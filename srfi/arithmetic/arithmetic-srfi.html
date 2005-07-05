@@ -1,0 +1,811 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN""http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><head>
+<title>
+SRFI ??: Preliminary Proposal for R6RS Arithmetic
+</title></head>
+<body>
+
+<H1>Title</H1>
+
+Preliminary Proposal for R6RS Arithmetic
+
+<H2>Authors</H2>
+
+William D Clinger and Michael Sperber
+
+<p>
+<strong>
+(FIXME: R6RS/SRFI boilerplate goes here)
+</strong>
+</p>
+
+<h2>Abstract</h2>
+
+<p>
+Scheme's arithmetic system was designed to allow a wide variety
+of implementations.  After many years of implementation experience,
+however, most implementations now fall into a small number of
+categories, and the benefits of continued experimentation no longer
+justify the confusion and portability problems that have resulted
+from giving implementations so much freedom in this area.
+</p>
+
+<p>
+In addition, several details of the R5RS are inconsistent or
+incomplete with respect to the IEEE standards for binary floating
+point arithmetic, which are generally used to implement Scheme's
+inexact real arithmetic.  Furthermore some details of the R5RS
+make it unnecessarily difficult to implement Scheme's arithmetic
+efficiently.
+</p>
+
+<p>
+The portability problems can most easily be solved by requiring
+all implementations to support the full numeric tower.  To
+prevent that requirement from making Scheme substantially more
+difficult to implement, we can provide reference implementations
+that construct the full numeric tower from a fixnum/flonum base.
+To ensure the portability of these reference implementations,
+the fixnum/flonum base must be described and (at least partially)
+standardized.
+</p>
+
+<p>
+Fixnum/flonum arithmetic is already supported by many systems,
+mainly for efficiency.  Standardization of fixnum/flonum
+arithmetic would increase the portability of code that uses it,
+but we cannot standardize the precision of fixnum/flonum arithmetic
+without making it inefficient on some systems, which would defeat
+its purpose.  We therefore propose to specify the syntax and much
+of the semantics of fixnum/flonum arithmetic, but to make the
+precision a parameter of the specification.
+</p>
+
+<p>
+This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
+</p>
+<ul>
+<li>defining fixnum arithmetic (parameterized by precision)
+<li>defining flonum arithmetic (inexactly)
+<li>defining new procedures for performing exact arithmetic
+<li>defining new procedures for performing inexact arithmetic
+<li>describing the external representation and semantics of
+    0.0, -0.0, +inf.0, -inf.0, +nan.0, and -nan.0 for systems
+    that implement inexact real arithmetic using IEEE binary
+    floating point
+<li>changing the specification of <code>eqv?</code> to
+    behave more sensibly with inexact numbers
+<li>defining Scheme's real numbers to be the complex numbers
+    whose imaginary part is an exact zero
+<li>adding an external representation for inexact numbers
+    that expresses the precision of a binary floating point
+    representation
+<li>restricting the domains of some R5RS procedures
+<li>clarifying the semantics of some R5RS procedures
+</ul>
+
+
+<h2>Issues</h2>
+
+<ul>
+<li>Instead of requiring the full numeric tower, the R6RS could
+    require only the fixnum/flonum base, and make the full tower
+    available as modules in the standard library.
+<li>The main problem with banishing the full tower to a library
+    is that <code>read</code>, <code>write</code>, and several
+    other procedures must know about the external representations
+    of all numbers.
+<li>Should a minimum precision be required for fixnums or flonums?
+    (The need 
+<li>Should the range of a fixnum be restricted to a power of two?
+    To a two's complement range?
+<li>Should the binary fixnum/flonums operations allow other than
+    two arguments?
+<li>What are the semantics of "safe mode" and "unsafe mode"?
+    (This is a much larger question that the R6RS should address.)
+<li>Should the R5RS procedures for generic arithmetic (e.g. <code>+</code>)
+    remain in R6RS?  Here are five possible answers, phrased in
+    terms of the <code>+</code> procedure:
+    <ol>
+    <li><code>+</code> is not defined in R6RS.
+    <li><code>+</code> is defined to be a synonym for the <code>ex+</code>,
+        so its domain is restricted to exact arguments, and always
+        returns an exact result.
+    <li><code>+</code> is defined as the union of the <code>ex+</code>
+        and <code>in+</code> procedures, so all of its arguments are
+        required to have the same exactness, and the exactness of its
+        result is the same as the exactness of its arguments.
+    <li><code>+</code> is defined as in R5RS, but with the increased
+        portability provided by requiring the full numeric tower.
+    <li><code>+</code> is defined to return an exact result in all
+        cases, even if one or more of its arguments is inexact.
+    </ol>
+    Will Clinger prefers the 4th possibility, Mike Sperber the 5th.
+    Members of the Scheme community should express themselves on this
+    issue.
+<li>The external representations of 0.0, -0.0, +inf.0, -inf.0, +nan.0,
+    and -nan.0 must be specified.  The notations used here are used
+    by several other languages, and have been adopted by several
+    implementations of Scheme, but other notations are possible.
+<li><strong>
+    (FIXME: several more issues should go here)
+    </strong>
+</ul>
+
+<h2>Rationale</h2>
+
+<strong>
+(FIXME: most of the rationale is in the abstract)
+</strong>
+
+<p>
+One of us (Sperber) has argued that Scheme's arithmetic requires
+radical overhaul.  The other (Clinger) agrees that revisions are
+needed.  This SRFI describes revisions that would satisfy both
+of us.  Whether these revisions qualify as radical is best left
+to the judgement of individual readers.
+</p>
+
+<p>
+Most implementations of Scheme fall into
+one of the following categories:
+</p>
+<ul>
+<li>fixnums only (now rare except in toy implementations)
+<li>fixnums and flonums only
+<li>exact rationals and flonums only (no imaginary numbers)
+<li>the complete numeric tower
+</ul>
+Under the R5RS, it is hard to write programs whose arithmetic
+is portable across the above categories, and it is unnecessarily
+difficult even to write programs whose arithmetic is portable
+between different implementations in the same category.
+
+<p>
+Many of these portability problems could be made to disappear
+by requiring implementations to support the complete numeric
+tower, as in Common Lisp.
+There has been concern that some implementors might ignore such
+a requirement, giving us arithmetic that's portable in theory
+but not in practice.
+This proposal addresses that concern by defining fixnum and
+flonum arithmetic with enough detail to support a portable
+implementation of the complete numeric tower.
+This approach recognizes the usefulness of fast fixnum/flonum
+arithmetic, and fixes some of the things that have made it hard to
+construct R5RS-compliant implementations with fast fixnum/flonum
+arithmetic.
+These changes should benefit both implementors and programmers.
+</p>
+
+<p>
+This SRFI is incompatible with SRFI-70 in several ways, including:
+</p>
+<ul>
+<li>This SRFI defines a real number to be a complex number whose
+    imaginary part is an exact zero.
+<li>This SRFI regards +nan.0 as a real number whose value is so
+    indeterminate that it might represent any real number within
+    the closed interval [-inf.0,+inf.0].
+</ul>
+Both of the above differences are motivated by closure properties
+that make it easier for an implementation to generate efficient
+numerical code.
+
+
+<h2>Specification</h2>
+
+
+<h3>External Representations</h3>
+
+<p>
+This SRFI adds the following external representations to Scheme:
+</p>
+<ul>
+<li><code>+inf.0</code> represents the result of
+    <code>(/ 1.0 0.0)</code>
+<li><code>-inf.0</code> represents the result of
+    <code>(/ -1.0 0.0)</code>
+<li><code>+nan.0</code> represents the result of
+    <code>(/ 0.0 0.0)</code>, and may represent other NaNs as well.
+    (This SRFI does not require read/write invariance for NaNs.)
+<li>If <var>x</var> is an external representation of an inexact
+    real number according to the R5RS, and <var>p</var> is a
+    sequence of 1 or more decimal digits, then
+    <var>x</var>|<var>p</var>
+    is an external representation that denotes the
+    best binary floating point approximation to <var>x</var>
+    using a <var>p</var>-bit significand.
+    For example, 1.1|53 is an external representation for the
+    best approximation to 1.1 in IEEE double precision.
+<li>If <var>x</var> is an external representation of an inexact
+    real number according to the R5RS, then <var>x</var> by
+    itself should be regarded as equivalent to
+    <code><var>x</var>|53</code>.
+</ul>
+
+<p>
+Implementations that use binary floating point representations
+of real numbers should represent <var>x</var>|<var>p</var>
+using a <var>p</var>-bit significand if practical, or by a greater
+precision if a <var>p</var>-bit significand is not practical, or
+by the largest available precision if <var>p</var> or more bits
+of significand is not practical within the implementation.
+</p>
+
+<BLOCKQUOTE>
+<p>
+<em>Note:</em>
+The precision of a significand should not be confused with the
+number of bits used to represent the significand.  In the IEEE
+floating point standards, for example, the significand's most
+significant bit is implicit in single and double precision but
+is explicit in extended precision.  Whether that bit is implicit
+or explicit does not affect the mathematical precision.
+In implementations that use binary floating point, the default
+precision can calculated by calling the following procedure:
+</p>
+<pre>
+    (define (precision)
+      (do ((n 0 (+ n 1))
+           (x 1.0 (/ x 2.0)))
+        ((= 1.0 (+ 1.0 x)) n)))
+</pre>
+</BLOCKQUOTE>
+
+<p>
+The <code>number-&gt;string</code> procedure should be generalized
+to support the <var>x</var>|<var>p</var> notation.
+<strong>(FIXME: details, please)</strong>
+</p>
+
+<p>
+The <code>write</code> procedure should be required to write
+inexact numbers in the external representation produced by
+<code>number-&gt;string</code> with one argument.
+</p>
+
+
+<h3>Numerical Type Predicates</h3>
+
+<font color=red>
+The following description is a revised form of the description
+given in SRFI-70.  Changes from SRFI-70 are highlighted in red.
+</font>
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>number?</B> <I>obj</I>
+<DD>
+<DT><U>procedure:</U> <B>complex?</B> <I>obj</I>
+<DD>
+<DT><U>procedure:</U> <B>real?</B> <I>obj</I>
+<DD>
+<DT><U>procedure:</U> <B>rational?</B> <I>obj</I>
+<DD>
+<DT><U>procedure:</U> <B>integer?</B> <I>obj</I>
+<DD>
+
+
+<P>
+These numerical type predicates can be applied to any kind of
+argument, including non-numbers.  They return <TT>#t</TT> if the object is
+of the named type, and otherwise they return <TT>#f</TT>.
+In general, if a type predicate is true of a number then all higher
+type predicates are also true of that number.  Consequently, if a type
+predicate is false of a number, then all lower type predicates are
+also false of that number.
+
+
+<p>
+If <VAR>z</VAR> is
+<font color=red>a <strike>inexact</strike></font> complex number, then
+<SAMP>`(real? <VAR>z</VAR>)'</SAMP> is true if and only if
+<SAMP>`(zero? (imag-part <VAR>z</VAR>))'</SAMP>
+<font color=red>
+and <SAMP>`(exact? (imag-part <VAR>z</VAR>))'</SAMP> are both true</font>.
+</p>
+
+<p>
+<font color=red>
+If <VAR>x</VAR> is a real number, then
+<SAMP>`(rational? <VAR>z</VAR>)'</SAMP> is true if and only if
+there exist exact integers <var>k1</var> and <var>k2</var>
+such that
+<SAMP>`(= <var>z</var> (/ <var>k1</var> <var>k2</var>))'</SAMP>
+and
+<SAMP>`(= (numerator <var>z</var>) <var>k1</var>)'</SAMP>
+and
+<SAMP>`(= (denominator <var>z</var>) <var>k2</var>)'</SAMP>
+are all true.
+Thus infinities and NaNs are not rational numbers.
+</font color=red>
+</p>
+
+If <VAR>r1</VAR> is <font color=red>a rational</font> number, then
+<SAMP>`(integer? <VAR>x</VAR>)'</SAMP> is true if and only if
+<font color=red>
+<SAMP>`(= (denominator <VAR>r1</VAR>) 1)'</SAMP>
+is true.
+</font>
+
+<PRE>
+(complex? 3+4i)                        ==&#62;  #t
+(complex? 3)                           ==&#62;  #t
+(real? 3)                              ==&#62;  #t
+(real? -2.5+0.0i)                      ==&#62;  <font color=red>#f</font>
+<font color=red>(real? -2.5+0i)                        ==&#62;  #t</font>
+<font color=red>(real? -2.5)                           ==&#62;  #f</font>
+(real? #e1e10)                         ==&#62;  #t
+<font color=red>(real? -inf.0)                         ==&#62;  #t</font>
+<font color=red>(real? +nan.0)                         ==&#62;  #t</font>
+<font color=red>(rational? -inf.0)                     ==&#62;  #f</font>
+<font color=red>(rational? +nan.0)                     ==&#62;  #f</font>
+(rational? 6/10)                       ==&#62;  #t
+(rational? 6/3)                        ==&#62;  #t
+(integer? 3+0i)                        ==&#62;  #t
+(integer? 3.0)                         ==&#62;  #t
+(integer? 8/4)                         ==&#62;  #t
+
+(number? <font color=red>+nan.0</font>)                       ==>  #t
+(complex? <font color=red>+nan.0</font>)                      ==>  <font color=red>#t</font>
+(complex? <font color=red>+inf.0</font>)                      ==>  #t
+(real? <font color=red>+nan.0</font>)                         ==>  <font color=red>#t</font>
+(real? <font color=red>-inf.0</font>)                         ==>  #t
+(rational? <font color=red>+inf.0</font>)                     ==>  #f
+(rational? <font color=red>+nan.0</font>)                     ==>  #f
+(integer? <font color=red>-inf.0</font>)                      ==>  #f
+</PRE>
+
+
+<BLOCKQUOTE>
+<P>
+<EM>Note:</EM>
+The behavior of these type predicates on inexact numbers is
+unreliable, because any inaccuracy may
+affect the result.
+</BLOCKQUOTE>
+
+
+<BLOCKQUOTE>
+<P>
+<strike>
+<font color=red>
+<EM>Note:</EM>
+In many implementations the <CODE>rational?</CODE> procedure will be the same
+
+as <CODE>real?</CODE>, and the <CODE>complex?</CODE> procedure will be the same as
+
+
+<CODE>number?</CODE>, but unusual implementations may be able to represent
+
+some irrational numbers exactly or may extend the number system to
+support some kind of non-complex numbers.
+</font>
+</strike>
+</BLOCKQUOTE>
+
+</DL>
+
+
+
+
+
+
+<h3>Fixnums</h3>
+
+<p>
+Every implementation must define its fixnum range as a closed
+interval [<var>lo</var>, <var>hi</var>] such that <var>lo</var>
+and <var>hi</var> are (mathematical) integers with
+<var>lo</var> &lt;= 0 &lt; 1 &lt;= <var>hi</var>.
+Every mathematical integer within an implementation's fixnum
+range must correspond to an exact integer that is representable
+within the implementation.
+The fixnum operations of an implementation will perform
+arithmetic modulo <var>hi-lo+1</var>.
+</p>
+
+<p>
+<strong>Definition.</strong>
+A fixnum is an exact integer whose value lies within the fixnum
+range.
+</p>
+
+<p>
+We will use <var>fx1</var> and <var>fx2</var> as metavariables
+that range over fixnums.
+</p>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fx+</B> <I>fx1 fx2</I>
+<DD>
+<DT><U>procedure:</U> <B>fx-</B> <I>fx1 fx2</I>
+<DD>
+<DT><U>procedure:</U> <B>fx*</B> <I>fx1 fx2</I>
+<DD>
+
+<P>
+These procedures return the unique fixnum that is congruent
+mod <var>hi-lo+1</var> to the sum, difference, or product of
+their arguments.
+</p>
+
+<p>
+If either argument to these procedures is not actually
+a fixnum, then these procedures signal an error, unless
+the implementation is running in unsafe mode, in which
+case all bets are off.  That's a screwy way of saying
+it, but that's a larger issue for R6RS, which we can't
+hope to resolve here.
+</p>
+
+</dl>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fxquotient</B> <I>fx1 fx2</I>
+<DD>
+<DT><U>procedure:</U> <B>fxmodulo</B> <I>fx1 fx2</I>
+<DD>
+<DT><U>procedure:</U> <B>fxremainder</B> <I>fx1 fx2</I>
+<DD>
+
+<P>
+These procedures return the unique fixnum that is congruent
+mod <var>hi-lo+1</var> to the mathematical integer that would
+be returned by the corresponding R5RS procedures whose names
+do not include the <code>fx</code> prefix.
+</p>
+
+<p>
+If either argument to these procedures is not actually
+a fixnum, then these procedures signal an error, unless
+the implementation is running in unsafe mode, in which
+case all bets are off.  That's a screwy way of saying
+it, but that's a larger issue for R6RS, which we can't
+hope to resolve here.
+</p>
+
+</dl>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fx=</B> <I>fx1 fx2</I>
+<DD>
+<DT><U>procedure:</U> <B>fx&lt;</B> <I>fx1 fx2</I>
+<DD>
+<DT><U>procedure:</U> <B>fx&lt=;</B> <I>fx1 fx2</I>
+<DD>
+<DT><U>procedure:</U> <B>fx&gt;</B> <I>fx1 fx2</I>
+<DD>
+<DT><U>procedure:</U> <B>fx&gt=;</B> <I>fx1 fx2</I>
+<DD>
+
+
+<P>
+These procedures return the same boolean result that
+would be returned by the R5RS procedures whose names
+do not include the <code>fx</code> prefix.
+</P>
+
+<p>
+If either argument to these procedures is not actually
+a fixnum, then these procedures signal an error, unless
+the implementation is running in unsafe mode, in which
+case all bets are off.  That's a screwy way of saying
+it, but that's a larger issue for R6RS, which we can't
+hope to resolve here.
+</p>
+
+</dl>
+
+
+
+<h3>Flonums</h3>
+
+<p>
+<strong>Definition.</strong>
+A flonum is an inexact real.
+</p>
+
+<p>
+Please note that this definition does not imply any particular
+representation for a flonum.  In particular, it does not imply
+that flonums are represented by any kind of floating point
+format.
+</p>
+
+<p>
+We will use <var>fl1</var> and <var>fl2</var> as metavariables
+that range over flonums.
+</p>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fl+</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl-</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl*</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl/</B> <I>fl1 fl2</I>
+<DD>
+
+
+<P>
+These procedures return the inexact real sum, difference,
+product, or quotient of their inexact real arguments.
+In general, they should return the flonum that best
+approximates the mathematical sum of their arguments.
+(For implementations that represent flonums as IEEE
+binary floating point numbers, the meaning of "best"
+is reasonably well-defined by the IEEE standards.)
+</P>
+
+<p>
+If either argument to these procedures is not actually
+a flonum, then these procedures signal an error, unless
+the implementation is running in unsafe mode, in which
+case all bets are off.  That's a screwy way of saying
+it, but that's a larger issue for R6RS, which we can't
+hope to resolve here.
+</p>
+
+</dl>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fl=</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl&lt;</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl&lt=;</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl&gt;</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl&gt=;</B> <I>fl1 fl2</I>
+<DD>
+
+
+<P>
+These procedures return the same boolean result that
+would be returned by the R5RS procedures whose names
+do not include the fl prefix.
+</P>
+
+<p>
+If either argument to these procedures is not actually
+a flonum, then these procedures signal an error, unless
+the implementation is running in unsafe mode, in which
+case all bets are off.  That's a screwy way of saying
+it, but that's a larger issue for R6RS, which we can't
+hope to resolve here.
+</p>
+
+</dl>
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>flmax</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>flmin</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>flatan</B> <I>fl1 fl2</I>
+<DD>
+
+
+<P>
+These procedures return the same inexact real result that
+would be returned by the R5RS procedures whose names
+do not include the fl prefix.
+</P>
+
+<p>
+If either argument to these procedures is not actually
+a flonum, then these procedures signal an error, unless
+the implementation is running in unsafe mode, in which
+case all bets are off.  That's a screwy way of saying
+it, but that's a larger issue for R6RS, which we can't
+hope to resolve here.
+</p>
+
+</dl>
+
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>flabs</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flfloor</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flceiling</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flround</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flexp</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>fllog</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flsin</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flcos</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>fltan</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flasin</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flatan</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flsqrt</B> <I>fl1</I>
+<DD>
+<DT><U>procedure:</U> <B>flexpt</B> <I>fl1</I>
+<DD>
+
+<P>
+These procedures return the same inexact real result that
+would be returned by the R5RS procedures whose names
+do not include the fl prefix.
+In the event that the corresponding R5RS procedure does
+not return a real result for the given arguments, the
+result may be a NaN, or may be some meaningless inexact
+real number.
+Implementations that use IEEE binary floating point
+arithmetic are encouraged to follow the relevant
+standards for these procedures.
+</P>
+
+<p>
+If the argument to these procedures is not actually
+a flonum, then these procedures signal an error, unless
+the implementation is running in unsafe mode, in which
+case all bets are off.  That's a screwy way of saying
+it, but that's a larger issue for R6RS, which we can't
+hope to resolve here.
+</p>
+
+</dl>
+
+
+<h3>Conversions</h3>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fixnum-&gt;flonum</B> <I>fx1</I>
+<DD>
+<DT><U>procedure:</U> <B>flonum-&gt;fixnum</B> <I>fl1</I>
+<DD>
+
+<p>
+The <code>fixnum-&gt;flonum</code>
+and <code>flonum-&gt;fixnum</code>
+procedures provide for explicit conversions
+between fixnums and flonums.
+Programmers should understand that these procedures
+cannot be expected to return results that are
+numerically equal to their arguments.
+</p>
+
+<p>
+For example, suppose the fixnum range is [-8388608,8388607]
+and flonums are represented in IEEE double precision.  Then
+</p>
+<pre>
+(fixnum-&gt;flonum 8388608)         =&gt; 8388608.0
+(flonum-&gt;fixnum 3.14159265)      =&gt; 3
+(flonum-&gt;fixnum -inf.0)          =&gt; -8388608
+(flonum-&gt;fixnum 1e20)            =&gt; 8388607
+</pre>
+
+<p>
+If the argument to these procedures is not actually
+a flonum, then these procedures signal an error, unless
+the implementation is running in unsafe mode, in which
+case all bets are off.  That's a screwy way of saying
+it, but that's a larger issue for R6RS, which we can't
+hope to resolve here.
+</p>
+
+</dl>
+
+<h3>
+IEEE Binary Floating Arithmetic
+</h3>
+
+<p>
+Although the R6RS should not require IEEE floating point arithmetic,
+it should address certain specific issues of IEEE arithmetic.  In
+particular, the R6RS should explain that
+</p>
+<pre>
+    0.0
+   -0.0
+   +inf.0
+   -inf.0
+   +nan.0
+</pre>
+<p>
+are likely to be distinct flonums.  The first two are inexact
+rationals, but <code>+inf.0</code>, <code>-inf.0</code>, and
+<code>+nan.0</code> are not rationals.
+The R6RS should also explain that
+</p>
+<pre>
+    (fl= 0.0 -0.0)                                =&gt;  #t
+    (fl< -0.0 0.0)                                =&gt;  #f
+    (fl= +nan.0 +nan.0)                           =&gt;  #f
+</pre>
+<p>
+is required by the IEEE standards, and is strongly recommended
+but not required by the R6RS.
+</p>
+
+<p>
+The R6RS specification of eqv? should be changed so that
+</p>
+<pre>
+    (eqv? -0.0 0.0)                             =&gt;  #f
+</pre>
+<p>
+and to allow (but not require)
+<code>(eqv? <var>x y</var>)</code> to evaluate to <code>#t</code>
+when <var>x</var> and <var>y</var> are NaNs.
+</p>
+
+<p>
+Note that <code>(negative? -0.0)</code> must return <code>#f</code>,
+else it would lose the correspondence with
+<code>(fl< -0.0 0.0)</code>, which is <code>#f</code>
+according to the IEEE standards.
+</p>
+
+
+<h3>Exact Procedures</h3>
+
+<p>
+We will use <var>r1</var> and <var>r2</var> as metavariables
+that range over exact rational numbers.
+</p>
+
+<p>
+<strong>
+(FIXME: I'm leaving this section for you, Mike.)
+</strong>
+</p>
+
+<h3>Inexact Procedures</h3>
+
+<p>
+We will use <var>c1</var> and <var>c2</var> as metavariables
+that range over inexact complex numbers.
+</p>
+
+<p>
+<strong>
+(FIXME: I'm leaving this section for you, Mike.)
+</strong>
+</p>
+
+
+<h3>Backward Compatibility</h3>
+
+<p>
+<strong>
+(FIXME: I'm leaving this section for you, Mike.)
+</strong>
+</p>
+
+
+<h2>Copyright</h2>
+
+<p>
+<strong>
+(FIXME: I'm leaving this section for you, Mike.)
+</strong>
+</p>
+
+</body></html>
