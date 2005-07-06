@@ -126,6 +126,11 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     and -nan.0 must be specified.  The notations used here are used
     by several other languages, and have been adopted by several
     implementations of Scheme, but other notations are possible.
+<li>The fixnum, flonum, and inexact arithmetic come with a full deck
+    of operations, including some that are defined in terms of
+    integers (such as <code>div+mod</code> and
+    <code>quotient+remainder</code>), and others that are easily abused
+    (such as <code>fxabs</code>).  Should these be pruned?
 <li><strong>
     (FIXME: several more issues should go here)
     </strong>
@@ -191,6 +196,12 @@ Both of the above differences are motivated by closure properties
 that make it easier for an implementation to generate efficient
 numerical code.
 
+<p>
+Moreover, unlike SRFI 70, this SRFI doesn't extend
+<code>quotient</code>, <code>remainder</code>, and <code>modulo</code>
+to real numbers, but instead provides additional operations
+<code>div</code> and <code>mod</code>, which are slightly more
+generally applicable and easier to specify.
 
 <h2>Specification</h2>
 
@@ -281,8 +292,123 @@ The SRFI uses the phrase "all bets are off" to describe that the
 behavior of a procedure is unspecified for certain arguments in unsafe
 mode.  Specifically, a procedure call for which all bets are off is
 free to crash the system.
-     
 </p>
+
+<h3><a name="integer-division">Integer Division</a></h3>
+
+<P>
+For various kinds of arithmetic (fixnum, flonum, exact, inexact, and
+generic), this SRFI provides operations for performing integer
+division.  Their variants differ mainly in the domains they operate
+on, not in substance.  The following specification is of the general
+variant.  Later section will link back to this one where appropriate.
+</P>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>div+mod</B> <I>x1 x2</I>
+<DT><U>library procedure:</U> <B>div</B> <I>x1 x2</I>
+<DT><U>library procedure:</U> <B>mod</B> <I>x1 x2</I>
+<DD>
+
+These implement integer division and remainder on real numbers.  
+<VAR>x2</VAR> should be non-zero. <B>div</B> returns an integer.
+
+<PRE>
+(div <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&#62; <VAR>n_d</VAR>
+(mod <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&#62; <VAR>x_m</VAR>
+</PRE>
+
+where:
+	<ol>
+	  <li><VAR>x1</VAR> = <VAR>n_d</VAR> * <VAR>x2</VAR> +
+	  <VAR>x_m</VAR>.</li>
+	  <li>0 &lt;= <VAR>x_m</VAR> &lt; <VAR>x2</VAR> if <VAR>y</VAR>
+	  &gt; 0</li>
+	  <li><VAR>x2</VAR>/2 &lt;= <VAR>x_m</VAR> &lt;
+	  -<VAR>x2</VAR>/2 if <VAR>x2</VAR> &lt; 0</li>
+	</ol>
+Moreover:
+<PRE>
+(div <VAR>x1</VAR> 0)                  ==&#62; 0
+</PRE>	
+
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <B>quotient+remainder</B> <I>n1 n2</I>
+<DT><U>library procedure:</U> <B>quotient</B> <I>n1 n2</I>
+<DT><U>library procedure:</U> <B>remainder</B> <I>n1 n2</I>
+<DT><U>library procedure:</U> <B>modulo</B> <I>n1 n2</I>
+<DD>
+
+<P>
+These procedures implement number-theoretic (integer)
+division.  <VAR>n2</VAR> should be non-zero.
+All three procedures return integers.
+<SAMP>`quotient'</SAMP>
+returns an integer.  If <VAR>n1</VAR>/<VAR>n2</VAR> is an integer:
+
+<PRE>
+(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&#62; <VAR>n1</VAR>/<VAR>n2</VAR>
+(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&#62; 0
+(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&#62; 0
+</PRE>
+
+If <VAR>n1</VAR>/<VAR>n2</VAR> is not an integer:
+
+<PRE>
+(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&#62; <VAR>n_q</VAR>
+(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&#62; <VAR>n_r</VAR>
+(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&#62; <VAR>n_m</VAR>
+</PRE>
+
+<P>
+where <VAR>n_q</VAR> is <VAR>n1</VAR>/<VAR>n2</VAR> rounded towards zero,
+0 &#60; |<VAR>n_r</VAR>| &#60; |<VAR>n2</VAR>|, 0 &#60; |<VAR>n_m</VAR>| &#60; |<VAR>n2</VAR>|,
+<VAR>n_r</VAR> and <VAR>n_m</VAR> differ from <VAR>n1</VAR> by a multiple of <VAR>n2</VAR>,
+<VAR>n_r</VAR> has the same sign as <VAR>n1</VAR>, and
+<VAR>n_m</VAR> has the same sign as <VAR>n2</VAR>.
+
+<P>
+From this we can conclude that for integers <VAR>n1</VAR> and <VAR>n2</VAR> with
+<VAR>n2</VAR> not equal to 0,
+
+<PRE>
+     (= <VAR>n1</VAR> (+ (* <VAR>n2</VAR> (quotient <VAR>n1</VAR> <VAR>n2</VAR>))
+           (remainder <VAR>x1</VAR> <VAR>x2</VAR>)))
+                                       ==&#62;  #t
+</PRE>
+
+provided all numbers involved in that computation are exact.
+
+
+<PRE>
+(quotient+remainder 13 4)              ==&#62;  3 1
+(modulo 13 4)                          ==&#62;  1
+(remainder 13 4)                       ==&#62;  1
+
+(quotient+remainder -13 4)             ==&#62;  -3 -1
+(modulo -13 4)                         ==&#62;  3
+(remainder -13 4)                      ==&#62;  -1
+
+(quotient+remainder -13 4)             ==&#62;  -3 1
+(modulo 13 -4)                         ==&#62;  -3
+(remainder 13 -4)                      ==&#62;  1
+
+(modulo -13 -4)                        ==&#62;  -1
+(remainder -13 -4)                     ==&#62;  -1
+
+(quotient+remainder -13 -4.0)          ==&#62;  3.0 -1.0 ; inexact
+(remainder -13 -4.0)                   ==&#62;  -1.0     ; inexact
+</PRE>
+
+</DD>
+</DL>
+
+
 
 <h3>Numerical Type Predicates</h3>
 
@@ -431,10 +557,88 @@ A fixnum is an exact integer whose value lies within the fixnum
 range.
 </p>
 
-<p>
-We will use <var>fx1</var> and <var>fx2</var> as metavariables
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fixnum?</B> <I>obj</I>
+<DD>
+
+<P>This returns <TT>#t</TT> if <I>obj</I> is a fixnum, and
+otherwise returns <TT>#f</TT>.
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>least-fixnum</B>
+<DT><U>procedure:</U> <B>greatest-fixnum</B>
+<DD>
+
+<P>These procedures return <var>lo</var> and <var>hi</var>, the
+minimum and the maximum value of the fixnum range, respectively.
+</DL>
+
+
+<P>
+We will use <var>fx</var>, <var>fx1</var> and <var>fx2</var> as metavariables
 that range over fixnums.
+</P>
+<p>
+If an argument to following procedures that corresponding to a fixnum
+metavariable is not actually a fixnum, then these procedures signal an
+error, unless the implementation is running in unsafe mode, in which
+case all bets are off.
 </p>
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fx=</B> <I>fx1 fx2</I>
+<DT><U>procedure:</U> <B>fx&gt;</B> <I>fx1 fx2</I>
+<DT><U>procedure:</U> <B>fx&lt;</B> <I>fx1 fx2</I>
+<DT><U>procedure:</U> <B>fx&gt;=</B> <I>fx1 fx2</I>
+<DT><U>procedure:</U> <B>fx&lt;=</B> <I>fx1 fx2</I>
+<DD>
+
+<P>
+These procedures return <TT>#t</TT> if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing,
+monotonically nondecreasing, or monotonically nonincreasing.
+</P>
+</DD>
+</DL>
+
+<P>
+<DL>
+<DD>
+<DT><U>library procedure:</U> <B>fxzero?</B> <I><VAR>fx</VAR></I>
+<DD>
+<DT><U>library procedure:</U> <B>fxpositive?</B> <I><VAR>fx</VAR></I>
+<DD>
+<DT><U>library procedure:</U> <B>fxnegative?</B> <I><VAR>fx</VAR></I>
+<DD>
+<DT><U>library procedure:</U> <B>fxodd?</B> <VAR>fx</VAR>
+<DD>
+<DT><U>library procedure:</U> <B>fxeven?</B> <VAR>fx</VAR>
+<DD>
+
+
+<P>
+These numerical predicates test a fixnum for a particular property,
+returning <TT>#t</TT> or <TT>#f</TT>.
+</P>
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <B>fxmax</B> <I>fx1 fx2</I>
+<DD>
+<DT><U>library procedure:</U> <B>fxmin</B> <I>fx1 fx2</I>
+<DD>
+
+
+<P>
+These procedures return the maximum or minimum of their arguments.
+</P>
+</DL>
 
 <P>
 <DL>
@@ -451,69 +655,93 @@ mod <var>hi-lo+1</var> to the sum, difference, or product of
 their arguments.
 </p>
 
-<p>
-If either argument to these procedures is not actually
-a fixnum, then these procedures signal an error, unless
-the implementation is running in unsafe mode, in which
-case all bets are off.
-</p>
-
 </dl>
 
 <P>
 <DL>
-<DT><U>procedure:</U> <B>fxquotient</B> <I>fx1 fx2</I>
-<DD>
-<DT><U>procedure:</U> <B>fxmodulo</B> <I>fx1 fx2</I>
-<DD>
-<DT><U>procedure:</U> <B>fxremainder</B> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <B>fxabs</B> <VAR>fx</VAR>
 <DD>
 
 <P>
-These procedures return the unique fixnum that is congruent
-mod <var>hi-lo+1</var> to the mathematical integer that would
-be returned by the corresponding R5RS procedures whose names
-do not include the <code>fx</code> prefix.
-</p>
+This procedure returns <SAMP>`(fx- 0 <VAR>fx</VAR>)'</SAMP> if
+<VAR>fx</VAR> is negative, <VAR>fx</VAR> otherwise.
 
-<p>
-If either argument to these procedures is not actually
-a fixnum, then these procedures signal an error, unless
-the implementation is running in unsafe mode, in which
-case all bets are off.
-</p>
-
-</dl>
-
-<P>
-<DL>
-<DT><U>procedure:</U> <B>fx=</B> <I>fx1 fx2</I>
-<DD>
-<DT><U>procedure:</U> <B>fx&lt;</B> <I>fx1 fx2</I>
-<DD>
-<DT><U>procedure:</U> <B>fx&lt=;</B> <I>fx1 fx2</I>
-<DD>
-<DT><U>procedure:</U> <B>fx&gt;</B> <I>fx1 fx2</I>
-<DD>
-<DT><U>procedure:</U> <B>fx&gt=;</B> <I>fx1 fx2</I>
-<DD>
-
-
-<P>
-These procedures return the same boolean result that
-would be returned by the R5RS procedures whose names
-do not include the <code>fx</code> prefix.
 </P>
+</DL>
 
-<p>
-If either argument to these procedures is not actually
-a fixnum, then these procedures signal an error, unless
-the implementation is running in unsafe mode, in which
-case all bets are off.
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fxdiv+mod</B> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <B>fxdiv</B> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <B>fxmod</B> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <B>fxquotient</B> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <B>fxmodulo+remainder</B> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <B>fxmodulo</B> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <B>fxremainder</B> <I>fx1 fx2</I>
+<DD>
+
+<P>
+These procedures implement number-theoretic integer division congruent
+mod <var>hi-lo+1</var>.  See <a href="#integer-division">the
+Section</a> on integer division.
 </p>
+</dl>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <B>fxgcd</B> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <B>fxlcm</B> <I>fx1 fx2</I>
+<DD>
+<P>
+These procedures return the greatest common divisor or least common
+multiple of their arguments congruent
+mod <var>hi-lo+1</var>.
+</DD>
+</DL>
 
 </dl>
 
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fxbitwise-not</B> <I>fx</I>
+<DD>
+<P>
+Returns the fixnum which is the one's-complement of its argument.
+congruent mod <var>hi-lo+1</var>.
+</DD>
+</DL>
+
+
+</dl>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fxbitwise-and</B> <I>fx</I>
+<DT><U>procedure:</U> <B>fxbitwise-ior</B> <I>fx</I>
+<DT><U>procedure:</U> <B>fxbitwise-xor</B> <I>fx</I>
+<DD>
+<P>
+The <B>fxbitwise-and</B> procedure returns the fixnum which is the bit-wise "and" of its
+arguments congruent mod <var>hi-lo+1</var>.
+The <B>fxbitwise-ior</B> procedure returns the fixnum which is the bit-wise "or" of its
+arguments congruent mod <var>hi-lo+1</var>.
+The <B>fxbitwise-xor</B> procedure returns the fixnum which is the
+bit-wise "exlusive or" of its arguments congruent mod <var>hi-lo+1</var>.
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>fxarithmetic-shift</B> <I>fx1</I> <I>fx2</I>
+<DD>
+<P>
+Conceptually shifts the two's complement representation of
+<VAR>fx1</VAR> <VAR>fx2</VAR> bits left when <VAR>fx2</VAR> &gt; 0,
+and -<VAR>fx2</VAR> bits right when <VAR>fx2</VAR> &lt; 0, extending
+the sign.  (It returns <VAR>fx1</VAR> when <VAR>fx2</VAR> = 0.)  It
+returns the result of that shift congruent mod <var>hi-lo+1</var>.
+</DD>
+</DL>
 
 
 <h3>Flonums</h3>
