@@ -464,7 +464,7 @@ and
 <SAMP>`(= (denominator <var>z</var>) <var>k2</var>)'</SAMP>
 are all true.
 Thus infinities and NaNs are not rational numbers.
-</font color=red>
+</font>
 </p>
 
 If <VAR>r1</VAR> is <font color=red>a rational</font> number, then
@@ -699,8 +699,6 @@ mod <var>hi-lo+1</var>.
 </DD>
 </DL>
 
-</dl>
-
 <P>
 <DL>
 <DT><U>procedure:</U> <B>fxbitwise-not</B> <I>fx</I>
@@ -711,8 +709,6 @@ congruent mod <var>hi-lo+1</var>.
 </DD>
 </DL>
 
-
-</dl>
 
 <P>
 <DL>
@@ -758,19 +754,84 @@ that flonums are represented by any kind of floating point
 format.
 </p>
 
+<P>
+<DL>
+<DT><U>procedure:</U> <B>flonum?</B> <I>obj</I>
+<DD>
+
+<P>This returns <TT>#t</TT> if <I>obj</I> is a flonum, and
+otherwise returns <TT>#f</TT>.
+</DL>
+
+
 <p>
-We will use <var>fl1</var> and <var>fl2</var> as metavariables
-that range over flonums.
+We will use <var>fl</var>, <var>fl1</var> and <var>fl2</var> as
+metavariables that range over flonums, and <var>ifl</var>,
+<var>ifl1</var> and <var>ifl2</var> as metavariables that range over
+integral flonums, i.e. flonums that represent integers.
+</p>
+<p>
+If an argument to following procedures that corresponding to a
+(integral) flonum metavariable is not actually a (integral) flonum,
+then these procedures signal an error, unless the implementation is
+running in unsafe mode, in which case all bets are off.
 </p>
 
 <P>
 <DL>
+<DT><U>procedure:</U> <B>fl=</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl&lt;</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl&lt;=</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl&gt;</B> <I>fl1 fl2</I>
+<DD>
+<DT><U>procedure:</U> <B>fl&gt;=</B> <I>fl1 fl2</I>
+<DD>
+
+
+<P>
+These procedures return <TT>#t</TT> if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing,
+monotonically nondecreasing, or monotonically nonincreasing.  These
+predicates are required to be transitive.
+</P>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>flzero?</B> <I>fl</I>
+<DT><U>procedure:</U> <B>flpositive?</B> <I>fl</I>
+<DT><U>procedure:</U> <B>flnegative?</B> <I>fl</I>
+<DT><U>procedure:</U> <B>flodd?</B> <I>ifl</I>
+<DT><U>procedure:</U> <B>fleven?</B> <I>ifl</I>
+<DD>
+
+
+<P>
+These numerical predicates test a fixnum for a particular property,
+returning <TT>#t</TT> or <TT>#f</TT>.
+</P>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>flmax</B> <I>fl1 fl2</I>
+<DT><U>procedure:</U> <B>flmin</B> <I>fl1 fl2</I>
+<DD>
+
+<P>
+These procedures return the maximum or minimum of their arguments.
+</P>
+
+</DL>
+
+<P>
+<DL>
 <DT><U>procedure:</U> <B>fl+</B> <I>fl1 fl2</I>
-<DD>
 <DT><U>procedure:</U> <B>fl-</B> <I>fl1 fl2</I>
-<DD>
 <DT><U>procedure:</U> <B>fl*</B> <I>fl1 fl2</I>
-<DD>
 <DT><U>procedure:</U> <B>fl/</B> <I>fl1 fl2</I>
 <DD>
 
@@ -784,124 +845,201 @@ approximates the mathematical sum of their arguments.
 binary floating point numbers, the meaning of "best"
 is reasonably well-defined by the IEEE standards.)
 </P>
-
-<p>
-If either argument to these procedures is not actually
-a flonum, then these procedures signal an error, unless
-the implementation is running in unsafe mode, in which
-case all bets are off.
-</p>
-
 </dl>
 
 <P>
 <DL>
-<DT><U>procedure:</U> <B>fl=</B> <I>fl1 fl2</I>
+<DT><U>procedure:</U> <B>flabs</B> <I>fl</I>
 <DD>
-<DT><U>procedure:</U> <B>fl&lt;</B> <I>fl1 fl2</I>
-<DD>
-<DT><U>procedure:</U> <B>fl&lt=;</B> <I>fl1 fl2</I>
-<DD>
-<DT><U>procedure:</U> <B>fl&gt;</B> <I>fl1 fl2</I>
-<DD>
-<DT><U>procedure:</U> <B>fl&gt=;</B> <I>fl1 fl2</I>
-<DD>
-
-
 <P>
-These procedures return the same boolean result that
-would be returned by the R5RS procedures whose names
-do not include the fl prefix.
-</P>
-
-<p>
-If either argument to these procedures is not actually
-a flonum, then these procedures signal an error, unless
-the implementation is running in unsafe mode, in which
-case all bets are off.
-</p>
-
-</dl>
-
+This returns the absolute value of its argument.
+<P>
+</DL>
 
 <P>
 <DL>
-<DT><U>procedure:</U> <B>flmax</B> <I>fl1 fl2</I>
+<DT><U>procedure:</U> <B>fldiv+mod</B> <I>fl1 fl2</I>
+<DT><U>library procedure:</U> <B>fldiv</B> <I>fl1 fl2</I>
+<DT><U>library procedure:</U> <B>flmod</B> <I>fl1 fl2</I>
+<DT><U>library procedure:</U> <B>flquotient</B> <I>ifl1 ifl2</I>
+<DT><U>library procedure:</U> <B>flmodulo+remainder</B> <I>ifl1 ifl2</I>
+<DT><U>library procedure:</U> <B>flmodulo</B> <I>ifl1 ifl2</I>
+<DT><U>library procedure:</U> <B>flremainder</B> <I>ifl1 ifl2</I>
 <DD>
-<DT><U>procedure:</U> <B>flmin</B> <I>fl1 fl2</I>
-<DD>
-<DT><U>procedure:</U> <B>flatan</B> <I>fl1 fl2</I>
-<DD>
-
 
 <P>
-These procedures return the same inexact real result that
-would be returned by the R5RS procedures whose names
-do not include the fl prefix.
-</P>
-
-<p>
-If either argument to these procedures is not actually
-a flonum, then these procedures signal an error, unless
-the implementation is running in unsafe mode, in which
-case all bets are off.
+These procedures implement number-theoretic integer division.  See <a
+href="#integer-division">the Section</a> on integer division.
 </p>
-
 </dl>
-
-
 
 <P>
 <DL>
-<DT><U>procedure:</U> <B>flabs</B> <I>fl1</I>
+<DT><U>library procedure:</U> <B>flgcd</B> <I>ifl1 ifl2</I>
+<DT><U>library procedure:</U> <B>fllcm</B> <I>ifl1 ifl2</I>
 <DD>
+<P>
+These procedures return the greatest common divisor or least common
+multiple of their arguments.
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <B>flnumerator</B> <I>ifl</I>
+<DT><U>library procedure:</U> <B>fldenominator</B> <I>ifl</I>
+<DD>
+<P>
+These procedures return the numerator or denominator of their
+argument; the result is computed as if the argument was represented as
+a fraction in lowest terms.  The denominator is always positive.  The
+denominator of 0 is defined to be 1.
+</DD>
+</DL>
+
+<P>
+<DL>
 <DT><U>procedure:</U> <B>flfloor</B> <I>fl1</I>
-<DD>
 <DT><U>procedure:</U> <B>flceiling</B> <I>fl1</I>
-<DD>
+<DT><U>procedure:</U> <B>fltruncate</B> <I>fl1</I>
 <DT><U>procedure:</U> <B>flround</B> <I>fl1</I>
 <DD>
-<DT><U>procedure:</U> <B>flexp</B> <I>fl1</I>
-<DD>
-<DT><U>procedure:</U> <B>fllog</B> <I>fl1</I>
-<DD>
-<DT><U>procedure:</U> <B>flsin</B> <I>fl1</I>
-<DD>
-<DT><U>procedure:</U> <B>flcos</B> <I>fl1</I>
-<DD>
-<DT><U>procedure:</U> <B>fltan</B> <I>fl1</I>
-<DD>
-<DT><U>procedure:</U> <B>flasin</B> <I>fl1</I>
-<DD>
-<DT><U>procedure:</U> <B>flatan</B> <I>fl1</I>
-<DD>
-<DT><U>procedure:</U> <B>flsqrt</B> <I>fl1</I>
-<DD>
-<DT><U>procedure:</U> <B>flexpt</B> <I>fl1</I>
+<P>
+These procedures return integral flonums.
+<SAMP>`Flfloor'</SAMP> returns the largest integral flonum not larger than <VAR>fl</VAR>.
+<SAMP>`Flceiling'</SAMP> returns the smallest integral flonum not smaller than <VAR>fl</VAR>.
+<SAMP>`Fltruncate'</SAMP> returns the integral flonum closest to <VAR>x</VAR> whose absolute
+value is not larger than the absolute value of <VAR>x</VAR>.  <SAMP>`Flround'</SAMP> returns the
+closest integral flonum to <VAR>x</VAR>, rounding to even when <VAR>x</VAR> is halfway between two
+integers.
+
+<BLOCKQUOTE>
+<P>
+<EM>Rationale:</EM>
+<SAMP>`Flround'</SAMP> rounds to even for consistency with the default rounding
+mode specified by the IEEE floating point standard.
+</BLOCKQUOTE>
+
+</dl>
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>flexp</B> <I>fl</I>
+<DT><U>procedure:</U> <B>fllog</B> <I>fl</I>
+<DT><U>procedure:</U> <B>flsin</B> <I>fl</I>
+<DT><U>procedure:</U> <B>flcos</B> <I>fl</I>
+<DT><U>procedure:</U> <B>fltan</B> <I>fl</I>
+<DT><U>procedure:</U> <B>flasin</B> <I>fl</I>
+<DT><U>procedure:</U> <B>flatan1</B> <I>fl</I>
+<DT><U>procedure:</U> <B>flatan2</B> <I>fl1 fl2</I>
 <DD>
 
 <P>
-These procedures return the same inexact real result that
-would be returned by the R5RS procedures whose names
-do not include the fl prefix.
-In the event that the corresponding R5RS procedure does
-not return a real result for the given arguments, the
-result may be a NaN, or may be some meaningless inexact
-real number.
+These procedures are part of every implementation that supports
+general
+real numbers; they compute the usual transcendental functions.  <SAMP>`Log'</SAMP>
+computes the natural logarithm of <VAR>z</VAR> (not the base ten logarithm).
+<SAMP>`Asin'</SAMP>, <SAMP>`acos'</SAMP>, and <SAMP>`atan1'</SAMP> compute arcsine (sin<SUP>-1</SUP>),
+arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
+The two-argument variant <SAMP>`atan2'</SAMP> computes <TT>(inangle
+(inmake-rectangular <VAR>x</VAR> <VAR>y</VAR>))</TT> (see below)<font
+color="red"><STRIKE>, even in implementations
+that don't support general complex numbers</STRIKE></font>.
+
+
+<P>
+In general, the mathematical functions log, arcsine, arccosine, and
+arctangent are multiply defined.
+The value of log <VAR>z</VAR> is defined to be the one whose imaginary
+part lies in the range from -pi (exclusive) to pi (inclusive).
+log 0 is undefined.
+With log defined this way, the values of sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
+and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
+
+
+<P>
+sin<SUP>-1</SUP> <VAR>z</VAR> = -i log (i <VAR>z</VAR> + sqrt(1 - <VAR>z</VAR><SUP>2</SUP>))
+
+
+<P>
+cos<SUP>-1</SUP> <VAR>z</VAR> = pi / 2 - sin<SUP>-1</SUP> <VAR>z</VAR>
+
+
+<P>
+tan<SUP>-1</SUP> <VAR>z</VAR> = (log (1 + i <VAR>z</VAR>) - log (1 - i <VAR>z</VAR>)) / (2 i)
+
+<P>
+If the function has a real-valued limit as its argument tends toward
+positive infinity, then that is the value returned by the function
+applied to <SAMP>+inf.0</SAMP>.
+
+If the function has a real-valued limit as its argument tends toward
+negative infinity, then that is the value returned by the function
+applied to <SAMP>-inf.0</SAMP>.
+
+
+The procedures <CODE>flsin</CODE>, <CODE>flcos</CODE>, <CODE>fltan</CODE>,
+<CODE>flasin</CODE>, and <CODE>flacos</CODE> <font color="red"><STRIKE>either</STRIKE></FONT> return
+<CODE>+nan.0</CODE><font color="red"><STRIKE> or
+report a violation of an implementation restriction</STRIKE></FONT>
+<font color="red">return some meaningless inexact real number</FONT> when given <CODE>+inf.0</CODE>,
+<CODE>-inf.0</CODE>, or <CODE>+nan.0</CODE> as an argument.
+
+<P>
+In the event that these formulae do
+not yield a real result for the given arguments, the
+result may be <code>+nan.0</code>, or may be some meaningless flonum.
+
+<P>
 Implementations that use IEEE binary floating point
 arithmetic are encouraged to follow the relevant
 standards for these procedures.
-</P>
+
+<P>
+The above specification follows <A HREF="r5rs_13.html#BIB27">[CLtL]</A>, which in turn
+cites <A HREF="r5rs_13.html#BIB19">[Penfield81]</A>; refer to these sources for more detailed
+discussion of branch cuts, boundary conditions, and implementation of
+these functions.
+
+<PRE>
+(flexp +inf.0)                ==> +inf.0
+(flexp -inf.0)                ==> 0.0
+(fllog +inf.0)                ==> +inf.0
+(log 0.0)                     ==> -inf.0
+(log -inf.0)                  ==> +nan.0
+(flatan1 -inf.0)              ==> -1.5707963267948965
+(flatan2 +inf.0)              ==> 1.5707963267948965
+</PRE>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>flsqrt</B> <I>fl</I>
+<DD>
+<P>
+Returns the principal square root of <VAR>z</VAR>.  The result is
+undefined for negative arguments.
+Implementations that use IEEE binary floating point
+arithmetic are encouraged to return <SAMP>+nan.0</SAMP> in this case.
+
+<PRE>
+(flsqrt +inf.0)               ==>  inf.0
+</PRE>
+
+</DL>
 
 <p>
-If the argument to these procedures is not actually
-a flonum, then these procedures signal an error, unless
-the implementation is running in unsafe mode, in which
-case all bets are off.
-</p>
-
-</dl>
-
+<DL>
+<DT><U>procedure:</U> <B>flexpt</B> <I>fl1</I> <I>fl2</I>
+<DD>
+<p>
+Returns <VAR>fl1</VAR> raised to the power <VAR>fl2</VAR>.
+The result is
+undefined for <VAR>fl1</VAR> = 0 and <VAR>fl2</VAR> = 0
+Implementations that use IEEE binary floating point
+arithmetic are encouraged to return <SAMP>+nan.0</SAMP> in this case.
+</DL>
 
 <h3>Conversions</h3>
 
@@ -987,7 +1125,7 @@ when <var>x</var> and <var>y</var> are NaNs.
 </p>
 
 <p>
-Note that <code>(negative? -0.0)</code> must return <code>#f</code>,
+Note that <code>(flnegative? -0.0)</code> must return <code>#f</code>,
 else it would lose the correspondence with
 <code>(fl< -0.0 0.0)</code>, which is <code>#f</code>
 according to the IEEE standards.
