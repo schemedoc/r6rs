@@ -1,0 +1,53 @@
+This is the reference implemenation of the R6RS Arithmetic SRFI.
+
+See COPYING for license information.
+
+It is written in R5RS Scheme  with few exceptions:
+
+- There may be name clashes between the different modules that
+  constitute the code.
+
+- The fixnum code uses the underlying implementations of the bitwise
+  operators; portable implementations are available as part of SRFI 60.
+
+- The code uses SRFI 9 (Defining Record Types).
+
+- The code uses the Scheme 48 DEFINE-RECORD-DISCLOSER procedure to
+  make the number objects print; these may be deleted without loss of
+  functionality.
+
+- Numerous modules assume an underlying IEEE-754-like representation
+  for flonums; they are clearly marked in the module definitions as
+  having dependencies on the FLONUMS-IEEE structure.
+
+The code assumes a certain minimal fixnum range:
+
+- the lengths of bignums are restricted by the fixnum range
+- we assume at least the presence of -1, possibly more
+- we assume the widths of the IEEE representations (exponent and
+  mantissa) are representable as fixnums
+
+To use the code, fire up Scheme 48 in this directory, and do:
+
+,config ,load packages.scm
+
+Then do:
+
+,in r6rs/will
+
+or
+
+,in r6rs/mike
+
+to switch to an environment where Will's version or Mike's version of
+the arithmetic is defined.
+
+Note that you can't use the regular R5RS numbers here---you need to
+convert them to the number representation of the reference
+implementation via the procedure `r5rs->number'.  So, you might do
+something like this:
+
+r6rs/mike> (+ (r5rs->number 4) (r5rs->number 7))
+#{Fx 11}
+
+Enjoy!
