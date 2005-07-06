@@ -96,7 +96,6 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     other procedures must know about the external representations
     of all numbers.
 <li>Should a minimum precision be required for fixnums or flonums?
-    (The need 
 <li>Should the range of a fixnum be restricted to a power of two?
     To a two's complement range?
 <li>Should the binary fixnum/flonums operations allow other than
@@ -253,6 +252,16 @@ precision can calculated by calling the following procedure:
 </pre>
 </BLOCKQUOTE>
 
+<BLOCKQUOTE>
+<p>
+<em>Note:</em>
+When the underlying floating-point representation is IEEE double
+precision, the |<var>p</var> suffix cannot be omitted for all cases:
+Denormalized numbers have diminished precision, and therefore must
+carry a |<var>p</var> suffix with the actual width of the signficand.
+</BLOCKQUOTE>
+
+
 <p>
 The <code>number-&gt;string</code> procedure should be generalized
 to support the <var>x</var>|<var>p</var> notation.
@@ -265,6 +274,15 @@ inexact numbers in the external representation produced by
 <code>number-&gt;string</code> with one argument.
 </p>
 
+<h3>Safe and Unsafe Mode</h3>
+
+<p>
+The SRFI uses the phrase "all bets are off" to describe that the
+behavior of a procedure is unspecified for certain arguments in unsafe
+mode.  Specifically, a procedure call for which all bets are off is
+free to crash the system.
+     
+</p>
 
 <h3>Numerical Type Predicates</h3>
 
@@ -437,9 +455,7 @@ their arguments.
 If either argument to these procedures is not actually
 a fixnum, then these procedures signal an error, unless
 the implementation is running in unsafe mode, in which
-case all bets are off.  That's a screwy way of saying
-it, but that's a larger issue for R6RS, which we can't
-hope to resolve here.
+case all bets are off.
 </p>
 
 </dl>
@@ -464,9 +480,7 @@ do not include the <code>fx</code> prefix.
 If either argument to these procedures is not actually
 a fixnum, then these procedures signal an error, unless
 the implementation is running in unsafe mode, in which
-case all bets are off.  That's a screwy way of saying
-it, but that's a larger issue for R6RS, which we can't
-hope to resolve here.
+case all bets are off.
 </p>
 
 </dl>
@@ -495,9 +509,7 @@ do not include the <code>fx</code> prefix.
 If either argument to these procedures is not actually
 a fixnum, then these procedures signal an error, unless
 the implementation is running in unsafe mode, in which
-case all bets are off.  That's a screwy way of saying
-it, but that's a larger issue for R6RS, which we can't
-hope to resolve here.
+case all bets are off.
 </p>
 
 </dl>
@@ -549,9 +561,7 @@ is reasonably well-defined by the IEEE standards.)
 If either argument to these procedures is not actually
 a flonum, then these procedures signal an error, unless
 the implementation is running in unsafe mode, in which
-case all bets are off.  That's a screwy way of saying
-it, but that's a larger issue for R6RS, which we can't
-hope to resolve here.
+case all bets are off.
 </p>
 
 </dl>
@@ -580,9 +590,7 @@ do not include the fl prefix.
 If either argument to these procedures is not actually
 a flonum, then these procedures signal an error, unless
 the implementation is running in unsafe mode, in which
-case all bets are off.  That's a screwy way of saying
-it, but that's a larger issue for R6RS, which we can't
-hope to resolve here.
+case all bets are off.
 </p>
 
 </dl>
@@ -608,9 +616,7 @@ do not include the fl prefix.
 If either argument to these procedures is not actually
 a flonum, then these procedures signal an error, unless
 the implementation is running in unsafe mode, in which
-case all bets are off.  That's a screwy way of saying
-it, but that's a larger issue for R6RS, which we can't
-hope to resolve here.
+case all bets are off.
 </p>
 
 </dl>
@@ -663,9 +669,7 @@ standards for these procedures.
 If the argument to these procedures is not actually
 a flonum, then these procedures signal an error, unless
 the implementation is running in unsafe mode, in which
-case all bets are off.  That's a screwy way of saying
-it, but that's a larger issue for R6RS, which we can't
-hope to resolve here.
+case all bets are off.
 </p>
 
 </dl>
@@ -705,9 +709,7 @@ and flonums are represented in IEEE double precision.  Then
 If the argument to these procedures is not actually
 a flonum, then these procedures signal an error, unless
 the implementation is running in unsafe mode, in which
-case all bets are off.  That's a screwy way of saying
-it, but that's a larger issue for R6RS, which we can't
-hope to resolve here.
+case all bets are off.
 </p>
 
 </dl>
