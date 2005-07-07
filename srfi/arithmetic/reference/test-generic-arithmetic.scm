@@ -36,6 +36,13 @@
 (check (numerical = 0.0 -0.0) => #t)
 (check (= (numerical make-rectangular 4.0 0) (r5rs->number 4.0)) => #t)
 (check (= (numerical make-rectangular 4.0 0.0) (r5rs->number 4.0)) => #t)
+(check (= (numerical make-rectangular 4.0 0.0) (r5rs->number 4)) => #t)
+(check (= (numerical make-rectangular 4.0 0.0) 
+	  (numerical make-rectangular 4 2)) => #f)
+(check (= (numerical make-rectangular 4 2) 
+	  (numerical make-rectangular 4.0 0.0)) => #f)
+(check (= (numerical make-rectangular 4 2) (r5rs->number 4.0)) => #f)
+(check (= (numerical make-rectangular 1e40 0.0) (r5rs->number 1e40)) => #t)
 
 (check (numerical zero? 3218943724243) => #f)
 (check (numerical zero? 0) => #t)
@@ -52,28 +59,59 @@
 (check (numerical even? 9999999999989000000000000) => #t)
 (check (numerical even? 5.0) => #f)
 
+(check (numerical max 1 2 4 3 5) ==> 5)
+(check (numerical max 1 2.0 3 5 4) ==> 5)
+(check (numerical max 1 5 7/2 2.0 4) ==> 5)
+(check (numerical min 4 1 2 3 5) ==> 1)
+(check (numerical min 2.0 1 3 5 4) ==> 1)
+(check (numerical min 1 5 7/2 2.0 4) ==> 1)
+
 (check (numerical + 3 4) ==> 7)
 (check (numerical + 3) ==> 3)
 (check (numerical +) ==> 0)
-(check (numerical * 4) ==> 4)
-(check (numerical *) ==> 1)
-
 (check (numerical + 9999999999999 999999999999) ==> 10999999999998)
 (check (numerical + 1000.0 5) ==> 1005.0)
-
+(check (numerical * 4) ==> 4)
+(check (numerical *) ==> 1)
+(check (numerical * 4.0 3000) ==> 12000.0)
+(check (numerical * 9999999999999 999999999999) ==> 9999999999989000000000001)
 
 (check (numerical - 3 4) ==> -1)
 (check (numerical - 3 4 5) ==> -6)
 (check (numerical - 3) ==> -3)
 (check (numerical / 3 4 5) ==> 3/20)
 (check (numerical / 3) ==> 1/3)
-
-(check (numerical * 4.0 3000) ==> 12000.0)
-(check (numerical * 9999999999999 999999999999) ==> 9999999999989000000000001)
+(check (numerical / 1.0 2.0) ==> 0.5)
 
 (check (numerical gcd) ==> 0)
 (check (numerical lcm 32 -36) ==> 288)
 (check (numerical lcm 32.0 -36) ==> 288.0)
 (check (numerical lcm) ==> 1)
 
+(check (numerical floor -4.3) ==> -5.0)
+(check (numerical ceiling -4.3) ==> -4.0)
+(check (numerical truncate -4.3) ==> -4.0)
+(check (numerical round -4.3) ==> -4.0)
+
+(check (numerical floor 3.5) ==> 3.0)
+(check (numerical ceiling 3.5) ==> 4.0)
+(check (numerical truncate 3.5) ==> 3.0)
+(check (inexact? (numerical round 3.5)) => #t)
+
+(check (numerical round 7/2) ==> 4)
+(check (exact? (numerical round 7/2)) => #t)
+(check (numerical round 7) ==> 7)
+(check (exact? (numerical round 7)) => #t)
+
+(check (numerator (numerical / 3 -4)) ==> -3)
+(check (numerical denominator 0) ==> 1)
+
+(check (rationalize (numerical inexact->exact 0.3) (r5rs->number 1/10)) ==> 1/3)
+(check (numerical rationalize 0.3 1/10) ==> #i1/3)
+
+(check (numerical sqrt -4) ==> +2i)
+
+(check (numerical expt 0 0) ==> 1)
+
 (check (numerical exact->inexact 14285714285714285714285) ==> 1.4285714285714286e22)
+
