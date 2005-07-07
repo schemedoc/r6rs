@@ -440,10 +440,6 @@
 
 ; end from Larceny
 
-(define (exact-integer? obj)
-  (or (fixnum? obj)
-      (bignum? obj)))
-
 (define (exact-rational? obj)
   (or (fixnum? obj)
       (bignum? obj)

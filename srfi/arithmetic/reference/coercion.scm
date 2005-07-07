@@ -56,6 +56,10 @@
 (define (compnum-float? f)
   (flzero? (compnum-imag f)))
 
+(define (exact-integer? obj)
+  (or (fixnum? obj)
+      (bignum? obj)))
+
 (define (compnum-integral? f)
   (and (compnum-float? f)
        (flinteger? (compnum-real f))))

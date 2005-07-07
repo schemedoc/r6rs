@@ -396,7 +396,8 @@
 	 generic-ex))
 
 (define-interface generic-arithmetic/in-interface
-  (export in= in< in<= in>= in>
+  (export innumber? incomplex? inreal? inrational? ininteger?
+	  in= in< in<= in>= in>
 	  inzero? inpositive? innegative?
 	  inodd? ineven?
 	  inmin inmax

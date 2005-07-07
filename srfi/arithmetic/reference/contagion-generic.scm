@@ -152,75 +152,6 @@
 (define-contagion cmatrix comp comp oops)
 
 
-'(define cmatrix
-  (vector
-   ;; fix
-   (vector (fun fixnum->bignum fixnum->bignum) ; $$$
-	   (fun fixnum->bignum id)
-	   (fun fixnum->ratnum id) 
-	   (fun fixnum->recnum id)
-	   (fun fixnum->flonum id) 
-	   (fun fixnum->compnum id))
-   ;; big
-   (vector (fun id fixnum->bignum)
-	   oops
-	   (fun bignum->ratnum id)
-	   (fun bignum->recnum id) 
-	   (make-algorithm*c always flinteger?
-			     id flonum->rational
-			     rational->flonum id)
-	   (make-algorithm*c always compnum-integral? 
-			     id compnum->bignum
-			     bignum->compnum id))
-   ;; rat
-   (vector (fun id fixnum->ratnum)
-	   (fun id bignum->ratnum)
-	   oops
-	   (fun ratnum->recnum id)
-	   (fun ratnum->flonum id)
-	   (fun ratnum->compnum id))
-   ;; rec
-   (vector (fun id fixnum->recnum)
-	   (fun id bignum->recnum)
-	   (fun id ratnum->recnum)
-	   oops
-	   (make-algorithm*cr always flinteger?
-			      recnum-real recnum-imag
-			      id zero
-			      id flonum->recnum
-			      recnum->compnum flonum->compnum)
-	   (make-algorithm*cr always compnum-integral?
-			      recnum-real recnum-imag
-			      compnum-real compnum-imag
-			      id compnum->recnum
-			      recnum->compnum id))
-   ;; flo
-   (vector (fun id fixnum->flonum)
-	   (make-algorithm*c flinteger? always
-			     flonum->rational id
-			     id bignum->flonum)
-	   (fun id ratnum->flonum) 
-	   (make-algorithm*cr flinteger? always
-			      recnum-imag recnum-real
-			      zero id
-			      flonum->recnum id
-			      flonum->compnum recnum->compnum)
-	   oops
-	   (fun flonum->compnum id))
-   ;; comp
-   (vector (fun id fixnum->compnum)
-	   (make-algorithm*c compnum-integral? always 
-			     compnum->bignum id
-			     id bignum->compnum)
-	   (fun id ratnum->compnum) 
-	   (make-algorithm*cr compnum-integral? always
-			      recnum-imag recnum-real
-			      compnum-imag compnum-real
-			      compnum->recnum id
-			      id recnum->compnum)
-	   (fun id flonum->compnum)
-	   oops)))
-
 ; Predicate matrix: for <, <=, >, >=
 ; Algorithm*p handles illegal complex numbers.
 
@@ -301,13 +232,13 @@
 
 (define-contagion ematrix rec rec oops)
 (define-contagion ematrix rec flo
-  (make-algorithm*cre recnum-integral? flinteger?
+  (make-algorithm*cre exact-integer? flinteger?
 		      recnum-real recnum-imag
 		      id zero
 		      id flonum->recnum
 		      recnum->compnum flonum->compnum))
 (define-contagion ematrix rec comp
-  (make-algorithm*cre recnum-integral? compnum-integral?
+  (make-algorithm*cre exact-integer? flinteger?
 		      recnum-real recnum-imag
 		      compnum-real compnum-imag
 		      id compnum->recnum
@@ -318,9 +249,9 @@
 		    flonum->bignum id
 		    id bignum->flonum))
 (define-contagion ematrix flo rec
-  (make-algorithm*cre flinteger? recnum-integral?
-		      recnum-imag recnum-real
+  (make-algorithm*cre flinteger? exact-integer?
 		      zero id
+		      recnum-real recnum-imag
 		      flonum->recnum id
 		      flonum->compnum recnum->compnum))
 (define-contagion ematrix flo flo oops)
@@ -331,83 +262,12 @@
 		    compnum->bignum id
 		    id bignum->compnum))
 (define-contagion ematrix comp rec
-  (make-algorithm*cre compnum-integral? recnum-integral?
-		      recnum-imag recnum-real
-		      compnum-imag compnum-real
+  (make-algorithm*cre flinteger? exact-integer?
+		      compnum-real compnum-imag
+		      recnum-real recnum-imag
 		      compnum->recnum id
 		      id recnum->compnum))
 (define-contagion ematrix comp comp oops)
-
-'(define ematrix
-  (vector
-   ;; fix
-   (vector oops
-	   (fun fixnum->bignum id)
-	   (fun fixnum->ratnum id) 
-	   (fun fixnum->recnum id)
-	   (fun fixnum->flonum id) 
-	   (fun fixnum->compnum id))
-   ;; big
-   (vector (fun id fixnum->bignum)
-	   oops
-	   (fun bignum->ratnum id)
-	   (fun bignum->recnum id)
-	   (make-algorithm*e always flinteger?
-			     id flonum->bignum
-			     bignum->flonum id)
-	   (make-algorithm*e always compnum-integral?
-			     id compnum->bignum
-			     bignum->compnum id))
-   ;; rat
-   (vector (fun id fixnum->ratnum)
-	   (fun id bignum->ratnum)
-	   oops
-	   (fun ratnum->recnum id)
-	   (fun ratnum->flonum id)
-	   (fun ratnum->compnum id))
-   ;; rec
-   (vector (fun id fixnum->recnum)
-	   (fun id bignum->recnum)
-	   (fun id ratnum->recnum)
-	   oops
-	   (make-algorithm*cre recnum-integral? flinteger?
-			       recnum-real recnum-imag
-			       id zero
-			       id flonum->recnum
-			       recnum->compnum flonum->compnum)
-	   (make-algorithm*cre recnum-integral? compnum-integral?
-			       recnum-real recnum-imag
-			       compnum-real compnum-imag
-			       id compnum->recnum
-			       recnum->compnum id)
-	   )
-   ;; flo
-   (vector (fun id fixnum->flonum)
-	   (make-algorithm*e flinteger? always
-			     flonum->bignum id
-			     id bignum->flonum)
-	   (fun id ratnum->flonum) 
-	   (make-algorithm*cre flinteger? recnum-integral?
-			       recnum-imag recnum-real
-			       zero id
-			       flonum->recnum id
-			       flonum->compnum recnum->compnum)
-	   oops
-	   (fun flonum->compnum id))
-   ;; comp
-   (vector (fun id fixnum->compnum)
-	   (make-algorithm*p compnum-integral? always
-			     compnum->bignum id
-			     compnum-float? always
-			     compnum-real bignum->flonum)
-	   (fun id ratnum->compnum)
-	   (make-algorithm*cre compnum-integral? recnum-integral?
-			       recnum-imag recnum-real
-			       compnum-imag compnum-real
-			       compnum->recnum id
-			       id recnum->compnum)
-	   (fun id flonum->compnum)
-	   oops)))
 
 (define contagion/will (lambda (a b retry)
 			 (do-contagion cmatrix a b retry)))
