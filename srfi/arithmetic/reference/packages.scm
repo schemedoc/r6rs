@@ -362,7 +362,8 @@
   (files arithmetic-util))
 
 (define-interface generic-arithmetic/ex-interface
-  (export ex= ex< ex<= ex>= ex>
+  (export excomplex? exrational? exinteger?
+	  ex= ex< ex<= ex>= ex>
 	  exzero? expositive? exnegative?
 	  exodd? exeven?
 	  exmin exmax
