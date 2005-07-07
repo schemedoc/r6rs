@@ -80,7 +80,19 @@
       x))
 
 (define flexp (make-fl->fl exp))
-(define fllog (make-fl->fl log))
+
+(define (log* z)
+  (cond
+   ((= r5rs-inf+ z)
+    r5rs-inf+)
+   ((= r5rs-inf- z)
+    r5rs-nan)
+   ((not (= z z))
+    r5rs-nan)
+   (else
+    (log z))))
+
+(define fllog (make-fl->fl log*))
 (define flsin (make-fl->fl sin))
 (define flcos (make-fl->fl cos))
 (define fltan (make-fl->fl tan))
@@ -89,7 +101,18 @@
 (define flatan1 (make-fl->fl atan))
 (define flatan2 (make-fl*fl->fl atan))
 
-(define flsqrt (make-fl->fl sqrt))
+(define (sqrt* z)
+  (cond
+   ((= r5rs-inf+ z)
+    r5rs-inf+)
+   ((= r5rs-inf- z)
+    r5rs-nan)
+   ((not (= z z))
+    r5rs-nan)
+   (else
+    (sqrt z))))
+
+(define flsqrt (make-fl->fl sqrt*))
 (define flexpt (make-fl*fl->fl expt))
 
 (define flfloor (make-fl->fl floor))

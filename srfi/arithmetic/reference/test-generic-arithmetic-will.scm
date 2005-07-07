@@ -112,11 +112,35 @@
 (check (numerical round 7) ==> 7)
 (check (exact? (numerical round 7)) => #t)
 
+(check (floor flinf+) => (=) flinf+)
+(check (ceiling flinf-) => (=) flinf-)
+
+(check (sqrt flinf+) => (=) flinf+)
+
+(check (exp flinf+) => (=) flinf+)
+(check (exp flinf-) ==> 0.0)
+(check (log flinf+) => (=) flinf+)
+(check (numerical log 0.0) => (=)  flinf-)
+(check (atan flinf-) ==> -1.5707963267948965)
+(check (atan flinf+) ==> 1.5707963267948965)
+
+(check (numerical expt 5 3) ==>  125)
+(check (numerical expt 5 -3) ==>  8.0e-3)
+(check (numerical expt 5 0) ==> 1)
+(check (numerical expt 0 5) ==>  0)
+(check (numerical expt 0 5+.0000312i) ==>  0)
+(check (numerical expt 0 0) ==> 1)
+(check (numerical expt 0.0 0.0) ==>  0.0)
+
 (check (numerator (numerical / 3 -4)) ==> -3)
 (check (numerical denominator 0) ==> 1)
 
 (check (rationalize (numerical inexact->exact 0.3) (r5rs->number 1/10)) ==> 1/3)
 (check (numerical rationalize 0.3 1/10) ==> #i1/3)
+(check (rationalize flinf+ (r5rs->number 3)) => (=) flinf+)
+(check (flnan? (rationalize flinf+ flinf+)) => #t)
+(check (rationalize (r5rs->number 3) flinf+) ==> 0)
+
 
 (check (numerical sqrt -4) ==> +2i)
 

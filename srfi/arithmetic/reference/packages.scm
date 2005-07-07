@@ -574,6 +574,7 @@
 (define-structure test-generic-arithmetic/will (export)
   (open scheme-sans-arithmetic
 	(modify scheme (prefix r5rs:) (expose +))
+	(subset flonums (flinf+ flinf- flnan flnan?))
 	r5rs-to-numbers
 	strings-to-numbers
 	generic-arithmetic/will)
