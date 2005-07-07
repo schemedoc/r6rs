@@ -145,7 +145,7 @@
 	(else
 	 (error "expects a numerical argument" ?name a)))))))
 
-(define-unary zero? fxzero? bignum-zero? never never flzero? compnum-zero?) ; ####????
+(define-unary zero? fxzero? never never never flzero? compnum-zero?)
 (define-unary positive? fxpositive? bignum-positive? ratnum-positive?
   (make-typo-op/1 positive? 'real)
   flpositive?
@@ -465,6 +465,9 @@
       (make-compnum a b))
      ((compnum? b)
       (fail))
+     ((and (exact? b)
+	   (zero? b))
+      a)
      (else
       (make-rectangular a (exact->inexact b)))))
    ((exact-rational? a)
