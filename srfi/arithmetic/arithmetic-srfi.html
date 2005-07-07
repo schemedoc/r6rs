@@ -65,6 +65,10 @@ precision a parameter of the specification.
 This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
 </p>
 <ul>
+<li>requiring the a Scheme implementation to provide the full tower,
+    including exact rationals of arbitrary precision, exact
+    rectangular complex numbers where with rational real and imaginary
+    parts, and inexact real and complex arithmetic
 <li>defining fixnum arithmetic (parameterized by precision)
 <li>defining flonum arithmetic (inexactly)
 <li>defining new procedures for performing exact arithmetic
@@ -1149,18 +1153,258 @@ according to the IEEE standards.
 </p>
 
 
-<h3>Exact Procedures</h3>
+<h3>Exact Arithmetic</h3>
 
 <p>
-We will use <var>r1</var> and <var>r2</var> as metavariables
-that range over exact rational numbers.
+The exact arithmetic provides generic operations on exact numbers;
+these operations correspond to their mathematical counterparts.  The
+exact numbers include rationals of arbitrary precision, and exact
+rectangular complex numbers.  A rational number with a denominator of
+1 is indistinguishable from its numerator.  An exact rectangular
+complex number with a zero imaginary part is indistinguishable from
+its real part.
 </p>
 
 <p>
-<strong>
-(FIXME: I'm leaving this section for you, Mike.)
-</strong>
+If an argument to following procedures that corresponding to an exact
+metavariable is not actually an exact number, then these procedures signal an
+error.
 </p>
+
+<p>
+We will use <var>ex</var>, <var>ex1</var>, <var>ex2</var>, and
+<var>ex3</var> as metavariables that range over the exact complex
+numbers.
+</p>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>excomplex?</B> <I>ex</I>
+<DT><U>procedure:</U> <B>exrational?</B> <I>ex</I>
+<DT><U>procedure:</U> <B>exinteger?</B> <I>ex</I>
+<P>
+These numerical predicates test a fixnum for a particular property,
+returning <TT>#t</TT> or <TT>#f</TT>.
+</P>
+</DL>
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>ex=</B> <I>ex1 ex2 ex3 ...</I>
+<DT><U>procedure:</U> <B>ex&gt;</B> <I>ex1 ex2 ex3 ...</I>
+<DT><U>procedure:</U> <B>ex&lt;</B> <I>ex1 ex2 ex3 ...</I>
+<DT><U>procedure:</U> <B>ex&gt;=</B> <I>ex1 ex2 ex3 ...</I>
+<DT><U>procedure:</U> <B>ex&lt;=</B> <I>ex1 ex2 ex3 ...</I>
+<DD>
+
+<P>
+These procedures return <TT>#t</TT> if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing,
+monotonically nondecreasing, or monotonically nonincreasing.
+These procedures signal an error if one of the arguments is not a
+rational number.
+</P>
+</DD>
+</DL>
+
+<P>
+<DL>
+<DD>
+<DT><U>library procedure:</U> <B>exzero?</B> <I><VAR>ex</VAR></I>
+<DT><U>library procedure:</U> <B>expositive?</B> <I><VAR>ex</VAR></I>
+<DT><U>library procedure:</U> <B>exnegative?</B> <I><VAR>ex</VAR></I>
+<DT><U>library procedure:</U> <B>exodd?</B> <VAR>ex</VAR>
+<DT><U>library procedure:</U> <B>exeven?</B> <VAR>ex</VAR>
+<DD>
+
+<P>
+These numerical predicates test a fixnum for a particular property,
+returning <TT>#t</TT> or <TT>#f</TT>.
+</P>
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <B>exmax</B> <I>ex1 ex2 ...</I>
+<DT><U>library procedure:</U> <B>exmin</B> <I>ex1 ex2 ...</I>
+<DD>
+
+<P>
+These procedures return the maximum or minimum of their arguments.
+</P>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>ex+</B> <I>ex1 ex2 ...</I>
+<DT><U>procedure:</U> <B>ex*</B> <I>ex1 ex2 ...</I>
+<DD>
+
+<P>
+These procedures return the sum or product of their arguments.
+</p>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>ex-</B> <I>ex1 ex2 ...</I>
+<DT><U>procedure:</U> <B>ex-</B> <I>ex</I>
+<DT><U>procedure:</U> <B>ex/</B> <I>ex1 ex2 ...</I>
+<DT><U>procedure:</U> <B>ex/</B> <I>ex</I>
+<DD>
+
+<P>
+With two or more arguments, these procedures return the difference or
+quotient of their arguments, associating to the left.  With one
+argument, however, they return the additive or multiplicative inverse
+of their argument.
+</p>
+
+</dl>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <B>exabs</B> <VAR>ex</VAR>
+<DD>
+
+<P>
+This procedure returns the absolute value of its argument.
+
+</P>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>exdiv+mod</B> <I>ex1 ex2</I>
+<DT><U>library procedure:</U> <B>exdiv</B> <I>ex1 ex2</I>
+<DT><U>library procedure:</U> <B>exmod</B> <I>ex1 ex2</I>
+<DT><U>library procedure:</U> <B>exquotient</B> <I>ex1 ex2</I>
+<DT><U>library procedure:</U> <B>exmodulo+remainder</B> <I>ex1 ex2</I>
+<DT><U>library procedure:</U> <B>exmodulo</B> <I>ex1 ex2</I>
+<DT><U>library procedure:</U> <B>exremainder</B> <I>ex1 ex2</I>
+<DD>
+
+<P>
+These procedures implement number-theoretic integer division.  See <a
+href="#integer-division">the Section</a> on integer division.
+</p>
+</dl>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <B>exgcd</B> <I>ex1 ex2 ...</I>
+<DT><U>library procedure:</U> <B>exlcm</B> <I>ex1 ex2 ...</I>
+<DD>
+<P>
+These procedures return the greatest common divisor or least common
+multiple of their arguments, which must be exact integers.  If any
+arguments are not, an error is signalled.  The result is always
+non-negative.
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <B>exnumerator</B> <I>ex</I>
+<DT><U>library procedure:</U> <B>exdenominator</B> <I>ex</I>
+<DD>
+<P>
+The procedures return the numerator or denominator of their argument,
+which must be an exact rational.  If it is not, an error is signalled.
+The result is computed as if the argument was represented as a
+fraction in lowest terms.  The denominator is always positive.  The
+denominator of 0 is defined to be 1.
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>exfloor</B> <I>ex</I>
+<DT><U>procedure:</U> <B>exceiling</B> <I>ex</I>
+<DT><U>procedure:</U> <B>extruncate</B> <I>ex</I>
+<DT><U>procedure:</U> <B>exround</B> <I>ex</I>
+<DD>
+<P>
+These procedures return exact integers.
+<SAMP>`Exfloor'</SAMP> returns the largest integer not larger than <VAR>ex</VAR>.
+<SAMP>`Exceiling'</SAMP> returns the smallest integer not smaller than <VAR>ex</VAR>.
+<SAMP>`Extruncate'</SAMP> returns the integer closest to <VAR>ex</VAR> whose absolute
+value is not larger than the absolute value of <VAR>ex</VAR>.  <SAMP>`Exround'</SAMP> returns the
+closest integer to <VAR>ex</VAR>, rounding to even when <VAR>ex</VAR> is halfway between two
+integers.
+</DL>
+
+<p>
+<DL>
+<DT><U>procedure:</U> <B>exexpt</B> <I>ex1</I> <I>ex2</I>
+<DD>
+<p>
+Returns <VAR>ex1</VAR> raised to the power <VAR>ex2</VAR>.
+<VAR>ex1</VAR> must be an exact rational, and <VAR>ex2</VAR> an exact
+integer.
+0<SUP><VAR>x</VAR></SUP> is 1 if <VAR>x</VAR> = 0 and 0 otherwise.
+</DL>
+
+<p>
+<DL>
+<DT><U>procedure:</U> <B>exmake-rectangular</B> <I>ex1</I> <I>ex2</I>
+<DT><U>procedure:</U> <B>exreal-part</B> <I>ex</I>
+<DT><U>procedure:</U> <B>eximag-part</B> <I>ex</I>
+<DD>
+<p>
+The arguments of <code>exmake-rectangular</code> must be exact
+rationals.  Suppose <VAR>z</VAR> is a complex number such that
+<VAR>z</VAR> = <VAR>ex1</VAR> + <VAR>ex1</VAR>*i.  Then:
+<PRE>
+(make-rectangular <VAR>ex1</VAR> <VAR>ex2</VAR>) =&gt; <VAR>z</VAR>
+(real-part <VAR>z</VAR>)              =&gt; <VAR>ex1</VAR>
+(imag-part <VAR>z</VAR>)              =&gt; <VAR>ex2</VAR>
+</PRE>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>exbitwise-not</B> <I>ex</I>
+<DD>
+<P>
+Returns the one's-complement of its argument, which must be an exact
+integer.  If it is not, and error is signalled.
+</DD>
+</DL>
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>exbitwise-and</B> <I>ex1 ex2 ...</I> 
+<DT><U>procedure:</U> <B>exbitwise-ior</B> <I>ex1 ex2 ...</I>
+<DT><U>procedure:</U> <B>exbitwise-xor</B> <I>ex1 ex2 ...</I>
+<DD>
+<P>
+The arguments for these procedures must be exact integers; an error is
+signalled if any argument is not.
+The <code>exbitwise-and</code> procedure returns the exact integer which is the bit-wise "and" of its
+arguments.
+The <code>exbitwise-ior</code> procedure returns the fixnum which is the bit-wise "or" of its
+arguments.
+The <code>exbitwise-xor</code> procedure returns the fixnum which is the
+bit-wise "exlusive or" of its arguments.
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <B>exarithmetic-shift</B> <I>ex1</I> <I>ex2</I>
+<DD>
+<P>
+Both arguments must be exact integers; an error is signalled if either
+argument is not.
+Conceptually shifts the two's complement representation of
+<VAR>ex1</VAR> <VAR>ex2</VAR> bits left when <VAR>ex2</VAR> &gt; 0,
+and -<VAR>ex2</VAR> bits right when <VAR>ex2</VAR> &lt; 0, extending
+the sign.  (It returns <VAR>ex1</VAR> when <VAR>ex2</VAR> = 0.)
+</DD>
+</DL>
 
 <h3>Inexact Procedures</h3>
 
