@@ -59,12 +59,21 @@
 (check (numerical even? 9999999999989000000000000) => #t)
 (check (numerical even? 5.0) => #f)
 
+(check (numerical abs 7) ==> 7)
+(check (numerical abs -7) ==> 7)
+(check (numerical abs 3/4) ==> 3/4)
+(check (numerical abs -3/4) ==> 3/4)
+(check (numerical abs 0.7) ==> 0.7)
+(check (numerical abs -0.7) ==> 0.7)
+
 (check (numerical max 1 2 4 3 5) ==> 5)
 (check (numerical max 1 2.0 3 5 4) ==> 5)
 (check (numerical max 1 5 7/2 2.0 4) ==> 5)
 (check (numerical min 4 1 2 3 5) ==> 1)
 (check (numerical min 2.0 1 3 5 4) ==> 1)
 (check (numerical min 1 5 7/2 2.0 4) ==> 1)
+
+(check (inexact? (numerical max 3.9 4)) => #t)
 
 (check (numerical + 3 4) ==> 7)
 (check (numerical + 3) ==> 3)

@@ -35,6 +35,9 @@
 		 m
 		 (make-unreduced-ratnum m n)))))))
 
+(define (ratnum->rational r)
+  (integer/ (ratnum-numerator r) (ratnum-denominator r)))
+
 ; a/b * c/d = a*c / b*d
 
 (define (ratnum* p q)
@@ -90,8 +93,18 @@
   (integer-negative? (ratnum-numerator r)))
 
 (define (ratnum-abs r)
-  (make-ratnum (integer-abs (ratnum-numerator r))
-	       (ratnum-denominator r)))
+  (integer/ (integer-abs (ratnum-numerator r))
+	    (ratnum-denominator r)))
+
+(define (ratnum-min m n)
+  (if (ratnum<= m n)
+      (ratnum->rational m)
+      (ratnum->rational n)))
+
+(define (ratnum-max m n)
+  (if (ratnum>= m n)
+      (ratnum->rational m)
+      (ratnum->rational n)))
 
 ; a/b = c/d  when a = b and c = d  (always lowest terms)
 

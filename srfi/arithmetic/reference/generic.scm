@@ -168,8 +168,17 @@
   fleven?
   (make-typo-op/1 even? 'integer))
 
-(define min (make-min/max <))
-(define max (make-min/max >))
+(define-binary min/2 contagion/will
+  fxmin bignum-min ratnum-min (make-typo-op/2 < 'real)
+  flmin (make-typo-op/2 min/2 'real))
+(define-binary max/2 contagion/will
+  fxmax bignum-max ratnum-max (make-typo-op/2 < 'real)
+  flmax (make-typo-op/2 max/2 'real))
+
+(define (min arg0 . args)
+  (reduce (r5rs->integer 0) min/2 (cons arg0 args)))
+(define (max arg0 . args)
+  (reduce (r5rs->integer 0) max/2 (cons arg0 args)))
 
 (define-binary plus/2 contagion/will
   bignum+ ratnum+ recnum+ fl+ compnum+)

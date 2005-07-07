@@ -11,6 +11,7 @@
 		max min
 		+ * - /
 		= < <= >= >
+		abs
 		quotient remainder modulo
 		gcd lcm
 		numerator denominator
@@ -86,6 +87,7 @@
 	  bignum< bignum<= bignum>= bignum>
 	  bignum-positive? bignum-negative?
 	  bignum-abs
+	  bignum-min bignum-max
 	  bignum-even? bignum-odd?
 	  bignum-zero?
 	  bignum->string
@@ -158,6 +160,7 @@
 	  ratnum=
 	  ratnum-positive? ratnum-negative?
 	  ratnum-abs
+	  ratnum-min ratnum-max
 	  ratnum-truncate ratnum-floor
 	  ratnum->string))
 

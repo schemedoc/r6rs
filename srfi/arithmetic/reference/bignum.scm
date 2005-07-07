@@ -164,6 +164,16 @@
       (bignum-negate m)
       m))
 
+(define (bignum-min m n)
+  (if (bignum<= m n)
+      (bignum->integer m)
+      (bignum->integer n)))
+
+(define (bignum-max m n)
+  (if (bignum>= m n)
+      (bignum->integer m)
+      (bignum->integer n)))
+
 
 ; Magnitude (unsigned integer) arithmetic
 
