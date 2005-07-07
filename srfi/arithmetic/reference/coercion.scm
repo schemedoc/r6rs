@@ -54,7 +54,7 @@
   (integer->flonum f))
 
 (define (compnum-float? f)
-  (fxzero? (compnum-imag f)))
+  (flzero? (compnum-imag f)))
 
 (define (compnum-integral? f)
   (and (compnum-float? f)
