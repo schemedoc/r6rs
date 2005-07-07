@@ -155,6 +155,8 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     efficient generic arithmetic on fixnums portably.  On the other hand,
     there isn't much experience with formulating an interface to these
     facilities.
+<li>The division between regular procedures and library procedures is
+    somewhat arbitrary.
 <li><strong> (FIXME: several more issues should go here)</strong>
 </ul>
 
@@ -1614,13 +1616,6 @@ value is not larger than the absolute value of <VAR>in</VAR>.  <CODE>Inround</CO
 closest integer to <VAR>in</VAR>, rounding to even when <VAR>in</VAR> is halfway between two
 integers.
 
-<P>
-On inexact reals that are not rationals, these procedures 
-return unspecified inexact real numbers.
-Implementations that use IEEE binary floating point
-arithmetic are encouraged to have these procedures return their
-arguments in this case.
-
 <BLOCKQUOTE>
 <P>
 <EM>Rationale:</EM>
@@ -1742,6 +1737,598 @@ for some integer <VAR>n</VAR>.
 <P>
 The behavior of <CODE>inmake-rectangular</CODE> and
 <CODE>inmake-polar</CODE> given non-rational arguments is unspecified.
+</DL>
+
+<h3>R5RS-style Generic Arithmetic</h3>
+
+<font color=red>
+The following description is a revised form of the description
+given in SRFI 70.  Changes from SRFI 70 are highlighted in red.
+</font>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>=</CODE> <I>z1 z2 z3 ...</I>
+<DT><U>procedure:</U> <CODE>&#60;</CODE> <I>x1 x2 x3 ...</I>
+<DT><U>procedure:</U> <CODE>&#62;</CODE> <I>x1 x2 x3 ...</I>
+<DT><U>procedure:</U> <CODE>&#60;=</CODE> <I>x1 x2 x3 ...</I>
+<DT><U>procedure:</U> <CODE>&#62;=</CODE> <I>x1 x2 x3 ...</I>
+<DD>
+
+
+<P>
+These procedures return <TT>#t</TT> if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing,
+monotonically nondecreasing, or monotonically nonincreasing.
+
+<PRE>
+(= +inf.0 +inf.0)           ==&gt;  #t
+(= -inf.0 +inf.0)           ==&gt;  #f
+(= -inf.0 -inf.0)           ==&gt;  #t
+<FONT COLOR=red><STRIKE>(= 0/0 0/0)                 ==>  #t</STRIKE></FONT>
+</PRE>
+
+For any rational number <VAR>x</VAR>:
+
+<PRE>
+(&lt -inf.0 <VAR>x</VAR> +inf.0))        ==>  #t
+(&gt +inf.0 <VAR>x</VAR> -inf.0))        ==>  #t
+</PRE>
+
+<P>
+These predicates are required to be transitive.
+
+
+
+<BLOCKQUOTE>
+<P>
+<EM>Note:</EM>
+The traditional implementations of these predicates in Lisp-like
+languages are not transitive.
+</BLOCKQUOTE>
+
+
+<BLOCKQUOTE>
+<P>
+<EM>Note:</EM>
+While it is not an error to compare inexact numbers using these
+predicates, the results may be unreliable because a small inaccuracy
+may affect the result; this is especially true of <CODE>=</CODE> and <CODE>zero?</CODE>.
+
+
+When in doubt, consult a numerical analyst.
+</BLOCKQUOTE>
+
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <CODE>zero?</CODE> <I><VAR>z</VAR></I>
+<DT><U>library procedure:</U> <CODE>positive?</CODE> <I><VAR>x</VAR></I>
+<DT><U>library procedure:</U> <CODE>negative?</CODE> <I><VAR>x</VAR></I>
+<DT><U>library procedure:</U> <CODE>odd?</CODE> <VAR>n</VAR>
+<DT><U>library procedure:</U> <CODE>even?</CODE> <VAR>n</VAR>
+<DD>
+
+
+<P>
+These numerical predicates test a number for a particular property,
+returning <TT>#t</TT> or <TT>#f</TT>.  See note above.
+
+<PRE>
+(positive? +inf.0)            ==>  #t
+(negative? -inf.0)            ==>  #t
+</PRE>
+
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <CODE>max</CODE> <I>x1 x2 ...</I>
+<DT><U>library procedure:</U> <CODE>min</CODE> <I>x1 x2 ...</I>
+<DD>
+
+
+<P>
+These procedures return the maximum or minimum of their arguments.
+
+
+
+<PRE>
+(max 3 4)                              ==&#62;  4    ; exact
+(max 3.9 4)                            ==&#62;  4.0  ; inexact
+</PRE>
+
+For any real number <VAR>x</VAR>:
+
+<PRE>
+(max +inf.0 <VAR>x</VAR>)                         ==&gt;  +inf.0
+(min -inf.0 <VAR>x</VAR>)                         ==&gt;  -inf.0
+</PRE>
+
+
+<BLOCKQUOTE>
+<P>
+<EM>Note:</EM>
+If any argument is inexact, then the result will also be inexact (unless
+the procedure can prove that the inaccuracy is not large enough to affect the
+result, which is possible only in unusual implementations).  If <CODE>min</CODE> or
+<CODE>max</CODE> is used to compare numbers of mixed exactness, and the numerical
+value of the result cannot be represented as an inexact number without loss of
+accuracy, then the procedure may report a violation of an implementation
+restriction.
+</BLOCKQUOTE>
+
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>+</CODE> <I>z1 ...</I>
+<DT><U>procedure:</U> <CODE>*</CODE> <I>z1 ...</I>
+<DD>
+
+<P>
+These procedures return the sum or product of their arguments.
+
+<PRE>
+(+ 3 4)                                ==&#62;  7
+(+ 3)                                  ==&#62;  3
+(+)                                    ==&#62;  0
+(+ inf.0 +inf.0)                       ==&gt;  +inf.0
+(+ +inf.0 -inf.0)                      ==&gt;  +nan.0
+
+(* 4)                                  ==&#62;  4
+(*)                                    ==&#62;  1
+(* 5 +inf.0)                           ==&gt;  +inf.0
+(* -5 +inf.0)                          ==&gt;  -inf.0
+(* +inf.0 +inf.0)                      ==&gt;  +inf.0
+(* +inf.0 -inf.0)                      ==&gt;  -inf.0
+(* 0 +inf.0)                           ==&gt;  +nan.0
+</PRE>
+
+For any <FONT COLOR=red><STRIKE>finite</STRIKE> rational</FONT> number <VAR><FONT COLOR=red>x</FONT></VAR><FONT COLOR=red>:</FONT>
+
+<PRE>
+(+ +inf.0 <VAR><FONT COLOR=red>x</FONT></VAR>)                           ==&gt;  +inf.0
+(+ -inf.0 <VAR><FONT COLOR=red>x</FONT></VAR>)                           ==&gt;  -inf.0
+</PRE>
+
+For any <FONT COLOR=red>rational</FONT> number <FONT COLOR="red"><VAR>x</VAR></FONT>:
+
+<PRE>
+(+ +nan.0 <VAR><FONT COLOR=red>x</FONT></VAR>)                           ==&gt;  +nan.0
+(* +nan.0 <VAR><FONT COLOR=red>x</FONT></VAR>)                           ==&gt;  +nan.0
+</PRE>
+
+<P>
+If any of these procedures are applied to mixed non-rational real and
+non-real complex arguments, they either report a violation of an implementation restriction
+or return an unspecified number.
+</DL>
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>-</CODE> <I>z1 z2</I>
+<DT><U>procedure:</U> <CODE>-</CODE> <I><VAR>z</VAR></I>
+<DT><U><FONT COLOR="red"><STRIKE>optional</STRIKE></FONT> procedure:</U> <CODE>-</CODE> <I>z1 z2 ...</I>
+<DT><U>procedure:</U> <CODE>/</CODE> <I>z1 z2</I>
+<DT><U>procedure:</U> <CODE>/</CODE> <I><VAR>z</VAR></I>
+<DT><U><FONT COLOR="red"><STRIKE>optional</STRIKE></FONT> procedure:</U> <CODE>/</CODE> <I>z1 z2 ...</I>
+<DD>
+
+
+<P>
+With two or more arguments, these procedures return the difference or
+quotient of their arguments, associating to the left.  With one argument,
+however, they return the additive or multiplicative inverse of their argument.
+
+
+
+<PRE>
+(- 3 4)                                ==&#62;  -1
+(- 3 4 5)                              ==&#62;  -6
+(- 3)                                  ==&#62;  -3
+(- +inf.0 +inf.0)                      ==&gt;  +nan.0
+
+(/ 3 4 5)                              ==&#62;  3/20
+(/ 3)                                  ==&#62;  1/3
+(/ 0.0)                                ==&gt;  +nan.0
+(/ 1.0 0)                              ==&gt;  +inf.0
+(/ -1 0.0)                             ==&gt;  -inf.0
+(/ +inf.0)                             ==&gt;  0.0
+(/ 0 0.0)                              ==&gt;  +nan.0
+(/ 0.0 0)                              ==&gt;  +nan.0
+(/ 0.0 0.0)                            ==&gt;  +nan.0
+</PRE>
+
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <CODE>abs</CODE> <I>x</I>
+<DD>
+
+
+<P>
+<CODE>Abs</CODE> returns the absolute value of its argument.
+
+
+
+<PRE>
+(abs -7)                               ==&#62;  7
+(abs -inf.0)                           ==&gt;  +inf.0
+</PRE>
+
+</DL>
+
+<FONT COLOR="red">
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>div+mod</CODE> <I>er1 er2</I>
+<DT><U>library procedure:</U> <CODE>div</CODE> <I>er1 er2</I>
+<DT><U>library procedure:</U> <CODE>mod</CODE> <I>er1 er2</I>
+<DT><U>library procedure:</U> <CODE>quotient</CODE> <I>ei1 ei2</I>
+<DT><U>library procedure:</U> <CODE>modulo+remainder</CODE> <I>ei1 ei2</I>
+<DT><U>library procedure:</U> <CODE>modulo</CODE> <I>ei1 ei2</I>
+<DT><U>library procedure:</U> <CODE>remainder</CODE> <I>ei1 ei2</I>
+<DD>
+
+<P>
+These procedures implement number-theoretic integer division.  See <a
+href="#integer-division">the Section</a> on integer division.
+</p>
+</dl>
+</FONT>
+
+<P><STRONG>FIXME: LOOK AT HIS AGAIN LATER</STRONG>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <CODE>gcd</CODE> <I><STRIKE>n1</STRIKE> <FONT COLOR=red>r1 </FONT>...</I>
+<DT><U>library procedure:</U> <CODE>lcm</CODE> <I><STRIKE>n1</STRIKE> <FONT COLOR=red>r1 </FONT>...</I>
+<DD>
+
+
+<P>
+These procedures return the greatest common divisor or least common
+multiple of their arguments.  The result is always non-negative.
+<P>
+<FONT COLOR=red>For exact integer arguments, these procedures are the familiar number</FONT>
+<FONT COLOR=red>theoretic operators:</FONT>
+
+<PRE>
+(gcd 32 -36)                           ==&#62;  4
+(gcd)                                  ==&#62;  0
+(lcm 32 -36)                           ==&#62;  288
+(lcm)                                  ==&#62;  1
+</PRE>
+
+<FONT COLOR=red>For exact rational arguments, </FONT><CODE><FONT COLOR=red>gcd</FONT></CODE> <FONT COLOR=red>returns the largest</FONT>
+<FONT COLOR=red>rational that divides into each of its arguments a whole number of</FONT>
+<FONT COLOR=red>times, while </FONT><CODE><FONT COLOR=red>lcm</FONT></CODE> <FONT COLOR=red>returns the smallest rational that is an</FONT>
+<FONT COLOR=red>integer multiple of its arguments.</FONT>
+
+<PRE>
+<FONT COLOR=red>(gcd 1/6 1/4)                          ==>  1/12</FONT>
+<FONT COLOR=red>(lcm 1/6 1/4)                          ==>  1/2</FONT>
+<FONT COLOR=red>(gcd 1/6 5/4)                          ==>  1/12</FONT>
+<FONT COLOR=red>(lcm 1/6 5/4)                          ==>  5/2</FONT>
+</PRE>
+
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>numerator</CODE> <I><VAR>q</VAR></I>
+<DT><U>procedure:</U> <CODE>denominator</CODE> <I><VAR>q</VAR></I>
+<DD>
+
+<P>
+These procedures return the numerator or denominator of their
+argument; the result is computed as if the argument was represented as
+a fraction in lowest terms.  The denominator is always positive.  The
+denominator of 0 is defined to be 1.
+
+
+
+<PRE>
+<TT>(numerator (/ 6 4))                    ==&#62;  3
+(denominator (/ 6 4))                  ==&#62;  2
+(denominator
+  (exact-&#62;inexact (/ 6 4)))            ==&#62; 2.0
+</TT>
+</PRE>
+
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>floor</CODE> <I>x</I>
+<DT><U>procedure:</U> <CODE>ceiling</CODE> <I>x</I>
+<DT><U>procedure:</U> <CODE>truncate</CODE> <I>x</I>
+<DT><U>procedure:</U> <CODE>round</CODE> <I>x</I>
+<DD>
+<P>
+These procedures return inexact integers on inexact rational
+arguments, and exact integers on rational arguments.
+
+<P>
+<CODE>Floor</CODE> returns the largest integer not larger than <VAR>x</VAR>.
+<CODE>Ceiling</CODE> returns the smallest integer not smaller than <VAR>x</VAR>.
+<CODE>Truncate</CODE> returns the integer closest to <VAR>x</VAR> whose absolute
+value is not larger than the absolute value of <VAR>x</VAR>.  <CODE>Round'</CODE> returns the
+closest integer to <VAR>x</VAR>, rounding to even when <VAR>x</VAR> is halfway between two
+integers.
+
+<BLOCKQUOTE>
+<P>
+<EM>Rationale:</EM>
+<CODE>Round</CODE> rounds to even for consistency with the default rounding
+mode specified by the IEEE floating point standard.
+</BLOCKQUOTE>
+
+
+<BLOCKQUOTE>
+<P>
+<EM>Note:</EM>
+If the argument to one of these procedures is inexact, then the result
+will also be inexact.  If an exact value is needed, the
+result should be passed to the <CODE>inexact-&#62;exact</CODE> procedure.
+</BLOCKQUOTE>
+
+
+<PRE>
+(floor -4.3)                           ==&#62;  -5.0
+(ceiling -4.3)                         ==&#62;  -4.0
+(truncate -4.3)                        ==&#62;  -4.0
+(round -4.3)                           ==&#62;  -4.0
+
+(floor 3.5)                            ==&#62;  3.0
+(ceiling 3.5)                          ==&#62;  4.0
+(truncate 3.5)                         ==&#62;  3.0
+(round 3.5)                            ==&#62;  4.0  ; inexact
+
+(round 7/2)                            ==&#62;  4    ; exact
+(round 7)                              ==&#62;  7
+
+(floor +inf.0)                         ==&gt;  +inf.0
+(ceiling -inf.0)                       ==&gt;  -inf.0
+</PRE>
+
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <CODE>rationalize</CODE> <I>x y</I>
+<DD>
+
+<P>
+<CODE>Rationalize</CODE> returns the <EM>simplest</EM> rational number
+differing from <VAR>x</VAR> by no more than <VAR>y</VAR>.  A rational number r<SUB>1</SUB> is
+<EM>simpler</EM>  than another rational number
+
+r<SUB>2</SUB> if r<SUB>1</SUB> = p<SUB>1</SUB>/q<SUB>1</SUB> and r<SUB>2</SUB> = p<SUB>2</SUB>/q<SUB>2</SUB> 
+(in lowest terms) and |p<SUB>1</SUB>|&#60;= |p<SUB>2</SUB>| and |q<SUB>1</SUB>| &#60;= |q<SUB>2</SUB>|.
+Thus 3/5 is simpler than 4/7.
+Although not all rationals are comparable in this ordering (consider 2/7
+and 3/5) any interval contains a rational number that is simpler than
+every other rational number in that interval (the simpler 2/5 lies
+between 2/7 and 3/5).  Note that 0 = 0/1 is the simplest rational of
+all.
+
+
+
+<PRE>
+(rationalize
+  (inexact-&#62;exact .3) 1/10)            ==&#62; 1/3    ; exact
+(rationalize .3 1/10)                  ==&#62; #i1/3  ; inexact
+
+(rationalize +inf.0 3)                 ==&gt;  +inf.0
+(rationalize +inf.0 +inf.0)            ==&gt;  +nan.0
+(rationalize 3 +inf.0)                 ==&gt;  0
+</PRE>
+
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>exp</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>log</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>sin</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>cos</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>tan</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>asin</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>acos</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>atan</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>atan</CODE> <I><VAR>y</VAR> <VAR>x</VAR></I>
+<DD>
+
+
+<P>
+These procedures are part of every implementation that supports
+general
+real numbers; they compute the usual transcendental functions.  <CODE>Log</CODE>
+computes the natural logarithm of <VAR>z</VAR> (not the base ten logarithm).
+<CODE>Asin</CODE>, <CODE>acos</CODE>, and <CODE>atan</CODE> compute arcsine (sin<SUP>-1</SUP>),
+arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
+The two-argument variant of <SAMP>`atan'</SAMP> computes <TT>(angle
+(make-rectangular <VAR>x</VAR> <VAR>y</VAR>))</TT> (see below), even in implementations
+that don't support general complex numbers.
+
+
+<P>
+In general, the mathematical functions log, arcsine, arccosine, and
+arctangent are multiply defined.
+The value of log <VAR>z</VAR> is defined to be the one whose imaginary
+part lies in the range from -pi (exclusive) to pi (inclusive).
+log 0 is undefined.
+With log defined this way, the values of sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
+and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
+
+
+<P>
+sin<SUP>-1</SUP> <VAR>z</VAR> = -i log (i <VAR>z</VAR> + sqrt(1 - <VAR>z</VAR><SUP>2</SUP>))
+
+
+<P>
+cos<SUP>-1</SUP> <VAR>z</VAR> = pi / 2 - sin<SUP>-1</SUP> <VAR>z</VAR>
+
+
+<P>
+tan<SUP>-1</SUP> <VAR>z</VAR> = (log (1 + i <VAR>z</VAR>) - log (1 - i <VAR>z</VAR>)) / (2 i)
+
+
+<P>
+The above specification follows <A HREF="r5rs_13.html#BIB27">[CLtL]</A>, which in turn
+cites <A HREF="r5rs_13.html#BIB19">[Penfield81]</A>; refer to these sources for more detailed
+discussion of branch cuts, boundary conditions, and implementation of
+these functions.  When it is possible these procedures produce a real
+result from a real argument.
+<P>
+If the function has a real-valued limit as its argument tends toward
+positive infinity, then that is the value returned by the function
+applied to +inf.0.
+
+If the function has a real-valued limit as its argument tends toward
+negative infinity, then that is the value returned by the function
+applied to -inf.0.
+
+<PRE>
+(exp +inf.0)                   ==&gt; +inf.0
+(exp -inf.0)                   ==&gt; 0.0
+(log +inf.0)                   ==&gt; +inf.0
+(log 0.0)                      ==&gt; -inf.0
+(log -inf.0)                   ==&gt; <FONT color="red"><STRIKE>+nan.0</STRIKE> <I>unspecified</I></FONT>
+(atan -inf.0)                  ==&gt; -1.5707963267948965
+(atan +inf.0)                  ==&gt; 1.5707963267948965
+</PRE>
+
+The functions <CODE>sin</CODE>, <CODE>cos</CODE>, <CODE>tan</CODE>,
+<CODE>asin</CODE>, and <CODE>acos</CODE> either return
+<CODE>+nan.0</CODE> or
+report a violation of an implementation restriction
+when given <CODE>+inf.0</CODE>,
+<CODE>-inf.0</CODE>, or <CODE>+nan.0</CODE> as an argument.
+
+<P>
+
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>sqrt</CODE> <I><VAR>z</VAR></I>
+<DD>
+
+
+<P>
+Returns the principal square root of <VAR>z</VAR>.  For <FONT
+color="red"><STRIKE>real</STRIKE> rational</FONT> <VAR>z</VAR>, the
+result will have either positive real part, or zero real part and
+non-negative imaginary part.
+
+<PRE>
+(sqrt -5)                   ==&gt;  0.0+2.23606797749979i
+(sqrt +inf.0)               ==&gt;  +inf.0
+(sqrt -inf.0)               ==&gt;  <FONT COLOR="red"><STRIKE>+nan.0</STRIKE> <I>unspecified</I></FONT>
+</PRE>
+
+</DL>
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>expt</CODE> <I>z1 z2</I>
+<DD>
+
+
+<P>
+Returns <VAR>z1</VAR> raised to the power <VAR>z2</VAR>.
+For <VAR>z</VAR><SUB>1</SUB> ~= 0
+
+<P>
+<VAR>z<SUB>1</SUB></VAR><SUP><VAR>z<SUB>2</SUB></VAR></SUP> = e<SUP><VAR>z<SUB>2</SUB></VAR> log <VAR>z<SUB>1</SUB></VAR></SUP>
+
+
+<P>
+0<SUP><VAR>z</VAR></SUP> is 1 if <VAR>z</VAR> = 0, and 0 if
+<SAMP>`(real-part <VAR>z</VAR>)'</SAMP> is positive.  
+Otherwise, this procedure reports a violation of an implementation restriction
+or returns an unspecified number.
+
+
+<PRE>
+(expt 5 3)                  ==&gt;  125
+(expt 5 -3)                 ==&gt;  8.0e-3
+(expt 5 0)                  ==&gt;  1>
+(expt 0 5)                  ==&gt;  0
+(expt 0 5+.0000312i)        ==&gt;  0
+(expt 0 -5)                 ==&gt;  <FONT color="red"><STRIKE>+inf.0</STRIKE> <I>unspecified</I></FONT>
+(expt 0 -5+.0000312i)       ==&gt;  <FONT color="red"><STRIKE>+inf.0</STRIKE> <I>unspecified</I></FONT>
+(expt 0 0)                  ==&gt;  <FONT color="red"><STRIKE>+nan.0</STRIKE> 1</FONT>
+(expt 0.0 0.0)              ==&gt;  <FONT color="red"><STRIKE>+nan.0</STRIKE> 1.0</FONT>
+</PRE>
+
+
+</DL>
+
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>make-rectangular</CODE> <I>x1 x2</I>
+<DT><U>procedure:</U> <CODE>make-polar</CODE> <I>x3 x4</I>
+<DT><U>procedure:</U> <CODE>real-part</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>imag-part</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>magnitude</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>angle</CODE> <I><VAR>z</VAR></I>
+<DD>
+
+
+<P>
+<FONT color="red"><STRIKE>These procedures are part of every implementation that supports
+general
+complex numbers.</STRIKE></FONT>  Suppose <VAR>x1</VAR>, <VAR>x2</VAR>, <VAR>x3</VAR>, and <VAR>x4</VAR> are
+real numbers and <VAR>z</VAR> is a complex number such that
+
+
+
+<P>
+<VAR>z</VAR> = <VAR>x1</VAR> + i <VAR>x2</VAR> = <VAR>x3</VAR> e<SUP>i <VAR>x4</VAR></SUP>
+
+
+<P>
+Then
+
+
+
+<PRE>
+(make-rectangular <VAR>x1</VAR> <VAR>x2</VAR>)               ==&#62; <VAR>z</VAR>
+(make-polar <VAR>x3</VAR> <VAR>x4</VAR>)                     ==&#62; <VAR>z</VAR>
+(real-part <VAR>z</VAR>)                          ==&#62; <VAR>x1</VAR>
+(imag-part <VAR>z</VAR>)                          ==&#62; <VAR>x2</VAR>
+(magnitude <VAR>z</VAR>)                          ==&#62; |<VAR>x3</VAR>|
+(angle <VAR>z</VAR>)                              ==&#62; x<SUB>angle</SUB>
+</PRE>
+
+<P>
+where -pi &#60; x<SUB>angle</SUB> &#60;= pi with x<SUB>angle</SUB> = <VAR>x4</VAR> + 2pi n
+for some integer n.
+
+<PRE>
+(angle +inf.0)                ==> 0.0
+(angle -inf.0)                ==> 3.141592653589793
+</PRE>
+
+<BLOCKQUOTE>
+<P>
+<EM>Rationale:</EM>
+<CODE>Magnitude</CODE> is the same as <CODE>abs</CODE> for a real argument<FONT COLOR="red"><STRIKE>,
+
+but <CODE>abs</CODE> must be present in all implementations, whereas
+<CODE>magnitude</CODE> need only be present in implementations that support
+general complex numbers</STRIKE></FONT>.
+</BLOCKQUOTE>
+
 </DL>
 
 
