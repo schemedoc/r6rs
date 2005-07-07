@@ -3,7 +3,6 @@
 
 ; Generic arithmetic, as preferred by Mike
 
-; ####the type predicates should be factored out
 (define (number? obj)
   (or (fixnum? obj)
       (bignum? obj)
@@ -34,7 +33,9 @@
   (or (fixnum? obj)
       (bignum? obj)
       (and (flonum? obj)
-	   (flinteger? obj))))
+	   (flinteger? obj))
+      (and (compnum? obj)
+	   (compnum-integral? obj))))
 
 (define (exact? obj)
   (or (fixnum? obj)
