@@ -306,6 +306,7 @@
 	  flonum->bignum
 	  bignum->flonum
 	  compnum->recnum
+	  exact-integer?
 	  compnum-float?
 	  recnum-integral?
 	  compnum-integral?
@@ -362,7 +363,7 @@
   (files arithmetic-util))
 
 (define-interface generic-arithmetic/ex-interface
-  (export excomplex? exrational? exinteger?
+  (export exnumber? excomplex? exrational? exinteger?
 	  ex= ex< ex<= ex>= ex>
 	  exzero? expositive? exnegative?
 	  exodd? exeven?

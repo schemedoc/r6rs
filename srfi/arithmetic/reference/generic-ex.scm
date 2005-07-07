@@ -3,6 +3,12 @@
 
 ; Generic exact rational arithmetic
 
+(define (exnumber? obj)
+  (or (fixnum? obj)
+      (bignum? obj)
+      (ratnum? obj)
+      (recnum? obj)))
+
 (define (excomplex? obj)
   (exnumber? obj))
 
