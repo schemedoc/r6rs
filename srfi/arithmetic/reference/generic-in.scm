@@ -14,7 +14,10 @@
   (flonum? obj))
 
 (define (inrational? obj)
-  (inreal? obj))
+  (and (inreal? obj)
+       (not (or (= obj flinf+)
+		(= obj flinf-)
+		(flnan? obj)))))
 
 (define (ininteger? obj)
   (and (flonum? obj)
