@@ -1407,18 +1407,325 @@ the sign.  (It returns <VAR>ex1</VAR> when <VAR>ex2</VAR> = 0.)
 </DD>
 </DL>
 
-<h3>Inexact Procedures</h3>
+<h3>Inexact Arithmetic</h3>
 
 <p>
-We will use <var>c1</var> and <var>c2</var> as metavariables
-that range over inexact complex numbers.
+The inexact arithmetic provides generic operations on inexact numbers.  The
+inexact numbers include reals and inexact complex numbers, both of
+which are distinguishable from the exact numbers.  The inexact reals
+include the flonums, and the procedures described here behave
+consistently with the corresponding flonum procedures if passed flonum
+arguments.
+</p>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>innumber?</CODE> <I>obj</I>
+<DT><U>procedure:</U> <CODE>incomplex?</CODE> <I>obj</I>
+<DT><U>procedure:</U> <CODE>inreal?</CODE> <I>obj</I>
+<DT><U>procedure:</U> <CODE>inrational?</CODE> <I>obj</I>
+<DT><U>procedure:</U> <CODE>ininteger?</CODE> <I>obj</I>
+<DD>
+<P>
+These numerical type predicates can be applied to any kind of
+argument, including non-numbers.  They return <TT>#t</TT> if the object is
+an inexact number of the named type, and otherwise they return <TT>#f</TT>.
+In general, if a type predicate is true of a number then all higher
+type predicates are also true of that number.  Consequently, if a type
+predicate is false of a number, then all lower type predicates are
+also false of that number.
+</P>
+</DL>
+
+<p>
+We will use <var>in</var>, <var>in1</var>, <var>in2</var>, and
+<var>in3</var> as metavariables that range over the inexact numbers,
+<var>ir</var>, <var>ir1</var>, <var>ir2</var>, and <var>ir3</var> as
+metavariables that range over the inexact real numbers,
+<var>if</var>, <var>if1</var>, <var>if2</var>, and <var>if3</var> as
+metavariables that range over the inexact rationals. and
+<var>ii</var>, <var>ii1</var>, <var>ii2</var>, and <var>ii3</var> as
+metavariables that range over the inexact integers.
 </p>
 
 <p>
-<strong>
-(FIXME: I'm leaving this section for you, Mike.)
-</strong>
+If an argument to following procedures that corresponding to an inexact
+metavariable is not actually an inexact number, then these procedures signal an
+error.  The same holds true for arguments corresponding to inexact
+real metavariables.
 </p>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>in=</CODE> <I>in1 in2 in3 ...</I>
+<DT><U>procedure:</U> <CODE>in&gt;</CODE> <I>ir1 ir2 ir3 ...</I>
+<DT><U>procedure:</U> <CODE>in&lt;</CODE> <I>ir1 ir2 ir3 ...</I>
+<DT><U>procedure:</U> <CODE>in&gt;=</CODE> <I>ir1 ir2 ir3 ...</I>
+<DT><U>procedure:</U> <CODE>in&lt;=</CODE> <I>ir1 ir2 ir3 ...</I>
+<DD>
+
+<P>
+These procedures return <TT>#t</TT> if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing,
+monotonically nondecreasing, or monotonically nonincreasing.
+</P>
+</DD>
+</DL>
+
+<P>
+<DL>
+<DD>
+<DT><U>library procedure:</U> <CODE>inzero?</CODE> <I>ex</I>
+<DT><U>library procedure:</U> <CODE>inpositive?</CODE> <I>ex</I>
+<DT><U>library procedure:</U> <CODE>innegative?</CODE> <I>ex</I>
+<DT><U>library procedure:</U> <CODE>inodd?</CODE> <I>ex</I>
+<DT><U>library procedure:</U> <CODE>ineven?</CODE> <I>ex</I>
+<DD>
+
+<P>
+These numerical predicates test an inexact number for a particular property,
+returning <TT>#t</TT> or <TT>#f</TT>.
+</P>
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <CODE>inmax</CODE> <I>ir1 ir2 ...</I>
+<DT><U>library procedure:</U> <CODE>inmin</CODE> <I>ir1 ir2 ...</I>
+<DD>
+
+<P>
+These procedures return the maximum or minimum of their arguments.
+</P>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>in+</CODE> <I>in1 in2 ...</I>
+<DT><U>procedure:</U> <CODE>in*</CODE> <I>in1 in2 ...</I>
+<DD>
+
+<P>
+These procedures return the sum or product of their arguments.
+</p>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>in-</CODE> <I>in1 in2 ...</I>
+<DT><U>procedure:</U> <CODE>in-</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>in/</CODE> <I>in1 in2 ...</I>
+<DT><U>procedure:</U> <CODE>in/</CODE> <I>in</I>
+<DD>
+
+<P>
+With two or more arguments, these procedures return the difference or
+quotient of their arguments, associating to the left.  With one
+argument, however, they return the additive or multiplicative inverse
+of their argument.
+</p>
+
+</dl>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <CODE>inabs</CODE> <VAR>in</VAR>
+<DD>
+
+<P>
+This procedure returns the absolute value of its argument.
+
+</P>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>indiv+mod</CODE> <I>ir1 ir2</I>
+<DT><U>library procedure:</U> <CODE>indiv</CODE> <I>ir1 ir2</I>
+<DT><U>library procedure:</U> <CODE>inmod</CODE> <I>ir1 ir2</I>
+<DT><U>library procedure:</U> <CODE>inquotient</CODE> <I>ii1 ii2</I>
+<DT><U>library procedure:</U> <CODE>inmodulo+remainder</CODE> <I>ii1 ii2</I>
+<DT><U>library procedure:</U> <CODE>inmodulo</CODE> <I>ii1 ii2</I>
+<DT><U>library procedure:</U> <CODE>inremainder</CODE> <I>ii1 ii2</I>
+<DD>
+
+<P>
+These procedures implement number-theoretic integer division.  See <a
+href="#integer-division">the Section</a> on integer division.
+</p>
+</dl>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <CODE>ingcd</CODE> <I>ii1 ii2 ...</I>
+<DT><U>library procedure:</U> <CODE>inlcm</CODE> <I>ii1 ii2 ...</I>
+<DD>
+<P>
+These procedures return the greatest common divisor or least common
+multiple of their arguments.
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>library procedure:</U> <CODE>innumerator</CODE> <I>if</I>
+<DT><U>library procedure:</U> <CODE>indenominator</CODE> <I>if</I>
+<DD>
+<P>
+The procedures return the numerator or denominator of their argument.
+The result is computed as if the argument was represented as a
+fraction in lowest terms.  The denominator is always positive.  The
+denominator of 0 is defined to be 1.
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>infloor</CODE> <I>ir</I>
+<DT><U>procedure:</U> <CODE>inceiling</CODE> <I>ir</I>
+<DT><U>procedure:</U> <CODE>intruncate</CODE> <I>ir</I>
+<DT><U>procedure:</U> <CODE>inround</CODE> <I>ir</I>
+<DD>
+<P>
+These procedures return inexact integers on inexact rational
+arguments.
+
+<CODE>Infloor</CODE> returns the largest integer not larger than <VAR>ir</VAR>.
+<CODE>Inceiling'</CODE> returns the smallest integer not smaller than <VAR>ir</VAR>.
+<CODE>Intruncate</CODE> returns the integer closest to <VAR>in</VAR> whose absolute
+value is not larger than the absolute value of <VAR>in</VAR>.  <CODE>Inround</CODE> returns the
+closest integer to <VAR>in</VAR>, rounding to even when <VAR>in</VAR> is halfway between two
+integers.
+
+<P>
+On inexact reals that are not rationals, these procedures 
+return unspecified inexact real numbers.
+Implementations that use IEEE binary floating point
+arithmetic are encouraged to have these procedures return their
+arguments in this case.
+
+<BLOCKQUOTE>
+<P>
+<EM>Rationale:</EM>
+<CODE>Round</CODE> rounds to even for consistency with the default rounding
+mode specified by the IEEE floating point standard.
+</BLOCKQUOTE>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>inexp</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>inlog</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>insin</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>incos</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>intan</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>inasin</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>inatan</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>inatan</CODE> <I>ir1 ir2</I>
+<DD>
+
+<P>
+These procedures compute the usual transcendental functions.  <CODE>Inlog</CODE>
+computes the natural logarithm of <VAR>in</VAR> (not the base ten logarithm).
+<CODE>Inasin</CODE>, <CODE>Inacos</CODE>, and <CODE>Inatan</CODE> compute arcsine (sin<SUP>-1</SUP>),
+arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
+The two-argument variant of <CODE>Inatan</CODE> computes <SAMP>`(inangle
+(inmake-rectangular <VAR>ir1</VAR> <VAR>ir2</VAR>))'</SAMP> (see below).
+
+<P>
+In general, the mathematical functions log, arcsine, arccosine, and
+arctangent are multiply defined.
+The value of log <VAR>z</VAR> is defined to be the one whose imaginary
+part lies in the range from -pi (exclusive) to pi (inclusive).
+log 0 is undefined.
+With log defined this way, the values of sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
+and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
+
+
+<P>
+sin<SUP>-1</SUP> <VAR>z</VAR> = -i log (i <VAR>z</VAR> + sqrt(1 - <VAR>z</VAR><SUP>2</SUP>))
+
+
+<P>
+cos<SUP>-1</SUP> <VAR>z</VAR> = pi / 2 - sin<SUP>-1</SUP> <VAR>z</VAR>
+
+
+<P>
+tan<SUP>-1</SUP> <VAR>z</VAR> = (log (1 + i <VAR>z</VAR>) - log (1 - i <VAR>z</VAR>)) / (2 i)
+
+<P>
+If the function has a real-valued limit as its argument tends toward
+positive infinity, then that is the value returned by the function
+applied to <SAMP>+inf.0</SAMP>.
+
+If the function has a real-valued limit as its argument tends toward
+negative infinity, then that is the value returned by the function
+applied to <SAMP>-inf.0</SAMP>.
+
+
+The procedures <CODE>insin</CODE>, <CODE>incos</CODE>, <CODE>intan</CODE>,
+<CODE>inasin</CODE>, and <CODE>inacos</CODE> <font color="red"><STRIKE>either</STRIKE></FONT> return
+<CODE>+nan.0</CODE><font color="red"><STRIKE> or
+report a violation of an implementation restriction</STRIKE></FONT>
+<font color="red">return some meaningless inexact real number</FONT> when given <CODE>+inf.0</CODE>,
+<CODE>-inf.0</CODE>, or <CODE>+nan.0</CODE> as an argument.
+
+<P>
+Implementations that use IEEE binary floating point
+arithmetic are encouraged to follow the relevant
+standards for these procedures.
+
+<P>
+The above specification follows <A HREF="r5rs_13.html#BIB27">[CLtL]</A>, which in turn
+cites <A HREF="r5rs_13.html#BIB19">[Penfield81]</A>; refer to these sources for more detailed
+discussion of branch cuts, boundary conditions, and implementation of
+these functions.
+</DL>
+
+<p>
+<DL>
+<DT><U>procedure:</U> <CODE>inexpt</CODE> <I>in1</I> <I>in2</I>
+<DD>
+<p>
+Returns <VAR>in1</VAR> raised to the power <VAR>in2</VAR>.
+The result is
+undefined for <VAR>fl1</VAR> = 0 and <VAR>fl2</VAR> = 0
+Implementations that use IEEE binary floating point
+arithmetic are encouraged to return <SAMP>+nan.0</SAMP> in this case.
+</DL>
+
+<p>
+<DL>
+<DT><U>procedure:</U> <CODE>inmake-rectangular</CODE> <I>ir1</I> <I>ir2</I>
+<DT><U>procedure:</U> <CODE>inmake-polar</CODE> <I>ir1</I> <I>ir2</I>
+<DT><U>procedure:</U> <CODE>inreal-part</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>inimag-part</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>inmagnitude</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>inangle</CODE> <I>in</I>
+<DD>
+<p>
+Suppose 
+<VAR>in1</VAR>, <VAR>in2</VAR>, <VAR>in3</VAR>, and <VAR>in4</VAR>
+are inexact rational numbers, and
+<VAR>z</VAR> is a complex number,
+such that
+<VAR>z</VAR> = <VAR>in1</VAR> + <VAR>in1</VAR>*i = <VAR>in3</VAR> *
+e<SUP>i*<VAR>in4</VAR></SUP>.  Then (inexactly):
+<PRE>
+(inmake-rectangular <VAR>in1</VAR> <VAR>in2</VAR>) =&gt; <VAR>z</VAR>
+(inmake-rectangular <VAR>in3</VAR> <VAR>in4</VAR>) =&gt; <VAR>z</VAR>
+(inreal-part <VAR>z</VAR>)              =&gt; <VAR>in1</VAR>
+(inimag-part <VAR>z</VAR>)              =&gt; <VAR>in2</VAR>
+(inmagnitude <VAR>z</VAR>)              =&gt; |<VAR>in3</VAR>|
+(inangle <VAR>z</VAR>)                  =&gt; <VAR>in<SUB>angle</SUB></VAR>
+</PRE>
+where -pi &lt; x_angle &lt;= pi with <VAR>in<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi <VAR>n</VAR>
+for some integer <VAR>n</VAR>.
+
+<P>
+The behavior of <CODE>inmake-rectangular</CODE> and
+<CODE>inmake-polar</CODE> given non-rational arguments is unspecified.
+</DL>
 
 
 <h3>Backward Compatibility</h3>
