@@ -326,11 +326,11 @@
 (define-contagion ematrix flo flo oops)
 (define-contagion ematrix flo comp flonum->compnum id)
 
-(define-contagion ematrix big comp
+(define-contagion ematrix comp big
   (make-algorithm*e compnum-integral? always
 		    compnum->bignum id
 		    id bignum->compnum))
-(define-contagion ematrix rec comp
+(define-contagion ematrix comp rec
   (make-algorithm*cre compnum-integral? recnum-integral?
 		      recnum-imag recnum-real
 		      compnum-imag compnum-real
