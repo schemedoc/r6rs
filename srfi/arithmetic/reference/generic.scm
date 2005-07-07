@@ -619,7 +619,9 @@
              (+ (r5rs->integer 1) fx)))))
   ;; Do some juggling to satisfy preconditions of simplest-rational-internal.
   (cond ((not (< x y))
-         (if (rational? x) x (error "(rationalize <irrational> 0)" x)))
+         (cond ((real? x) x)
+	       ((real? y) y)
+	       (else (error "(rationalize <non-real> 0)" x))))
         ((positive? x)
          (simplest-rational-internal x y))
         ((negative? y)
