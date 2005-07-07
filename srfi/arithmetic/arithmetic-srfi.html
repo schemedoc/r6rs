@@ -135,14 +135,27 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     integers (such as <code>div+mod</code> and
     <code>quotient+remainder</code>), and others that are easily abused
     (such as <code>fxabs</code>).  Should these be pruned?
-<li>The <code>integer?</code> predicate must return <code>#f</code>
-    for inexact complex numbers, as non-realness is now contagious.
-    Should it also return <code>#f</code> for inexact real numbers?
-    If so, an additional predicate may be necessary to check if a real
-    number is integral.
-<li><strong>
-    (FIXME: several more issues should go here)
-    </strong>
+<li>The <code>real</code>, <code>rational?</code>, and <code>integer?</code> predicates must
+    return <code>#f</code> for complex numbers with an imaginary part
+    of inexact zero, as non-realness is now contagious.
+    This causes possibly unexpected behavior: <SAMP>`(zero?
+    0+0.0i)'</SAMP> returns true despite <SAMP>`(integer?
+    0+0.0i)'</SAMP> returning zero.
+    In the arithmetic model preferred by Mike, this makes even less
+    sense, because inexact complex numbers are implicitly coerced to
+    exact ones.
+    Possibly, new predicates <code>realistic?</code>,
+    <code>rationalistic?</code>, and <code>integral?</code> should be
+    added to say that a number can be coerced to the specified type
+    (and back) without loss.  It's a mess.
+<li>What should <code>flonum->fixnum</code> return for a NaN argument?
+<li>The fixnum operations provide efficient fixnums that "wrap."
+    However, they do not give efficient access to the hardware facilities
+    for carry and overflow.  This would be desirable to implement
+    efficient generic arithmetic on fixnums portably.  On the other hand,
+    there isn't much experience with formulating an interface to these
+    facilities.
+<li><strong> (FIXME: several more issues should go here)</strong>
 </ul>
 
 <h2>Rationale</h2>
