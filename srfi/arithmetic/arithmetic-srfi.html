@@ -1364,13 +1364,13 @@ integers.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>exexpt</CODE> <I>ex1</I> <I>ex2</I>
+<DT><U>procedure:</U> <CODE>exexpt</CODE> <I>ef1</I> <I>ei2</I>
 <DD>
 <p>
-Returns <VAR>ex1</VAR> raised to the power <VAR>ex2</VAR>.
-<VAR>ex1</VAR> must be an exact rational, and <VAR>ex2</VAR> an exact
-integer.
-0<SUP><VAR>x</VAR></SUP> is 1 if <VAR>x</VAR> = 0 and 0 otherwise.
+Returns <VAR>ef1</VAR> raised to the power <VAR>ei2</VAR>.
+0<SUP><VAR>ei</VAR></SUP> is 1 if <VAR>ei</VAR> = 0 and 0 if
+<VAR>ei</VAR> is positive.
+Otherwise, this procedure signals an error.
 </DL>
 
 <p>
@@ -1704,12 +1704,19 @@ these functions.
 <DL>
 <DT><U>procedure:</U> <CODE>inexpt</CODE> <I>in1</I> <I>in2</I>
 <DD>
-<p>
+<P>
 Returns <VAR>in1</VAR> raised to the power <VAR>in2</VAR>.
-The result is
-undefined for <VAR>fl1</VAR> = 0 and <VAR>fl2</VAR> = 0
-Implementations that use IEEE binary floating point
-arithmetic are encouraged to return <SAMP>+nan.0</SAMP> in this case.
+For <VAR>in1</VAR> ~= 0
+
+<P>
+<VAR>in1</VAR><SUP><VAR>in2</VAR></SUP> = e<SUP><VAR>in2</VAR> log <VAR>in1</VAR></SUP>
+
+
+<P>
+0<SUP><VAR>z</VAR></SUP> is 1 if <VAR>z</VAR> = 0, and 0 if
+<SAMP>`(inreal-part <VAR>z</VAR>)'</SAMP> is positive.  
+Otherwise, this procedure reports a violation of an implementation restriction
+or returns an unspecified number.
 </DL>
 
 <p>
@@ -2250,10 +2257,10 @@ non-negative imaginary part.
 
 <P>
 Returns <VAR>z1</VAR> raised to the power <VAR>z2</VAR>.
-For <VAR>z</VAR><SUB>1</SUB> ~= 0
+For <VAR>z1</VAR> ~= 0
 
 <P>
-<VAR>z<SUB>1</SUB></VAR><SUP><VAR>z<SUB>2</SUB></VAR></SUP> = e<SUP><VAR>z<SUB>2</SUB></VAR> log <VAR>z<SUB>1</SUB></VAR></SUP>
+<VAR>z1</VAR><SUP><VAR>z2</VAR></SUP> = e<SUP><VAR>z2</VAR> log <VAR>z1</VAR></SUP>
 
 
 <P>
