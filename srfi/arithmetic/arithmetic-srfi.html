@@ -957,13 +957,11 @@ mode specified by the IEEE floating point standard.
 <DD>
 
 <P>
-These procedures are part of every implementation that supports
-general
-real numbers; they compute the usual transcendental functions.  <CODE>Log</CODE>
-computes the natural logarithm of <VAR>z</VAR> (not the base ten logarithm).
-<CODE>Flasin</CODE>, <CODE>Flacos</CODE>, and <CODE>atan1</CODE> compute arcsine (sin<SUP>-1</SUP>),
+These procedures compute the usual transcendental functions.  <CODE>Fllog</CODE>
+computes the natural logarithm of <VAR>fl</VAR> (not the base ten logarithm).
+<CODE>Flasin</CODE>, <CODE>Flacos</CODE>, and <CODE>Flatan1</CODE> compute arcsine (sin<SUP>-1</SUP>),
 arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
-The two-argument variant <CODE>atan2</CODE> computes <SAMP>`(inangle
+The two-argument variant <CODE>flatan2</CODE> computes <SAMP>`(inangle
 (inmake-rectangular <VAR>fl1</VAR> <VAR>fl2</VAR>))'</SAMP> (see below)<font
 color="red"><STRIKE>, even in implementations
 that don't support general complex numbers</STRIKE></font>.
@@ -972,10 +970,10 @@ that don't support general complex numbers</STRIKE></font>.
 <P>
 In general, the mathematical functions log, arcsine, arccosine, and
 arctangent are multiply defined.
-The value of log <VAR>z</VAR> is defined to be the one whose imaginary
+The value of log <VAR>fl</VAR> is defined to be the one whose imaginary
 part lies in the range from -pi (exclusive) to pi (inclusive).
 log 0 is undefined.
-With log defined this way, the values of sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
+With log defined this way, the values of sin<SUP>-1</SUP> <VAR>fl</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
 and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
 
 
@@ -1165,46 +1163,56 @@ complex number with a zero imaginary part is indistinguishable from
 its real part.
 </p>
 
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>exnumber?</CODE> <I>ex</I>
+<DT><U>procedure:</U> <CODE>excomplex?</CODE> <I>ex</I>
+<DT><U>procedure:</U> <CODE>exrational?</CODE> <I>ex</I>
+<DT><U>procedure:</U> <CODE>exinteger?</CODE> <I>ex</I>
+<DD>
+<P>
+These numerical type predicates can be applied to any kind of
+argument, including non-numbers.  They return <TT>#t</TT> if the object is
+an exact number of the named type, and otherwise they return <TT>#f</TT>.
+In general, if a type predicate is true of a number then all higher
+type predicates are also true of that number.  Consequently, if a type
+predicate is false of a number, then all lower type predicates are
+also false of that number.
+</P>
+</DL>
+
+<p>
+We will use <var>ex</var>, <var>ex1</var>, <var>ex2</var>, and
+<var>ex3</var> as metavariables that range over the exact complex
+numbers,
+<var>ef</var>, <var>ef1</var>, <var>ef2</var>, and
+<var>ef3</var> as metavariables that range over the exact rational
+numbers,
+and
+<var>ei</var>, <var>ei1</var>, <var>ei2</var>, and
+<var>ei3</var> as metavariables that range over the exact rational
+numbers,
+</p>
+
 <p>
 If an argument to following procedures that corresponding to an exact
 metavariable is not actually an exact number, then these procedures signal an
 error.
 </p>
 
-<p>
-We will use <var>ex</var>, <var>ex1</var>, <var>ex2</var>, and
-<var>ex3</var> as metavariables that range over the exact complex
-numbers.
-</p>
-
-<P>
-<DL>
-<DT><U>procedure:</U> <CODE>excomplex?</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>exrational?</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>exinteger?</CODE> <I>ex</I>
-<DD>
-<P>
-These numerical predicates test a fixnum for a particular property,
-returning <TT>#t</TT> or <TT>#f</TT>.
-</P>
-</DL>
-
-
 <P>
 <DL>
 <DT><U>procedure:</U> <CODE>ex=</CODE> <I>ex1 ex2 ex3 ...</I>
-<DT><U>procedure:</U> <CODE>ex&gt;</CODE> <I>ex1 ex2 ex3 ...</I>
-<DT><U>procedure:</U> <CODE>ex&lt;</CODE> <I>ex1 ex2 ex3 ...</I>
-<DT><U>procedure:</U> <CODE>ex&gt;=</CODE> <I>ex1 ex2 ex3 ...</I>
-<DT><U>procedure:</U> <CODE>ex&lt;=</CODE> <I>ex1 ex2 ex3 ...</I>
+<DT><U>procedure:</U> <CODE>ex&gt;</CODE> <I>er1 er2 er3 ...</I>
+<DT><U>procedure:</U> <CODE>ex&lt;</CODE> <I>er1 er2 er3 ...</I>
+<DT><U>procedure:</U> <CODE>ex&gt;=</CODE> <I>er1 er2 er3 ...</I>
+<DT><U>procedure:</U> <CODE>ex&lt;=</CODE> <I>er1 er2 er3 ...</I>
 <DD>
 
 <P>
 These procedures return <TT>#t</TT> if their arguments are (respectively):
 equal, monotonically increasing, monotonically decreasing,
 monotonically nondecreasing, or monotonically nonincreasing.
-These procedures signal an error if one of the arguments is not a
-rational number.
 </P>
 </DD>
 </DL>
@@ -1213,22 +1221,22 @@ rational number.
 <DL>
 <DD>
 <DT><U>library procedure:</U> <CODE>exzero?</CODE> <I><VAR>ex</VAR></I>
-<DT><U>library procedure:</U> <CODE>expositive?</CODE> <I><VAR>ex</VAR></I>
-<DT><U>library procedure:</U> <CODE>exnegative?</CODE> <I><VAR>ex</VAR></I>
-<DT><U>library procedure:</U> <CODE>exodd?</CODE> <VAR>ex</VAR>
-<DT><U>library procedure:</U> <CODE>exeven?</CODE> <VAR>ex</VAR>
+<DT><U>library procedure:</U> <CODE>expositive?</CODE> <I><VAR>ef</VAR></I>
+<DT><U>library procedure:</U> <CODE>exnegative?</CODE> <I><VAR>ef</VAR></I>
+<DT><U>library procedure:</U> <CODE>exodd?</CODE> <VAR>ei</VAR>
+<DT><U>library procedure:</U> <CODE>exeven?</CODE> <VAR>ei</VAR>
 <DD>
 
 <P>
-These numerical predicates test a fixnum for a particular property,
+These numerical predicates test an exact number for a particular property,
 returning <TT>#t</TT> or <TT>#f</TT>.
 </P>
 </DL>
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exmax</CODE> <I>ex1 ex2 ...</I>
-<DT><U>library procedure:</U> <CODE>exmin</CODE> <I>ex1 ex2 ...</I>
+<DT><U>library procedure:</U> <CODE>exmax</CODE> <I>ef1 ef2 ...</I>
+<DT><U>library procedure:</U> <CODE>exmin</CODE> <I>ef1 ef2 ...</I>
 <DD>
 
 <P>
@@ -1266,7 +1274,7 @@ of their argument.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exabs</CODE> <VAR>ex</VAR>
+<DT><U>library procedure:</U> <CODE>exabs</CODE> <VAR>ef</VAR>
 <DD>
 
 <P>
@@ -1277,13 +1285,13 @@ This procedure returns the absolute value of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exdiv+mod</CODE> <I>ex1 ex2</I>
-<DT><U>library procedure:</U> <CODE>exdiv</CODE> <I>ex1 ex2</I>
-<DT><U>library procedure:</U> <CODE>exmod</CODE> <I>ex1 ex2</I>
-<DT><U>library procedure:</U> <CODE>exquotient</CODE> <I>ex1 ex2</I>
-<DT><U>library procedure:</U> <CODE>exmodulo+remainder</CODE> <I>ex1 ex2</I>
-<DT><U>library procedure:</U> <CODE>exmodulo</CODE> <I>ex1 ex2</I>
-<DT><U>library procedure:</U> <CODE>exremainder</CODE> <I>ex1 ex2</I>
+<DT><U>procedure:</U> <CODE>exdiv+mod</CODE> <I>er1 er2</I>
+<DT><U>library procedure:</U> <CODE>exdiv</CODE> <I>er1 er2</I>
+<DT><U>library procedure:</U> <CODE>exmod</CODE> <I>er1 er2</I>
+<DT><U>library procedure:</U> <CODE>exquotient</CODE> <I>ei1 ei2</I>
+<DT><U>library procedure:</U> <CODE>exmodulo+remainder</CODE> <I>ei1 ei2</I>
+<DT><U>library procedure:</U> <CODE>exmodulo</CODE> <I>ei1 ei2</I>
+<DT><U>library procedure:</U> <CODE>exremainder</CODE> <I>ei1 ei2</I>
 <DD>
 
 <P>
@@ -1294,25 +1302,22 @@ href="#integer-division">the Section</a> on integer division.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exgcd</CODE> <I>ex1 ex2 ...</I>
-<DT><U>library procedure:</U> <CODE>exlcm</CODE> <I>ex1 ex2 ...</I>
+<DT><U>library procedure:</U> <CODE>exgcd</CODE> <I>ei1 ei2 ...</I>
+<DT><U>library procedure:</U> <CODE>exlcm</CODE> <I>ei1 ei2 ...</I>
 <DD>
 <P>
 These procedures return the greatest common divisor or least common
-multiple of their arguments, which must be exact integers.  If any
-arguments are not, an error is signalled.  The result is always
-non-negative.
+multiple of their arguments, which must be exact integers.
 </DD>
 </DL>
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exnumerator</CODE> <I>ex</I>
-<DT><U>library procedure:</U> <CODE>exdenominator</CODE> <I>ex</I>
+<DT><U>library procedure:</U> <CODE>exnumerator</CODE> <I>ef</I>
+<DT><U>library procedure:</U> <CODE>exdenominator</CODE> <I>ef</I>
 <DD>
 <P>
-The procedures return the numerator or denominator of their argument,
-which must be an exact rational.  If it is not, an error is signalled.
+The procedures return the numerator or denominator of their argument.
 The result is computed as if the argument was represented as a
 fraction in lowest terms.  The denominator is always positive.  The
 denominator of 0 is defined to be 1.
@@ -1321,18 +1326,18 @@ denominator of 0 is defined to be 1.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exfloor</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>exceiling</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>extruncate</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>exround</CODE> <I>ex</I>
+<DT><U>procedure:</U> <CODE>exfloor</CODE> <I>ef</I>
+<DT><U>procedure:</U> <CODE>exceiling</CODE> <I>ef</I>
+<DT><U>procedure:</U> <CODE>extruncate</CODE> <I>ef</I>
+<DT><U>procedure:</U> <CODE>exround</CODE> <I>ef</I>
 <DD>
 <P>
 These procedures return exact integers.
-<CODE>Exfloor</CODE> returns the largest integer not larger than <VAR>ex</VAR>.
-<CODE>Exceiling'</CODE> returns the smallest integer not smaller than <VAR>ex</VAR>.
-<CODE>Extruncate</CODE> returns the integer closest to <VAR>ex</VAR> whose absolute
-value is not larger than the absolute value of <VAR>ex</VAR>.  <CODE>Exround'</CODE> returns the
-closest integer to <VAR>ex</VAR>, rounding to even when <VAR>ex</VAR> is halfway between two
+<CODE>Exfloor</CODE> returns the largest integer not larger than <VAR>ef</VAR>.
+<CODE>Exceiling</CODE> returns the smallest integer not smaller than <VAR>ef</VAR>.
+<CODE>Extruncate</CODE> returns the integer closest to <VAR>ef</VAR> whose absolute
+value is not larger than the absolute value of <VAR>ef</VAR>.  <CODE>Exround</CODE> returns the
+closest integer to <VAR>ef</VAR>, rounding to even when <VAR>ef</VAR> is halfway between two
 integers.
 </DL>
 
@@ -1349,61 +1354,60 @@ integer.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>exmake-rectangular</CODE> <I>ex1</I> <I>ex2</I>
+<DT><U>procedure:</U> <CODE>exmake-rectangular</CODE> <I>ef1</I> <I>ef2</I>
 <DT><U>procedure:</U> <CODE>exreal-part</CODE> <I>ex</I>
 <DT><U>procedure:</U> <CODE>eximag-part</CODE> <I>ex</I>
 <DD>
 <p>
 The arguments of <code>exmake-rectangular</code> must be exact
 rationals.  Suppose <VAR>z</VAR> is a complex number such that
-<VAR>z</VAR> = <VAR>ex1</VAR> + <VAR>ex1</VAR>*i.  Then:
+<VAR>z</VAR> = <VAR>ef1</VAR> + <VAR>ef1</VAR>*i.  Then:
 <PRE>
-(make-rectangular <VAR>ex1</VAR> <VAR>ex2</VAR>) =&gt; <VAR>z</VAR>
-(real-part <VAR>z</VAR>)              =&gt; <VAR>ex1</VAR>
-(imag-part <VAR>z</VAR>)              =&gt; <VAR>ex2</VAR>
+(make-rectangular <VAR>ef1</VAR> <VAR>ef2</VAR>) =&gt; <VAR>z</VAR>
+(real-part <VAR>z</VAR>)              =&gt; <VAR>ef1</VAR>
+(imag-part <VAR>z</VAR>)              =&gt; <VAR>ef2</VAR>
 </PRE>
 </DL>
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exbitwise-not</CODE> <I>ex</I>
+<DT><U>procedure:</U> <CODE>exbitwise-not</CODE> <I>ei</I>
 <DD>
 <P>
-Returns the one's-complement of its argument, which must be an exact
-integer.  If it is not, and error is signalled.
+Returns the one's-complement of its argument.
 </DD>
 </DL>
 
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exbitwise-and</CODE> <I>ex1 ex2 ...</I> 
-<DT><U>procedure:</U> <CODE>exbitwise-ior</CODE> <I>ex1 ex2 ...</I>
-<DT><U>procedure:</U> <CODE>exbitwise-xor</CODE> <I>ex1 ex2 ...</I>
+<DT><U>procedure:</U> <CODE>exbitwise-and</CODE> <I>ei1 ei2 ...</I> 
+<DT><U>procedure:</U> <CODE>exbitwise-ior</CODE> <I>ei1 ei2 ...</I>
+<DT><U>procedure:</U> <CODE>exbitwise-xor</CODE> <I>ei1 ei2 ...</I>
 <DD>
 <P>
 The arguments for these procedures must be exact integers; an error is
 signalled if any argument is not.
 The <code>exbitwise-and</code> procedure returns the exact integer which is the bit-wise "and" of its
 arguments.
-The <code>exbitwise-ior</code> procedure returns the fixnum which is the bit-wise "or" of its
+The <code>exbitwise-ior</code> procedure returns the exact integer which is the bit-wise "or" of its
 arguments.
-The <code>exbitwise-xor</code> procedure returns the fixnum which is the
+The <code>exbitwise-xor</code> procedure returns the exact integer which is the
 bit-wise "exlusive or" of its arguments.
 </DD>
 </DL>
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exarithmetic-shift</CODE> <I>ex1</I> <I>ex2</I>
+<DT><U>procedure:</U> <CODE>exarithmetic-shift</CODE> <I>ei1</I> <I>ei2</I>
 <DD>
 <P>
 Both arguments must be exact integers; an error is signalled if either
 argument is not.
 Conceptually shifts the two's complement representation of
-<VAR>ex1</VAR> <VAR>ex2</VAR> bits left when <VAR>ex2</VAR> &gt; 0,
-and -<VAR>ex2</VAR> bits right when <VAR>ex2</VAR> &lt; 0, extending
-the sign.  (It returns <VAR>ex1</VAR> when <VAR>ex2</VAR> = 0.)
+<VAR>ei1</VAR> <VAR>ei2</VAR> bits left when <VAR>ex2</VAR> &gt; 0,
+and -<VAR>ei2</VAR> bits right when <VAR>ei2</VAR> &lt; 0, extending
+the sign.  It returns <VAR>ei1</VAR> when <VAR>ei2</VAR> = 0.
 </DD>
 </DL>
 
@@ -1475,11 +1479,11 @@ monotonically nondecreasing, or monotonically nonincreasing.
 <P>
 <DL>
 <DD>
-<DT><U>library procedure:</U> <CODE>inzero?</CODE> <I>ex</I>
-<DT><U>library procedure:</U> <CODE>inpositive?</CODE> <I>ex</I>
-<DT><U>library procedure:</U> <CODE>innegative?</CODE> <I>ex</I>
-<DT><U>library procedure:</U> <CODE>inodd?</CODE> <I>ex</I>
-<DT><U>library procedure:</U> <CODE>ineven?</CODE> <I>ex</I>
+<DT><U>library procedure:</U> <CODE>inzero?</CODE> <I>in</I>
+<DT><U>library procedure:</U> <CODE>inpositive?</CODE> <I>ir</I>
+<DT><U>library procedure:</U> <CODE>innegative?</CODE> <I>ir</I>
+<DT><U>library procedure:</U> <CODE>inodd?</CODE> <I>ii</I>
+<DT><U>library procedure:</U> <CODE>ineven?</CODE> <I>ii</I>
 <DD>
 
 <P>
@@ -1591,7 +1595,7 @@ These procedures return inexact integers on inexact rational
 arguments.
 
 <CODE>Infloor</CODE> returns the largest integer not larger than <VAR>ir</VAR>.
-<CODE>Inceiling'</CODE> returns the smallest integer not smaller than <VAR>ir</VAR>.
+<CODE>Inceiling</CODE> returns the smallest integer not smaller than <VAR>ir</VAR>.
 <CODE>Intruncate</CODE> returns the integer closest to <VAR>in</VAR> whose absolute
 value is not larger than the absolute value of <VAR>in</VAR>.  <CODE>Inround</CODE> returns the
 closest integer to <VAR>in</VAR>, rounding to even when <VAR>in</VAR> is halfway between two
