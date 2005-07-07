@@ -90,8 +90,8 @@
   (integer-negative? (ratnum-numerator r)))
 
 (define (ratnum-abs r)
-  (make-unreduced-ratnum (integer-abs (ratnum-numerator r))
-			 (ratnum-denominator r)))
+  (make-ratnum (integer-abs (ratnum-numerator r))
+	       (ratnum-denominator r)))
 
 ; a/b = c/d  when a = b and c = d  (always lowest terms)
 
