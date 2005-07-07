@@ -130,7 +130,7 @@
 (check (numerical expt 0 5) ==>  0)
 (check (numerical expt 0 5+.0000312i) ==>  0)
 (check (numerical expt 0 0) ==> 1)
-(check (numerical expt 0.0 0.0) ==>  0.0)
+(check (numerical expt 0.0 0.0) ==>  1.0)
 
 (check (numerator (numerical / 3 -4)) ==> -3)
 (check (numerical denominator 0) ==> 1)
@@ -141,6 +141,8 @@
 (check (flnan? (rationalize flinf+ flinf+)) => #t)
 (check (rationalize (r5rs->number 3) flinf+) ==> 0)
 
+(check (angle flinf+) ==> 0.0)
+(check (angle flinf-) ==> 3.141592653589793)
 
 (check (numerical sqrt -4) ==> +2i)
 
