@@ -1443,7 +1443,7 @@ numbers,
 and
 <var>ei</var>, <var>ei1</var>, <var>ei2</var>, and
 <var>ei3</var> as metavariables that range over the exact rational
-numbers,
+numbers.
 </p>
 
 <p>
@@ -1519,7 +1519,8 @@ These procedures return the sum or product of their arguments.
 With two or more arguments, these procedures return the difference or
 quotient of their arguments, associating to the left.  With one
 argument, however, they return the additive or multiplicative inverse
-of their argument.
+of their argument. <CODE>Ex/</CODE> signals an error
+if a divisor is 0.
 </p>
 
 </dl>
@@ -1559,7 +1560,7 @@ href="#integer-division">the Section</a> on integer division.
 <DD>
 <P>
 These procedures return the greatest common divisor or least common
-multiple of their arguments, which must be exact integers.
+multiple of their arguments.
 </DD>
 </DL>
 
@@ -1569,7 +1570,7 @@ multiple of their arguments, which must be exact integers.
 <DT><U>library procedure:</U> <CODE>exdenominator</CODE> <var>ef</var>
 <DD>
 <P>
-The procedures return the numerator or denominator of their argument.
+These procedures return the numerator or denominator of their argument.
 The result is computed as if the argument was represented as a
 fraction in lowest terms.  The denominator is always positive.  The
 denominator of 0 is defined to be 1.
@@ -1613,11 +1614,11 @@ Otherwise, this procedure signals an error.
 <p>
 The arguments of <code>exmake-rectangular</code> must be exact
 rationals.  Suppose <VAR>z</VAR> is a complex number such that
-<VAR>z</VAR> = <VAR>ef1</VAR> + <VAR>ef1</VAR>*i.  Then:
+<VAR>z</VAR> = <VAR>ef1</VAR> + <VAR>ef2</VAR>*i.  Then:
 <PRE>
-(make-rectangular <VAR>ef1</VAR> <VAR>ef2</VAR>) =&gt; <VAR>z</VAR>
-(real-part <VAR>z</VAR>)              =&gt; <VAR>ef1</VAR>
-(imag-part <VAR>z</VAR>)              =&gt; <VAR>ef2</VAR>
+(exmake-rectangular <VAR>ef1</VAR> <VAR>ef2</VAR>) =&gt; <VAR>z</VAR>
+(exreal-part <VAR>z</VAR>)              =&gt; <VAR>ef1</VAR>
+(eximag-part <VAR>z</VAR>)              =&gt; <VAR>ef2</VAR>
 </PRE>
 </DL>
 
@@ -1638,14 +1639,14 @@ Returns the one's-complement of its argument.
 <DT><U>procedure:</U> <CODE>exbitwise-xor</CODE> <var>ei1</var> <var>ei2</var> ...
 <DD>
 <P>
-The arguments for these procedures must be exact integers; an error is
-signalled if any argument is not.
-The <code>exbitwise-and</code> procedure returns the exact integer which is the bit-wise "and" of its
+The <code>exbitwise-and</code> procedure returns the exact integer which is the bit-wise "and" of the
+two's complement representations of its
 arguments.
-The <code>exbitwise-ior</code> procedure returns the exact integer which is the bit-wise "or" of its
+The <code>exbitwise-ior</code> procedure returns the exact integer which is the bit-wise "or" of the two's
+complement representations of its
 arguments.
 The <code>exbitwise-xor</code> procedure returns the exact integer which is the
-bit-wise "exlusive or" of its arguments.
+bit-wise "exlusive or" of the two's complement representations of its arguments.
 </DD>
 </DL>
 
@@ -1654,9 +1655,7 @@ bit-wise "exlusive or" of its arguments.
 <DT><U>procedure:</U> <CODE>exarithmetic-shift</CODE> <var>ei1</var> <var>ei2</var>
 <DD>
 <P>
-Both arguments must be exact integers; an error is signalled if either
-argument is not.
-Conceptually shifts the two's complement representation of
+This conceptually shifts the two's complement representation of
 <VAR>ei1</VAR> <VAR>ei2</VAR> bits left when <VAR>ex2</VAR> &gt; 0,
 and -<VAR>ei2</VAR> bits right when <VAR>ei2</VAR> &lt; 0, extending
 the sign.  It returns <VAR>ei1</VAR> when <VAR>ei2</VAR> = 0.
@@ -2168,7 +2167,8 @@ or return an unspecified number.
 With two or more arguments, these procedures return the difference or
 quotient of their arguments, associating to the left.  With one argument,
 however, they return the additive or multiplicative inverse of their argument.
-
+<FONT color="red"><CODE>Ex/</CODE> signals an error
+if a divisor is exact 0.</CODE>
 
 
 <PRE>
