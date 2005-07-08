@@ -120,8 +120,12 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
         result is the same as the exactness of its arguments.
     <li><code>+</code> is defined as in R5RS, but with the increased
         portability provided by requiring the full numeric tower.
+        This alternative is described in the section 
+	<a href="#r5rs-generic">R5RS-style Generic Arithmetic</a>.
     <li><code>+</code> is defined to return an exact result in all
         cases, even if one or more of its arguments is inexact.
+        This alternative is described in the section 
+	<a href="#exact-generic">Generic Exact Arithmetic</a>.
     </ol>
     Will Clinger prefers the 4th possibility, Mike Sperber the 5th.
     Members of the Scheme community should express themselves on this
@@ -1986,7 +1990,7 @@ The behavior of <CODE>inmake-rectangular</CODE> and
 <CODE>inmake-polar</CODE> given non-rational arguments is unspecified.
 </DL>
 
-<h3>R5RS-style Generic Arithmetic</h3>
+<h3><a name="r5rs-generic">R5RS-style Generic Arithmetic</a></h3>
 
 <font color=red>
 The following description is a revised form of the description
@@ -2634,7 +2638,11 @@ the sign.  It returns <VAR>ei1</VAR> when <VAR>ei2</VAR> = 0.
 </DD>
 </DL>
 
-<h3>Generic Exact Arithmetic</h3>
+<h3><a name="exact-generic">Generic Exact Arithmetic</a></h3>
+
+<p>This specification of exact arithmetic is an alternative to the
+R5RS-style generic arithmetic described in the previous section.
+
 
 <p>
 The exact generic arithmetic provides generic operations on exact and
@@ -2647,6 +2655,10 @@ mathematical counterparts.
 </p>
 
 <P>In this model of arithmetic, the section on exactness reads as follows:
+<font color=red>
+Changes from the description of exactness in the previous section are
+highlighted in red.
+</font>
 
 <BLOCKQUOTE>
 Scheme numbers are either <I>exact</I> or <I>inexact</I>.  A number is
