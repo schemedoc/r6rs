@@ -780,11 +780,13 @@ returns <TT>#f</TT>.
 (string-&gt;number "15##")                ==&gt;  1500.0
 (string->number "+inf.0")              ==&gt; +inf.0
 (string->number "-inf.0")              ==&gt; -inf.0
+(string->number "+nan.0")              ==&gt; +nan.0
 </PRE>
 
 
 <BLOCKQUOTE>
 <P>
+<FONT color="red"><STRIKE>
 <EM>Note:</EM>
 The domain of <CODE>string-&gt;number</CODE> may be restricted by implementations
 in the following ways.  <CODE>String-&gt;number</CODE> is permitted to return
@@ -794,14 +796,14 @@ If all numbers supported by an implementation are real, then
 <VAR>string</VAR> uses the polar or rectangular notations for complex
 numbers.  If all numbers are integers, then
 <CODE>string-&gt;number</CODE> may return <TT>#f</TT> whenever
-the fractional notation is used.  If all numbers are exact, then
+the fractional notation is used. If all numbers are exact, then
 <CODE>string-&gt;number</CODE> may return <TT>#f</TT> whenever
 an exponent marker or explicit exactness prefix is used, or if
 a <TT>#</TT> appears in place of a digit.  If all inexact
 numbers are integers, then
 <CODE>string-&gt;number</CODE> may return <TT>#f</TT> whenever
 a decimal point is used.
-An implementation may return <CODE>#f</CODE> for <CODE>"+nan.0"</CODE>.
+An implementation may return <CODE>#f</CODE> for <CODE>"+nan.0"</CODE>.</STRIKE></FONT>
 </BLOCKQUOTE>
 
 </DL>
