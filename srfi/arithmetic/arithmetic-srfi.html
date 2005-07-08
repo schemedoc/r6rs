@@ -207,7 +207,7 @@ These changes should benefit both implementors and programmers.
 </p>
 
 <p>
-This SRFI is incompatible with SRFI-70 in several ways, including:
+This SRFI is incompatible with SRFI 70 in several ways, including:
 </p>
 <ul>
 <li>This SRFI defines a real number to be a complex number whose
@@ -384,17 +384,17 @@ returns an integer.  If <VAR>n1</VAR>/<VAR>n2</VAR> is an integer:
 If <VAR>n1</VAR>/<VAR>n2</VAR> is not an integer:
 
 <PRE>
-(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&#62; <VAR>n_q</VAR>
-(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&#62; <VAR>n_r</VAR>
-(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&#62; <VAR>n_m</VAR>
+(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&#62; <VAR>n<SUB>q</SUB></VAR>
+(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&#62; <VAR>n<SUB>r</SUB></VAR>
+(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&#62; <VAR>n<SUB>m</SUB></VAR>
 </PRE>
 
 <P>
-where <VAR>n_q</VAR> is <VAR>n1</VAR>/<VAR>n2</VAR> rounded towards zero,
-0 &#60; |<VAR>n_r</VAR>| &#60; |<VAR>n2</VAR>|, 0 &#60; |<VAR>n_m</VAR>| &#60; |<VAR>n2</VAR>|,
-<VAR>n_r</VAR> and <VAR>n_m</VAR> differ from <VAR>n1</VAR> by a multiple of <VAR>n2</VAR>,
-<VAR>n_r</VAR> has the same sign as <VAR>n1</VAR>, and
-<VAR>n_m</VAR> has the same sign as <VAR>n2</VAR>.
+where <VAR>n<SUB>q</SUB></VAR> is <VAR>n1</VAR>/<VAR>n2</VAR> rounded towards zero,
+0 &#60; |<VAR>n<SUB>r</SUB></VAR>| &#60; |<VAR>n2</VAR>|, 0 &#60; |<VAR>n<SUB>m</SUB></VAR>| &#60; |<VAR>n2</VAR>|,
+<VAR>n<SUB>r</SUB></VAR> and <VAR>n<SUB>m</SUB></VAR> differ from <VAR>n1</VAR> by a multiple of <VAR>n2</VAR>,
+<VAR>n<SUB>r</SUB></VAR> has the same sign as <VAR>n1</VAR>, and
+<VAR>n<SUB>m</SUB></VAR> has the same sign as <VAR>n2</VAR>.
 
 <P>
 From this we can conclude that for integers <VAR>n1</VAR> and <VAR>n2</VAR> with
@@ -438,7 +438,7 @@ provided all numbers involved in that computation are exact.
 
 <font color=red>
 The following description is a revised form of the description
-given in SRFI-70.  Changes from SRFI-70 are highlighted in red.
+given in SRFI 70.  Changes from SRFI 70 are highlighted in red.
 </font>
 
 
@@ -557,8 +557,59 @@ support some kind of non-complex numbers.
 </DL>
 
 
+<h3>Conversions</h3>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>exact-&gt;inexact</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>inexact-&gt;exact</CODE> <VAR>z</VAR>
+<DD>
+<P>
+<CODE>Exact-&gt;inexact</CODE> returns an inexact representation of <VAR>z</VAR>.
+The value returned is the
+inexact number that is numerically closest to the argument.
+If an exact argument has no reasonably close inexact equivalent,
+then a violation of an implementation restriction may be reported.
 
 
+<P>
+<CODE>Inexact-&gt;exact</CODE> returns an exact representation of
+<VAR>z</VAR>.  The value returned is the exact number that is numerically
+closest to the argument.
+If an inexact argument has no reasonably close exact equivalent,
+then a violation of an implementation restriction may be reported.
+
+<P>
+These procedures implement the natural one-to-one correspondence between
+exact and inexact integers throughout an
+implementation-dependent range.
+<P>
+<CODE>Exact-&gt;inexact</CODE> and
+<CODE>inexact-&gt;exact</CODE> are idempotent.
+
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>number-&gt;flonum</CODE> <VAR>z</VAR>
+<P>
+<CODE>Number-&gt;flonum</CODE> returns a flonum representation of
+<VAR>z</VAR>, which must be a real number or a complex number where
+<SAMP>`(zero? (imag-part <VAR>z</VAR>))'</SAMP> returns
+<CODE>#t</CODE>.  On other kinds of numbers, the behavior is
+unspecified.
+
+The value returned is the flonum that is numerically closest to the
+argument.
+
+<BLOCKQUOTE>
+<P>
+<EM>Rationale:</EM> Traditionally, <CODE>exact-&gt;>inexact</CODE> has
+been used to convert numbers to a flonum representation.  However, a
+Scheme system may have representations for real numbers other than
+flonums.  Without <CODE>number-&gt;flonum</CODE>, a program has no
+means for reliably ensuring that a number is converted to a flonum.
+</BLOCKQUOTE>
 
 
 <h3>Fixnums</h3>
@@ -1778,7 +1829,7 @@ monotonically nondecreasing, or monotonically nonincreasing.
 (= +inf.0 +inf.0)           ==&gt;  #t
 (= -inf.0 +inf.0)           ==&gt;  #f
 (= -inf.0 -inf.0)           ==&gt;  #t
-<FONT COLOR=red><STRIKE>(= 0/0 0/0)                 ==>  #t</STRIKE></FONT>
+<FONT COLOR=red><STRIKE>(= +nan.0 +nan.0)                 ==>  #t</STRIKE></FONT>
 </PRE>
 
 For any rational number <VAR>x</VAR>:
@@ -2358,7 +2409,7 @@ general complex numbers</STRIKE></FONT>.
 
 <h2>Acknowledgements</h2>
 
-We thank Anton van Straaten, Kent Dyvig, Sebastian Egner, Aubrey
+We thank Anton van Straaten, Kent Dybvig, Sebastian Egner, Aubrey
 Jaffer, Marc Feeley, Matthew Flatt, Manuel Serrano for direct and
 indirect assistance producing this draft.
 
