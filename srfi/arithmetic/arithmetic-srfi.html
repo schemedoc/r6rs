@@ -977,12 +977,15 @@ congruent mod <var>hi-lo+1</var>.
 <DT><U>procedure:</U> <CODE>fxbitwise-xor</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 <P>
-The <CODE>fxbitwise-and</CODE> procedure returns the fixnum which is the bit-wise "and" of its
+The <CODE>fxbitwise-and</CODE> procedure returns the fixnum which is the bit-wise "and" of 
+the two's complement representations of its
 arguments congruent mod <var>hi-lo+1</var>.
-The <CODE>fxbitwise-ior</CODE> procedure returns the fixnum which is the bit-wise "or" of its
+The <CODE>fxbitwise-ior</CODE> procedure returns the fixnum which is the bit-wise "or" of
+the two's complement representations of its
 arguments congruent mod <var>hi-lo+1</var>.
 The <CODE>fxbitwise-xor</CODE> procedure returns the fixnum which is the
-bit-wise "exlusive or" of its arguments congruent mod <var>hi-lo+1</var>.
+bit-wise "exlusive or" of the two's complement representations of its
+arguments congruent mod <var>hi-lo+1</var>.
 </DD>
 </DL>
 
@@ -991,7 +994,7 @@ bit-wise "exlusive or" of its arguments congruent mod <var>hi-lo+1</var>.
 <DT><U>procedure:</U> <CODE>fxarithmetic-shift</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 <P>
-Conceptually shifts the two's complement representation of
+This procedure conceptually shifts the two's complement representation of
 <VAR>fx1</VAR> <VAR>fx2</VAR> bits left when <VAR>fx2</VAR> &gt; 0,
 and -<VAR>fx2</VAR> bits right when <VAR>fx2</VAR> &lt; 0, extending
 the sign.  (It returns <VAR>fx1</VAR> when <VAR>fx2</VAR> = 0.)  It
@@ -1828,7 +1831,7 @@ multiple of their arguments.
 <DT><U>library procedure:</U> <CODE>indenominator</CODE> <var>if</var>
 <DD>
 <P>
-The procedures return the numerator or denominator of their argument.
+These procedures return the numerator or denominator of their argument.
 The result is computed as if the argument was represented as a
 fraction in lowest terms.  The denominator is always positive.  The
 denominator of 0 is defined to be 1.
@@ -1965,7 +1968,7 @@ Suppose
 are inexact rational numbers, and
 <VAR>z</VAR> is a complex number,
 such that
-<VAR>z</VAR> = <VAR>in1</VAR> + <VAR>in1</VAR>*i = <VAR>in3</VAR> *
+<VAR>z</VAR> = <VAR>in1</VAR> + <VAR>in2</VAR>*i = <VAR>in3</VAR> *
 e<SUP>i*<VAR>in4</VAR></SUP>.  Then (inexactly):
 <PRE>
 (inmake-rectangular <VAR>in1</VAR> <VAR>in2</VAR>) =&gt; <VAR>z</VAR>
@@ -2267,11 +2270,10 @@ denominator of 0 is defined to be 1.
 
 
 <PRE>
-<TT>(numerator (/ 6 4))                    ==&gt;  3
+(numerator (/ 6 4))                    ==&gt;  3
 (denominator (/ 6 4))                  ==&gt;  2
 (denominator
   (exact-&gt;inexact (/ 6 4)))            ==&gt; 2.0
-</TT>
 </PRE>
 
 </DL>
