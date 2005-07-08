@@ -296,11 +296,9 @@ Denormalized numbers have diminished precision, and therefore must
 carry a |<var>p</var> suffix with the actual width of the signficand.
 </BLOCKQUOTE>
 
-
 <p>
 The <code>number-&gt;string</code> procedure should be generalized
 to support the <var>x</var>|<var>p</var> notation.
-<strong>(FIXME: details, please)</strong>
 </p>
 
 <p>
@@ -308,6 +306,54 @@ The <code>write</code> procedure should be required to write
 inexact numbers in the external representation produced by
 <code>number-&gt;string</code> with one argument.
 </p>
+
+<P>The R6RS section on the lexical structure of numerical tokens should read as as
+follows:
+</P>
+
+<P>
+The following rules for <code>&lt;num R&gt;</code>, <code>&lt;complex R&gt;</code>,
+<code>&lt;real R&gt;</code>, <code>&lt;ureal R&gt;</code>,
+<code>&lt;uinteger R&gt;</code>, and <code>&lt;prefix R&gt;</code> should be replicated for R = 2, 8, 10,
+and 16.  There are no rules for <code>&lt;decimal 2&gt;</code>, <code>&lt;decimal 8&gt;</code>, and
+<code>&lt;decimal 16&gt;</code>, which means that numbers containing decimal points
+or exponents or mantissa widths must be in decimal radix.
+
+<PRE>
+&lt;num R&gt;  --&gt; &lt;prefix R&gt; &lt;complex R&gt;
+&lt;complex R&gt; --&gt; &lt;real R&gt; | &lt;real R&gt; @ &lt;real R&gt;
+    | &lt;real R&gt; + &lt;ureal R&gt; i | &lt;real R&gt; - &lt;ureal R&gt; i
+    | &lt;real R&gt; + i | &lt;real R&gt; - i
+    | + &lt;ureal R&gt; i | - &lt;ureal R&gt; i | + i | - i
+&lt;real R&gt; --&gt; &lt;sign&gt; &lt;ureal R&gt;
+&lt;ureal R&gt;  --&gt;  &lt;uinteger R&gt;
+    |  &lt;uinteger R&gt; / &lt;uinteger R&gt;
+    |  &lt;decimal R&gt; &lt;mantissa width&gt;
+    |  inf.0 | nan.0
+&lt;decimal 10&gt;  --&gt;  &lt;uinteger 10&gt; &lt;suffix&gt;
+    |  . &lt;digit 10&gt;+ #* &lt;suffix&gt;
+    |  &lt;digit 10&gt;+ . &lt;digit 10&gt;* #* &lt;suffix&gt;
+    |  &lt;digit 10&gt;+ #* . #* &lt;suffix&gt;
+&lt;uinteger R&gt;  --&gt;  &lt;digit R&gt;+ #*
+&lt;prefix R&gt;  --&gt;  &lt;radix R&gt; &lt;exactness&gt;
+    |  &lt;exactness&gt; &lt;radix R&gt;
+
+&lt;suffix&gt;  --&gt;  &lt;empty&gt;
+    |  &lt;exponent marker&gt; &lt;sign&gt; &lt;digit 10&gt;+
+&lt;exponent marker&gt;  --&gt;  e  |  s  |  f  |  d  |  l
+&lt;mantissa width&gt; -&gt; &lt;empty&gt;
+    | &lt;digit 10&gt;+
+&lt;sign&gt;  --&gt;  &lt;empty&gt;  |  +  |  -
+&lt;exactness&gt;  --&gt;  &lt;empty&gt;  |  #i  |  #e
+&lt;radix 2&gt;  --&gt;  #b
+&lt;radix 8&gt;  --&gt;  #o
+&lt;radix 10&gt;  --&gt;  &lt;empty&gt;  |  #d
+&lt;radix 16&gt;  --&gt;  #x
+&lt;digit 2&gt;  --&gt;  0  |  1
+&lt;digit 8&gt;  --&gt;  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7
+&lt;digit 10&gt;  --&gt;  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9
+&lt;digit 16&gt;  --&gt;  &lt;digit 10&gt;  |  a  |  b  |  c  |  d  |  e  |  f
+</PRE>
 
 <h3>Safe and Unsafe Mode</h3>
 
