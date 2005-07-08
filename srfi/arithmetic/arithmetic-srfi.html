@@ -152,7 +152,6 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     <code>rationalistic?</code>, and <code>integral?</code> should be
     added to say that a number can be coerced to the specified type
     (and back) without loss.  It's a mess.
-<li>What should <code>flonum->fixnum</code> return for a NaN argument?
 <li>The fixnum operations provide efficient fixnums that "wrap."
     However, they do not give efficient access to the hardware facilities
     for carry and overflow.  This would be desirable to implement
@@ -1351,7 +1350,7 @@ and flonums are represented in IEEE double precision.  Then
 
 <p>
 If the argument to these procedures is not actually
-a flonum, then these procedures signal an error, unless
+a fixnum or a flonum or NaN respectively, then these procedures signal an error, unless
 the implementation is running in unsafe mode, in which
 case all bets are off.
 </p>
