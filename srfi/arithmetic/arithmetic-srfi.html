@@ -376,17 +376,17 @@ variant.  Later section will link back to this one where appropriate.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>div+mod</CODE> <I>x1 x2</I>
-<DT><U>library procedure:</U> <CODE>div</CODE> <I>x1 x2</I>
-<DT><U>library procedure:</U> <CODE>mod</CODE> <I>x1 x2</I>
+<DT><U>procedure:</U> <CODE>div+mod</CODE> <var>x1</var> <var>x2</var>
+<DT><U>library procedure:</U> <CODE>div</CODE> <var>x1</var> <var>x2</var>
+<DT><U>library procedure:</U> <CODE>mod</CODE> <var>x1</var> <var>x2</var>
 <DD>
 
 These implement integer division and remainder on real numbers.  
 <VAR>x2</VAR> should be non-zero. <CODE>div</CODE> returns an integer.
 
 <PRE>
-(div <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&#62; <VAR>n<SUB>d</SUB></VAR>
-(mod <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&#62; <VAR>x<SUB>m</SUB></VAR>
+(div <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>n<SUB>d</SUB></VAR>
+(mod <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>x<SUB>m</SUB></VAR>
 </PRE>
 
 where:
@@ -400,7 +400,7 @@ where:
 	</ol>
 Moreover:
 <PRE>
-(div <VAR>x1</VAR> 0)                  ==&#62; 0
+(div <VAR>x1</VAR> 0)                  ==&gt; 0
 </PRE>	
 
 <BLOCKQUOTE>
@@ -416,10 +416,10 @@ reduction.  For details, see the paper by Egner et. al
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>quotient+remainder</CODE> <I>n1 n2</I>
-<DT><U>library procedure:</U> <CODE>quotient</CODE> <I>n1 n2</I>
-<DT><U>library procedure:</U> <CODE>remainder</CODE> <I>n1 n2</I>
-<DT><U>library procedure:</U> <CODE>modulo</CODE> <I>n1 n2</I>
+<DT><U>library procedure:</U> <CODE>quotient+remainder</CODE> <var>n1</var> <var>n2</var>
+<DT><U>library procedure:</U> <CODE>quotient</CODE> <var>n1</var> <var>n2</var>
+<DT><U>library procedure:</U> <CODE>remainder</CODE> <var>n1</var> <var>n2</var>
+<DT><U>library procedure:</U> <CODE>modulo</CODE> <var>n1</var> <var>n2</var>
 <DD>
 
 <P>
@@ -430,22 +430,22 @@ All three procedures return integers.
 returns an integer.  If <VAR>n1</VAR>/<VAR>n2</VAR> is an integer:
 
 <PRE>
-(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&#62; <VAR>n1</VAR>/<VAR>n2</VAR>
-(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&#62; 0
-(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&#62; 0
+(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&gt; <VAR>n1</VAR>/<VAR>n2</VAR>
+(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&gt; 0
+(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&gt; 0
 </PRE>
 
 If <VAR>n1</VAR>/<VAR>n2</VAR> is not an integer:
 
 <PRE>
-(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&#62; <VAR>n<SUB>q</SUB></VAR>
-(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&#62; <VAR>n<SUB>r</SUB></VAR>
-(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&#62; <VAR>n<SUB>m</SUB></VAR>
+(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&gt; <VAR>n<SUB>q</SUB></VAR>
+(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&gt; <VAR>n<SUB>r</SUB></VAR>
+(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&gt; <VAR>n<SUB>m</SUB></VAR>
 </PRE>
 
 <P>
 where <VAR>n<SUB>q</SUB></VAR> is <VAR>n1</VAR>/<VAR>n2</VAR> rounded towards zero,
-0 &#60; |<VAR>n<SUB>r</SUB></VAR>| &#60; |<VAR>n2</VAR>|, 0 &#60; |<VAR>n<SUB>m</SUB></VAR>| &#60; |<VAR>n2</VAR>|,
+0 &lt; |<VAR>n<SUB>r</SUB></VAR>| &lt; |<VAR>n2</VAR>|, 0 &lt; |<VAR>n<SUB>m</SUB></VAR>| &lt; |<VAR>n2</VAR>|,
 <VAR>n<SUB>r</SUB></VAR> and <VAR>n<SUB>m</SUB></VAR> differ from <VAR>n1</VAR> by a multiple of <VAR>n2</VAR>,
 <VAR>n<SUB>r</SUB></VAR> has the same sign as <VAR>n1</VAR>, and
 <VAR>n<SUB>m</SUB></VAR> has the same sign as <VAR>n2</VAR>.
@@ -457,30 +457,30 @@ From this we can conclude that for integers <VAR>n1</VAR> and <VAR>n2</VAR> with
 <PRE>
      (= <VAR>n1</VAR> (+ (* <VAR>n2</VAR> (quotient <VAR>n1</VAR> <VAR>n2</VAR>))
            (remainder <VAR>x1</VAR> <VAR>x2</VAR>)))
-                                       ==&#62;  #t
+                                       ==&gt;  #t
 </PRE>
 
 provided all numbers involved in that computation are exact.
 
 
 <PRE>
-(quotient+remainder 13 4)              ==&#62;  3 1
-(modulo 13 4)                          ==&#62;  1
-(remainder 13 4)                       ==&#62;  1
+(quotient+remainder 13 4)              ==&gt;  3 1
+(modulo 13 4)                          ==&gt;  1
+(remainder 13 4)                       ==&gt;  1
 
-(quotient+remainder -13 4)             ==&#62;  -3 -1
-(modulo -13 4)                         ==&#62;  3
-(remainder -13 4)                      ==&#62;  -1
+(quotient+remainder -13 4)             ==&gt;  -3 -1
+(modulo -13 4)                         ==&gt;  3
+(remainder -13 4)                      ==&gt;  -1
 
-(quotient+remainder -13 4)             ==&#62;  -3 1
-(modulo 13 -4)                         ==&#62;  -3
-(remainder 13 -4)                      ==&#62;  1
+(quotient+remainder -13 4)             ==&gt;  -3 1
+(modulo 13 -4)                         ==&gt;  -3
+(remainder 13 -4)                      ==&gt;  1
 
-(modulo -13 -4)                        ==&#62;  -1
-(remainder -13 -4)                     ==&#62;  -1
+(modulo -13 -4)                        ==&gt;  -1
+(remainder -13 -4)                     ==&gt;  -1
 
-(quotient+remainder -13 -4.0)          ==&#62;  3.0 -1.0 ; inexact
-(remainder -13 -4.0)                   ==&#62;  -1.0     ; inexact
+(quotient+remainder -13 -4.0)          ==&gt;  3.0 -1.0 ; inexact
+(remainder -13 -4.0)                   ==&gt;  -1.0     ; inexact
 </PRE>
 
 <P>
@@ -520,15 +520,11 @@ given in SRFI 70.  Changes from SRFI 70 are highlighted in red.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>number?</CODE> <I>obj</I>
-<DD>
-<DT><U>procedure:</U> <CODE>complex?</CODE> <I>obj</I>
-<DD>
-<DT><U>procedure:</U> <CODE>real?</CODE> <I>obj</I>
-<DD>
-<DT><U>procedure:</U> <CODE>rational?</CODE> <I>obj</I>
-<DD>
-<DT><U>procedure:</U> <CODE>integer?</CODE> <I>obj</I>
+<DT><U>procedure:</U> <CODE>number?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>complex?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>real?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>rational?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>integer?</CODE> <var>obj</var>
 <DD>
 
 
@@ -575,22 +571,22 @@ is true.
 </font>
 
 <PRE>
-(complex? 3+4i)                        ==&#62;  #t
-(complex? 3)                           ==&#62;  #t
-(real? 3)                              ==&#62;  #t
-(real? -2.5+0.0i)                      ==&#62;  <font color=red>#f</font>
-<font color=red>(real? -2.5+0i)                        ==&#62;  #t</font>
-(real? -2.5)                           ==&#62;  #t
-(real? #e1e10)                         ==&#62;  #t
-<font color=red>(real? -inf.0)                         ==&#62;  #t</font>
-<font color=red>(real? +nan.0)                         ==&#62;  #t</font>
-<font color=red>(rational? -inf.0)                     ==&#62;  #f</font>
-<font color=red>(rational? +nan.0)                     ==&#62;  #f</font>
-(rational? 6/10)                       ==&#62;  #t
-(rational? 6/3)                        ==&#62;  #t
-(integer? 3+0i)                        ==&#62;  #t
-(integer? 3.0)                         ==&#62;  #t
-(integer? 8/4)                         ==&#62;  #t
+(complex? 3+4i)                        ==&gt;  #t
+(complex? 3)                           ==&gt;  #t
+(real? 3)                              ==&gt;  #t
+(real? -2.5+0.0i)                      ==&gt;  <font color=red>#f</font>
+<font color=red>(real? -2.5+0i)                        ==&gt;  #t</font>
+(real? -2.5)                           ==&gt;  #t
+(real? #e1e10)                         ==&gt;  #t
+<font color=red>(real? -inf.0)                         ==&gt;  #t</font>
+<font color=red>(real? +nan.0)                         ==&gt;  #t</font>
+<font color=red>(rational? -inf.0)                     ==&gt;  #f</font>
+<font color=red>(rational? +nan.0)                     ==&gt;  #f</font>
+(rational? 6/10)                       ==&gt;  #t
+(rational? 6/3)                        ==&gt;  #t
+(integer? 3+0i)                        ==&gt;  #t
+(integer? 3.0)                         ==&gt;  #t
+(integer? 8/4)                         ==&gt;  #t
 
 (number? <font color=red>+nan.0</font>)                       ==>  #t
 (complex? <font color=red>+nan.0</font>)                      ==>  <font color=red>#t</font>
@@ -693,8 +689,8 @@ means for reliably ensuring that a number is converted to a flonum.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>number-&gt;string</CODE> <I>z</I>
-<DT><U>procedure:</U> <CODE>number-&gt;string</CODE> <I>z radix</I>
+<DT><U>procedure:</U> <CODE>number-&gt;string</CODE> <var>z</var>
+<DT><U>procedure:</U> <CODE>number-&gt;string</CODE> <var>z</var> <var>radix</var>
 <DD>
 
 
@@ -757,8 +753,8 @@ allows for infinities, NaNs, and non-flonum representations.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>string-&gt;number</CODE> <I>string</I>
-<DT><U>procedure:</U> <CODE>string-&gt;number</CODE> <I>string radix</I>
+<DT><U>procedure:</U> <CODE>string-&gt;number</CODE> <var>string</var>
+<DT><U>procedure:</U> <CODE>string-&gt;number</CODE> <var>string</var> <var>radix</var>
 <DD>
 
 
@@ -830,10 +826,10 @@ range.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fixnum?</CODE> <I>obj</I>
+<DT><U>procedure:</U> <CODE>fixnum?</CODE> <var>obj</var>
 <DD>
 
-<P>This returns <TT>#t</TT> if <I>obj</I> is a fixnum, and
+<P>This returns <TT>#t</TT> if <var>obj</var> is a fixnum, and
 otherwise returns <TT>#f</TT>.
 </DL>
 
@@ -862,11 +858,11 @@ case all bets are off.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fx=</CODE> <I>fx1 fx2</I>
-<DT><U>procedure:</U> <CODE>fx&gt;</CODE> <I>fx1 fx2</I>
-<DT><U>procedure:</U> <CODE>fx&lt;</CODE> <I>fx1 fx2</I>
-<DT><U>procedure:</U> <CODE>fx&gt;=</CODE> <I>fx1 fx2</I>
-<DT><U>procedure:</U> <CODE>fx&lt;=</CODE> <I>fx1 fx2</I>
+<DT><U>procedure:</U> <CODE>fx=</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fx&gt;</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fx&lt;</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fx&gt;=</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fx&lt;=</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 
 <P>
@@ -880,14 +876,10 @@ monotonically nondecreasing, or monotonically nonincreasing.
 <P>
 <DL>
 <DD>
-<DT><U>library procedure:</U> <CODE>fxzero?</CODE> <I><VAR>fx</VAR></I>
-<DD>
-<DT><U>library procedure:</U> <CODE>fxpositive?</CODE> <I><VAR>fx</VAR></I>
-<DD>
-<DT><U>library procedure:</U> <CODE>fxnegative?</CODE> <I><VAR>fx</VAR></I>
-<DD>
+<DT><U>library procedure:</U> <CODE>fxzero?</CODE> <VAR>fx</VAR>
+<DT><U>library procedure:</U> <CODE>fxpositive?</CODE> <VAR>fx</VAR>
+<DT><U>library procedure:</U> <CODE>fxnegative?</CODE> <VAR>fx</VAR>
 <DT><U>library procedure:</U> <CODE>fxodd?</CODE> <VAR>fx</VAR>
-<DD>
 <DT><U>library procedure:</U> <CODE>fxeven?</CODE> <VAR>fx</VAR>
 <DD>
 
@@ -900,9 +892,8 @@ returning <TT>#t</TT> or <TT>#f</TT>.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>fxmax</CODE> <I>fx1 fx2</I>
-<DD>
-<DT><U>library procedure:</U> <CODE>fxmin</CODE> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <CODE>fxmax</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>library procedure:</U> <CODE>fxmin</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 
 
@@ -913,11 +904,9 @@ These procedures return the maximum or minimum of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fx+</CODE> <I>fx1 fx2</I>
-<DD>
-<DT><U>procedure:</U> <CODE>fx-</CODE> <I>fx1 fx2</I>
-<DD>
-<DT><U>procedure:</U> <CODE>fx*</CODE> <I>fx1 fx2</I>
+<DT><U>procedure:</U> <CODE>fx+</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fx-</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fx*</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 
 <P>
@@ -942,13 +931,13 @@ This procedure returns <SAMP>`(fx- 0 <VAR>fx</VAR>)'</SAMP> if
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fxdiv+mod</CODE> <I>fx1 fx2</I>
-<DT><U>library procedure:</U> <CODE>fxdiv</CODE> <I>fx1 fx2</I>
-<DT><U>library procedure:</U> <CODE>fxmod</CODE> <I>fx1 fx2</I>
-<DT><U>library procedure:</U> <CODE>fxquotient</CODE> <I>fx1 fx2</I>
-<DT><U>library procedure:</U> <CODE>fxmodulo+remainder</CODE> <I>fx1 fx2</I>
-<DT><U>library procedure:</U> <CODE>fxmodulo</CODE> <I>fx1 fx2</I>
-<DT><U>library procedure:</U> <CODE>fxremainder</CODE> <I>fx1 fx2</I>
+<DT><U>procedure:</U> <CODE>fxdiv+mod</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>library procedure:</U> <CODE>fxdiv</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>library procedure:</U> <CODE>fxmod</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>library procedure:</U> <CODE>fxquotient</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>library procedure:</U> <CODE>fxmodulo+remainder</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>library procedure:</U> <CODE>fxmodulo</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>library procedure:</U> <CODE>fxremainder</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 
 <P>
@@ -960,8 +949,8 @@ Section</a> on integer division.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>fxgcd</CODE> <I>fx1 fx2</I>
-<DT><U>library procedure:</U> <CODE>fxlcm</CODE> <I>fx1 fx2</I>
+<DT><U>library procedure:</U> <CODE>fxgcd</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>library procedure:</U> <CODE>fxlcm</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 <P>
 These procedures return the greatest common divisor or least common
@@ -972,7 +961,7 @@ mod <var>hi-lo+1</var>.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fxbitwise-not</CODE> <I>fx</I>
+<DT><U>procedure:</U> <CODE>fxbitwise-not</CODE> <var>fx</var>
 <DD>
 <P>
 Returns the fixnum which is the one's-complement of its argument.
@@ -983,9 +972,9 @@ congruent mod <var>hi-lo+1</var>.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fxbitwise-and</CODE> <I>fx1 fx2</I>
-<DT><U>procedure:</U> <CODE>fxbitwise-ior</CODE> <I>fx1 fx2</I>
-<DT><U>procedure:</U> <CODE>fxbitwise-xor</CODE> <I>fx1 fx2</I>
+<DT><U>procedure:</U> <CODE>fxbitwise-and</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fxbitwise-ior</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fxbitwise-xor</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 <P>
 The <CODE>fxbitwise-and</CODE> procedure returns the fixnum which is the bit-wise "and" of its
@@ -999,7 +988,7 @@ bit-wise "exlusive or" of its arguments congruent mod <var>hi-lo+1</var>.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fxarithmetic-shift</CODE> <I>fx1</I> <I>fx2</I>
+<DT><U>procedure:</U> <CODE>fxarithmetic-shift</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 <P>
 Conceptually shifts the two's complement representation of
@@ -1027,10 +1016,10 @@ format.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>flonum?</CODE> <I>obj</I>
+<DT><U>procedure:</U> <CODE>flonum?</CODE> <var>obj</var>
 <DD>
 
-<P>This returns <TT>#t</TT> if <I>obj</I> is a flonum, and
+<P>This returns <TT>#t</TT> if <var>obj</var> is a flonum, and
 otherwise returns <TT>#f</TT>.
 </DL>
 
@@ -1050,15 +1039,11 @@ running in unsafe mode, in which case all bets are off.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fl=</CODE> <I>fl1 fl2</I>
-<DD>
-<DT><U>procedure:</U> <CODE>fl&lt;</CODE> <I>fl1 fl2</I>
-<DD>
-<DT><U>procedure:</U> <CODE>fl&lt;=</CODE> <I>fl1 fl2</I>
-<DD>
-<DT><U>procedure:</U> <CODE>fl&gt;</CODE> <I>fl1 fl2</I>
-<DD>
-<DT><U>procedure:</U> <CODE>fl&gt;=</CODE> <I>fl1 fl2</I>
+<DT><U>procedure:</U> <CODE>fl=</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fl&lt;</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fl&lt;=</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fl&gt;</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fl&gt;=</CODE> <var>fl1</var> <var>fl2</var>
 <DD>
 
 
@@ -1072,13 +1057,13 @@ predicates are required to be transitive.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>flinteger?</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flzero?</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flpositive?</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flnegative?</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flodd?</CODE> <I>ifl</I>
-<DT><U>procedure:</U> <CODE>fleven?</CODE> <I>ifl</I>
-<DT><U>procedure:</U> <CODE>flnan?</CODE> <I>ifl</I>
+<DT><U>procedure:</U> <CODE>flinteger?</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flzero?</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flpositive?</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flnegative?</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flodd?</CODE> <var>ifl</var>
+<DT><U>procedure:</U> <CODE>fleven?</CODE> <var>ifl</var>
+<DT><U>procedure:</U> <CODE>flnan?</CODE> <var>fl</var>
 <DD>
 
 
@@ -1090,8 +1075,8 @@ returning <TT>#t</TT> or <TT>#f</TT>.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>flmax</CODE> <I>fl1 fl2</I>
-<DT><U>procedure:</U> <CODE>flmin</CODE> <I>fl1 fl2</I>
+<DT><U>procedure:</U> <CODE>flmax</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>flmin</CODE> <var>fl1</var> <var>fl2</var>
 <DD>
 
 <P>
@@ -1102,10 +1087,10 @@ These procedures return the maximum or minimum of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fl+</CODE> <I>fl1 fl2</I>
-<DT><U>procedure:</U> <CODE>fl-</CODE> <I>fl1 fl2</I>
-<DT><U>procedure:</U> <CODE>fl*</CODE> <I>fl1 fl2</I>
-<DT><U>procedure:</U> <CODE>fl/</CODE> <I>fl1 fl2</I>
+<DT><U>procedure:</U> <CODE>fl+</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fl-</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fl*</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fl/</CODE> <var>fl1</var> <var>fl2</var>
 <DD>
 
 
@@ -1132,7 +1117,7 @@ IEEE standards:
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>flabs</CODE> <I>fl</I>
+<DT><U>procedure:</U> <CODE>flabs</CODE> <var>fl</var>
 <DD>
 <P>
 This returns the absolute value of its argument.
@@ -1141,13 +1126,13 @@ This returns the absolute value of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fldiv+mod</CODE> <I>fl1 fl2</I>
-<DT><U>library procedure:</U> <CODE>fldiv</CODE> <I>fl1 fl2</I>
-<DT><U>library procedure:</U> <CODE>flmod</CODE> <I>fl1 fl2</I>
-<DT><U>library procedure:</U> <CODE>flquotient</CODE> <I>ifl1 ifl2</I>
-<DT><U>library procedure:</U> <CODE>flmodulo+remainder</CODE> <I>ifl1 ifl2</I>
-<DT><U>library procedure:</U> <CODE>flmodulo</CODE> <I>ifl1 ifl2</I>
-<DT><U>library procedure:</U> <CODE>flremainder</CODE> <I>ifl1 ifl2</I>
+<DT><U>procedure:</U> <CODE>fldiv+mod</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>library procedure:</U> <CODE>fldiv</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>library procedure:</U> <CODE>flmod</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>library procedure:</U> <CODE>flquotient</CODE> <var>ifl1</var> <var>ifl2</var>
+<DT><U>library procedure:</U> <CODE>flmodulo+remainder</CODE> <var>ifl1</var> <var>ifl2</var>
+<DT><U>library procedure:</U> <CODE>flmodulo</CODE> <var>ifl1</var> <var>ifl2</var>
+<DT><U>library procedure:</U> <CODE>flremainder</CODE> <var>ifl1</var> <var>ifl2</var>
 <DD>
 
 <P>
@@ -1158,8 +1143,8 @@ href="#integer-division">the Section</a> on integer division.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>flgcd</CODE> <I>ifl1 ifl2</I>
-<DT><U>library procedure:</U> <CODE>fllcm</CODE> <I>ifl1 ifl2</I>
+<DT><U>library procedure:</U> <CODE>flgcd</CODE> <var>ifl1</var> <var>ifl2</var>
+<DT><U>library procedure:</U> <CODE>fllcm</CODE> <var>ifl1</var> <var>ifl2</var>
 <DD>
 <P>
 These procedures return the greatest common divisor or least common
@@ -1169,8 +1154,8 @@ multiple of their arguments.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>flnumerator</CODE> <I>ifl</I>
-<DT><U>library procedure:</U> <CODE>fldenominator</CODE> <I>ifl</I>
+<DT><U>library procedure:</U> <CODE>flnumerator</CODE> <var>ifl</var>
+<DT><U>library procedure:</U> <CODE>fldenominator</CODE> <var>ifl</var>
 <DD>
 <P>
 These procedures return the numerator or denominator of their
@@ -1182,10 +1167,10 @@ denominator of 0 is defined to be 1.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>flfloor</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flceiling</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>fltruncate</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flround</CODE> <I>fl</I>
+<DT><U>procedure:</U> <CODE>flfloor</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flceiling</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>fltruncate</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flround</CODE> <var>fl</var>
 <DD>
 <P>
 These procedures return integral flonums.
@@ -1208,14 +1193,14 @@ mode specified by the IEEE floating point standard.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>flexp</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>fllog</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flsin</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flcos</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>fltan</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flasin</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flatan1</CODE> <I>fl</I>
-<DT><U>procedure:</U> <CODE>flatan2</CODE> <I>fl1 fl2</I>
+<DT><U>procedure:</U> <CODE>flexp</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>fllog</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flsin</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flcos</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>fltan</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flasin</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flatan1</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flatan2</CODE> <var>fl1</var> <var>fl2</var>
 <DD>
 
 <P>
@@ -1296,7 +1281,7 @@ these functions.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>flsqrt</CODE> <I>fl</I>
+<DT><U>procedure:</U> <CODE>flsqrt</CODE> <var>fl</var>
 <DD>
 <P>
 Returns the principal square root of <VAR>z</VAR>.  The result is
@@ -1312,7 +1297,7 @@ arithmetic are encouraged to return <SAMP>+nan.0</SAMP> in this case.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>flexpt</CODE> <I>fl1</I> <I>fl2</I>
+<DT><U>procedure:</U> <CODE>flexpt</CODE> <var>fl1</var> <var>fl2</var>
 <DD>
 <p>
 Returns <VAR>fl1</VAR> raised to the power <VAR>fl2</VAR>.
@@ -1332,9 +1317,8 @@ or returns an unspecified number.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fixnum-&gt;flonum</CODE> <I>fx1</I>
-<DD>
-<DT><U>procedure:</U> <CODE>flonum-&gt;fixnum</CODE> <I>fl1</I>
+<DT><U>procedure:</U> <CODE>fixnum-&gt;flonum</CODE> <var>fx</var>
+<DT><U>procedure:</U> <CODE>flonum-&gt;fixnum</CODE> <var>fl</var>
 <DD>
 
 <p>
@@ -1433,10 +1417,10 @@ its real part.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exnumber?</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>excomplex?</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>exrational?</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>exinteger?</CODE> <I>ex</I>
+<DT><U>procedure:</U> <CODE>exnumber?</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>excomplex?</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exrational?</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exinteger?</CODE> <var>ex</var>
 <DD>
 <P>
 These numerical type predicates can be applied to any kind of
@@ -1470,11 +1454,11 @@ error.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>ex=</CODE> <I>ex1 ex2 ex3 ...</I>
-<DT><U>procedure:</U> <CODE>ex&gt;</CODE> <I>er1 er2 er3 ...</I>
-<DT><U>procedure:</U> <CODE>ex&lt;</CODE> <I>er1 er2 er3 ...</I>
-<DT><U>procedure:</U> <CODE>ex&gt;=</CODE> <I>er1 er2 er3 ...</I>
-<DT><U>procedure:</U> <CODE>ex&lt;=</CODE> <I>er1 er2 er3 ...</I>
+<DT><U>procedure:</U> <CODE>ex=</CODE> <var>ex1</var> <var>ex2</var> <var>ex3</var> ...
+<DT><U>procedure:</U> <CODE>ex&gt;</CODE> <var>er1</var> <var>er2</var> <var>er3</var> ...
+<DT><U>procedure:</U> <CODE>ex&lt;</CODE> <var>er1</var> <var>er2</var> <var>er3</var> ...
+<DT><U>procedure:</U> <CODE>ex&gt;=</CODE> <var>er1</var> <var>er2</var> <var>er3</var> ...
+<DT><U>procedure:</U> <CODE>ex&lt;=</CODE> <var>er1</var> <var>er2</var> <var>er3</var> ...
 <DD>
 
 <P>
@@ -1488,9 +1472,9 @@ monotonically nondecreasing, or monotonically nonincreasing.
 <P>
 <DL>
 <DD>
-<DT><U>library procedure:</U> <CODE>exzero?</CODE> <I><VAR>ex</VAR></I>
-<DT><U>library procedure:</U> <CODE>expositive?</CODE> <I><VAR>ef</VAR></I>
-<DT><U>library procedure:</U> <CODE>exnegative?</CODE> <I><VAR>ef</VAR></I>
+<DT><U>library procedure:</U> <CODE>exzero?</CODE> <VAR>ex</VAR>
+<DT><U>library procedure:</U> <CODE>expositive?</CODE> <VAR>ef</VAR>
+<DT><U>library procedure:</U> <CODE>exnegative?</CODE> <VAR>ef</VAR>
 <DT><U>library procedure:</U> <CODE>exodd?</CODE> <VAR>ei</VAR>
 <DT><U>library procedure:</U> <CODE>exeven?</CODE> <VAR>ei</VAR>
 <DD>
@@ -1503,8 +1487,8 @@ returning <TT>#t</TT> or <TT>#f</TT>.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exmax</CODE> <I>ef1 ef2 ...</I>
-<DT><U>library procedure:</U> <CODE>exmin</CODE> <I>ef1 ef2 ...</I>
+<DT><U>library procedure:</U> <CODE>exmax</CODE> <var>ef1</var> <var>ef2</var> ...
+<DT><U>library procedure:</U> <CODE>exmin</CODE> <var>ef1</var> <var>ef2</var> ...
 <DD>
 
 <P>
@@ -1514,8 +1498,8 @@ These procedures return the maximum or minimum of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>ex+</CODE> <I>ex1 ex2 ...</I>
-<DT><U>procedure:</U> <CODE>ex*</CODE> <I>ex1 ex2 ...</I>
+<DT><U>procedure:</U> <CODE>ex+</CODE> <var>ex1</var> <var>ex2</var> ...
+<DT><U>procedure:</U> <CODE>ex*</CODE> <var>ex1</var> <var>ex2</var> ...
 <DD>
 
 <P>
@@ -1525,10 +1509,10 @@ These procedures return the sum or product of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>ex-</CODE> <I>ex1 ex2 ...</I>
-<DT><U>procedure:</U> <CODE>ex-</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>ex/</CODE> <I>ex1 ex2 ...</I>
-<DT><U>procedure:</U> <CODE>ex/</CODE> <I>ex</I>
+<DT><U>procedure:</U> <CODE>ex-</CODE> <var>ex1</var> <var>ex2</var> ...
+<DT><U>procedure:</U> <CODE>ex-</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>ex/</CODE> <var>ex1</var> <var>ex2</var> ...
+<DT><U>procedure:</U> <CODE>ex/</CODE> <var>ex</var>
 <DD>
 
 <P>
@@ -1553,13 +1537,13 @@ This procedure returns the absolute value of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exdiv+mod</CODE> <I>er1 er2</I>
-<DT><U>library procedure:</U> <CODE>exdiv</CODE> <I>er1 er2</I>
-<DT><U>library procedure:</U> <CODE>exmod</CODE> <I>er1 er2</I>
-<DT><U>library procedure:</U> <CODE>exquotient</CODE> <I>ei1 ei2</I>
-<DT><U>library procedure:</U> <CODE>exmodulo+remainder</CODE> <I>ei1 ei2</I>
-<DT><U>library procedure:</U> <CODE>exmodulo</CODE> <I>ei1 ei2</I>
-<DT><U>library procedure:</U> <CODE>exremainder</CODE> <I>ei1 ei2</I>
+<DT><U>procedure:</U> <CODE>exdiv+mod</CODE> <var>er1</var> <var>er2</var>
+<DT><U>library procedure:</U> <CODE>exdiv</CODE> <var>er1</var> <var>er2</var>
+<DT><U>library procedure:</U> <CODE>exmod</CODE> <var>er1</var> <var>er2</var>
+<DT><U>library procedure:</U> <CODE>exquotient</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>library procedure:</U> <CODE>exmodulo+remainder</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>library procedure:</U> <CODE>exmodulo</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>library procedure:</U> <CODE>exremainder</CODE> <var>ei1</var> <var>ei2</var>
 <DD>
 
 <P>
@@ -1570,8 +1554,8 @@ href="#integer-division">the Section</a> on integer division.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exgcd</CODE> <I>ei1 ei2 ...</I>
-<DT><U>library procedure:</U> <CODE>exlcm</CODE> <I>ei1 ei2 ...</I>
+<DT><U>library procedure:</U> <CODE>exgcd</CODE> <var>ei1</var> <var>ei2</var> ...
+<DT><U>library procedure:</U> <CODE>exlcm</CODE> <var>ei1</var> <var>ei2</var> ...
 <DD>
 <P>
 These procedures return the greatest common divisor or least common
@@ -1581,8 +1565,8 @@ multiple of their arguments, which must be exact integers.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exnumerator</CODE> <I>ef</I>
-<DT><U>library procedure:</U> <CODE>exdenominator</CODE> <I>ef</I>
+<DT><U>library procedure:</U> <CODE>exnumerator</CODE> <var>ef</var>
+<DT><U>library procedure:</U> <CODE>exdenominator</CODE> <var>ef</var>
 <DD>
 <P>
 The procedures return the numerator or denominator of their argument.
@@ -1594,10 +1578,10 @@ denominator of 0 is defined to be 1.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exfloor</CODE> <I>ef</I>
-<DT><U>procedure:</U> <CODE>exceiling</CODE> <I>ef</I>
-<DT><U>procedure:</U> <CODE>extruncate</CODE> <I>ef</I>
-<DT><U>procedure:</U> <CODE>exround</CODE> <I>ef</I>
+<DT><U>procedure:</U> <CODE>exfloor</CODE> <var>ef</var>
+<DT><U>procedure:</U> <CODE>exceiling</CODE> <var>ef</var>
+<DT><U>procedure:</U> <CODE>extruncate</CODE> <var>ef</var>
+<DT><U>procedure:</U> <CODE>exround</CODE> <var>ef</var>
 <DD>
 <P>
 These procedures return exact integers.
@@ -1611,7 +1595,7 @@ integers.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>exexpt</CODE> <I>ef1</I> <I>ei2</I>
+<DT><U>procedure:</U> <CODE>exexpt</CODE> <var>ef1</var> <var>ei2</var>
 <DD>
 <p>
 Returns <VAR>ef1</VAR> raised to the power <VAR>ei2</VAR>.
@@ -1622,9 +1606,9 @@ Otherwise, this procedure signals an error.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>exmake-rectangular</CODE> <I>ef1</I> <I>ef2</I>
-<DT><U>procedure:</U> <CODE>exreal-part</CODE> <I>ex</I>
-<DT><U>procedure:</U> <CODE>eximag-part</CODE> <I>ex</I>
+<DT><U>procedure:</U> <CODE>exmake-rectangular</CODE> <var>ef1</var> <var>ef2</var>
+<DT><U>procedure:</U> <CODE>exreal-part</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>eximag-part</CODE> <var>ex</var>
 <DD>
 <p>
 The arguments of <code>exmake-rectangular</code> must be exact
@@ -1639,7 +1623,7 @@ rationals.  Suppose <VAR>z</VAR> is a complex number such that
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exbitwise-not</CODE> <I>ei</I>
+<DT><U>procedure:</U> <CODE>exbitwise-not</CODE> <var>ei</var>
 <DD>
 <P>
 Returns the one's-complement of its argument.
@@ -1649,9 +1633,9 @@ Returns the one's-complement of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exbitwise-and</CODE> <I>ei1 ei2 ...</I> 
-<DT><U>procedure:</U> <CODE>exbitwise-ior</CODE> <I>ei1 ei2 ...</I>
-<DT><U>procedure:</U> <CODE>exbitwise-xor</CODE> <I>ei1 ei2 ...</I>
+<DT><U>procedure:</U> <CODE>exbitwise-and</CODE> <var>ei1</var> <var>ei2</var> ...
+<DT><U>procedure:</U> <CODE>exbitwise-ior</CODE> <var>ei1</var> <var>ei2</var> ...
+<DT><U>procedure:</U> <CODE>exbitwise-xor</CODE> <var>ei1</var> <var>ei2</var> ...
 <DD>
 <P>
 The arguments for these procedures must be exact integers; an error is
@@ -1667,7 +1651,7 @@ bit-wise "exlusive or" of its arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exarithmetic-shift</CODE> <I>ei1</I> <I>ei2</I>
+<DT><U>procedure:</U> <CODE>exarithmetic-shift</CODE> <var>ei1</var> <var>ei2</var>
 <DD>
 <P>
 Both arguments must be exact integers; an error is signalled if either
@@ -1692,11 +1676,11 @@ arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>innumber?</CODE> <I>obj</I>
-<DT><U>procedure:</U> <CODE>incomplex?</CODE> <I>obj</I>
-<DT><U>procedure:</U> <CODE>inreal?</CODE> <I>obj</I>
-<DT><U>procedure:</U> <CODE>inrational?</CODE> <I>obj</I>
-<DT><U>procedure:</U> <CODE>ininteger?</CODE> <I>obj</I>
+<DT><U>procedure:</U> <CODE>innumber?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>incomplex?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>inreal?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>inrational?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>ininteger?</CODE> <var>obj</var>
 <DD>
 <P>
 These numerical type predicates can be applied to any kind of
@@ -1729,11 +1713,11 @@ real metavariables.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>in=</CODE> <I>in1 in2 in3 ...</I>
-<DT><U>procedure:</U> <CODE>in&gt;</CODE> <I>ir1 ir2 ir3 ...</I>
-<DT><U>procedure:</U> <CODE>in&lt;</CODE> <I>ir1 ir2 ir3 ...</I>
-<DT><U>procedure:</U> <CODE>in&gt;=</CODE> <I>ir1 ir2 ir3 ...</I>
-<DT><U>procedure:</U> <CODE>in&lt;=</CODE> <I>ir1 ir2 ir3 ...</I>
+<DT><U>procedure:</U> <CODE>in=</CODE> <var>in1</var> <var>in2</var> <var>in3</var> ...
+<DT><U>procedure:</U> <CODE>in&gt;</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
+<DT><U>procedure:</U> <CODE>in&lt;</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
+<DT><U>procedure:</U> <CODE>in&gt;=</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
+<DT><U>procedure:</U> <CODE>in&lt;=</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
 <DD>
 
 <P>
@@ -1747,12 +1731,12 @@ monotonically nondecreasing, or monotonically nonincreasing.
 <P>
 <DL>
 <DD>
-<DT><U>library procedure:</U> <CODE>inzero?</CODE> <I>in</I>
-<DT><U>library procedure:</U> <CODE>inpositive?</CODE> <I>ir</I>
-<DT><U>library procedure:</U> <CODE>innegative?</CODE> <I>ir</I>
-<DT><U>library procedure:</U> <CODE>inodd?</CODE> <I>ii</I>
-<DT><U>library procedure:</U> <CODE>ineven?</CODE> <I>ii</I>
-<DT><U>library procedure:</U> <CODE>innan?</CODE> <I>in</I>
+<DT><U>library procedure:</U> <CODE>inzero?</CODE> <var>in</var>
+<DT><U>library procedure:</U> <CODE>inpositive?</CODE> <var>ir</var>
+<DT><U>library procedure:</U> <CODE>innegative?</CODE> <var>ir</var>
+<DT><U>library procedure:</U> <CODE>inodd?</CODE> <var>ii</var>
+<DT><U>library procedure:</U> <CODE>ineven?</CODE> <var>ii</var>
+<DT><U>library procedure:</U> <CODE>innan?</CODE> <var>in</var>
 <DD>
 
 <P>
@@ -1763,8 +1747,8 @@ returning <TT>#t</TT> or <TT>#f</TT>.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>inmax</CODE> <I>ir1 ir2 ...</I>
-<DT><U>library procedure:</U> <CODE>inmin</CODE> <I>ir1 ir2 ...</I>
+<DT><U>library procedure:</U> <CODE>inmax</CODE> <var>ir1</var> <var>ir2</var> ...
+<DT><U>library procedure:</U> <CODE>inmin</CODE> <var>ir1</var> <var>ir2</var> ...
 <DD>
 
 <P>
@@ -1774,8 +1758,8 @@ These procedures return the maximum or minimum of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>in+</CODE> <I>in1 in2 ...</I>
-<DT><U>procedure:</U> <CODE>in*</CODE> <I>in1 in2 ...</I>
+<DT><U>procedure:</U> <CODE>in+</CODE> <var>in1</var> <var>in2</var> ...
+<DT><U>procedure:</U> <CODE>in*</CODE> <var>in1</var> <var>in2</var> ...
 <DD>
 
 <P>
@@ -1785,10 +1769,10 @@ These procedures return the sum or product of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>in-</CODE> <I>in1 in2 ...</I>
-<DT><U>procedure:</U> <CODE>in-</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>in/</CODE> <I>in1 in2 ...</I>
-<DT><U>procedure:</U> <CODE>in/</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>in-</CODE> <var>in1</var> <var>in2</var> ...
+<DT><U>procedure:</U> <CODE>in-</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>in/</CODE> <var>in1</var> <var>in2</var> ...
+<DT><U>procedure:</U> <CODE>in/</CODE> <var>in</var>
 <DD>
 
 <P>
@@ -1813,13 +1797,13 @@ This procedure returns the absolute value of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>indiv+mod</CODE> <I>ir1 ir2</I>
-<DT><U>library procedure:</U> <CODE>indiv</CODE> <I>ir1 ir2</I>
-<DT><U>library procedure:</U> <CODE>inmod</CODE> <I>ir1 ir2</I>
-<DT><U>library procedure:</U> <CODE>inquotient</CODE> <I>ii1 ii2</I>
-<DT><U>library procedure:</U> <CODE>inmodulo+remainder</CODE> <I>ii1 ii2</I>
-<DT><U>library procedure:</U> <CODE>inmodulo</CODE> <I>ii1 ii2</I>
-<DT><U>library procedure:</U> <CODE>inremainder</CODE> <I>ii1 ii2</I>
+<DT><U>procedure:</U> <CODE>indiv+mod</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>library procedure:</U> <CODE>indiv</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>library procedure:</U> <CODE>inmod</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>library procedure:</U> <CODE>inquotient</CODE> <var>ii1</var> <var>ii2</var>
+<DT><U>library procedure:</U> <CODE>inmodulo+remainder</CODE> <var>ii1</var> <var>ii2</var>
+<DT><U>library procedure:</U> <CODE>inmodulo</CODE> <var>ii1</var> <var>ii2</var>
+<DT><U>library procedure:</U> <CODE>inremainder</CODE> <var>ii1</var> <var>ii2</var>
 <DD>
 
 <P>
@@ -1830,8 +1814,8 @@ href="#integer-division">the Section</a> on integer division.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>ingcd</CODE> <I>ii1 ii2 ...</I>
-<DT><U>library procedure:</U> <CODE>inlcm</CODE> <I>ii1 ii2 ...</I>
+<DT><U>library procedure:</U> <CODE>ingcd</CODE> <var>ii1</var> <var>ii2</var> ...
+<DT><U>library procedure:</U> <CODE>inlcm</CODE> <var>ii1</var> <var>ii2</var> ...
 <DD>
 <P>
 These procedures return the greatest common divisor or least common
@@ -1841,8 +1825,8 @@ multiple of their arguments.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>innumerator</CODE> <I>if</I>
-<DT><U>library procedure:</U> <CODE>indenominator</CODE> <I>if</I>
+<DT><U>library procedure:</U> <CODE>innumerator</CODE> <var>if</var>
+<DT><U>library procedure:</U> <CODE>indenominator</CODE> <var>if</var>
 <DD>
 <P>
 The procedures return the numerator or denominator of their argument.
@@ -1854,10 +1838,10 @@ denominator of 0 is defined to be 1.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>infloor</CODE> <I>ir</I>
-<DT><U>procedure:</U> <CODE>inceiling</CODE> <I>ir</I>
-<DT><U>procedure:</U> <CODE>intruncate</CODE> <I>ir</I>
-<DT><U>procedure:</U> <CODE>inround</CODE> <I>ir</I>
+<DT><U>procedure:</U> <CODE>infloor</CODE> <var>ir</var>
+<DT><U>procedure:</U> <CODE>inceiling</CODE> <var>ir</var>
+<DT><U>procedure:</U> <CODE>intruncate</CODE> <var>ir</var>
+<DT><U>procedure:</U> <CODE>inround</CODE> <var>ir</var>
 <DD>
 <P>
 These procedures return inexact integers on inexact rational
@@ -1880,14 +1864,14 @@ mode specified by the IEEE floating point standard.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>inexp</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>inlog</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>insin</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>incos</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>intan</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>inasin</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>inatan</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>inatan</CODE> <I>ir1 ir2</I>
+<DT><U>procedure:</U> <CODE>inexp</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inlog</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>insin</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>incos</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>intan</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inasin</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inatan</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inatan</CODE> <var>ir1</var> <var>ir2</var>
 <DD>
 
 <P>
@@ -1922,11 +1906,11 @@ tan<SUP>-1</SUP> <VAR>z</VAR> = (log (1 + i <VAR>z</VAR>) - log (1 - i <VAR>z</V
 <P>
 If the function has a real-valued limit as its argument tends toward
 positive infinity, then that is the value returned by the function
-applied to <SAMP>+inf.0</SAMP>.
+applied to <CODE>+inf.0</CODE>.
 
 If the function has a real-valued limit as its argument tends toward
 negative infinity, then that is the value returned by the function
-applied to <SAMP>-inf.0</SAMP>.
+applied to <CODE>-inf.0</CODE>.
 
 
 The procedures <CODE>insin</CODE>, <CODE>incos</CODE>, <CODE>intan</CODE>,
@@ -1950,7 +1934,7 @@ these functions.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>inexpt</CODE> <I>in1</I> <I>in2</I>
+<DT><U>procedure:</U> <CODE>inexpt</CODE> <var>in1</var> <var>in2</var>
 <DD>
 <P>
 Returns <VAR>in1</VAR> raised to the power <VAR>in2</VAR>.
@@ -1969,12 +1953,12 @@ or returns an unspecified number.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>inmake-rectangular</CODE> <I>ir1</I> <I>ir2</I>
-<DT><U>procedure:</U> <CODE>inmake-polar</CODE> <I>ir1</I> <I>ir2</I>
-<DT><U>procedure:</U> <CODE>inreal-part</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>inimag-part</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>inmagnitude</CODE> <I>in</I>
-<DT><U>procedure:</U> <CODE>inangle</CODE> <I>in</I>
+<DT><U>procedure:</U> <CODE>inmake-rectangular</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>procedure:</U> <CODE>inmake-polar</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>procedure:</U> <CODE>inreal-part</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inimag-part</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inmagnitude</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inangle</CODE> <var>in</var>
 <DD>
 <p>
 Suppose 
@@ -2009,11 +1993,11 @@ given in SRFI 70.  Changes from SRFI 70 are highlighted in red.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>=</CODE> <I>z1 z2 z3 ...</I>
-<DT><U>procedure:</U> <CODE>&#60;</CODE> <I>x1 x2 x3 ...</I>
-<DT><U>procedure:</U> <CODE>&#62;</CODE> <I>x1 x2 x3 ...</I>
-<DT><U>procedure:</U> <CODE>&#60;=</CODE> <I>x1 x2 x3 ...</I>
-<DT><U>procedure:</U> <CODE>&#62;=</CODE> <I>x1 x2 x3 ...</I>
+<DT><U>procedure:</U> <CODE>=</CODE> <var>z1</var> <var>z2</var> <var>z3</var> ...
+<DT><U>procedure:</U> <CODE>&lt;</CODE> <var>x1</var> <var>x2</var> <var>x3</var> ...
+<DT><U>procedure:</U> <CODE>&gt;</CODE> <var>x1</var> <var>x2</var> <var>x3</var> ...
+<DT><U>procedure:</U> <CODE>&lt;=</CODE> <var>x1</var> <var>x2</var> <var>x3</var> ...
+<DT><U>procedure:</U> <CODE>&gt;=</CODE> <var>x1</var> <var>x2</var> <var>x3</var> ...
 <DD>
 
 
@@ -2064,12 +2048,12 @@ When in doubt, consult a numerical analyst.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>zero?</CODE> <I><VAR>z</VAR></I>
-<DT><U>library procedure:</U> <CODE>positive?</CODE> <I><VAR>x</VAR></I>
-<DT><U>library procedure:</U> <CODE>negative?</CODE> <I><VAR>x</VAR></I>
+<DT><U>library procedure:</U> <CODE>zero?</CODE> <VAR>z</VAR>
+<DT><U>library procedure:</U> <CODE>positive?</CODE> <VAR>x</VAR>
+<DT><U>library procedure:</U> <CODE>negative?</CODE> <VAR>x</VAR>
 <DT><U>library procedure:</U> <CODE>odd?</CODE> <VAR>n</VAR>
 <DT><U>library procedure:</U> <CODE>even?</CODE> <VAR>n</VAR>
-<DT><U>library procedure:</U> <CODE>nan?</CODE> <I><VAR>z</VAR></I>
+<DT><U>library procedure:</U> <CODE>nan?</CODE> <VAR>z</VAR>
 <DD>
 
 
@@ -2086,8 +2070,8 @@ returning <TT>#t</TT> or <TT>#f</TT>.  See note above.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>max</CODE> <I>x1 x2 ...</I>
-<DT><U>library procedure:</U> <CODE>min</CODE> <I>x1 x2 ...</I>
+<DT><U>library procedure:</U> <CODE>max</CODE> <var>x1</var> <var>x2</var> ...
+<DT><U>library procedure:</U> <CODE>min</CODE> <var>x1</var> <var>x2</var> ...
 <DD>
 
 
@@ -2097,8 +2081,8 @@ These procedures return the maximum or minimum of their arguments.
 
 
 <PRE>
-(max 3 4)                              ==&#62;  4    ; exact
-(max 3.9 4)                            ==&#62;  4.0  ; inexact
+(max 3 4)                              ==&gt;  4    ; exact
+(max 3.9 4)                            ==&gt;  4.0  ; inexact
 </PRE>
 
 For any real number <VAR>x</VAR>:
@@ -2125,22 +2109,22 @@ restriction.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>+</CODE> <I>z1 ...</I>
-<DT><U>procedure:</U> <CODE>*</CODE> <I>z1 ...</I>
+<DT><U>procedure:</U> <CODE>+</CODE> <var>z1</var> ...
+<DT><U>procedure:</U> <CODE>*</CODE> <var>z1</var> ...
 <DD>
 
 <P>
 These procedures return the sum or product of their arguments.
 
 <PRE>
-(+ 3 4)                                ==&#62;  7
-(+ 3)                                  ==&#62;  3
-(+)                                    ==&#62;  0
+(+ 3 4)                                ==&gt;  7
+(+ 3)                                  ==&gt;  3
+(+)                                    ==&gt;  0
 (+ +inf.0 +inf.0)                      ==&gt;  +inf.0
 (+ +inf.0 -inf.0)                      ==&gt;  +nan.0
 
-(* 4)                                  ==&#62;  4
-(*)                                    ==&#62;  1
+(* 4)                                  ==&gt;  4
+(*)                                    ==&gt;  1
 (* 5 +inf.0)                           ==&gt;  +inf.0
 (* -5 +inf.0)                          ==&gt;  -inf.0
 (* +inf.0 +inf.0)                      ==&gt;  +inf.0
@@ -2171,12 +2155,12 @@ or return an unspecified number.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>-</CODE> <I>z1 z2</I>
-<DT><U>procedure:</U> <CODE>-</CODE> <I><VAR>z</VAR></I>
-<DT><U><FONT COLOR="red"><STRIKE>optional</STRIKE></FONT> procedure:</U> <CODE>-</CODE> <I>z1 z2 ...</I>
-<DT><U>procedure:</U> <CODE>/</CODE> <I>z1 z2</I>
-<DT><U>procedure:</U> <CODE>/</CODE> <I><VAR>z</VAR></I>
-<DT><U><FONT COLOR="red"><STRIKE>optional</STRIKE></FONT> procedure:</U> <CODE>/</CODE> <I>z1 z2 ...</I>
+<DT><U>procedure:</U> <CODE>-</CODE> <var>z1</var> <var>z2</var>
+<DT><U>procedure:</U> <CODE>-</CODE> <VAR>z</VAR>
+<DT><U><FONT COLOR="red"><STRIKE>optional</STRIKE></FONT> procedure:</U> <CODE>-</CODE> <var>z1</var> <var>z2</var> ...
+<DT><U>procedure:</U> <CODE>/</CODE> <var>z1</var> <var>z2</var>
+<DT><U>procedure:</U> <CODE>/</CODE> <VAR>z</VAR>
+<DT><U><FONT COLOR="red"><STRIKE>optional</STRIKE></FONT> procedure:</U> <CODE>/</CODE> <var>z1</var> <var>z2</var> ...
 <DD>
 
 
@@ -2188,13 +2172,13 @@ however, they return the additive or multiplicative inverse of their argument.
 
 
 <PRE>
-(- 3 4)                                ==&#62;  -1
-(- 3 4 5)                              ==&#62;  -6
-(- 3)                                  ==&#62;  -3
+(- 3 4)                                ==&gt;  -1
+(- 3 4 5)                              ==&gt;  -6
+(- 3)                                  ==&gt;  -3
 (- +inf.0 +inf.0)                      ==&gt;  +nan.0
 
-(/ 3 4 5)                              ==&#62;  3/20
-(/ 3)                                  ==&#62;  1/3
+(/ 3 4 5)                              ==&gt;  3/20
+(/ 3)                                  ==&gt;  1/3
 (/ 0.0)                                ==&gt;  +nan.0
 (/ 1.0 0)                              ==&gt;  +inf.0
 (/ -1 0.0)                             ==&gt;  -inf.0
@@ -2208,7 +2192,7 @@ however, they return the additive or multiplicative inverse of their argument.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>abs</CODE> <I>x</I>
+<DT><U>library procedure:</U> <CODE>abs</CODE> <var>x</var>
 <DD>
 
 
@@ -2218,7 +2202,7 @@ however, they return the additive or multiplicative inverse of their argument.
 
 
 <PRE>
-(abs -7)                               ==&#62;  7
+(abs -7)                               ==&gt;  7
 (abs -inf.0)                           ==&gt;  +inf.0
 </PRE>
 
@@ -2227,13 +2211,13 @@ however, they return the additive or multiplicative inverse of their argument.
 <FONT COLOR="red">
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>div+mod</CODE> <I>er1 er2</I>
-<DT><U>library procedure:</U> <CODE>div</CODE> <I>er1 er2</I>
-<DT><U>library procedure:</U> <CODE>mod</CODE> <I>er1 er2</I>
-<DT><U>library procedure:</U> <CODE>quotient</CODE> <I>ei1 ei2</I>
-<DT><U>library procedure:</U> <CODE>modulo+remainder</CODE> <I>ei1 ei2</I>
-<DT><U>library procedure:</U> <CODE>modulo</CODE> <I>ei1 ei2</I>
-<DT><U>library procedure:</U> <CODE>remainder</CODE> <I>ei1 ei2</I>
+<DT><U>procedure:</U> <CODE>div+mod</CODE> <var>er1</var> <var>er2</var>
+<DT><U>library procedure:</U> <CODE>div</CODE> <var>er1</var> <var>er2</var>
+<DT><U>library procedure:</U> <CODE>mod</CODE> <var>er1</var> <var>er2</var>
+<DT><U>library procedure:</U> <CODE>quotient</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>library procedure:</U> <CODE>modulo+remainder</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>library procedure:</U> <CODE>modulo</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>library procedure:</U> <CODE>remainder</CODE> <var>ei1</var> <var>ei2</var>
 <DD>
 
 <P>
@@ -2245,8 +2229,8 @@ href="#integer-division">the Section</a> on integer division.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>gcd</CODE> <I><STRIKE>r1</STRIKE> <FONT COLOR=red>n1 </FONT>...</I>
-<DT><U>library procedure:</U> <CODE>lcm</CODE> <I><STRIKE>r1</STRIKE> <FONT COLOR=red>n1 </FONT>...</I>
+<DT><U>library procedure:</U> <CODE>gcd</CODE> <VAR><STRIKE>r1</STRIKE> <FONT COLOR=red>n1</FONT></VAR> ...
+<DT><U>library procedure:</U> <CODE>lcm</CODE> <VAR><STRIKE>r1</STRIKE> <FONT COLOR=red>n1</FONT></VAR> ...
 <DD>
 <P>
 <FONT COLOR="red">Note: This is the R5RS definition.</FONT>
@@ -2259,19 +2243,19 @@ multiple of their arguments.  The result is always non-negative.
 theoretic operators:</STRIKE></FONT>
 
 <PRE>
-(gcd 32 -36)                           ==&#62;  4
-(gcd)                                  ==&#62;  0
-(lcm 32 -36)                           ==&#62;  288
-(lcm 32.0 -36)                         ==&#62;  288.0 ; inexact
-(lcm)                                  ==&#62;  1
+(gcd 32 -36)                           ==&gt;  4
+(gcd)                                  ==&gt;  0
+(lcm 32 -36)                           ==&gt;  288
+(lcm 32.0 -36)                         ==&gt;  288.0 ; inexact
+(lcm)                                  ==&gt;  1
 </PRE>
 
 </DL>
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>numerator</CODE> <I><VAR>q</VAR></I>
-<DT><U>procedure:</U> <CODE>denominator</CODE> <I><VAR>q</VAR></I>
+<DT><U>procedure:</U> <CODE>numerator</CODE> <VAR>q</VAR>
+<DT><U>procedure:</U> <CODE>denominator</CODE> <VAR>q</VAR>
 <DD>
 
 <P>
@@ -2283,10 +2267,10 @@ denominator of 0 is defined to be 1.
 
 
 <PRE>
-<TT>(numerator (/ 6 4))                    ==&#62;  3
-(denominator (/ 6 4))                  ==&#62;  2
+<TT>(numerator (/ 6 4))                    ==&gt;  3
+(denominator (/ 6 4))                  ==&gt;  2
 (denominator
-  (exact-&#62;inexact (/ 6 4)))            ==&#62; 2.0
+  (exact-&gt;inexact (/ 6 4)))            ==&gt; 2.0
 </TT>
 </PRE>
 
@@ -2294,10 +2278,10 @@ denominator of 0 is defined to be 1.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>floor</CODE> <I>x</I>
-<DT><U>procedure:</U> <CODE>ceiling</CODE> <I>x</I>
-<DT><U>procedure:</U> <CODE>truncate</CODE> <I>x</I>
-<DT><U>procedure:</U> <CODE>round</CODE> <I>x</I>
+<DT><U>procedure:</U> <CODE>floor</CODE> <var>x</var>
+<DT><U>procedure:</U> <CODE>ceiling</CODE> <var>x</var>
+<DT><U>procedure:</U> <CODE>truncate</CODE> <var>x</var>
+<DT><U>procedure:</U> <CODE>round</CODE> <var>x</var>
 <DD>
 <P>
 These procedures return inexact integers on inexact rational
@@ -2324,23 +2308,23 @@ mode specified by the IEEE floating point standard.
 <EM>Note:</EM>
 If the argument to one of these procedures is inexact, then the result
 will also be inexact.  If an exact value is needed, the
-result should be passed to the <CODE>inexact-&#62;exact</CODE> procedure.
+result should be passed to the <CODE>inexact-&gt;exact</CODE> procedure.
 </BLOCKQUOTE>
 
 
 <PRE>
-(floor -4.3)                           ==&#62;  -5.0
-(ceiling -4.3)                         ==&#62;  -4.0
-(truncate -4.3)                        ==&#62;  -4.0
-(round -4.3)                           ==&#62;  -4.0
+(floor -4.3)                           ==&gt;  -5.0
+(ceiling -4.3)                         ==&gt;  -4.0
+(truncate -4.3)                        ==&gt;  -4.0
+(round -4.3)                           ==&gt;  -4.0
 
-(floor 3.5)                            ==&#62;  3.0
-(ceiling 3.5)                          ==&#62;  4.0
-(truncate 3.5)                         ==&#62;  3.0
-(round 3.5)                            ==&#62;  4.0  ; inexact
+(floor 3.5)                            ==&gt;  3.0
+(ceiling 3.5)                          ==&gt;  4.0
+(truncate 3.5)                         ==&gt;  3.0
+(round 3.5)                            ==&gt;  4.0  ; inexact
 
-(round 7/2)                            ==&#62;  4    ; exact
-(round 7)                              ==&#62;  7
+(round 7/2)                            ==&gt;  4    ; exact
+(round 7)                              ==&gt;  7
 
 (floor +inf.0)                         ==&gt;  +inf.0
 (ceiling -inf.0)                       ==&gt;  -inf.0
@@ -2350,7 +2334,7 @@ result should be passed to the <CODE>inexact-&#62;exact</CODE> procedure.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>rationalize</CODE> <I>x y</I>
+<DT><U>library procedure:</U> <CODE>rationalize</CODE> <var>x</var> <var>y</var>
 <DD>
 
 <P>
@@ -2359,7 +2343,7 @@ differing from <VAR>x</VAR> by no more than <VAR>y</VAR>.  A rational number r<S
 <EM>simpler</EM>  than another rational number
 
 r<SUB>2</SUB> if r<SUB>1</SUB> = p<SUB>1</SUB>/q<SUB>1</SUB> and r<SUB>2</SUB> = p<SUB>2</SUB>/q<SUB>2</SUB> 
-(in lowest terms) and |p<SUB>1</SUB>|&#60;= |p<SUB>2</SUB>| and |q<SUB>1</SUB>| &#60;= |q<SUB>2</SUB>|.
+(in lowest terms) and |p<SUB>1</SUB>|&lt;= |p<SUB>2</SUB>| and |q<SUB>1</SUB>| &lt;= |q<SUB>2</SUB>|.
 Thus 3/5 is simpler than 4/7.
 Although not all rationals are comparable in this ordering (consider 2/7
 and 3/5) any interval contains a rational number that is simpler than
@@ -2371,8 +2355,8 @@ all.
 
 <PRE>
 (rationalize
-  (inexact-&#62;exact .3) 1/10)            ==&#62; 1/3    ; exact
-(rationalize .3 1/10)                  ==&#62; #i1/3  ; inexact
+  (inexact-&gt;exact .3) 1/10)            ==&gt; 1/3    ; exact
+(rationalize .3 1/10)                  ==&gt; #i1/3  ; inexact
 
 (rationalize +inf.0 3)                 ==&gt;  +inf.0
 (rationalize +inf.0 +inf.0)            ==&gt;  +nan.0
@@ -2383,15 +2367,15 @@ all.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exp</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>log</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>sin</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>cos</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>tan</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>asin</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>acos</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>atan</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>atan</CODE> <I><VAR>y</VAR> <VAR>x</VAR></I>
+<DT><U>procedure:</U> <CODE>exp</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>log</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>sin</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>cos</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>tan</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>asin</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>acos</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>atan</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>atan</CODE> <VAR>y</VAR> <VAR>x</VAR>
 <DD>
 
 
@@ -2467,7 +2451,7 @@ when given <CODE>+inf.0</CODE>,
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>sqrt</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>sqrt</CODE> <VAR>z</VAR>
 <DD>
 
 
@@ -2488,7 +2472,7 @@ non-negative imaginary part.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>expt</CODE> <I>z1 z2</I>
+<DT><U>procedure:</U> <CODE>expt</CODE> <var>z1</var> <var>z2</var>
 <DD>
 
 
@@ -2525,12 +2509,12 @@ or returns an unspecified number.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>make-rectangular</CODE> <I>x1 x2</I>
-<DT><U>procedure:</U> <CODE>make-polar</CODE> <I>x3 x4</I>
-<DT><U>procedure:</U> <CODE>real-part</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>imag-part</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>magnitude</CODE> <I><VAR>z</VAR></I>
-<DT><U>procedure:</U> <CODE>angle</CODE> <I><VAR>z</VAR></I>
+<DT><U>procedure:</U> <CODE>make-rectangular</CODE> <var>x1</var> <var>x2</var>
+<DT><U>procedure:</U> <CODE>make-polar</CODE> <var>x3</var> <var>x4</var>
+<DT><U>procedure:</U> <CODE>real-part</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>imag-part</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>magnitude</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>angle</CODE> <VAR>z</VAR>
 <DD>
 
 
@@ -2552,16 +2536,16 @@ Then
 
 
 <PRE>
-(make-rectangular <VAR>x1</VAR> <VAR>x2</VAR>)               ==&#62; <VAR>z</VAR>
-(make-polar <VAR>x3</VAR> <VAR>x4</VAR>)                     ==&#62; <VAR>z</VAR>
-(real-part <VAR>z</VAR>)                          ==&#62; <VAR>x1</VAR>
-(imag-part <VAR>z</VAR>)                          ==&#62; <VAR>x2</VAR>
-(magnitude <VAR>z</VAR>)                          ==&#62; |<VAR>x3</VAR>|
-(angle <VAR>z</VAR>)                              ==&#62; x<SUB>angle</SUB>
+(make-rectangular <VAR>x1</VAR> <VAR>x2</VAR>)               ==&gt; <VAR>z</VAR>
+(make-polar <VAR>x3</VAR> <VAR>x4</VAR>)                     ==&gt; <VAR>z</VAR>
+(real-part <VAR>z</VAR>)                          ==&gt; <VAR>x1</VAR>
+(imag-part <VAR>z</VAR>)                          ==&gt; <VAR>x2</VAR>
+(magnitude <VAR>z</VAR>)                          ==&gt; |<VAR>x3</VAR>|
+(angle <VAR>z</VAR>)                              ==&gt; x<SUB>angle</SUB>
 </PRE>
 
 <P>
-where -pi &#60; x<SUB>angle</SUB> &#60;= pi with x<SUB>angle</SUB> = <VAR>x4</VAR> + 2pi n
+where -pi &lt; x<SUB>angle</SUB> &lt;= pi with x<SUB>angle</SUB> = <VAR>x4</VAR> + 2pi n
 for some integer n.
 
 <PRE>
