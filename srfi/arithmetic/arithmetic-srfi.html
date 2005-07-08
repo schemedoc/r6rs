@@ -22,44 +22,25 @@ William D Clinger and Michael Sperber
 <h2>Abstract</h2>
 
 <p>
-Scheme's arithmetic system was designed to allow a wide variety
-of implementations.  After many years of implementation experience,
+Scheme's arithmetic system was designed to allow a wide variety of
+implementations.  After many years of implementation experience,
 however, most implementations now fall into a small number of
 categories, and the benefits of continued experimentation no longer
-justify the confusion and portability problems that have resulted
-from giving implementations so much freedom in this area.
-</p>
+justify the confusion and portability problems that have resulted from
+giving implementations so much freedom in this area.  Moreover, The
+R5RS generic arithmetic is difficult to implement as efficiently as
+purely fixnum or purely flonum arithmetic.  This SRFI is an effort to
+extend and clarify the R5RS arithmetic to make it more portable, more
+comprehensive, and enable faster programs.
 
-<p>
-In addition, several details of the R5RS are inconsistent or
-incomplete with respect to the IEEE standards for binary floating
-point arithmetic, which are generally used to implement Scheme's
-inexact real arithmetic.  Furthermore some details of the R5RS
-make it unnecessarily difficult to implement Scheme's arithmetic
-efficiently.
-</p>
-
-<p>
-The portability problems can most easily be solved by requiring
-all implementations to support the full numeric tower.  To
-prevent that requirement from making Scheme substantially more
-difficult to implement, we can provide reference implementations
-that construct the full numeric tower from a fixnum/flonum base.
-To ensure the portability of these reference implementations,
-the fixnum/flonum base must be described and (at least partially)
-standardized.
-</p>
-
-<p>
-Fixnum/flonum arithmetic is already supported by many systems,
-mainly for efficiency.  Standardization of fixnum/flonum
-arithmetic would increase the portability of code that uses it,
-but we cannot standardize the precision of fixnum/flonum arithmetic
-without making it inefficient on some systems, which would defeat
-its purpose.  We therefore propose to specify the syntax and much
-of the semantics of fixnum/flonum arithmetic, but to make the
-precision a parameter of the specification.
-</p>
+<P>
+Furthermore, one of us (Sperber) has argued that Scheme's arithmetic
+requires radical overhaul.  The other (Clinger) agrees that revisions
+are needed.  This SRFI describes revisions that would satisfy both of
+us and states the choice between both of them as an issue to be
+resolved in the discussion period of this SRFI.  Whether these
+revisions qualify as radical is best left to the judgement of
+individual readers.
 
 <p>
 This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
@@ -86,6 +67,7 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     representation
 <li>restricting the domains of some R5RS procedures
 <li>clarifying the semantics of some R5RS procedures
+<li>possibly changing the semantics of some R5RS procedures
 </ul>
 
 
@@ -163,22 +145,9 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     facilities.
 <li>The division between regular procedures and library procedures is
     somewhat arbitrary.
-<li><strong> (FIXME: several more issues should go here)</strong>
 </ul>
 
 <h2>Rationale</h2>
-
-<strong>
-(FIXME: most of the rationale is in the abstract)
-</strong>
-
-<p>
-One of us (Sperber) has argued that Scheme's arithmetic requires
-radical overhaul.  The other (Clinger) agrees that revisions are
-needed.  This SRFI describes revisions that would satisfy both
-of us.  Whether these revisions qualify as radical is best left
-to the judgement of individual readers.
-</p>
 
 <p>
 Most implementations of Scheme fall into
@@ -196,23 +165,35 @@ difficult even to write programs whose arithmetic is portable
 between different implementations in the same category.
 
 <p>
-Many of these portability problems could be made to disappear
-by requiring implementations to support the complete numeric
-tower, as in Common Lisp.
-There has been concern that some implementors might ignore such
-a requirement, giving us arithmetic that's portable in theory
-but not in practice.
-This proposal addresses that concern by defining fixnum and
-flonum arithmetic with enough detail to support a portable
-implementation of the complete numeric tower.
-This approach recognizes the usefulness of fast fixnum/flonum
-arithmetic, and fixes some of the things that have made it hard to
-construct R5RS-compliant implementations with fast fixnum/flonum
-arithmetic.
-These changes should benefit both implementors and programmers.
+The portability problems can most easily be solved by requiring
+all implementations to support the full numeric tower.  To
+prevent that requirement from making Scheme substantially more
+difficult to implement, we provide a reference implementation
+that constructs the full numeric tower from a fixnum/flonum base.
+To ensure the portability of such reference implementations,
+the fixnum/flonum base must be described and (at least partially)
+standardized.
 </p>
 
 <p>
+Fixnum/flonum arithmetic is already supported by many systems,
+mainly for efficiency.  Standardization of fixnum/flonum
+arithmetic would increase the portability of code that uses it,
+but we cannot standardize the precision of fixnum/flonum arithmetic
+without making it inefficient on some systems, which would defeat
+its purpose.  We therefore propose to specify the syntax and much
+of the semantics of fixnum/flonum arithmetic, but to make the
+precision a parameter of the specification.
+</p>
+
+<p>
+Several details of the R5RS are inconsistent or incomplete with
+respect to the IEEE standards for binary floating point arithmetic,
+which are generally used to implement Scheme's inexact real
+arithmetic.  Furthermore some details of the R5RS make it
+unnecessarily difficult to implement Scheme's arithmetic efficiently.
+</p>
+
 This SRFI is incompatible with <a href="http://srfi.schemers.org/srfi-70/">SRFI 70</a> 
 <a href="#jaffer-2005">[Jaffer 2005]</a> in several ways, including:
 </p>
@@ -237,6 +218,20 @@ the <code>gcd</code> and <code>lcm</code> to rational numbers.
 
 <P>
 There are more minor differences with SRFI 70 highlighted in the hypertext.
+
+<P>
+This SRFI describes several alternative approaches to completely
+generic arithmetic.  The alternative described in the section <a
+href="#r5rs-generic">R5RS-style Generic Arithmetic</a> follows the
+essence of the R5RS, with the advantage of continuity and
+contagiousness of inexact operations.  The alternative described in
+section <a href="#exact-generic">Generic Exact Arithmetic</a> has
+exactness be contagious, with the advantage of greater transparancy
+over the R5RS-style generic arithmetic.  The section describing exact
+arithmetic opens with a more detailed rationale.  Other alternatives
+build on the exact arithmetic described in section <a href="#exact">Exact Arithmetic</a>
+and the inexact arithmetic described in section <a href="#inexact">Inexact Arithmetic</a>.
+
 
 <h2>Specification</h2>
 
@@ -1433,7 +1428,7 @@ according to the IEEE standards.
 </p>
 
 
-<h3>Exact Arithmetic</h3>
+<h3><a name="exact">Exact Arithmetic</A></h3>
 
 <p>
 The exact arithmetic provides generic operations on exact numbers;
@@ -1692,7 +1687,7 @@ the sign.  It returns <VAR>ei1</VAR> when <VAR>ei2</VAR> = 0.
 </DD>
 </DL>
 
-<h3>Inexact Arithmetic</h3>
+<h3><a name="inexact">Inexact Arithmetic</A></h3>
 
 <p>
 The inexact arithmetic provides generic operations on inexact numbers.  The
