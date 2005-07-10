@@ -78,6 +78,7 @@
   (make-typo-op/1 inodd? 'real))
 (define-unary ineven? fleven?
   (make-typo-op/1 ineven? 'real))
+(define-unary innan? flnan? never)
 
 (define inmin (make-min/max in<))
 (define inmax (make-min/max in>))

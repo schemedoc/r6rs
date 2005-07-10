@@ -404,7 +404,7 @@
 (define-interface generic-arithmetic/in-interface
   (export innumber? incomplex? inreal? inrational? ininteger?
 	  in= in< in<= in>= in>
-	  inzero? inpositive? innegative?
+	  inzero? inpositive? innegative? innan?
 	  inodd? ineven?
 	  inmin inmax
 	  in+ in- in* in/
