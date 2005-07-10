@@ -455,7 +455,7 @@
   (export number? complex? real? rational? integer?
 	  exact? inexact?
 	  = < > <= >=
-	  zero? positive? negative? odd? even?
+	  zero? positive? negative? odd? even? nan?
 	  max min
 	  + * - /
 	  abs

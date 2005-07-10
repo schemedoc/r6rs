@@ -44,7 +44,7 @@
 (define (inexact? obj)
   (or (flonum? obj)
       (compnum? obj)))
-  
+
 (define-syntax define-binary
   (syntax-rules ()
     ((define-binary ?name ?contagion ?bignum-op ?ratnum-op ?recnum-op ?flonum-op ?compnum-op)
@@ -167,6 +167,8 @@
   (make-typo-op/1 even? 'integer)
   fleven?
   (make-typo-op/1 even? 'integer))
+
+(define-unary nan? never never never never flnan? never)
 
 (define-binary min/2 contagion/will
   fxmin bignum-min ratnum-min (make-typo-op/2 < 'real)
