@@ -142,6 +142,7 @@
 (define-interface flonums-ieee-interface
   (export flsign flsignificand flexponent
 	  fl-ieee-min-exponent fl-ieee-min-exponent/denormalized
+	  fl-ieee-max-exponent
 	  fl-ieee-mantissa-width))
 
 (define-structure flonums-ieee flonums-ieee-interface
@@ -268,7 +269,8 @@
   (open scheme-sans-arithmetic
 	integers integers-r5rs
 	flonums flonums-r5rs
-	rationals-to-flonums
+	flonums-ieee
+	rationals-to-flonums flonums-to-rationals
 	srfi-23)
   (files bellerophon))
 

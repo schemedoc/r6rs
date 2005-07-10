@@ -7,12 +7,14 @@
 ; of Scheme that support IEEE double precision arithmetic
 ; and exact integer arithmetic of unlimited precision.
 
-; ####
-(define n         (r5rs->integer 53))
+; #### Mike probably didn't do a great job abstracting this over the
+; floating-point precision.
+
+(define n         fl-ieee-mantissa-width)
 (define two^n-1   (integer-expt (r5rs->integer 2)
 				(integer- n (r5rs->integer 1))))
 (define two^n     (integer-expt (r5rs->integer 2) n))
-(define p         (r5rs->integer 64))
+(define p         (integer+ n (r5rs->integer 9)))
 (define two^p-1   (integer-expt (r5rs->integer 2)
 				(integer- p (r5rs->integer 1))))
 (define two^p     (integer-expt (r5rs->integer 2) p))
@@ -22,17 +24,24 @@
 				(integer- (integer- p n) (r5rs->integer 1))))
 
 (define flonum:zero (r5rs->flonum 0.0))
-(define flonum:infinity (r5rs->flonum 1e500))
-(define flonum:minexponent (r5rs->integer -1023))
-(define flonum:minexponent-51 (r5rs->integer -1074))
-(define bellerophon:big-f (integer-expt (r5rs->integer 2) (r5rs->integer 64)))
-(define bellerophon:small-e (r5rs->integer -306))
-(define bellerophon:big-e (r5rs->integer 309))
+(define flonum:infinity flinf+)
+(define flonum:minexponent fl-ieee-min-exponent)
+(define flonum:minexponent-51 fl-ieee-min-exponent/denormalized)
+(define bellerophon:big-f (integer-expt (r5rs->integer 2) p))
+(define bellerophon:small-e (flonum->integer
+			     (flceiling (fl/ (integer->flonum fl-ieee-min-exponent)
+					     (fl/ (fllog (r5rs->flonum 10.0))
+						  (fllog (r5rs->flonum 2.0)))))))
+(define bellerophon:big-e (flonum->integer
+			   (flceiling
+			    (fl/ (integer->flonum fl-ieee-max-exponent)
+				 (fl/ (fllog (r5rs->flonum 10.0))
+				      (fllog (r5rs->flonum 2.0)))))))
 
 (define (bellerophon f e p)
   (cond ((integer-negative? f) (integer- (bellerophon (integer-negate f) e p)))
 	((integer-zero? f) flonum:zero)
-	((not (integer= p n)) (fail0 f e (integer-min p (r5rs->integer 52))))
+	((not (integer= p n)) (fail0 f e (integer-min p (integer- n (r5rs->integer 1)))))
 	((integer<= bellerophon:big-f f) (fail0 f e p))
 	((integer< e bellerophon:small-e) (fail0 f e p))
 	((integer< bellerophon:big-e e) flonum:infinity)
