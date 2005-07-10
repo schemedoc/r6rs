@@ -15,8 +15,8 @@
 
 (define (inrational? obj)
   (and (inreal? obj)
-       (not (or (= obj flinf+)
-		(= obj flinf-)
+       (not (or (in= obj flinf+)
+		(in= obj flinf-)
 		(flnan? obj)))))
 
 (define (ininteger? obj)
