@@ -289,47 +289,4 @@
 (define-unary exreal-part id id id recnum-real) 
 (define-unary eximag-part one one one recnum-imag)
 
-(define-unary exbitwise-not fxbitwise-not bignum-bitwise-not
-  (make-typo-op/1 exbitwise-not 'integer)
-  (make-typo-op/1 exbitwise-not 'integer))
-
-(define-binary exbitwise-ior/2 fxbitwise-ior bignum-bitwise-ior
-  (make-typo-op/2 exbitwise-ior/2 'integer)
-  (make-typo-op/2 exbitwise-ior/2 'integer))
-
-(define-binary exbitwise-xor/2 fxbitwise-xor bignum-bitwise-xor
-  (make-typo-op/2 exbitwise-xor/2 'integer)
-  (make-typo-op/2 exbitwise-xor/2 'integer))
-
-(define-binary exbitwise-and/2 fxbitwise-and bignum-bitwise-and
-  (make-typo-op/2 exbitwise-and/2 'integer)
-  (make-typo-op/2 exbitwise-and/2 'integer))
-
-(define (exbitwise-ior . args)
-  (reduce (r5rs->integer 0) exbitwise-ior/2 args))
-(define (exbitwise-and . args)
-  (reduce (r5rs->integer 1) exbitwise-and/2 args))
-(define (exbitwise-xor . args)
-  (reduce (r5rs->integer 1) exbitwise-xor/2 args))
-
-(define (exarithmetic-shift a b)
-
-  (define (fail)
-    (error "exarithmetic-shift expects exact integer arguments" a b))
-
-  (cond
-   ((fixnum? a)
-    (cond
-     ((fixnum? b)
-      (bignum-arithmetic-shift (fixnum->bignum a) (fixnum->bignum b)))
-     ((bignum? b)
-      (bignum-arithmetic-shift (fixnum->bignum a) b))
-     (else (fail))))
-   ((bignum? a)
-    (cond
-     ((fixnum? b)
-      (bignum-arithmetic-shift a (fixnum->bignum b)))
-     ((bignum? b)
-      (bignum-arithmetic-shift a (fixnum->bignum b)))
-     (else (fail))))))
 

@@ -382,9 +382,6 @@
 	  exfloor exceiling extruncate exround
 	  exmake-rectangular
 	  exremainder eximag-part
-	  exbitwise-not
-	  exbitwise-ior exbitwise-xor exbitwise-and
-	  exarithmetic-shift
 	  exexpt))
 
 (define-structure generic-arithmetic/ex generic-arithmetic/ex-interface
