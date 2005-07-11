@@ -43,6 +43,11 @@
 (define (compnum->bignum f)
   (flonum->bignum (compnum-real f)))
 
+(define (compnum->integer c)
+  (if (flzero? (compnum-imag c))
+      (flonum->integer (compnum-real c))
+      (error "expected compnum with zero imaginary part" c)))
+
 (define (flonum->recnum f)
   (ratnum->recnum (flonum->rational f)))
 

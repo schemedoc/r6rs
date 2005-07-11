@@ -72,7 +72,7 @@
 (define-unary inzero? flzero? compnum-zero?) ; #### compnum case?
 (define-unary inpositive? flpositive?
   (make-typo-op/1 inpositive? 'real))
-(define-unary innegative? innegative?
+(define-unary innegative? flnegative?
   (make-typo-op/1 innegative? 'real))
 (define-unary inodd? flodd?
   (make-typo-op/1 inodd? 'real))

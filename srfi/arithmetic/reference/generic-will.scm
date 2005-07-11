@@ -598,6 +598,17 @@
 (define-unary inexact->exact
   id id id id flonum->rational compnum->exact)
 
+(define-unary number->flonum
+  fixnum->flonum bignum->flonum ratnum->flonum
+  (make-typo-op/1 number->flonum 'real)
+  id
+  maybe-compnum->flonum)
+
+(define (maybe-compnum->flonum c)
+  (if (flzero? (compnum-imag c))
+      (compnum-real c)
+      (error "can't convert complex number with non-zero imaginary part to flonum" c)))
+
 ; Simplest rational within an interval.  Copied from IEEE P1178/D4 nimpl.tex.
 
 (define (rationalize x e)

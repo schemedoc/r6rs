@@ -6,6 +6,9 @@
 ; Probably assumes IEEE double precision arithmetics for the flonum
 ; examples.
 
+(define (n-r5rs= a b)
+  (= a (r5rs->number b)))
+
 (check (string->number "100") ==> 100)
 (check (string->number "100" (r5rs->number 16)) ==> 256)
 (check (string->number "1e2") ==> 100.0)

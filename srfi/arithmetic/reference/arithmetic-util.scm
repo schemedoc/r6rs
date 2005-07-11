@@ -17,14 +17,14 @@
 
 (define (make-typo-op/2 proc type)
   (lambda (a b)
-    (error "expects types" proc type a b)))
+    (error "type mismatch" proc type a b)))
 
 (define (never x)
   #f)
 
 (define (make-typo-op/1 proc type)
   (lambda (a)
-    (error "expects type" proc type a)))
+    (error "type mismatch" proc type a)))
 
 (define (make-min/max comp)
   (lambda (arg0 . args)

@@ -3,6 +3,9 @@
 
 ; Tests for R5RS-style generic arithmetic
 
+(define (n-r5rs= a b)
+  (= a (r5rs->number b)))
+
 (check (numerical complex? 3+4i) =>  #t)
 (check (numerical complex? 3) =>  #t)
 (check (numerical real? 3) =>  #t)

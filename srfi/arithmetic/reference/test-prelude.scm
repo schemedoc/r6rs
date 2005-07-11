@@ -27,9 +27,6 @@
                (set! *failed-count* (r5rs:+ *failed-count* 1)) ))
          (newline) )))))
 
-(define (n-r5rs= a b)
-  (= a (r5rs->number b)))
-
 (define-syntax numerical
   (syntax-rules ()
     ((numerical ?rator ?rand ...)

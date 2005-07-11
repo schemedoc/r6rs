@@ -307,6 +307,7 @@
 	  recnum->compnum 
 	  flonum->compnum
 	  compnum->bignum
+	  compnum->integer
 	  flonum->recnum
 	  flonum->bignum
 	  bignum->flonum
@@ -405,6 +406,7 @@
 	  inodd? ineven?
 	  inmin inmax
 	  in+ in- in* in/
+	  inabs
 	  inquotient inremainder inquotient+remainder
 	  indiv+mod indiv inmod
 	  inmodulo
@@ -463,7 +465,7 @@
 	  exp log sin cos tan asin acos atan
 	  sqrt expt
 	  make-rectangular make-polar real-part imag-part magnitude angle
-	  exact->inexact inexact->exact
+	  exact->inexact inexact->exact number->flonum
 	  bitwise-not
 	  bitwise-ior bitwise-and bitwise-xor
 	  arithmetic-shift
@@ -500,7 +502,7 @@
 	  floor ceiling truncate round
 	  expt
 	  make-rectangular real-part imag-part
-	  exact->inexact inexact->exact
+	  exact->inexact inexact->exact number->flonum
 	  bitwise-not
 	  bitwise-ior bitwise-and bitwise-xor
 	  arithmetic-shift
@@ -579,4 +581,26 @@
 	generic-arithmetic/will)
   (files test-prelude
 	 test-generic-arithmetic-will
+	 test-postlude))
+
+(define-structure test-generic-arithmetic/mike (export)
+  (open scheme-sans-arithmetic
+	(modify scheme (prefix r5rs:) (expose +))
+	(subset flonums (flinf+ flinf- flnan flnan?))
+	r5rs-to-numbers
+	strings-to-numbers
+	generic-arithmetic/mike)
+  (files test-prelude
+	 test-generic-arithmetic-mike
+	 test-postlude))
+
+(define-structure test-generic-arithmetic/in (export)
+  (open scheme-sans-arithmetic
+	(modify scheme (prefix r5rs:) (expose +))
+	(subset flonums (flinf+ flinf- flnan flnan?))
+	r5rs-to-numbers
+	strings-to-numbers
+	generic-arithmetic/in)
+  (files test-prelude
+	 test-generic-arithmetic-in
 	 test-postlude))

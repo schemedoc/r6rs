@@ -159,19 +159,19 @@
   fxabs bignum-abs ratnum-abs
   (make-typo-op/1 abs 'rational))
 
-(define-binary quotient contagion/mike
+(define-binary quotient icontagion/mike
   fxquotient
   bignum-quotient
   (make-typo-op/2 quotient 'integer)
   (make-typo-op/2 quotient 'integer))
   
-(define-binary remainder contagion/mike
+(define-binary remainder icontagion/mike
   fxremainder
   bignum-remainder
   (make-typo-op/2 remainder 'integer)
   (make-typo-op/2 remainder 'integer))
 
-(define-binary quotient+remainder contagion/mike
+(define-binary quotient+remainder icontagion/mike
   fxquotient+remainder
   bignum-quotient+remainder
   (make-typo-op/2 quotient+remainder 'integer)
@@ -251,7 +251,7 @@
     (if (zero? g)
 	g
 	(* (quotient (abs x) g)
-	     (abs y)))))
+	   (abs y)))))
 
 (define (gcd . args)
   (reduce (r5rs->integer 0) gcd/2 args))
@@ -411,6 +411,21 @@
    ((compnum? x) x)
    (else
     (error "exact->inexact expects a numerical argument" x))))
+
+(define (number->flonum x)
+  (cond
+   ((fixnum? x) (fixnum->flonum x))
+   ((bignum? x) (bignum->flonum x))
+   ((ratnum? x) (ratnum->flonum x))
+   ((recnum? x)
+    (error "number->flonum expects argument with non-zero imaginary part" x))
+   ((flonum? x) x)
+   ((compnum? x)
+    (if (flzero? (compnum-imag x))
+	(compnum-real x)
+	(error "number->flonum expects argument with non-zero imaginary part" x)))
+   (else
+    (error "number->flonum expects a numerical argument" x))))
 
 (define (compnum->exact a)
   (make-rectangular (inexact->exact (real-part a))
