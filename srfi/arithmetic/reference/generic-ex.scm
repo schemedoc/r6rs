@@ -13,7 +13,9 @@
   (exnumber? obj))
 
 (define (exrational? obj)
-  (exreal? obj))
+  (or (fixnum? obj)
+      (bignum? obj)
+      (ratnum? obj)))
 
 (define (exinteger? obj)
   (or (fixnum? obj)
