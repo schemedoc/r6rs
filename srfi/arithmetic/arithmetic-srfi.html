@@ -125,11 +125,11 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     <code>quotient+remainder</code>, <code>gcd</code> and <code>lcm</code>), and others that are easily abused
     (such as <code>fxabs</code>).  Should these be pruned?
 <li>The <code>real?</code>, <code>rational?</code>, and <code>integer?</code> predicates must
-    return <code>#f</code> for complex numbers with an imaginary part
-    of inexact false, as non-realness is now contagious.
+    return false for complex numbers with an imaginary part
+    of inexact zero, as non-realness is now contagious.
     This causes possibly unexpected behavior: <SAMP>`(zero?
     0+0.0i)'</SAMP> returns true despite <SAMP>`(integer?
-    0+0.0i)'</SAMP> returning zero.
+    0+0.0i)'</SAMP> returning false.
     In the arithmetic model preferred by Mike, this makes even less
     sense, because inexact complex numbers are implicitly coerced to
     exact ones.
@@ -452,8 +452,7 @@ reduction.  For details, see the paper by Egner et. al
 These procedures implement number-theoretic (integer)
 division.  <VAR>n2</VAR> should be non-zero.
 All three procedures return integers.
-<SAMP>quotient</SAMP>
-returns an integer.  If <VAR>n1</VAR>/<VAR>n2</VAR> is an integer:
+If <VAR>n1</VAR>/<VAR>n2</VAR> is an integer:
 
 <PRE>
 (quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&gt; <VAR>n1</VAR>/<VAR>n2</VAR>
