@@ -66,10 +66,76 @@
 
       (p
        "Also, the procedural layer (already present in the reference implementation of "
-       "SRFI 9) is now part of the specification.")
+       "SRFI 9) is now part of the specification, and allows introspection, the implementation "
+       "of portable debuggers and metacircular interpreters that manipulate records compatibly "
+       "with the host language.")
 
       (p
        "The syntax is designed to allow future extensions via keyworded clauses.")
+
+      (p
+       "The syntax is designed in such a way as to obviate having to write separate "
+       "constructor procedures that shuffle arguments, provide default values for fields, "
+       "and/or register the created objects.")
+
+      (p
+       "The implicit-naming layer chooses names for the constructor, predicate, "
+       "accessors, and mutators based on the name of the record type.  This "
+       "makes record-type definitions more succinct and prescribes a standard "
+       "naming convention.  This has the cost of binding identifiers that do "
+       "not occur verbatim in the source code, thus hiding them from tools like "
+       (code "grep(1)") ", and possibly causing confusion among programmers "
+       "new to Scheme.")
+
+      (p
+       "The two layers were designed in tandem; the implicit-naming layer is simply "
+       "a conservative extension of the explicit-naming layer.  The goal was to "
+       "make explicit-naming definitions reasonably natural and allowing a seamless "
+       "\"upgrade\" to implicit naming.")
+
+      (h1 "Issues")
+
+      (ul
+       (li 
+	"The names " (code "define-record-type/explicit") " and "
+	(code "define-record-type/implicit") " are obviously unsatisfactory and need "
+	"to be replaced eventually.  It is open whether both names should in fact "
+	"be the same.   This raises the question of how to distinguish them; presumably "
+	"a module system would allow that.")
+       (li
+	(p
+	 "Compared to some other record-defining forms that have been proposed and implemented, "
+	 "the syntax is comparatively verbose.  For instance, PLT Scheme has a "
+	 (code "define-struct") " form that allows record-type definitions as short as this:")
+	(verbatim
+	 "(define-struct point (x y))")
+	(p
+	 "This proposal requires at least:")
+	(verbatim
+	 "(define-record-type/implicit point (x y)"
+	 "  (fields ((mutable x) x)"
+	 "          ((mutable y) y)))")
+	(p
+	 "Arguably, the added verbosity contains valuable information.  Moreover, "
+	 "it is trivial to define forms like " (code "define-struct") " on top "
+	 "of this proposal.")
+	(p
+	 "It would be possible to introduce abbreviations into the syntax. "
+	 "In the " (code "fields") " clause, a single identifier could serve as a shorthand "
+	 "for a " (code "mutable") " or " (code "immutable") " clause:")
+	(verbatim
+	 "(define-record-type/implicit point (x y)"
+	 "  (fields (x x)"
+	 "          (y y)")
+	(p
+	 "Even more radically, a default " (code "fields") " clause could be provided:")
+	(verbatim
+	 "(define-record-type/implicit point (x y))")
+	(p
+	 "Again, this conciseness comes at the cost of more obscure semantics")))
+
+      (p
+       "Members of the Scheme community should express their opinion on these questions.")
 
       (h1 "Specification")
 
