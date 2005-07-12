@@ -22,7 +22,7 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(module simple-syntactic-record-types mzscheme
+(module syntactic-record-types-explicit mzscheme
   (provide define-simple-record-type
 	   record-type-rtd)
 
@@ -30,5 +30,5 @@
   (require "procedural-record-types.ss")
 
   (require (lib "include.ss"))
-  (include "simple-syntactic-record.scm"))
+  (include "syntactic-record-explicit.scm"))
 

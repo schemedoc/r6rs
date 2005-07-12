@@ -44,21 +44,21 @@
 	)
   (files procedural-record))
 
-(define-interface simple-syntactic-record-types-interface
+(define-interface syntactic-record-types/explicit-interface
   (export (define-simple-record-type :syntax)
 	  (record-type-rtd :syntax)))
 
-(define-structure simple-syntactic-record-types simple-syntactic-record-types-interface
+(define-structure syntactic-record-types/explicit syntactic-record-types/explicit-interface
   (open scheme
 	srfi-9 ; DEFINE-RECORD-TYPE
 	procedural-record-types)
-  (files simple-syntactic-record))
+  (files syntactic-record-explicit))
 
-(define-interface fancy-syntactic-record-types-interface
+(define-interface syntactic-record-types/implicit-interface
   (export (define-record-type :syntax)))
 
-(define-structure fancy-syntactic-record-types fancy-syntactic-record-types-interface
+(define-structure syntactic-record-types/implicit syntactic-record-types/implicit-interface
   (open scheme
-	simple-syntactic-record-types)
-  (files fancy-syntactic-record-r5rs
-	 fancy-syntactic-record-s48))
+	syntactic-record-types/explicit)
+  (files syntactic-record-implicit-r5rs
+	 syntactic-record-implicit-s48))

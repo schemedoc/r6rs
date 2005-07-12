@@ -23,13 +23,13 @@
 ; SOFTWARE.
 
 
-(module fancy-syntactic-record-types mzscheme
+(module syntactic-record-types-implicit mzscheme
   (provide define-record-type)
 
-  (require "simple-syntactic-record-types.ss")
+  (require "syntactic-record-types-explicit.ss")
 
   (require (lib "include.ss"))
-  (include "fancy-syntactic-record-r5rs.scm")
-  (include "fancy-syntactic-record-plt.scm"))
+  (include "syntactic-record-implicit-r5rs.scm")
+  (include "syntactic-record-implicit-plt.scm"))
 
 
