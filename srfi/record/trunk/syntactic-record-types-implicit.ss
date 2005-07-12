@@ -24,7 +24,7 @@
 
 
 (module syntactic-record-types-implicit mzscheme
-  (provide define-record-type)
+  (provide define-record-type/implicit)
 
   (require "syntactic-record-types-explicit.ss")
 
