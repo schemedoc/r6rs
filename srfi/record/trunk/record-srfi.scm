@@ -44,19 +44,19 @@
 	"a procedural layer for explaining the semantics of records, and for "
 	"introspection and reflection; it has library status")
        (li
-	"a simple syntactic layer for defining the various entities associated "
+	"an explicit-naming syntactic layer for defining the various entities associated "
 	"with a record type "
 	"- constructor, predicate, field accessors, mutators, etc. - at once; "
 	"it has primitive status")
        (li
-	"a more featureful syntactic layer built on top of the simple syntactic "
-	"layer, which makes some aspects of defining record types more convenient; "
-	"it has library status"))
+	"an implicit-naming syntactic layer built on top of explicit-naming syntactic "
+	"layer, which chooses the names for the various entities based on the name of "
+	"the record type; it has library status"))
 
       (h1 "Rationale")
 
       (p
-       "The primitive syntactic layer described here is similar to "
+       "The explicit-naming syntactic layer described here is similar to "
        (a (@ (href "http://srfi.schemers.org/srfi-9/")) "SRFI 9: Defining Record Types") ". "
        "However, it contains some modest functionality extensions to the record types:")
       
@@ -69,11 +69,7 @@
        "SRFI 9) is now part of the specification.")
 
       (p
-       "Moreover, this proposal describes a more featureful syntactic layer "
-       "with extensions that simplifies common forms of record-type definitions, "
-       "among them name conventions for the record procedures, and optional "
-       "initialization code that runs after the constructor.  The syntactic transition "
-       "between the two syntactic layers is almost seamless.")
+       "The syntax is designed to allow future extensions via keyworded clauses.")
 
       (h1 "Specification")
 
@@ -279,7 +275,7 @@
 
        )
 
-      (h2 "Simple Syntactic Layer")
+      (h2 "Explicit-Naming Syntactic Layer")
 
       (p
        "The record-type-defining form " (code "define-record-type/explicit") " can occur "
@@ -416,13 +412,14 @@
 	
       )
 
-      (h2 "Featureful Syntactic Layer")
+      (h2 "Implicit-Naming Syntactic Layer")
 
       (p
-       "The " (code "define-record-type/implicit") " form of the featureful syntactic layer is "
-       " basically a conservative extension of " (code "define-record-type/explicit") " - "
+       "The " (code "define-record-type/implicit") " form of the implicit-naming syntactic layer is "
+       " a conservative extension of " (code "define-record-type/explicit") " - "
        "a " (code "define-record-type/explicit") " form can be changed to an equivalent "
-       (code "define-record-type/implicit") " form merely by removing the " (code "-simple") ". "
+       (code "define-record-type/implicit") " form merely by renaming the " (code "explicit")
+       " to " (code "implicit") ". "
        "The " (code "define-record-type/implicit") " form is explained by translation to a "
        (code "define-record-type/explicit") " form.")
 
@@ -523,7 +520,7 @@
        "(point2-xx p2) ; => 3"
        "(point2-yy p2) ; => 4")
 
-      (h2 "Simple syntactic layer")
+      (h2 "Explicit-naming syntactic layer")
 
       (verbatim
        "(define-record-type/explicit (pare kons pare?) (x y)"
@@ -555,7 +552,7 @@
        "(point? p1) ; => #t"
        "(cpoint-rgb p1) ; => (rgb . red)")
 
-      (h2 "Featureful syntactic layer")
+      (h2 "Implicit-naming syntactic layer")
 
       (verbatim
        "(define-record-type/implicit (point make-point point?) (x y)"
