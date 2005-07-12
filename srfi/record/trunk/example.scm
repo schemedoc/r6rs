@@ -138,7 +138,8 @@
 (define-record-type ex3 (x y c)
   (parent point x y)
   (fields ((mutable rgb) (color->rgb c)))
-  (init! (p) (set! *ex3-instance* p)))
+  (init! (p) (set! *ex3-instance* p))
+  sealed)
 
 (define ex3-i1 (make-ex3 1 2 'red))
 (check (ex3? ex3-i1) => #t)
