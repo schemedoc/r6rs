@@ -84,6 +84,7 @@
 	(prototype "make-record-type-descriptor"
 		   (var "name")
 		   (var "parent")
+		   (var "sealed?")
 		   (var "uid")
 		   (var "fields")))
        (dd
@@ -105,6 +106,10 @@
 	 "A record type that has another as a parent is said to " (i "extend") " the "
 	 "parent type; \"extends\" is transitive in the sense that a child of a child of "
 	 " a record type also extends the grandparent type, and so on.")
+	(p
+	 "The " (var "sealed?") " flag is a boolean.  If it is true, the "
+	 "record type being created is " (i "sealed") ".  This means that it is "
+	 "an error to create another record type that extends the one being created.")
 
 	(p
 	 "The " (var "uid") " argument is either " (code "#f") " or a symbol. "
@@ -363,6 +368,14 @@
 	   "are passed as the arguments to the constructor corresponding to "
 	   "the fields of the parent record type.   (Not the arguments to the constructor "
 	   "created by the " (code "define-simple-record-type") " form for the parent!)"))
+
+	 (dt
+	  (code "sealed"))
+	 (dd
+	  (p
+	   "If this clause is specified, it means that the record type being created is "
+	   "sealed and cannot be extended.  If no " (code "sealed") " clause is present, "
+	   "the record type being created is not sealed."))
 
 	 (dt
 	  (prototype "nongenerative" (meta "uid")))

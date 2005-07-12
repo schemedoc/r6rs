@@ -23,7 +23,7 @@
 ; SOFTWARE.
 
 (define-syntax define-record-type
-  (syntax-rules (fields parent nongenerative mutable immutable init!)
+  (syntax-rules ()
     ((define-record-type (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?clause ...)
@@ -40,7 +40,7 @@
        ?clause ...))))
 
 (define-syntax define-record-type-1
-  (syntax-rules (fields parent nongenerative mutable immutable init!)
+  (syntax-rules (fields)
 
     ;; find FIELDS clause
     ((define-record-type-1 ?record-name ?record-name-spec
