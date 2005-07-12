@@ -1,4 +1,4 @@
-; Implementation of simple syntactic layer for Records SRFI
+; Implementation of explicit-naming syntactic layer for Records SRFI
 
 ; Copyright (C) Michael Sperber (2005). All Rights Reserved. 
 ; 
@@ -32,12 +32,12 @@
     ((record-type-rtd ?record-name)
      (real-record-type-rtd ?record-name))))
 
-(define-syntax define-simple-record-type
+(define-syntax define-record-type/explicit
   (syntax-rules ()
-    ((define-simple-record-type (?record-name ?constructor-name ?predicate-name)
+    ((define-record-type/explicit (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?clause ...)
-     (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+     (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        #f ()  ; parent rtd, parent init exprs
        #f ; sealed?
@@ -46,67 +46,67 @@
        values ; INIT! proc
        ?clause ...))))
 
-(define-syntax define-simple-record-type-1
+(define-syntax define-record-type/explicit-1
   (syntax-rules (fields parent sealed nongenerative init! mutable immutable)
     ;; find PARENT clause
-    ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+    ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid ?init-proc
        (parent ?parent-name ?expr ...)
        ?clause ...)
-     (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+     (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        (record-type-rtd ?parent-name) (?expr ...) ?sealed? ?fields-clause ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find SEALED clause
-    ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+    ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid ?init-proc
        sealed
        ?clause ...)
-     (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+     (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs #t ?fields-clause ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find FIELDS clause
-    ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+    ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid  ?init-proc
        (fields (?field-spec ?init-expr) ...)
        ?clause ...)
-     (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+     (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? (fields (?field-spec ?init-expr) ...) ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find NONGENERATIVE clause
-    ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+    ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid  ?init-proc
        (nongenerative ?uid)
        ?clause ...)
-     (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+     (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?uid
        ?init-proc
        ?clause ...))
 
     ;; find INIT! clause
-    ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+    ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid  ?init-proc
        (init! (?r) ?body)
        ?clause ...)
-     (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+     (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid
        (lambda (?r) ?body)
        ?clause ...))
 
     ;; generate code
-    ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+    ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd (?parent-init-expr ...)
        ?sealed?

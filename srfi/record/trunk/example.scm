@@ -25,14 +25,14 @@
                (set! *failed-count* (+ *failed-count* 1)) ))
          (newline) )))))
 
-; DEFINE-SIMPLE-RECORD-TYPE
+; DEFINE-RECORD-TYPE/EXPLICIT
 
-(define-simple-record-type (point make-point point?) (x y)
+(define-record-type/explicit (point make-point point?) (x y)
   (fields ((immutable x point-x) x)
           ((mutable y point-y set-point-y!) y))
   (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
 
-(define-simple-record-type (cpoint make-cpoint cpoint?) (x y c)
+(define-record-type/explicit (cpoint make-cpoint cpoint?) (x y c)
   (parent point x y)
   (fields ((mutable rgb cpoint-rgb cpoint-rgb-set!) (color->rgb c))))
 
@@ -57,20 +57,20 @@
 (set-point-y! p1 17)
 (check (point-y p1) => 17)
 
-(define-simple-record-type (point make-point point?) (x y)
+(define-record-type/explicit (point make-point point?) (x y)
   (fields ((immutable x point-x) x)
           ((mutable y point-y set-point-y!) y))
   (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
 
 (check (point? p1) => #t)
 
-(define-simple-record-type (ex1 make-ex1 ex1?) a
+(define-record-type/explicit (ex1 make-ex1 ex1?) a
   (fields ((immutable f ex1-f) a)))
 
 (define ex1-i1 (make-ex1 1 2 3))
 (check (ex1-f ex1-i1) => '(1 2 3))
 
-(define-simple-record-type (ex2 make-ex2 ex2?) (a . b)
+(define-record-type/explicit (ex2 make-ex2 ex2?) (a . b)
   (fields ((immutable a ex2-a) a)
 	  ((immutable b ex2-b) b)))
 
@@ -78,14 +78,14 @@
 (check (ex2-a ex2-i1) => 1)
 (check (ex2-b ex2-i1) => '(2 3))
 
-; DEFINE-RECORD-TYPE
+; DEFINE-RECORD-TYPE/IMPLICIT
 
-(define-record-type (point make-point point?) (x y)
+(define-record-type/implicit (point make-point point?) (x y)
   (fields ((immutable x point-x) x)
           ((mutable y point-y set-point-y!) y))
   (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
 
-(define-record-type (cpoint make-cpoint cpoint?) (x y c)
+(define-record-type/implicit (cpoint make-cpoint cpoint?) (x y c)
   (parent point x y)
   (fields ((mutable rgb cpoint-rgb cpoint-rgb-set!) (color->rgb c))))
 
@@ -110,20 +110,20 @@
 (set-point-y! p1 17)
 (check (point-y p1) => 17)
 
-(define-record-type (point make-point point?) (x y)
+(define-record-type/implicit (point make-point point?) (x y)
   (fields ((immutable x point-x) x)
           ((mutable y point-y set-point-y!) y))
   (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
 
 (check (point? p1) => #t)
 
-(define-record-type (ex1 make-ex1 ex1?) a
+(define-record-type/implicit (ex1 make-ex1 ex1?) a
   (fields ((immutable f ex1-f) a)))
 
 (define ex1-i1 (make-ex1 1 2 3))
 (check (ex1-f ex1-i1) => '(1 2 3))
 
-(define-record-type (ex2 make-ex2 ex2?) (a . b)
+(define-record-type/implicit (ex2 make-ex2 ex2?) (a . b)
   (fields ((immutable a ex2-a) a)
 	  ((immutable b ex2-b) b)))
 
@@ -131,11 +131,11 @@
 (check (ex2-a ex2-i1) => 1)
 (check (ex2-b ex2-i1) => '(2 3))
 
-; genuine tests for DEFINE-RECORD-TYPE
+; genuine tests for DEFINE-RECORD-TYPE/IMPLICIT
 
 (define *ex3-instance* #f)
 
-(define-record-type ex3 (x y c)
+(define-record-type/implicit ex3 (x y c)
   (parent point x y)
   (fields ((mutable rgb) (color->rgb c)))
   (init! (p) (set! *ex3-instance* p))

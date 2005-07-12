@@ -1,4 +1,4 @@
-; PLT-specific part of the implementation of DEFINE-RECORD-TYPE for Records SRFI
+; PLT-specific part of the implementation of DEFINE-RECORD-TYPE/IMPLICIT for Records SRFI
 
 ; Copyright (C) Michael Sperber (2005). All Rights Reserved. 
 ; 
@@ -22,7 +22,7 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(define-syntax define-record-type-2
+(define-syntax define-record-type/implicit-2
   (lambda (form)
     (syntax-case form ()
       ((_ ?record-name (?record-name-2 ?constructor-name ?predicate-name)
@@ -31,7 +31,7 @@
 
        (syntax
 	(begin
-	  (define-simple-record-type (?record-name ?constructor-name ?predicate-name)
+	  (define-record-type/explicit (?record-name ?constructor-name ?predicate-name)
 	    ?formals
 	    ?simple-clause ...))))
 
@@ -56,7 +56,7 @@
 		     
 					    
        (syntax
-	(define-record-type-2 ?record-name (?record-name ?constructor-name ?predicate-name)
+	(define-record-type/implicit-2 ?record-name (?record-name ?constructor-name ?predicate-name)
 	  ?formals
 	  (?simple-clause ...))))))))
 
@@ -112,7 +112,7 @@
 			 clause)))
 		    (syntax->list (syntax (?field-clause ...))))))
 	   (syntax
-	    (define-record-type-1 
+	    (define-record-type/implicit-1 
 	      ?record-name ?record-name-spec
 	      ?formals
 	      (?simple-clause ... (fields ?simple-field ...))

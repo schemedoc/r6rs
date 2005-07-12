@@ -282,12 +282,12 @@
       (h2 "Simple Syntactic Layer")
 
       (p
-       "The record-type-defining form " (code "define-simple-record-type") " can occur "
+       "The record-type-defining form " (code "define-record-type/explicit") " can occur "
        "anywhere a " (meta "definition") " can occur.")
 
       (dl
        (dt
-	(prototype "define-simple-record-type"
+	(prototype "define-record-type/explicit"
 		   (code "(")
 		   (meta "record name")
 		   (meta "constructor name")
@@ -360,14 +360,14 @@
 	  (p
 	   "This specifies that the record type is to have parent type "
 	   (meta "parent name") ", where " (meta "parent name") " is the "
-	   (meta "record name") " of a previous " (code "define-simple-record-type")
+	   (meta "record name") " of a previous " (code "define-record-type/explicit")
 	   " form.  The absence of a " (code "parent") " clause implies a "
 	   "record type with no parent type.")
 	  (p
 	   "The " (meta "constructor arg") " operands must all be expressions; their values "
 	   "are passed as the arguments to the constructor corresponding to "
 	   "the fields of the parent record type.   (Not the arguments to the constructor "
-	   "created by the " (code "define-simple-record-type") " form for the parent!)"))
+	   "created by the " (code "define-record-type/explicit") " form for the parent!)"))
 
 	 (dt
 	  (code "sealed"))
@@ -391,13 +391,13 @@
 	 (dd
 	  (p
 	   "When this clause is specified, the constructor being defined by the "
-	   (code "define-record-type") " form calls "
+	   (code "define-record-type/implicit") " form calls "
 	   (code "(lambda (") (meta "identifier") (code ") ") (meta "expression") "*" (code ")")
 	  " with the newly created record as an argument before returning the record object to the "
 	  "caller.  Any return values from the initialization procedure are ignored.")))
 
 	(p
-	 "Whether or not " (code "define-simple-record-type") " creates a new "
+	 "Whether or not " (code "define-record-type/explicit") " creates a new "
 	 "record type every time it is evaluated is unspecified.  It is possible "
 	 "that a new record type is created every time, or that the same one is re-used. "
 	 "Correspondingly, it is unspecified whether " (meta "record name") " is bound "
@@ -412,23 +412,23 @@
        (dd
 	(p
 	 "This evaluates to, given a " (meta "record name") " defined with "
-	 (code "define-simple-record-type") ", the associated record-type descriptor."))
+	 (code "define-record-type/explicit") ", the associated record-type descriptor."))
 	
       )
 
       (h2 "Featureful Syntactic Layer")
 
       (p
-       "The " (code "define-record-type") " form of the featureful syntactic layer is "
-       " basically a conservative extension of " (code "define-simple-record-type") " - "
-       "a " (code "define-simple-record-type") " form can be changed to an equivalent "
-       (code "define-record-type") " form merely by removing the " (code "-simple") ". "
-       "The " (code "define-record-type") " form is explained by translation to a "
-       (code "define-simple-record-type") " form.")
+       "The " (code "define-record-type/implicit") " form of the featureful syntactic layer is "
+       " basically a conservative extension of " (code "define-record-type/explicit") " - "
+       "a " (code "define-record-type/explicit") " form can be changed to an equivalent "
+       (code "define-record-type/implicit") " form merely by removing the " (code "-simple") ". "
+       "The " (code "define-record-type/implicit") " form is explained by translation to a "
+       (code "define-record-type/explicit") " form.")
 
       (dl
        (dt
-	(prototype "define-simple-record-type"
+	(prototype "define-record-type/explicit"
 		   (code "(")
 		   (meta "record name")
 		   (meta "constructor name")
@@ -438,14 +438,14 @@
 		   (meta "record clause") "*")
 	   " (syntax)")
        (dt
-	(prototype "define-simple-record-type"
+	(prototype "define-record-type/explicit"
 		   (meta "record name")
 		   (meta "formals")
 		   (meta "record clause") "*")
 	   " (syntax)")
        (dd
 	(p
-	 "The first form is like " (code "define-simple-record-type") ", except that the "
+	 "The first form is like " (code "define-record-type/explicit") ", except that the "
 	 "set of possible clauses is extended (see below), and that the constructor "
 	 "may perform additional initialization (see below).")
 	(p
@@ -455,7 +455,7 @@
 
 	(p
 	 "Each " (meta "record clause") " is a either " (meta "simple record clause") ", "
-	 "in which case it means the same as with " (code "define-simple-record-type") ", "
+	 "in which case it means the same as with " (code "define-record-type/explicit") ", "
 	 "or it is an extended " (code "fields") " clause:")
 
 	(dl
@@ -479,7 +479,7 @@
 
 	  (p
 	   "The respective first form with " (code "immutable") " and " (code "mutable") 
-	   " are as in " (code "define-simple-record-type") ".")
+	   " are as in " (code "define-record-type/explicit") ".")
 
 	  (p
 	   "The forms omitting " (meta "accessor name") " and " (meta "mutator name")
@@ -526,7 +526,7 @@
       (h2 "Simple syntactic layer")
 
       (verbatim
-       "(define-simple-record-type (pare kons pare?) (x y)"
+       "(define-record-type/explicit (pare kons pare?) (x y)"
        "  (fields"
        "   ((mutable x kar set-kar!) x)"
        "   ((immutable y kdr) y)))"
@@ -539,12 +539,12 @@
        "  (set-kar! k 3)"
        "  (kar k)) ; => 3"
        ""
-       "(define-simple-record-type (point make-point point?) (x y)"
+       "(define-record-type/explicit (point make-point point?) (x y)"
        "  (fields ((immutable x point-x) x)"
        "          ((mutable y point-y set-point-y!) y))"
        "  (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))"
        ""
-       "(define-simple-record-type (cpoint make-cpoint cpoint?) (x y c)"
+       "(define-record-type/explicit (cpoint make-cpoint cpoint?) (x y c)"
        "  (parent point x y)"
        "  (fields ((mutable rgb cpoint-rgb cpoint-rgb-set!) (color->rgb c))))"
        ""
@@ -558,14 +558,14 @@
       (h2 "Featureful syntactic layer")
 
       (verbatim
-       "(define-record-type (point make-point point?) (x y)"
+       "(define-record-type/implicit (point make-point point?) (x y)"
        "  (fields ((immutable x point-x) x)"
        "          ((mutable y point-y set-point-y!) y))"
        "  (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))"
        ""
        "(define *the-cpoint* #f)"
        ""
-       "(define-record-type cpoint (x y c)"
+       "(define-record-type/implicit cpoint (x y c)"
        "  (parent point x y)"
        "  (fields ((mutable rgb) (color->rgb c)))"
        "  (init! (p) (set! *the-cpoint* p)))"

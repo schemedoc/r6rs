@@ -1,4 +1,4 @@
-; Scheme-48-specific part of the implementation of DEFINE-RECORD-TYPE for Records SRFI
+; Scheme-48-specific part of the implementation of DEFINE-RECORD-TYPE/IMPLICIT for Records SRFI
 
 ; Copyright (C) Michael Sperber (2005). All Rights Reserved. 
 ; 
@@ -22,7 +22,7 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(define-syntax define-record-type-2
+(define-syntax define-record-type/implicit-2
   (lambda (form rename compare)
     (let* ((name-spec (caddr form))
 	   (constructor-name
@@ -34,7 +34,7 @@
 		(caddr name-spec)
 		(string->symbol (string-append (symbol->string name-spec) "?")))))
       
-      `(,(rename 'define-simple-record-type) (,(cadr form) ,constructor-name ,predicate-name)
+      `(,(rename 'define-record-type/explicit) (,(cadr form) ,constructor-name ,predicate-name)
 	,(list-ref form 3)		; formals
 	,@(list-ref form 4)))))		; simple clauses
 
@@ -71,7 +71,7 @@
 		 (cdr (cadr form))))
 	   (simple-fields-clause
 	    (cons (caadr form) simple-fields)))
-      `(,(rename 'define-record-type-1) ,(caddr form) ,(cadddr form)
+      `(,(rename 'define-record-type/implicit-1) ,(caddr form) ,(cadddr form)
 	,(list-ref form 4)
 	,(append (list-ref form 5) (list simple-fields-clause))
 	,@(list-tail form 6)))))
