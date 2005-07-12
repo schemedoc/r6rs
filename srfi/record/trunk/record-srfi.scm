@@ -211,6 +211,13 @@
 	(p
 	 "Returns the parent of the record-type descriptor " (var "rtd") ", or "
 	 (code "#f") " if it has none."))
+       (dt
+	(prototype "record-type-sealed?"
+		   (var "rtd")))
+       (dd
+	(p
+	 "Returns a boolean value indicating whether the record-type descriptor is "
+	 "sealed or not."))
 
        (dt
 	(prototype "record-type-uid"

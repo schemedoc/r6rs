@@ -27,6 +27,7 @@
 	   record-type-descriptor?
 	   record-type-name
 	   record-type-parent
+	   record-type-sealed?
 	   record-type-uid
 	   record-type-field-names
 	   record-constructor record-predicate
