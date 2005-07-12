@@ -33,7 +33,7 @@
      (real-record-type-rtd ?record-name))))
 
 (define-syntax define-simple-record-type
-  (syntax-rules (fields parent nongenerative mutable immutable)
+  (syntax-rules (fields parent nongenerative init! mutable immutable)
     ((define-simple-record-type (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?clause ...)
@@ -42,41 +42,55 @@
        #f ()  ; parent rtd, parent init exprs
        "fields-unspecified"
        #f ; nongenerative uid
+       values ; INIT! proc
        ?clause ...))))
 
 (define-syntax define-simple-record-type-1
-  (syntax-rules (fields parent nongenerative mutable immutable)
+  (syntax-rules (fields parent nongenerative init! mutable immutable)
     ;; find PARENT clause
     ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?fields-clause ?nongenerative-clause
+       ?parent-rtd ?parent-init-exprs ?fields-clause ?nongenerative-uid ?init-proc
        (parent ?parent-name ?expr ...)
        ?clause ...)
      (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       (record-type-rtd ?parent-name) (?expr ...) ?fields-clause ?nongenerative-uid
+       (record-type-rtd ?parent-name) (?expr ...) ?fields-clause ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find FIELDS clause
     ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?fields-clause ?nongenerative-uid
+       ?parent-rtd ?parent-init-exprs ?fields-clause ?nongenerative-uid  ?init-proc
        (fields (?field-spec ?init-expr) ...)
        ?clause ...)
      (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs (fields (?field-spec ?init-expr) ...) ?nongenerative-uid
+       ?parent-rtd ?parent-init-exprs (fields (?field-spec ?init-expr) ...) ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find NONGENERATIVE clause
     ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?fields-clause ?nongenerative-uid
+       ?parent-rtd ?parent-init-exprs ?fields-clause ?nongenerative-uid  ?init-proc
        (nongenerative ?uid)
        ?clause ...)
      (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs  ?fields-clause ?uid
+       ?init-proc
+       ?clause ...))
+
+    ;; find INIT! clause
+    ((define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent-rtd ?parent-init-exprs ?fields-clause ?nongenerative-uid  ?init-proc
+       (init! (?r) ?body)
+       ?clause ...)
+     (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent-rtd ?parent-init-exprs  ?fields-clause ?nongenerative-uid
+       (lambda (?r) ?body)
        ?clause ...))
 
     ;; generate code
@@ -84,7 +98,8 @@
        ?formals
        ?parent-rtd (?parent-init-expr ...)
        (fields ((?mutability ?field-name ?procs ...) ?init-expr) ...)
-       ?nongenerative-uid)
+       ?nongenerative-uid
+       ?init-proc)
 
      (begin
        ;; where we need LETREC* semantics if this is to work internally
@@ -99,7 +114,9 @@
        (define ?constructor-name
 	 (let ((make (record-constructor $rtd)))
 	   (lambda ?formals
-	     (make ?parent-init-expr ... ?init-expr ...))))
+	     (let ((r (make ?parent-init-expr ... ?init-expr ...)))
+	       (?init-proc r)
+	       r))))
        
        (define ?predicate-name
 	 (record-predicate $rtd))

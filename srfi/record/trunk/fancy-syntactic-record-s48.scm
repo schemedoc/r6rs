@@ -32,17 +32,11 @@
 	   (predicate-name
 	    (if (pair? name-spec)
 		(caddr name-spec)
-		(string->symbol (string-append (symbol->string name-spec) "?"))))
-	   (real-constructor-name (list-ref form 3)))
+		(string->symbol (string-append (symbol->string name-spec) "?")))))
       
-      `(,(rename 'begin)
-	(,(rename 'define-simple-record-type) (,(cadr form) ,real-constructor-name ,predicate-name)
-	,(list-ref form 4)		; formals
-	,@(list-ref form 5))		; simple clauses
-	(,(rename 'define-constructor-with-init)
-	 ,constructor-name ,real-constructor-name
-	 ,(list-ref form 4)		; formals
-	 ,(list-ref form 6))))))	; init-proc
+      `(,(rename 'define-simple-record-type) (,(cadr form) ,constructor-name ,predicate-name)
+	,(list-ref form 3)		; formals
+	,@(list-ref form 4)))))		; simple clauses
 
 
 (define-syntax process-fields-clause
@@ -80,5 +74,4 @@
       `(,(rename 'define-record-type-1) ,(caddr form) ,(cadddr form)
 	,(list-ref form 4)
 	,(append (list-ref form 5) (list simple-fields-clause))
-	,(list-ref form 6)
-	,@(list-tail form 7)))))
+	,@(list-tail form 6)))))

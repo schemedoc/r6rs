@@ -26,24 +26,18 @@
   (lambda (form)
     (syntax-case form ()
       ((_ ?record-name (?record-name-2 ?constructor-name ?predicate-name)
-       ?real-constructor-name
        ?formals
-       (?simple-clause ...)
-       ?init-proc)
+       (?simple-clause ...))
 
        (syntax
 	(begin
-	  (define-simple-record-type (?record-name ?real-constructor-name ?predicate-name)
+	  (define-simple-record-type (?record-name ?constructor-name ?predicate-name)
 	    ?formals
-	    ?simple-clause ...)
-	  (define-constructor-with-init ?constructor-name ?real-constructor-name
-	    ?formals ?init-proc))))
+	    ?simple-clause ...))))
 
       ((_ ?record-name ?record-name-2
-       ?real-constructor-name
        ?formals
-       (?simple-clause ...)
-       ?init-proc)
+       (?simple-clause ...))
 
        (with-syntax ((?constructor-name
 		      (datum->syntax-object (syntax ?record-name)
@@ -63,10 +57,8 @@
 					    
        (syntax
 	(define-record-type-2 ?record-name (?record-name ?constructor-name ?predicate-name)
-	  ?real-constructor-name
 	  ?formals
-	  (?simple-clause ...)
-	  ?init-proc)))))))
+	  (?simple-clause ...))))))))
 
 (define-syntax process-fields-clause
   (lambda (form)
@@ -75,7 +67,6 @@
 	  ?record-name ?record-name-spec
 	  ?formals
 	  (?simple-clause ...)
-	  ?init-proc
 	  ?clause ...)
 
        (let ((record-name (symbol->string (syntax-object->datum (syntax ?record-name)))))
@@ -125,5 +116,4 @@
 	      ?record-name ?record-name-spec
 	      ?formals
 	      (?simple-clause ... (fields ?simple-field ...))
-	      ?init-proc
 	      ?clause ...))))))))

@@ -371,7 +371,17 @@
 	   "This specifies that the record type be nongenerative with uid "
 	   (meta "uid") " (which must be a " (meta "symbol") "). "
 	   "The absence of a " (code "nongenerative") " clause implies a "
-	   "generative record type.")))
+	   "generative record type."))
+
+	 (dt
+	  (prototype "init!" (code "(") (meta "identifier") (code ")") (meta "expression") "*"))
+	 (dd
+	  (p
+	   "When this clause is specified, the constructor being defined by the "
+	   (code "define-record-type") " form calls "
+	   (code "(lambda (") (meta "identifier") (code ") ") (meta "expression") "*" (code ")")
+	  " with the newly created record as an argument before returning the record object to the "
+	  "caller.  Any return values from the initialization procedure are ignored.")))
 
 	(p
 	 "Whether or not " (code "define-simple-record-type") " creates a new "
@@ -431,7 +441,9 @@
 	 (meta "record name") (code "?") " as the " (meta "predicate name") ".")
 
 	(p
-	 "Each " (meta "simple record clause") " must have one of the following forms:")
+	 "Each " (meta "record clause") " is a either " (meta "simple record clause") ", "
+	 "in which case it means the same as with " (code "define-simple-record-type") ", "
+	 "or it is an extended " (code "fields") " clause:")
 
 	(dl
 	 (dt (prototype "fields" (meta "field-spec")))
@@ -461,35 +473,7 @@
 	   " imply an " (meta "accessor name") " of " (meta "record name") (code "-")
 	   (meta "field name") ", and a " (meta "mutator name") " of "
 	   (meta "record name") (code "-")
-	   (meta "field name") (code "-set!") ".")
-
-	 (dt
-	  (prototype "parent" (meta "parent name") " " (meta "constructor arg") "*"))
-	 (dd
-	  (p
-	   "This is as in " (code "define-simple-record-type") "."))
-
-	 (dt
-	  (prototype "nongenerative" (meta "uid")))
-	 (dd
-	  (p
-	   "This is as in " (code "define-simple-record-type") "."))
-	 
-	 (dt
-	  (prototype "init!" (code "(") (meta "identifier") (code ")") (meta "expression") "*"))
-	 (dd
-	  (p
-	   "When this clause is specified, the constructor being defined by the "
-	   (code "define-record-type") " form calls "
-	   (code "(lambda (") (meta "identifier") (code ") ") (meta "expression") "*" (code ")")
-	  " with the newly created record as an argument before returning the record object to the "
-	  "caller.  Any return values from the initialization procedure are ignored."))
-	 
-
-	 )
-
-	)
-	))
+	   (meta "field name") (code "-set!") ".")))))
 
       (h1 "Examples")
 
