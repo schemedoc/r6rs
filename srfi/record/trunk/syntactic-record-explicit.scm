@@ -67,8 +67,7 @@
        ?clause ...)
      (define-simple-record-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid ?init-proc
-       #t
+       ?parent-rtd ?parent-init-exprs #t ?fields-clause ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find FIELDS clause
