@@ -33,7 +33,8 @@
 	   record-type-opaque?
 	   record-constructor record-predicate
 	   record-accessor record-mutator
-	   record-field-accessible? record-field-mutable?)
+	   record-field-accessible? record-field-mutable?
+	   record? record-type-descriptor)
   (require (only (lib "1.ss" "srfi") list-index find)
 	   (lib "9.ss" "srfi") ; DEFINE-RECORD-TYPE
 	   (lib "26.ss" "srfi"))
