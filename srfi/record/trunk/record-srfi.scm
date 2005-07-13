@@ -68,7 +68,8 @@
        "Also, the procedural layer (already present in the reference implementation of "
        "SRFI 9) is now part of the specification, and allows introspection, the implementation "
        "of portable debuggers and metacircular interpreters that manipulate records compatibly "
-       "with the host language.")
+       "with the host language.  The interface also allows creating " (i "opaque") " record types "
+       "that disallow retrieving the type from a record object.")
 
       (p
        "The syntax is designed to allow future extensions via keyworded clauses.")
@@ -132,7 +133,10 @@
 	(verbatim
 	 "(define-record-type/implicit point (x y))")
 	(p
-	 "Again, this conciseness comes at the cost of more obscure semantics")))
+	 "Again, this conciseness comes at the cost of more obscure semantics"))
+       (li
+	"Should syntactic record-type definitions default to creating opaque or "
+	"non-opaque record types?"))
 
       (p
        "Members of the Scheme community should express their opinion on these questions.")
@@ -148,7 +152,8 @@
 		   (var "parent")
 		   (var "sealed?")
 		   (var "uid")
-		   (var "fields")))
+		   (var "fields")
+		   (var "opaque?")))
        (dd
 	(p
 	 "This creates and returns a " (i "record-type descriptor") ", a value "
@@ -187,7 +192,12 @@
 
 	(p
 	 "The " (var "fields") " argument must be a list of pairwise different "
-	 "symbols naming the fields of the record type."))
+	 "symbols naming the fields of the record type.")
+	(p
+	 "The " (var "opaque?") " flag is boolean.  If it is true, the "
+	 "record type being created is " (i "opaque") ".  This means that calls to "
+	 (code "record-type-descriptor") " (defined below) will return "
+	 (code "#f") " instead of the descriptor."))
 
        (dt
 	(prototype "record-type-descriptor?"
@@ -233,6 +243,14 @@
        (dd
 	(p
 	 "Returns the field names of the record-type descriptor " (var "rtd") "."))
+
+       (dt
+	(prototype "record-type-opaque?"
+		   (var "rtd")))
+       (dd
+	(p
+	 "Returns a boolean value indicating whether the record-type descriptor is "
+	 "opaque or not."))
 
        (dt
 	(prototype "record-constructor"
@@ -344,7 +362,8 @@
        (dd
 	(p
 	 "Given a record " (var "rec") " created by calling "
-	 (code "(record-constructor " (var "rtd") ")") ", returns " (var "rtd") "."))
+	 (code "(record-constructor " (var "rtd") ")") ", returns " (var "rtd") 
+	 " if the record type is non-opaque, and " (code "#f") " otherwise."))
 
        )
 
@@ -445,6 +464,14 @@
 	   "If this clause is specified, it means that the record type being created is "
 	   "sealed and cannot be extended.  If no " (code "sealed") " clause is present, "
 	   "the record type being created is not sealed."))
+
+	 (dt
+	  (code "opaque"))
+	 (dd
+	  (p
+	   "If this clause is specified, it means that the record type being created is "
+	   "opaque.  If no " (code "opaque") " clause is present, "
+	   "the record type being created is not opaque."))
 
 	 (dt
 	  (prototype "nongenerative" (meta "uid")))

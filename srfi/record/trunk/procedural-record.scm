@@ -23,14 +23,15 @@
 ; SOFTWARE.
 
 (define-record-type :record-type-descriptor
-  (really-make-record-type-descriptor name parent sealed? uid fields)
+  (really-make-record-type-descriptor name parent sealed? uid fields opaque?)
   record-type-descriptor?
   (name record-type-name)
   (parent record-type-parent)
   (sealed? record-type-sealed?)
   ;; this is #f in the generative case
   (uid record-type-uid)
-  (fields record-type-field-names))
+  (fields record-type-field-names)
+  (opaque? record-type-opaque?))
 
 (define (record-type-descriptor=? rtd-1 rtd-2)
   (and (eq? (record-type-name rtd-1) (record-type-name rtd-2))
@@ -46,11 +47,11 @@
 
 (define *nongenerative-record-types* '())
 
-(define (make-record-type-descriptor name parent sealed? uid fields)
+(define (make-record-type-descriptor name parent sealed? uid fields opaque?)
   (if (and parent
 	   (record-type-sealed? parent))
       (error "can't extend a sealed parent class" parent))
-  (let ((rtd (really-make-record-type-descriptor name parent sealed? uid fields)))
+  (let ((rtd (really-make-record-type-descriptor name parent sealed? uid fields opaque?)))
     (if uid
 	(cond
 	 ((uid->record-type-descriptor uid)
@@ -84,12 +85,18 @@
 (define-record-type :record
   (really-make-record rtd components)
   record?
-  (rtd record-type-descriptor)
+  (rtd actual-record-type-descriptor)
   (components record-components))
 
 (define (make-record rtd component-count)
   (really-make-record rtd
 		      (make-vector component-count)))
+
+(define (record-type-descriptor r)
+  (let ((rtd (actual-record-type-descriptor r)))
+    (if (record-type-opaque? rtd)
+	#f
+	rtd)))
 
 (define (record-ref record index)
   (vector-ref (record-components record) index))
@@ -120,7 +127,7 @@
 
 (define (record-with-rtd? obj rtd)
   (and (record? obj)
-       (rtd-ancestor? rtd (record-type-descriptor obj))))
+       (rtd-ancestor? rtd (actual-record-type-descriptor obj))))
 
 (define (record-predicate rtd)
   (cut record-with-rtd? <> rtd))

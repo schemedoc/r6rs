@@ -30,6 +30,7 @@
 	  record-type-sealed?
 	  record-type-uid
 	  record-type-field-names
+	  record-type-opaque?
 	  record-constructor record-predicate
 	  record-accessor record-mutator
 	  record-field-accessible? record-field-mutable?

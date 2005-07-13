@@ -41,67 +41,79 @@
        ?formals
        #f ()  ; parent rtd, parent init exprs
        #f ; sealed?
+       #f ; opaque?
        "fields-unspecified"
        #f ; nongenerative uid
        values ; INIT! proc
        ?clause ...))))
 
 (define-syntax define-record-type/explicit-1
-  (syntax-rules (fields parent sealed nongenerative init! mutable immutable)
+  (syntax-rules (parent sealed nongenerative init! opaque fields mutable immutable)
     ;; find PARENT clause
     ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid ?init-proc
+       ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
        (parent ?parent-name ?expr ...)
        ?clause ...)
      (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       (record-type-rtd ?parent-name) (?expr ...) ?sealed? ?fields-clause ?nongenerative-uid ?init-proc
+       (record-type-rtd ?parent-name) (?expr ...) ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find SEALED clause
     ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid ?init-proc
+       ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
        sealed
        ?clause ...)
      (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs #t ?fields-clause ?nongenerative-uid ?init-proc
+       ?parent-rtd ?parent-init-exprs #t ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
+       ?clause ...))
+
+    ;; find OPAQUE clause
+    ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
+       opaque
+       ?clause ...)
+     (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent-rtd ?parent-init-exprs ?sealed? #t ?fields-clause ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find FIELDS clause
     ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid  ?init-proc
+       ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?nongenerative-uid  ?init-proc
        (fields (?field-spec ?init-expr) ...)
        ?clause ...)
      (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?sealed? (fields (?field-spec ?init-expr) ...) ?nongenerative-uid ?init-proc
+       ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? (fields (?field-spec ?init-expr) ...) ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find NONGENERATIVE clause
     ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid  ?init-proc
+       ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?nongenerative-uid  ?init-proc
        (nongenerative ?uid)
        ?clause ...)
      (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?uid
+       ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?uid
        ?init-proc
        ?clause ...))
 
     ;; find INIT! clause
     ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid  ?init-proc
+       ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?nongenerative-uid  ?init-proc
        (init! (?r) ?body)
        ?clause ...)
      (define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       ?parent-rtd ?parent-init-exprs ?sealed? ?fields-clause ?nongenerative-uid
+       ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?nongenerative-uid
        (lambda (?r) ?body)
        ?clause ...))
 
@@ -109,7 +121,7 @@
     ((define-record-type/explicit-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd (?parent-init-expr ...)
-       ?sealed?
+       ?sealed? ?opaque?
        (fields ((?mutability ?field-name ?procs ...) ?init-expr) ...)
        ?nongenerative-uid
        ?init-proc)
@@ -121,7 +133,8 @@
 				      ?parent-rtd
 				      ?sealed?
 				      '?nongenerative-uid
-				      '(?field-name ...)))
+				      '(?field-name ...)
+				      ?opaque?))
 
        (define ?record-name (make-record-type $rtd))
 

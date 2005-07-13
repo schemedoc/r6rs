@@ -57,6 +57,8 @@
 (set-point-y! p1 17)
 (check (point-y p1) => 17)
 
+(check (record-type-descriptor p1) => (record-type-rtd point))
+
 (define-record-type/explicit (point make-point point?) (x y)
   (fields ((immutable x point-x) x)
           ((mutable y point-y set-point-y!) y))
@@ -139,7 +141,7 @@
   (parent point x y)
   (fields ((mutable rgb) (color->rgb c)))
   (init! (p) (set! *ex3-instance* p))
-  sealed)
+  sealed opaque)
 
 (define ex3-i1 (make-ex3 1 2 'red))
 (check (ex3? ex3-i1) => #t)
@@ -147,6 +149,8 @@
 (ex3-rgb-set! ex3-i1 '(rgb . blue))
 (check (ex3-rgb ex3-i1) => '(rgb . blue))
 (check *ex3-instance* => (eq?) ex3-i1)
+
+(check (record-type-descriptor ex3-i1) => #f)
 
 (newline)
 (display "correct tests: ")
