@@ -151,6 +151,11 @@
         (p
          "Again, this conciseness comes at the cost of more obscure semantics."))
        (li
+	"Similarly, one might allow plain symbols to be used as field specifiers "
+	"in the " (var "fields") " argument to " (code "make-record-type-descriptor")
+	", defaulting to mutability or immutability.")
+       
+       (li
         "Should syntactic record-type definitions default to creating opaque or "
         "non-opaque record types?"))
 
@@ -220,15 +225,14 @@
 
         (p
          "The " (var "fields") " argument must be a list of " (var "field specifiers") ". "
-         "Each " (var "field specifier") " must be a " (var "name") ", "
+         "Each " (var "field specifier") " must be "
          "a list of the form " (code "(mutable ") (var "name") (code ")") ", or a list "
          " of the form " (code "(immutable ") (var "name") (code ")") ". "
          "The specified fields are added to the parent fields, if any, to "
          "determine the complete set of fields of the returned record type. "
          "Each " (var "name") " must be a symbol and names the corresponding field of the "
          "record type; the names need not be distinct. "
-         "A field marked mutable may be modified, whereas a field marked immutable may not. "
-         "If the mutability is not specified, the field is mutable by default.")
+         "A field marked mutable may be modified, whereas a field marked immutable may not.")
         (p
          "Where field order is relevant, e.g., for record construction and field access, "
          "the fields are considered to "
