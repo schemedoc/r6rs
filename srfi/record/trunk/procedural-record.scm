@@ -23,15 +23,15 @@
 ; SOFTWARE.
 
 (define-record-type :record-type-descriptor
-  (really-make-record-type-descriptor name parent sealed? uid fields opaque?)
+  (really-make-record-type-descriptor name parent uid sealed? opaque? fields)
   record-type-descriptor?
   (name record-type-name)
   (parent record-type-parent)
-  (sealed? record-type-sealed?)
   ;; this is #f in the generative case
   (uid record-type-uid)
-  (fields record-type-field-names)
-  (opaque? record-type-opaque?))
+  (sealed? record-type-sealed?)
+  (opaque? record-type-opaque?)
+  (fields record-type-field-names))
 
 (define (record-type-descriptor=? rtd-1 rtd-2)
   (and (eq? (record-type-name rtd-1) (record-type-name rtd-2))
@@ -47,7 +47,7 @@
 
 (define *nongenerative-record-types* '())
 
-(define (make-record-type-descriptor name parent sealed? uid fields opaque?)
+(define (make-record-type-descriptor name parent uid sealed? opaque? fields)
   (if (and parent
 	   (record-type-sealed? parent))
       (error "can't extend a sealed parent class" parent))
@@ -55,7 +55,7 @@
 		     (or (record-type-opaque? parent)
 			 opaque?)
 		     opaque?))
-	 (rtd (really-make-record-type-descriptor name parent sealed? uid fields opaque?)))
+	 (rtd (really-make-record-type-descriptor name parent uid sealed? opaque? fields)))
     (if uid
 	(cond
 	 ((uid->record-type-descriptor uid)

@@ -131,10 +131,10 @@
        (define $rtd
 	 (make-record-type-descriptor '?record-name
 				      ?parent-rtd
-				      ?sealed?
 				      '?nongenerative-uid
-				      '(?field-name ...)
-				      ?opaque?))
+				      ?sealed?
+				      ?opaque?
+				      '(?field-name ...)))
 
        (define ?record-name (make-record-type $rtd))
 
