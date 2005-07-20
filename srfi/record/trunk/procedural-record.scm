@@ -51,7 +51,11 @@
   (if (and parent
 	   (record-type-sealed? parent))
       (error "can't extend a sealed parent class" parent))
-  (let ((rtd (really-make-record-type-descriptor name parent sealed? uid fields opaque?)))
+  (let* ((opaque? (if parent
+		     (or (record-type-opaque? parent)
+			 opaque?)
+		     opaque?))
+	 (rtd (really-make-record-type-descriptor name parent sealed? uid fields opaque?)))
     (if uid
 	(cond
 	 ((uid->record-type-descriptor uid)
