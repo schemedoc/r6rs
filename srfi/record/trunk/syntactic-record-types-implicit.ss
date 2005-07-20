@@ -24,9 +24,10 @@
 
 
 (module syntactic-record-types-implicit mzscheme
-  (provide define-record-type/implicit)
+  (provide define-type)
 
-  (require "syntactic-record-types-explicit.ss")
+  (require (rename "syntactic-record-types-explicit.ss"
+		   define-type/explicit define-type))
 
   (require (lib "include.ss"))
   (include "syntactic-record-implicit-r5rs.scm")

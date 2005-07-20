@@ -22,28 +22,28 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(define-syntax define-record-type/implicit
+(define-syntax define-type
   (syntax-rules ()
-    ((define-record-type/implicit (?record-name ?constructor-name ?predicate-name)
+    ((define-type (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?clause ...)
-     (define-record-type/implicit-1 ?record-name (?record-name ?constructor-name ?predicate-name)
+     (define-type-1 ?record-name (?record-name ?constructor-name ?predicate-name)
        ?formals
        ()
        ?clause ...))
-    ((define-record-type/implicit ?record-name
+    ((define-type ?record-name
        ?formals
        ?clause ...)
-     (define-record-type/implicit-1 ?record-name ?record-name
+     (define-type-1 ?record-name ?record-name
        ?formals
        ()
        ?clause ...))))
 
-(define-syntax define-record-type/implicit-1
+(define-syntax define-type-1
   (syntax-rules (fields)
 
     ;; find FIELDS clause
-    ((define-record-type/implicit-1 ?record-name ?record-name-spec
+    ((define-type-1 ?record-name ?record-name-spec
        ?formals
        (?simple-clause ...)
        (fields ((?mutability ?field-name ?proc-names ...) ?init-expr) ...)
@@ -55,21 +55,21 @@
 			    ?clause ...))
 
     ;; collect all other clauses
-    ((define-record-type/implicit-1 ?record-name ?record-name-spec
+    ((define-type-1 ?record-name ?record-name-spec
        ?formals
        (?simple-clause ...)
        ?clause0
        ?clause ...)
-     (define-record-type/implicit-1 ?record-name ?record-name-spec
+     (define-type-1 ?record-name ?record-name-spec
        ?formals
        (?simple-clause ... ?clause0)
        ?clause ...))
 
     ;; pass it on
-    ((define-record-type/implicit-1 ?record-name ?record-name-spec
+    ((define-type-1 ?record-name ?record-name-spec
        ?formals
        (?simple-clause ...))
 
-     (define-record-type/implicit-2 ?record-name ?record-name-spec
+     (define-type-2 ?record-name ?record-name-spec
        ?formals
        (?simple-clause ...)))))

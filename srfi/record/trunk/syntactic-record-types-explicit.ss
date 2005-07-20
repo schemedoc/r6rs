@@ -23,7 +23,7 @@
 ; SOFTWARE.
 
 (module syntactic-record-types-explicit mzscheme
-  (provide define-record-type/explicit
+  (provide define-type
 	   record-type-rtd)
 
   (require (lib "9.ss" "srfi")) ; DEFINE-RECORD-TYPE

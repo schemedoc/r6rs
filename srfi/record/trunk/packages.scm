@@ -47,7 +47,7 @@
   (files procedural-record))
 
 (define-interface syntactic-record-types/explicit-interface
-  (export (define-record-type/explicit :syntax)
+  (export (define-type :syntax)
 	  (record-type-rtd :syntax)))
 
 (define-structure syntactic-record-types/explicit syntactic-record-types/explicit-interface
@@ -57,10 +57,11 @@
   (files syntactic-record-explicit))
 
 (define-interface syntactic-record-types/implicit-interface
-  (export (define-record-type/implicit :syntax)))
+  (export (define-type :syntax)))
 
 (define-structure syntactic-record-types/implicit syntactic-record-types/implicit-interface
   (open scheme
-	syntactic-record-types/explicit)
+	(modify syntactic-record-types/explicit
+		(rename (define-type define-type/explicit))))
   (files syntactic-record-implicit-r5rs
 	 syntactic-record-implicit-s48))
