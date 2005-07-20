@@ -134,7 +134,7 @@
 				      '?nongenerative-uid
 				      ?sealed?
 				      ?opaque?
-				      '(?field-name ...)))
+				      '((?mutability ?field-name) ...)))
 
        (define ?record-name (make-record-type $rtd))
 

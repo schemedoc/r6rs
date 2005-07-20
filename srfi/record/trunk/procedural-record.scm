@@ -22,8 +22,20 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
+(define-record-type :field-spec
+  (make-field-spec mutable? name)
+  field-spec?
+  (mutable? field-spec-mutable?)
+  (name field-spec-name))
+
+(define (field-spec=? spec-1 spec-2)
+  (and (eq? (field-spec-mutable? spec-1)
+	    (field-spec-mutable? spec-2))
+       (eq? (field-spec-name spec-1)
+	    (field-spec-name spec-2))))
+
 (define-record-type :record-type-descriptor
-  (really-make-record-type-descriptor name parent uid sealed? opaque? fields)
+  (really-make-record-type-descriptor name parent uid sealed? opaque? field-specs)
   record-type-descriptor?
   (name record-type-name)
   (parent record-type-parent)
@@ -31,14 +43,15 @@
   (uid record-type-uid)
   (sealed? record-type-sealed?)
   (opaque? record-type-opaque?)
-  (fields record-type-field-names))
+  (field-specs record-type-field-specs))
 
 (define (record-type-descriptor=? rtd-1 rtd-2)
   (and (eq? (record-type-name rtd-1) (record-type-name rtd-2))
        (eq? (record-type-parent rtd-1) (record-type-parent rtd-2))
        (eq? (record-type-uid rtd-1) (record-type-uid rtd-2))
-       (equal? (record-type-field-names rtd-1)
-	       (record-type-field-names rtd-2))))
+       (every field-spec=?
+	      (record-type-field-specs rtd-1)
+	      (record-type-field-specs rtd-2))))
 
 (define (uid->record-type-descriptor uid)
   (find (lambda (rtd)
@@ -47,28 +60,42 @@
 
 (define *nongenerative-record-types* '())
 
-(define (make-record-type-descriptor name parent uid sealed? opaque? fields)
+(define (make-record-type-descriptor name parent uid sealed? opaque? field-specs)
   (if (and parent
 	   (record-type-sealed? parent))
       (error "can't extend a sealed parent class" parent))
-  (let* ((opaque? (if parent
+  (let ((opaque? (if parent
 		     (or (record-type-opaque? parent)
 			 opaque?)
 		     opaque?))
-	 (rtd (really-make-record-type-descriptor name parent uid sealed? opaque? fields)))
-    (if uid
-	(cond
-	 ((uid->record-type-descriptor uid)
-	  => (lambda (old-rtd)
-	       (if (record-type-descriptor=? rtd old-rtd)
-		   old-rtd
-		   (error "mismatched nongenerative record types with identical uids"
-			  old-rtd rtd))))
-	 (else
-	  (set! *nongenerative-record-types* 
-		(cons rtd *nongenerative-record-types*))
-	  rtd))
-	rtd)))
+	(field-specs (map parse-field-spec field-specs)))
+    (let ((rtd (really-make-record-type-descriptor name parent uid sealed? opaque? field-specs)))
+      (if uid
+	  (cond
+	   ((uid->record-type-descriptor uid)
+	    => (lambda (old-rtd)
+		 (if (record-type-descriptor=? rtd old-rtd)
+		     old-rtd
+		     (error "mismatched nongenerative record types with identical uids"
+			    old-rtd rtd))))
+	   (else
+	    (set! *nongenerative-record-types* 
+		  (cons rtd *nongenerative-record-types*))
+	    rtd))
+	  rtd))))
+
+(define (parse-field-spec spec)
+  (apply (lambda (mutability name)
+	   (make-field-spec
+	    (case mutability
+	      ((mutable) #t)
+	      ((immutable) #f)
+	      (else (error "field spec with invalid mutability specification" spec)))
+	    name))
+	 spec))
+
+(define (record-type-field-names rtd)
+  (map field-spec-name (record-type-field-specs rtd)))
 
 (define (field-count rtd)
   (let loop ((rtd rtd)
@@ -76,7 +103,7 @@
     (if (not rtd)
 	count
 	(loop (record-type-parent rtd)
-	      (+ count (length (record-type-field-names rtd)))))))
+	      (+ count (length (record-type-field-specs rtd)))))))
 	 
 
 (define (field-index rtd field)
@@ -144,6 +171,8 @@
 	  (error "accessor applied to bad value" rtd field-id thing)))))
 
 (define (record-mutator rtd field-id)
+  (if (not (field-spec-mutable? (field-spec-ref rtd field-id)))
+      (error "record-mutator called on immutable field" rtd field-id))
   (let ((index (field-id-index rtd field-id)))
     (lambda (thing val)
       (if (record-with-rtd? thing rtd)
@@ -157,13 +186,30 @@
       field-id
       (field-index rtd field-id)))
 
-; dummy implementation
-(define (record-field-accessible? rtd field-id)
-  (field-id-index rtd field-id) ; for error checking
-  #t)
-
-; dummy implementation
 (define (record-field-mutable? rtd field-id)
-  (field-id-index rtd field-id) ; for error checking
-  #t)
+  (field-spec-mutable? (field-spec-ref rtd field-id)))
+
+(define (field-spec-ref rtd field-id)
+  
+  (define (nth rtd index)
+    (list-ref (record-type-field-specs rtd) index))
+  
+  (cond
+   ((number? field-id)
+    (nth rtd (field-index rtd field-id)))
+   ((symbol? field-id)
+    (let loop ((rtd rtd))
+      (cond
+       ((not rtd)
+	(error "invalid field spec" rtd field-id))
+       ((list-index (cut eq? field-id <>) (record-type-field-names rtd))
+	=> (cut nth rtd <>))
+       (else
+	(loop (record-type-parent rtd))))))
+   (else
+    (error "invalid field spec" rtd field-id))))
+	     
+       
+
+   
 

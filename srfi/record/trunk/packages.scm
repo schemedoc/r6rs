@@ -33,13 +33,13 @@
 	  record-type-opaque?
 	  record-constructor record-predicate
 	  record-accessor record-mutator
-	  record-field-accessible? record-field-mutable?
+	  record-field-mutable?
 
 	  record? record-type-descriptor))
 
 (define-structure procedural-record-types procedural-record-types-interface
   (open scheme
-	(subset srfi-1 (list-index find))
+	(subset srfi-1 (list-index find every))
 	srfi-9 ; DEFINE-RECORD-TYPE
 	srfi-23 ; ERROR
 	srfi-26 ; CUT
