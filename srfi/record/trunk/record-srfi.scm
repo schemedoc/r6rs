@@ -408,28 +408,24 @@
            "these expressions become the values of the parent's formals in the "
            "constructor."))
 
-         (dt
-          (prototype "options" (meta "option") "*"))
-         (dd
-          (p
-           "Each " (meta "option") " must be one of the following.")
-          (dl
-           (dt
-            (code "sealed"))
-           (dd
-            (p
-             "If this option is specified, the defined record type is "
-             "sealed, i.e., cannot be extended.  If no " (code "sealed")
-             " option is present, the defined record type is not sealed."))
+	 (dt
+	  (prototype "sealed"))
+	 (dd
+	  (p
+	   "If this option is specified, the defined record type is "
+	   "sealed, i.e., cannot be extended.  If no " (code "sealed")
+	   " option is present, the defined record type is not sealed."))
 
-           (dt
-            (code "opaque"))
-           (dd
-            (p
-             "If this option is specified, it means that the record type is "
-             "opaque.  It is also opaque if an opaque parent is specified. "
-             "If the " (code "opaque") " option is not present and an opaque parent "
-             "is not specified, the record type is not opaque."))))
+	 (dt
+	  (prototype "opaque"))
+	 (dd
+	  (p
+	   "If this option is specified, it means that the record type is "
+	   "opaque.  It is also opaque if an opaque parent is specified. "
+	   "If the " (code "opaque") " option is not present and an opaque parent "
+	   "is not specified, the record type is not opaque."))
+
+
 
          (dt
           (prototype "nongenerative" (meta "uid")))
