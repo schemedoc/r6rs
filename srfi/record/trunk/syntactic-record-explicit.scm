@@ -64,7 +64,7 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
-       sealed
+       (sealed)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
@@ -75,7 +75,7 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-rtd ?parent-init-exprs ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
-       opaque
+       (opaque)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals

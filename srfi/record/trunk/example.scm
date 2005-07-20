@@ -88,7 +88,7 @@
   (parent point x y)
   (fields ((mutable rgb) (color->rgb c)))
   (init! (p) (set! *ex3-instance* p))
-  sealed opaque)
+  (sealed) (opaque))
 
 (define ex3-i1 (make-ex3 1 2 'red))
 (check (ex3? ex3-i1) => #t)
