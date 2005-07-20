@@ -48,7 +48,7 @@
 
 (define-interface syntactic-record-types/explicit-interface
   (export (define-type :syntax)
-	  (record-type-rtd :syntax)))
+	  (type-descriptor :syntax)))
 
 (define-structure syntactic-record-types/explicit syntactic-record-types/explicit-interface
   (open scheme

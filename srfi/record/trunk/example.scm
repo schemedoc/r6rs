@@ -57,7 +57,7 @@
 (set-point-y! p1 17)
 (check (point-y p1) => 17)
 
-(check (record-type-descriptor p1) => (record-type-rtd point))
+(check (record-type-descriptor p1) => (type-descriptor point))
 
 (define-type (point make-point point?) (x y)
   (fields ((immutable x point-x) x)

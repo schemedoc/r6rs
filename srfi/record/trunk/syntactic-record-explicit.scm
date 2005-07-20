@@ -27,9 +27,9 @@
   record-type?
   (rtd real-record-type-rtd))
 
-(define-syntax record-type-rtd
+(define-syntax type-descriptor
   (syntax-rules ()
-    ((record-type-rtd ?record-name)
+    ((type-descriptor ?record-name)
      (real-record-type-rtd ?record-name))))
 
 (define-syntax define-type
@@ -57,7 +57,7 @@
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       (record-type-rtd ?parent-name) (?expr ...) ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
+       (type-descriptor ?parent-name) (?expr ...) ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find SEALED clause

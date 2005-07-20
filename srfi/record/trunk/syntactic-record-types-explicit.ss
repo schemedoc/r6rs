@@ -24,7 +24,7 @@
 
 (module syntactic-record-types-explicit mzscheme
   (provide define-type
-	   record-type-rtd)
+	   type-descriptor)
 
   (require (lib "9.ss" "srfi")) ; DEFINE-RECORD-TYPE
   (require "procedural-record-types.ss")
