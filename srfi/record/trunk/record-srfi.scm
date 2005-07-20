@@ -331,10 +331,9 @@
         (p
          "The " (meta "name-spec") " specifies the names of the record type, constructor, "
          "and predicate.  It must take the form below.")
-          
-          (dl
-           (dt
-            (prototype (meta "record name") (meta "constructor name") (meta "predicate name"))))
+
+	(p
+	 (code "(") (meta "record name") " " (meta "constructor name") " " (meta "predicate name") (code ")"))
          
         (p
          (meta "Record name") ", " (meta "constructor name") ", and " (meta "predicate name")
