@@ -25,19 +25,22 @@
 (define-interface procedural-record-types-interface
   (export make-record-type-descriptor
 	  record-type-descriptor?
-	  record-type-name
+	  record-constructor record-predicate
+	  record-accessor record-mutator))
+
+(define-interface record-reflection-interface
+  (export record-type-name
 	  record-type-parent
 	  record-type-sealed?
 	  record-type-uid
 	  record-type-field-names
 	  record-type-opaque?
-	  record-constructor record-predicate
-	  record-accessor record-mutator
 	  record-field-mutable?
 
 	  record? record-type-descriptor))
 
-(define-structure procedural-record-types procedural-record-types-interface
+(define-structures ((procedural-record-types procedural-record-types-interface)
+		    (record-reflection record-reflection-interface))
   (open scheme
 	(subset srfi-1 (list-index find every))
 	srfi-9 ; DEFINE-RECORD-TYPE

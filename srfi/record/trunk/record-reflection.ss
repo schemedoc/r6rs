@@ -22,11 +22,15 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(module procedural-record-types mzscheme
-  (provide make-record-type-descriptor
-	   record-type-descriptor?
-	   record-constructor record-predicate
-	   record-accessor record-mutator)
+(module record-reflection mzscheme
+  (provide record-type-name
+	   record-type-parent
+	   record-type-sealed?
+	   record-type-uid
+	   record-type-field-names
+	   record-type-opaque?
+	   record-field-mutable?
+	   record? record-type-descriptor)
   (require "procedural-record-types-all.ss"))
 
 	   

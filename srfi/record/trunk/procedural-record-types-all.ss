@@ -22,12 +22,25 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(module procedural-record-types mzscheme
+(module procedural-record-types-all mzscheme
   (provide make-record-type-descriptor
 	   record-type-descriptor?
+	   record-type-name
+	   record-type-parent
+	   record-type-sealed?
+	   record-type-uid
+	   record-type-field-names
+	   record-type-opaque?
 	   record-constructor record-predicate
-	   record-accessor record-mutator)
-  (require "procedural-record-types-all.ss"))
+	   record-accessor record-mutator
+	   record-field-mutable?
+	   record? record-type-descriptor)
+  (require (only (lib "1.ss" "srfi") list-index find every)
+	   (lib "9.ss" "srfi") ; DEFINE-RECORD-TYPE
+	   (lib "26.ss" "srfi"))
+
+  (require (lib "include.ss"))
+  (include "procedural-record.scm"))
 
 	   
   
