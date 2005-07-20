@@ -57,7 +57,8 @@
   (files syntactic-record-explicit))
 
 (define-interface syntactic-record-types/implicit-interface
-  (export (define-type :syntax)))
+  (export (define-type :syntax)
+	  (type-descriptor :syntax)))
 
 (define-structure syntactic-record-types/implicit syntactic-record-types/implicit-interface
   (open scheme
