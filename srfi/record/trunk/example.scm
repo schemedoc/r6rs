@@ -84,17 +84,18 @@
 
 (define *ex3-instance* #f)
 
-(define-type ex3 (x y c)
-  (parent point x y)
-  (fields ((mutable rgb) (color->rgb c)))
+(define-type ex3 (x y t)
+  (parent cpoint x y 'red)
+  (fields ((mutable thickness) t))
   (init! (p) (set! *ex3-instance* p))
   (sealed) (opaque))
 
-(define ex3-i1 (make-ex3 1 2 'red))
+(define ex3-i1 (make-ex3 1 2 17))
 (check (ex3? ex3-i1) => #t)
-(check (ex3-rgb ex3-i1) => '(rgb . red))
-(ex3-rgb-set! ex3-i1 '(rgb . blue))
-(check (ex3-rgb ex3-i1) => '(rgb . blue))
+(check (cpoint-rgb ex3-i1) => '(rgb . red))
+(check (ex3-thickness ex3-i1) => 17)
+(ex3-thickness-set! ex3-i1 18)
+(check (ex3-thickness ex3-i1) => 18)
 (check *ex3-instance* => (eq?) ex3-i1)
 
 (check (record-type-descriptor ex3-i1) => #f)
