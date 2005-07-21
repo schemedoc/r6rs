@@ -2326,8 +2326,9 @@ denominator of 0 is defined to be 1.
 <DT><U>procedure:</U> <CODE>round</CODE> <var>x</var>
 <DD>
 <P>
+<FONT COLOR="red"><STRIKE>These procedures accept finite real numbers and return integers.</STRIKE>
 These procedures return inexact integers on inexact rational
-arguments, and exact integers on rational arguments.
+arguments, and exact integers on rational arguments.</FONT>
 
 <P>
 <CODE>Floor</CODE> returns the largest integer not larger than <VAR>x</VAR>.
@@ -2463,9 +2464,12 @@ negative infinity, then that is the value returned by the function
 applied to <CODE>-inf.0</CODE>.
 
 <P>
+<FONT color="red">
 In the event that these formulae do
 not yield a real result for the given arguments, the
-result may be <code>+nan.0</code>, or may be some meaningless inexact number.
+result may be <code>+nan.0</code>, or may be some meaningless inexact
+number.
+</FONT>
 
 <P>
 The above specification follows <A HREF="#steele-1990">[Steele 1990]</A>, which in turn
@@ -2482,6 +2486,18 @@ these functions.
 (atan -inf.0)                  ==&gt; -1.5707963267948965
 (atan +inf.0)                  ==&gt; 1.5707963267948965
 </PRE>
+
+<P>
+<FONT color="red"><STRIKE>The functions <CODE>sin</CODE>, <CODE>cos</CODE>, <CODE>tan</CODE>,
+<CODE>asin</CODE>, and <CODE>acos</CODE> either return
+<CODE>+nan.0</CODE> or
+report a violation of an implementation restriction
+when given <CODE>+inf.00</CODE>,
+<CODE>-inf.0</CODE>, or <CODE>+nan.0</CODE> as an argument.
+</STRIKE></FONT>
+
+
+
 </DL>
 
 <P>
@@ -2513,22 +2529,37 @@ non-negative imaginary part.
 
 <P>
 Returns <VAR>z1</VAR> raised to the power <VAR>z2</VAR>.
-For <VAR>z1</VAR> ~= 0
+<FONT color="red">For <VAR>z1</VAR> ~= 0</FONT>
 
 <P>
-<VAR>z1</VAR><SUP><VAR>z2</VAR></SUP> = e<SUP><VAR>z2</VAR> log <VAR>z1</VAR></SUP>
+<FONT color="red"><VAR>z1</VAR><SUP><VAR>z2</VAR></SUP> = e<SUP><VAR>z2</VAR> log <VAR>z1</VAR></SUP></FONT>
 
 
 <P>
+<FONT color="red">
 0<SUP><VAR>z</VAR></SUP> is 1 if <VAR>z</VAR> = 0, and 0 if
 <SAMP>`(real-part <VAR>z</VAR>)'</SAMP> is positive.  
 Otherwise, this procedure reports a violation of an implementation restriction
 or returns an unspecified number.
+</FONT>
+
+<FONT COLOR="red"><STRIKE>0^0 is 1.</STRIKE></FONT>
+<P>
+<FONT COLOR="red"><STRIKE>For inexact arguments not both zero</STRIKE></FONT>
+<PRE>
+<FONT COLOR="red"><STRIKE>(define (expt </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z1</STRIKE></FONT></VAR> <VAR><FONT COLOR="red"><STRIKE>z2</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>) (exp (* (if (zero? </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z1</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>) (real-part </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z2</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>) </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z2</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>) (log </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z1</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>))))</STRIKE></FONT>
+</PRE>
+
+<CODE><FONT COLOR="red"><STRIKE>(expt 0.0 </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>)</STRIKE></FONT></CODE><BR>
+<FONT COLOR="red"><STRIKE>returns 1.0 for </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z</STRIKE></FONT></VAR> <FONT COLOR="red"><STRIKE>equal to 0;</STRIKE></FONT><BR>
+<FONT COLOR="red"><STRIKE>returns 0.0 for </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z</STRIKE></FONT></VAR> <FONT COLOR="red"><STRIKE>having positive real part (including +/0.);</STRIKE></FONT><BR>
+<FONT COLOR="red"><STRIKE>returns +/0. for </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z</STRIKE></FONT></VAR> <FONT COLOR="red"><STRIKE>having negative real part (including -/0.); and</STRIKE></FONT><BR>
+<FONT COLOR="red"><STRIKE>returns 0/0. or reports a violation of an implementation restriction otherwise.</STRIKE></FONT>
 
 
 <PRE>
 (expt 5 3)                  ==&gt;  125
-(expt 5 -3)                 ==&gt;  8.0e-3
+(expt 5 -3)                 ==&gt;  1/125
 (expt 5 0)                  ==&gt;  1
 (expt 0 5)                  ==&gt;  0
 (expt 0 5+.0000312i)        ==&gt;  0
