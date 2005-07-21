@@ -9,7 +9,7 @@ SRFI ??: Preliminary Proposal for R6RS Arithmetic
 
 Preliminary Proposal for R6RS Arithmetic
 
-<H2>Authors</H2>
+<H1>Authors</H1>
 
 William D Clinger and Michael Sperber
 
@@ -19,7 +19,7 @@ William D Clinger and Michael Sperber
 </strong>
 </p>
 
-<h2>Abstract</h2>
+<h1>Abstract</h1>
 
 <p>
 Scheme's arithmetic system was designed to allow a wide variety of
@@ -71,7 +71,7 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
 </ul>
 
 
-<h2>Issues</h2>
+<h1>Issues</h1>
 
 <ul>
 <li>Instead of requiring the full numeric tower, the R6RS could
@@ -154,7 +154,7 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     somewhat arbitrary.
 </ul>
 
-<h2>Rationale</h2>
+<h1>Rationale</h1>
 
 <p>
 Most implementations of Scheme fall into
@@ -241,14 +241,14 @@ build on the exact arithmetic described in section <a href="#exact">Exact Arithm
 and the inexact arithmetic described in section <a href="#inexact">Inexact Arithmetic</a>.
 
 
-<h2>Specification</h2>
+<h1>Specification</h1>
 
 <P>
 We assume that Section 6.2.3 of the R5RS remains essentially as it
 stands.  The text of this SRFI describes the differences between the proposed
 additions and changes to the R5RS and/or SRFI 70.
 
-<h3>External Representations</h3>
+<h2>External Representations</h2>
 
 <p>
 This SRFI adds the following external representations to Scheme:
@@ -373,7 +373,7 @@ or exponents or mantissa widths must be in decimal radix.
 &lt;digit 16&gt;  --&gt;  &lt;digit 10&gt;  |  a  |  b  |  c  |  d  |  e  |  f
 </PRE>
 
-<h3>Safe and Unsafe Mode</h3>
+<h2>Safe and Unsafe Mode</h2>
 
 <P>
 This SRFI allows a Scheme implementation to run code in one of two global
@@ -394,7 +394,7 @@ mode.  Specifically, a procedure call for which all bets are off is
 free to crash the system.
 </p>
 
-<h3><a name="integer-division">Integer Division</a></h3>
+<h2><a name="integer-division">Integer Division</a></h2>
 
 <P>
 For various kinds of arithmetic (fixnum, flonum, exact, inexact, and
@@ -536,7 +536,7 @@ can easily be defined through <CODE>div</CODE> and <CODE>mod</CODE>:
 
 
 
-<h3>Numerical Type Predicates</h3>
+<h2>Numerical Type Predicates</h2>
 
 <font color=red>
 The following description is a revised form of the description
@@ -655,7 +655,7 @@ support some kind of non-complex numbers.
 </DL>
 
 
-<h3>Generic Conversions</h3>
+<h2>Generic Conversions</h2>
 
 <P>
 <DL>
@@ -711,7 +711,7 @@ means for reliably ensuring that a number is converted to a flonum.
 </BLOCKQUOTE>
 </DL>
 
-<h3>Numerical input and output</h3>
+<h2>Numerical input and output</h2>
 
 <P>
 <DL>
@@ -830,7 +830,7 @@ An implementation may return <CODE>#f</CODE> for <CODE>"+nan.0"</CODE>.</STRIKE>
 
 </DL>
 
-<h3>Fixnums</h3>
+<h2>Fixnums</h2>
 
 <p>
 Every implementation must define its fixnum range as a closed
@@ -1030,7 +1030,7 @@ returns the result of that shift congruent mod <var>hi-lo+1</var>.
 </DL>
 
 
-<h3>Flonums</h3>
+<h2>Flonums</h2>
 
 <p>
 <strong>Definition.</strong>
@@ -1360,7 +1360,7 @@ Otherwise, the result may be <code>+nan.0</code>, or may be some
 meaningless flonum.
 </DL>
 
-<h3>Fixnum/Flonum Conversions</h3>
+<h2>Fixnum/Flonum Conversions</h2>
 
 <P>
 <DL>
@@ -1398,14 +1398,14 @@ case all bets are off.
 
 </dl>
 
-<h3>
+<h2>
 IEEE Binary Floating Arithmetic
-</h3>
+</h2>
 
 <p>
-Although the R6RS should not require IEEE floating point arithmetic,
-it should address certain specific issues of IEEE arithmetic.  In
-particular, the R6RS should explain that
+Although the R6RS does not require IEEE floating point arithmetic,
+it does address certain specific issues of IEEE arithmetic.  In
+particular,
 </p>
 <pre>
     0.0
@@ -1418,7 +1418,7 @@ particular, the R6RS should explain that
 are likely to be distinct flonums.  The first two are inexact
 rationals, but <code>+inf.0</code>, <code>-inf.0</code>, and
 <code>+nan.0</code> are not rationals.
-The R6RS should also explain that
+Also,
 </p>
 <pre>
     (fl= 0.0 -0.0)                                =&gt;  #t
@@ -1450,7 +1450,7 @@ according to the IEEE standards.
 </p>
 
 
-<h3><a name="exact">Exact Arithmetic</A></h3>
+<h2><a name="exact">Exact Arithmetic</A></h2>
 
 <p>
 The exact arithmetic provides generic operations on exact numbers;
@@ -1670,7 +1670,7 @@ rationals.  Suppose <VAR>z</VAR> is a complex number such that
 </PRE>
 </DL>
 
-<h3><a name="inexact">Inexact Arithmetic</A></h3>
+<h2><a name="inexact">Inexact Arithmetic</A></h2>
 
 <p>
 The inexact arithmetic provides generic operations on inexact numbers.  The
@@ -1985,7 +1985,7 @@ The behavior of <CODE>inmake-rectangular</CODE> and
 <CODE>inmake-polar</CODE> given non-rational arguments is unspecified.
 </DL>
 
-<h3><a name="r5rs-generic">R5RS-style Generic Arithmetic</a></h3>
+<h2><a name="r5rs-generic">R5RS-style Generic Arithmetic</a></h2>
 
 <font color=red>
 The following description is a revised form of the description
@@ -2660,7 +2660,7 @@ the sign.  It returns <VAR>ei1</VAR> when <VAR>ei2</VAR> = 0.
 </DD>
 </DL>
 
-<h3><a name="exact-generic">Generic Exact Arithmetic</a></h3>
+<h2><a name="exact-generic">Generic Exact Arithmetic</a></h2>
 
 <p>This specification of exact arithmetic is an alternative to the
 R5RS-style generic arithmetic described in the previous section.
@@ -2968,7 +2968,7 @@ the sign.  It returns <var>n1</VAR> when <var>n2</VAR> = 0.
 </DL>
 
 
-<h2>References</h2>
+<h1>References</h1>
 
     <ul>
       <li><a name="burger-dybvig-1996">[Burger, Dybvig 1996]</a> Robert G. Burger and R. Kent Dybvig. Printing floating-point numbers quickly and accurately. In Proceedings of the ACM SIGPLAN '96 Conference on Programming Language Design and Implementation, pages 108-116.
@@ -2991,7 +2991,7 @@ the sign.  It returns <var>n1</VAR> when <var>n2</VAR> = 0.
 
 
 
-<h2>Acknowledgements</h2>
+<h1>Acknowledgements</h1>
 
 We thank Anton van Straaten, Kent Dybvig, Sebastian Egner, Mike
 Ashley, Marc Feeley, Matthew Flatt, Manuel Serrano for direct and
