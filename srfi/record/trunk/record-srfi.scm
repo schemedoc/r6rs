@@ -137,6 +137,42 @@
          "Arguably, the added verbosity contains valuable information.  Moreover, "
          "it is trivial to define forms like " (code "define-struct") " on top "
          "of this proposal.")
+
+	(p
+	 "Furthermore, the proposed syntax generalizes gracefully beyond this "
+	 "trivial sort of record definition, as illustrated by the two record "
+	 "definitions below.")
+
+	(verbatim
+	 "(define-type hash-table (pred hasher size)"
+	 "  (fields ((immutable pred) pred)"
+	 "          ((immutable hasher) hasher)"
+	 "          ((mutable data) (make-vector (nearest-prime size)))"
+	 "          ((mutable count) 0)))"
+	 ""
+	 "(define-type eq-hash-table (pred hasher size)"
+	 "  (parent hash-table pred hasher size)"
+	 "  (fields ((mutable gc-count) gc-count)))")
+
+	(p
+	 "The first defines a " (code "hash-table") " record with four fields: "
+	 (code "pred") ", " (code "hasher") ", "
+	 (code "data") ", and " (code "count") ".  "
+	 "Two of the fields, " (code "pred") " and " (code "hasher") ", are immutable "
+	 "and set to the values of the first two constructor arguments.  The "
+	 (code "data") " field is initialized to a vector whose size is a "
+	 "function of the third constructor argument.  "
+	 "The " (code "count") "field is initialized to zero.")
+
+	(p
+	 "The second extends the " (code "hash-table") 
+	 " record to form an " (code "eq-hash-table")
+	 "record with an additional " (code "gc-count") " field, used in systems whose "
+	 "collectors move objects to determine if a collection has occurred "
+	 "since the last rehash.  The child record does not initialize the "
+	 "parent fields directly but rather defers to the initialization code "
+	 "in the parent record definition by passing along the constructor "
+	 "arguments.")
         (p
          "It would be possible to introduce abbreviations into the syntax. "
          "In the " (code "fields") " clause, a single identifier could serve as a shorthand "
