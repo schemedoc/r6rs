@@ -124,9 +124,11 @@
 	      `("&lt;" ,@term "&gt;")))
 	(prototype
 	 . ,(lambda (tag name . args)
-	      `("<code>(" ,name " </code>"
-		,@(list-intersperse args " ")
-		"<code>)</code>")))
+	      (if (null? args)
+		  `("<code>(" ,name ")</code>")
+		  `("<code>(" ,name " </code>"
+		    ,@(list-intersperse args " ")
+		    "<code>)</code>"))))
 
 	(comment
 	 . ,(lambda (tag . args)
