@@ -105,7 +105,7 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
 <li>Should a minimum precision be required for fixnums or flonums?
 <li>Should the range of a fixnum be restricted to a power of two?
     To a two's complement range?
-<li>Should the binary fixnum/flonums operations allow other than
+<li>Should the binary fixnum/flonum operations allow other than
     two arguments?
 <li>What are the semantics of "safe mode" and "unsafe mode"?
     (This is a much larger question that the R6RS should address.)
@@ -133,7 +133,7 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     Will Clinger prefers the 4th possibility, Mike Sperber the 5th.
     Members of the Scheme community should express themselves on this
     issue.
-<li>If the R6RS adopts a R5RS-style model for the generic arithmetic,
+<li>If the R6RS does not adopts a R5RS-style model for the generic arithmetic,
     should it still provide more R5RS-compatible generic arithmetic as
     a library?
 <li>The external representations of 0.0, -0.0, infinities and NaNs
@@ -285,21 +285,21 @@ This SRFI adds the following external representations to Scheme:
 <li>If <var>x</var> is an external representation of an inexact
     real number according to the R5RS, and <var>p</var> is a
     sequence of 1 or more decimal digits, then
-    <var>x</var>|<var>p</var>
+    <var>x</var><code>|</code><var>p</var>
     is an external representation that denotes the
     best binary floating point approximation to <var>x</var>
     using a <var>p</var>-bit significand.
-    For example, 1.1|53 is an external representation for the
+    For example, <code>1.1|53</code> is an external representation for the
     best approximation to 1.1 in IEEE double precision.
 <li>If <var>x</var> is an external representation of an inexact
     real number according to the R5RS, then <var>x</var> by
     itself should be regarded as equivalent to
-    <code><var>x</var>|53</code>.
+    <code><var>x</var><code>|</code>53</code>.
 </ul>
 
 <p>
 Implementations that use binary floating point representations
-of real numbers should represent <var>x</var>|<var>p</var>
+of real numbers should represent <var>x</var><code>|</code><var>p</var>
 using a <var>p</var>-bit significand if practical, or by a greater
 precision if a <var>p</var>-bit significand is not practical, or
 by the largest available precision if <var>p</var> or more bits
@@ -316,7 +316,7 @@ significant bit is implicit in single and double precision but
 is explicit in extended precision.  Whether that bit is implicit
 or explicit does not affect the mathematical precision.
 In implementations that use binary floating point, the default
-precision can calculated by calling the following procedure:
+precision can be calculated by calling the following procedure:
 </p>
 <pre>
     (define (precision)
@@ -330,14 +330,14 @@ precision can calculated by calling the following procedure:
 <p>
 <em>Note:</em>
 When the underlying floating-point representation is IEEE double
-precision, the |<var>p</var> suffix cannot be omitted for all cases:
+precision, the <code>|</code><var>p</var> suffix cannot be omitted for all cases:
 Denormalized numbers have diminished precision, and therefore must
-carry a |<var>p</var> suffix with the actual width of the signficand.
+carry a <code>|</code><var>p</var> suffix with the actual width of the signficand.
 </BLOCKQUOTE>
 
 <p>
 The <code>number-&gt;string</code> procedure should be generalized
-to support the <var>x</var>|<var>p</var> notation.
+to support the <var>x</var><code>|</code><var>p</var> notation.
 </p>
 
 <p>
@@ -409,7 +409,7 @@ The R6RS should require a Scheme implementation to provide the safe
 mode.
 
 <p>
-The SRFI uses the phrase "all bets are off" to describe that the
+This SRFI uses the phrase "all bets are off" to describe that the
 behavior of a procedure is unspecified for certain arguments in unsafe
 mode.  Specifically, a procedure call for which all bets are off is
 free to crash the system.
@@ -422,7 +422,7 @@ For various kinds of arithmetic (fixnum, flonum, exact, inexact, and
 generic), this SRFI provides operations for performing integer
 division.  Their variants differ mainly in the domains they operate
 on, not in substance.  The following specification is of the general
-variant.  Later section will link back to this one where appropriate.
+variant.  Later sections will link back to this one where appropriate.
 </P>
 
 <P>
@@ -438,13 +438,14 @@ These implement integer division and remainder on real numbers.
 <PRE>
 (div <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>n<SUB>d</SUB></VAR>
 (mod <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>x<SUB>m</SUB></VAR>
+(div+mod <VAR>x1</VAR> <VAR>x2</VAR>)              ==&gt; (div <VAR>x1</VAR> <VAR>x2</VAR>) (mod <VAR>x1</VAR> <VAR>x2</VAR>) ; two return values
 </PRE>
 
 where:
 	<ol>
 	  <li><VAR>x1</VAR> = <VAR>n<SUB>d</SUB></VAR> * <VAR>x2</VAR> +
 	  <VAR>x<SUB>m</SUB></VAR>.</li>
-	  <li>0 &lt;= <VAR>x<SUB>m</SUB></VAR> &lt; <VAR>x2</VAR> if <VAR>y</VAR>
+	  <li>0 &lt;= <VAR>x<SUB>m</SUB></VAR> &lt; <VAR>x2</VAR> if <VAR>x2</VAR>
 	  &gt; 0</li>
 	  <li><VAR>x2</VAR>/2 &lt;= <VAR>x<SUB>m</SUB></VAR> &lt;
 	  -<VAR>x2</VAR>/2 if <VAR>x2</VAR> &lt; 0</li>
@@ -476,7 +477,14 @@ reduction.  For details, see the paper by Egner et. al
 <P>
 These procedures implement number-theoretic (integer)
 division.  <VAR>n2</VAR> should be non-zero.
-All three procedures return integers.
+<code>Quotient</code>, <code>remainder</code>, and <code>modulo</code>
+return integers; <code>quotient+remainder</code> returns two integers.
+
+<PRE>
+(quotient+remainder <VAR>n1</VAR> <VAR>n2</VAR>)         ==&gt; (quotient <VAR>n1</VAR> <VAR>n2</VAR>) (remainder <VAR>n1</VAR> <VAR>n2</VAR>) ; two return values
+</PRE>
+
+<P>
 If <VAR>n1</VAR>/<VAR>n2</VAR> is an integer:
 
 <PRE>
@@ -496,7 +504,8 @@ If <VAR>n1</VAR>/<VAR>n2</VAR> is not an integer:
 <P>
 where <VAR>n<SUB>q</SUB></VAR> is <VAR>n1</VAR>/<VAR>n2</VAR> rounded towards zero,
 0 &lt; |<VAR>n<SUB>r</SUB></VAR>| &lt; |<VAR>n2</VAR>|, 0 &lt; |<VAR>n<SUB>m</SUB></VAR>| &lt; |<VAR>n2</VAR>|,
-<VAR>n<SUB>r</SUB></VAR> and <VAR>n<SUB>m</SUB></VAR> differ from <VAR>n1</VAR> by a multiple of <VAR>n2</VAR>,
+<VAR>n<SUB>r</SUB></VAR> and <VAR>n<SUB>m</SUB></VAR> differ from
+<VAR>n1</VAR> by an integral multiple of <VAR>n2</VAR>,
 <VAR>n<SUB>r</SUB></VAR> has the same sign as <VAR>n1</VAR>, and
 <VAR>n<SUB>m</SUB></VAR> has the same sign as <VAR>n2</VAR>.
 
@@ -719,17 +728,26 @@ implementation-dependent range.
 <CODE>#t</CODE>.  On other kinds of numbers, the behavior is
 unspecified.
 
-The value returned is the flonum that is numerically closest to the
+The value returned is a flonum that is numerically closest to the
 argument.
 
 <BLOCKQUOTE>
 <P>
-<EM>Rationale:</EM> Traditionally, <CODE>exact-&gt;>inexact</CODE> has
+<EM>Rationale:</EM> Traditionally, <CODE>exact-&gt;inexact</CODE> has
 been used to convert numbers to a flonum representation.  However, a
 Scheme system may have representations for real numbers other than
 flonums.  Without <CODE>number-&gt;flonum</CODE>, a program has no
 means for reliably ensuring that a number is converted to a flonum.
 </BLOCKQUOTE>
+
+<BLOCKQUOTE>
+<P>
+<EM>Note:</EM> For flonum representations such as IEEE binary floating
+point, Scheme implementations are strongly encouraged to break ties
+by preferring the flonum whose least significant bit is zero.
+</BLOCKQUOTE>
+
+
 </DL>
 
 <h2>Numerical input and output</h2>
@@ -790,10 +808,11 @@ or is a complex number with a non-rational real or imaginary part.
 <BLOCKQUOTE>
 <P>
 <EM>Rationale:</EM>
-If <VAR>z</VAR> is an inexact number represented using flonums, and
-the radix is 10, then the above expression is normally satisfied by
+If <VAR>z</VAR> is an inexact number represented using binary floating
+point, and the radix is 10, then the above expression is normally satisfied by
 a result containing a decimal point.  The unspecified case
-allows for infinities, NaNs, and non-flonum representations.
+allows for infinities, NaNs, and representations other than binary
+floating point.
 </BLOCKQUOTE>
 
 </DL>
@@ -896,7 +915,7 @@ We will use <var>fx</var>, <var>fx1</var> and <var>fx2</var> as metavariables
 that range over fixnums.
 </P>
 <p>
-If an argument to following procedures that corresponding to a fixnum
+If an argument to the following procedures that corresponds to a fixnum
 metavariable is not actually a fixnum, then these procedures signal an
 error, unless the implementation is running in unsafe mode, in which
 case all bets are off.
@@ -916,7 +935,7 @@ case all bets are off.
 These procedures return <TT>#t</TT> if their arguments are (respectively):
 equal, monotonically increasing, monotonically decreasing,
 monotonically nondecreasing, or monotonically nonincreasing,
-code <code>#f</code> otherwise.
+<code>#f</code> otherwise.
 </P>
 </DD>
 </DL>
@@ -1086,7 +1105,7 @@ metavariables that range over flonums, and <var>ifl</var>,
 integral flonums, i.e. flonums that represent integers.
 </p>
 <p>
-If an argument to following procedures that corresponding to a
+If an argument to the following procedures that corresponds to a
 (integral) flonum metavariable is not actually a (integral) flonum,
 then these procedures signal an error, unless the implementation is
 running in unsafe mode, in which case all bets are off.
@@ -1188,7 +1207,7 @@ is reasonably well-defined by the IEEE standards.)
 </P>
 
 <P>
-For undefined quotients, <code>fl-</code> behaves as specified by the
+For undefined quotients, <code>fl/</code> behaves as specified by the
 IEEE standards:
 
 <PRE>
@@ -1244,14 +1263,16 @@ multiple of their arguments.
 <DD>
 <P>
 These procedures return the numerator or denominator of their
-argument; the result is computed as if the argument was represented as
+argument as a flonum; the result is computed as if the argument was represented as
 a fraction in lowest terms.  The denominator is always positive.  The
 denominator of 0 is defined to be 1.
 <PRE>
 (flnumerator +inf.0)           ==&gt;  +inf.0
 (flnumerator -inf.0)           ==&gt;  -inf.0
-(fldenominator +inf.0)           ==&gt;  1.0
-(fldenominator -inf.0)           ==&gt;  1.0
+(fldenominator +inf.0)         ==&gt;  1.0
+(fldenominator -inf.0)         ==&gt;  1.0
+(flnumerator 0.75)             ==&gt;  3.0 ; example
+(fldenominator 0.75)           ==&gt;  4.0 ; example
 </PRE>
 </DL>
 
@@ -1380,7 +1401,7 @@ meaningless flonum.
 <DD>
 <p>
 Returns <VAR>fl1</VAR> raised to the power <VAR>fl2</VAR>.
-For <VAR>fl1</VAR><SUB>1</SUB> ~= 0
+For nonzero <VAR>fl1</VAR>
 
 <P>
 <VAR>fl1</VAR><SUP><VAR>fl2</VAR></SUP> = e<SUP><VAR>z2</VAR> log <VAR>z1</VAR></SUP>
@@ -1525,9 +1546,10 @@ and
 </p>
 
 <p>
-If an argument to following procedures that corresponding to an exact
+If an argument to the following procedures that corresponds to an exact
 (rational, integer) metavariable is not actually an exact (rational,
-integer) number, then these procedures signal an error.
+integer) number, then these procedures signal an error, even in unsafe
+mode.
 </p>
 
 <P>
@@ -1712,8 +1734,8 @@ rationals.  Suppose <VAR>z</VAR> is a complex number such that
 <p>
 The inexact arithmetic provides generic operations on inexact numbers.  The
 inexact numbers include reals and inexact complex numbers, both of
-which are distinguishable from the exact numbers.  The inexact reals
-include the flonums, and the procedures described here behave
+which are distinguishable from the exact numbers.  The inexact complex
+numbers include the flonums, and the procedures described here behave
 consistently with the corresponding flonum procedures if passed flonum
 arguments.
 </p>
@@ -1749,9 +1771,9 @@ metavariables that range over the inexact integers.
 </p>
 
 <p>
-If an argument to following procedures that corresponding to an inexact
+If an argument to the following procedures that corresponds to an inexact
 metavariable is not actually an inexact number, then these procedures signal an
-error.  The same holds true for arguments corresponding to inexact
+error, even in unsafe mode.  The same holds true for arguments corresponding to inexact
 real metavariables.
 </p>
 
@@ -1982,7 +2004,7 @@ these functions.
 <DD>
 <P>
 Returns <VAR>in1</VAR> raised to the power <VAR>in2</VAR>.
-For <VAR>in1</VAR> ~= 0
+For nonzero <VAR>in1</VAR>
 
 <P>
 <VAR>in1</VAR><SUP><VAR>in2</VAR></SUP> = e<SUP><VAR>in2</VAR> log <VAR>in1</VAR></SUP>
@@ -2579,7 +2601,7 @@ non-negative imaginary part.
 
 <P>
 Returns <VAR>z1</VAR> raised to the power <VAR>z2</VAR>.
-<FONT color="red">For <VAR>z1</VAR> ~= 0</FONT>
+<FONT color="red">For nonzero <VAR>z1</VAR></FONT>
 
 <P>
 <FONT color="red"><VAR>z1</VAR><SUP><VAR>z2</VAR></SUP> = e<SUP><VAR>z2</VAR> log <VAR>z1</VAR></SUP></FONT>
@@ -2802,10 +2824,10 @@ and
 </p>
 
 <p>
-If an argument to following procedures that corresponding to an exact
+If an argument to the following procedures that corresponds to an exact
 metavariable is not actually a rational or complex number with
 rational real and imaginary part, these procedures signal an
-error.
+error, even in unsafe mode.
 </p>
 
 <P>
