@@ -494,13 +494,24 @@
            "before the instance is returned from the constructor. "
            "Parent init expressions, if any, are evaluated before child init "
            "expressions.  The values of the expressions are ignored.")))
-
+	
 	(p
 	 "Note that all bindings created by this form (for the record type, "
 	 "the constructor, the predicate, the accessors, and the mutators) "
 	 "must have names that are pairwise distinct.")
 	
-        )
+	(p
+	 "If the " (code "define-type") " form has a " (code "nongenerative") " clause, "
+	 "a subsequent evaluation of an identical " (code "define-type") " form will "
+	 "reuse the previously created rtd, and create identical bindings.  If the "
+	 "implied arguments to " (code "make-record-type-descriptor") " are the same as with "
+	 "a previously evaluated " (code "define-type") " form are the same, but other parts of the "
+	 "form are different (i.e. the names of the created procedures, the signature of the "
+	 "constructor procedure, or the initial field values), the behavior is unspecified---"
+	 "an error may or may not be signalled.  "
+	 "If the implied arguments to " (code "make-record-type-descriptor") " are not the same, "
+	 "an error is signalled."
+	 ))
 
        (dt
         (prototype "type-descriptor"
