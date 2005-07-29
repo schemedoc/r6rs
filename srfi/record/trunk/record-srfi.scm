@@ -246,6 +246,11 @@
          "before, " (code "make-record-type-descriptor") " returns a fresh "
          "record-type descriptor representing a new type disjoint from all other types.")
 
+	(p
+	 "If " (var "parent") " is not " (code "#f") ", and " (var "uid")
+	 " is not " (code "#f") ", and the parent is generative "
+	 " (i.e. its uid is " (code "#f") "), an error is signalled.")
+
         (p
          "The " (var "sealed?") " flag is a boolean.  If true, the "
          "returned record type is " (i "sealed") ", i.e., it cannot be extended.")
