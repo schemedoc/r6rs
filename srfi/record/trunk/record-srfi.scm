@@ -490,6 +490,12 @@
            "before the instance is returned from the constructor. "
            "Parent init expressions, if any, are evaluated before child init "
            "expressions.  The values of the expressions are ignored.")))
+
+	(p
+	 "Note that all bindings created by this form (for the record type, "
+	 "the constructor, the predicate, the accessors, and the mutators) "
+	 "must have names that are pairwise distinct.")
+	
         )
 
        (dt
