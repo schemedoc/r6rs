@@ -530,7 +530,7 @@
        " a conservative extension of " (code "define-type") " form of the "
        "explicit-naming layer: "
        "a " (code "define-type") " form that conforms to the syntax of the "
-       "implicit-naming layer also conforms tot he syntax of the "
+       "implicit-naming layer also conforms to the syntax of the "
        "explicit-naming layer, and any definition in the explicit-naming layer "
        "can be understood its translation into the implicit-naming layer.")
 
