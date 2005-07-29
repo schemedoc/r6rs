@@ -302,7 +302,10 @@
         (p
          "Two records created by such a constructor are equal according to " 
          (code "equal?")
-         " iff they are " (code "eq?") "."))
+         " if they are " (code "eq?") ".  If they are not " (code "eq?")
+	 ", the result of comparing them via " (code "equal?")
+	 " is unspecified."))
+
 
        (dt
         (prototype "record-predicate"
