@@ -133,13 +133,8 @@
          "(define-type point (x y)"
          "  (fields ((mutable x) x)"
          "          ((mutable y) y)))")
-        (p
-         "Arguably, the added verbosity contains valuable information.  Moreover, "
-         "it is trivial to define forms like " (code "define-struct") " on top "
-         "of this proposal.")
-
 	(p
-	 "Furthermore, the proposed syntax generalizes gracefully beyond this "
+	 "On the other hand, the proposed syntax generalizes gracefully beyond this "
 	 "trivial sort of record definition, as illustrated by the two record "
 	 "definitions below.")
 
@@ -162,12 +157,12 @@
 	 "and set to the values of the first two constructor arguments.  The "
 	 (code "data") " field is initialized to a vector whose size is a "
 	 "function of the third constructor argument.  "
-	 "The " (code "count") "field is initialized to zero.")
+	 "The " (code "count") " field is initialized to zero.")
 
 	(p
 	 "The second extends the " (code "hash-table") 
 	 " record to form an " (code "eq-hash-table")
-	 "record with an additional " (code "gc-count") " field, used in systems whose "
+	 " record with an additional " (code "gc-count") " field, used in systems whose "
 	 "collectors move objects to determine if a collection has occurred "
 	 "since the last rehash.  The child record does not initialize the "
 	 "parent fields directly but rather defers to the initialization code "
@@ -175,8 +170,8 @@
 	 "arguments.")
         (p
          "It would be possible to introduce abbreviations into the syntax. "
-         "In the " (code "fields") " clause, a single identifier could serve as a shorthand "
-         "for a " (code "mutable") " or " (code "immutable") " clause:")
+         "In the " (code "fields") " clause, a single identifier might serve as a shorthand "
+         "for a " (code "mutable") " clause:")
         (verbatim
          "(define-type point (x y) (fields (x x) (y y)))")
         (p
@@ -184,8 +179,13 @@
          "with the constructor formals serving as implicit field names and initializers:")
         (verbatim
          "(define-type point (x y))")
-        (p
-         "Again, this conciseness comes at the cost of more obscure semantics."))
+	(p
+	 "Allowing such abbreviations would make some record definitions more "
+	 "concise but may also discourage programmers from specifying valuable "
+	 "field mutability information and taking advantage of nontrivial "
+	 "field initializers.  In any case, it is trivial to define forms like "
+	 (code "define-struct") " on top of this proposal."))
+
        (li
 	"Similarly, one might allow plain symbols to be used as field specifiers "
 	"in the " (var "fields") " argument to " (code "make-record-type-descriptor")
