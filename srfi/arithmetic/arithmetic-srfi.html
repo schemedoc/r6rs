@@ -109,6 +109,9 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     two arguments?
 <li>What are the semantics of "safe mode" and "unsafe mode"?
     (This is a much larger question that the R6RS should address.)
+<li>Should the R6RS allow other inexact reals beside the flonums?
+    This draft does allow them, at the cost of some complications and
+    additions such as <code>number-&gt;flonum</code>.
 <li>Should the R5RS procedures for generic arithmetic (e.g. <code>+</code>)
     remain in R6RS?  Here are five possible answers, phrased in
     terms of the <code>+</code> procedure:
@@ -145,6 +148,18 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     integers (such as 
     <code>quotient+remainder</code>, <code>gcd</code> and <code>lcm</code>), and others that are easily abused
     (such as <code>fxabs</code>).  Should these be pruned?
+<li>The R5RS says this:
+<blockquote>
+<P>
+<EM>Rationale:</EM>
+<CODE>Magnitude</CODE> is the same as <CODE>abs</CODE> for a real argument,
+but <CODE>abs</CODE> must be present in all implementations, whereas
+<CODE>magnitude</CODE> need only be present in implementations that support
+general complex numbers.
+</blockquote>
+    Given that this SRFI suggests requiring all implementations to
+    support the general complex numbers, should <code>abs</code> (and
+    <code>exabs</code> and <code>inabs</code>) be removed?
 <li>The <code>real?</code>, <code>rational?</code>, and <code>integer?</code> predicates must
     return false for complex numbers with an imaginary part
     of inexact zero, as non-realness is now contagious.
@@ -1051,7 +1066,8 @@ congruent mod <var>hi-lo+1</var>.
 The <CODE>fxbitwise-and</CODE> procedure returns the fixnum which is the bit-wise "and" of 
 the two's complement representations of its
 arguments congruent mod <var>hi-lo+1</var>.
-The <CODE>fxbitwise-ior</CODE> procedure returns the fixnum which is the bit-wise "or" of
+The <CODE>fxbitwise-ior</CODE> procedure returns the fixnum which is
+the bit-wise inclusive "or" of
 the two's complement representations of its
 arguments congruent mod <var>hi-lo+1</var>.
 The <CODE>fxbitwise-xor</CODE> procedure returns the fixnum which is the
@@ -1714,7 +1730,7 @@ Otherwise, this procedure signals an error.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>exmake-rectangular</CODE> <var>ef1</var> <var>ef2</var>
+<DT><U>procedure:</U> <CODE>exmake-rectangular</CODE> <var>ex1</var> <var>ex2</var>
 <DT><U>procedure:</U> <CODE>exreal-part</CODE> <var>ex</var>
 <DT><U>procedure:</U> <CODE>eximag-part</CODE> <var>ex</var>
 <DD>
@@ -1733,7 +1749,7 @@ rationals.  Suppose <VAR>z</VAR> is a complex number such that
 
 <p>
 The inexact arithmetic provides generic operations on inexact numbers.  The
-inexact numbers include reals and inexact complex numbers, both of
+inexact numbers include inexact reals and inexact complex numbers, both of
 which are distinguishable from the exact numbers.  The inexact complex
 numbers include the flonums, and the procedures described here behave
 consistently with the corresponding flonum procedures if passed flonum
@@ -2011,7 +2027,7 @@ For nonzero <VAR>in1</VAR>
 
 
 <P>
-0<SUP><VAR>z</VAR></SUP> is 1 if <VAR>z</VAR> = 0, and 0 if
+0.0<SUP><VAR>z</VAR></SUP> is 1 if <VAR>z</VAR> = 0.0, and 0.0 if
 <SAMP>`(inreal-part <VAR>z</VAR>)'</SAMP> is positive.  
 Otherwise, this procedure reports a violation of an implementation restriction
 or returns an unspecified number.
@@ -2044,10 +2060,6 @@ e<SUP>i*<VAR>in4</VAR></SUP>.  Then (inexactly):
 </PRE>
 where -pi &lt; x_angle &lt;= pi with <VAR>in<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi <VAR>n</VAR>
 for some integer <VAR>n</VAR>.
-
-<P>
-The behavior of <CODE>inmake-rectangular</CODE> and
-<CODE>inmake-polar</CODE> given non-rational arguments is unspecified.
 </DL>
 
 <h2><a name="r5rs-generic">R5RS-style Generic Arithmetic</a></h2>
@@ -2712,7 +2724,8 @@ general complex numbers</STRIKE></FONT>.
 The <code>bitwise-and</code> procedure returns the exact integer which is the bit-wise "and" of the
 two's complement representations of its
 arguments.
-The <code>bitwise-ior</code> procedure returns the exact integer which is the bit-wise "or" of the two's
+The <code>bitwise-ior</code> procedure returns the exact integer which
+is the bit-wise inclusive "or" of the two's
 complement representations of its
 arguments.
 The <code>bitwise-xor</code> procedure returns the exact integer which is the
@@ -2764,14 +2777,16 @@ implement exact operations.  Consequently, exactness is a contagious
 property of a number.
 
 <P>
-If two implementations produce exact results for a computation that
+If two implementations produce exact results for a computation <FONT
+COLOR="red">using only the operations described in this section</FONT>  that
 did not involve inexact <FONT COLOR="red"><STRIKE>intermediate results
 or the results of numerical predicates</STRIKE></FONT> inputs, the two
-ultimate results will be mathematically equivalent.  This is generally
+ultimate results will be mathematically equivalent.  <FONT COLOR="red"><STRIKE>This is generally
 not true of computations involving inexact numbers because approximate
 methods such as floating point arithmetic may be used, but it is the
 duty of each implementation to make the result as close as practical
-to the mathematically ideal result.
+to the mathematically ideal result.</STRIKE>
+</FONT>
 
 <FONT COLOR="red">
 The transition from exactness to inexactness is always explicit
@@ -2806,26 +2821,27 @@ subject, refer to the paper by Egner et al. <A
 href="#egner-at-al-2004">[Egner et al. 2004]</A>.
 
 <P>
-Should the R6RS adopt this model of generic model, it should also provide
+Should the R6RS adopt this model of generic arithmetic, it should also provide
 the R5RS-stlye generic arithmetic described in the previous section as
 a library for backward compatibility.
 </BLOCKQUOTE>
 
 <p>
 We will use <var>z</var>, <var>z1</var>, <var>z2</var>, and
-<var>z3</var> as metavariables that range over the exact complex
-numbers,
+<var>z3</var> as metavariables that range over the complex
+numbers, excluding NaNs, infinites, or complex numbers
+with NaN or infinite real or imaginary part,
 <var>q</var>, <var>q1</var>, <var>q2</var>, and
-<var>q3</var> as metavariables that range over the exact rational
+<var>q3</var> as metavariables that range over the rational
 numbers,
 and
 <var>n</var>, <var>n1</var>, <var>n2</var>, and
-<var>n3</var> as metavariables that range over the exact integers.
+<var>n3</var> as metavariables that range over the integers.
 </p>
 
 <p>
-If an argument to the following procedures that corresponds to an exact
-metavariable is not actually a rational or complex number with
+If an argument to the following procedures that corresponds to one
+of the above metavariables is not actually a rational or complex number with
 rational real and imaginary part, these procedures signal an
 error, even in unsafe mode.
 </p>
@@ -3025,7 +3041,9 @@ Returns the one's-complement of its argument.
 The <code>bitwise-and</code> procedure returns the exact integer which is the bit-wise "and" of the
 two's complement representations of its
 arguments.
-The <code>bitwise-ior</code> procedure returns the exact integer which is the bit-wise "or" of the two's
+The <code>bitwise-ior</code> procedure returns the exact integer which
+is the bit-wise inclusive
+"or" of the two's
 complement representations of its
 arguments.
 The <code>bitwise-xor</code> procedure returns the exact integer which is the
