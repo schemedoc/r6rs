@@ -60,7 +60,7 @@
       (p
        "The procedural layer allows dynamic construction of new record types and "
        "associated procedures for creating and manipulating records, "
-       "which is particularly useful writing interpreters that "
+       "which is particularly useful when writing interpreters that "
        "construct host-compatible record types.  It may also serve as a target "
        "for expansion of the syntactic layers.")
 
@@ -147,7 +147,7 @@
 	 ""
 	 "(define-type eq-hash-table (pred hasher size)"
 	 "  (parent hash-table pred hasher size)"
-	 "  (fields ((mutable gc-count) gc-count)))")
+	 "  (fields ((mutable gc-count) 0)))")
 
 	(p
 	 "The first defines a " (code "hash-table") " record with four fields: "
@@ -231,7 +231,7 @@
          "applicable to a record of type " (i "t") ".  "
          "An error is signaled if " (var "parent") " is sealed (see below).")
         (p
-         "The extension relationship is transitive in the sense a type extends "
+         "The extension relationship is transitive in the sense that a type extends "
          "its parent's parent, if any, and so on. ")
         (p
          "The " (var "uid") " argument is either " (code "#f") " or a symbol. "
@@ -299,7 +299,7 @@
          "Returns a procedure that returns a new instance of the record type "
          "represented by " (var "rtd") ". "
          "The procedure accepts one argument per field, in order, with parent "
-         "parent fields first (and grandparent fields before that, and so on).")
+         "fields first (and grandparent fields before that, and so on).")
         (p
          "Two records created by such a constructor are equal according to " 
          (code "equal?")
@@ -392,19 +392,19 @@
         (p (meta "Record clause") " is as described below.")
 
         (p
-         (meta "Record name") " is bound to a compile-time description of the "
+         (meta "Record name") " is bound to a compile-time or run-time description of the "
          "record type for use as parent name in record definitions that extend "
          "this definition.  It may also be used as a handle to gain access to the "
          "underlying record-type descriptor (see " (code "type-descriptor") " below).")
 
         (p
-         (meta "Constructor name") " is defined to a construction procedure. "
+         (meta "Constructor name") " is defined to be a construction procedure. "
          "The construction procedure accepts the number(s) of arguments implied "
          "by " (meta "formals") " and creates a new record instance of the "
          "defined type with the fields initialized as described below.")
 
         (p
-         (meta "Predicate name") " is defined to a predicate for the defined "
+         (meta "Predicate name") " is defined to be a predicate for the defined "
          "record type.")
 
         (p
@@ -532,7 +532,7 @@
        "a " (code "define-type") " form that conforms to the syntax of the "
        "implicit-naming layer also conforms to the syntax of the "
        "explicit-naming layer, and any definition in the explicit-naming layer "
-       "can be understood its translation into the implicit-naming layer.")
+       "can be understood by its translation into the implicit-naming layer.")
 
       (p
        "The implicit-naming syntactic layer extends the explicit-naming layer in "
@@ -549,7 +549,7 @@
        "Second, the syntax of " (meta "field-spec") " is extended to allow the "
        "accessor and mutator names to be omitted.  That is, " (meta "field-spec")
        " can take one of the following forms as well as the forms described in "
-       "the preceeding section.")
+       "the preceding section.")
 
       (dl
        (dt
@@ -583,7 +583,7 @@
        "  (fields ((mutable widget frob-widget frob-widget-set!) (make-widget n))))")
 
       (p
-       "With the explicit-naming layer, one can choose to specify just some of "
+       "With the explicit-naming layer, one can choose to specify just some of the "
        "names explicitly; for example, the following overrides the choice of "
        "accessor and mutator names for the " (code "widget") " field.")
    
@@ -640,7 +640,7 @@
          "Returns the uid of the record-type descriptor " (var "rtd") ", or "
          (code "#f") " if it has none.  (An implementation may assign a generated "
          "uid to a record type even if the type is generative, so the return of a uid "
-         "does not necessarily imply that the type is nongenerative."))
+         "does not necessarily imply that the type is nongenerative.)"))
 
        (dt
         (prototype "record-type-sealed?"
@@ -694,7 +694,7 @@
        "(define p1 (make-point 1 2))"
        "(point? p1) ; => #t"
        "(point-x p1) ; => 1"
-       "(point-y p1) ; => 1"
+       "(point-y p1) ; => 2"
        "(point-x-set! p1 5)"
        "(point-x p1) ; => 5"
        ""
@@ -803,7 +803,7 @@
        "at the 1998 Scheme Worshop. "
        "Pavel's proposal was also a starting point for Chez Scheme's procedural "
        "interface. "
-       "The mechanism for definining and using constructor arguments in the "
+       "The mechanism for defining and using constructor arguments in the "
        "syntactic interface is similar to the syntax used by "
        "the Scheme Widget Library for class definitions. "
        "Single inheritance was added to Larceny in 1998 and Chez Scheme in 1999, "
