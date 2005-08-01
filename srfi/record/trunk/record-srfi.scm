@@ -187,13 +187,27 @@
 	 (code "define-struct") " on top of this proposal."))
 
        (li
-	"Similarly, one might allow plain symbols to be used as field specifiers "
-	"in the " (var "fields") " argument to " (code "make-record-type-descriptor")
-	", defaulting to mutability or immutability.")
+	(p
+	 "Similarly, one might allow plain symbols to be used as field specifiers "
+	 "in the " (var "fields") " argument to " (code "make-record-type-descriptor")
+	 ", defaulting to mutability or immutability."))
        
        (li
-        "Should syntactic record-type definitions default to creating opaque or "
-        "non-opaque record types?"))
+	(p
+	 "Should syntactic record-type definitions default to creating opaque or "
+	 "non-opaque record types?"))
+       (li
+	(p
+	 "The specification of " (code "make-record-type-descriptor") " has this:")
+	(p
+	 (blockquote
+	 "If " (var "parent") " is not " (code "#f") ", and " (var "uid")
+	 " is not " (code "#f") ", and the parent is generative "
+	 " (i.e. its uid is " (code "#f") "), an error is signalled."))
+	(p
+	 "However, the semantics would be perfectly clear even in the error case "
+	 "described above.  Should this restriction be lifted, if only for reasons "
+	 "of simplicity?")))
 
       (p
        "We invite members of the Scheme community to express their opinions on these issues.")
