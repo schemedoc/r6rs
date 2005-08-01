@@ -112,6 +112,7 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
 <li>Should the R6RS allow other inexact reals beside the flonums?
     This draft does allow them, at the cost of some complications and
     additions such as <code>number-&gt;flonum</code>.
+    (See the <a href="#design-rationale">Design Rationale</a>.)
 <li>Should the R5RS procedures for generic arithmetic (e.g. <code>+</code>)
     remain in R6RS?  Here are five possible answers, phrased in
     terms of the <code>+</code> procedure:
@@ -173,6 +174,7 @@ general complex numbers.
     <code>rationalistic?</code>, and <code>integral?</code> should be
     added to say that a number can be coerced to the specified type
     (and back) without loss.
+    (See the <a href="#design-rationale">Design Rationale</a>.)
 <li>The fixnum operations provide efficient fixnums that "wrap."
     However, they do not give efficient access to the hardware facilities
     for carry and overflow.  This would be desirable to implement
@@ -3062,6 +3064,372 @@ and -<var>n2</VAR> bits right when <var>n2</VAR> &lt; 0, extending
 the sign.  It returns <var>n1</VAR> when <var>n2</VAR> = 0.
 </DD>
 </DL>
+
+<h1><a name="design-rationale">Design Rationale</a></h1>
+
+<p>
+Background and Rationale
+concerning two issues of R6RS arithmetic
+(written by William D Clinger, 29 July 2005)
+
+<p>
+(Most experts who read this note will want to start with the
+section titled "Problems With Flow Analysis", thereby skipping
+the history and background information that is intended to
+make this note more self-contained and accessible.)
+
+
+<h2>Lucier's Proposal</h2>
+
+In 1998, for the Scheme workshop before ICFP '98 in Baltimore,
+Brad Lucier proposed several changes that were intended to
+bring Scheme's inexact arithmetic into line with the IEEE
+floating point standards and with other recommended practice
+for transcendental functions and complex arithmetic.  Most of
+Lucier's proposals would have applied only to implementations
+that use IEEE floating point for inexact arithmetic, and would
+thus act as recommendations, much like the appendices on inexact
+arithmetic that were published with the IEEE standard for Scheme.
+A few of Lucier's proposals would have required changes to the
+Scheme standards themselves, however.
+
+Few of the workshop attendees knew enough about the IEEE floating
+point standards to discuss Lucier's proposal.  A straw poll was
+taken, and came out 31-0 in favor of bringing Scheme into line
+with IEEE floating point and with current practice, trusting
+experts to work out the details.
+
+Here are the highlights of Lucier's proposal, taken verbatim from
+my notes on the 1998 workshop:
+
+<blockquote>
+    The behavior of <code>eqv?</code> on inexact numbers would change.
+    If <var>x</var> and <var>y</var> are inexact reals represented as IEEE floating
+    point numbers, then <code>`(eqv? <var>x</var> <var>y</var>)'</code> would be true if and only if
+    <var>x</var> and <var>y</var> are equal <em>and</em> have the same base, sign, number of
+    bits in the exponent, number of bits in the significand,
+    and the same biased exponents and significands.  For
+    example, <code>`(eqv? +0. -0.)</code> would be false, as would
+    <code>`(eqv? 1e8 1d8)'</code> in an implementation for which <code>1d8</code> has more
+    precision than <code>1e8</code>.  In most implementations <code>`(eqv? <var>x</var> <var>y</var>)'</code>
+    would be computed by a bit-level comparison of the floating
+    point representations for <var>x</var> and <var>y</var>.
+
+    <code>`(real? 4.3+0.i)'</code> and <code>`(real? 4.3-0.i)'</code> would be false, although
+    <code>`(real? 4.3+0i)'</code> and <code>`(real? 4.3-0i)'</code> would remain true (assuming
+    an implementation allows the real and imaginary parts of a
+    complex number to have a different exactness, which is not
+    required by the Scheme standards and would not be required
+    by Lucier's proposal).
+
+    <code>Truncate</code>, <code>round</code>, <code>ceiling</code>, and <code>floor</code> would be defined only on
+    rationals, not on all reals.  The motivation for this is that
+    infinities and NaNs would be reals but not rationals, and
+    there is no meaningful integer value that these procedures
+    could return for infinities and NaNs.  Similarly the first
+    argument to <code>rationalize</code> would be required to be a rational.
+
+    The branch cuts for certain transcendental functions would
+    change to conform to current practice.
+
+    Kahan reportedly would like for <code>`(max 1 +nan.0 2)'</code> to return 2
+    instead of <code>+nan.0</code>, but this would conflict with the guiding
+    principle of Scheme's inexact arithmetic so I oppose this.
+    Returning an inexact <code>2.0</code> would be consistent with Scheme's
+    arithmetic, and would not require any changes to the Scheme
+    standards.
+</blockquote>
+
+
+<h2>The Issues</h2>
+
+<P>
+The purpose of this note is to explain why it is desirable for
+Scheme's reals to have an exact zero as their imaginary part.
+
+<P>
+This note also discusses whether the proposed "flonum" type
+should be a synonym for "inexact real", or merely a subset
+of the inexact reals.
+
+<h2>Numerical Types</h2>
+
+<P>
+Scheme's numerical types are the exactness types { exact, inexact },
+the tower types { integer, rational, real, complex, number }, and
+the Cartesian product of the exactness types with the tower types,
+where &lt; t1, t2 &gt; is regarded as a subtype of both t1 and t2.
+
+<P>
+These types have an aesthetic symmetry to them, but they are not
+equally important.  Judging by the number of R5RS procedures whose
+domain is restricted to values of some numerical type, the most
+important numerical types are the exact integers, the integers,
+the rationals, the reals, and the complex numbers.
+
+<P>
+Many programmers and implementors regard the R5RS's focus on those
+particular numerical types as something of a mistake.  In practice,
+there is reason to believe that the most important numerical types
+are the exact integers, the exact rationals, the inexact reals, and
+the inexact complex numbers.  The following section explores one of
+the reasons those four types are so important in practice.
+
+
+<h2>Closure Properties</h2>
+
+<P>
+Scheme's types are not completely arbitrary.  Each type corresponds
+to a set of values that turns up repeatedly as the natural domain
+or range of the functions that are computed by Scheme's standard
+procedures.  The reason these types turn up so often is that they
+are closed under certain groups of operations.
+
+<P>
+The exact integers, for example, are closed under the integral
+operations of addition, subtraction, and multiplication.  The
+exact rationals are closed under the rational operations, which
+consist of the integral operations plus division (although we
+must make a special case for division by zero).  The reals (and
+inexact reals) are closed under some (often inexact) interpretation
+of rational and irrational operations such as exp and sin, but are
+not closed under operations such as log, sqrt, and expt (although
+we must make special cases for (expt 0 0) et cetera).  The complex
+(and inexact complex) numbers are closed under the largest group
+of operations.
+
+<h2>Representation Types</h2>
+
+<P>
+The Scheme standards give implementations considerable freedom
+with respect to the representation of expressed values, but the
+usual approach is to represent the numerical types as unions of
+the representation types that appear on the right hand sides of
+the following domain equations:
+
+<P>
+<table>
+<tr>
+    <td>exact integer</td>  <td>=</td> <td>fixnum + bignum</td>
+</tr>
+<tr>
+    <td>exact rational</td> <td>=</td><td> fixnum + bignum + ratnum</td>
+</tr>
+<tr>
+    <td>inexact real</td>    <td>=</td>  <td>flonum</td>
+</tr>
+<tr>
+    <td>inexact complex</td> <td>=</td>  <td>flonum + compnum</td>
+</tr>
+<tr>
+
+    <td>integer</td>         <td>=</td>  <td>fixnum + bignum + flonum</td>
+</tr>
+<tr>
+    <td>rational</td>        <td>=</td>  <td>fixnum + bignum + ratnum + flonum</td>
+</tr>
+<tr>
+    <td>real</td>            <td>=</td>  <td>fixnum + bignum + ratnum + flonum</td>
+</tr>
+<tr>
+    <td>complex</td>         <td>=</td>  <td>rectangular + compnum</td>
+</tr>
+</table>
+
+<P>
+These domain equations are typical of most implementations, but
+many variations are possible.  The flonum representation type,
+for example, is often divided into several distinct precisions.
+
+<h2>Representation-specific Operations</h2>
+
+<P>
+A naive implementation of Scheme's arithmetic operations is slow
+compared to the arithmetic operations of most other languages,
+mainly because most operations must perform some sort of case
+dispatch on the representation types of their arguments.  The
+potential for this case dispatch arises when the type of an
+operation's argument is represented by a union of two or more
+representation types, or because the operation is required to
+signal an error when given an argument of an incorrect type.
+(The second reason can be regarded as a special case of the
+first.)
+
+<P>
+To make Scheme's arithmetic more efficient, many implementations
+provide sets of operations whose domain is restricted to a single
+representation type, and which are not expected to signal an error
+when given arguments of incorrect type.
+
+<P>
+Alternatively, or in addition, several compilers perform some
+kind of flow analysis that attempts to infer the representation
+types of expressions.  When a single representation type can be
+inferred for each argument of an operation, and those types
+match the types expected by some representation-specific version
+of the operation, then the compiler can substitute the specific
+version for the more general version that was specified in the
+source code.
+
+
+<h2>Flow Analysis</h2>
+
+<P>
+Flow analysis is performed by solving the type and interval
+constraints that arise from such things as:
+
+<ul>
+<li> the types of literal constants, e.g. 2 is an exact integer
+    that is known to be within the interval [2,2]
+</li>
+
+<li> conditional control flow that is predicated on known
+    inequalities, e.g. <code>`(if (< i n) E1 E2)'</code>
+</li>
+
+<li> conditional control flow that is predicated on known type
+    predicates, e.g. <code>`(if (real? x) &lt;real_case&gt; &lt;unreal_case&gt;)'</code>
+
+<li> the closure properties of known operations (for example,
+    <code>`(+ &lt;flonum&gt; &lt;flonum&gt;)'</code> always evaluates to a flonum)
+</li>
+</ul>
+
+<P>
+The purpose of flow analysis (as motivated in this note) is to
+infer a single representation type for each argument of an
+operation.  That places a premium on predicates and closure
+properties from which a single representation type can be
+inferred.
+
+<P>
+(Sometimes, however, the combination of a more general type and
+an interval can imply a single representation type.  For example,
+the arithmetic operations may be implemented so that, if n is
+known to be a fixnum, then every exact integer in the range
+[0,n] is also known to be a fixnum.)
+
+
+<h2>Problems With Flow Analysis</h2>
+
+<P>
+In practice, the most important single representation types are
+fixnum, flonum, and compnum.  These are the representation types
+for which a short sequence of machine code can be generated when
+the representation type is known, but for which considerably less
+efficient code will probably have to be generated when the
+representation type cannot be inferred.
+
+<P>
+The fixnum representation type is not closed under any R5RS
+operations, so it is hard for flow analysis to infer the fixnum
+type from portable R5RS code.  Sometimes the combination of a
+more general type (e.g. exact integer) and an interval (e.g.
+[0,n), where n is known to be a fixnum) can imply the fixnum
+representation type.  Adding fixnum-specific operations that
+map fixnums to fixnums (by computing modulo 2^n, say) greatly
+increases the number of fixnum representation types that a
+compiler can infer.
+
+<P>
+The flonum representation type is not closed under operations
+such as <code>sqrt</code> and <code>expt</code>, so flow analysis tends to break down in
+the presence of those operations.  This is unfortunate, because
+those operations are normally used only with arguments for which
+the result is expected to be a flonum.  Adding flonum-specific
+versions such as <code>flsqrt</code> and <code>flexpt</code> improves the effectiveness
+of flow analysis.
+
+<P>
+The R5RS creates a more insidious problem by defining <code>`(real? <var>z</var>)'</code>
+to be true if and only if <code>`(zero? (imag-part <var>z</var>))'</code> is true.  This
+means, for example, that <code>-2.5+0.0i</code> is real.  If <code>-2.5+0.0i</code> is
+represented as a compnum, then the compiler cannot rely on x
+being a flonum during the &lt;real_case&gt; of
+<code>`(if (real? x) &lt;real_case&gt; &lt;unreal_case&gt;)'</code>.  This problem could
+be fixed by writing all of the arithmetic operations so that
+any compnum with a zero imaginary part is converted to a flonum
+before it is returned, but that merely creates an analogous
+problem for compnum arithmetic, as explained below.  A better
+way to fix the problem is as Lucier recommended: change the
+definition of Scheme's real numbers by defining <code>`(real? <var>z</var>)'</code> to
+be true if and only if <code>`(imag-part <var>z</var>)'</code> is an exact zero.
+
+<P>
+The compnum representation type is closed under virtually all
+operations, provided no operation that accepts two compnums as
+its argument ever returns a flonum.  To work around the problem
+described in the paragraph above, several implementations
+automatically convert compnums with a zero imaginary part to
+the flonum representation.  This practice virtually destroys
+the effectiveness of flow analysis for inferring the compnum
+representation, so it is not a good workaround.  To improve
+the effectiveness of flow analysis, it is better to change
+the definition of Scheme's real numbers as described in the
+paragraph above.
+
+
+<h2>Recommendations</h2>
+
+<P>
+To improve the effectiveness of flow analysis and to improve
+the efficiency of arithmetic, I recommend that the R6RS:
+
+<ul>
+<li> add fixnum-specific operations, e.g. <code>fx+</code></li>
+<li> add flonum-specific operations, e.g. <code>fl+</code></li>
+<li> change the definition of real numbers so that a complex
+    number is real if and only if its imaginary part is an
+    exact zero</li>
+<li> change the interpretation of literals accordingly, e.g.
+    so <code>`(imag-part 2.0)'</code> is an exact zero
+</ul>
+
+<h2>Flonums</h2>
+
+<P>
+When flonum-specific operations are added to Scheme, should
+they take any inexact real as arguments?  Or should their
+arguments be restricted to some subtype of the inexact reals?
+
+<P>
+Another way to describe this issue is to specify that the
+flonum-specific operations take flonums as arguments and
+return flonums as results.  Then the question becomes:
+Are the flonums coextensive with the inexact reals?  Or
+are the flonums allowed to be a proper subset of the
+inexact reals?
+
+<P>
+I do not think this question is terribly important.  Most
+current implementations have only one representation for
+inexact reals, and having only one representation for the
+inexact reals improves the effectiveness of flow analysis,
+so implementations that try to provide efficient arithmetic
+on inexact reals are likely to make "flonum" synonymous with
+"inexact real" even if the R6RS allows otherwise.
+
+<P>
+One reason for allowing "flonum" to be a proper subtype of
+"inexact real" is to give implementations freedom to
+experiment with unusual representation strategies.
+Another possibility is that an implementation might take
+"flonum" to mean the representation that is supported most
+efficiently by the hardware, e.g. IEEE double precision,
+while providing other precisions that might be more
+space-efficient for certain applications.
+
+<P>
+On the other hand, defining "flonum" to be a synonym for
+"inexact real" would simplify the presentation of flonum
+arithmetic, and would eliminate a couple of procedures that
+would otherwise have to be provided and somehow specified
+(e.g. real->flonum and flonum?).
+
+<P>
+I recommend that the R6RS define "flonum" as a synonym for
+"inexact real", but this is not a strong recommendation.
+It doesn't matter very much.
 
 <H1>Reference Implementation</H1>
 
