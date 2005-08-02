@@ -111,7 +111,7 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
     (This is a much larger question that the R6RS should address.)
 <li>Should the R6RS allow other inexact reals beside the flonums?
     This draft does allow them, at the cost of some complications and
-    additions such as <code>number-&gt;flonum</code>.
+    additions such as <code>real-&gt;flonum</code>.
     (See the <a href="#design-rationale">Design Rationale</a>.)
 <li>Should the R5RS procedures for generic arithmetic (e.g. <code>+</code>)
     remain in R6RS?  Here are five possible answers, phrased in
@@ -269,11 +269,12 @@ There are more minor differences with SRFI 70 highlighted in the hypertext.
 This SRFI describes several alternative approaches to completely
 generic arithmetic.  The alternative described in the section <a
 href="#r5rs-generic">R5RS-style Generic Arithmetic</a> follows the
-essence of the R5RS, with the advantage of continuity and
+essence of the R5RS, with the advantage of historical continuity and
 contagiousness of inexact operations.  The alternative described in
 section <a href="#exact-generic">Generic Exact Arithmetic</a> has
-exactness be contagious, with the advantage of greater transparancy
-over the R5RS-style generic arithmetic.  The section describing exact
+exactness be contagious, with the advantage of greater transparency
+over the R5RS-style generic arithmetic.  The section describing
+generic exact
 arithmetic opens with a more detailed rationale.  Other alternatives
 build on the exact arithmetic described in section <a href="#exact">Exact Arithmetic</a>
 and the inexact arithmetic described in section <a href="#inexact">Inexact Arithmetic</a>.
@@ -347,8 +348,8 @@ precision can be calculated by calling the following procedure:
 <p>
 <em>Note:</em>
 When the underlying floating-point representation is IEEE double
-precision, the <code>|</code><var>p</var> suffix cannot be omitted for all cases:
-Denormalized numbers have diminished precision, and therefore must
+precision, the <code>|</code><var>p</var> suffix should not be omitted for all cases:
+Denormalized numbers have diminished precision, and therefore should
 carry a <code>|</code><var>p</var> suffix with the actual width of the signficand.
 </BLOCKQUOTE>
 
@@ -362,6 +363,28 @@ The <code>write</code> procedure should be required to write
 inexact numbers in the external representation produced by
 <code>number-&gt;string</code> with one argument.
 </p>
+
+<p>
+    Implementations are not required to use floating-point
+    representations, but every implementation is required to
+    designate a subset of its inexact reals as flonums, and
+    to convert certain external representations into flonums.
+</p>
+<p>
+    If a <code>&lt;decimal 10&gt;</code> does not contain a non-empty <code>&lt;mantissa width&gt;</code>
+    and does not contain one of the exponent markers <code>s</code>, <code>f</code>, <code>d</code>, or <code>l</code>,
+    but does contain a decimal point or the exponent marker e, then
+    it is an external representation for a flonum.
+    Furthermore <code>inf.0</code>, <code>+inf.0</code>, <code>-inf.0</code>, <code>nan.0</code>, <code>+nan.0</code>, and <code>-nan.0</code> are
+    external representations for flonums.  Some or all of the other
+    external representations for inexact reals may also represent
+    flonums, but that is not required by this SRFI.
+</p>
+<p>
+    If a <code>&lt;decimal 10&gt;</code> contains a non-empty <code>&lt;mantissa width&gt;</code> or one
+    of the exponent markers <code>s</code>, <code>f</code>, <code>d</code>, or <code>l</code>, then it represents an
+    inexact number, but does not necessarily represent a flonum.
+    </p>
 
 <P>The R6RS section on the lexical structure of numerical tokens should read as as
 follows:
@@ -398,7 +421,7 @@ or exponents or mantissa widths must be in decimal radix.
     |  &lt;exponent marker&gt; &lt;sign&gt; &lt;digit 10&gt;+
 &lt;exponent marker&gt;  --&gt;  e  |  s  |  f  |  d  |  l
 &lt;mantissa width&gt; -&gt; &lt;empty&gt;
-    | &lt;digit 10&gt;+
+    | | &lt;digit 10&gt;+
 &lt;sign&gt;  --&gt;  &lt;empty&gt;  |  +  |  -
 &lt;exactness&gt;  --&gt;  &lt;empty&gt;  |  #i  |  #e
 &lt;radix 2&gt;  --&gt;  #b
@@ -410,6 +433,8 @@ or exponents or mantissa widths must be in decimal radix.
 &lt;digit 10&gt;  --&gt;  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9
 &lt;digit 16&gt;  --&gt;  &lt;digit 10&gt;  |  a  |  b  |  c  |  d  |  e  |  f
 </PRE>
+
+
 
 <h2>Safe and Unsafe Mode</h2>
 
@@ -432,6 +457,47 @@ mode.  Specifically, a procedure call for which all bets are off is
 free to crash the system.
 </p>
 
+<h2>Equivalence of Objects</h2>
+
+<p>
+    The R6RS specification of eqv? for numbers should be changed
+    as follows.
+</p>
+
+<p>
+    The <code>eqv?</code> procedure returns <code>#t</code> if:
+
+<ul>
+<li> <var>obj1</var> and <var>obj2</var> are both exact numbers, and are numerically
+          equal (see <code>=</code>, section see section 6.2
+          Numbers).</li>
+<li>
+    <var>obj1</var> and <var>obj2</var> are both inexact numbers, are numerically
+          equal (see <code>=</code>, section see section 6.2 Numbers), and
+          yield the same results (in the sense of <code>eqv?</code>) when passed
+          as arguments to any other procedure that can be defined
+          as a finite composition of Scheme's standard arithmetic
+          procedures.</li>
+</ul>
+
+<p>
+    The <code>eqv?</code> procedure returns <code>#f</code> if:
+</p>
+
+<ul>
+<li> one of <var>obj1</var> and <var>obj2</var> is an exact number but the other is
+	an inexact number. </li>
+<li> one of <var>obj1</var> and <var>obj2</var> is a flonum but the other is not.</li>
+<li><var>obj1</var> and <var>obj2</var> are numbers for which the <code>=</code> procedure
+ returns <code>#f</code>. </li>
+<li><var>obj1</var> and <var>obj2</var> yield different results (in the sense of
+	<code>eqv?</code>) when passed as arguments to any other procedure
+          that can be defined as a finite composition of Scheme's
+          standard arithmetic procedures.
+      </li>
+    </ul>
+
+
 <h2><a name="integer-division">Integer Division</a></h2>
 
 <P>
@@ -450,7 +516,8 @@ variant.  Later sections will link back to this one where appropriate.
 <DD>
 
 These implement integer division and remainder on real numbers.  
-<VAR>x2</VAR> should be non-zero. <CODE>div</CODE> returns an integer.
+<CODE>div</CODE> returns an integer; <CODE>mod</code> returns a real:
+<code>div+mod</code> returns two values, an integer and a real.
 
 <PRE>
 (div <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>n<SUB>d</SUB></VAR>
@@ -532,7 +599,7 @@ From this we can conclude that for integers <VAR>n1</VAR> and <VAR>n2</VAR> with
 
 <PRE>
      (= <VAR>n1</VAR> (+ (* <VAR>n2</VAR> (quotient <VAR>n1</VAR> <VAR>n2</VAR>))
-           (remainder <VAR>x1</VAR> <VAR>x2</VAR>)))
+           (remainder <VAR>n1</VAR> <VAR>n2</VAR>)))
                                        ==&gt;  #t
 </PRE>
 
@@ -567,7 +634,7 @@ can easily be defined through <CODE>div</CODE> and <CODE>mod</CODE>:
     ((negative? n) -1)
     (else 0)))
 
-(define (quotient  n1 n2)
+(define (quotient n1 n2)
   (* (sign n1) (sign n2) (div (abs n1) (abs n2))))
 
 (define (remainder n1 n2)
@@ -661,14 +728,12 @@ is true.
 (integer? 3.0)                         ==&gt;  #t
 (integer? 8/4)                         ==&gt;  #t
 
-(number? <font color=red>+nan.0</font>)                       ==>  #t
-(complex? <font color=red>+nan.0</font>)                      ==>  <font color=red>#t</font>
-(complex? <font color=red>+inf.0</font>)                      ==>  #t
-(real? <font color=red>+nan.0</font>)                         ==>  <font color=red>#t</font>
-(real? <font color=red>-inf.0</font>)                         ==>  #t
-(rational? <font color=red>+inf.0</font>)                     ==>  #f
-(rational? <font color=red>+nan.0</font>)                     ==>  #f
-(integer? <font color=red>-inf.0</font>)                      ==>  #f
+(number? <font color=red>+nan.0</font>)                       ==&gt;  #t
+(complex? <font color=red>+nan.0</font>)                      ==&gt;  <font color=red>#t</font>
+(complex? <font color=red>+inf.0</font>)                      ==&gt;  #t
+(real? <font color=red>+nan.0</font>)                         ==&gt;  <font color=red>#t</font>
+(rational? <font color=red>+nan.0</font>)                     ==&gt;  #f
+(integer? <font color=red>-inf.0</font>)                      ==&gt;  #f
 </PRE>
 
 
@@ -736,49 +801,49 @@ implementation-dependent range.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>number-&gt;flonum</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>real-&gt;flonum</CODE> <VAR>x</VAR>
 <DD>
 <P>
-<CODE>Number-&gt;flonum</CODE> returns a flonum representation of
-<VAR>z</VAR>, which must be a real number or a complex number where
-<SAMP>`(zero? (imag-part <VAR>z</VAR>))'</SAMP> returns
-<CODE>#t</CODE>.  On other kinds of numbers, the behavior is
-unspecified.
+<CODE>Real-&gt;flonum</CODE> returns a flonum representation of
+<VAR>x</VAR>, which must be a real number.
 
 The value returned is a flonum that is numerically closest to the
 argument.
 
 <BLOCKQUOTE>
 <P>
-<EM>Rationale:</EM> Traditionally, <CODE>exact-&gt;inexact</CODE> has
-been used to convert numbers to a flonum representation.  However, a
-Scheme system may have representations for real numbers other than
-flonums.  Without <CODE>number-&gt;flonum</CODE>, a program has no
-means for reliably ensuring that a number is converted to a flonum.
+<EM>Rationale:</EM> The flonums are a subset of the inexact reals, but
+    may be a proper subset.  The <code>real-&gt;flonum</code> procedure converts
+    an arbitrary real to the flonum type required by flonum-specific
+    procedures.
 </BLOCKQUOTE>
 
 <BLOCKQUOTE>
 <P>
-<EM>Note:</EM> For flonum representations such as IEEE binary floating
-point, Scheme implementations are strongly encouraged to break ties
-by preferring the flonum whose least significant bit is zero.
+<EM>Note:</EM> If flonums are represented in binary floating point,
+    then implementations are strongly encouraged to break ties
+    by preferring the floating point representation whose least
+    significant bit is zero.
 </BLOCKQUOTE>
 
 
 </DL>
 
-<h2>Numerical input and output</h2>
+<h2>Numerical Input and Output</h2>
 
 <P>
 <DL>
 <DT><U>procedure:</U> <CODE>number-&gt;string</CODE> <var>z</var>
 <DT><U>procedure:</U> <CODE>number-&gt;string</CODE> <var>z</var> <var>radix</var>
+<DT><U>procedure:</U> <CODE>number-&gt;string</CODE> <var>z</var> <var>radix</var> <var>precision</var>
 <DD>
 
 
 <P>
-<VAR>Radix</VAR> must be an exact integer, either 2, 8, 10, or 16.  If omitted,
-<VAR>radix</VAR> defaults to 10.
+<VAR>Radix</VAR> must be an exact integer, either 2, 8, 10, or 16.
+If omitted, <VAR>radix</VAR> defaults to 10.
+If a <VAR>precision</VAR> is specified, then it must be an exact
+positive integer, and the <VAR>radix</VAR> must be 10.
 The procedure <CODE>number-&gt;string</CODE> takes a
 number and a radix and returns as a string an external representation of
 the given number in the given radix such that
@@ -797,21 +862,28 @@ the given number in the given radix such that
 <P>
 is true.  It is an error if no possible result makes this expression true.
 
+<P>
+If a <VAR>precision</VAR> is specified, then the result specifies an
+explicit &lt;mantissa width&gt; <VAR>p</VAR>, and <VAR>p</VAR> is the
+least <VAR>p</VAR> &ge; <VAR>precision</VAR> for which the above
+expression is true.  If no <VAR>precision</VAR> is specified, then
+the result does not specify an explicit &lt;mantissa width&gt;.
 
 <P>
 If <VAR>z</VAR> is inexact, the radix is 10, and the above expression
+and condition
 can be satisfied by a result that contains a decimal point,
 then the result contains a decimal point and is expressed using the
-minimum number of digits (exclusive of exponent and trailing
-zeroes) needed to make the above expression
-true [<A HREF="#burger-dybvig-1996">Burger, Dybvig 1996</A>; <A HREF="#clinger-1990">Clinger 1990</A>];
+minimum number of digits (exclusive of exponent, trailing
+zeroes, and mantissa width) needed to make the above expression and
+condition true
+[<A HREF="#burger-dybvig-1996">Burger, Dybvig 1996</A>; <A HREF="#clinger-1990">Clinger 1990</A>];
 otherwise the format of the result is unspecified.
 
 
 <P>
 The result returned by <CODE>number-&gt;string</CODE>
 never contains an explicit radix prefix.
-
 
 
 <BLOCKQUOTE>
@@ -1029,8 +1101,8 @@ This procedure returns <SAMP>`(fx- 0 <VAR>fx</VAR>)'</SAMP> if
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division congruent
-mod <var>hi-lo+1</var>.  See <a href="#integer-division">the
+These procedures implement number-theoretic integer division 
+modulo <var>hi-lo+1</var>.  See <a href="#integer-division">the
 Section</a> on integer division.
 </p>
 </dl>
@@ -1042,8 +1114,8 @@ Section</a> on integer division.
 <DD>
 <P>
 These procedures return the greatest common divisor or least common
-multiple of their arguments congruent
-mod <var>hi-lo+1</var>.
+multiple of their arguments 
+modulo <var>hi-lo+1</var>.
 </DD>
 </DL>
 
@@ -1067,14 +1139,14 @@ congruent mod <var>hi-lo+1</var>.
 <P>
 The <CODE>fxbitwise-and</CODE> procedure returns the fixnum which is the bit-wise "and" of 
 the two's complement representations of its
-arguments congruent mod <var>hi-lo+1</var>.
+arguments modulo <var>hi-lo+1</var>.
 The <CODE>fxbitwise-ior</CODE> procedure returns the fixnum which is
 the bit-wise inclusive "or" of
 the two's complement representations of its
-arguments congruent mod <var>hi-lo+1</var>.
+arguments modulo <var>hi-lo+1</var>.
 The <CODE>fxbitwise-xor</CODE> procedure returns the fixnum which is the
 bit-wise "exlusive or" of the two's complement representations of its
-arguments congruent mod <var>hi-lo+1</var>.
+arguments modulo <var>hi-lo+1</var>.
 </DD>
 </DL>
 
@@ -1094,17 +1166,12 @@ returns the result of that shift congruent mod <var>hi-lo+1</var>.
 
 <h2>Flonums</h2>
 
-<p>
-<strong>Definition.</strong>
-A flonum is an inexact real.
-</p>
-
-<p>
-Please note that this definition does not imply any particular
-representation for a flonum.  In particular, it does not imply
-that flonums are represented by any kind of floating-point
-format.
-</p>
+<P>
+    Implementations are not required to use floating-point
+    representations, but every implementation is required to
+    designate a subset of its inexact reals as flonums, and
+    to convert certain external representations into flonums.
+</P>
 
 <P>
 <DL>
@@ -1454,10 +1521,10 @@ For example, suppose the fixnum range is [-8388608,8388607]
 and flonums are represented in IEEE double precision.  Then
 </p>
 <pre>
-(fixnum-&gt;flonum 8388608)         =&gt; 8388608.0
-(flonum-&gt;fixnum 3.14159265)      =&gt; 3
-(flonum-&gt;fixnum -inf.0)          =&gt; -8388608
-(flonum-&gt;fixnum 1e20)            =&gt; 8388607
+(fixnum-&gt;flonum 8388608)         ==&gt; 8388608.0
+(flonum-&gt;fixnum 3.14159265)      ==&gt; 3
+(flonum-&gt;fixnum -inf.0)          ==&gt; -8388608
+(flonum-&gt;fixnum 1e20)            ==&gt; 8388607
 </pre>
 
 <p>
@@ -1470,7 +1537,7 @@ case all bets are off.
 </dl>
 
 <h2>
-IEEE Binary Floating Arithmetic
+IEEE Binary Floating Point Arithmetic
 </h2>
 
 <p>
@@ -1492,25 +1559,24 @@ rationals, but <code>+inf.0</code>, <code>-inf.0</code>, and
 Also,
 </p>
 <pre>
-    (fl= 0.0 -0.0)                                =&gt;  #t
-    (fl&lt; -0.0 0.0)                                =&gt;  #f
-    (fl= +nan.0 +nan.0)                           =&gt;  #f
+    (fl= 0.0 -0.0)                                ==&gt;  #t
+    (fl&lt; -0.0 0.0)                                ==&gt;  #f
+    (fl= +nan.0 +nan.0)                           ==&gt;  #f
 </pre>
 <p>
 is required by the IEEE standards, and is strongly recommended
 but not required by the R6RS.
 </p>
 
-<p>
-The R6RS specification of eqv? should be changed so that
-</p>
+<P>
+    Furthermore
+</P>
+
 <pre>
-    (eqv? -0.0 0.0)                             =&gt;  #f
+    (numerator? -0.0)                             ==&gt; -0.0
 </pre>
 <p>
-and to allow (but not require)
-<code>(eqv? <var>x y</var>)</code> to evaluate to <code>#t</code>
-when <var>x</var> and <var>y</var> are NaNs.
+    is recommended but not required by the R6RS.
 </p>
 
 <p>
@@ -1519,7 +1585,6 @@ else it would lose the correspondence with
 <code>(fl< -0.0 0.0)</code>, which is <code>#f</code>
 according to the IEEE standards.
 </p>
-
 
 <h2><a name="exact">Exact Arithmetic</A></h2>
 
@@ -1741,9 +1806,9 @@ The arguments of <code>exmake-rectangular</code> must be exact
 rationals.  Suppose <VAR>z</VAR> is a complex number such that
 <VAR>z</VAR> = <VAR>ef1</VAR> + <VAR>ef2</VAR>*i.  Then:
 <PRE>
-(exmake-rectangular <VAR>ef1</VAR> <VAR>ef2</VAR>) =&gt; <VAR>z</VAR>
-(exreal-part <VAR>z</VAR>)              =&gt; <VAR>ef1</VAR>
-(eximag-part <VAR>z</VAR>)              =&gt; <VAR>ef2</VAR>
+(exmake-rectangular <VAR>ef1</VAR> <VAR>ef2</VAR>) ==&gt; <VAR>z</VAR>
+(exreal-part <VAR>z</VAR>)              ==&gt; <VAR>ef1</VAR>
+(eximag-part <VAR>z</VAR>)              ==&gt; <VAR>ef2</VAR>
 </PRE>
 </DL>
 
@@ -2053,12 +2118,12 @@ such that
 <VAR>z</VAR> = <VAR>in1</VAR> + <VAR>in2</VAR>*i = <VAR>in3</VAR> *
 e<SUP>i*<VAR>in4</VAR></SUP>.  Then (inexactly):
 <PRE>
-(inmake-rectangular <VAR>in1</VAR> <VAR>in2</VAR>) =&gt; <VAR>z</VAR>
-(inmake-rectangular <VAR>in3</VAR> <VAR>in4</VAR>) =&gt; <VAR>z</VAR>
-(inreal-part <VAR>z</VAR>)              =&gt; <VAR>in1</VAR>
-(inimag-part <VAR>z</VAR>)              =&gt; <VAR>in2</VAR>
-(inmagnitude <VAR>z</VAR>)              =&gt; |<VAR>in3</VAR>|
-(inangle <VAR>z</VAR>)                  =&gt; <VAR>in<SUB>angle</SUB></VAR>
+(inmake-rectangular <VAR>in1</VAR> <VAR>in2</VAR>) ==&gt; <VAR>z</VAR>
+(inmake-rectangular <VAR>in3</VAR> <VAR>in4</VAR>) ==&gt; <VAR>z</VAR>
+(inreal-part <VAR>z</VAR>)              ==&gt; <VAR>in1</VAR>
+(inimag-part <VAR>z</VAR>)              ==&gt; <VAR>in2</VAR>
+(inmagnitude <VAR>z</VAR>)              ==&gt; |<VAR>in3</VAR>|
+(inangle <VAR>z</VAR>)                  ==&gt; <VAR>in<SUB>angle</SUB></VAR>
 </PRE>
 where -pi &lt; x_angle &lt;= pi with <VAR>in<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi <VAR>n</VAR>
 for some integer <VAR>n</VAR>.
@@ -2756,7 +2821,8 @@ R5RS-style generic arithmetic described in the previous section.
 <p>
 The exact generic arithmetic provides generic operations on exact and
 inexact rational and complex numbers.  Each inexact number, except for
-infinities and NaNs, is taken to represent a unique exact rational
+infinities and NaNs and complex numbers with infinite or NaN real or
+imaginary part, is taken to represent a unique exact rational
 number or exact complex number with exact rational real and imaginary
 parts, namely the one produced by <code>inexact-&gt;exact</code>.
 With this provision, the generic exact operations correspond to their
@@ -2782,7 +2848,8 @@ property of a number.
 If two implementations produce exact results for a computation <FONT
 COLOR="red">using only the operations described in this section</FONT>  that
 did not involve inexact <FONT COLOR="red"><STRIKE>intermediate results
-or the results of numerical predicates</STRIKE></FONT> inputs, the two
+or the results of numerical predicates</STRIKE></FONT> inputs (which
+include the literals representing inexact numbers), the two
 ultimate results will be mathematically equivalent.  <FONT COLOR="red"><STRIKE>This is generally
 not true of computations involving inexact numbers because approximate
 methods such as floating point arithmetic may be used, but it is the
@@ -2792,7 +2859,7 @@ to the mathematically ideal result.</STRIKE>
 
 <FONT COLOR="red">
 The transition from exactness to inexactness is always explicit
-through <code>exact-&gt;inexact</code>, <code>number-&gt;flonum</code>
+through <code>exact-&gt;inexact</code>, <code>real-&gt;flonum</code>
 (or indirectly through I/O).  Consequently, inexactness cannot
 implicitly contaminate a computation that started out with exact
 numbers and does not use the (explicitly) inexact operations.
@@ -3017,9 +3084,9 @@ Otherwise, this procedure signals an error.
 Suppose <VAR>z</VAR> is a complex number such that
 <VAR>z</VAR> = <var>q1</VAR> + <var>q2</VAR>*i.  Then:
 <PRE>
-(make-rectangular <var>q1</VAR> <var>q2</VAR>) =&gt; <VAR>z</VAR>
-(real-part <VAR>z</VAR>)            =&gt; <var>q1</VAR>
-(imag-part <VAR>z</VAR>)            =&gt; <var>q2</VAR>
+(make-rectangular <var>q1</VAR> <var>q2</VAR>) ==&gt; <VAR>z</VAR>
+(real-part <VAR>z</VAR>)            ==&gt; <var>q1</VAR>
+(imag-part <VAR>z</VAR>)            ==&gt; <var>q2</VAR>
 </PRE>
 </DL>
 
@@ -3081,6 +3148,7 @@ make this note more self-contained and accessible.)
 
 <h2>Lucier's Proposal</h2>
 
+<P>
 In 1998, for the Scheme workshop before ICFP '98 in Baltimore,
 Brad Lucier proposed several changes that were intended to
 bring Scheme's inexact arithmetic into line with the IEEE
@@ -3092,17 +3160,23 @@ thus act as recommendations, much like the appendices on inexact
 arithmetic that were published with the IEEE standard for Scheme.
 A few of Lucier's proposals would have required changes to the
 Scheme standards themselves, however.
+</P>
 
+<P>
 Few of the workshop attendees knew enough about the IEEE floating
 point standards to discuss Lucier's proposal.  A straw poll was
 taken, and came out 31-0 in favor of bringing Scheme into line
 with IEEE floating point and with current practice, trusting
 experts to work out the details.
+</P>
 
+<P>
 Here are the highlights of Lucier's proposal, taken verbatim from
 my notes on the 1998 workshop:
+</P>
 
 <blockquote>
+<P>
     The behavior of <code>eqv?</code> on inexact numbers would change.
     If <var>x</var> and <var>y</var> are inexact reals represented as IEEE floating
     point numbers, then <code>`(eqv? <var>x</var> <var>y</var>)'</code> would be true if and only if
@@ -3114,30 +3188,39 @@ my notes on the 1998 workshop:
     precision than <code>1e8</code>.  In most implementations <code>`(eqv? <var>x</var> <var>y</var>)'</code>
     would be computed by a bit-level comparison of the floating
     point representations for <var>x</var> and <var>y</var>.
+</P>
 
+<P>
     <code>`(real? 4.3+0.i)'</code> and <code>`(real? 4.3-0.i)'</code> would be false, although
     <code>`(real? 4.3+0i)'</code> and <code>`(real? 4.3-0i)'</code> would remain true (assuming
     an implementation allows the real and imaginary parts of a
     complex number to have a different exactness, which is not
     required by the Scheme standards and would not be required
     by Lucier's proposal).
+</P>
 
+<P>
     <code>Truncate</code>, <code>round</code>, <code>ceiling</code>, and <code>floor</code> would be defined only on
     rationals, not on all reals.  The motivation for this is that
     infinities and NaNs would be reals but not rationals, and
     there is no meaningful integer value that these procedures
     could return for infinities and NaNs.  Similarly the first
     argument to <code>rationalize</code> would be required to be a rational.
+</P>
 
+<P>
     The branch cuts for certain transcendental functions would
     change to conform to current practice.
+</P>
 
+<P>
     Kahan reportedly would like for <code>`(max 1 +nan.0 2)'</code> to return 2
     instead of <code>+nan.0</code>, but this would conflict with the guiding
     principle of Scheme's inexact arithmetic so I oppose this.
     Returning an inexact <code>2.0</code> would be consistent with Scheme's
     arithmetic, and would not require any changes to the Scheme
     standards.
+</P>
 </blockquote>
 
 
@@ -3183,7 +3266,7 @@ Scheme's types are not completely arbitrary.  Each type corresponds
 to a set of values that turns up repeatedly as the natural domain
 or range of the functions that are computed by Scheme's standard
 procedures.  The reason these types turn up so often is that they
-are closed under certain groups of operations.
+are closed under certain sets of operations.
 
 <P>
 The exact integers, for example, are closed under the integral
@@ -3193,9 +3276,8 @@ consist of the integral operations plus division (although we
 must make a special case for division by zero).  The reals (and
 inexact reals) are closed under some (often inexact) interpretation
 of rational and irrational operations such as exp and sin, but are
-not closed under operations such as log, sqrt, and expt (although
-we must make special cases for (expt 0 0) et cetera).  The complex
-(and inexact complex) numbers are closed under the largest group
+not closed under operations such as <code>log</code>, <code>sqrt</code>, and <code>expt</code>.  The complex
+(and inexact complex) numbers are closed under the largest set
 of operations.
 
 <h2>Representation Types</h2>
@@ -3223,10 +3305,10 @@ the following domain equations:
 </tr>
 <tr>
 
-    <td>integer</td>         <td>=</td>  <td>fixnum + bignum + flonum</td>
+    <td>integer</td>         <td>=</td>  <td>fixnum + bignum + subset of flonum</td>
 </tr>
 <tr>
-    <td>rational</td>        <td>=</td>  <td>fixnum + bignum + ratnum + flonum</td>
+    <td>rational</td>        <td>=</td>  <td>fixnum + bignum + ratnum + subset of flonum</td>
 </tr>
 <tr>
     <td>real</td>            <td>=</td>  <td>fixnum + bignum + ratnum + flonum</td>
@@ -3277,6 +3359,7 @@ source code.
 <P>
 Flow analysis is performed by solving the type and interval
 constraints that arise from such things as:
+</P>
 
 <ul>
 <li> the types of literal constants, e.g. 2 is an exact integer
@@ -3301,14 +3384,7 @@ infer a single representation type for each argument of an
 operation.  That places a premium on predicates and closure
 properties from which a single representation type can be
 inferred.
-
-<P>
-(Sometimes, however, the combination of a more general type and
-an interval can imply a single representation type.  For example,
-the arithmetic operations may be implemented so that, if n is
-known to be a fixnum, then every exact integer in the range
-[0,n] is also known to be a fixnum.)
-
+</P>
 
 <h2>Problems With Flow Analysis</h2>
 
