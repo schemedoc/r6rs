@@ -799,7 +799,7 @@
        "to support internal record-type definitions. "
        "The explicit-naming syntactic layer cannot be implemented using " (code "syntax-rules")
        " alone.  Two implementations, one for Scheme 48 using explicit renaming, and one for "
-       "Chez Scheme or PLT Scheme using " (code "syntax-case") " are provided.")
+       "PLT Scheme using " (code "syntax-case") " are provided.")
       
       (h1 "References")
 
