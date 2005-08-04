@@ -282,9 +282,8 @@
         (p
          "Two records created by such a constructor are equal according to " 
          (code "equal?")
-         " if they are " (code "eq?") ".  If they are not " (code "eq?")
-	 ", the result of comparing them via " (code "equal?")
-	 " is unspecified."))
+         " iff they are " (code "eq?") ", provided their record type was not used "
+	 "to implement any of the types handled specially by " (code "equal?") "."))
 
 
        (dt
@@ -309,7 +308,9 @@
         (p
          "The " (var "field-id") " argument may be a symbol or an exact non-negative integer. "
          "If it is a symbol " (var "s") ", the field named " (var "s") " is selected. "
-         "(If more than one field has the given name, the field selected is unspecified.) "
+         "If more than one field has the given name, the field selected is the first "
+	 "field with that name in " (var "rtd") ", or, if there is no such field in " (var "rtd")
+	 ", the first field with that name in its parent, and so on."
          "If " (var "field-id") " is an exact non-negative integer " (var "i") ", the field at "
          "the 0-based index " (var "i") " is selected, where the fields are ordered "
          "as described under " (code "make-record-type-descriptor") " above."))
@@ -484,10 +485,8 @@
 	 "a subsequent evaluation of an identical " (code "define-type") " form will "
 	 "reuse the previously created rtd, and create identical bindings.  If the "
 	 "implied arguments to " (code "make-record-type-descriptor") " are the same as with "
-	 "a previously evaluated " (code "define-type") " form are the same, but other parts of the "
-	 "form are different (i.e. the names of the created procedures, the signature of the "
-	 "constructor procedure, or the initial field values), the behavior is unspecified---"
-	 "an error may or may not be signalled.  "
+	 "a previously evaluated " (code "define-type") " form are the same, the rtd is "
+	 "also reused, and bindings will be created or modified according to the more recent form. "
 	 "If the implied arguments to " (code "make-record-type-descriptor") " are not the same, "
 	 "an error is signalled."
 	 ))
