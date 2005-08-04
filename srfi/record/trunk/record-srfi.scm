@@ -120,54 +120,17 @@
         "With different names it would be easier to identify when only "
         "the explicit-naming interface is being used; presumably, "
         "a module system would also make this possible.")
+
        (li
-        (p
-         "Compared to some other record-defining forms that have been proposed and implemented, "
-         "the syntax is comparatively verbose.  For instance, PLT Scheme has a "
-         (code "define-struct") " form that allows record-type definitions as short as this:")
-        (verbatim
-         "(define-struct point (x y))")
-        (p
-         "To produce the same effect, this proposal requires:")
-        (verbatim
-         "(define-type point (x y)"
-         "  (fields ((mutable x) x)"
-         "          ((mutable y) y)))")
 	(p
-	 "On the other hand, the proposed syntax generalizes gracefully beyond this "
-	 "trivial sort of record definition, as illustrated by the two record "
-	 "definitions below.")
-
+	 "Compared to some other record-defining forms that have been proposed and implemented, "
+	 "the syntax is comparatively verbose.  For instance, PLT Scheme has a "
+	 (code "define-struct") " form that allows record-type definitions as short as this:")
 	(verbatim
-	 "(define-type hash-table (pred hasher size)"
-	 "  (fields ((immutable pred) pred)"
-	 "          ((immutable hasher) hasher)"
-	 "          ((mutable data) (make-vector (nearest-prime size)))"
-	 "          ((mutable count) 0)))"
-	 ""
-	 "(define-type eq-hash-table (pred hasher size)"
-	 "  (parent hash-table pred hasher size)"
-	 "  (fields ((mutable gc-count) 0)))")
-
+	 "(define-struct point (x y))")
 	(p
-	 "The first defines a " (code "hash-table") " record with four fields: "
-	 (code "pred") ", " (code "hasher") ", "
-	 (code "data") ", and " (code "count") ".  "
-	 "Two of the fields, " (code "pred") " and " (code "hasher") ", are immutable "
-	 "and set to the values of the first two constructor arguments.  The "
-	 (code "data") " field is initialized to a vector whose size is a "
-	 "function of the third constructor argument.  "
-	 "The " (code "count") " field is initialized to zero.")
-
-	(p
-	 "The second extends the " (code "hash-table") 
-	 " record to form an " (code "eq-hash-table")
-	 " record with an additional " (code "gc-count") " field, used in systems whose "
-	 "collectors move objects to determine if a collection has occurred "
-	 "since the last rehash.  The child record does not initialize the "
-	 "parent fields directly but rather defers to the initialization code "
-	 "in the parent record definition by passing along the constructor "
-	 "arguments.")
+	 "The " (a (@ (href "#design-rationale")) "Design Rationale section")
+	 " explains why.")
         (p
          "It would be possible to introduce abbreviations into the syntax. "
          "In the " (code "fields") " clause, a single identifier might serve as a shorthand "
@@ -694,6 +657,89 @@
          (var "field-id") " of the type represented by " (var "rtd") " is mutable, "
          "where " (var "field-id") " is as in " (code "record-accessor") "."))
        )
+
+      (h1 (a (@ (name "design-rationale")) "Design Rationale"))
+
+      (h2 "Field initialization and verbosity")
+
+      (p
+       "To define a record type with two mutable fields, this proposal requires:")
+      (verbatim
+       "(define-type point (x y)"
+       "  (fields ((mutable x) x)"
+       "          ((mutable y) y)))")
+      (p
+       "While this is arguably verbose, the proposed syntax generalizes gracefully beyond this "
+       "trivial sort of record definition, as illustrated by the two record "
+       "definitions below.")
+      
+      (verbatim
+       "(define-type hash-table (pred hasher size)"
+       "  (fields ((immutable pred) pred)"
+       "          ((immutable hasher) hasher)"
+       "          ((mutable data) (make-vector (nearest-prime size)))"
+       "          ((mutable count) 0)))"
+       ""
+       "(define-type eq-hash-table (pred hasher size)"
+       "  (parent hash-table pred hasher size)"
+       "  (fields ((mutable gc-count) 0)))")
+
+      (p
+       "The first defines a " (code "hash-table") " record with four fields: "
+       (code "pred") ", " (code "hasher") ", "
+       (code "data") ", and " (code "count") ".  "
+       "Two of the fields, " (code "pred") " and " (code "hasher") ", are immutable "
+       "and set to the values of the first two constructor arguments.  The "
+       (code "data") " field is initialized to a vector whose size is a "
+       "function of the third constructor argument.  "
+       "The " (code "count") " field is initialized to zero.")
+
+      (p
+       "The second extends the " (code "hash-table") 
+       " record to form an " (code "eq-hash-table")
+       " record with an additional " (code "gc-count") " field, used in systems whose "
+       "collectors move objects to determine if a collection has occurred "
+       "since the last rehash.  The child record does not initialize the "
+       "parent fields directly but rather defers to the initialization code "
+       "in the parent record definition by passing along the constructor "
+       "arguments.")
+
+      (p
+       "If the custom field initialization were omitted, it would still be possible to perform "
+       "custom initialization by writing a separate constructor procedure, which "
+       "would wrap a record type's actual constructor.  However, this creates "
+       "the need for an extra procedure name which is not part of the record "
+       "type's definition.  This means that extensions which deal with the "
+       "record type's definition (such as " (code "co-export") ", but also extensions to "
+       "support keyword arguments, etc.) don't have access to the record type's "
+       "actual constructor.")
+
+      (h2 (code "init!") " clause")
+
+      (p
+       "When constructing records, custom initialization code is commonly "
+       "required, because the initial field values often do not have a "
+       "one-to-one correspondence to the constructor arguments.  There may also "
+       "be a need to perform other construction-time initialization, such as "
+       "calling a procedure to \"register\" the new record.")
+
+      (p
+       "Internally, record construction involves an initialization step, and the "
+       (code "init!") " clause provides a hook into this step, in order to "
+       "support custom initialization.")
+
+      (p
+       "If this feature were omitted, many record-type definitions would require "
+       "a separate constructor procedure, with the same consequences as explained "
+       "above in the section on field initialization.")
+
+      (p
+       "The " (code "init!") " clause addresses this common requirement by "
+       "allowing arbitrary operations on the new record instance, before it is "
+       "returned from the constructor.  This eliminates the need to define a "
+       "constructor wrapper procedure, and means that the record type's defined "
+       "constructor can always be the actual constructor used by clients.")
+
 
       (h1 "Examples")
 
