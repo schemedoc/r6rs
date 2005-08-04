@@ -275,8 +275,8 @@
         (p
          "The " (var "opaque?") " flag is a boolean.  If true, the "
          "returned record type is " (i "opaque") ".  This means that calls to "
-         (code "record-type-descriptor") " (see \"Reflection\" below) will return "
-         (code "#f") " instead of the descriptor. "
+         (code "record?") " will return " (code "#f") " and "
+	 (code "record-descriptor") " (see \"Reflection\" below) will signal an error. "
          "The record type is also opaque if an opaque parent is supplied. "
          "If " (var "opaque?") " is false and an opaque parent is not supplied, "
          "the record is not opaque.")
@@ -620,7 +620,8 @@
                    (var "obj")))
        (dd
         (p
-         "Returns " (code "#t") " if " (var "obj") " is a record."))
+         "Returns " (code "#t") " if " (var "obj") " is a record, and its record type is not opaque. "
+	 "Returns " (code "#f") " otherwise."))
 
        (dt
         (prototype "record-type-descriptor"
@@ -631,7 +632,7 @@
          "The rtd of the most precise type is returned; that is, the type " (var "t") " such "
          "that " (var "rec") " is of type " (var "t") " but not of any type that extends "
          (var "t") ". "
-         "If the type is opaque, " (code "record-type-descriptor") " returns " (code "#f") "."))
+         "If the type is opaque, " (code "record-type-descriptor") " signals an error."))
 
        (dt
         (prototype "record-type-name"

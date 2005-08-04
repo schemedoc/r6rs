@@ -119,9 +119,13 @@
 
 (define-record-type :record
   (really-make-record rtd components)
-  record?
+  any-record?
   (rtd actual-record-type-descriptor)
   (components record-components))
+
+(define (record? r)
+  (and (any-record? r)
+       (not (record-type-opaque? (actual-record-type-descriptor r)))))
 
 (define (make-record rtd component-count)
   (really-make-record rtd
@@ -130,7 +134,7 @@
 (define (record-type-descriptor r)
   (let ((rtd (actual-record-type-descriptor r)))
     (if (record-type-opaque? rtd)
-	#f
+	(error "tried to obtain record-type descriptor from object of unknown type" r)
 	rtd)))
 
 (define (record-ref record index)

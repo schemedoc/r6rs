@@ -98,7 +98,7 @@
 (check (ex3-thickness ex3-i1) => 18)
 (check *ex3-instance* => (eq?) ex3-i1)
 
-(check (record-type-descriptor ex3-i1) => #f)
+(check (record? ex3-i1) => #f)
 
 (newline)
 (display "correct tests: ")
