@@ -892,9 +892,16 @@
        (li
         "The (undocumented) " (code "define-record") " form of "
         (a (@ (href "http://www.iro.umontreal.ca/~gambit/")) "Gambit-C 4.0beta")
-        ".")
+        "."))
 
-      )))))
+       (h1 "Acknowledgements")
+
+       (p
+	"This SRFI was written in consultation with the R6RS editors: Will Clinger, R. Kent Dybvig, "
+	"Marc Feeley, Matthew Flatt, Manuel Serrano, Michael Sperber, and Anton van Straaten. "
+	"Anton van Straaten wrote parts of the Design Rationale section.")
+
+      ))))
 
 (with-output-to-file "record-srfi.html"
   (lambda ()
