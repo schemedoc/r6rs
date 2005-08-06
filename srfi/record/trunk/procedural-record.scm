@@ -165,7 +165,7 @@
 	     (loop (record-type-parent rtd-2))))))
 
 (define (record-with-rtd? obj rtd)
-  (and (record? obj)
+  (and (any-record? obj)
        (rtd-ancestor? rtd (actual-record-type-descriptor obj))))
 
 (define (record-predicate rtd)
