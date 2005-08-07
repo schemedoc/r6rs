@@ -391,7 +391,7 @@
          "Each " (meta "record clause") " must take one of the following forms:")
 
         (dl
-         (dt (prototype "fields" (meta "field-spec")))
+         (dt (prototype "fields" (meta "field-spec") "*"))
          (dd
           (p
            "where each " (meta "field-spec") " has one of the following forms")
