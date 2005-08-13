@@ -175,6 +175,12 @@ general complex numbers.
     added to say that a number can be coerced to the specified type
     (and back) without loss.
     (See the <a href="#design-rationale">Design Rationale</a>.)
+<li>Most Scheme implementations represent an inexact complex number as
+    a pair of two inexact reals, representing the real and imaginary
+    parts of the number, respectively.  Should the R6RS mandate the
+    presence of such a representation (while allowing additional
+    alternative representations), thus allowing it to more
+    meaningfully discuss semantic issues such as branch cuts?
 <li>The fixnum operations provide efficient fixnums that "wrap."
     However, they do not give efficient access to the hardware facilities
     for carry and overflow.  This would be desirable to implement
@@ -1408,14 +1414,15 @@ These procedures compute the usual transcendental functions.  <CODE>Fllog</CODE>
 computes the natural logarithm of <VAR>fl</VAR> (not the base ten logarithm).
 <CODE>Flasin</CODE>, <CODE>Flacos</CODE>, and <CODE>Flatan1</CODE> compute arcsine (sin<SUP>-1</SUP>),
 arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
-The two-argument variant <CODE>flatan2</CODE> computes <SAMP>`(inangle
-(inmake-rectangular <VAR>fl1</VAR> <VAR>fl2</VAR>))'</SAMP> (see below).
-
+<CODE>`(flatan1 <var>fl1</var> <var>fl2</var>)'</CODE> computes the
+arc tangent of <var>fl1</var>/<var>fl2</var>.  The range of
+<CODE>flatan1</CODE> and <CODE>flatan2</CODE> lies between -pi/2 and
+pi/2, both inclusive if -0.0 is distinguished, both exclusive otherwise.
 
 <P>
 In general, the mathematical functions log, arcsine, arccosine, and
 arctangent are multiply defined.
-The value of log <VAR>fl</VAR> is defined to be the one whose imaginary
+The value of log <VAR>z</VAR> is defined to be the one whose imaginary
 part lies in the range from -pi (exclusive) to pi (inclusive).
 log 0 is undefined.
 With log defined this way, the values of sin<SUP>-1</SUP> <VAR>fl</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
@@ -1432,6 +1439,8 @@ cos<SUP>-1</SUP> <VAR>z</VAR> = pi / 2 - sin<SUP>-1</SUP> <VAR>z</VAR>
 
 <P>
 tan<SUP>-1</SUP> <VAR>z</VAR> = (log (1 + i <VAR>z</VAR>) - log (1 - i <VAR>z</VAR>)) / (2 i)
+
+
 
 <P>
 If the function has a real-valued limit as its argument tends toward
@@ -1453,7 +1462,147 @@ arithmetic are encouraged to follow the relevant
 standards for these procedures.
 
 <P>
-The above specification follows <A HREF="#steele-1990">[Steele 1990]</A>, which in turn
+Specifically, the range of <CODE>`(flatan2 <var>x</var>
+<var>y</var>)'</CODE> is as in the following table. The asterisk (*)
+indicates that the entry applies to implementations that distinguish
+minus zero.
+
+<P>
+<table>
+<tr>
+<td></td>
+<th><var>y</var> Condition</th>
+<th><var>x</var> Condition</th>
+<th>Range of result</th>
+
+<tbody>
+<tr>
+<td></td>
+<td><var>y</var> = 0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>+0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>-0.0</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &gt; 0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>0.0 &lt; result&lt; pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &gt; 0.0</td>
+<td><var>x</var> = 0.0</td>
+<td>pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &gt; 0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>pi/2 &lt; result&lt; pi</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> = 0.0</td>
+<td><var>x</var> &lt; 0</td>
+<td>pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>+pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>-pi</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &lt; 0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>-pi&lt; result&lt; -pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &lt; 0.0</td>
+<td><var>x</var> = 0.0</td>
+<td>-pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &lt; 0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>-pi/2 &lt; result&lt; 0.0</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> = 0.0</td>
+<td><var>x</var> = 0.0</td>
+<td>undefined</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> = +0.0</td>
+<td>+0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> = +0.0</td>
+<td>-0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> = -0.0</td>
+<td>+pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> = -0.0</td>
+<td>-pi</td>
+</tr>
+</tbody>
+</table>
+
+
+<P>
+The above specification follows the 
+<A HREF="http://www.lispworks.com/documentation/HyperSpec/Issues/iss192_w.htm">
+branch cut specification of Common Lisp</A>, and 
+<A HREF="#steele-1990">[Steele 1990]</A>, which in turn
 cites <A HREF="#penfield-1981">[Penfield 1981]</A>; refer to these sources for more detailed
 discussion of branch cuts, boundary conditions, and implementation of
 these functions.
@@ -1463,11 +1612,13 @@ these functions.
 (flexp -inf.0)                ==&gt; 0.0
 (fllog +inf.0)                ==&gt; +inf.0
 (fllog 0.0)                   ==&gt; -inf.0
+(fllog -0.0)                  ==&gt; unspecified ; if -0.0 is distinguished
 (fllog -inf.0)                ==&gt; +nan.0
 (flatan1 -inf.0)              ==&gt; -1.5707963267948965
-(flatan2 +inf.0)              ==&gt; 1.5707963267948965
+(flatan1 +inf.0)              ==&gt; 1.5707963267948965
 </PRE>
 </DL>
+
 
 <P>
 <DL>
@@ -1476,7 +1627,9 @@ these functions.
 <P>
 Returns the principal square root of <VAR>z</VAR>. For a negative
 argument, the result may be <code>+nan.0</code>, or may be some
-meaningless flonum.
+meaningless flonum.  With <code>flexp</code> and <code>fllog</code>
+defined as above, the value of <code>`(flsqrt <var>fl</var>)'</code>
+is defined as <CODE>`(flexp (fl/ (fllog <var>fl</var>) 2.0))'</CODE>.
 
 <PRE>
 (flsqrt +inf.0)               ==>  +inf.0
@@ -2047,7 +2200,8 @@ The two-argument variant of <CODE>Inatan</CODE> computes <SAMP>`(inangle
 In general, the mathematical functions log, arcsine, arccosine, and
 arctangent are multiply defined.
 The value of log <VAR>z</VAR> is defined to be the one whose imaginary
-part lies in the range from -pi (exclusive) to pi (inclusive).
+part lies in the range from -pi (inclusive if -0.0 is distinguished,
+exclusive otherwise) to pi (inclusive).
 log 0 is undefined.
 With log defined this way, the values of sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
 and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
@@ -2079,10 +2233,163 @@ not yield a real result for the given arguments, the
 result may be <code>+nan.0</code>, or may be some meaningless inexact number.
 
 <P>
-The above specification follows <A HREF="#steele-1990">[Steele 1990]</A>, which in turn
+Specifically, the range of <CODE>`(inatan <var>x</var>
+<var>y</var>)'</CODE> is as in the following table. The asterisk (*)
+indicates that the entry applies to implementations that distinguish
+minus zero.
+
+<P>
+<table>
+<tr>
+<td></td>
+<th><var>y</var> Condition</th>
+<th><var>x</var> Condition</th>
+<th>Range of result</th>
+
+<tbody>
+<tr>
+<td></td>
+<td><var>y</var> = 0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>+0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>-0.0</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &gt; 0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>0.0 &lt; result&lt; pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &gt; 0.0</td>
+<td><var>x</var> = 0.0</td>
+<td>pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &gt; 0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>pi/2 &lt; result&lt; pi</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> = 0.0</td>
+<td><var>x</var> &lt; 0</td>
+<td>pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>+pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>-pi</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &lt; 0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>-pi&lt; result&lt; -pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &lt; 0.0</td>
+<td><var>x</var> = 0.0</td>
+<td>-pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &lt; 0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>-pi/2 &lt; result&lt; 0.0</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> = 0.0</td>
+<td><var>x</var> = 0.0</td>
+<td>undefined</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> = +0.0</td>
+<td>+0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> = +0.0</td>
+<td>-0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> = -0.0</td>
+<td>+pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> = -0.0</td>
+<td>-pi</td>
+</tr>
+</tbody>
+</table>
+
+
+<P>
+The above specification follows the 
+<A HREF="http://www.lispworks.com/documentation/HyperSpec/Issues/iss192_w.htm">
+branch cut specification of Common Lisp</A>, and 
+<A HREF="#steele-1990">[Steele 1990]</A>, which in turn
 cites <A HREF="#penfield-1981">[Penfield 1981]</A>; refer to these sources for more detailed
 discussion of branch cuts, boundary conditions, and implementation of
 these functions.
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>insqrt</CODE> <var>in</var>
+<DD>
+<P>
+Returns the principal square root of <VAR>z</VAR>. For a negative
+argument, the result may be <code>+nan.0</code>, or may be some
+meaningless inexact number.  With <code>inlog</code> defined as above,
+the value of <code>`(insqrt <var>in</var>)'</code> is defined as
+<CODE>`(inexp (in/ (inlog <var>in</var>) 2.0))'</CODE>.
+
 </DL>
 
 <p>
@@ -2129,9 +2436,20 @@ e<SUP>i*<VAR>in4</VAR></SUP>.  Then (inexactly):
 (inmagnitude <VAR>z</VAR>)              ==&gt; |<VAR>in3</VAR>|
 (inangle <VAR>z</VAR>)                  ==&gt; <VAR>in<SUB>angle</SUB></VAR>
 </PRE>
-where -pi &lt; x_angle &lt;= pi with <VAR>in<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi <VAR>n</VAR>
+where -pi <FONT color="red"><STRIKE>&lt;</STRIKE>&lt;=</FONT> x_angle &lt;= pi with <VAR>in<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi <VAR>n</VAR>
 for some integer <VAR>n</VAR>.
 </DL>
+
+<P>
+<FONT color="red">
+<PRE>
+(angle -1)           ==&gt; pi
+(angle -1.0)         ==&gt; pi
+(angle -1.0+0.0)     ==&gt; pi
+(angle -1.0-0.0)     ==&gt; -pi ; if -0.0 is distinguished
+</PRE>
+</FONT>
+
 
 <h2><a name="r5rs-generic">R5RS-style Generic Arithmetic</a></h2>
 
@@ -2583,18 +2901,35 @@ computes the natural logarithm of <VAR>z</VAR> (not the base ten logarithm).
 <CODE>Asin</CODE>, <CODE>acos</CODE>, and <CODE>atan</CODE> compute arcsine (sin<SUP>-1</SUP>),
 arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
 The two-argument variant of <SAMP>`atan'</SAMP> computes <TT>(angle
-(make-rectangular <VAR>x</VAR> <VAR>y</VAR>))</TT> (see below), even in implementations
-that don't support general complex numbers.
+(make-rectangular <VAR>x</VAR> <VAR>y</VAR>))</TT> (see below)<FONT color="red"><STRIKE>, even in implementations
+that don't support general complex numbers</STRIKE></FONT>.
 
 
 <P>
 In general, the mathematical functions log, arcsine, arccosine, and
-arctangent are multiply defined.
-The value of log <VAR>z</VAR> is defined to be the one whose imaginary
-part lies in the range from -pi (exclusive) to pi (inclusive).
-log 0 is undefined.
-With log defined this way, the values of sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
-and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
+arctangent are multiply defined.  The value of log <VAR>z</VAR> is
+defined to be the one whose imaginary part lies in the range from -pi
+<FONT color="red"><STRIKE>(exclusive)</STRIKE> (inclusive if -0.0 is
+distinguished, exclusive otherwise)</FONT> to pi (inclusive).  log 0
+is undefined.  
+
+<P>
+<FONT COLOR="red">
+The value of log <VAR>z</VAR> for non-real <VAR>z</VAR> is defined in
+terms of log on real numbers as
+
+<P>
+log <VAR>z</VAR> = log |<VAR>z</VAR>| + <VAR>x<SUB>angle</SUB></VAR>i
+
+<P>
+where <VAR>x<SUB>angle</SUB></VAR> is the angle of <VAR>z</VAR> as
+specified below.
+</FONT>
+
+<P>
+With log defined this way, the values of
+sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>, and
+tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
 
 
 <P>
@@ -2626,8 +2961,165 @@ result may be <code>+nan.0</code>, or may be some meaningless inexact
 number.
 </FONT>
 
+<FONT color="red">
 <P>
-The above specification follows <A HREF="#steele-1990">[Steele 1990]</A>, which in turn
+Specifically, the range of <CODE>`(atan <var>x</var>
+<var>y</var>)'</CODE> is as in the following table. The asterisk (*)
+indicates that the entry applies to implementations that distinguish
+minus zero.
+
+<P>
+<table>
+<tr>
+<td></td>
+<th><var>y</var> Condition</th>
+<th><var>x</var> Condition</th>
+<th>Range of result</th>
+
+<tbody>
+<tr>
+<td></td>
+<td><var>y</var> = 0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>+0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>-0.0</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &gt; 0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>0.0 &lt; result&lt; pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &gt; 0.0</td>
+<td><var>x</var> = 0.0</td>
+<td>pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &gt; 0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>pi/2 &lt; result&lt; pi</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> = 0.0</td>
+<td><var>x</var> &lt; 0</td>
+<td>pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>+pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>-pi</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &lt; 0.0</td>
+<td><var>x</var> &lt; 0.0</td>
+<td>-pi&lt; result&lt; -pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &lt; 0.0</td>
+<td><var>x</var> = 0.0</td>
+<td>-pi/2</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> &lt; 0.0</td>
+<td><var>x</var> &gt; 0.0</td>
+<td>-pi/2 &lt; result&lt; 0.0</td>
+</tr>
+
+<tr>
+<td></td>
+<td><var>y</var> = 0.0</td>
+<td><var>x</var> = 0.0</td>
+<td>undefined</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> = +0.0</td>
+<td>+0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> = +0.0</td>
+<td>-0.0</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> = -0.0</td>
+<td>+pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> = -0.0</td>
+<td>-pi</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = +0.0</td>
+<td><var>x</var> = 0</td>
+<td>pi/2</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td><var>y</var> = -0.0</td>
+<td><var>x</var> = 0</td>
+<td>-pi/2</td>
+</tr>
+
+</tbody>
+</table>
+</FONT>
+
+<P>
+The above specification follows the 
+<FONT COLOR="red">
+<A HREF="http://www.lispworks.com/documentation/HyperSpec/Issues/iss192_w.htm">
+branch cut specification of Common Lisp</A>,</FONT> and 
+<A HREF="#steele-1990">[Steele 1990]</A>, which in turn
 cites <A HREF="#penfield-1981">[Penfield 1981]</A>; refer to these sources for more detailed
 discussion of branch cuts, boundary conditions, and implementation of
 these functions.
@@ -2640,6 +3132,8 @@ these functions.
 (log -inf.0)                   ==&gt; <FONT color="red"><STRIKE>+nan.0</STRIKE> <I>unspecified</I></FONT>
 (atan -inf.0)                  ==&gt; -1.5707963267948965
 (atan +inf.0)                  ==&gt; 1.5707963267948965
+<FONT COLOR="red">(log -1.0+0.0i)                ==&gt; 0.0+<VAR>pi</VAR>i</FONT>
+<FONT COLOR="red">(log -1.0-0.0i)                ==&gt; 0.0-<VAR>pi</VAR>i ; if -0.0 is distinguished</FONT>
 </PRE>
 
 <P>
@@ -2665,7 +3159,10 @@ when given <CODE>+inf.00</CODE>,
 Returns the principal square root of <VAR>z</VAR>.  For <FONT
 color="red"><STRIKE>real</STRIKE> rational</FONT> <VAR>z</VAR>, the
 result will have either positive real part, or zero real part and
-non-negative imaginary part.
+non-negative imaginary part.  <FONT color="red">With <code>exp</code> and <code>log</code>
+defined as above, the value of <code>`(sqrt <var>z</var>)'</code>
+<CODE>`(exp (/ (log <var>z</var>) 2.0))'</CODE>
+</FONT>
 
 <PRE>
 (sqrt -5)                   ==&gt;  0.0+2.23606797749979i
@@ -3548,10 +4045,10 @@ systems.
 
 <h1>Acknowledgements</h1>
 
-We thank Anton van Straaten, Kent Dybvig, Sebastian Egner, Mike
-Ashley, Marc Feeley, Matthew Flatt, Manuel Serrano for direct and
-indirect assistance producing this draft.  Special thanks to Aubrey
-Jaffer for his work on SRFI 70.
+We thank Anton van Straaten, Kent Dybvig, Sebastian Egner, Bradley
+Lucier, Mike Ashley, Marc Feeley, Matthew Flatt, Manuel Serrano for
+direct and indirect assistance producing this draft.  Special thanks
+to Aubrey Jaffer for his work on SRFI 70.
 
 
 <h1>Copyright</h1>
