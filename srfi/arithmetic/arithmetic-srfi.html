@@ -167,9 +167,6 @@ general complex numbers.
     This causes possibly unexpected behavior: <SAMP>`(zero?
     0+0.0i)'</SAMP> returns true despite <SAMP>`(integer?
     0+0.0i)'</SAMP> returning false.
-    In the arithmetic model preferred by Mike, this makes even less
-    sense, because inexact complex numbers are implicitly coerced to
-    exact ones.
     Possibly, new predicates <code>realistic?</code>,
     <code>rationalistic?</code>, and <code>integral?</code> should be
     added to say that a number can be coerced to the specified type
@@ -185,11 +182,8 @@ general complex numbers.
     However, they do not give efficient access to the hardware facilities
     for carry and overflow.  This would be desirable to implement
     efficient generic arithmetic on fixnums portably.  On the other hand,
-    there isn't much experience with formulating an interface to these
+    there isn't much experience with formulating a portable interface to these
     facilities.
-<li>Should the <code>string-&gt;number</code> and <code>number-&gt;string</code>
-    operations accept an additional argument specifying the default width
-    of the significand for inexact floating-point literals?
 <li>The <code>x|53</code> default for the mantissa width discriminates
 against implementations that default to unusually good representations,
 such as IEEE extended precision.  Are there any such implementations?
@@ -283,6 +277,7 @@ essence of the R5RS, with the advantage of historical continuity and
 contagiousness of inexact operations.  The alternative described in
 section <a href="#exact-generic">Generic Exact Arithmetic</a> has
 exactness be contagious, with the advantage of greater transparency
+and the validity of standard algebraic laws
 over the R5RS-style generic arithmetic.  The section describing
 generic exact
 arithmetic opens with a more detailed rationale.  Other alternatives
@@ -972,6 +967,12 @@ An implementation may return <CODE>#f</CODE> for <CODE>"+nan.0"</CODE>.</STRIKE>
 <h2>Fixnums</h2>
 
 <p>
+A subset range of the exact integers is denoted as the set of fixnums.
+Conversely, a fixnum is an exact integer whose value lies within this
+fixnum range.
+</p>
+
+<p>
 Every implementation must define its fixnum range as a closed
 interval [<var>lo</var>, <var>hi</var>] such that <var>lo</var>
 and <var>hi</var> are (mathematical) integers with
@@ -981,12 +982,6 @@ range must correspond to an exact integer that is representable
 within the implementation.
 The fixnum operations of an implementation will perform
 arithmetic modulo <var>hi-lo+1</var>.
-</p>
-
-<p>
-<strong>Definition.</strong>
-A fixnum is an exact integer whose value lies within the fixnum
-range.
 </p>
 
 <P>
@@ -1181,6 +1176,8 @@ returns the result of that shift congruent mod <var>hi-lo+1</var>.
     representations, but every implementation is required to
     designate a subset of its inexact reals as flonums, and
     to convert certain external representations into flonums.
+    The flonums are closed under the flonum operations described
+    in this section.
 </P>
 
 <P>
@@ -1214,6 +1211,16 @@ running in unsafe mode, in which case all bets are off.
 <DT><U>procedure:</U> <CODE>fl&gt;</CODE> <var>fl1</var> <var>fl2</var>
 <DT><U>procedure:</U> <CODE>fl&gt;=</CODE> <var>fl1</var> <var>fl2</var>
 <DD>
+
+<P>
+These procedures return <TT>#t</TT> if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing,
+monotonically nondecreasing, or monotonically nonincreasing,
+<code>#f</code> otherwise.  These
+predicates are required to be transitive.
+</P>
+
+<P>
 <PRE>
 (fl= +inf.0 +inf.0)           ==&gt;  #t
 (fl= -inf.0 +inf.0)           ==&gt;  #f
@@ -1224,15 +1231,6 @@ running in unsafe mode, in which case all bets are off.
 (fl= +nan.0 <var>fl</var>)               ==&gt;  <I>unspecified</I>
 (fl&lt; +nan.0 <var>fl</var>)               ==&gt;  <I>unspecified</I>
 </PRE>
-
-
-<P>
-These procedures return <TT>#t</TT> if their arguments are (respectively):
-equal, monotonically increasing, monotonically decreasing,
-monotonically nondecreasing, or monotonically nonincreasing,
-<code>#f</code> otherwise.  These
-predicates are required to be transitive.
-</P>
 
 The following behavior is strongly recommended but not required by the
 R6RS:
@@ -1265,9 +1263,14 @@ returning <TT>#t</TT> or <TT>#f</TT>.
 it is <code>fl=</code> to zero, <code>flpositive?</code> tests if it is greater
 than zero, <code>flnegative?</code> tests if it is less
 than zero, <code>flodd?</code> tests if it is odd, 
-<code>fxodd?</code> tests if it is even,
-<code>fxnan?</code> tests if it is a NaN.
+<code>flodd?</code> tests if it is even,
+<code>flnan?</code> tests if it is a NaN.
 </P>
+
+<P>
+<PRE>
+(flnegative? -0.0) ==&gt; #f
+</PRE>
 </DL>
 
 <P>
@@ -1292,8 +1295,8 @@ These procedures return the maximum or minimum of their arguments.
 
 
 <P>
-These procedures return the inexact real sum, difference,
-product, or quotient of their inexact real arguments.
+These procedures return the flonum sum, difference,
+product, or quotient of their flonum arguments.
 In general, they should return the flonum that best
 approximates the mathematical sum of their arguments.
 (For implementations that represent flonums as IEEE
@@ -1379,7 +1382,7 @@ denominator of 0 is defined to be 1.
 <DT><U>procedure:</U> <CODE>flround</CODE> <var>fl</var>
 <DD>
 <P>
-These procedures return integral flonums.
+These procedures return integral flonums for finite flonum arguments.
 <CODE>Flfloor</CODE> returns the largest integral flonum not larger than <VAR>fl</VAR>.
 <CODE>Flceiling</CODE> returns the smallest integral flonum not smaller than <VAR>fl</VAR>.
 <CODE>Fltruncate</CODE> returns the integral flonum closest to <VAR>fl</VAR> whose absolute
@@ -1394,6 +1397,11 @@ integers.
 mode specified by the IEEE floating point standard.
 </BLOCKQUOTE>
 
+<P>
+<PRE>
+(flfloor +inf.0)                       ==&gt;  +inf.0
+(flceiling -inf.0)                     ==&gt;  -inf.0
+</PRE>
 </dl>
 
 
@@ -1667,7 +1675,12 @@ meaningless flonum.
 The <code>fixnum-&gt;flonum</code>
 and <code>flonum-&gt;fixnum</code>
 procedures provide for explicit conversions
-between fixnums and flonums.
+between fixnums and flonums.  The <code>fixnum-&gt;flonum</code>
+procedure returns, for a flonum argument, its numerically closest
+fixnum.
+The <code>flonum-&gt;fixnum</code>
+procedure returns, for a fixnum argument, its numerically closest
+flonum.
 Programmers should understand that these procedures
 cannot be expected to return results that are
 numerically equal to their arguments.
@@ -1730,7 +1743,7 @@ but not required by the R6RS.
 </P>
 
 <pre>
-    (numerator? -0.0)                             ==&gt; -0.0
+    (flnumerator -0.0)                             ==&gt; -0.0
 </pre>
 <p>
     is recommended but not required by the R6RS.
@@ -1765,7 +1778,7 @@ its real part.
 <P>
 These numerical type predicates can be applied to any kind of
 argument, including non-numbers.  They return <TT>#t</TT> if the object is
-an exact number of the named type, and otherwise they return <TT>#f</TT>.
+an exact number of the named type, and otherwise return <TT>#f</TT>.
 In general, if a type predicate is true of a number then all higher
 type predicates are also true of that number.  Consequently, if a type
 predicate is false of a number, then all lower type predicates are
@@ -2436,17 +2449,19 @@ e<SUP>i*<VAR>in4</VAR></SUP>.  Then (inexactly):
 (inmagnitude <VAR>z</VAR>)              ==&gt; |<VAR>in3</VAR>|
 (inangle <VAR>z</VAR>)                  ==&gt; <VAR>in<SUB>angle</SUB></VAR>
 </PRE>
-where -pi <FONT color="red"><STRIKE>&lt;</STRIKE>&lt;=</FONT> x_angle &lt;= pi with <VAR>in<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi <VAR>n</VAR>
-for some integer <VAR>n</VAR>.
+
+<P>
+where -pi &lt;= <VAR>in</VAR><SUB>angle</SUB> &lt;= pi with
+<VAR>in<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi <VAR>n</VAR> for
+some integer <VAR>n</VAR>.
 </DL>
 
 <P>
 <FONT color="red">
 <PRE>
-(angle -1)           ==&gt; pi
-(angle -1.0)         ==&gt; pi
-(angle -1.0+0.0)     ==&gt; pi
-(angle -1.0-0.0)     ==&gt; -pi ; if -0.0 is distinguished
+(inangle -1.0)         ==&gt; pi
+(inangle -1.0+0.0)     ==&gt; pi
+(inangle -1.0-0.0)     ==&gt; -pi ; if -0.0 is distinguished
 </PRE>
 </FONT>
 
@@ -2498,7 +2513,27 @@ return inexact results when given any inexact arguments.
 <P>
 The procedures described here behave
 consistently with the inexact arithmetic if passed inexact
+arguments, and
+consistently with the exact arithmetic if passed exact
 arguments.
+
+<p>
+We will use <var>z</var>, <var>z1</var>, <var>z2</var>, and
+<var>z3</var> as metavariables that range over the complex numbers,
+<var>x</var>, <var>x1</var>, <var>x2</var>, and <var>x3</var> as
+metavariables that range over the real numbers,
+<var>q</var>, <var>q1</var>, <var>q2</var>, and <var>q3</var> as
+metavariables that range over the rationals. and
+<var>n</var>, <var>n1</var>, <var>n2</var>, and <var>n3</var> as
+metavariables that range over the inexact integers.
+</p>
+
+<p>
+If an argument to the following procedures that corresponds to a
+metavariable is not in the set specified for that metavariable, then
+these procedures signal an error, even in unsafe mode.
+</p>
+
 
 <P>
 <DL>
@@ -2523,11 +2558,11 @@ monotonically nondecreasing, or monotonically nonincreasing
 <FONT COLOR=red><STRIKE>(= +nan.0 +nan.0)           ==>  #t</STRIKE></FONT>
 </PRE>
 
-For any rational number <VAR>x</VAR>:
+For any rational number <VAR>q</VAR>:
 
 <PRE>
-(&lt -inf.0 <VAR>x</VAR> +inf.0))        ==>  #t
-(&gt +inf.0 <VAR>x</VAR> -inf.0))        ==>  #t
+(&lt; -inf.0 <VAR>q</VAR> +inf.0))        ==>  #t
+(&gt; +inf.0 <VAR>q</VAR> -inf.0))        ==>  #t
 </PRE>
 
 <P>
@@ -2649,18 +2684,18 @@ These procedures return the sum or product of their arguments.
 (* 0 +inf.0)                           ==&gt;  +nan.0
 </PRE>
 
-For any <FONT COLOR=red><STRIKE>finite</STRIKE> rational</FONT> number <VAR><FONT COLOR=red>x</FONT></VAR><FONT COLOR=red>:</FONT>
+For any <FONT COLOR=red><STRIKE>finite</STRIKE> rational</FONT> number <VAR><FONT COLOR=red>q</FONT></VAR><FONT COLOR=red>:</FONT>
 
 <PRE>
-(+ +inf.0 <VAR><FONT COLOR=red>x</FONT></VAR>)                           ==&gt;  +inf.0
-(+ -inf.0 <VAR><FONT COLOR=red>x</FONT></VAR>)                           ==&gt;  -inf.0
+(+ +inf.0 <VAR><FONT COLOR=red>q</FONT></VAR>)                           ==&gt;  +inf.0
+(+ -inf.0 <VAR><FONT COLOR=red>q</FONT></VAR>)                           ==&gt;  -inf.0
 </PRE>
 
-For any <FONT COLOR=red>rational</FONT> number <FONT COLOR="red"><VAR>x</VAR></FONT>:
+For any <FONT COLOR=red>rational</FONT> number <FONT COLOR="red"><VAR>q</VAR></FONT>:
 
 <PRE>
-(+ +nan.0 <VAR><FONT COLOR=red>x</FONT></VAR>)                           ==&gt;  +nan.0
-(* +nan.0 <VAR><FONT COLOR=red>x</FONT></VAR>)                           ==&gt;  +nan.0
+(+ +nan.0 <VAR><FONT COLOR=red>q</FONT></VAR>)                           ==&gt;  +nan.0
+(* +nan.0 <VAR><FONT COLOR=red>q</FONT></VAR>)                           ==&gt;  +nan.0
 </PRE>
 
 <P>
@@ -2727,13 +2762,13 @@ however, they return the additive or multiplicative inverse of their argument.
 <FONT COLOR="red">
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>div+mod</CODE> <var>ef1</var> <var>ef2</var>
-<DT><U>library procedure:</U> <CODE>div</CODE> <var>ef1</var> <var>ef2</var>
-<DT><U>library procedure:</U> <CODE>mod</CODE> <var>ef1</var> <var>ef2</var>
-<DT><U>library procedure:</U> <CODE>quotient</CODE> <var>ei1</var> <var>ei2</var>
-<DT><U>library procedure:</U> <CODE>modulo+remainder</CODE> <var>ei1</var> <var>ei2</var>
-<DT><U>library procedure:</U> <CODE>modulo</CODE> <var>ei1</var> <var>ei2</var>
-<DT><U>library procedure:</U> <CODE>remainder</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>procedure:</U> <CODE>div+mod</CODE> <var>x1</var> <var>x2</var>
+<DT><U>library procedure:</U> <CODE>div</CODE> <var>x1</var> <var>x2</var>
+<DT><U>library procedure:</U> <CODE>mod</CODE> <var>x1</var> <var>x2</var>
+<DT><U>library procedure:</U> <CODE>quotient</CODE> <var>n1</var> <var>n2</var>
+<DT><U>library procedure:</U> <CODE>modulo+remainder</CODE> <var>n1</var> <var>n2</var>
+<DT><U>library procedure:</U> <CODE>modulo</CODE> <var>n1</var> <var>n2</var>
+<DT><U>library procedure:</U> <CODE>remainder</CODE> <var>n1</var> <var>n2</var>
 <DD>
 
 <P>
@@ -2801,7 +2836,7 @@ denominator of 0 is defined to be 1.
 <P>
 <FONT COLOR="red"><STRIKE>These procedures accept finite real numbers and return integers.</STRIKE>
 These procedures return inexact integers on inexact rational
-arguments, and exact integers on rational arguments.</FONT>
+arguments, and exact integers on exact rational arguments.</FONT>
 
 <P>
 <CODE>Floor</CODE> returns the largest integer not larger than <VAR>x</VAR>.
@@ -3263,12 +3298,15 @@ Then
 </PRE>
 
 <P>
-where -pi &lt; x<SUB>angle</SUB> &lt;= pi with x<SUB>angle</SUB> = <VAR>x4</VAR> + 2pi n
-for some integer n.
+where -pi <FONT color="red"><STRIKE>&lt;</STRIKE>&lt;=</FONT> x<SUb>angle</SUB>
+&lt;= pi with <VAR>x<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi
+<VAR>n</VAR> for some integer <VAR>n</VAR>.
 
+<P>
 <PRE>
-(angle +inf.0)                ==> 0.0
-(angle -inf.0)                ==> 3.141592653589793
+(angle -1)                    ==&gt; pi
+(angle +inf.0)                ==&gt; 0.0
+(angle -inf.0)                ==&gt; 3.141592653589793
 </PRE>
 
 <BLOCKQUOTE>
@@ -3342,7 +3380,8 @@ exact if it was written as an exact constant or was derived from exact
 numbers using only exact operations.  A number is inexact if it was written as an
 inexact constant, if it was derived using inexact ingredients, or if
 it was derived using inexact operations.  The generic operations all
-implement exact operations.  Consequently, exactness is a contagious
+implement <FONT color="red">exact</FONT> operations.  Consequently,
+<FONT color="red">exactness</FONT> is a contagious
 property of a number.
 
 <P>
@@ -3390,17 +3429,16 @@ standard algebraic laws.  For a more detailed treatment of the
 subject, refer to the paper by Egner et al. <A
 href="#egner-at-al-2004">[Egner et al. 2004]</A>.
 
-<P>
-Should the R6RS adopt this model of generic arithmetic, it should also provide
-the R5RS-stlye generic arithmetic described in the previous section as
-a library for backward compatibility.
 </BLOCKQUOTE>
 
 <p>
-We will use <var>z</var>, <var>z1</var>, <var>z2</var>, and
+We will use <var>zf</var>, <var>zf1</var>, <var>zf2</var>, and
 <var>z3</var> as metavariables that range over the complex
 numbers, excluding NaNs, infinites, or complex numbers
 with NaN or infinite real or imaginary part,
+<var>xf</var>, <var>xf1</var>, <var>xf2</var>, and
+<var>xf3</var> as metavariables that range over the real
+numbers excluding NaNs and infinities,
 <var>q</var>, <var>q1</var>, <var>q2</var>, and
 <var>q3</var> as metavariables that range over the rational
 numbers,
@@ -3418,11 +3456,11 @@ error, even in unsafe mode.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>=</CODE> <var>z1</var> <var>z2</var> <var>z3</var> ...
-<DT><U>procedure:</U> <CODE>&gt;</CODE> <var>q1</var> <var>q2</var> <var>q3</var> ...
-<DT><U>procedure:</U> <CODE>&lt;</CODE> <var>q1</var> <var>q2</var> <var>q3</var> ...
-<DT><U>procedure:</U> <CODE>&gt;=</CODE> <var>q1</var> <var>q2</var> <var>q3</var> ...
-<DT><U>procedure:</U> <CODE>&lt;=</CODE> <var>q1</var> <var>q2</var> <var>q3</var> ...
+<DT><U>procedure:</U> <CODE>=</CODE> <var>zf1</var> <var>zf2</var> <var>zf3</var> ...
+<DT><U>procedure:</U> <CODE>&gt;</CODE> <var>xf1</var> <var>xf2</var> <var>xf3</var> ...
+<DT><U>procedure:</U> <CODE>&lt;</CODE> <var>xf1</var> <var>xf2</var> <var>xf3</var> ...
+<DT><U>procedure:</U> <CODE>&gt;=</CODE> <var>xf1</var> <var>xf2</var> <var>xf3</var> ...
+<DT><U>procedure:</U> <CODE>&lt;=</CODE> <var>xf1</var> <var>xf2</var> <var>xf3</var> ...
 <DD>
 
 <P>
@@ -3436,9 +3474,9 @@ monotonically nondecreasing, or monotonically nonincreasing.
 <P>
 <DL>
 <DD>
-<DT><U>library procedure:</U> <CODE>zero?</CODE> <var>z</var>
-<DT><U>library procedure:</U> <CODE>positive?</CODE> <var>q</VAR>
-<DT><U>library procedure:</U> <CODE>negative?</CODE> <var>q</VAR>
+<DT><U>library procedure:</U> <CODE>zero?</CODE> <var>zf</var>
+<DT><U>library procedure:</U> <CODE>positive?</CODE> <var>xf</VAR>
+<DT><U>library procedure:</U> <CODE>negative?</CODE> <var>xf</VAR>
 <DT><U>library procedure:</U> <CODE>odd?</CODE> <var>n</VAR>
 <DT><U>library procedure:</U> <CODE>even?</CODE> <var>n</VAR>
 <DD>
@@ -3457,8 +3495,8 @@ than zero, <code>odd?</code> tests if it is odd,
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>max</CODE> <var>q1</var> <var>q2</var> ...
-<DT><U>library procedure:</U> <CODE>min</CODE> <var>q1</var> <var>q2</var> ...
+<DT><U>library procedure:</U> <CODE>max</CODE> <var>xf1</var> <var>xf2</var> ...
+<DT><U>library procedure:</U> <CODE>min</CODE> <var>xf1</var> <var>xf2</var> ...
 <DD>
 
 <P>
@@ -3468,8 +3506,8 @@ These procedures return the maximum or minimum of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>+</CODE> <var>z1</var> <var>z2</var> ...
-<DT><U>procedure:</U> <CODE>*</CODE> <var>z1</var> <var>z2</var> ...
+<DT><U>procedure:</U> <CODE>+</CODE> <var>zf1</var> <var>zf2</var> ...
+<DT><U>procedure:</U> <CODE>*</CODE> <var>zf1</var> <var>zf2</var> ...
 <DD>
 
 <P>
@@ -3479,10 +3517,10 @@ These procedures return the sum or product of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>-</CODE> <var>z1</var> <var>z2</var> ...
-<DT><U>procedure:</U> <CODE>-</CODE> <var>z</var>
-<DT><U>procedure:</U> <CODE>/</CODE> <var>z1</var> <var>z2</var> ...
-<DT><U>procedure:</U> <CODE>/</CODE> <var>z</var>
+<DT><U>procedure:</U> <CODE>-</CODE> <var>zf1</var> <var>zf2</var> ...
+<DT><U>procedure:</U> <CODE>-</CODE> <var>zf</var>
+<DT><U>procedure:</U> <CODE>/</CODE> <var>zf1</var> <var>zf2</var> ...
+<DT><U>procedure:</U> <CODE>/</CODE> <var>zf</var>
 <DD>
 
 <P>
@@ -3497,7 +3535,7 @@ if a divisor is 0.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>abs</CODE> <var>q</VAR>
+<DT><U>library procedure:</U> <CODE>abs</CODE> <var>xf</VAR>
 <DD>
 
 <P>
@@ -3508,9 +3546,9 @@ This procedure returns the absolute value of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>div+mod</CODE> <var>q1</var> <var>q2</var>
-<DT><U>library procedure:</U> <CODE>div</CODE> <var>q1</var> <var>q2</var>
-<DT><U>library procedure:</U> <CODE>mod</CODE> <var>q1</var> <var>q2</var>
+<DT><U>procedure:</U> <CODE>div+mod</CODE> <var>xf1</var> <var>xf2</var>
+<DT><U>library procedure:</U> <CODE>div</CODE> <var>xf1</var> <var>xf2</var>
+<DT><U>library procedure:</U> <CODE>mod</CODE> <var>xf1</var> <var>xf2</var>
 <DT><U>library procedure:</U> <CODE>quotient</CODE> <var>n1</var> <var>n2</var>
 <DT><U>library procedure:</U> <CODE>modulo+remainder</CODE> <var>n1</var> <var>n2</var>
 <DT><U>library procedure:</U> <CODE>modulo</CODE> <var>n1</var> <var>n2</var>
@@ -3549,27 +3587,27 @@ denominator of 0 is defined to be 1.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>floor</CODE> <var>q</var>
-<DT><U>procedure:</U> <CODE>ceiling</CODE> <var>q</var>
-<DT><U>procedure:</U> <CODE>truncate</CODE> <var>q</var>
-<DT><U>procedure:</U> <CODE>round</CODE> <var>q</var>
+<DT><U>procedure:</U> <CODE>floor</CODE> <var>xf</var>
+<DT><U>procedure:</U> <CODE>ceiling</CODE> <var>xf</var>
+<DT><U>procedure:</U> <CODE>truncate</CODE> <var>xf</var>
+<DT><U>procedure:</U> <CODE>round</CODE> <var>xf</var>
 <DD>
 <P>
 These procedures return exact integers.
-<CODE>Floor</CODE> returns the largest integer not larger than <var>q</VAR>.
-<CODE>Ceiling</CODE> returns the smallest integer not smaller than <var>q</VAR>.
-<CODE>Truncate</CODE> returns the integer closest to <var>q</VAR> whose absolute
-value is not larger than the absolute value of <var>q</VAR>.  <CODE>Round</CODE> returns the
-closest integer to <var>q</VAR>, rounding to even when <var>q</VAR> is halfway between two
+<CODE>Floor</CODE> returns the largest integer not larger than <var>xf</VAR>.
+<CODE>Ceiling</CODE> returns the smallest integer not smaller than <var>xf</VAR>.
+<CODE>Truncate</CODE> returns the integer closest to <var>xf</VAR> whose absolute
+value is not larger than the absolute value of <var>xf</VAR>.  <CODE>Round</CODE> returns the
+closest integer to <var>xf</VAR>, rounding to even when <var>xf</VAR> is halfway between two
 integers.
 </DL>
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>expt</CODE> <var>q1</var> <var>n2</var>
+<DT><U>procedure:</U> <CODE>expt</CODE> <var>q</var> <var>n</var>
 <DD>
 <p>
-Returns <var>q1</VAR> raised to the power <var>n2</VAR>.
+Returns <var>q</VAR> raised to the power <var>n</VAR>.
 0<SUP><var>n</VAR></SUP> is 1 if <var>n</VAR> = 0 and 0 if
 <var>n</VAR> is positive.
 Otherwise, this procedure signals an error.
@@ -3577,17 +3615,17 @@ Otherwise, this procedure signals an error.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>make-rectangular</CODE> <var>q1</var> <var>q2</var>
-<DT><U>procedure:</U> <CODE>real-part</CODE> <var>z</var>
-<DT><U>procedure:</U> <CODE>imag-part</CODE> <var>z</var>
+<DT><U>procedure:</U> <CODE>make-rectangular</CODE> <var>xf1</var> <var>xf2</var>
+<DT><U>procedure:</U> <CODE>real-part</CODE> <var>zf</var>
+<DT><U>procedure:</U> <CODE>imag-part</CODE> <var>zf</var>
 <DD>
 <p>
-Suppose <VAR>z</VAR> is a complex number such that
-<VAR>z</VAR> = <var>q1</VAR> + <var>q2</VAR>*i.  Then:
+Suppose <VAR>zf</VAR> is a complex number such that
+<VAR>zf</VAR> = <var>x1</VAR> + <var>xf2</VAR>*i.  Then:
 <PRE>
-(make-rectangular <var>q1</VAR> <var>q2</VAR>) ==&gt; <VAR>z</VAR>
-(real-part <VAR>z</VAR>)            ==&gt; <var>q1</VAR>
-(imag-part <VAR>z</VAR>)            ==&gt; <var>q2</VAR>
+(make-rectangular <var>xf1</VAR> <var>xf2</VAR>) ==&gt; <VAR>zf</VAR>
+(real-part <VAR>zf</VAR>)            ==&gt; <var>xf1</VAR>
+(imag-part <VAR>zf</VAR>)            ==&gt; <var>xf2</VAR>
 </PRE>
 </DL>
 
@@ -4001,7 +4039,7 @@ On the other hand, defining "flonum" to be a synonym for
 "inexact real" would simplify the presentation of flonum
 arithmetic, and would eliminate a couple of procedures that
 would otherwise have to be provided and somehow specified
-(e.g. real->flonum and flonum?).
+(e.g. <code>real-&gt;flonum</code> and <code>flonum?</code>).
 
 <P>
 I recommend that the R6RS define "flonum" as a synonym for
@@ -4016,7 +4054,7 @@ contains a reference implementation for the procedures described here,
 written in mostly R5RS Scheme, and based purely on integer and flonum
 arithmetic of the underlying Scheme implementation.  It builds the
 entire numeric tower on fixnums and flonums.  The code is set up to
-run under Scheme 48, but should be very easy to adapt to other Scheme
+run under Scheme 48, but should be easy to adapt to other Scheme
 systems.
 </P>
 
