@@ -67,10 +67,10 @@
       (p
        "The explicit-naming syntactic layer provides a basic syntactic interface "
        "whereby a single record definition serves as a shorthand for the definition "
-       "of several record creation and manipuation routines: a constructor, "
+       "of several record creation and manipulation routines: a constructor, "
        "a predicate, accessors, and mutators. "
        "As the name suggests, the explicit-naming syntactic layer requires the "
-       "programmer to name each of these products explicity. "
+       "programmer to name each of these products explicitly. "
        "The explicit-naming syntactic layer is similar to "
        (a (@ (href "http://srfi.schemers.org/srfi-9/")) "SRFI 9: Defining Record Types") ", "
        "but adds several features, including single inheritance and non-generative "
@@ -170,7 +170,16 @@
 	(p
 	 "However, the semantics would be perfectly clear even in the error case "
 	 "described above.  Should this restriction be lifted, if only for reasons "
-	 "of simplicity?")))
+	 "of simplicity?"))
+       (li
+	(p
+	 "The specification of " (code "eq?") " on records prevents certain kinds "
+	 "of unboxing optimizations.  Should instead the following hold:")
+	(verbatim
+	 "(let ((r (construct ...)))"
+	 "  (eqv? r r))               ==> #t"
+	 "(let ((r (construct ...)))"
+	 "  (eq? r r))                ==> unspecified")))
 
       (p
        "We invite members of the Scheme community to express their opinions on these issues.")
@@ -214,7 +223,7 @@
          "The " (var "uid") " argument is either " (code "#f") " or a symbol. "
          "If it is a symbol, the created record type is " (i "non-generative") ", i.e. "
          "there may be only one record type with that uid in the entire system "
-	 "(in the sense of " (code "eq?") ").  "
+	 "(in the sense of " (code "eqv?") ").  "
          "When " (code "make-record-type-descriptor") " is called repeatedly with the "
          "same " (var "uid") " argument (in the sense of " (code "eq?") "), all other arguments to "
          (code "make-record-type-descriptor") " must also be the same (in the sense of "
@@ -279,12 +288,22 @@
          "represented by " (var "rtd") ". "
          "The procedure accepts one argument per field, in order, with parent "
          "fields first (and grandparent fields before that, and so on).")
+	(p
+	 "If " (var "rtd") " describes an opaque record type, then the values "
+	 "created by such a constructor are not considered to be records; see "
+	 "the specification of " (code "record?") " below.")
         (p
          "Two records created by such a constructor are equal according to " 
          (code "equal?")
          " iff they are " (code "eq?") ", provided their record type was not used "
-	 "to implement any of the types handled specially by " (code "equal?") "."))
-
+	 "to implement any of the types explicitly mentioned in the definition of "
+	 (code "equal?") ".")
+	(p
+	 "If " (code "construct") " is bound to a constructor returned by "
+	 (code "record-constructor") ", the following holds:")
+	(verbatim
+	 "(let ((r (construct ...)))"
+	 "  (eq? r r))                ==> #t"))
 
        (dt
         (prototype "record-predicate"
@@ -483,7 +502,8 @@
 	(p
 	 "If the " (code "define-type") " form has a " (code "nongenerative") " clause, "
 	 "a subsequent evaluation of an identical " (code "define-type") " form will "
-	 "reuse the previously created rtd, and create identical bindings.  If the "
+	 "reuse the previously created rtd, and the procedures created will behave identically "
+	 "to the previously created ones.  If the "
 	 "implied arguments to " (code "make-record-type-descriptor") " are the same as with "
 	 "a previously evaluated " (code "define-type") " form are the same, the rtd is "
 	 "also reused, and bindings will be created or modified according to the more recent form. "
@@ -508,9 +528,9 @@
        " a conservative extension of " (code "define-type") " form of the "
        "explicit-naming layer: "
        "a " (code "define-type") " form that conforms to the syntax of the "
-       "implicit-naming layer also conforms to the syntax of the "
-       "explicit-naming layer, and any definition in the explicit-naming layer "
-       "can be understood by its translation into the implicit-naming layer.")
+       "explicit-naming layer also conforms to the syntax of the "
+       "implicit-naming layer, and any definition in the implicit-naming layer "
+       "can be understood by its translation into the explicit-naming layer.")
 
       (p
        "The implicit-naming syntactic layer extends the explicit-naming layer in "
