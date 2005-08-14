@@ -184,6 +184,19 @@ general complex numbers.
     efficient generic arithmetic on fixnums portably.  On the other hand,
     there isn't much experience with formulating a portable interface to these
     facilities.
+<-li>
+  The fixnum operators wrap on overflow, i.e., they perform modular
+  arithmetic.  For many purposes, it would be better
+  for them to signal an error in safe mode.  Since the modulus is
+  implementation-dependent, portable code cannot generally take advantage
+  of the wrapping.  Instead, applications are likely to use fixnums simply
+  to avoid the overhead of generic arithmetic under the assumption that
+  all quantities computed fit in the fixnum range, and feedback if this
+  turns out not to be the case will be valuable.  On the other hand,
+  the wrapping semantics can also be useful, i.e., in the coding of a
+  practical implementation of bignums in terms of fixnums.  It may be
+  that we should consider including two sets of operators: fx operators
+  that signal an error upon overflow and wfx operators that wrap.
 <li>The <code>x|53</code> default for the mantissa width discriminates
 against implementations that default to unusually good representations,
 such as IEEE extended precision.  Are there any such implementations?
