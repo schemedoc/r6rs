@@ -179,7 +179,12 @@
 	 "(let ((r (construct ...)))"
 	 "  (eqv? r r))               ==> #t"
 	 "(let ((r (construct ...)))"
-	 "  (eq? r r))                ==> unspecified")))
+	 "  (eq? r r))                ==> unspecified"))
+       (li
+	(p
+	 "The semantics of generativity for the syntactic record-type-definition forms "
+	 "is presently unspecified.  Should this be tightened, and, if so, to what kind "
+	 "of generativity?")))
 
       (p
        "We invite members of the Scheme community to express their opinions on these issues.")
