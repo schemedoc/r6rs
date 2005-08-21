@@ -3,7 +3,9 @@
 
 ; Converting flonums to strings
 
-(define (flonum->string x radix)
+; precision may be #f or an exact, positive integer
+
+(define (flonum->string x radix precision)
   (cond
    ((flnan? x)
     (string-copy "+nan.0"))
@@ -18,15 +20,39 @@
    (else
     (let* ((exp (flexponent x))
 	   (digit-count (flonum-exponent->digit-count exp))
+	   (significand (flsignificand x))
 	   (rep (string-append 
 		 (if (flnegative? x) "-" "")
 		 (if (integer= radix (r5rs->integer 10))
-		     (burger10 (flabs x) (flsignificand x) exp)
-		     (burger (flabs x) (flsignificand x) exp radix)))))
+		     (burger10 (flabs x) significand exp)
+		     (burger (flabs x) significand exp radix)))))
       (if (integer= digit-count (r5rs->integer 53))
-	  rep
+	  (if precision
+	      (string-append rep "|"
+			     (integer->string
+			      (integer-max precision (mantissa-width significand))
+			      radix))
+	      rep)
 	  (string-append rep "|"
-			 (integer->string digit-count radix)))))))
+			 (integer->string (integer-max digit-count
+						       (or precision (r5rs->integer 0)))
+					  radix)))))))
+
+(define (mantissa-width significand)
+  (let ((right-aligned
+	 (let loop ((significand significand))
+	   (call-with-values
+	       (lambda () (integer-quotient+remainder significand (r5rs->integer 2)))
+	     (lambda (q r)
+	       (if (integer-zero? r)
+		   (loop q)
+		   significand))))))
+    (let loop ((significand right-aligned)
+	       (width (r5rs->integer 0)))
+      (if (integer-zero? significand)
+	  width
+	  (loop (integer-quotient significand (r5rs->integer 2))
+		(integer+ (r5rs->integer 1) width))))))
 
 (define (burger x mantissa exp radix)
   (call-with-values

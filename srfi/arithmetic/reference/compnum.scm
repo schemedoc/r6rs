@@ -138,12 +138,12 @@
 			  compnum-two))))
 
 
-(define (compnum->string x radix)
+(define (compnum->string x radix precision)
   (let ((r (compnum-real x))
 	(i (compnum-imag x)))
     ;; A little mysterious, to deal with +/-inf.0, +nan.0
-    (let ((rr (flonum->string r 10))
-	  (ii (flonum->string i 10)))
+    (let ((rr (flonum->string r 10 precision))
+	  (ii (flonum->string i 10 precision)))
       (string-append rr
 		     (let ((c (string-ref ii 0)))
 		       (if (and (not (char=? c #\+))
