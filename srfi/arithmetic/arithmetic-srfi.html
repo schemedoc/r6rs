@@ -879,7 +879,8 @@ argument.
 <P>
 <VAR>Radix</VAR> must be an exact integer, either 2, 8, 10, or 16.
 If omitted, <VAR>radix</VAR> defaults to 10.
-If a <VAR>precision</VAR> is specified, then it must be an exact
+If a <VAR>precision</VAR> is specified, then <var>z</var> must be an
+inexact complex number, <VAR>precision</VAR> must be an exact
 positive integer, and the <VAR>radix</VAR> must be 10.
 The procedure <CODE>number-&gt;string</CODE> takes a
 number and a radix and returns as a string an external representation of
@@ -900,11 +901,11 @@ the given number in the given radix such that
 is true.  It is an error if no possible result makes this expression true.
 
 <P>
-If a <VAR>precision</VAR> is specified, then the result specifies an
-explicit &lt;mantissa width&gt; <VAR>p</VAR>, and <VAR>p</VAR> is the
-least <VAR>p</VAR> &ge; <VAR>precision</VAR> for which the above
-expression is true.  If no <VAR>precision</VAR> is specified, then
-the result does not specify an explicit &lt;mantissa width&gt;.
+If a <VAR>precision</VAR> is specified, then the representations of
+the inexact real components of the result, unless they are infinite or
+NaN, specify an explicit &lt;mantissa width&gt; <VAR>p</VAR>, and
+<VAR>p</VAR> is the least <VAR>p</VAR> &ge; <VAR>precision</VAR> for
+which the above expression is true.
 
 <P>
 If <VAR>z</VAR> is inexact, the radix is 10, and the above expression
