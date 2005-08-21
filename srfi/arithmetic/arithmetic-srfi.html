@@ -755,9 +755,9 @@ is true.
 <font color=red>(real? -2.5+0i)                        ==&gt;  #t</font>
 (real? -2.5)                           ==&gt;  #t
 (real? #e1e10)                         ==&gt;  #t
-<font color=red>(real? -inf.0)                         ==&gt;  #t</font>
+(real? -inf.0)                         ==&gt;  #t
 <font color=red>(real? +nan.0)                         ==&gt;  #t</font>
-<font color=red>(rational? -inf.0)                     ==&gt;  #f</font>
+(rational? -inf.0)                     ==&gt;  #f
 <font color=red>(rational? +nan.0)                     ==&gt;  #f</font>
 (rational? 6/10)                       ==&gt;  #t
 (rational? 6/3)                        ==&gt;  #t
@@ -765,12 +765,12 @@ is true.
 (integer? 3.0)                         ==&gt;  #t
 (integer? 8/4)                         ==&gt;  #t
 
-(number? <font color=red>+nan.0</font>)                       ==&gt;  #t
-(complex? <font color=red>+nan.0</font>)                      ==&gt;  <font color=red>#t</font>
-(complex? <font color=red>+inf.0</font>)                      ==&gt;  #t
-(real? <font color=red>+nan.0</font>)                         ==&gt;  <font color=red>#t</font>
-(rational? <font color=red>+nan.0</font>)                     ==&gt;  #f
-(integer? <font color=red>-inf.0</font>)                      ==&gt;  #f
+<font color=red>(number? +nan.0)                       ==&gt;  #t</font>
+<font color=red>(complex? +nan.0)                      ==&gt;  #t</font>
+(complex? +inf.0)                      ==&gt;  #t
+<font color=red>(real? +nan.0)                         ==&gt;  #t</font>
+<font color=red>(rational? +nan.0)                     ==&gt;  #f</font>
+(integer? -inf.0)                      ==&gt;  #f
 </PRE>
 
 
@@ -1465,7 +1465,6 @@ In general, the mathematical functions log, arcsine, arccosine, and
 arctangent are multiply defined.
 The value of log <VAR>z</VAR> is defined to be the one whose imaginary
 part lies in the range from -pi (exclusive) to pi (inclusive).
-log 0 is undefined.
 With log defined this way, the values of sin<SUP>-1</SUP> <VAR>fl</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
 and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
 
@@ -2250,7 +2249,6 @@ arctangent are multiply defined.
 The value of log <VAR>z</VAR> is defined to be the one whose imaginary
 part lies in the range from -pi (inclusive if -0.0 is distinguished,
 exclusive otherwise) to pi (inclusive).
-log 0 is undefined.
 With log defined this way, the values of sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
 and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
 
@@ -2590,14 +2588,13 @@ monotonically nondecreasing, or monotonically nonincreasing
 (= +inf.0 +inf.0)           ==&gt;  #t
 (= -inf.0 +inf.0)           ==&gt;  #f
 (= -inf.0 -inf.0)           ==&gt;  #t
-<FONT COLOR=red><STRIKE>(= +nan.0 +nan.0)           ==>  #t</STRIKE></FONT>
 </PRE>
 
-For any rational number <VAR>q</VAR>:
+For any real number <VAR>x</VAR> that is neither infinite nor NaN:
 
 <PRE>
-(&lt; -inf.0 <VAR>q</VAR> +inf.0))        ==>  #t
-(&gt; +inf.0 <VAR>q</VAR> -inf.0))        ==>  #t
+(&lt; -inf.0 <VAR>x</VAR> +inf.0))        ==>  #t
+(&gt; +inf.0 <VAR>x</VAR> -inf.0))        ==>  #t
 </PRE>
 
 <P>
@@ -2719,18 +2716,14 @@ These procedures return the sum or product of their arguments.
 (* 0 +inf.0)                           ==&gt;  +nan.0
 </PRE>
 
-For any <FONT COLOR=red><STRIKE>finite</STRIKE> rational</FONT> number <VAR><FONT COLOR=red>q</FONT></VAR><FONT COLOR=red>:</FONT>
+For any real number <VAR>x</VAR> that is neither
+infinite nor NaN:
 
 <PRE>
-(+ +inf.0 <VAR><FONT COLOR=red>q</FONT></VAR>)                           ==&gt;  +inf.0
-(+ -inf.0 <VAR><FONT COLOR=red>q</FONT></VAR>)                           ==&gt;  -inf.0
-</PRE>
-
-For any <FONT COLOR=red>rational</FONT> number <FONT COLOR="red"><VAR>q</VAR></FONT>:
-
-<PRE>
-(+ +nan.0 <VAR><FONT COLOR=red>q</FONT></VAR>)                           ==&gt;  +nan.0
-(* +nan.0 <VAR><FONT COLOR=red>q</FONT></VAR>)                           ==&gt;  +nan.0
+(+ +inf.0 <VAR>x</VAR>)                           ==&gt;  +inf.0
+(+ -inf.0 <VAR>x</VAR>)                           ==&gt;  -inf.0
+<FONT COLOR=red>(+ +nan.0 <VAR>x</VAR>)                           ==&gt;  +nan.0</FONT>
+<FONT COLOR=red>(* +nan.0 <VAR>x</VAR>)                           ==&gt;  +nan.0</FONT>
 </PRE>
 
 <P>
@@ -2769,7 +2762,7 @@ however, they return the additive or multiplicative inverse of their argument.
 (/ 1.0 0)                              ==&gt;  +inf.0
 (/ -1 0.0)                             ==&gt;  -inf.0
 (/ +inf.0)                             ==&gt;  0.0
-(/ 0 0.0)                              ==&gt;  +nan.0
+(/ 0 0.0)                              ==&gt;  <FONT color="red"><STRIKE>+nan.0</STRIKE> unspecified</FONT>
 (/ 0.0 0)                              ==&gt;  +nan.0
 (/ 0.0 0.0)                            ==&gt;  +nan.0
 </PRE>
@@ -2794,7 +2787,6 @@ however, they return the additive or multiplicative inverse of their argument.
 
 </DL>
 
-<FONT COLOR="red">
 <P>
 <DL>
 <DT><U>procedure:</U> <CODE>div+mod</CODE> <var>x1</var> <var>x2</var>
@@ -2811,7 +2803,6 @@ These procedures implement number-theoretic integer division.  See <a
 href="#integer-division">the Section</a> on integer division.
 </p>
 </dl>
-</FONT>
 
 <P>
 <DL>
@@ -2980,8 +2971,7 @@ In general, the mathematical functions log, arcsine, arccosine, and
 arctangent are multiply defined.  The value of log <VAR>z</VAR> is
 defined to be the one whose imaginary part lies in the range from -pi
 <FONT color="red"><STRIKE>(exclusive)</STRIKE> (inclusive if -0.0 is
-distinguished, exclusive otherwise)</FONT> to pi (inclusive).  log 0
-is undefined.  
+distinguished, exclusive otherwise)</FONT> to pi (inclusive).
 
 <P>
 <FONT COLOR="red">
@@ -2997,7 +2987,7 @@ specified below.
 </FONT>
 
 <P>
-With log defined this way, the values of
+<FONT color="red">With log defined this way,</FONT> the values of
 sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>, and
 tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
 
