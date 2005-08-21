@@ -1311,7 +1311,7 @@ These procedures return the maximum or minimum of their arguments.
 These procedures return the flonum sum, difference,
 product, or quotient of their flonum arguments.
 In general, they should return the flonum that best
-approximates the mathematical sum of their arguments.
+approximates the mathematical sum, difference, or quotient of their arguments.
 (For implementations that represent flonums as IEEE
 binary floating point numbers, the meaning of "best"
 is reasonably well-defined by the IEEE standards.)
@@ -1711,10 +1711,10 @@ and flonums are represented in IEEE double precision.  Then
 </pre>
 
 <p>
-If the argument to these procedures is not actually
-a fixnum or a flonum or NaN respectively, then these procedures signal an error, unless
-the implementation is running in unsafe mode, in which
-case all bets are off.
+If the argument to <code>fixnum-&gt;flonum</code> is not a fixnum, or
+the argument to <code>flonum-&gt;fixnum</code> is NaN or not a flonum,
+then an error is signalled, unless the implementation is
+running in unsafe mode, in which case all bets are off.
 </p>
 
 </dl>
