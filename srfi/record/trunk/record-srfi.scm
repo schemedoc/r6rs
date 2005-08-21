@@ -173,13 +173,14 @@
 	 "of simplicity?"))
        (li
 	(p
-	 "The specification of " (code "eq?") " on records prevents certain kinds "
-	 "of unboxing optimizations.  Should instead the following hold:")
+	 "The specification of " (code "eq?") " on records allows certain kinds "
+	 "of unboxing optimizations, at the cost of leaving its behavior on records unspecified.  "
+	 "Should instead the following hold:")
 	(verbatim
 	 "(let ((r (construct ...)))"
 	 "  (eqv? r r))               ==> #t"
 	 "(let ((r (construct ...)))"
-	 "  (eq? r r))                ==> unspecified"))
+	 "  (eq? r r))                ==> #t"))
        (li
 	(p
 	 "The semantics of generativity for the syntactic record-type-definition forms "
@@ -306,6 +307,11 @@
 	(p
 	 "If " (code "construct") " is bound to a constructor returned by "
 	 (code "record-constructor") ", the following holds:")
+	(verbatim
+	 "(let ((r (construct ...)))"
+	 "  (eqv? r r))                ==> #t")
+	(p
+	 "This does " (em "not") " imply:")
 	(verbatim
 	 "(let ((r (construct ...)))"
 	 "  (eq? r r))                ==> #t"))
