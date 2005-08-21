@@ -201,7 +201,7 @@ general complex numbers.
 against implementations that default to unusually good representations,
 such as IEEE extended precision.  Are there any such implementations?
 Do we expect such implementations in the near future?
-<li>Should `<code>(floor +inf.0)</code>' return <code>+inf.0<code> or
+<li>Should `<code>(floor +inf.0)</code>' return <code>+inf.0</code> or
     signal an error instead?  (Similarly for <code>ceiling</code>,
     <code>flfloor</code>, <code>infloor</code>, etc.)
 <li>The bitwise operations operate on exact integers only.  Should
@@ -678,6 +678,22 @@ The following description is a revised form of the description
 given in SRFI 70.  Changes from SRFI 70 are highlighted in red.
 </font>
 
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>exact?</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>inexact?</CODE> <VAR>z</VAR>
+<DD>
+
+<P>
+These numerical predicates provide tests for the exactness of a
+quantity.  For any Scheme number, precisely one of these predicates
+is true.
+
+<PRE>
+(exact? 5)                   ==&gt;  #t
+(inexact? +inf.0)            ==&gt;  #t
+</PRE>
+</DL>
 
 <P>
 <DL>
@@ -950,9 +966,9 @@ returns <TT>#f</TT>.
 (string-&gt;number "100" 16)              ==&gt;  256
 (string-&gt;number "1e2")                 ==&gt;  100.0
 (string-&gt;number "15##")                ==&gt;  1500.0
-(string->number "+inf.0")              ==&gt; +inf.0
-(string->number "-inf.0")              ==&gt; -inf.0
-(string->number "+nan.0")              ==&gt; +nan.0
+(string->number "+inf.0")              ==&gt;  +inf.0
+(string->number "-inf.0")              ==&gt;  -inf.0
+(string->number "+nan.0")              ==&gt;  +nan.0
 </PRE>
 
 
@@ -1398,8 +1414,9 @@ denominator of 0 is defined to be 1.
 <DT><U>procedure:</U> <CODE>flround</CODE> <var>fl</var>
 <DD>
 <P>
-These procedures return integral flonums for finite flonum arguments.
-<CODE>Flfloor</CODE> returns the largest integral flonum not larger than <VAR>fl</VAR>.
+These procedures return integral flonums for flonum arguments that are
+not infinities or NaNs.  For such arguments,
+<CODE>flfloor</CODE> returns the largest integral flonum not larger than <VAR>fl</VAR>.
 <CODE>Flceiling</CODE> returns the smallest integral flonum not smaller than <VAR>fl</VAR>.
 <CODE>Fltruncate</CODE> returns the integral flonum closest to <VAR>fl</VAR> whose absolute
 value is not larger than the absolute value of <VAR>fl</VAR>.  <CODE>Flround</CODE> returns the
@@ -2189,8 +2206,10 @@ denominator of 0 is defined to be 1.
 <DT><U>procedure:</U> <CODE>inround</CODE> <var>ir</var>
 <DD>
 <P>
-These procedures return inexact integers.
-<CODE>Infloor</CODE> returns the largest integer not larger than <VAR>ir</VAR>.
+These procedures return inexact integers
+for real arguments that are
+not infinities or NaNs.  For such arguments,
+<CODE>infloor</CODE> returns the largest integer not larger than <VAR>ir</VAR>.
 <CODE>Inceiling</CODE> returns the smallest integer not smaller than <VAR>ir</VAR>.
 <CODE>Intruncate</CODE> returns the integer closest to <VAR>in</VAR> whose absolute
 value is not larger than the absolute value of <VAR>in</VAR>.  <CODE>Inround</CODE> returns the
@@ -2837,7 +2856,7 @@ denominator of 0 is defined to be 1.
 (numerator (/ 6 4))                    ==&gt;  3
 (denominator (/ 6 4))                  ==&gt;  2
 (denominator
-  (exact-&gt;inexact (/ 6 4)))            ==&gt; 2.0
+  (exact-&gt;inexact (/ 6 4)))            ==&gt;  2.0
 </PRE>
 
 </DL>
@@ -2851,11 +2870,11 @@ denominator of 0 is defined to be 1.
 <DD>
 <P>
 <FONT COLOR="red"><STRIKE>These procedures accept finite real numbers and return integers.</STRIKE>
-These procedures return inexact integers on inexact rational
-arguments, and exact integers on exact rational arguments.</FONT>
-
-<P>
-<CODE>Floor</CODE> returns the largest integer not larger than <VAR>x</VAR>.
+These procedures return inexact integers on
+inexact arguments that are not infinities or NaNs,
+and exact integers on exact rational arguments.
+For such arguments,</FONT>
+<CODE>floor</CODE> returns the largest integer not larger than <VAR>x</VAR>.
 <CODE>Ceiling</CODE> returns the smallest integer not smaller than <VAR>x</VAR>.
 <CODE>Truncate</CODE> returns the integer closest to <VAR>x</VAR> whose absolute
 value is not larger than the absolute value of <VAR>x</VAR>.  <CODE>Round</CODE> returns the
