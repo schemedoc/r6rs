@@ -375,6 +375,7 @@
 	  exodd? exeven?
 	  exmin exmax
 	  ex+ ex- ex* ex/
+	  exabs
 	  exquotient exremainder exquotient+remainder
 	  exdiv exmod exdiv+mod
 	  exmodulo
@@ -592,6 +593,16 @@
 	generic-arithmetic/mike)
   (files test-prelude
 	 test-generic-arithmetic-mike
+	 test-postlude))
+
+(define-structure test-generic-arithmetic/ex (export)
+  (open scheme-sans-arithmetic
+	(modify scheme (prefix r5rs:) (expose +))
+	r5rs-to-numbers
+	strings-to-numbers
+	generic-arithmetic/ex)
+  (files test-prelude
+	 test-generic-arithmetic-ex
 	 test-postlude))
 
 (define-structure test-generic-arithmetic/in (export)
