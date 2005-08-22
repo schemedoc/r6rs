@@ -6,7 +6,7 @@
      (srfi-head "SRFI ??: R6RS Records")
      (body
       (srfi-title "R6RS Records")
-      (srfi-authors "Will Clinger, R. Kent Dybvig, Michael Sperber")
+      (srfi-authors "Will Clinger, R. Kent Dybvig, Michael Sperber, Anton van Straaten")
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       (h1 "Note")
@@ -134,9 +134,9 @@
         (p
          "It would be possible to introduce abbreviations into the syntax. "
          "In the " (code "fields") " clause, a single identifier might serve as a shorthand "
-         "for a " (code "mutable") " clause:")
+         "for a " (code "mutable") " field clause:")
         (verbatim
-         "(define-type point (x y) (fields (x x) (y y)))")
+         "(define-type point (x y) (fields x y))")
         (p
          "Even more radically, a default " (code "fields") " clause could be provided, "
          "with the constructor formals serving as implicit field names and initializers:")
@@ -427,17 +427,14 @@
            "where each " (meta "field-spec") " has one of the following forms")
           (dl
            (dt
-            (code "((immutable ") (meta "field name") " " (meta "accessor name") ") "
-            (meta "init expression") (code ")"))
+            (prototype (meta "field name") (code "(") (meta "accessor name") (code ")")
+		       (ebnf-opt (meta "init expression"))))
            (dt
-            (code "((mutable ") (meta "field name")
-            " " (meta "accessor name") " " (meta "mutator name") 
-            ") "
-            (meta "init expression") (code ")")))
-
+            (prototype (meta "field name") (code "(") (meta "accessor name") (meta "mutator name") (code ")")
+		       (ebnf-opt (meta "init expression")))))
           (p
            (meta "Field name") ", " (meta "accessor name") ", and " (meta "mutator name")
-           " must all be identifiers; " (meta "init expression") " must be an expression. "
+           " must all be identifiers; " (meta "init expression") ", if present, must be an expression. "
            "The first form declares an immutable field called " (meta "field name")
            ", with the corresponding "
            "accessor named " (meta "acccessor name") ". "
@@ -446,7 +443,11 @@
            "accessor named " (meta "acccessor name") ", and with the corresponding "
            "mutator named " (meta "mutator name") ". "
            "In either form, " (meta "init expression") " specifies the initial "
-           "value of the field when it is created by the constructor."))
+           "value of the field when it is created by the constructor. "
+	   "If " (meta "init expression") " is absent, it defaults to 
+	   " (meta "field name") ".  In this case, the formals list must have "
+	   "a corresponding parameter, whose value will become the initial value of "
+	   "the field."))
 
          (dt
           (prototype "parent" (meta "parent name") " " (meta "constructor argument") "*"))
@@ -562,9 +563,11 @@
 
       (dl
        (dt
-        (code "((immutable ") (meta "field name") ") " (meta "init expression") (code ")"))
+	(prototype (meta "field name") (code "immutable")
+		   (ebnf-opt (meta "init expression"))))
        (dt
-        (code "((mutable ") (meta "field name") ") " (meta "init expression") (code ")")))
+	(prototype (meta "field name") (code "mutable")
+		   (ebnf-opt (meta "init expression")))))
 
       (p
        "If " (meta "field-spec") " takes one of these forms, then the accessor name "
@@ -583,13 +586,13 @@
 
       (verbatim
        "(define-type frob (n)"
-       "  (fields ((mutable widget) (make-widget n))))")
+       "  (fields (widget mutable (make-widget n))))")
 
       (p "is equivalent to the following explicit-layer record definition.")
 
       (verbatim
        "(define-type (frob make-frob frob?) (n)"
-       "  (fields ((mutable widget frob-widget frob-widget-set!) (make-widget n))))")
+       "  (fields (widget (frob-widget frob-widget-set!) (make-widget n))))")
 
       (p
        "With the explicit-naming layer, one can choose to specify just some of the "
@@ -598,7 +601,7 @@
    
       (verbatim
        "(define-type frob (n)"
-       "  (fields ((mutable widget getwid setwid!) (make-widget n))))")
+       "  (fields (widget (getwid setwid!) (make-widget n))))")
 
 
       (h2 "Reflection")
@@ -693,11 +696,11 @@
       (h2 "Field initialization and verbosity")
 
       (p
-       "To define a record type with two mutable fields, this proposal requires:")
+       "To define a record type with two mutable fields, this proposal requires at least:")
       (verbatim
        "(define-type point (x y)"
-       "  (fields ((mutable x) x)"
-       "          ((mutable y) y)))")
+       "  (fields (x mutable)"
+       "          (y mutable)))")
       (p
        "While this is arguably verbose, the proposed syntax generalizes gracefully beyond this "
        "trivial sort of record definition, as illustrated by the two record "
@@ -705,14 +708,14 @@
       
       (verbatim
        "(define-type hash-table (pred hasher size)"
-       "  (fields ((immutable pred) pred)"
-       "          ((immutable hasher) hasher)"
-       "          ((mutable data) (make-vector (nearest-prime size)))"
-       "          ((mutable count) 0)))"
+       "  (fields (pred immutable pred)"
+       "          (hasher immutable hasher)"
+       "          (data mutable (make-vector (nearest-prime size)))"
+       "          (count mutable 0)))"
        ""
        "(define-type eq-hash-table (pred hasher size)"
        "  (parent hash-table pred hasher size)"
-       "  (fields ((mutable gc-count) 0)))")
+       "  (fields (gc-count mutable 0)))")
 
       (p
        "The first defines a " (code "hash-table") " record with four fields: "
@@ -810,8 +813,8 @@
 
       (verbatim
        "(define-type (pare kons pare?) (x y)"
-       "  (fields ((mutable x kar set-kar!) x)"
-       "          ((immutable y kdr) y)))"
+       "  (fields (x (kar set-kar!) x)"
+       "          (y (kdr) y)))"
        ""
        "(pare? (kons 1 2)) ; => #t"
        "(pare? (cons 1 2)) ; => #f"
@@ -822,13 +825,13 @@
        "  (kar k)) ; => 3"
        ""
        "(define-type (point make-point point?) (x y)"
-       "  (fields ((immutable x point-x) x)"
-       "          ((mutable y point-y set-point-y!) y))"
+       "  (fields (x (point-x) x)"
+       "          (y (point-y set-point-y!) y))"
        "  (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))"
        ""
        "(define-type (cpoint make-cpoint cpoint?) (x y c)"
        "  (parent point x y)"
-       "  (fields ((mutable rgb cpoint-rgb cpoint-rgb-set!) (color->rgb c))))"
+       "  (fields (rgb (cpoint-rgb cpoint-rgb-set!) (color->rgb c))))"
        ""
        "(define (color->rgb c)"
        "  (cons 'rgb c))"
@@ -841,15 +844,15 @@
 
       (verbatim
        "(define-type (point make-point point?) (x y)"
-       "  (fields ((immutable x point-x) x)"
-       "          ((mutable y point-y set-point-y!) y))"
+       "  (fields (x immutable x)"
+       "          (y mutable y))"
        "  (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))"
        ""
        "(define *the-cpoint* #f)"
        ""
        "(define-type cpoint (x y c)"
        "  (parent point x y)"
-       "  (fields ((mutable rgb) (color->rgb c)))"
+       "  (fields (rgb mutable (color->rgb c)))"
        "  (init! (p) (set! *the-cpoint* p)))"
        ""
        "(define cpoint-i1 (make-cpoint 1 2 'red))"

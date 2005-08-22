@@ -74,7 +74,7 @@
 	     (((?simple-field ...)
 	       (map (lambda (clause)
 		      (syntax-case clause (mutable immutable)
-			(((immutable ?field-name) ?init)
+			((?field-name immutable ?init ...)
 			 (with-syntax ((?accessor-name
 					(datum->syntax-object
 					 (syntax ?field-name)
@@ -84,10 +84,8 @@
 							  (syntax-object->datum
 							   (syntax ?field-name))))))))
 			   (syntax
-			    ((immutable ?field-name ?accessor-name) ?init))))
-			(((immutable ?field-name ?accessor-name) ?init)
-			 clause)
-			(((mutable ?field-name) ?init)
+			    (?field-name (?accessor-name) ?init ...))))
+			((?field-name mutable ?init ...)
 			 (with-syntax ((?accessor-name
 					(datum->syntax-object
 					 (syntax ?field-name)
@@ -106,9 +104,8 @@
 							   (syntax ?field-name)))
 							 "-set!")))))
 			   (syntax
-			    ((mutable ?field-name ?accessor-name ?mutator-name) ?init))))
-
-			(((mutable ?field-name ?accessor-name ?mutator-name) ?init)
+			    ( ?field-name (?accessor-name ?mutator-name) ?init ...))))
+			(?clause
 			 clause)))
 		    (syntax->list (syntax (?field-clause ...))))))
 	   (syntax

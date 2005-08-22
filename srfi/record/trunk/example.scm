@@ -28,13 +28,13 @@
 ; explicit naming
 
 (define-type (point make-point point?) (x y)
-  (fields ((immutable x point-x) x)
-          ((mutable y point-y set-point-y!) y))
+  (fields (x (point-x))
+          (y (point-y set-point-y!) y))
   (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
 
 (define-type (cpoint make-cpoint cpoint?) (x y c)
   (parent point x y)
-  (fields ((mutable rgb cpoint-rgb cpoint-rgb-set!) (color->rgb c))))
+  (fields (rgb (cpoint-rgb cpoint-rgb-set!) (color->rgb c))))
 
 (define (color->rgb c)
   (cons 'rgb c))
@@ -60,21 +60,21 @@
 (check (record-type-descriptor p1) => (type-descriptor point))
 
 (define-type (point make-point point?) (x y)
-  (fields ((immutable x point-x) x)
-          ((mutable y point-y set-point-y!) y))
+  (fields (x (point-x))
+          (y (point-y set-point-y!) y))
   (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
 
 (check (point? p1) => #t)
 
 (define-type (ex1 make-ex1 ex1?) a
-  (fields ((immutable f ex1-f) a)))
+  (fields (f (ex1-f) a)))
 
 (define ex1-i1 (make-ex1 1 2 3))
 (check (ex1-f ex1-i1) => '(1 2 3))
 
 (define-type (ex2 make-ex2 ex2?) (a . b)
-  (fields ((immutable a ex2-a) a)
-	  ((immutable b ex2-b) b)))
+  (fields (a (ex2-a) a)
+	  (b (ex2-b) b)))
 
 (define ex2-i1 (make-ex2 1 2 3))
 (check (ex2-a ex2-i1) => 1)
@@ -86,7 +86,8 @@
 
 (define-type ex3 (x y t)
   (parent cpoint x y 'red)
-  (fields ((mutable thickness) t))
+  (fields 
+   (thickness mutable t))
   (init! (p) (set! *ex3-instance* p))
   (sealed) (opaque))
 

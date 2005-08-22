@@ -46,9 +46,9 @@
     ((define-type-1 ?record-name ?record-name-spec
        ?formals
        (?simple-clause ...)
-       (fields ((?mutability ?field-name ?proc-names ...) ?init-expr) ...)
+       (fields ?field-spec ...)
        ?clause ...)
-     (process-fields-clause (fields ((?mutability ?field-name ?proc-names ...) ?init-expr) ...)
+     (process-fields-clause (fields ?field-spec ...)
 			    ?record-name ?record-name-spec
 			    ?formals
 			    (?simple-clause ...)

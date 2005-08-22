@@ -42,16 +42,16 @@
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
-       #f #f ()			       ; parent, parent rtd, parent init exprs
+       #f #f ()		       ; parent, parent rtd, parent init exprs
        #f				; sealed?
        #f				; opaque?
-       "fields-unspecified"
+       ()				; fields
        #f				; nongenerative uid
        values				; INIT! proc
        ?clause ...))))
 
 (define-syntax define-type-1
-  (syntax-rules (parent sealed nongenerative init! opaque fields mutable immutable)
+  (syntax-rules (parent sealed nongenerative init! opaque fields)
     ;; find PARENT clause
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
@@ -69,52 +69,99 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
+       ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
        (sealed)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       #t ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
+       #t ?opaque? ?field-specs ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find OPAQUE clause
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
+       ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
        (opaque)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs 
-       ?sealed? #t ?fields-clause ?nongenerative-uid ?init-proc
+       ?sealed? #t ?field-specs ?nongenerative-uid ?init-proc
        ?clause ...))
 
-    ;; find FIELDS clause
+    ;; parse FIELDS clause
+
+    ;; base case
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       ?sealed? ?opaque? ?fields-clause ?nongenerative-uid  ?init-proc
-       (fields (?field-spec ?init-expr) ...)
+       ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
+       (fields)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       ?sealed? ?opaque? (fields (?field-spec ?init-expr) ...) ?nongenerative-uid ?init-proc
+       ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
+       ?clause ...))
+
+    ;; missing init expression
+    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
+       (fields (?field-name ?procs) ?rest ...)
+       ?clause ...)
+     (define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
+       (fields (?field-name ?procs ?field-name) ?rest ...)
+       ?clause ...))
+     
+     ;; complete spec
+    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
+       (fields (?field-name (?accessor) ?init) ?rest ...)
+       ?clause ...)
+     (define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       ?sealed? ?opaque?
+       (?field-spec ... (immutable ?field-name (?accessor) ?init)) 
+       ?nongenerative-uid  ?init-proc
+       (fields ?rest ...)
+       ?clause ...))
+
+    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
+       (fields (?field-name (?accessor ?mutator) ?init) ?rest ...)
+       ?clause ...)
+     (define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       ?sealed? ?opaque?
+       (?field-spec ... (mutable ?field-name (?accessor ?mutator) ?init))
+       ?nongenerative-uid  ?init-proc
+       (fields ?rest ...)
        ?clause ...))
 
     ;; find NONGENERATIVE clause
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       ?sealed? ?opaque? ?fields-clause ?nongenerative-uid  ?init-proc
+       ?sealed? ?opaque? ?field-specs ?nongenerative-uid  ?init-proc
        (nongenerative ?uid)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       ?sealed? ?opaque? ?fields-clause ?uid
+       ?sealed? ?opaque? ?field-specs ?uid
        ?init-proc
        ?clause ...))
 
@@ -122,13 +169,13 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       ?sealed? ?opaque? ?fields-clause ?nongenerative-uid  ?init-proc
+       ?sealed? ?opaque? ?field-specs ?nongenerative-uid  ?init-proc
        (init! (?r) ?body)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       ?sealed? ?opaque? ?fields-clause ?nongenerative-uid
+       ?sealed? ?opaque? ?field-specs ?nongenerative-uid
        (lambda (?r) ?body)
        ?clause ...))
 
@@ -137,7 +184,7 @@
        ?formals
        ?parent ?parent-rtd (?parent-init-expr ...)
        ?sealed? ?opaque?
-       (fields ((?mutability ?field-name ?procs ...) ?init-expr) ...)
+       ((?mutability ?field-name ?procs ?init-expr) ...)
        ?nongenerative-uid
        ?init-proc)
 
@@ -180,16 +227,16 @@
        (define ?predicate-name
 	 (record-predicate $rtd))
 
-       (define-record-field $rtd (?mutability ?field-name ?procs ...) ?init-expr)
+       (define-record-field $rtd ?field-name ?procs)
        ...))))
 
 (define-syntax define-record-field
-  (syntax-rules (mutable immutable)
+  (syntax-rules ()
     ((define-record-field ?rtd
-       (immutable ?field-name ?accessor-name) ?init-expr)
+       ?field-name (?accessor-name))
      (define ?accessor-name (record-accessor ?rtd '?field-name)))
     ((define-record-field ?rtd
-       (mutable ?field-name ?accessor-name ?mutator-name) ?init-expr)
+       ?field-name (?accessor-name ?mutator-name))
      (begin
        (define ?accessor-name (record-accessor ?rtd '?field-name))
        (define ?mutator-name (record-mutator ?rtd '?field-name))))))
