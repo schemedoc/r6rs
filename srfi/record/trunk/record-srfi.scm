@@ -175,12 +175,17 @@
 	(p
 	 "The specification of " (code "eq?") " on records allows certain kinds "
 	 "of unboxing optimizations, at the cost of leaving its behavior on records unspecified.  "
-	 "Should instead the following hold:")
+	 "Should instead the following be required to hold for immutable records as well?")
 	(verbatim
 	 "(let ((r (construct ...)))"
-	 "  (eqv? r r))               ==> #t"
-	 "(let ((r (construct ...)))"
 	 "  (eq? r r))                ==> #t"))
+       (li
+	(p
+	 "The behavior of " (code "equal?") " on records is one of several possibilities. "
+	 "See the " (a (@ (href "http://www.lisp.org/HyperSpec/Issues/iss143-writeup.html"))
+		       "Issue EQUAL-STRUCTURE Writeup")
+	 " in the Common Lisp HyperSpec on why any behavior of " (code "equal?") " on "
+	 "records is wrong for some purposes."))
        (li
 	(p
 	 "The semantics of generativity for the syntactic record-type-definition forms "
@@ -282,7 +287,12 @@
          "the fields are considered to "
          "be ordered as specified, with parent fields first (and grandparent fields before "
          "that, and so on).  No particular order is required for the actual representation "
-         "of a record instance, however."))
+         "of a record instance, however.")
+	(p
+	 "A record type whose fields (including the fields the record types it extends) "
+	 "are all immutable is called " (i "immutable") " itself.  A record type that has "
+	 "at least one mutable field or extends a record type that has is called "
+	 (i "mutable.")))
 
        (dt
         (prototype "record-type-descriptor?"
@@ -306,10 +316,13 @@
 	 "If " (var "rtd") " describes an opaque record type, then the values "
 	 "created by such a constructor are not considered to be records; see "
 	 "the specification of " (code "record?") " below.")
+	(p
+	 "A record from an immutable record type is called " (i "immutable") "; "
+	 "conversely, a record from an mutable record type is called " (i "mutable") ".")
         (p
          "Two records created by such a constructor are equal according to " 
          (code "equal?")
-         " iff they are " (code "eq?") ", provided their record type was not used "
+         " iff they are " (code "eqv?") ", provided their record type was not used "
 	 "to implement any of the types explicitly mentioned in the definition of "
 	 (code "equal?") ".")
 	(p
@@ -319,10 +332,11 @@
 	 "(let ((r (construct ...)))"
 	 "  (eqv? r r))                ==> #t")
 	(p
-	 "This does " (em "not") " imply:")
+	 "For mutable records, but not necessarily for immutable ones, "
+	 "the following holds:")
 	(verbatim
 	 "(let ((r (construct ...)))"
-	 "  (eq? r r))                ==> #t"))
+	 "  (eq? r r))                 ==> #t"))
 
        (dt
         (prototype "record-predicate"
