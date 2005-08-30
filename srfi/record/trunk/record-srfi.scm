@@ -976,8 +976,7 @@
 
        (p
 	"This SRFI was written in consultation with the R6RS editors: Will Clinger, R. Kent Dybvig, "
-	"Marc Feeley, Matthew Flatt, Manuel Serrano, Michael Sperber, and Anton van Straaten. "
-	"Anton van Straaten wrote parts of the Design Rationale section.")
+	"Marc Feeley, Matthew Flatt, Manuel Serrano, Michael Sperber, and Anton van Straaten.")
 
       ))))
 
