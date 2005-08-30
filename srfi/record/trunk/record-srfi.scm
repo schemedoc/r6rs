@@ -242,6 +242,14 @@
          "record-type descriptor representing a new type disjoint from all other types.")
 
 	(p
+	 (blockquote
+	  (i "Note: ")
+	  "Users are strongly strongly encouraged to use symbol names "
+	  "from the "
+	  (a (@ (href "http://www.ietf.org/rfc/rfc4122")) "UUID namespace")
+	  " for the " (var "uid") " argument."))
+
+	(p
 	 "If " (var "parent") " is not " (code "#f") ", and " (var "uid")
 	 " is not " (code "#f") ", and the parent is generative "
 	 " (i.e. its uid is " (code "#f") "), an error is signalled.")
