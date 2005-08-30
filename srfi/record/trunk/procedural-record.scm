@@ -46,8 +46,7 @@
   (field-specs record-type-field-specs))
 
 (define (record-type-descriptor=? rtd-1 rtd-2)
-  (and (eq? (record-type-name rtd-1) (record-type-name rtd-2))
-       (eq? (record-type-parent rtd-1) (record-type-parent rtd-2))
+  (and (eq? (record-type-parent rtd-1) (record-type-parent rtd-2))
        (eq? (record-type-uid rtd-1) (record-type-uid rtd-2))
        (every field-spec=?
 	      (record-type-field-specs rtd-1)
