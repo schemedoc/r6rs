@@ -48,7 +48,7 @@
 	       "<body>" nl
 	       elems
 	       "<H1>Copyright</H1>" nl
-	       "Copyright (C) ??? (200?). All Rights Reserved. " nl
+	       "Copyright (C) Will Clinger, R. Kent Dybvig, Michael Sperber, Anton van Straaten (2005). All Rights Reserved. " nl
 	       "<p>" nl
 "Permission is hereby granted, free of charge, to any person obtaining a" nl
 "copy of this software and associated documentation files (the \"Software\")," nl
@@ -69,7 +69,7 @@
 "DEALINGS IN THE SOFTWARE." nl
 "" nl
 	       "    <hr>" nl
-	       "    <address>Editor: <a href=\"mailto:srfi-editors@srfi.schemers.org\">?</a></address>" nl
+	       "    <address>Editor: <a href=\"mailto:srfi-editors@srfi.schemers.org\">David Van Horn</a></address>" nl
 	       "</body>")))
 
 	(srfi-head
