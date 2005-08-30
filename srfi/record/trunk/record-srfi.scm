@@ -236,10 +236,12 @@
          "there may be only one record type with that uid in the entire system "
 	 "(in the sense of " (code "eqv?") ").  "
          "When " (code "make-record-type-descriptor") " is called repeatedly with the "
-         "same " (var "uid") " argument (in the sense of " (code "eq?") "), all other arguments to "
-         (code "make-record-type-descriptor") " must also be the same (in the sense of "
-	 (code "equal?") "), and the same "
-         "record-type descriptor (in the sense of " (code "eq?") ") is returned every time.  "
+         "same " (var "uid") " argument (in the sense of " (code "eq?") "), the "
+	 (var "parent") " argument must be the same in the sense of " (code "eqv?")
+	 " (more on this below), and the " (var "uid") ", " (var "sealed?") ", "
+	 (var "opaque?") ", and " (var "fields") " arguments must be the same in the "
+	 "sense of " (code "equal?") ".  In this case, the same "
+         "record-type descriptor (in the sense of " (code "eqv?") ") is returned every time.  "
 	 "If a call with the same "
          "uid differs in any argument, an error is signaled.  If " (var "uid") " is "
          (code "#f") ", or if no record type with the given uid has been created "
@@ -292,7 +294,28 @@
 	 "A record type whose fields (including the fields the record types it extends) "
 	 "are all immutable is called " (i "immutable") " itself.  A record type that has "
 	 "at least one mutable field or extends a record type that has is called "
-	 (i "mutable.")))
+	 (i "mutable."))
+	(p
+	 "A generative record-type descriptor created by a call to " 
+	 (code "make-record-type-descriptor") " is not " (code "eqv?") " to any "
+	 "record-type descriptor (generative or non-generative) created by another "
+	 "call to " (code "make-record-type-descriptor") ".  A generative record-type "
+	 "descriptor is only " (code "eqv?") " to itself, i.e. " (code "(eqv? rtd1 rtd2)")
+	 " iff " (code "(eq? rtd1 rtd2)") ".  Moreover:")
+	 (verbatim
+	 "(let ((rtd (make-record-type-descriptor ...)))"
+	 "  (eqv? rtd rtd))                ==> #t")
+	 (p
+	  "Note that this does " (em "not") " imply the following:")
+	 (verbatim
+	  "(let ((rtd (make-record-type-descriptor ...)))"
+	  "  (eq? rtd rtd))                 ==> #t")
+	 (p
+	  "Also, two non-generative record-type descriptors are " (code "eqv?")
+	  " if they were created by calls to " (code "make-record-type-descriptor")
+	  "with the same " (var "uid") " arguments, and the conditions described "
+	  "above hold."))
+
 
        (dt
         (prototype "record-type-descriptor?"
