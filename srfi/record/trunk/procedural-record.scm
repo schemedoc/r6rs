@@ -57,6 +57,9 @@
 	  (eq? (record-type-uid rtd) uid))
 	*nongenerative-record-types*))
 
+(define (record-type-generative? rtd)
+  (not (record-type-uid rtd)))
+
 (define *nongenerative-record-types* '())
 
 (define (make-record-type-descriptor name parent uid sealed? opaque? field-specs)

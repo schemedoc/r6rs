@@ -27,6 +27,7 @@
 	   record-type-parent
 	   record-type-sealed?
 	   record-type-uid
+	   record-type-generative?
 	   record-type-field-names
 	   record-type-opaque?
 	   record-field-mutable?

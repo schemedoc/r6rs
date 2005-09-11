@@ -136,11 +136,17 @@
 	      `("&lt;" ,@term "&gt;")))
 	(prototype
 	 . ,(lambda (tag name . args)
-	      (if (null? args)
-		  `("<code>(" ,name ")</code>")
-		  `("<code>(" ,name " </code>"
+	      (cond
+	       ((null? args)
+		`("<code>(" ,name ")</code>"))
+	       ((string? (car args))
+		`("<code>(" ,name " </code>"
 		    ,@(list-intersperse args " ")
-		    "<code>)</code>"))))
+		    "<code>)</code>"))
+	       (else
+		`("<code>(</code>" ,name
+		  ,@(list-intersperse args " ")
+		  "<code>)</code>")))))
 
 	(comment
 	 . ,(lambda (tag . args)
