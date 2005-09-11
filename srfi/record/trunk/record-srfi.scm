@@ -3,10 +3,8 @@
 (define record-srfi
   `(html:begin
     (srfi
-     (srfi-head "SRFI ??: R6RS Records")
-     (body
-      (srfi-title "R6RS Records")
-      (srfi-authors "Will Clinger, R. Kent Dybvig, Michael Sperber, Anton van Straaten")
+     "R6RS Records"
+     "Will Clinger, R. Kent Dybvig, Michael Sperber, Anton van Straaten"
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       (h1 "Note")
@@ -978,7 +976,7 @@
 	"This SRFI was written in consultation with the R6RS editors: Will Clinger, R. Kent Dybvig, "
 	"Marc Feeley, Matthew Flatt, Manuel Serrano, Michael Sperber, and Anton van Straaten.")
 
-      ))))
+      )))
 
 (with-output-to-file "record-srfi.html"
   (lambda ()

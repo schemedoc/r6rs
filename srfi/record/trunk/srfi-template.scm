@@ -43,34 +43,46 @@
 	       "</html>" nl)))
 
 	(srfi
-	 . ,(lambda (tag . elems)
-	      (list
-	       "<body>" nl
-	       elems
-	       "<H1>Copyright</H1>" nl
-	       "Copyright (C) Will Clinger, R. Kent Dybvig, Michael Sperber, Anton van Straaten (2005). All Rights Reserved. " nl
-	       "<p>" nl
-"Permission is hereby granted, free of charge, to any person obtaining a" nl
-"copy of this software and associated documentation files (the \"Software\")," nl
-"to deal in the Software without restriction, including without limitation" nl
-"the rights to use, copy, modify, merge, publish, distribute, sublicense," nl
-"and/or sell copies of the Software, and to permit persons to whom the" nl
-"Software is furnished to do so, subject to the following conditions:" nl
-"<p>" nl
-"The above copyright notice and this permission notice shall be included in" nl
-"all copies or substantial portions of the Software." nl
-"<p>" nl
-"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR" nl
-"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY," nl
-"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL" nl
-"THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER" nl
-"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING" nl
-"FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER" nl
-"DEALINGS IN THE SOFTWARE." nl
-"" nl
-	       "    <hr>" nl
-	       "    <address>Editor: <a href=\"mailto:srfi-editors@srfi.schemers.org\">David Van Horn</a></address>" nl
-	       "</body>")))
+	 . ,(lambda (tag title authors . elems)
+	      `("<head>" ,nl "<title>SRFI ??: "
+		,title
+		"</title>" ,nl "</head>"
+		,nl
+		"<body>" ,nl ,nl
+		
+		"<H1>Title</H1>" ,nl ,nl
+		,title
+		,nl ,nl
+		
+		"<H1>Authors</H1>" ,nl ,nl
+		,authors
+		,nl ,nl
+		
+		,@elems
+		"<H1>Copyright</H1>" ,nl
+		"Copyright (C) Will Clinger, R. Kent Dybvig, Michael Sperber, Anton van Straaten (2005). All Rights Reserved. " ,nl
+		"<p>" ,nl
+		"Permission is hereby granted, free of charge, to any person obtaining a" ,nl
+		"copy of this software and associated documentation files (the \"Software\")," ,nl
+		"to deal in the Software without restriction, including without limitation" ,nl
+		"the rights to use, copy, modify, merge, publish, distribute, sublicense," ,nl
+		"and/or sell copies of the Software, and to permit persons to whom the" ,nl
+		"Software is furnished to do so, subject to the following conditions:" ,nl
+		"<p>" ,nl
+		"The above copyright notice and this permission notice shall be included in" ,nl
+		"all copies or substantial portions of the Software." ,nl
+		"<p>" ,nl
+		"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR" ,nl
+		"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY," ,nl
+		"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL" ,nl
+		"THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER" ,nl
+		"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING" ,nl
+		"FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER" ,nl
+		"DEALINGS IN THE SOFTWARE." ,nl
+		"" ,nl
+		"    <hr>" ,nl
+		"    <address>Editor: <a href=\"mailto:srfi-editors@srfi.schemers.org\">David Van Horn</a></address>" ,nl
+		"</body>")))
 
 	(srfi-head
 	 . ,(lambda (tag title)
