@@ -81,7 +81,7 @@
 		"DEALINGS IN THE SOFTWARE." ,nl
 		"" ,nl
 		"    <hr>" ,nl
-		"    <address>Editor: <a href=\"mailto:srfi-editors@srfi.schemers.org\">David Van Horn</a></address>" ,nl
+		"    <address>Editor: <a href=\"mailto:srfi-editors@srfi.schemers.org\">Donovan Kolbly</a></address>" ,nl
 		"</body>")))
 
 	(srfi-head
