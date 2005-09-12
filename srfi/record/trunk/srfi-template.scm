@@ -139,7 +139,7 @@
 	      (cond
 	       ((null? args)
 		`("<code>(" ,name ")</code>"))
-	       ((string? (car args))
+	       ((string? name)
 		`("<code>(" ,name " </code>"
 		    ,@(list-intersperse args " ")
 		    "<code>)</code>"))
