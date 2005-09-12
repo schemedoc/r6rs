@@ -269,9 +269,10 @@
 	 (blockquote
 	  (i "Note: ")
 	  "Users are strongly strongly encouraged to use symbol names "
-	  "from the "
+	  "constructed using the "
 	  (a (@ (href "http://www.ietf.org/rfc/rfc4122")) "UUID namespace")
-	  " for the " (var "uid") " argument."))
+	  " (for example, using the record-type name as a prefix) for the "
+	  (var "uid") " argument."))
 
 	(p
 	 "If " (var "parent") " is not " (code "#f") ", and " (var "uid")
