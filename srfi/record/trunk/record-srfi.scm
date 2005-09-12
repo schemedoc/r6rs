@@ -171,11 +171,10 @@
        (li
 	(p
 	 "The specification of " (code "make-record-type-descriptor") " has this:")
-	(p
-	 (blockquote
+	(blockquote
 	 "If " (var "parent") " is not " (code "#f") ", and " (var "uid")
 	 " is not " (code "#f") ", and the parent is generative "
-	 " (i.e. its uid is " (code "#f") "), an error is signalled."))
+	 " (i.e. its uid is " (code "#f") "), an error is signalled.")
 	(p
 	 "However, the semantics would be perfectly clear even in the error case "
 	 "described above.  Should this restriction be lifted, if only for reasons "
@@ -265,14 +264,13 @@
          "before, " (code "make-record-type-descriptor") " returns a fresh "
          "record-type descriptor representing a new type disjoint from all other types.")
 
-	(p
-	 (blockquote
-	  (i "Note: ")
-	  "Users are strongly strongly encouraged to use symbol names "
-	  "constructed using the "
-	  (a (@ (href "http://www.ietf.org/rfc/rfc4122")) "UUID namespace")
-	  " (for example, using the record-type name as a prefix) for the "
-	  (var "uid") " argument."))
+	(blockquote
+	 (i "Note: ")
+	 "Users are strongly strongly encouraged to use symbol names "
+	 "constructed using the "
+	 (a (@ (href "http://www.ietf.org/rfc/rfc4122")) "UUID namespace")
+	 " (for example, using the record-type name as a prefix) for the "
+	 (var "uid") " argument.")
 
 	(p
 	 "If " (var "parent") " is not " (code "#f") ", and " (var "uid")
