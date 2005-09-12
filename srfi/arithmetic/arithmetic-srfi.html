@@ -40,7 +40,70 @@ William D Clinger and Michael Sperber
 </p>
 </blockquote>
 
-<h1>Abstract</h1>
+<h1>Table of contents</h1>
+
+    <ul>
+      <li><a href="#Abstract">Abstract</a></li>
+      <li><a href="#Issues">Issues</a></li>
+      <li><a href="#Rationale">Rationale</a></li>
+      <li><a href="#Specification">Specification</a>
+	<ul>
+	  <li><a href="#ExternalRepresentations">External Representations</a></li>
+	  <li><a href="#SafeUnsafeMode">Safe and Unsafe Mode</a></li>
+	  <li><a href="#EquivalenceOfObjects">Equivalence of
+	  Objects</a></li>
+	  <li><a href="#integer-division">Integer Division</a></li>
+	  <li><a href="#NumericalTypePredicates">Numerical Type
+	  Predicates</a></li>
+	  <li><a href="#GenericConversions">Generic
+	  Conversions</a></li>
+	  <li><a href="#NumericalIO">Numerical Input and
+	  Output</a></li>
+	  <li><a href="#Fixnums">Fixnums</a></li>
+	  <li><a href="#Flonums">Flonums</a></li>
+	  <li><a href="#FixnumFlonumConversions">Fixnum/Flonum
+	  Conversions</a></li>
+	  <li><a href="#IEEEFP">IEEE Binary Floating Point
+	  Arithmetic</a></li>
+	  <li><a href="#exact">Exact Arithmetic</a></li>
+	  <li><a href="#inexact">Inexact Arithmetic</a></li>
+	  <li><a href="#r5rs-generic">R5RS-style Generic
+	  Arithmetic</a></li>
+	  <li><a href="#exact-generic">Generic Exact
+	  Arithmetic</a></li>
+	</ul>
+	</li>
+      <li><a href="#design-rationale">Design Rationale</a>
+	<ul>
+	  <li><a href="#LuciersProposal">Lucier's Proposal</a></li>
+	  <li><a href="#ComplexIssues">The Issues</a>
+	    <ul>
+	      <li><a href="#ComplexIssuesNumericalTypes">Numerical
+	      Types</a></li>
+	      <li><a href="#ComplexIssuesClosureProperties">Closure
+	      Properties</a></li>
+	      <li><a href="#ComplexIssuesRepresentationTypes">Representation Types</a></li>
+	      <li><a
+	      href="#ComplexIssuesRepresentationSpecificOperations">Representation-specific Operations</a></li>
+	      <li><a href="#ComplexIssuesFlowAnalysis">Flow
+	      Analysis</a></li>
+	      <li><a
+	      href="#ComplexIssuesFlowAnalysisProblems">Problems With
+	      Flow Analysis</a></li>
+	    </ul>
+	    </li>
+	  <li><a href="#Recommendations">Recommendations</a></li>
+	  <li><a href="#FlonumsReals">Flonums</a></li>
+	</ul>
+      </li>
+      <li><a href="#ReferenceImplementation">Reference Implementation</a></li>
+      <li><a href="#References">References</a></li>
+      <li><a href="#Acknowledgements">Acknowledgements</a></li>
+      <li><a href="#Copyright">Copyright</a></li>
+    </ul>
+
+
+<h1><a name="Abstract">Abstract</a></h1>
 
 <p>
 Scheme's arithmetic system was designed to allow a wide variety of
@@ -92,7 +155,7 @@ This SRFI proposes to revise section 6.2 ("Numbers") of R5RS by:
 </ul>
 
 
-<h1>Issues</h1>
+<h1><a name="Issues">Issues</a></h1>
 
 <ul>
 <li>Instead of requiring the full numeric tower, the R6RS could
@@ -212,7 +275,7 @@ Do we expect such implementations in the near future?
     somewhat arbitrary.
 </ul>
 
-<h1>Rationale</h1>
+<h1><a name="Rationale">Rationale</a></h1>
 
 <p>
 Most implementations of Scheme fall into
@@ -301,14 +364,14 @@ build on the exact arithmetic described in section <a href="#exact">Exact Arithm
 and the inexact arithmetic described in section <a href="#inexact">Inexact Arithmetic</a>.
 
 
-<h1>Specification</h1>
+<h1><a name="Specification">Specification</a></h1>
 
 <P>
 We assume that Section 6.2.3 of the R5RS remains essentially as it
 stands.  The text of this SRFI describes the differences between the proposed
 additions and changes to the R5RS and/or SRFI 70.
 
-<h2>External Representations</h2>
+<h2><a name="ExternalRepresentations">External Representations</a></h2>
 
 <p>
 This SRFI adds the following external representations to Scheme:
@@ -457,7 +520,7 @@ or exponents or mantissa widths must be in decimal radix.
 
 
 
-<h2>Safe and Unsafe Mode</h2>
+<h2><a name="SafeUnsafeMode">Safe and Unsafe Mode</a></h2>
 
 <P>
 This SRFI allows a Scheme implementation to run code in one of two global
@@ -478,7 +541,7 @@ mode.  Specifically, a procedure call for which all bets are off is
 free to crash the system.
 </p>
 
-<h2>Equivalence of Objects</h2>
+<h2><a name="EquivalenceOfObjects">Equivalence of Objects</a></h2>
 
 <p>
     The R6RS specification of eqv? for numbers should be changed
@@ -671,7 +734,7 @@ can easily be defined through <CODE>div</CODE> and <CODE>mod</CODE>:
 
 
 
-<h2>Numerical Type Predicates</h2>
+<h2><a name="NumericalTypePredicates">Numerical Type Predicates</a></h2>
 
 <font color=red>
 The following description is a revised form of the description
@@ -804,7 +867,7 @@ support some kind of non-complex numbers.
 </DL>
 
 
-<h2>Generic Conversions</h2>
+<h2><a name="GenericConversions">Generic Conversions</a></h2>
 
 <P>
 <DL>
@@ -866,7 +929,7 @@ argument.
 
 </DL>
 
-<h2>Numerical Input and Output</h2>
+<h2><a name="NumericalIO">Numerical Input and Output</a></h2>
 
 <P>
 <DL>
@@ -997,7 +1060,7 @@ An implementation may return <CODE>#f</CODE> for <CODE>"+nan.0"</CODE>.</STRIKE>
 
 </DL>
 
-<h2>Fixnums</h2>
+<h2><a name="Fixnums">Fixnums</a></h2>
 
 <p>
 A subset range of the exact integers is denoted as the set of fixnums.
@@ -1202,7 +1265,7 @@ returns the result of that shift congruent mod <var>hi-lo+1</var>.
 </DL>
 
 
-<h2>Flonums</h2>
+<h2><a name="Flonums">Flonums</a></h2>
 
 <P>
     Implementations are not required to use floating-point
@@ -1696,7 +1759,7 @@ Otherwise, the result may be <code>+nan.0</code>, or may be some
 meaningless flonum.
 </DL>
 
-<h2>Fixnum/Flonum Conversions</h2>
+<h2><a name="FixnumFlonumConversions">Fixnum/Flonum Conversions</a></h2>
 
 <P>
 <DL>
@@ -1739,9 +1802,7 @@ running in unsafe mode, in which case all bets are off.
 
 </dl>
 
-<h2>
-IEEE Binary Floating Point Arithmetic
-</h2>
+<h2><a name="IEEEFP">IEEE Binary Floating Point Arithmetic</a></h2>
 
 <p>
 Although the R6RS does not require IEEE floating point arithmetic,
@@ -3711,7 +3772,7 @@ the history and background information that is intended to
 make this note more self-contained and accessible.)
 
 
-<h2>Lucier's Proposal</h2>
+<h2><a name="LuciersProposal">Lucier's Proposal</a></h2>
 
 <P>
 In 1998, for the Scheme workshop before ICFP '98 in Baltimore,
@@ -3789,7 +3850,7 @@ my notes on the 1998 workshop:
 </blockquote>
 
 
-<h2>The Issues</h2>
+<h2><a name="ComplexIssues">The Issues</a></h2>
 
 <P>
 The purpose of this note is to explain why it is desirable for
@@ -3800,7 +3861,7 @@ This note also discusses whether the proposed "flonum" type
 should be a synonym for "inexact real", or merely a subset
 of the inexact reals.
 
-<h2>Numerical Types</h2>
+<h3><a name="ComplexIssuesNumericalTypes">Numerical Types</a></h3>
 
 <P>
 Scheme's numerical types are the exactness types { exact, inexact },
@@ -3824,7 +3885,7 @@ the inexact complex numbers.  The following section explores one of
 the reasons those four types are so important in practice.
 
 
-<h2>Closure Properties</h2>
+<h3><a name="ComplexIssuesClosureProperties">Closure Properties</a></h3>
 
 <P>
 Scheme's types are not completely arbitrary.  Each type corresponds
@@ -3845,7 +3906,7 @@ not closed under operations such as <code>log</code>, <code>sqrt</code>, and <co
 (and inexact complex) numbers are closed under the largest set
 of operations.
 
-<h2>Representation Types</h2>
+<h3><a name="ComplexIssuesRepresentationTypes">Representation Types</a></h3>
 
 <P>
 The Scheme standards give implementations considerable freedom
@@ -3888,7 +3949,7 @@ These domain equations are typical of most implementations, but
 many variations are possible.  The flonum representation type,
 for example, is often divided into several distinct precisions.
 
-<h2>Representation-specific Operations</h2>
+<h3><a name="ComplexIssuesRepresentationSpecificOperations">Representation-specific Operations</a></h3>
 
 <P>
 A naive implementation of Scheme's arithmetic operations is slow
@@ -3919,7 +3980,7 @@ version for the more general version that was specified in the
 source code.
 
 
-<h2>Flow Analysis</h2>
+<h3><a name="ComplexIssuesFlowAnalysis">Flow Analysis</a></h3>
 
 <P>
 Flow analysis is performed by solving the type and interval
@@ -3951,7 +4012,7 @@ properties from which a single representation type can be
 inferred.
 </P>
 
-<h2>Problems With Flow Analysis</h2>
+<h3><a name="ComplexIssuesFlowAnalysisProblems">Problems With Flow Analysis</a></h3>
 
 <P>
 In practice, the most important single representation types are
@@ -4010,7 +4071,7 @@ the definition of Scheme's real numbers as described in the
 paragraph above.
 
 
-<h2>Recommendations</h2>
+<h2><a name="Recommendations">Recommendations</a></h2>
 
 <P>
 To improve the effectiveness of flow analysis and to improve
@@ -4026,7 +4087,7 @@ the efficiency of arithmetic, I recommend that the R6RS:
     so <code>`(imag-part 2.0)'</code> is an exact zero
 </ul>
 
-<h2>Flonums</h2>
+<h2><a name="FlonumsReals">Flonums</a></h2>
 
 <P>
 When flonum-specific operations are added to Scheme, should
@@ -4072,7 +4133,7 @@ I recommend that the R6RS define "flonum" as a synonym for
 "inexact real", but this is not a strong recommendation.
 It doesn't matter very much.
 
-<H1>Reference Implementation</H1>
+<H1><a name="ReferenceImplementation">Reference Implementation</a></H1>
 
 <P>
 The <a href="arithmetic-reference.tar.gz">reference implementation</a>
@@ -4085,7 +4146,7 @@ systems.
 </P>
 
 
-<h1>References</h1>
+<h1><a name="References">References</a></h1>
 
     <ul>
       <li><a name="burger-dybvig-1996">[Burger, Dybvig 1996]</a> Robert G. Burger and R. Kent Dybvig. Printing floating-point numbers quickly and accurately. In Proceedings of the ACM SIGPLAN '96 Conference on Programming Language Design and Implementation, pages 108-116.
@@ -4107,7 +4168,7 @@ systems.
     </ul>
 
 
-<h1>Acknowledgements</h1>
+<h1><a name="Acknowledgements">Acknowledgements</a></h1>
 
 We thank Anton van Straaten, Kent Dybvig, Sebastian Egner, Bradley
 Lucier, Mike Ashley, Marc Feeley, Matthew Flatt, Manuel Serrano for
@@ -4115,7 +4176,7 @@ direct and indirect assistance producing this draft.  Special thanks
 to Aubrey Jaffer for his work on SRFI 70.
 
 
-<h1>Copyright</h1>
+<h1><a name="Copyright">Copyright</a></h1>
 
 Copyright (C) William D Clinger and Michael Sperber (2005). All Rights Reserved. 
 <p>
