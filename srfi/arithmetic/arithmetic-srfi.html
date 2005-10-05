@@ -2,7 +2,13 @@
 <html><head>
 <title>
 SRFI ??: Preliminary Proposal for R6RS Arithmetic
-</title></head>
+</title>
+<style type="text/css">
+  .add { color: red; }
+  .del { color: red; text-decoration: line-through; }
+  .sub { vertical-align: sub; text-size: tiny; }
+</style>
+</head>
 <body>
 
 <H1>Title</H1>
@@ -253,7 +259,7 @@ general complex numbers.
     efficient generic arithmetic on fixnums portably.  On the other hand,
     there isn't much experience with formulating a portable interface to these
     facilities.
-<-li>
+<li>
   The fixnum operators wrap on overflow, i.e., they perform modular
   arithmetic.  For many purposes, it would be better
   for them to signal an error in safe mode.  Since the modulus is
@@ -340,9 +346,10 @@ This SRFI is incompatible with <a href="http://srfi.schemers.org/srfi-70/">SRFI 
     indeterminate that it might represent any real number within
     the closed interval [-inf.0,+inf.0].
 </ul>
-Both of the above differences are motivated by closure properties
-that make it easier for an implementation to generate efficient
-numerical code.
+Both of the above differences are motivated by <a
+href="#ComplexIssuesClosureProperties">closure properties</a> that
+make it easier for an implementation to generate efficient numerical
+code.
 
 <p>
 Moreover, unlike SRFI 70, this SRFI doesn't extend
@@ -353,10 +360,13 @@ generally applicable and easier to specify.  It also does not extend
 the <code>gcd</code> and <code>lcm</code> to rational numbers.  
 
 <P>
-The sections on fixnum, flonum, exact, inexact are new in the SRFI and
-not in SRFI 70.  Moreover, the section on generic exact arithmetic is also
-new here.  This SRFI also omits SRFI 70's discussion of infinities and
-offers its own.
+The sections on <a href="#Fixnums">Fixnums</a>, <a
+href="#Flonums">Flonums</a>, <a href="#exact">Exact Arithmetic</a>,
+and <a href="#inexact">Inexact Arithmetic</a> are new in the SRFI and
+not in SRFI 70.  Moreover, the section <a
+href="#exact-generic">Generic Exact Arithmetic</a> is also new here.
+This SRFI also omits SRFI 70's discussion of infinities and offers its
+own.
 
 <P>
 Other, more minor differences with SRFI 70 are highlighted in the
@@ -383,9 +393,10 @@ and the inexact arithmetic described in section <a href="#inexact">Inexact Arith
 <h1><a name="Specification">Specification</a></h1>
 
 <P>
-We assume that Section 6.2.3 of R5RS remains essentially as it
-stands.  The text of this SRFI describes the differences between the proposed
-additions and changes to R5RS and/or SRFI 70.
+We assume that Section 6.2.3 ("Implementation restrictions") of R5RS
+remains essentially as it stands.  The text of this SRFI describes the
+differences between the proposed additions and changes to R5RS and/or
+SRFI 70.
 
 <h2><a name="ExternalRepresentations">External Representations</a></h2>
 
@@ -436,6 +447,7 @@ or explicit does not affect the mathematical precision.
 In implementations that use binary floating point, the default
 precision can be calculated by calling the following procedure:
 </p>
+<p>
 <pre>
     (define (precision)
       (do ((n 0 (+ n 1))
@@ -660,11 +672,12 @@ Thus infinities and NaNs are not rational numbers.
 <FONT color="red"><STRIKE>
 If <VAR>x</VAR> is an inexact
 real number, then <SAMP>`(integer? <VAR>x</VAR>)'</SAMP> is true if and only if
-<PRE>
-    (and (finite? <VAR>x</VAR>) (= <VAR>x</VAR> (round <VAR>x</VAR>)))
-</PRE>
 </STRIKE>
 </FONT>
+
+<PRE style="color:red; text-decoration: line-through">
+    (and (finite? <VAR>x</VAR>) (= <VAR>x</VAR> (round <VAR>x</VAR>)))
+</PRE>
 
 <font color="red">If <VAR>q</VAR> is a rational number, then
 <SAMP>`(integer? <VAR>q</VAR>)'</SAMP> is true if and only if
@@ -676,25 +689,25 @@ is true.
 (complex? 3+4i)                        ==&gt;  #t
 (complex? 3)                           ==&gt;  #t
 (real? 3)                              ==&gt;  #t
-(real? -2.5+0.0i)                      ==&gt;  <font color=red>#f</font>
-<font color=red>(real? -2.5+0i)                        ==&gt;  #t</font>
+(real? -2.5+0.0i)                      ==&gt;  <span class=add>#f</span>
+<span class=add>(real? -2.5+0i)                        ==&gt;  #t</span>
 (real? -2.5)                           ==&gt;  #t
 (real? #e1e10)                         ==&gt;  #t
 (real? -inf.0)                         ==&gt;  #t
-<font color=red>(real? +nan.0)                         ==&gt;  #t</font>
+<span class=add>(real? +nan.0)                         ==&gt;  #t</span>
 (rational? -inf.0)                     ==&gt;  #f
-<font color=red>(rational? +nan.0)                     ==&gt;  #f</font>
+<span class=add>(rational? +nan.0)                     ==&gt;  #f</span>
 (rational? 6/10)                       ==&gt;  #t
 (rational? 6/3)                        ==&gt;  #t
 (integer? 3+0i)                        ==&gt;  #t
 (integer? 3.0)                         ==&gt;  #t
 (integer? 8/4)                         ==&gt;  #t
 
-<font color=red>(number? +nan.0)                       ==&gt;  #t</font>
-<font color=red>(complex? +nan.0)                      ==&gt;  #t</font>
+<span class=add>(number? +nan.0)                       ==&gt;  #t</span>
+<span class=add>(complex? +nan.0)                      ==&gt;  #t</span>
 (complex? +inf.0)                      ==&gt;  #t
-<font color=red>(real? +nan.0)                         ==&gt;  #t</font>
-<font color=red>(rational? +nan.0)                     ==&gt;  #f</font>
+<span class=add>(real? +nan.0)                         ==&gt;  #t</span>
+<span class=add>(rational? +nan.0)                     ==&gt;  #f</span>
 (integer? -inf.0)                      ==&gt;  #f
 </PRE>
 
@@ -710,8 +723,8 @@ affect the result.
 
 <BLOCKQUOTE>
 <P>
-<strike>
 <font color=red>
+<strike>
 <EM>Note:</EM>
 In many implementations the <CODE>rational?</CODE> procedure will be the same
 
@@ -722,8 +735,8 @@ as <CODE>real?</CODE>, and the <CODE>complex?</CODE> procedure will be the same 
 
 some irrational numbers exactly or may extend the number system to
 support some kind of non-complex numbers.
-</font>
 </strike>
+</font>
 </BLOCKQUOTE>
 
 </DL>
@@ -778,9 +791,7 @@ implementation-dependent range.
 
 </DL>
 
-<FONT color="red">
-<P>
-<DL>
+<DL class=add>
 <DT><U>procedure:</U> <CODE>real-&gt;flonum</CODE> <VAR>x</VAR>
 <DD>
 <P>
@@ -807,7 +818,6 @@ argument.
 </BLOCKQUOTE>
 
 </DL>
-</FONT>
 
 <h2><a name="NumericalIO">Numerical Input and Output</a></h2>
 
@@ -913,7 +923,7 @@ returns <TT>#f</TT>.
 (string-&gt;number "15##")                ==&gt;  1500.0
 (string->number "+inf.0")              ==&gt;  +inf.0
 (string->number "-inf.0")              ==&gt;  -inf.0
-<FONT color="red">(string->number "+nan.0")              ==&gt;  +nan.0</FONT>
+<span class=add>(string->number "+nan.0")              ==&gt;  +nan.0</span>
 </PRE>
 
 
@@ -970,18 +980,18 @@ These implement integer division and remainder on real numbers.
 <code>div+mod</code> returns two values, an integer and a real.
 
 <PRE>
-(div <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>n<SUB>d</SUB></VAR>
-(mod <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>x<SUB>m</SUB></VAR>
+(div <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>n<span class=sub>d</span></VAR>
+(mod <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>x<span class=sub>m</span></VAR>
 (div+mod <VAR>x1</VAR> <VAR>x2</VAR>)              ==&gt; (div <VAR>x1</VAR> <VAR>x2</VAR>) (mod <VAR>x1</VAR> <VAR>x2</VAR>) ; two return values
 </PRE>
 
 where:
 	<ol>
-	  <li><VAR>x1</VAR> = <VAR>n<SUB>d</SUB></VAR> * <VAR>x2</VAR> +
-	  <VAR>x<SUB>m</SUB></VAR>.</li>
-	  <li>0 &lt;= <VAR>x<SUB>m</SUB></VAR> &lt; <VAR>x2</VAR> if <VAR>x2</VAR>
+	  <li><VAR>x1</VAR> = <VAR>n<span class=sub>d</span></VAR> * <VAR>x2</VAR> +
+	  <VAR>x<span class=sub>m</span></VAR>.</li>
+	  <li>0 &lt;= <VAR>x<span class=sub>m</span></VAR> &lt; <VAR>x2</VAR> if <VAR>x2</VAR>
 	  &gt; 0</li>
-	  <li><VAR>x2</VAR>/2 &lt;= <VAR>x<SUB>m</SUB></VAR> &lt;
+	  <li><VAR>x2</VAR>/2 &lt;= <VAR>x<span class=sub>m</span></VAR> &lt;
 	  -<VAR>x2</VAR>/2 if <VAR>x2</VAR> &lt; 0</li>
 	</ol>
 Moreover:
@@ -1030,18 +1040,18 @@ If <VAR>n1</VAR>/<VAR>n2</VAR> is an integer:
 If <VAR>n1</VAR>/<VAR>n2</VAR> is not an integer:
 
 <PRE>
-(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&gt; <VAR>n<SUB>q</SUB></VAR>
-(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&gt; <VAR>n<SUB>r</SUB></VAR>
-(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&gt; <VAR>n<SUB>m</SUB></VAR>
+(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&gt; <VAR>n<span class=sub>q</span></VAR>
+(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&gt; <VAR>n<span class=sub>r</span></VAR>
+(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&gt; <VAR>n<span class=sub>m</span></VAR>
 </PRE>
 
 <P>
-where <VAR>n<SUB>q</SUB></VAR> is <VAR>n1</VAR>/<VAR>n2</VAR> rounded towards zero,
-0 &lt; |<VAR>n<SUB>r</SUB></VAR>| &lt; |<VAR>n2</VAR>|, 0 &lt; |<VAR>n<SUB>m</SUB></VAR>| &lt; |<VAR>n2</VAR>|,
-<VAR>n<SUB>r</SUB></VAR> and <VAR>n<SUB>m</SUB></VAR> differ from
+where <VAR>n<span class=sub>q</span></VAR> is <VAR>n1</VAR>/<VAR>n2</VAR> rounded towards zero,
+0 &lt; |<VAR>n<span class=sub>r</span></VAR>| &lt; |<VAR>n2</VAR>|, 0 &lt; |<VAR>n<span class=sub>m</span></VAR>| &lt; |<VAR>n2</VAR>|,
+<VAR>n<span class=sub>r</span></VAR> and <VAR>n<span class=sub>m</span></VAR> differ from
 <VAR>n1</VAR> by an integral multiple of <VAR>n2</VAR>,
-<VAR>n<SUB>r</SUB></VAR> has the same sign as <VAR>n1</VAR>, and
-<VAR>n<SUB>m</SUB></VAR> has the same sign as <VAR>n2</VAR>.
+<VAR>n<span class=sub>r</span></VAR> has the same sign as <VAR>n1</VAR>, and
+<VAR>n<span class=sub>m</span></VAR> has the same sign as <VAR>n2</VAR>.
 
 <P>
 From this we can conclude that for integers <VAR>n1</VAR> and <VAR>n2</VAR> with
@@ -1241,8 +1251,8 @@ This procedure returns <SAMP>`(fx- 0 <VAR>fx</VAR>)'</SAMP> if
 
 <P>
 These procedures implement number-theoretic integer division 
-modulo <var>hi-lo+1</var>.  See <a href="#integer-division">the
-Section</a> on integer division.
+modulo <var>hi-lo+1</var>.  See the section on <a href="#integer-division">
+Integer Division</a>.
 </p>
 </dl>
 
@@ -1284,7 +1294,7 @@ the bit-wise inclusive "or" of
 the two's complement representations of its
 arguments modulo <var>hi-lo+1</var>.
 The <CODE>fxbitwise-xor</CODE> procedure returns the fixnum which is the
-bit-wise "exlusive or" of the two's complement representations of its
+bit-wise "exclusive or" of the two's complement representations of its
 arguments modulo <var>hi-lo+1</var>.
 </DD>
 </DL>
@@ -1470,9 +1480,9 @@ This returns the absolute value of its argument.
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division.  See <a
-href="#integer-division">the Section</a> on integer division.  For
-zero divisors, the procedures may return <code>+nan.0</code> or some
+These procedures implement number-theoretic integer division.  See the
+section on <a href="#integer-division">Integer Division</a>.  For zero
+divisors, the procedures may return <code>+nan.0</code> or some
 meaningless flonum.
 </p>
 </dl>
@@ -2039,9 +2049,9 @@ This procedure returns the absolute value of its argument.
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division.  See <a
-href="#integer-division">the Section</a> on integer division.
-For zero divisors, these procedures signal an error.
+These procedures implement number-theoretic integer division.  See the
+section on <a href="#integer-division">Integer Division</a>.  For zero
+divisors, these procedures signal an error.
 </p>
 </dl>
 
@@ -2266,10 +2276,10 @@ This procedure returns the absolute value of its argument.
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division.  See <a
-href="#integer-division">the Section</a> on integer division.
-For zero divisors, these procedures signal an error or may return some meaningless
-inexact number.
+These procedures implement number-theoretic integer division.  See the
+section on <a href="#integer-division">Integer Division</a>.  For zero
+divisors, these procedures signal an error or may return some
+meaningless inexact number.
 </p>
 </dl>
 
@@ -2580,23 +2590,22 @@ e<SUP>i*<VAR>in4</VAR></SUP>.  Then (inexactly):
 (inreal-part <VAR>z</VAR>)              ==&gt; <VAR>in1</VAR>
 (inimag-part <VAR>z</VAR>)              ==&gt; <VAR>in2</VAR>
 (inmagnitude <VAR>z</VAR>)              ==&gt; |<VAR>in3</VAR>|
-(inangle <VAR>z</VAR>)                  ==&gt; <VAR>in<SUB>angle</SUB></VAR>
+(inangle <VAR>z</VAR>)                  ==&gt; <VAR>in<span class=sub>angle</span></VAR>
 </PRE>
 
 <P>
-where -pi &lt;= <VAR>in</VAR><SUB>angle</SUB> &lt;= pi with
-<VAR>in<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi <VAR>n</VAR> for
+where -pi &lt;= <VAR>in</VAR><span class=sub>angle</span> &lt;= pi with
+<VAR>in<span class=sub>angle</span></VAR> = <VAR>in4</VAR> + 2pi <VAR>n</VAR> for
 some integer <VAR>n</VAR>.
-</DL>
 
 <P>
-<FONT color="red">
-<PRE>
+<PRE class=add>
 (inangle -1.0)         ==&gt; pi
 (inangle -1.0+0.0)     ==&gt; pi
 (inangle -1.0-0.0)     ==&gt; -pi ; if -0.0 is distinguished
 </PRE>
-</FONT>
+
+</DL>
 
 
 <h2><a name="r5rs-generic">R5RS-style Generic Arithmetic</a></h2>
@@ -2609,8 +2618,9 @@ exact if it was written as an exact constant or was derived from exact
 numbers using only exact operations.  A number is inexact if it <FONT
 COLOR=red><STRIKE>is infinite, if it </STRIKE></FONT>was written as an
 inexact constant, if it was derived using inexact ingredients, or if
-it was derived using inexact operations. Thus inexactness is a
-contagious property of a number.
+it was derived using inexact operations. <FONT COLOR=red>The generic
+operations all implement inexact operations.</FONT>  Thus inexactness
+is a contagious property of a number.
 
 <P>
 <FONT COLOR="red"><STRIKE>Each exact number corresponds to a single mathematical number.  It is
@@ -2837,8 +2847,8 @@ infinite nor NaN:
 <PRE>
 (+ +inf.0 <VAR>x</VAR>)                           ==&gt;  +inf.0
 (+ -inf.0 <VAR>x</VAR>)                           ==&gt;  -inf.0
-<FONT COLOR=red>(+ +nan.0 <VAR>x</VAR>)                           ==&gt;  +nan.0</FONT>
-<FONT COLOR=red>(* +nan.0 <VAR>x</VAR>)                           ==&gt;  +nan.0</FONT>
+<span class=add>(+ +nan.0 <VAR>x</VAR>)                           ==&gt;  +nan.0</span>
+<span class=add>(* +nan.0 <VAR>x</VAR>)                           ==&gt;  +nan.0</span>
 </PRE>
 
 <P>
@@ -2877,7 +2887,7 @@ however, they return the additive or multiplicative inverse of their argument.
 (/ 1.0 0)                              ==&gt;  +inf.0
 (/ -1 0.0)                             ==&gt;  -inf.0
 (/ +inf.0)                             ==&gt;  0.0
-(/ 0 0.0)                              ==&gt;  <FONT color="red"><STRIKE>+nan.0</STRIKE> unspecified</FONT>
+(/ 0 0.0)                              ==&gt;  <span class=del>+nan.0</span> <span class=add>unspecified</span>
 (/ 0.0 0)                              ==&gt;  +nan.0
 (/ 0.0 0.0)                            ==&gt;  +nan.0
 </PRE>
@@ -2914,15 +2924,15 @@ however, they return the additive or multiplicative inverse of their argument.
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division.  See <a
-href="#integer-division">the Section</a> on integer division.
+These procedures implement number-theoretic integer division.  See the
+section on <a href="#integer-division">Integer Division</a>.
 </p>
 </dl>
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>gcd</CODE> <VAR><STRIKE>r1</STRIKE> <FONT COLOR=red>n1</FONT></VAR> ...
-<DT><U>library procedure:</U> <CODE>lcm</CODE> <VAR><STRIKE>r1</STRIKE> <FONT COLOR=red>n1</FONT></VAR> ...
+<DT><U>library procedure:</U> <CODE>gcd</CODE> <VAR><FONT COLOR=red><STRIKE>r1</STRIKE> n1</FONT></VAR> ...
+<DT><U>library procedure:</U> <CODE>lcm</CODE> <VAR><FONT COLOR=red><STRIKE>r1</STRIKE> n1</FONT></VAR> ...
 <DD>
 <P>
 <FONT COLOR="red">Note: This is the R5RS definition.</FONT>
@@ -3031,11 +3041,11 @@ result should be passed to the <CODE>inexact-&gt;exact</CODE> procedure.
 
 <P>
 <CODE>Rationalize</CODE> returns the <EM>simplest</EM> rational number
-differing from <VAR>x</VAR> by no more than <VAR>y</VAR>.  A rational number r<SUB>1</SUB> is
+differing from <VAR>x</VAR> by no more than <VAR>y</VAR>.  A rational number r<span class=sub>1</span> is
 <EM>simpler</EM>  than another rational number
 
-r<SUB>2</SUB> if r<SUB>1</SUB> = p<SUB>1</SUB>/q<SUB>1</SUB> and r<SUB>2</SUB> = p<SUB>2</SUB>/q<SUB>2</SUB> 
-(in lowest terms) and |p<SUB>1</SUB>|&lt;= |p<SUB>2</SUB>| and |q<SUB>1</SUB>| &lt;= |q<SUB>2</SUB>|.
+r<span class=sub>2</span> if r<span class=sub>1</span> = p<span class=sub>1</span>/q<span class=sub>1</span> and r<span class=sub>2</span> = p<span class=sub>2</span>/q<span class=sub>2</span> 
+(in lowest terms) and |p<span class=sub>1</span>|&lt;= |p<span class=sub>2</span>| and |q<span class=sub>1</span>| &lt;= |q<span class=sub>2</span>|.
 Thus 3/5 is simpler than 4/7.
 Although not all rationals are comparable in this ordering (consider 2/7
 and 3/5) any interval contains a rational number that is simpler than
@@ -3088,18 +3098,16 @@ defined to be the one whose imaginary part lies in the range from -pi
 <FONT color="red"><STRIKE>(exclusive)</STRIKE> (inclusive if -0.0 is
 distinguished, exclusive otherwise)</FONT> to pi (inclusive).
 
-<P>
-<FONT COLOR="red">
+<P class=add>
 The value of log <VAR>z</VAR> for non-real <VAR>z</VAR> is defined in
 terms of log on real numbers as
 
-<P>
-log <VAR>z</VAR> = log |<VAR>z</VAR>| + <VAR>x<SUB>angle</SUB></VAR>i
+<P class=add>
+log <VAR>z</VAR> = log |<VAR>z</VAR>| + <VAR>x<span class=sub>angle</span></VAR>i
 
-<P>
-where <VAR>x<SUB>angle</SUB></VAR> is the angle of <VAR>z</VAR> as
+<P class=add>
+where <VAR>x<span class=sub>angle</span></VAR> is the angle of <VAR>z</VAR> as
 specified below.
-</FONT>
 
 <P>
 <FONT color="red">With log defined this way,</FONT> the values of
@@ -3136,7 +3144,7 @@ result may be <code>+nan.0</code>, or may be some meaningless inexact
 number.
 </FONT>
 
-<FONT color="red">
+<div class=add>
 <P>
 Specifically, the range of <CODE>`(atan <var>x</var>
 <var>y</var>)'</CODE> is as in the following table. The asterisk (*)
@@ -3287,7 +3295,7 @@ minus zero.
 
 </tbody>
 </table>
-</FONT>
+</div>
 
 <P>
 The above specification follows the 
@@ -3304,11 +3312,11 @@ these functions.
 (exp -inf.0)                   ==&gt; 0.0
 (log +inf.0)                   ==&gt; +inf.0
 (log 0.0)                      ==&gt; -inf.0
-(log -inf.0)                   ==&gt; <FONT color="red"><STRIKE>+nan.0</STRIKE> <I>unspecified</I></FONT>
+(log -inf.0)                   ==&gt; <span class=del>+nan.0</span> <span class=add><I>unspecified</I></span>
 (atan -inf.0)                  ==&gt; -1.5707963267948965
 (atan +inf.0)                  ==&gt; 1.5707963267948965
-<FONT COLOR="red">(log -1.0+0.0i)                ==&gt; 0.0+<VAR>pi</VAR>i</FONT>
-<FONT COLOR="red">(log -1.0-0.0i)                ==&gt; 0.0-<VAR>pi</VAR>i ; if -0.0 is distinguished</FONT>
+<span class=add>(log -1.0+0.0i)                ==&gt; 0.0+<VAR>pi</VAR>i</span>
+<span class=add>(log -1.0-0.0i)                ==&gt; 0.0-<VAR>pi</VAR>i ; if -0.0 is distinguished</span>
 </PRE>
 
 <P>
@@ -3336,13 +3344,13 @@ color="red"><STRIKE>real</STRIKE> rational</FONT> <VAR>z</VAR>, the
 result will have either positive real part, or zero real part and
 non-negative imaginary part.  <FONT color="red">With <code>exp</code> and <code>log</code>
 defined as above, the value of <code>`(sqrt <var>z</var>)'</code>
-<CODE>`(exp (/ (log <var>z</var>) 2.0))'</CODE>
+<CODE>`(exp (/ (log <var>z</var>) 2.0))'</CODE>.
 </FONT>
 
 <PRE>
 (sqrt -5)                   ==&gt;  0.0+2.23606797749979i
 (sqrt +inf.0)               ==&gt;  +inf.0
-(sqrt -inf.0)               ==&gt;  <FONT COLOR="red"><STRIKE>+nan.0</STRIKE> <I>unspecified</I></FONT>
+(sqrt -inf.0)               ==&gt;  <span class=del>+nan.0</span> <span class=add><I>unspecified</I></span>
 </PRE>
 
 </DL>
@@ -3374,7 +3382,7 @@ or returns an unspecified number.
 <P>
 <FONT COLOR="red"><STRIKE>For inexact arguments not both zero</STRIKE></FONT>
 <PRE>
-<FONT COLOR="red"><STRIKE>(define (expt </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z1</STRIKE></FONT></VAR> <VAR><FONT COLOR="red"><STRIKE>z2</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>) (exp (* (if (zero? </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z1</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>) (real-part </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z2</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>) </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z2</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>) (log </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z1</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>))))</STRIKE></FONT>
+<span class=del>(define (expt <VAR>z1</VAR> <VAR>z2</VAR>) (exp (* (if (zero? <VAR>z1</VAR>) (real-part <VAR>z2</VAR>) <VAR>z2</VAR>) (log <VAR>z1</VAR>))))</span>
 </PRE>
 
 <CODE><FONT COLOR="red"><STRIKE>(expt 0.0 </STRIKE></FONT><VAR><FONT COLOR="red"><STRIKE>z</STRIKE></FONT></VAR><FONT COLOR="red"><STRIKE>)</STRIKE></FONT></CODE><BR>
@@ -3390,10 +3398,10 @@ or returns an unspecified number.
 (expt 5 0)                  ==&gt;  1
 (expt 0 5)                  ==&gt;  0
 (expt 0 5+.0000312i)        ==&gt;  0
-(expt 0 -5)                 ==&gt;  <FONT color="red"><STRIKE>+inf.0</STRIKE> <I>unspecified</I></FONT>
-(expt 0 -5+.0000312i)       ==&gt;  <FONT color="red"><STRIKE>+inf.0</STRIKE> <I>unspecified</I></FONT>
-(expt 0 0)                  ==&gt;  <FONT color="red"><STRIKE>+nan.0</STRIKE> 1</FONT>
-(expt 0.0 0.0)              ==&gt;  <FONT color="red"><STRIKE>+nan.0</STRIKE> 1.0</FONT>
+(expt 0 -5)                 ==&gt;  <span class=del>+inf.0</span> <span class=add><I>unspecified</I></span>
+(expt 0 -5+.0000312i)       ==&gt;  <span class=del>+inf.0</span> <span class=add><I>unspecified</I></span>
+(expt 0 0)                  ==&gt;  <span class=del>+nan.0</span> <span class=add></span>
+(expt 0.0 0.0)              ==&gt;  <span class=del>+nan.0</span> <span class=add>1.0</span>
 </PRE>
 
 
@@ -3434,12 +3442,12 @@ Then
 (real-part <VAR>z</VAR>)                          ==&gt; <VAR>x1</VAR>
 (imag-part <VAR>z</VAR>)                          ==&gt; <VAR>x2</VAR>
 (magnitude <VAR>z</VAR>)                          ==&gt; |<VAR>x3</VAR>|
-(angle <VAR>z</VAR>)                              ==&gt; x<SUB>angle</SUB>
+(angle <VAR>z</VAR>)                              ==&gt; x<span class=sub>angle</span>
 </PRE>
 
 <P>
-where -pi <FONT color="red"><STRIKE>&lt;</STRIKE>&lt;=</FONT> x<SUb>angle</SUB>
-&lt;= pi with <VAR>x<SUB>angle</SUB></VAR> = <VAR>in4</VAR> + 2pi
+where -pi <FONT color="red"><STRIKE>&lt;</STRIKE>&lt;=</FONT> x<span class=sub>angle</span>
+&lt;= pi with <VAR>x<span class=sub>angle</span></VAR> = <VAR>in4</VAR> + 2pi
 <VAR>n</VAR> for some integer <VAR>n</VAR>.
 
 <P>
@@ -3475,7 +3483,7 @@ is the bit-wise inclusive "or" of the two's
 complement representations of its
 arguments.
 The <code>bitwise-xor</code> procedure returns the exact integer which is the
-bit-wise "exlusive or" of the two's complement representations of its arguments.
+bit-wise "exclusive or" of the two's complement representations of its arguments.
 </DD>
 </DL>
 
@@ -3517,12 +3525,13 @@ highlighted in red.
 <BLOCKQUOTE>
 Scheme numbers are either <I>exact</I> or <I>inexact</I>.  A number is
 exact if it was written as an exact constant or was derived from exact
-numbers using only exact operations.  A number is inexact if it was written as an
-inexact constant, if it was derived using inexact ingredients, or if
-it was derived using inexact operations.  The generic operations all
-implement <FONT color="red">exact</FONT> operations.  Consequently,
-<FONT color="red">exactness</FONT> is a contagious
-property of a number.
+numbers using only exact operations.  A number is inexact if it was
+written as an inexact constant, if it was derived using inexact
+ingredients, or if it was derived using inexact operations.  The
+generic operations all implement <FONT
+color="red"><strike>inexact</strike> exact</FONT> operations.
+Consequently, <FONT color="red"><strike>inexactness</strike>
+exactness</FONT> is a contagious property of a number.
 
 <P>
 It is the programmer's responsibility to avoid using
@@ -3531,16 +3540,16 @@ the implementation.
 
 <P>
 If two implementations produce exact results for a computation <FONT
-COLOR="red">using only the operations described in this section</FONT>  that
-did not involve inexact <FONT COLOR="red"><STRIKE>intermediate results
-or the results of numerical predicates</STRIKE></FONT> inputs (which
-include the literals representing inexact numbers), the two
-ultimate results will be mathematically equivalent.  <FONT COLOR="red"><STRIKE>This is generally
-not true of computations involving inexact numbers because approximate
-methods such as floating point arithmetic may be used, but it is the
-duty of each implementation to make the result as close as practical
-to the mathematically ideal result.</STRIKE>
-</FONT>
+COLOR="red">using only the operations described in this section</FONT>
+that did not involve inexact <FONT COLOR="red"><STRIKE>intermediate
+results or the results of numerical predicates</STRIKE></FONT> inputs
+<FONT COLOR=red>(which include the literals representing inexact
+numbers)</FONT>, the two ultimate results will be mathematically
+equivalent.  <FONT COLOR="red"><STRIKE>This is generally not true of
+computations involving inexact numbers because approximate methods
+such as floating point arithmetic may be used, but it is the duty of
+each implementation to make the result as close as practical to the
+mathematically ideal result.</STRIKE> </FONT>
 
 <FONT COLOR="red">
 The transition from exactness to inexactness is always explicit
@@ -3587,7 +3596,7 @@ href="#egner-at-al-2004">[Egner et al. 2004]</A>.
 <p>
 We will use <var>zf</var>, <var>zf1</var>, <var>zf2</var>, and
 <var>z3</var> as metavariables that range over the complex
-numbers, excluding NaNs, infinites, or complex numbers
+numbers, excluding NaNs, infinities, or complex numbers
 with NaN or infinite real or imaginary part,
 <var>xf</var>, <var>xf1</var>, <var>xf2</var>, and
 <var>xf3</var> as metavariables that range over the real
@@ -3709,8 +3718,8 @@ This procedure returns the absolute value of its argument.
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division.  See <a
-href="#integer-division">the Section</a> on integer division.
+These procedures implement number-theoretic integer division.  See the
+section on <a href="#integer-division">Integer Division</a>.
 </p>
 </dl>
 
@@ -3808,7 +3817,7 @@ is the bit-wise inclusive
 complement representations of its
 arguments.
 The <code>bitwise-xor</code> procedure returns the exact integer which is the
-bit-wise "exlusive or" of the two's complement representations of its arguments.
+bit-wise "exclusive or" of the two's complement representations of its arguments.
 </DD>
 </DL>
 
@@ -3832,10 +3841,11 @@ concerning two issues of R6RS arithmetic
 (written by William D Clinger, 29 July 2005)
 
 <p>
-(Most experts who read this note will want to start with the
-section titled "Problems With Flow Analysis", thereby skipping
-the history and background information that is intended to
-make this note more self-contained and accessible.)
+(Most experts who read this note will want to start with the section
+<a href="#ComplexIssuesFlowAnalysisProblems">Problems With Flow
+Analysis</a>, thereby skipping the history and background information
+that is intended to make this note more self-contained and
+accessible.)
 
 
 <h2><a name="LuciersProposal">Lucier's Proposal</a></h2>
@@ -4229,7 +4239,7 @@ systems.
     Computer Science Department, Indiana University.
       </li>
       <li><a name="jaffer-2005">[Jaffer 2005]</a> Aubrey Jaffer.  Numerics with Infinities.  2005.  <a href="http://srfi.schemers.org/srfi-70/">SRFI 70</a>.</li>
-      <li><a name="penfield-1981">[Penfield 1981]</A> Paul Penfield, Jr. Principal values and branch cuts in complex APL. In APL '81 Conference Proceedings, pages 248-256. ACM SIGAPL, San Francisco, September 1981. Proceedings published as APL Quote Quad 12(1), ACM, September 1981. <a href="http://portal.acm.org/citation.cfm?id=800142.805368&dl=GUIDE&dl=ACM&type=series&idx=SERIES404&part=Proceedings&WantType=Proceedings&title=International%20Conference%20on%20APL">ACM Digital Library Entry</a>.</li>
+      <li><a name="penfield-1981">[Penfield 1981]</A> Paul Penfield, Jr. Principal values and branch cuts in complex APL. In APL '81 Conference Proceedings, pages 248-256. ACM SIGAPL, San Francisco, September 1981. Proceedings published as APL Quote Quad 12(1), ACM, September 1981. <a href="http://portal.acm.org/citation.cfm?id=800142.805368&amp;dl=GUIDE&amp;dl=ACM&amp;type=series&amp;idx=SERIES404&amp;part=Proceedings&amp;WantType=Proceedings&amp;title=International%20Conference%20on%20APL">ACM Digital Library Entry</a>.</li>
       <li><a name="steele-1990">[Steele 1990]</A> Guy Lewis Steele Jr. Common Lisp: The Language, second edition. Digital Press, Burlington MA, 1990.  Available electronically <a href="http://www-2.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html">here</a>.</li>
     </ul>
 
@@ -4269,3 +4279,4 @@ DEALINGS IN THE SOFTWARE.
     href="mailto:srfi-editors@srfi.schemers.org">David Van Horn</a></address>
 
 </body></html>
+
