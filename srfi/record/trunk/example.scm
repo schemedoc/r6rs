@@ -102,6 +102,14 @@
 
 (check (record? ex3-i1) => #f)
 
+; fancy constructor
+
+(define-type (unit-vector make-unit-vector unit-vector?) (x y z)
+  (let ((length (+ (* x x) (* y y) (* z z)))))
+  (fields (x (unit-vector-x) (/ x length))
+	  (y (unit-vector-y) (/ y length))
+	  (z (unit-vector-z) (/ z length))))
+
 (newline)
 (display "correct tests: ")
 (display *correct-count*)

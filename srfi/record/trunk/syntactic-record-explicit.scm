@@ -43,6 +43,7 @@
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        #f #f ()		       ; parent, parent rtd, parent init exprs
+       ()				; constructor lets
        #f				; sealed?
        #t				; opaque?
        ()				; fields
@@ -51,30 +52,49 @@
        ?clause ...))))
 
 (define-syntax define-type-1
-  (syntax-rules (parent sealed nongenerative init! opaque fields)
+  (syntax-rules (parent sealed nongenerative init! opaque fields let)
     ;; find PARENT clause
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
        (parent ?parent-name ?expr ...)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent-name (type-descriptor ?parent-name)
-       (?expr ...) ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
+       (?expr ...)        
+       ?constructor-lets ?sealed? ?opaque? ?fields-clause ?nongenerative-uid ?init-proc
+       ?clause ...))
+
+    ;; find LET clause
+    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       (?constructor-let ...)
+       ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
+       (let ?bindings)
+       ?clause ...)
+     (define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       (?bindings ?constructor-let ...)
+       ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find SEALED clause
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
        (sealed ?val)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?val ?opaque? ?field-specs ?nongenerative-uid ?init-proc
        ?clause ...))
 
@@ -82,12 +102,14 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
        (opaque ?val)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs 
+       ?constructor-lets
        ?sealed? ?val ?field-specs ?nongenerative-uid ?init-proc
        ?clause ...))
 
@@ -97,12 +119,14 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
        (fields)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
        ?clause ...))
 
@@ -110,12 +134,14 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
        (fields (?field-name ?procs) ?rest ...)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
        (fields (?field-name ?procs ?field-name) ?rest ...)
        ?clause ...))
@@ -124,12 +150,14 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
        (fields (?field-name (?accessor) ?init) ?rest ...)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque?
        (?field-spec ... (immutable ?field-name (?accessor) ?init)) 
        ?nongenerative-uid  ?init-proc
@@ -139,12 +167,14 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? (?field-spec ...) ?nongenerative-uid  ?init-proc
        (fields (?field-name (?accessor ?mutator) ?init) ?rest ...)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque?
        (?field-spec ... (mutable ?field-name (?accessor ?mutator) ?init))
        ?nongenerative-uid  ?init-proc
@@ -155,12 +185,14 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? ?field-specs ?nongenerative-uid  ?init-proc
        (nongenerative ?uid)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? ?field-specs ?uid
        ?init-proc
        ?clause ...))
@@ -169,12 +201,14 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? ?field-specs ?nongenerative-uid  ?init-proc
        (init! (?r) ?body)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
        ?sealed? ?opaque? ?field-specs ?nongenerative-uid
        (lambda (?r) ?body)
        ?clause ...))
@@ -183,6 +217,7 @@
     ((define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd (?parent-init-expr ...)
+       ?constructor-lets
        ?sealed? ?opaque?
        ((?mutability ?field-name ?procs ?init-expr) ...)
        ?nongenerative-uid
@@ -202,11 +237,13 @@
 	 (if ?parent-rtd
 	     (let ((parent-args-proc (record-type-args-proc ?parent)))
 	       (lambda (child-field-values . ?formals)
-		 (parent-args-proc
-		  (do-append (?init-expr ...) child-field-values)
-		  ?parent-init-expr ...)))
+		 (letify ?constructor-lets
+			 (parent-args-proc
+			  (do-append (?init-expr ...) child-field-values)
+			  ?parent-init-expr ...))))
 	     (lambda (child-field-values . ?formals)
-	       (do-append (?init-expr ...) child-field-values))))
+	       (letify ?constructor-lets
+		       (do-append (?init-expr ...) child-field-values)))))
 
        (define ?record-name (make-record-type $rtd $args-proc))
 
@@ -215,14 +252,16 @@
 	   (if ?parent-rtd
 	       (let ((parent-args-proc (record-type-args-proc ?parent)))
 		 (lambda ?formals
-		   (let ((r (apply make (parent-args-proc (list ?init-expr ...)
-							  ?parent-init-expr ...))))
-		     (?init-proc r)
-		     r)))
+		   (letify ?constructor-lets
+			   (let ((r (apply make (parent-args-proc (list ?init-expr ...)
+								  ?parent-init-expr ...))))
+			     (?init-proc r)
+			     r))))
 	       (lambda ?formals
-		 (let ((r (make ?parent-init-expr ... ?init-expr ... )))
-		   (?init-proc r)
-		   r)))))
+		 (letify ?constructor-lets
+			 (let ((r (make ?parent-init-expr ... ?init-expr ... )))
+			   (?init-proc r)
+			   r))))))
        
        (define ?predicate-name
 	 (record-predicate $rtd))
@@ -246,3 +285,12 @@
     ((do-append (?elem1 ?elems ...) ?tail)
      (cons ?elem1 (do-append (?elems ...) ?tail)))
     ((do-append () ?tail) ?tail)))
+
+; the innermost let comes first
+(define-syntax letify
+  (syntax-rules ()
+    ((letify () ?exp) ?exp)
+    ((letify (?bindings1 ?rest ...) ?exp)
+     (letify (?rest ...)
+	     (let ?bindings1 ?exp)))))
+     

@@ -1,5 +1,7 @@
 (load "srfi-template.scm")
 
+(define nl (string #\newline))
+
 (define record-srfi
   `(html:begin
     (srfi
@@ -569,6 +571,35 @@
            "is guaranteed to be distinct even for verbatim copies of the same "
            "record definition appearing in different parts of a program."))
 
+	 (dt
+	  (prototype "let" (code "(") (meta "binding spec") (code ")")))
+	 (dd
+	  (p
+	   "A " (code "let") " clause leads to a " (code "let") " form "
+	   "being collectively wrapped around the " (meta "init expression") "s in "
+	   "the " (code "fields") " clause, and the " (meta "constructor argument") "s "
+	   "in the " (code "parent") " clause.  The resulting form is evaluated "
+	   "in the environment of the body of the constructor prodedure, with the formals "
+	   "bound.  I.e., if there are the following " (code "let") " clauses:")
+	  (p
+	   (code "(let") (var "binding-specs-1") (code ")"))
+	  (p
+	   (code "(let") (var "binding-specs-2") (code ")"))
+	  (p
+	   "...")
+	  (p
+	   (code "(let") (var "binding-specs-n") (code ")"))
+	  (p
+	   "the constructor procedure will look like this:")
+	  (pre
+	   "(lambda " (var "formals") ,nl
+	   "  (let " (var "binding-specs-1") ,nl
+	   "    (let " (var "binding-specs-2") ,nl
+	   "      ..." ,nl
+	   "        (let " (var "binding-specs-n") ,nl
+	   "          ... " (var "init-expression") "...) ...)))"))
+	 
+
          (dt
           (prototype "init!" (code "(") (meta "identifier") (code ")") (meta "expression") "*"))
          (dd
@@ -935,7 +966,13 @@
        ""
        "(define p1 (make-cpoint 3 4 'red))"
        "(point? p1) ; => #t"
-       "(cpoint-rgb p1) ; => (rgb . red)")
+       "(cpoint-rgb p1) ; => (rgb . red)"
+       ""
+       "(define-type (unit-vector make-unit-vector unit-vector?) (x y z)"
+       "  (let ((length (+ (* x x) (* y y) (* z z)))))"
+       "  (fields (x (unit-vector-x) (/ x length))"
+       "	  (y (unit-vector-y) (/ y length))"
+       "	  (z (unit-vector-z) (/ z length))))")
 
       (h2 "Implicit-<naming syntactic layer")
 
@@ -958,7 +995,7 @@
        "(cpoint-rgb-set! cpoint-i1 '(rgb . blue))"
        "(cpoint-rgb cpoint-i1) ; => (rgb . blue)"
        "(eq? *the-cpoint* cpoint-i1) ; => #t")
-
+      
       (h1 "Reference implementation")
 
       (p
