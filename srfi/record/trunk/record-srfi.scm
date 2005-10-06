@@ -166,10 +166,6 @@
        
        (li
 	(p
-	 "Should syntactic record-type definitions default to creating opaque or "
-	 "non-opaque record types?"))
-       (li
-	(p
 	 "The specification of " (code "make-record-type-descriptor") " has this:")
 	(blockquote
 	 "If " (var "parent") " is not " (code "#f") ", and " (var "uid")
@@ -537,23 +533,28 @@
            "constructor."))
 
 	 (dt
-	  (prototype "sealed"))
+	  (prototype "sealed" (meta "exp")))
 	 (dd
+	  (p
+	   (meta "Exp") " must evaluate to " (code "#t") " or " (code "#f") ". "
+	   "It is evaluated in the same environment as the " (code "define-type")
+	   " form.")
 	  (p
 	   "If this option is specified, the defined record type is "
 	   "sealed, i.e., cannot be extended.  If no " (code "sealed")
 	   " option is present, the defined record type is not sealed."))
 
 	 (dt
-	  (prototype "opaque"))
+	  (prototype "opaque" (meta "exp")))
 	 (dd
 	  (p
-	   "If this option is specified, it means that the record type is "
-	   "opaque.  It is also opaque if an opaque parent is specified. "
-	   "If the " (code "opaque") " option is not present and an opaque parent "
-	   "is not specified, the record type is not opaque."))
-
-
+	   (meta "Exp") " must evaluate to " (code "#t") " or " (code "#f") ". "
+	   "It is evaluated in the same environment as the " (code "define-type")
+	   " form.")
+	  (p
+	   "If this option is specified, it means that the opacity of the type is "
+	   "the value " (meta "exp") ".  It is also opaque if an opaque parent is specified. "
+	   "If the " (code "opaque") " option is not present, the record type is opaque."))
 
          (dt
           (prototype "nongenerative" (meta "uid")))

@@ -44,7 +44,7 @@
        ?formals
        #f #f ()		       ; parent, parent rtd, parent init exprs
        #f				; sealed?
-       #f				; opaque?
+       #t				; opaque?
        ()				; fields
        #f				; nongenerative uid
        values				; INIT! proc
@@ -70,12 +70,12 @@
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
        ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
-       (sealed)
+       (sealed ?val)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
-       #t ?opaque? ?field-specs ?nongenerative-uid ?init-proc
+       ?val ?opaque? ?field-specs ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find OPAQUE clause
@@ -83,12 +83,12 @@
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
        ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
-       (opaque)
+       (opaque ?val)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs 
-       ?sealed? #t ?field-specs ?nongenerative-uid ?init-proc
+       ?sealed? ?val ?field-specs ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; parse FIELDS clause

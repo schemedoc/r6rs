@@ -30,6 +30,7 @@
 (define-type (point make-point point?) (x y)
   (fields (x (point-x))
           (y (point-y set-point-y!) y))
+  (opaque #f)
   (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
 
 (define-type (cpoint make-cpoint cpoint?) (x y c)
@@ -89,7 +90,7 @@
   (fields 
    (thickness mutable t))
   (init! (p) (set! *ex3-instance* p))
-  (sealed) (opaque))
+  (sealed #t) (opaque #t))
 
 (define ex3-i1 (make-ex3 1 2 17))
 (check (ex3? ex3-i1) => #t)
