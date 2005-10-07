@@ -475,7 +475,9 @@
          "A " (code "define-type") " form defines a new record type "
          "along with associated construction procedure (which is distinguished "
 	 "from the constructor of the record type), predicate, "
-         "field accessors and field mutators.")
+         "field accessors and field mutators.  These names are all bound in the "
+	 "environment where " (code "define-type") " appears; hence, it is possible to "
+	 "refer to the bindings (except for that of the record-type itself) recursively.")
 
         (p
          "The " (meta "name-spec") " specifies the names of the record type, construction "
