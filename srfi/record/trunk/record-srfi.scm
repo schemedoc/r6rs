@@ -987,7 +987,7 @@
        "	  (y (unit-vector-y) (/ y length))"
        "	  (z (unit-vector-z) (/ z length))))")
 
-      (h2 "Implicit-<naming syntactic layer")
+      (h2 "Implicit-naming syntactic layer")
 
       (verbatim
        "(define-type (point make-point point?) (x y)"
