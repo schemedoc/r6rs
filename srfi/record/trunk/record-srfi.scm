@@ -219,6 +219,13 @@
 	 (code "(init! register!"))
 	(p
 	 "Should it?"))
+
+       (li
+	(p
+	 "Should the " (code "nongenerative") " clause take an expression operand rather than "
+	 "a symbol, as argued "
+	 (a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00056.html")) "here")
+	 "?"))
 	
        )
 
