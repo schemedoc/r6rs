@@ -206,6 +206,20 @@
 	 " explains why they are currently not required to be distinct.  However, Andre van Tonder "
 	 "argues " (a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00060.html")) "here")
 	 " that this should be changed."))
+
+       (li
+	(p
+	 "The " (code "init!") " clause is currently a binding form.  Instead, it could just "
+	 "take a procedure as an operand.  Then,")
+	(p
+	 (code "(init! (r) (register! r))"))
+	(p
+	 "could be written as")
+	(p
+	 (code "(init! register!"))
+	(p
+	 "Should it?"))
+	
        )
 
       (p
