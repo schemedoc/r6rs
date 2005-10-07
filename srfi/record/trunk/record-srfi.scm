@@ -46,7 +46,7 @@
        (li
         "an explicit-naming syntactic layer for defining the various entities associated "
         "with a record type "
-        "- constructor, predicate, field accessors, mutators, etc. - at once")
+        "- construction procedure, predicate, field accessors, mutators, etc. - at once")
        (li
         "an implicit-naming syntactic layer built on top of explicit-naming syntactic "
         "layer, which chooses the names for the various products based on the names of "
@@ -66,7 +66,7 @@
       (p
        "The explicit-naming syntactic layer provides a basic syntactic interface "
        "whereby a single record definition serves as a shorthand for the definition "
-       "of several record creation and manipulation routines: a constructor, "
+       "of several record creation and manipulation routines: a construction procedure, "
        "a predicate, accessors, and mutators. "
        "As the name suggests, the explicit-naming syntactic layer requires the "
        "programmer to name each of these products explicitly. "
@@ -77,19 +77,13 @@
 
       (p
        "The implicit-naming syntactic layer extends the explicit-naming syntactic layer "
-       "by allowing the names for constructor, predicate, accessors, and mutators "
+       "by allowing the names for construction procedure, predicate, accessors, and mutators "
        "to be determined automatically from the name of the record and names of "
        "the fields.  This establishes a standard naming convention and allows "
        "record-type definitions to be more succinct, with the downside that the "
        "product definitions cannot easily be located via a simple search for the "
        "product name.  The programmer may override some or all of the default names "
        "by specifying them explicitly as in the explicit-naming syntactic layer.")
-
-      (p
-       "The syntax of both syntactic layers is designed to obviate "
-       "separate constructor procedures that shuffle arguments, provide default "
-       "values for fields, and/or perform initialization actions on the created "
-       "instance, such as registering it in some manner.")
 
       (p
        "The syntax of both syntactic layers is also designed to allow future extensions "
@@ -449,18 +443,19 @@
        (dd
         (p
          "A " (code "define-type") " form defines a new record type "
-         "along with associated constructor, predicate, "
+         "along with associated construction procedure (which is distinguished "
+	 "from the constructor of the record type), predicate, "
          "field accessors and field mutators.")
 
         (p
-         "The " (meta "name-spec") " specifies the names of the record type, constructor, "
-         "and predicate.  It must take the following form.")
+         "The " (meta "name-spec") " specifies the names of the record type, construction "
+	 "procedure, and predicate.  It must take the following form.")
 
 	(p
-	 (code "(") (meta "record name") " " (meta "constructor name") " " (meta "predicate name") (code ")"))
+	 (code "(") (meta "record name") " " (meta "construction proc name") " " (meta "predicate name") (code ")"))
          
         (p
-         (meta "Record name") ", " (meta "constructor name") ", and " (meta "predicate name")
+         (meta "Record name") ", " (meta "construction proc name") ", and " (meta "predicate name")
          " must all be identifiers.")
 
         (p
@@ -471,7 +466,7 @@
          "underlying record-type descriptor (see " (code "type-descriptor") " below).")
 
         (p
-         (meta "Constructor name") " is defined by this definition to a construction procedure. "
+         (meta "Construction proc name") " is defined by this definition to a construction procedure. "
          "The construction procedure accepts the number(s) of arguments implied "
          "by " (meta "formals") " and creates a new record instance of the "
          "defined type with the fields initialized as described below.")
@@ -515,7 +510,7 @@
            "accessor named " (meta "acccessor name") ", and with the corresponding "
            "mutator named " (meta "mutator name") ". "
            "In either form, " (meta "init expression") " specifies the initial "
-           "value of the field when it is created by the constructor. "
+           "value of the field when it is created by the construction procedure. "
 	   "If " (meta "init expression") " is absent, it defaults to 
 	   " (meta "field name") "."))
 
@@ -532,7 +527,7 @@
           (p
            "Each " (meta "constructor argument") " must be an expression; the values of "
            "these expressions become the values of the parent's formals in the "
-           "constructor."))
+           "construction procedure."))
 
 	 (dt
 	  (prototype "sealed" (meta "exp")))
@@ -579,7 +574,7 @@
 	   "being collectively wrapped around the " (meta "init expression") "s in "
 	   "the " (code "fields") " clause, and the " (meta "constructor argument") "s "
 	   "in the " (code "parent") " clause.  The resulting form is evaluated "
-	   "in the environment of the body of the constructor prodedure, with the formals "
+	   "in the environment of the body of the construction prodedure, with the formals "
 	   "bound.  I.e., if there are the following " (code "let") " clauses:")
 	  (p
 	   (code "(let") (var "binding-specs-1") (code ")"))
@@ -590,7 +585,7 @@
 	  (p
 	   (code "(let") (var "binding-specs-n") (code ")"))
 	  (p
-	   "the constructor procedure will look like this:")
+	   "the construction procedure will look like this:")
 	  (pre
 	   "(lambda " (var "formals") ,nl
 	   "  (let " (var "binding-specs-1") ,nl
@@ -604,16 +599,16 @@
           (prototype "init!" (code "(") (meta "identifier") (code ")") (meta "expression") "*"))
          (dd
           (p
-           "When this clause is specified, the defined constructor "
+           "When this clause is specified, the defined construction procedure "
            "arranges to evaluate the specified expressions in the scope of "
            "a binding for " (meta "identifier") " to the new record instance, "
-           "before the instance is returned from the constructor. "
+           "before the instance is returned from the procedure. "
            "Parent init expressions, if any, are evaluated before child init "
            "expressions.  The values of the expressions are ignored.")))
 	
 	(p
 	 "Note that all bindings created by this form (for the record type, "
-	 "the constructor, the predicate, the accessors, and the mutators) "
+	 "the construction procedure, the predicate, the accessors, and the mutators) "
 	 "must have names that are pairwise distinct.")
 	
 	(p
@@ -656,11 +651,11 @@
        "The implicit-naming syntactic layer extends the explicit-naming layer in "
        "two ways.  First, " (meta "name-spec") " may be a single identifier "
        "representing just the record name. "
-       "In this case, the constructor name is generated by prefixing the record "
+       "In this case, the name of the construction procedure is generated by prefixing the record "
        "name with " (code "make-") ", and the predicate name is generated by adding "
        "a question mark (" (code "?") ") to the end of the record name. "
-       "For example, if the record name is " (code "frob") " then the constructor "
-       "name is " (code "make-frob") " and the predicate name is "
+       "For example, if the record name is " (code "frob") " then the name of the construction "
+       "procedure is " (code "make-frob") " and the predicate name is "
        (code "frob?") ".")
     
       (p
@@ -818,6 +813,27 @@
 
       (h1 (a (@ (name "design-rationale")) "Design Rationale"))
 
+      (h2 "Separate construction procedure in the syntactic layers")
+      
+      (p
+       "The syntactic layers distinguish the construction procedure from the "
+       "constructor of the underlying record type.  This has several reasons:")
+      (p
+       "The field-initialization syntax allows specifying the initial values "
+       "by name, rather than by position.")
+      (p
+       "Moreover, the initial values of the fields will often need to be specially "
+       "computed or default to constant values.  Moreover, the created record "
+       "might need to be registered somewhere before being ready for processing. "
+       "The mechanism for field initialization and the " (code "init!") " clause "
+       "largely obviate the need for separate procedures to do this.  (More on the "
+       (code "init!") " clause below.)")
+      (p
+       "Most importantly, the field initialization of a parent record type is available "
+       "to record types that extend it through the implicit chaining of the constructor "
+       "procedures.  This would be difficult to achieve if the field initialization "
+       "mechanism were not built in the " (code "define-type") " forms.")
+
       (h2 "Field initialization and verbosity")
 
       (p
@@ -865,12 +881,9 @@
       (p
        "If the custom field initialization were omitted, it would still be possible to perform "
        "custom initialization by writing a separate constructor procedure, which "
-       "would wrap a record type's actual constructor.  However, this creates "
-       "the need for an extra procedure name which is not part of the record "
-       "type's definition.  This means that extensions which deal with the "
-       "record type's definition (such extensions to "
-       "support keyword arguments, etc.) don't have access to the record type's "
-       "actual constructor.")
+       "would wrap a record type's actual constructor.  See the previous item on why "
+       "that would create difficulties.")
+
 
       (h2 (code "init!") " clause")
 
