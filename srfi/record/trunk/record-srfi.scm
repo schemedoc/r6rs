@@ -513,7 +513,11 @@
            "In either form, " (meta "init expression") " specifies the initial "
            "value of the field when it is created by the construction procedure. "
 	   "If " (meta "init expression") " is absent, it defaults to 
-	   " (meta "field name") "."))
+	   " (meta "field name") ".")
+	  (p
+	   "The " (meta "field name") "s must be distinct.  They become, as symbols, "
+	   "the names of the fields of the record type being created, in the same order.  "
+	   "They are not used in any other way."))
 
          (dt
           (prototype "parent" (meta "parent name") " " (meta "constructor argument") "*"))
