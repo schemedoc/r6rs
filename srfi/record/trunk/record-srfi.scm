@@ -484,7 +484,8 @@
 
         (p
          "Each " (meta "record clause") " must take one of the following forms; "
-	 "it is an error if multiple " (meta "record clause") "s of the same kind "
+	 "except for the " (code "let") " clause, it is an error if multiple "
+	 (meta "record clause") "s of the same kind "
 	 "appear in a " (code "define-type") " form.")
 
         (dl
