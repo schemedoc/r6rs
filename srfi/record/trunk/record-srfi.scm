@@ -489,7 +489,8 @@
          " must all be identifiers.")
 
         (p
-         (meta "Record name") " is bound by this definition "
+         (meta "Record name") " becomes the name of the record type.  Additionally, "
+	 "it is bound by this definition "
 	 "to a compile-time or run-time description of the "
          "record type for use as parent name in record definitions that extend "
          "this definition.  It may also be used as a handle to gain access to the "
