@@ -193,7 +193,8 @@
 ; to a field in RTD itself.
 (define (field-id-index rtd field-id)
   (if (integer? field-id)
-      field-id
+      (+ (field-count (record-type-parent rtd))
+	 field-id)
       (field-index rtd field-id)))
 
 (define (record-field-mutable? rtd field-id)
