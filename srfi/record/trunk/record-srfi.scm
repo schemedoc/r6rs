@@ -128,6 +128,14 @@
 
        (li
 	(p
+	 "Should " (code "define-type") " be called " (code "define-record-type") 
+	 ", as argued "
+	 (a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00001.html")) "here")
+	 "?  If so, what should be the name of what's currently " (code "type-descriptor") "? "
+	 "(" (code "Record-type-descriptor") " is taken.)"))
+
+       (li
+	(p
 	 "Compared to some other record-defining forms that have been proposed and implemented, "
 	 "the syntax is comparatively verbose.  For instance, PLT Scheme has a "
 	 (code "define-struct") " form that allows record-type definitions as short as this:")
