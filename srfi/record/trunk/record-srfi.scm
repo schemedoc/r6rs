@@ -4,7 +4,7 @@
 
 (define record-srfi
   `(html:begin
-    (srfi
+    (srfi 76
      "R6RS Records"
      "Will Clinger, R. Kent Dybvig, Michael Sperber, Anton van Straaten"
 

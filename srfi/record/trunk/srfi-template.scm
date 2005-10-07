@@ -43,8 +43,8 @@
 	       "</html>" nl)))
 
 	(srfi
-	 . ,(lambda (tag title authors . elems)
-	      `("<head>" ,nl "<title>SRFI ??: "
+	 . ,(lambda (tag number title authors . elems)
+	      `("<head>" ,nl "<title>SRFI " ,(number->string number) ": "
 		,title
 		"</title>" ,nl "</head>"
 		,nl
