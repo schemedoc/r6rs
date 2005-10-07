@@ -224,7 +224,7 @@
 	(p
 	 "could be written as")
 	(p
-	 (code "(init! register!"))
+	 (code "(init! register!)"))
 	(p
 	 "Should it?"))
 
