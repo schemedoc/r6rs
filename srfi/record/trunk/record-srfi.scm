@@ -217,6 +217,15 @@
 
        (li
 	(p
+	 "Should the operations for access and mutation be augmented by functional update? "
+	 "Should it be possible to generate a copy operation for records? "
+	 "(See "(a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00066.html"))
+		   "this post")
+	 " for some discussion on the issue.)  If any of these are added, what should the syntax "
+	 " in the syntactic layers look like?"))
+
+       (li
+	(p
 	 "The " (code "init!") " clause is currently a binding form.  Instead, it could just "
 	 "take a procedure as an operand.  Then,")
 	(p
