@@ -69,7 +69,10 @@
   (if (and parent
 	   (not (record-type-uid parent)) ; parent generative
 	   uid)			  ; ... but this one is non-generative
-      (error "a generative type can only be extended to give a generative type"))
+      (error "a generative type can only be extended to give a generative type" parent))
+  (if (not (= (length field-specs)
+	      (length (delete-duplicates (map cadr field-specs)))))
+      (error "duplicate field name" field-specs))
   (let ((opaque? (if parent
 		     (or (record-type-opaque? parent)
 			 opaque?)

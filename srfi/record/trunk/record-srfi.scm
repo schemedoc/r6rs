@@ -339,7 +339,7 @@
          "The specified fields are added to the parent fields, if any, to "
          "determine the complete set of fields of the returned record type. "
          "Each " (var "name") " must be a symbol and names the corresponding field of the "
-         "record type; the names need not be distinct. "
+         "record type; the names must be distinct.  If they are not, an error is signalled.  "
          "A field with tag " (code "mutable") " may be modified, whereas an attempt "
 	 "to obtain a mutator for a field "
 	 "with tag " (code "immutable") " will signal an error.")

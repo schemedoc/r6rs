@@ -35,7 +35,7 @@
 	   record-accessor record-mutator
 	   record-field-mutable?
 	   record? record-type-descriptor)
-  (require (only (lib "1.ss" "srfi") list-index find every)
+  (require (only (lib "1.ss" "srfi") list-index find every delete-duplicates)
 	   (lib "9.ss" "srfi") ; DEFINE-RECORD-TYPE
 	   (lib "26.ss" "srfi"))
 

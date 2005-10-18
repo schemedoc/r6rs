@@ -43,7 +43,7 @@
 (define-structures ((procedural-record-types procedural-record-types-interface)
 		    (record-reflection record-reflection-interface))
   (open scheme
-	(subset srfi-1 (list-index find every))
+	(subset srfi-1 (list-index find every delete-duplicates))
 	srfi-9 ; DEFINE-RECORD-TYPE
 	srfi-23 ; ERROR
 	srfi-26 ; CUT
