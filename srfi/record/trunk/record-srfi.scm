@@ -332,6 +332,8 @@
          "determine the complete set of fields of the returned record type. "
          "Each " (var "name") " must be a symbol and names the corresponding field of the "
          "record type; the names must be distinct.  If they are not, an error is signalled.  "
+	 "(Note, however, that a field name may be shared between " (var "fields")
+	 "and any record type this type extends.)  "
          "A field with tag " (code "mutable") " may be modified, whereas an attempt "
 	 "to obtain a mutator for a field "
 	 "with tag " (code "immutable") " will signal an error.")
