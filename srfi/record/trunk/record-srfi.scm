@@ -209,14 +209,6 @@
 
        (li
 	(p
-	 "Should the field names in in " (code "make-record-type-descriptor") " be required "
-	 "to be distinct?  The " (a (@ (href "#design-rationale")) "Design Rationale section")
-	 " explains why they are currently not required to be distinct.  However, Andre van Tonder "
-	 "argues " (a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00060.html")) "here")
-	 " that this should be changed."))
-
-       (li
-	(p
 	 "Should the operations for access and mutation be augmented by functional update? "
 	 "Should it be possible to generate a copy operation for records? "
 	 "(See "(a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00066.html"))
