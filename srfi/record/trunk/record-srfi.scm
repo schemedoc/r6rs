@@ -449,8 +449,6 @@
          "The " (var "field-id") " argument may be a symbol or an exact non-negative integer. "
          "If it is a symbol " (var "s") ", the field named " (var "s") " from the "
 	 (var "fields") " argument " "to " (code "make-record-type-descriptor") " is selected. "
-         "If more than one field has the given name, the field selected is the first "
-	 "field with that name in " (var "rtd") ". "
          "If " (var "field-id") " is an exact non-negative integer " (var "i") ", the field selected "
 	 "is the one corresponding the the " (var "i") "th element (0-based) of the "
 	 (var "fields") " argument " "to " (code "make-record-type-descriptor") "."))
