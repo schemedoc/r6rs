@@ -585,27 +585,24 @@
            "construction procedure."))
 
 	 (dt
-	  (prototype "sealed" (meta "exp")))
-	 (dd
-	  (p
-	   (meta "Exp") " must evaluate to " (code "#t") " or " (code "#f") ". "
-	   "It is evaluated in the same environment as the " (code "define-type")
-	   " form.")
-	  (p
-	   "If this option is specified, the defined record type is "
-	   "sealed, i.e., cannot be extended.  If no " (code "sealed")
-	   " option is present, the defined record type is not sealed."))
-
+	  (prototype "sealed" (code "#t")))
 	 (dt
-	  (prototype "opaque" (meta "exp")))
+	  (prototype "sealed" (code "#f")))
 	 (dd
-	  (p
-	   (meta "Exp") " must evaluate to " (code "#t") " or " (code "#f") ". "
-	   "It is evaluated in the same environment as the " (code "define-type")
-	   " form.")
 	  (p
 	   "If this option is specified, it means that the opacity of the type is "
-	   "the value " (meta "exp") ".  It is also opaque if an opaque parent is specified. "
+	   "the value specified as the operand.  "
+	   "If no " (code "sealed")
+	   " option is present, the defined record type is not sealed."))
+	 (dt
+	  (prototype "opaque" (code "#t")))
+	 (dt
+	  (prototype "opaque" (code "#f")))
+	 (dd
+	  (p
+	   "If this option is specified, it means that the opacity of the type is "
+	   "the value specified as the operand.  "
+	   "It is also opaque if an opaque parent is specified. "
 	   "If the " (code "opaque") " option is not present, the record type is opaque."))
 
          (dt

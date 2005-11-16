@@ -89,13 +89,26 @@
        ?parent ?parent-rtd ?parent-init-exprs
        ?constructor-lets
        ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
-       (sealed ?val)
+       (sealed #t)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs
        ?constructor-lets
-       ?val ?opaque? ?field-specs ?nongenerative-uid ?init-proc
+       #t ?opaque? ?field-specs ?nongenerative-uid ?init-proc
+       ?clause ...))
+    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
+       ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
+       (sealed #f)
+       ?clause ...)
+     (define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
+       #f ?opaque? ?field-specs ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; find OPAQUE clause
@@ -104,13 +117,26 @@
        ?parent ?parent-rtd ?parent-init-exprs
        ?constructor-lets
        ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
-       (opaque ?val)
+       (opaque #t)
        ?clause ...)
      (define-type-1 (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?parent ?parent-rtd ?parent-init-exprs 
        ?constructor-lets
-       ?sealed? ?val ?field-specs ?nongenerative-uid ?init-proc
+       ?sealed? #t ?field-specs ?nongenerative-uid ?init-proc
+       ?clause ...))
+    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs
+       ?constructor-lets
+       ?sealed? ?opaque? ?field-specs ?nongenerative-uid ?init-proc
+       (opaque #f)
+       ?clause ...)
+     (define-type-1 (?record-name ?constructor-name ?predicate-name)
+       ?formals
+       ?parent ?parent-rtd ?parent-init-exprs 
+       ?constructor-lets
+       ?sealed? #f ?field-specs ?nongenerative-uid ?init-proc
        ?clause ...))
 
     ;; parse FIELDS clause
