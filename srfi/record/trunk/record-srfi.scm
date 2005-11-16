@@ -167,7 +167,13 @@
 	 "Similarly, one might allow plain symbols to be used as field specifiers "
 	 "in the " (var "fields") " argument to " (code "make-record-type-descriptor")
 	 ", defaulting to mutability or immutability."))
-       
+
+       (li
+	(p
+	 "Conversely, should the implicit-naming layer be dropped to simplify "
+	 "the proposal, and avoid potential hygiene problems with macros that "
+	 "expand into the implicit-naming layer?"))
+	        
        (li
 	(p
 	 "The specification of " (code "make-record-type-descriptor") " has this:")
