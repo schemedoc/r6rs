@@ -27,14 +27,19 @@
 
 (define (make-fl*fl->fl r5rs-op)
   (lambda (a b)
-    (make-flonum (r5rs-op (flonum-inexact a) (flonum-inexact b)))))
+    (if (or (flnan? a)
+	    (flnan? b))
+	flnan
+	(make-flonum (r5rs-op (flonum-inexact a) (flonum-inexact b))))))
 
 (define fl+ (make-fl*fl->fl +))
 (define fl- (make-fl*fl->fl -))
 
 (define (make-fl->fl r5rs-op)
   (lambda (a)
-    (make-flonum (r5rs-op (flonum-inexact a)))))
+    (if (flnan? a)
+	flnan
+	(make-flonum (r5rs-op (flonum-inexact a))))))
 
 ; unary minus---better name?
 (define fl~ (make-fl->fl -))
@@ -43,9 +48,25 @@
 
 (define (/* a b)
   (cond
+   ((= b r5rs-inf+)
+    (cond
+     ((or (= a r5rs-inf+) (= a r5rs-inf-))
+      r5rs-nan)
+     ((< a 0.0)
+      -0.0)
+     (else
+      0.0)))
+   ((= b r5rs-inf-)
+    (cond
+     ((or (= a r5rs-inf+) (= a r5rs-inf-))
+      r5rs-nan)
+     ((< a 0.0)
+      0.0)
+     (else
+      -0.0)))
    ((not (= b 0.0)) (/ a b))
    ((= a 0.0) r5rs-nan)
-   ((positive? a) r5rs-inf+)
+   ((> a 0.0) r5rs-inf+)
    (else r5rs-inf-)))
 
 (define fl/ (make-fl*fl->fl /*))
