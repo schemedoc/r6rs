@@ -11,7 +11,7 @@
 			   #f
 			   (cadr more))))
 	(if (and (exact-integer? radix)
-		 (integer> (r5rs->integer 1) radix)
+		 (integer< (r5rs->integer 1) radix)
 		 (integer< radix (r5rs->integer 37)))
 	    (number2string x radix precision)
 	    (begin
