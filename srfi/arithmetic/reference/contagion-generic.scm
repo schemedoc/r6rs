@@ -35,7 +35,7 @@
 	     (integral-2? (real-part-2 b))
 	     (integral-2? (imag-part-2 b)))
 	(let ((a (x->rec-1 a))
-	      (b (x->rec-1 b)))
+	      (b (x->rec-2 b)))
 	  (recnum->compnum (retry a b)))
 	(let ((a (x->comp-1 a))
 	      (b (x->comp-2 b)))
