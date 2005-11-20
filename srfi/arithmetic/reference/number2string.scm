@@ -5,7 +5,7 @@
 
 (define (number->string x . more)
   (if (null? more)
-      (number2string x (r5rs->integer 10))
+      (number2string x (r5rs->integer 10) #f)
       (let ((radix (car more))
 	    (precision (if (null? (cdr more))
 			   #f
