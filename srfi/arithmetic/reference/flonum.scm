@@ -43,8 +43,8 @@
 
 (define (/* a b)
   (cond
-   ((not (zero? b)) (/ a b))
-   ((zero? a) r5rs-nan)
+   ((not (= b 0.0)) (/ a b))
+   ((= a 0.0) r5rs-nan)
    ((positive? a) r5rs-inf+)
    (else r5rs-inf-)))
 
