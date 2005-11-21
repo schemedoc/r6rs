@@ -735,10 +735,10 @@
 
       (dl
        (dt
-	(prototype (meta "field name") (code "immutable")
+	(prototype (meta "field name") (code " immutable")
 		   (ebnf-opt (meta "init expression"))))
        (dt
-	(prototype (meta "field name") (code "mutable")
+	(prototype (meta "field name") (code " mutable")
 		   (ebnf-opt (meta "init expression")))))
 
       (p
