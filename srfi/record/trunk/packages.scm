@@ -22,11 +22,30 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
+(define-interface vector-types-interface
+  (export make-vector-type
+	  vector-type?
+	  vector-type-data
+	  has-vector-type?
+	  make-typed-vector typed-vector
+	  typed-vector-length
+	  typed-vector-ref typed-vector-set!
+	  typed-vector-type
+	  make-typed-vector-immutable!))
+
+(define-structure vector-types vector-types-interface
+  (open scheme
+	srfi-9 ; DEFINE-RECORD-TYPE
+	srfi-23 ; ERROR
+	)
+  (files vector-type))
+	  
+
 (define-interface procedural-record-types-interface
   (export make-record-type-descriptor
 	  record-type-descriptor?
 	  record-constructor record-predicate
-	  record-accessor record-mutator))
+	  record-accessor record-mutator record-updater))
 
 (define-interface record-reflection-interface
   (export record-type-name

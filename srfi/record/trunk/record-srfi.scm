@@ -215,15 +215,6 @@
 
        (li
 	(p
-	 "Should the operations for access and mutation be augmented by functional update? "
-	 "Should it be possible to generate a copy operation for records? "
-	 "(See "(a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00066.html"))
-		   "this post")
-	 " for some discussion on the issue.)  If any of these are added, what should the syntax "
-	 " in the syntactic layers look like?"))
-
-       (li
-	(p
 	 "The " (code "init!") " clause is currently a binding form.  Instead, it could just "
 	 "take a procedure as an operand.  Then,")
 	(p
@@ -469,6 +460,22 @@
          "The " (var "field-id") " argument is as in " (code "record-accessor") ". "
          "If " (code "record-mutator") " is called on an immutable field, "
          "an error is signalled."))
+
+       (dt
+        (prototype "record-updater"
+                   (var "rtd")
+                   (var "field-ids")))
+       (dd
+        (p
+         "Given a record-type descriptor " (var "rtd") " and a list " (var "field-id")
+         " with " (var "n") " elements that specifies a list of the fields "
+	 "of " (var "rtd") ", " (code "record-updater") " returns a "
+         "procedure with 1+" (var "n") " arguments "
+         "that, when passed a record " (var "r") " of the type represented by " (var "rtd") " and "
+	 (var "n") " objects, returns a copy of " (var "r") ", where the contents of the fields "
+	 "named by " (var "field-ids") " are replaced by these objects, in the "
+	 "same order.  "
+	 "The elements of " (var "field-ids") " are as in " (code "record-accessor") "."))
        )
 
       (h2 "Explicit-Naming Syntactic Layer")
@@ -644,6 +651,18 @@
 	   "        (let " (var "binding-specs-n") ,nl
 	   "          ... " (var "init-expression") "...) ...)))"))
 	 
+
+	 (dt
+	  (prototype "updater" (meta "updater name") (meta "field-name") (code "...")))
+	 (dd
+	  (p
+	   "Each " (code "updater") " clause defines a record updater named "
+	   (meta "updater name") " corresponding to the fields specified.  "
+	   "I.e., " (meta "updater name") " is bound to a procedure that will "
+	   "accept a record of the type being defined and as many objects as "
+	   "there are field names in the " (code "updater") " clause, and "
+	   "return a copy of that record with the contents of the specified "
+	   "fields replaced by the objects, in the same order."))
 
          (dt
           (prototype "init!" (code "(") (meta "identifier") (code ")") (meta "expression") "*"))

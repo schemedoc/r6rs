@@ -26,7 +26,7 @@
   (provide make-record-type-descriptor
 	   record-type-descriptor?
 	   record-constructor record-predicate
-	   record-accessor record-mutator)
+	   record-accessor record-mutator record-updater)
   (require "procedural-record-types-all.ss"))
 
 	   

@@ -31,6 +31,8 @@
   (fields (x (point-x))
           (y (point-y set-point-y!) y))
   (opaque #f)
+  (updater update-x x)
+  (updater update-yx y x)
   (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
 
 (define-type (cpoint make-cpoint cpoint?) (x y c)
@@ -59,6 +61,12 @@
 (check (point-y p1) => 17)
 
 (check (record-type-descriptor p1) => (type-descriptor point))
+
+(check (point-x (update-x p1 5)) => 5)
+(check (point-y (update-x p1 5)) => 2)
+
+(check (point-x (update-yx p1 17 24)) => 24)
+(check (point-y (update-yx p1 17 24)) => 17)
 
 (define-type (point make-point point?) (x y)
   (fields (x (point-x))

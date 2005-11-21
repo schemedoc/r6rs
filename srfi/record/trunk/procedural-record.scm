@@ -136,6 +136,19 @@
   (really-make-record rtd
 		      (make-vector component-count)))
 
+; for internal purposes only
+(define (record-copy r)
+  (really-make-record (actual-record-type-descriptor r)
+		      (vector-copy (record-components r))))
+
+(define (vector-copy v)
+  (let* ((size (vector-length v))
+	 (c (make-vector size)))
+    (do ((i 0 (+ 1 i)))
+	((>= i size))
+      (vector-set! c i (vector-ref v i)))
+    c))
+
 (define (record-type-descriptor r)
   (let ((rtd (actual-record-type-descriptor r)))
     (if (record-type-opaque? rtd)
@@ -191,6 +204,16 @@
       (if (record-with-rtd? thing rtd)
 	  (record-set! thing index val)
 	  (error "mutator applied to bad value" rtd field-id thing val)))))
+
+(define (record-updater rtd field-ids)
+  (let ((indices (map (cut field-id-index rtd <>) field-ids)))
+    (lambda (thing . vals)
+      (if (record-with-rtd? thing rtd)
+	  (let ((c (record-copy thing)))
+	    (for-each (cut record-set! c <> <>)
+		      indices vals)
+	    c)
+	  (error "updater applied to bad value" rtd field-ids thing vals)))))
 
 ; A FIELD-ID may be either an index or a symbol, which needs to refer
 ; to a field in RTD itself.
