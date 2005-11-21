@@ -38,30 +38,49 @@
 ; ASSQ at the syntax level
 (define-syntax define-alist-extractor
   (syntax-rules ()
-    ((define-alist-extractor ?name ?tag ?default)
-     (define-syntax ?name
-       (syntax-rules (?tag)
-	 ((?name ())
-	  ?default)
-	 ((?name ((?tag ?val) . ?rest))
-	  ?val)
-	 ((?name ((?another-tag ?val) . ?rest))
-	  (?name ?rest)))))))
+    ((define-alist-extractor ?name ?name/cps ?tag ?default)
+     (begin
 
-(define-alist-extractor extract-parent-name parent-name #f)
-(define-alist-extractor extract-parent-rtd parent-rtd #f)
-(define-alist-extractor extract-sealed sealed #f)
-(define-alist-extractor extract-opaque opaque #t)
-(define-alist-extractor extract-nongenerative nongenerative #f)
-(define-alist-extractor extract-init! init! values)
+       (define-syntax ?name/cps
+	 (syntax-rules (?tag)
+	   ((?name/cps () ?k . ?rands)
+	    (?k ?default . ?rands))
+	   ((?name/cps ((?tag ?val) . ?rest) ?k . ?rands)
+	    (?k ?val . ?rands))
+	   ((?name/cps ((?another-tag ?val) . ?rest) ?k . ?rands)
+	    (?name/cps ?rest ?k . ?rands))))
+
+       (define-syntax ?name
+	 (syntax-rules (?tag)
+	   ((?name ())
+	    ?default)
+	   ((?name ((?tag ?val) . ?rest))
+	    ?val)
+	   ((?name ((?another-tag ?val) . ?rest))
+	    (?name ?rest))))))))
+
+(define-alist-extractor extract-parent-name extract-parent-name/cps parent-name #f)
+(define-alist-extractor extract-parent-rtd extract-parent-rtd/cps parent-rtd #f)
+(define-alist-extractor extract-sealed extract-sealed/cps sealed #f)
+(define-alist-extractor extract-opaque extract-opaque/cps opaque #t)
+(define-alist-extractor extract-nongenerative extract-nongenerative/cps nongenerative #f)
+(define-alist-extractor extract-init! extract-init!/cps init! values)
+
+(define-alist-extractor extract-record-name extract-record-name/cps record-name cant-happen)
+(define-alist-extractor extract-constructor-name extract-constructor-name/cps
+  constructor-name cant-happen)
+(define-alist-extractor extract-predicate-name extract-predicate-name/cps
+  predicate-name cant-happen)
 
 (define-syntax define-type
   (syntax-rules ()
     ((define-type (?record-name ?constructor-name ?predicate-name)
        ?formals
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ()				; prop alist
+     (define-type-1
+       ((record-name ?record-name)		; prop alist
+	(constructor-name ?constructor-name)
+	(predicate-name ?predicate-name))
        ?formals
        ()				; parent init exprs
        ()				; constructor lets
@@ -71,32 +90,28 @@
 (define-syntax define-type-1
   (syntax-rules (parent sealed nongenerative init! opaque fields let)
     ;; find PARENT clause
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        ?fields-clause
        (parent ?parent-name ?expr ...)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ((parent-name ?parent-name) (parent-rtd (type-descriptor ?parent-name)) . ?props)
+     (define-type-1 ((parent-name ?parent-name) (parent-rtd (type-descriptor ?parent-name)) . ?props)
        ?formals
        (?expr ...)        
        ?constructor-lets ?fields-clause
        ?clause ...))
 
     ;; find LET clause
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        (?constructor-let ...)
        ?field-specs
        (let ?bindings)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+     (define-type-1 ?props
        ?formals
        ?parent-init-exprs
        (?bindings ?constructor-let ...)
@@ -104,31 +119,27 @@
        ?clause ...))
 
     ;; find SEALED clause
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        ?field-specs
        (sealed #t)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ((sealed #t) . ?props)
+     (define-type-1 ((sealed #t) . ?props)
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        ?field-specs
        ?clause ...))
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        ?field-specs
        (sealed #f)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ((sealed #f) . ?props)
+     (define-type-1 ((sealed #f) . ?props)
        ?formals
        ?parent-init-exprs
        ?constructor-lets
@@ -136,31 +147,27 @@
        ?clause ...))
 
     ;; find OPAQUE clause
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        ?field-specs
        (opaque #t)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ((opaque #t) . ?props)
+     (define-type-1 ((opaque #t) . ?props)
        ?formals
        ?parent-init-exprs 
        ?constructor-lets
        ?field-specs
        ?clause ...))
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        ?field-specs
        (opaque #f)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ((opaque #f) . ?props)
+     (define-type-1 ((opaque #f) . ?props)
        ?formals
        ?parent-init-exprs 
        ?constructor-lets
@@ -170,16 +177,14 @@
     ;; parse FIELDS clause
 
     ;; base case
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        (?field-spec ...)
        (fields)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+     (define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
@@ -187,16 +192,14 @@
        ?clause ...))
 
     ;; missing init expression
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        (?field-spec ...)
        (fields (?field-name ?procs) ?rest ...)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+     (define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
@@ -204,17 +207,15 @@
        (fields (?field-name ?procs ?field-name) ?rest ...)
        ?clause ...))
      
-     ;; complete spec
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ;; complete spec
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        (?field-spec ...)
        (fields (?field-name (?accessor) ?init) ?rest ...)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+     (define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
@@ -222,16 +223,14 @@
        (fields ?rest ...)
        ?clause ...))
 
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        (?field-spec ...)
        (fields (?field-name (?accessor ?mutator) ?init) ?rest ...)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+     (define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
@@ -240,16 +239,14 @@
        ?clause ...))
 
     ;; find NONGENERATIVE clause
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        ?field-specs
        (nongenerative ?uid)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ((nongenerative '?uid) . ?props)
+     (define-type-1 ((nongenerative '?uid) . ?props)
        ?formals
        ?parent-init-exprs
        ?constructor-lets
@@ -257,16 +254,14 @@
        ?clause ...))
 
     ;; find INIT! clause
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        ?parent-init-exprs
        ?constructor-lets
        ?field-specs
        (init! (?r) ?body)
        ?clause ...)
-     (define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ((init! (lambda (?r) ?body)) . ?props)
+     (define-type-1 ((init! (lambda (?r) ?body)) . ?props)
        ?formals
        ?parent-init-exprs
        ?constructor-lets
@@ -274,8 +269,7 @@
        ?clause ...))
 
     ;; generate code
-    ((define-type-1 (?record-name ?constructor-name ?predicate-name)
-       ?props
+    ((define-type-1 ?props
        ?formals
        (?parent-init-expr ...)
        ?constructor-lets
@@ -284,7 +278,7 @@
      (begin
        ;; where we need LETREC* semantics if this is to work internally
        (define $rtd
-	 (make-record-type-descriptor '?record-name
+	 (make-record-type-descriptor (extract-record-name/cps ?props quote)
 				      (extract-parent-rtd ?props)
 				      (extract-nongenerative ?props)
 				      (extract-sealed ?props)
@@ -303,26 +297,29 @@
 	       (letify ?constructor-lets
 		       (do-append (?init-expr ...) child-field-values)))))
 
-       (define ?record-name (make-record-type $rtd $args-proc))
+       (extract-record-name/cps ?props
+				define (make-record-type $rtd $args-proc))
 
-       (define ?constructor-name
-	 (let ((make (record-constructor $rtd)))
-	   (if (extract-parent-rtd ?props)
-	       (let ((parent-args-proc (record-type-args-proc (extract-parent-name ?props))))
-		 (lambda ?formals
-		   (letify ?constructor-lets
-			   (let ((r (apply make (parent-args-proc (list ?init-expr ...)
-								  ?parent-init-expr ...))))
-			     ((extract-init! ?props) r)
-			     r))))
-	       (lambda ?formals
-		 (letify ?constructor-lets
-			 (let ((r (make ?parent-init-expr ... ?init-expr ... )))
-			   ((extract-init! ?props) r)
-			   r))))))
+       (extract-constructor-name/cps
+	?props
+	define
+	(let ((make (record-constructor $rtd)))
+	  (if (extract-parent-rtd ?props)
+	      (let ((parent-args-proc (record-type-args-proc (extract-parent-name ?props))))
+		(lambda ?formals
+		  (letify ?constructor-lets
+			  (let ((r (apply make (parent-args-proc (list ?init-expr ...)
+								 ?parent-init-expr ...))))
+			    ((extract-init! ?props) r)
+			    r))))
+	      (lambda ?formals
+		(letify ?constructor-lets
+			(let ((r (make ?parent-init-expr ... ?init-expr ... )))
+			  ((extract-init! ?props) r)
+			  r))))))
        
-       (define ?predicate-name
-	 (record-predicate $rtd))
+       (extract-predicate-name/cps ?props
+				   define (record-predicate $rtd))
 
        (define-record-field $rtd ?field-name ?procs)
        ...))))
