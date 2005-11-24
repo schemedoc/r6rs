@@ -31,7 +31,7 @@
 	   record-type-uid
 	   record-type-field-names
 	   record-type-opaque?
-	   record-constructor record-predicate
+	   record-constructor record-predicate record-updater
 	   record-accessor record-mutator
 	   record-field-mutable?
 	   record? record-type-descriptor)
