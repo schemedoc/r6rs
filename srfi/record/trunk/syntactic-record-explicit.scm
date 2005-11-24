@@ -76,11 +76,6 @@
   (syntax-rules ()
     ((define-alist-collector ?name/cps ?tag)
      (begin
-       (define-syntax ?name/cps
-	 (syntax-rules ()
-	   ((?name/cps ?props ?k . ?rands)
-	    (helper () ?props ?k . ?rands))))
-	 
        (define-syntax helper
 	 (syntax-rules (?tag)
 	   ((helper ?vals () ?k . ?rands)
@@ -88,7 +83,12 @@
 	   ((helper ?vals ((?tag ?val) . ?rest) ?k . ?rands)
 	    (helper (?val . ?vals) ?rest ?k . ?rands))
 	   ((helper ?vals ((?another-tag ?val) . ?rest) ?k . ?rands)
-	    (helper ?vals ?rest ?k . ?rands))))))))
+	    (helper ?vals ?rest ?k . ?rands))))
+	 
+       (define-syntax ?name/cps
+	 (syntax-rules ()
+	   ((?name/cps ?props ?k . ?rands)
+	    (helper () ?props ?k . ?rands))))))))
 
 (define-alist-collector extract-updaters updater)
 
