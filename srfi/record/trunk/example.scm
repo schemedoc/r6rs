@@ -63,7 +63,7 @@
 (check (record-type-descriptor p1) => (type-descriptor point))
 
 (check (point-x (update-x p1 5)) => 5)
-(check (point-y (update-x p1 5)) => 2)
+(check (point-y (update-x p1 5)) => 17)
 
 (check (point-x (update-yx p1 17 24)) => 24)
 (check (point-y (update-yx p1 17 24)) => 17)
