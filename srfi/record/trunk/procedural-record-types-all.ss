@@ -33,7 +33,7 @@
 	   record-type-opaque?
 	   record-constructor record-predicate record-updater
 	   record-accessor record-mutator
-	   record-field-mutable?
+	   record-field-mutable? record-type-generative?
 	   record? record-type-descriptor)
   (require (only (lib "1.ss" "srfi") list-index find every delete-duplicates)
 	   (lib "9.ss" "srfi") ; DEFINE-RECORD-TYPE
