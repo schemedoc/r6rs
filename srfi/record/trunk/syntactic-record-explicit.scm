@@ -343,16 +343,16 @@
 	  (if (extract-parent-rtd ?props)
 	      (let ((parent-args-proc (record-type-args-proc (extract-parent-name ?props))))
 		(lambda ?formals
-		  (letify ?constructor-lets
-			  (let ((r (apply make (parent-args-proc (list ?init-expr ...)
-								 ?parent-init-expr ...))))
-			    ((extract-init! ?props) r)
-			    r))))
+		  (let ((r (letify ?constructor-lets
+				   (apply make (parent-args-proc (list ?init-expr ...)
+								 ?parent-init-expr ...)))))
+		    ((extract-init! ?props) r)
+		    r)))
 	      (lambda ?formals
-		(letify ?constructor-lets
-			(let ((r (make ?parent-init-expr ... ?init-expr ... )))
-			  ((extract-init! ?props) r)
-			  r))))))
+		(let ((r (letify ?constructor-lets
+				 (make ?parent-init-expr ... ?init-expr ... ))))
+		  ((extract-init! ?props) r)
+		  r)))))
        
        (extract-predicate-name/cps ?props
 				   define (record-predicate $rtd))
