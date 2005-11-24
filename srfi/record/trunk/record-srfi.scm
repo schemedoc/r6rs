@@ -624,25 +624,24 @@
            "record definition appearing in different parts of a program."))
 
 	 (dt
-	  (prototype "let" (code "(") (meta "binding spec") (code ")")))
+	  (prototype "let" (code "(") (meta "binding spec") (meta "let or fields/parent clause") (code ")")))
 	 (dd
 	  (p
-	   "A " (code "let") " clause leads to a " (code "let") " form "
-	   "being collectively wrapped around the " (meta "init expression") "s in "
+	   "A " (code "let") " clause collectively wraps a " (code "let") " form "
+	   "around  the " (meta "init expression") "s in "
 	   "the " (code "fields") " clause, and the " (meta "constructor argument") "s "
 	   "in the " (code "parent") " clause.  The resulting form is evaluated "
 	   "in the environment of the body of the construction prodedure, with the formals "
-	   "bound.  I.e., if there are the following " (code "let") " clauses:")
+	   "bound.  I.e., if there is the following " (code "let") " clause:")
+	  (pre
+	   "  (let " (var "binding-specs-1") ,nl
+	   "    (let " (var "binding-specs-2") ,nl
+	   "      ..." ,nl
+	   "        (let " (var "binding-specs-n") ,nl
+	   "          (parent ...)" , nl          
+	   "          (fields ...)")
 	  (p
-	   (code "(let") (var "binding-specs-1") (code ")"))
-	  (p
-	   (code "(let") (var "binding-specs-2") (code ")"))
-	  (p
-	   "...")
-	  (p
-	   (code "(let") (var "binding-specs-n") (code ")"))
-	  (p
-	   "the construction procedure will look like this:")
+	   "the construction procedure will look roughly like this:")
 	  (pre
 	   "(lambda " (var "formals") ,nl
 	   "  (let " (var "binding-specs-1") ,nl
@@ -1060,10 +1059,10 @@
        "(cpoint-rgb p1) ; => (rgb . red)"
        ""
        "(define-type (unit-vector make-unit-vector unit-vector?) (x y z)"
-       "  (let ((length (+ (* x x) (* y y) (* z z)))))"
-       "  (fields (x (unit-vector-x) (/ x length))"
-       "	  (y (unit-vector-y) (/ y length))"
-       "	  (z (unit-vector-z) (/ z length))))")
+       "  (let ((length (+ (* x x) (* y y) (* z z))))"
+       "    (fields (x (unit-vector-x) (/ x length))"
+       "	    (y (unit-vector-y) (/ y length))"
+       "	    (z (unit-vector-z) (/ z length)))))")
 
       (h2 "Implicit-naming syntactic layer")
 
