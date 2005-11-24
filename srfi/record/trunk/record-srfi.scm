@@ -568,7 +568,9 @@
            "In either form, " (meta "init expression") " specifies the initial "
            "value of the field when it is created by the construction procedure. "
 	   "If " (meta "init expression") " is absent, it defaults to 
-	   " (meta "field name") ".")
+	   " (meta "field name") ".  The " (meta "init expression") "s are evaluated "
+	   "in the scope of the " (var "formals") " as well as any " (code "let") 
+	   " clauses wrapped around the " (code "fields") " clause (see below).")
 	  (p
 	   "The " (meta "field name") "s must be distinct.  They become, as symbols, "
 	   "the names of the fields of the record type being created, in the same order.  "
@@ -669,6 +671,7 @@
           (p
            "When this clause is specified, the defined construction procedure "
            "arranges to evaluate the specified expressions in the scope of "
+	   "the " (var "formals") " and "
            "a binding for " (meta "identifier") " to the new record instance, "
            "before the instance is returned from the procedure. "
            "Parent init expressions, if any, are evaluated before child init "
