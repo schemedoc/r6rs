@@ -129,14 +129,14 @@
        ?parent-init-exprs
        (?constructor-let ...)
        ?field-specs
-       (let ?bindings)
+       (let ?bindings ?body ...)
        ?clause ...)
      (define-type-1 ?props
        ?formals
        ?parent-init-exprs
        (?bindings ?constructor-let ...)
        ?field-specs
-       ?clause ...))
+       ?body ... ?clause ...))
 
     ;; find SEALED clause
     ((define-type-1 ?props

@@ -41,7 +41,7 @@
 
 (define-syntax process-fields-clause
   (lambda (form rename compare)
-    (let* ((record-name (symbol->string (caddr form)))
+    (let* ((record-name (symbol->string (list-ref form 2)))
 	   (simple-fields
 	    (map (lambda (field-spec)
 		   (let ((field-name (car field-spec)))
@@ -64,10 +64,11 @@
 						   (symbol->string field-name)
 						   "-set!"))))))
 		       (cddr field-spec)))))
-		 (cdr (cadr form))))
+		 (cdr (list-ref form 1))))
 	   (simple-fields-clause
-	    (cons (caadr form) simple-fields)))
-      `(,(rename 'define-type-1) ,(caddr form) ,(cadddr form)
+	    (cons (car (list-ref form 1)) simple-fields)))
+      `(,(rename 'define-type-1) ,(list-ref form 2) ,(list-ref form 3)
 	,(list-ref form 4)
-	,(append (list-ref form 5) (list simple-fields-clause))
-	,@(list-tail form 6)))))
+	,(list-ref form 5) (,simple-fields-clause . ,(list-ref form 6))
+	,(list-ref form 7)
+	,@(list-tail form 8)))))

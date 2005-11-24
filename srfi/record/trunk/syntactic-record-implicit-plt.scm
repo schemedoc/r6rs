@@ -66,6 +66,7 @@
       ((_ (fields ?field-clause ...)
 	  ?record-name ?record-name-spec
 	  ?formals
+	  ?bindings* ?binding-clauses
 	  (?simple-clause ...)
 	  ?clause ...)
 
@@ -112,5 +113,7 @@
 	    (define-type-1 
 	      ?record-name ?record-name-spec
 	      ?formals
-	      (?simple-clause ... (fields ?simple-field ...))
+	      ?bindings*
+	      ((fields ?simple-field ...) . ?binding-clauses)
+	      (?simple-clause ...)
 	      ?clause ...))))))))
