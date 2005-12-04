@@ -64,6 +64,17 @@
        "for expansion of the syntactic layers.")
 
       (p
+       "The procedural layer provides allows record types to be extended.  This allows "
+       "using record types to naturally model hierarchies that occur in applications "
+       "like algebraic data types, and also single-inheritance class systems.  "
+       "This model of extension has a well-understood representation that is simple "
+       "to implement. "
+       "Multiple inheritance could be formulated as an extension of the present "
+       "system, but it would raise more complex semantic and implementation issues "
+       "(sharing among common parent types, among other things) than we are prepared "
+       "to handle at this time.")
+
+      (p
        "The explicit-naming syntactic layer provides a basic syntactic interface "
        "whereby a single record definition serves as a shorthand for the definition "
        "of several record creation and manipulation routines: a construction procedure, "
@@ -330,17 +341,15 @@
          "Each " (var "name") " must be a symbol and names the corresponding field of the "
          "record type; the names must be distinct.  If they are not, an error is signalled.  "
 	 "(Note, however, that a field name may be shared between " (var "fields")
-	 "and any record type this type extends.)  "
+	 " and any record type this type extends.)  "
          "A field with tag " (code "mutable") " may be modified, whereas an attempt "
 	 "to obtain a mutator for a field "
 	 "with tag " (code "immutable") " will signal an error.")
         (p
-         "Where field order is relevant, e.g., for record construction and field access, "
-         "the fields are considered to "
-         "be ordered as specified, with parent fields first (and grandparent fields before "
-         "that, and so on).  Although field access using indices uses the field order "
-	 "specified here, no particular order is required for the actual representation "
-         "of a record instance, however.")
+	 "Where field order is relevant, e.g., for record construction and "
+	 "field access, the fields are considered to be ordered as specified, "
+	 "although no particular order is required for the actual representation "
+	 "of a record instance, however.")
 	(p
 	 "A record type whose complete set of fields "
 	 "are all immutable is called " (i "immutable") " itself.  Conversely, a record type "
@@ -410,7 +419,15 @@
 	 "the following holds:")
 	(verbatim
 	 "(let ((r (construct ...)))"
-	 "  (eq? r r))                 ==> #t"))
+	 "  (eq? r r))                 ==> #t")
+	(p
+	 "For mutable records, the following holds:")
+	(verbatim "(let ((f (lambda () (construct ...))))"
+		  "  (eq? (f) (f))) => #f")
+	(p
+	 "For immutable records, the value of the above expression "
+	 "is unspecified.")
+	)
 
        (dt
         (prototype "record-predicate"
@@ -433,16 +450,19 @@
          "the value of the selected field of that record.")
 	(p
 	 "It is an error if the accessor procedure is given something other "
-	 "than a record of the type represented by " (var "rtd") ". Note that "
-	 "it is an error even if the procedure's argument is of a parent type "
-	 "from which the selected field was inherited.")
+	 "than a record of the type represented by " (var "rtd") ".  Note that "
+	 "the records of the type represented by " (var "rtd") " include "
+	 "records of extensions of the type represented by " (var "rtd") ".")
         (p
          "The " (var "field-id") " argument may be a symbol or an exact non-negative integer. "
          "If it is a symbol " (var "s") ", the field named " (var "s") " from the "
 	 (var "fields") " argument " "to " (code "make-record-type-descriptor") " is selected. "
          "If " (var "field-id") " is an exact non-negative integer " (var "i") ", the field selected "
 	 "is the one corresponding the the " (var "i") "th element (0-based) of the "
-	 (var "fields") " argument " "to " (code "make-record-type-descriptor") "."))
+	 (var "fields") " argument to the invocation of " (code "make-record-type-descriptor")
+	 " that created " (var "rtd") ". "
+	 "Note that " (var "field-id") " cannot be used to specify a field of "
+	 "any type " (var "rtd") " extends."))
 
        (dt
         (prototype "record-mutator"
@@ -515,7 +535,7 @@
         (p
          (meta "Record name") " becomes the name of the record type.  Additionally, "
 	 "it is bound by this definition "
-	 "to a compile-time or run-time description of the "
+	 "to a expand-time or run-time description of the "
          "record type for use as parent name in record definitions that extend "
          "this definition.  It may also be used as a handle to gain access to the "
          "underlying record-type descriptor (see " (code "type-descriptor") " below).")
@@ -539,9 +559,11 @@
 
         (p
          "Each " (meta "record clause") " must take one of the following forms; "
-	 "except for the " (code "let") " clause, it is an error if multiple "
+	 "except for " (code "updater") " clauses, it is an error if multiple "
 	 (meta "record clause") "s of the same kind "
-	 "appear in a " (code "define-type") " form.")
+	 "appear in a " (code "define-type") " form. "
+	 "If a " (code "let") " clause appears, it must contain the " (code "fields") 
+	 " clause and the " (code "parent") " clause (if any).  It is an error otherwise.")
 
         (dl
          (dt (prototype "fields" (meta "field-spec") "*"))
@@ -626,7 +648,8 @@
            "record definition appearing in different parts of a program."))
 
 	 (dt
-	  (prototype "let" (code "(") (meta "binding spec") (meta "let or fields/parent clause") (code ")")))
+	  (prototype "let" (code "(") (ebnf-* (meta "binding spec")) (code ")") 
+		     (meta "let or fields/parent clause") (code ")")))
 	 (dd
 	  (p
 	   "A " (code "let") " clause collectively wraps a " (code "let") " form "
@@ -650,7 +673,7 @@
 	   "    (let " (var "binding-specs-2") ,nl
 	   "      ..." ,nl
 	   "        (let " (var "binding-specs-n") ,nl
-	   "          ... " (var "init-expression") "...) ...)))"))
+	   "          ...) ...)))"))
 	 
 
 	 (dt
@@ -692,17 +715,30 @@
 	 "also reused, and bindings will be created or modified according to the more recent form. "
 	 "If the implied arguments to " (code "make-record-type-descriptor") " are not the same, "
 	 "an error is signalled."
-	 ))
+	 )
+	(p
+	 "Note again that, in the absence of a " (code "nongenerative") " clause, the "
+	 "question of expand-time or run-time generativity is unspecified.  Specifically, "
+	 "the return value of the following expression in unspecified:")
+	(verbatim
+	 "(let ((f (lambda (x) (define-type r ---) (if x r? (make-r ---)))))"
+	 "  ((f #t) (f #f)))"))
 
-       (dt
+	       (dt
         (prototype "type-descriptor"
                    (meta "record name"))
         " (syntax)")
        (dd
         (p
          "This evaluates to the record-type descriptor representing the type "
-         "specified by " (meta "record-name") "."))
-      )
+         "specified by " (meta "record-name") ".")
+	(p
+	 "Note that, in the absense, of a " (code "nongenerative") " clause, "
+	 "the return value of the following expression is unspecified:")
+	(verbatim
+	 "(let ((f (lambda () (define-type r ---) (type-descriptor r))))"
+	 "  (eqv? (f) (f)))")))
+
 
       (h2 "Implicit-Naming Syntactic Layer")
 
