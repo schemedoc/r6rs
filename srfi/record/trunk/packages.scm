@@ -39,7 +39,19 @@
 	srfi-23 ; ERROR
 	)
   (files vector-type))
-	  
+
+(define-interface opaque-cells-interface
+  (export make-opaque-cell
+	  opaque-cell?
+	  opaque-cell-ref opaque-cell-set!
+	  opaque-cell-key-fits?))
+
+(define-structure opaque-cells opaque-cells-interface
+  (open scheme
+	srfi-9 ; DEFINE-RECORD-TYPE
+	srfi-23 ; ERROR
+	)
+  (files opaque-cell))
 
 (define-interface procedural-record-types-interface
   (export make-record-type-descriptor
@@ -66,6 +78,7 @@
 	srfi-9 ; DEFINE-RECORD-TYPE
 	srfi-23 ; ERROR
 	srfi-26 ; CUT
+	opaque-cells
 	)
   (files procedural-record))
 
