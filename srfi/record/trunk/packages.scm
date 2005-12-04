@@ -25,9 +25,10 @@
 (define-interface vector-types-interface
   (export make-vector-type
 	  vector-type?
-	  vector-type-data
+	  vector-type-name vector-type-supertypes vector-type-data
 	  has-vector-type?
 	  make-typed-vector typed-vector
+	  typed-vector?
 	  typed-vector-length
 	  typed-vector-ref typed-vector-set!
 	  typed-vector-type
@@ -74,11 +75,12 @@
 (define-structures ((procedural-record-types procedural-record-types-interface)
 		    (record-reflection record-reflection-interface))
   (open scheme
-	(subset srfi-1 (list-index find every delete-duplicates))
+	(subset srfi-1 (list-index find every any delete-duplicates))
 	srfi-9 ; DEFINE-RECORD-TYPE
 	srfi-23 ; ERROR
 	srfi-26 ; CUT
 	opaque-cells
+	vector-types
 	)
   (files procedural-record))
 

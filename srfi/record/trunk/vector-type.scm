@@ -2,7 +2,7 @@
 
 (define-record-type :vector-type
   (make-vector-type name supertypes data)
-  type?
+  vector-type?
   (name vector-type-name)
   (supertypes vector-type-supertypes)
   (data vector-type-data))
@@ -21,16 +21,16 @@
 
 (define-record-type :typed-vector
   (really-make-typed-vector type immutable? components)
-  real-typed-vector?
+  typed-vector?
   (type typed-vector-type)
   ;; the following are begging to be unboxed
   (immutable? typed-vector-immutable? set-typed-vector-immutable?!)
   (components typed-vector-components))
 
 (define (has-vector-type? type thing)
-  (and (real-typed-vector? thing)
+  (and (typed-vector? thing)
        (type-ancestor? type
-		      (typed-vector-type type))))
+		      (typed-vector-type thing))))
 
 (define (make-typed-vector type size)
   (really-make-typed-vector type #f (make-vector size)))

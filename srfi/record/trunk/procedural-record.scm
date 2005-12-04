@@ -22,11 +22,10 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(define-record-type :field-spec
-  (make-field-spec mutable? name)
-  field-spec?
-  (mutable? field-spec-mutable?)
-  (name field-spec-name))
+(define make-field-spec cons)
+
+(define field-spec-mutable? car)
+(define field-spec-name cdr)
 
 (define (field-spec=? spec-1 spec-2)
   (and (eq? (field-spec-mutable? spec-1)
@@ -34,16 +33,31 @@
        (eq? (field-spec-name spec-1)
 	    (field-spec-name spec-2))))
 
-(define-record-type :record-type-descriptor
-  (really-make-record-type-descriptor name parent uid sealed? opaque? field-specs)
-  record-type-descriptor?
-  (name record-type-name)
-  (parent record-type-parent)
-  ;; this is #f in the generative case
-  (uid record-type-uid)
-  (sealed? record-type-sealed?)
-  (opaque? record-type-opaque?)
-  (field-specs record-type-field-specs))
+(define :record-type-data (make-vector-type 'vector-type-descriptor '() #f))
+
+(define (really-make-record-type-data uid sealed? opaque? field-specs immutable?)
+  (typed-vector :record-type-data
+		uid sealed? opaque? field-specs immutable?))
+
+(define (make-record-type-data uid sealed? opaque? field-specs)
+  (really-make-record-type-data 
+   uid sealed? opaque? field-specs
+   (and (not (any field-spec-mutable? field-specs)) #t)))
+
+(define (record-type-data? thing)
+  (has-vector-type? :record-type-data thing))
+
+; this is #f in the generative case
+(define (record-type-uid rtd)
+  (typed-vector-ref :record-type-data (vector-type-data rtd) 0))
+(define (record-type-sealed? rtd)
+  (typed-vector-ref :record-type-data (vector-type-data rtd) 1))
+(define (record-type-opaque? rtd)
+  (typed-vector-ref :record-type-data (vector-type-data rtd) 2))
+(define (record-type-field-specs rtd)
+  (typed-vector-ref :record-type-data (vector-type-data rtd) 3))
+(define (record-type-immutable? rtd)
+  (typed-vector-ref :record-type-data (vector-type-data rtd) 4))
 
 (define (record-type-descriptor=? rtd-1 rtd-2)
   (and (eq? (record-type-parent rtd-1) (record-type-parent rtd-2))
@@ -78,7 +92,10 @@
 			 opaque?)
 		     opaque?))
 	(field-specs (map parse-field-spec field-specs)))
-    (let ((rtd (really-make-record-type-descriptor name parent uid sealed? opaque? field-specs)))
+    (let ((rtd 
+	   (make-vector-type name
+			     (if parent (list parent) '())
+			     (make-record-type-data uid sealed? opaque? field-specs))))
       (if uid
 	  (cond
 	   ((uid->record-type-descriptor uid)
@@ -92,6 +109,25 @@
 		  (cons rtd *nongenerative-record-types*))
 	    rtd))
 	  rtd))))
+
+(define (record-type-descriptor? thing)
+  (and (vector-type? thing)
+       (record-type-data? (vector-type-data thing))))
+
+(define (ensure-rtd thing)
+  (if (not (record-type-descriptor? thing))
+      (error "not a record-type descriptor" thing)))
+
+(define (record-type-name rtd)
+  (ensure-rtd rtd)
+  (vector-type-name rtd))
+
+(define (record-type-parent rtd)
+  (ensure-rtd rtd)
+  (let ((supertypes (vector-type-supertypes rtd)))
+    (if (null? supertypes)
+	#f
+	(car supertypes))))
 
 (define (parse-field-spec spec)
   (apply (lambda (mutability name)
@@ -122,33 +158,38 @@
       (else
        (error "record type has no such field" rtd field)))))
 
-(define-record-type :record
-  (really-make-record rtd components)
-  record?
-  (rtd record-type-descriptor)
-  (components record-components))
+(define (record? thing)
+  (and (typed-vector? thing)
+       (record-type-descriptor? (typed-vector-type thing))))
 
-(define (make-record rtd component-count)
-  (really-make-record rtd
-		      (make-vector component-count)))
+(define (make-record rtd size)
+  (make-typed-vector rtd size))
 
-(define (record-copy r)
-  (really-make-record (record-type-descriptor r)
-		      (vector-copy (record-components r))))
+(define (record rtd . components)
+  (apply typed-vector rtd components))
 
-(define (vector-copy v)
-  (let* ((size (vector-length v))
-	 (c (make-vector size)))
-    (do ((i 0 (+ 1 i)))
-	((>= i size))
-      (vector-set! c i (vector-ref v i)))
-    c))
+(define (record-type-descriptor rec)
+  (typed-vector-type rec))
 
-(define (record-ref record index)
-  (vector-ref (record-components record) index))
+(define (record-ref rtd rec index)
+  (typed-vector-ref rtd rec index))
 
-(define (record-set! record index val)
-  (vector-set! (record-components record) index val))
+(define (record-set! rtd rec index val)
+  (typed-vector-set! rtd rec index val))
+
+(define (make-record-immutable! r)
+  (make-typed-vector-immutable! r))
+
+; does RTD-1 represent an ancestor of RTD-2?
+
+; This suggests the corresponding procedure in VECTOR-TYPES should be
+; abstracted out.
+
+(define (rtd-ancestor? rtd-1 rtd-2)
+  (let loop ((rtd-2 rtd-2))
+    (or (eq? rtd-1 rtd-2)
+	(and rtd-2
+	     (loop (record-type-parent rtd-2))))))
 
 (define (record-constructor rtd)
   (let ((component-count (field-count rtd))
@@ -157,31 +198,18 @@
 		    (make-opaque-cell (lambda (access-key)
 					(and (record-type-descriptor? access-key)
 					     (rtd-ancestor? access-key rtd)))
-				      r))
+			      r))
 		  (lambda (r) r))))
     (lambda components
       (if (not (= (length components) component-count))
 	  (error "wrong number of arguments to record constructor" rtd components))
-      (let ((r (make-record rtd component-count)))
-	(let loop ((i 0)
-		   (components components))
-	  (if (not (null? components))
-	      (begin
-		(record-set! r i (car components))
-		(loop (+ 1 i) (cdr components)))))
-	  
+      (let ((r (apply record rtd components)))
+	(if (record-type-immutable? rtd)
+	    (make-record-immutable! r))
 	(wrap r)))))
 
-; does RTD-1 represent an ancestor of RTD-2?
-(define (rtd-ancestor? rtd-1 rtd-2)
-  (let loop ((rtd-2 rtd-2))
-    (or (eq? rtd-1 rtd-2)
-	(and rtd-2
-	     (loop (record-type-parent rtd-2))))))
-
 (define (record-with-rtd? obj rtd)
-  (and (record? obj)
-       (rtd-ancestor? rtd (record-type-descriptor obj))))
+  (has-vector-type? rtd obj))
 
 (define (record-predicate rtd)
   (lambda (thing)
@@ -196,9 +224,7 @@
       (let ((thing (if (opaque-cell? thing)
 		       (opaque-cell-ref rtd thing)
 		       thing)))
-	(if (record-with-rtd? thing rtd)
-	    (record-ref thing  index)
-	    (error "accessor applied to bad value" rtd field-id thing))))))
+	(record-ref rtd thing index)))))
 
 (define (record-mutator rtd field-id)
   (if (not (field-spec-mutable? (field-spec-ref rtd field-id)))
@@ -208,9 +234,16 @@
       (let ((thing (if (opaque-cell? thing)
 		     (opaque-cell-ref rtd thing)
 		     thing)))
-	(if (record-with-rtd? thing rtd)
-	    (record-set! thing index val)
-	    (error "mutator applied to bad value" rtd field-id thing val))))))
+	(record-set! rtd thing index val)))))
+
+(define (record-copy r)
+  (let* ((rtd (record-type-descriptor r))
+	 (size (typed-vector-length rtd r))
+	 (c (make-record rtd size)))
+    (do ((i 0 (+ 1 i)))
+	((>= i size))
+      (record-set! rtd c i (record-ref rtd r i)))
+    c))
 
 (define (record-updater rtd field-ids)
   (let ((indices (map (cut field-id-index rtd <>) field-ids)))
@@ -220,7 +253,7 @@
 		       thing)))
 	(if (record-with-rtd? thing rtd)
 	    (let ((c (record-copy thing)))
-	      (for-each (cut record-set! c <> <>)
+	      (for-each (cut record-set! rtd c <> <>)
 			indices vals)
 	      c)
 	    (error "updater applied to bad value" rtd field-ids thing vals))))))
