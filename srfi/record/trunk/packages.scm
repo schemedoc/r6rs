@@ -58,7 +58,7 @@
   (export make-record-type-descriptor
 	  record-type-descriptor?
 	  record-constructor record-predicate
-	  record-accessor record-mutator record-updater))
+	  record-accessor record-mutator))
 
 (define-interface record-reflection-interface
   (export record-type-name

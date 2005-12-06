@@ -72,26 +72,6 @@
 (define-alist-extractor extract-predicate-name extract-predicate-name/cps
   predicate-name cant-happen)
 
-(define-syntax define-alist-collector
-  (syntax-rules ()
-    ((define-alist-collector ?name/cps ?tag)
-     (begin
-       (define-syntax helper
-	 (syntax-rules (?tag)
-	   ((helper ?vals () ?k . ?rands)
-	    (?k ?vals . ?rands))
-	   ((helper ?vals ((?tag ?val) . ?rest) ?k . ?rands)
-	    (helper (?val . ?vals) ?rest ?k . ?rands))
-	   ((helper ?vals ((?another-tag ?val) . ?rest) ?k . ?rands)
-	    (helper ?vals ?rest ?k . ?rands))))
-	 
-       (define-syntax ?name/cps
-	 (syntax-rules ()
-	   ((?name/cps ?props ?k . ?rands)
-	    (helper () ?props ?k . ?rands))))))))
-
-(define-alist-collector extract-updaters updater)
-
 (define-syntax define-type
   (syntax-rules ()
     ((define-type (?record-name ?constructor-name ?predicate-name)
@@ -108,7 +88,7 @@
        ?clause ...))))
 
 (define-syntax define-type-1
-  (syntax-rules (parent sealed nongenerative init! opaque fields let updater)
+  (syntax-rules (parent sealed nongenerative init! opaque fields let)
     ;; find PARENT clause
     ((define-type-1 ?props
        ?formals
@@ -288,22 +268,6 @@
        ?field-specs
        ?clause ...))
 
-    ;; find UPDATER clause
-    ((define-type-1 ?props
-       ?formals
-       ?parent-init-exprs
-       ?constructor-lets
-       ?field-specs
-       (updater ?name ?field ...)
-       ?clause ...)
-     (define-type-1 ((updater (?name ?field ...)) . ?props)
-       ?formals
-       ?parent-init-exprs
-       ?constructor-lets
-       ?field-specs
-       ?clause ...))
-
-
     ;; generate code
     ((define-type-1 ?props
        ?formals
@@ -357,9 +321,8 @@
        (extract-predicate-name/cps ?props
 				   define (record-predicate $rtd))
 
-       (define-record-field $rtd ?field-name ?procs) ...
-
-       (extract-updaters ?props define-record-updaters $rtd)))))
+       (define-record-field $rtd ?field-name ?procs)
+       ...))))
 
 (define-syntax define-record-field
   (syntax-rules ()
@@ -371,12 +334,6 @@
      (begin
        (define ?accessor-name (record-accessor ?rtd '?field-name))
        (define ?mutator-name (record-mutator ?rtd '?field-name))))))
-
-(define-syntax define-record-updaters
-  (syntax-rules ()
-    ((define-record-updaters ((?name ?field ...) ...) ?rtd)
-     (begin
-       (define ?name (record-updater ?rtd '(?field ...))) ...))))
 
 (define-syntax do-append
   (syntax-rules ()

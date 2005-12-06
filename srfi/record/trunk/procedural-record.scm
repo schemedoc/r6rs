@@ -236,28 +236,6 @@
 		     thing)))
 	(record-set! rtd thing index val)))))
 
-(define (record-copy r)
-  (let* ((rtd (record-type-descriptor r))
-	 (size (typed-vector-length rtd r))
-	 (c (make-record rtd size)))
-    (do ((i 0 (+ 1 i)))
-	((>= i size))
-      (record-set! rtd c i (record-ref rtd r i)))
-    c))
-
-(define (record-updater rtd field-ids)
-  (let ((indices (map (cut field-id-index rtd <>) field-ids)))
-    (lambda (thing . vals)
-      (let ((thing (if (opaque-cell? thing)
-		       (opaque-cell-ref rtd thing)
-		       thing)))
-	(if (record-with-rtd? thing rtd)
-	    (let ((c (record-copy thing)))
-	      (for-each (cut record-set! rtd c <> <>)
-			indices vals)
-	      c)
-	    (error "updater applied to bad value" rtd field-ids thing vals))))))
-
 ; A FIELD-ID may be either an index or a symbol, which needs to refer
 ; to a field in RTD itself.
 (define (field-id-index rtd field-id)
