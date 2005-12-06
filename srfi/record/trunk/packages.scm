@@ -76,7 +76,6 @@
 		    (record-reflection record-reflection-interface))
   (open scheme
 	(subset srfi-1 (list-index find every any delete-duplicates))
-	srfi-9 ; DEFINE-RECORD-TYPE
 	srfi-23 ; ERROR
 	srfi-26 ; CUT
 	opaque-cells

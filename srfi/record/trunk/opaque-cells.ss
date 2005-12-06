@@ -1,4 +1,4 @@
-; PLT module definition for implementation of procedural layer for Records SRFI
+; PLT module definition for opaque cells for Records SRFI
 
 ; Copyright (C) Michael Sperber (2005). All Rights Reserved. 
 ; 
@@ -22,28 +22,15 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(module procedural-record-types-all mzscheme
-  (provide make-record-type-descriptor
-	   record-type-descriptor?
-	   record-type-name
-	   record-type-parent
-	   record-type-sealed?
-	   record-type-uid
-	   record-type-field-names
-	   record-type-opaque?
-	   record-constructor record-predicate
-	   record-accessor record-mutator
-	   record-field-mutable? record-type-generative?
-	   record? record-type-descriptor)
-  (require (only (lib "1.ss" "srfi") list-index find every any delete-duplicates)
-	   (lib "26.ss" "srfi")) ; CUT
-  
-  (require "opaque-cells.ss")
-  (require "vector-types.ss")
+(module opaque-cells mzscheme
+  (provide make-opaque-cell
+	   opaque-cell?
+	   opaque-cell-ref opaque-cell-set!
+	   opaque-cell-key-fits?)
+  (require (lib "9.ss" "srfi")) ; DEFINE-RECORD-TYPE
+  (require (lib "23.ss" "srfi")) ; ERROR
 
   (require (lib "include.ss"))
-  (include "procedural-record.scm"))
+  (include "opaque-cell.scm"))
 
-	   
-  
-  
+   
