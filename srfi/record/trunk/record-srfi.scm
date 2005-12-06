@@ -460,10 +460,11 @@
        (dt
         (prototype "record-accessor"
                    (var "rtd")
-                   (var "field-id")))
+                   (var "k")))
        (dd
         (p
-         "Given a record-type descriptor " (var "rtd") " and a " (var "field-id")
+         "Given a record-type descriptor " (var "rtd") " and an exact non-negative integer "
+	 (var "k")
          " argument that specifies one "
          "of the fields of " (var "rtd") ", " (code "record-accessor") " returns a one-argument "
          "procedure that, given a record of the type represented by " (var "rtd") ", returns "
@@ -474,30 +475,27 @@
 	 "the records of the type represented by " (var "rtd") " include "
 	 "records of extensions of the type represented by " (var "rtd") ".")
         (p
-         "The " (var "field-id") " argument may be a symbol or an exact non-negative integer. "
-         "If it is a symbol " (var "s") ", the field named " (var "s") " from the "
-	 (var "fields") " argument " "to " (code "make-record-type-descriptor") " is selected. "
-         "If " (var "field-id") " is an exact non-negative integer " (var "i") ", the field selected "
-	 "is the one corresponding the the " (var "i") "th element (0-based) of the "
+         "The field selected "
+	 "is the one corresponding the the " (var "k") "th element (0-based) of the "
 	 (var "fields") " argument to the invocation of " (code "make-record-type-descriptor")
 	 " that created " (var "rtd") ". "
-	 "Note that " (var "field-id") " cannot be used to specify a field of "
+	 "Note that " (var "k") " cannot be used to specify a field of "
 	 "any type " (var "rtd") " extends."))
 
        (dt
         (prototype "record-mutator"
                    (var "rtd")
-                   (var "field-id")))
+                   (var "k")))
        (dd
         (p
-         "Given a record-type descriptor " (var "rtd") " and a " (var "field-id")
+         "Given a record-type descriptor " (var "rtd") " and a " (var "k")
          " argument that specifies one "
          "of the mutable fields of " (var "rtd") ", " (code "record-accessor") " returns a "
          "two-argument procedure that, "
          "given a record " (var "r") " of the type represented by " (var "rtd") " and an "
          "object " (var "obj") ", stores " (var "obj")
-         " within the field of " (var "r") " specified by " (var "field-id") ". "
-         "The " (var "field-id") " argument is as in " (code "record-accessor") ". "
+         " within the field of " (var "r") " specified by " (var "k") ". "
+         "The " (var "k") " argument is as in " (code "record-accessor") ". "
          "If " (code "record-mutator") " is called on an immutable field, "
          "an error is signalled."))
        )
@@ -902,12 +900,12 @@
        (dt
         (prototype "record-field-mutable?"
                    (var "rtd")
-                   (var "field-id")))
+                   (var "k")))
        (dd
         (p
          "Returns a boolean value indicating whether the field specified by "
-         (var "field-id") " of the type represented by " (var "rtd") " is mutable, "
-         "where " (var "field-id") " is as in " (code "record-accessor") "."))
+         (var "k") " of the type represented by " (var "rtd") " is mutable, "
+         "where " (var "k") " is as in " (code "record-accessor") "."))
        )
 
       (h1 (a (@ (name "design-rationale")) "Design Rationale"))

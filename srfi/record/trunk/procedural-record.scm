@@ -150,14 +150,6 @@
 	(loop (record-type-parent rtd)
 	      (+ count (length (record-type-field-specs rtd)))))))
 	 
-
-(define (field-index rtd field)
-  (+ (field-count (record-type-parent rtd))
-     (cond
-      ((list-index (cut eq? field <>) (record-type-field-names rtd)))
-      (else
-       (error "record type has no such field" rtd field)))))
-
 (define (record? thing)
   (and (typed-vector? thing)
        (record-type-descriptor? (typed-vector-type thing))))
@@ -227,7 +219,7 @@
 	(record-ref rtd thing index)))))
 
 (define (record-mutator rtd field-id)
-  (if (not (field-spec-mutable? (field-spec-ref rtd field-id)))
+  (if (not (record-field-mutable? rtd field-id))
       (error "record-mutator called on immutable field" rtd field-id))
   (let ((index (field-id-index rtd field-id)))
     (lambda (thing val)
@@ -236,38 +228,10 @@
 		     thing)))
 	(record-set! rtd thing index val)))))
 
-; A FIELD-ID may be either an index or a symbol, which needs to refer
-; to a field in RTD itself.
+; A FIELD-ID is an index, which refers to a field in RTD itself.
 (define (field-id-index rtd field-id)
-  (if (integer? field-id)
-      (+ (field-count (record-type-parent rtd))
-	 field-id)
-      (field-index rtd field-id)))
+  (+ (field-count (record-type-parent rtd))
+     field-id))
 
 (define (record-field-mutable? rtd field-id)
-  (field-spec-mutable? (field-spec-ref rtd field-id)))
-
-(define (field-spec-ref rtd field-id)
-  
-  (define (nth rtd index)
-    (list-ref (record-type-field-specs rtd) index))
-  
-  (cond
-   ((number? field-id)
-    (nth rtd (field-index rtd field-id)))
-   ((symbol? field-id)
-    (let loop ((rtd rtd))
-      (cond
-       ((not rtd)
-	(error "invalid field spec" rtd field-id))
-       ((list-index (cut eq? field-id <>) (record-type-field-names rtd))
-	=> (cut nth rtd <>))
-       (else
-	(loop (record-type-parent rtd))))))
-   (else
-    (error "invalid field spec" rtd field-id))))
-	     
-       
-
-   
-
+  (field-spec-mutable? (list-ref (record-type-field-specs rtd) field-id)))

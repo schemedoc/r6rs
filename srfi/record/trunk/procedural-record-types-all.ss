@@ -35,7 +35,7 @@
 	   record-accessor record-mutator
 	   record-field-mutable? record-type-generative?
 	   record? record-type-descriptor)
-  (require (only (lib "1.ss" "srfi") list-index find every any delete-duplicates)
+  (require (only (lib "1.ss" "srfi") find every any delete-duplicates)
 	   (lib "26.ss" "srfi")) ; CUT
   
   (require "opaque-cells.ss")

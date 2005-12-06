@@ -75,7 +75,7 @@
 (define-structures ((procedural-record-types procedural-record-types-interface)
 		    (record-reflection record-reflection-interface))
   (open scheme
-	(subset srfi-1 (list-index find every any delete-duplicates))
+	(subset srfi-1 (find every any delete-duplicates))
 	srfi-23 ; ERROR
 	srfi-26 ; CUT
 	opaque-cells
@@ -89,6 +89,7 @@
 
 (define-structure syntactic-record-types/explicit syntactic-record-types/explicit-interface
   (open scheme
+	(subset srfi-1 (list-index))
 	srfi-9 ; DEFINE-RECORD-TYPE
 	procedural-record-types)
   (files syntactic-record-explicit))
