@@ -89,7 +89,6 @@
 
 (define-structure syntactic-record-types/explicit syntactic-record-types/explicit-interface
   (open scheme
-	(subset srfi-1 (list-index))
 	srfi-9 ; DEFINE-RECORD-TYPE
 	procedural-record-types)
   (files syntactic-record-explicit))

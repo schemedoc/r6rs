@@ -321,36 +321,30 @@
        (extract-predicate-name/cps ?props
 				   define (record-predicate $rtd))
 
-       (define-record-fields $rtd (?field-name ...) (?field-name ?procs) ...)))))
+       (define-record-fields $rtd 0 (?field-name ?procs) ...)))))
 
 (define-syntax define-record-fields
   (syntax-rules ()
-    ((define-record-fields ?rtd ?field-names (?field-name ?procs) ...)
+    ((define-record-fields ?rtd ?index)
+     (begin))
+    ((define-record-fields ?rtd ?index (?field-name ?procs) . ?rest)
      (begin
-       (define-record-field ?rtd ?field-names ?field-name ?procs) ...))))
+       (define-record-field ?rtd ?field-name ?index ?procs)
+       (define-record-fields ?rtd (+ 1 ?index) . ?rest)))))
 
 (define-syntax define-record-field
   (syntax-rules ()
-    ((define-record-field ?rtd ?all-fields
-       ?field-name (?accessor-name))
+    ((define-record-field ?rtd
+       ?field-name ?index (?accessor-name))
      (define ?accessor-name
-       (record-accessor ?rtd
-			(index-of '?field-name '?all-fields))))
-    ((define-record-field ?rtd ?all-fields
-       ?field-name (?accessor-name ?mutator-name))
+       (record-accessor ?rtd ?index)))
+    ((define-record-field ?rtd
+       ?field-name ?index (?accessor-name ?mutator-name))
      (begin
        (define ?accessor-name
-	 (record-accessor ?rtd (index-of '?field-name '?all-fields)))
+	 (record-accessor ?rtd ?index))
        (define ?mutator-name
-	 (record-mutator ?rtd (index-of '?field-name '?all-fields)))))))
-
-(define (index-of thing list)
-  (let loop ((i 0) (list list))
-    (cond
-     ((null? list) #f)
-     ((equal? (car list) thing) i)
-     (else
-      (loop (+ i 1) (cdr list))))))
+	 (record-mutator ?rtd ?index))))))
 
 (define-syntax do-append
   (syntax-rules ()
