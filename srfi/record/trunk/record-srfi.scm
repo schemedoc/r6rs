@@ -68,11 +68,7 @@
        "using record types to naturally model hierarchies that occur in applications "
        "like algebraic data types, and also single-inheritance class systems.  "
        "This model of extension has a well-understood representation that is simple "
-       "to implement. "
-       "Multiple inheritance could be formulated as an extension of the present "
-       "system, but it would raise more complex semantic and implementation issues "
-       "(sharing among common parent types, among other things) than we are prepared "
-       "to handle at this time.")
+       "to implement.")
 
       (p
        "The explicit-naming syntactic layer provides a basic syntactic interface "
@@ -1037,6 +1033,14 @@
        "layered on top of the facilities described here.  These would certainly be "
        "useful to enable, say, pattern-matching or separate abstractions that refer "
        "to fields by name, but are outside the scope of this proposal.")
+
+      (h2 "No multiple inheritance")
+
+      (p
+       "Multiple inheritance could be formulated as an extension of the present "
+       "system, but it would raise more complex semantic and implementation issues "
+       "(sharing among common parent types, among other things) than we are prepared "
+       "to handle at this time.")
 
       (h1 "Examples")
 
