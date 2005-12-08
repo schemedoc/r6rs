@@ -222,6 +222,14 @@
 
        (li
 	(p
+	 "The concepts of typed aggregates (with subtyping) with positional addressing "
+	 "and opacity can be separated from the much heavier and more arbitrary composite notion "
+	 "of records with named fields defined in this SRFI - see the reference "
+	 "implementation on how it's done.  Should these be the primitive part of "
+	 "the standard, and records derived from them?"))
+
+       (li
+	(p
 	 "Functional update and/or copy operations would be useful additions.  "
 	 "(See " (a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00066.html"))
 		   "this post")
