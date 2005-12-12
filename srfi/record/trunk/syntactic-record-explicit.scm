@@ -259,9 +259,9 @@
        ?parent-init-exprs
        ?constructor-lets
        ?field-specs
-       (init! (?r) ?body)
+       (init! ?exp)
        ?clause ...)
-     (define-type-1 ((init! (lambda (?r) ?body)) . ?props)
+     (define-type-1 ((init! ?exp) . ?props)
        ?formals
        ?parent-init-exprs
        ?constructor-lets

@@ -89,7 +89,7 @@
   (parent cpoint x y 'red)
   (fields 
    (thickness mutable t))
-  (init! (p) (set! *ex3-instance* p))
+  (init! (lambda (p) (set! *ex3-instance* p)))
   (sealed #t) (opaque #t))
 
 (define ex3-i1 (make-ex3 1 2 17))
