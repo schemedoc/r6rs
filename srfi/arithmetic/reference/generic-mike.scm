@@ -163,7 +163,7 @@
    ((fxnegative? x)
     (if (fx= x (least-fixnum))
 	*minus-least-fixnum*
-	(fx~ x)))
+	(fx- x)))
    (else x)))
 
 (define-unary abs

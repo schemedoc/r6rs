@@ -41,7 +41,7 @@
 	 (bignum-negate m))
 	((fx= m (least-fixnum))
 	 least-fixnum-negated)
-	(else (fx~ m))))
+	(else (fx- m))))
 
 ; ####assumes two's complement---oops!
 (define least-fixnum-negated (bignum-negate (fixnum->bignum (least-fixnum))))

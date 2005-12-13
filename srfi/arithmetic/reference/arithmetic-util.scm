@@ -3,18 +3,6 @@
 
 ; Utilities for implementing higher-level arithmetic
 
-(define (make-transitive-pred pred)
-  (lambda (arg1 arg2 . args)
-    (cond
-     ((pred arg1 arg2)
-      (let loop ((last arg2) (args args))
-	(cond
-	 ((null? args) #t)
-	 ((pred last (car args))
-	  (loop (car args) (cdr args)))
-	 (else #f))))
-     (else #f))))
-
 (define (make-typo-op/2 proc type)
   (lambda (a b)
     (error "type mismatch" proc type a b)))
@@ -25,24 +13,6 @@
 (define (make-typo-op/1 proc type)
   (lambda (a)
     (error "type mismatch" proc type a)))
-
-(define (make-min/max comp)
-  (lambda (arg0 . args)
-    (let loop ((m arg0) (args args))
-      (cond 
-       ((null? args) m)
-       ((comp (car args) m) (loop (car args) (cdr args)))
-       (else (loop m (cdr args)))))))
-
-(define (reduce unit combine args)
-  (cond
-   ((null? args) unit)
-   ((null? (cdr args)) (combine unit (car args)))
-   (else
-    (let loop ((acc (combine (car args) (cadr args))) (args (cddr args)))
-      (if (null? args)
-	  acc
-	  (loop (combine acc (car args)) (cdr args)))))))
 
 (define (id x) x)
 

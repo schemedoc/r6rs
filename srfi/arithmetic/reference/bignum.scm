@@ -22,7 +22,7 @@
 	((fx= m (least-fixnum))
 	 (make-bignum (r5rs->fixnum -1) fx-min-magnitude))
 	(else
-	 (make-bignum (r5rs->fixnum -1) (fixnum->magnitude (fx~ m))))))
+	 (make-bignum (r5rs->fixnum -1) (fixnum->magnitude (fx- m))))))
 
 (define (r5rs->bignum m)
   (if (bignum? m)
@@ -60,7 +60,7 @@
 	  (make-bignum sign mag)
 	  (if (same-magnitude? mag fx-min-magnitude)
 	      (least-fixnum)
-	      (fx~ (magnitude->integer mag))))))
+	      (fx- (magnitude->integer mag))))))
 
 (define (bignum->integer m)
   (make-integer (bignum-sign m)
@@ -75,7 +75,7 @@
       (magnitude->integer mag))
      ((same-magnitude? mag fx-min-magnitude)
       (least-fixnum))
-     (else (fx~ (magnitude->integer mag))))))
+     (else (fx- (magnitude->integer mag))))))
 
 ; Arithmetic
 
@@ -87,14 +87,14 @@
     (if (fx= m-sign n-sign)
 	(make-integer m-sign (add-magnitudes m-mag n-mag))
 	(if (smaller-magnitude? m-mag n-mag)
-	    (make-integer (fx~ m-sign) (subtract-magnitudes n-mag m-mag))
+	    (make-integer (fx- m-sign) (subtract-magnitudes n-mag m-mag))
 	    (make-integer m-sign (subtract-magnitudes m-mag n-mag))))))
 
 (define (bignum- m n)
   (bignum+ m (bignum-negate n)))
 
 (define (bignum-negate m)
-  (make-bignum (fx~ (bignum-sign m))
+  (make-bignum (fx- (bignum-sign m))
 	       (bignum-magnitude m)))
 
 (define (bignum* m n)
@@ -227,9 +227,9 @@
   (fixnum->magnitude (greatest-fixnum)))
 
 (define fx-min-magnitude
-  (adjoin-digit (fx~ (fxremainder (least-fixnum) radix))
+  (adjoin-digit (fx- (fxremainder (least-fixnum) radix))
 		(fixnum->magnitude
-		 (fx~ (fxquotient (least-fixnum) radix)))))
+		 (fx- (fxquotient (least-fixnum) radix)))))
 
 ; Combine two numbers digitwise using op.
 

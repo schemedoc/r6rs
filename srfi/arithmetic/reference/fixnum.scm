@@ -3,6 +3,8 @@
 
 ; Fixnums in terms of R5RS
 
+; This code is actually not constrained by a two's complement range.
+
 (define *width* 24)
 
 (define *low* (- (expt 2 (- *width* 1))))
@@ -67,17 +69,22 @@
   (lambda (a b)
     (make-fixnum (fixnum-op (fixnum-rep a) (fixnum-rep b)))))
 
-(define fx+ (make-fx*fx->fx +))
-(define fx- (make-fx*fx->fx -))
+(define fx+/2 (make-fx*fx->fx +))
+(define (fx+ . args)
+  (reduce (make-fixnum 0) fx+/2 args))
+
+(define fx-/2 (make-fx*fx->fx -))
+(define (fx- arg0 . args)
+  (reduce (make-fixnum 0) fx-/2 (cons arg0 args)))
 
 (define (make-fx->fx fixnum-op)
   (lambda (a)
     (make-fixnum (fixnum-op (fixnum-rep a)))))
 
-; unary minus---better name?
-(define fx~ (make-fx->fx -))
+(define fx*/2 (make-fx*fx->fx *))
+(define (fx* . args)
+  (reduce (make-fixnum 1) fx*/2 args))
 
-(define fx* (make-fx*fx->fx *))
 (define fxquotient (make-fx*fx->fx quotient))
 (define fxremainder (make-fx*fx->fx remainder))
 (define fxmodulo (make-fx*fx->fx modulo))
@@ -99,9 +106,9 @@
 	    (r5rs->fixnum 0))
 	   ((fxnegative? y)
 	    (let ((n (fx* (r5rs->fixnum -2) x))
-		  (d (fx~ y)))
+		  (d (fx- y)))
 	      (if (fx< n d)
-		  (fx~ (fxquotient (fx- d n) (fx* (r5rs->fixnum 2) d)))
+		  (fx- (fxquotient (fx- d n) (fx* (r5rs->fixnum 2) d)))
 		  (fxquotient (fx+ n (fx+ d (r5rs->fixnum -1)))
 			      (fx* (r5rs->fixnum 2) d)))))))
 	 (mod
@@ -124,11 +131,11 @@
   (lambda (a b)
     (fixnum-op (fixnum-rep a) (fixnum-rep b))))
 
-(define fx= (make-fx*fx->val =))
-(define fx>= (make-fx*fx->val >=))
-(define fx<= (make-fx*fx->val <=))
-(define fx> (make-fx*fx->val >))
-(define fx< (make-fx*fx->val <))
+(define fx= (make-transitive-pred (make-fx*fx->val =)))
+(define fx>= (make-transitive-pred (make-fx*fx->val >=)))
+(define fx<= (make-transitive-pred (make-fx*fx->val <=)))
+(define fx> (make-transitive-pred (make-fx*fx->val >)))
+(define fx< (make-transitive-pred (make-fx*fx->val <)))
 
 (define (make-fx->val fixnum-op)
   (lambda (a)
@@ -140,8 +147,8 @@
 (define fxeven? (make-fx->val even?))
 (define fxodd? (make-fx->val odd?))
 
-(define fxmin (make-fx*fx->fx min))
-(define fxmax (make-fx*fx->fx max))
+(define fxmin (make-min/max fx<))
+(define fxmax (make-min/max fx>))
 
 (define *fx-width* (make-fixnum *width*))
 (define *fx-min* (make-fixnum *low*))

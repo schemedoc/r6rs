@@ -25,9 +25,18 @@
 		exact->inexact inexact->exact
 		number->string string->number)))
 
+(define-interface nary-interface
+  (export make-transitive-pred
+	  reduce
+	  make-min/max))
+
+(define-structure nary nary-interface
+  (open scheme-sans-arithmetic)
+  (files nary))
+
 (define-interface fixnums-interface
   (export fx ; temporary
-	  fx+ fx- fx~ fx*
+	  fx+ fx- fx*
 	  fixnum?
 	  fxquotient fxremainder fxmodulo
 	  fxquotient+remainder
@@ -46,7 +55,8 @@
   (open scheme
 	bitwise
 	srfi-9 ; define-record-type
-	(subset define-record-types (define-record-discloser)))
+	(subset define-record-types (define-record-discloser))
+	nary)
   (files fixnum))
 
 (define-interface flonums-interface
@@ -353,10 +363,7 @@
   (files string2number))
 
 (define-interface arithmetic-utils-interface
-  (export make-transitive-pred
-	  make-typo-op/2 make-typo-op/1
-	  make-min/max
-	  reduce
+  (export make-typo-op/2 make-typo-op/1
 	  never id one one/flo))
 
 (define-structure arithmetic-utils arithmetic-utils-interface
@@ -394,6 +401,7 @@
 	recnums
 	contagion-utils
 	arithmetic-utils
+	nary
 	srfi-23 ; error
 	)
   (files contagion-ex
@@ -431,6 +439,7 @@
 	compnums compnums-r5rs
 	contagion-utils
 	arithmetic-utils
+	nary
 	srfi-23 ; error
 	)
   (files contagion-in
@@ -445,6 +454,7 @@
 	recnums
 	contagion-utils
 	arithmetic-utils
+	nary
 	srfi-23 ; error
 	)
   (files contagion-ex
@@ -483,6 +493,7 @@
 	rationals-to-flonums flonums-to-rationals
 	contagion-utils
 	arithmetic-utils
+	nary
 	srfi-23 ; error
 	)
   (files contagion-will
@@ -521,6 +532,7 @@
 	generic-arithmetic/in
 	contagion-utils
 	arithmetic-utils
+	nary
 	srfi-23 ; error
 	)
   (files contagion-mike
