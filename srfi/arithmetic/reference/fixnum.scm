@@ -3,8 +3,10 @@
 
 ; Fixnums in terms of R5RS
 
-(define *low* -32768)
-(define *high* 32768)
+(define *width* 24)
+
+(define *low* (- (expt 2 (- *width* 1))))
+(define *high* (- (expt 2 (- *width* 1)) 1))
 
 ; SRFI 9
 (define-record-type :fixnum
@@ -146,9 +148,11 @@
 
 (define fxabs (make-fx->fx abs))
 
+(define *fx-width* (make-fixnum *width*))
 (define *fx-min* (make-fixnum *low*))
 (define *fx-max* (make-fixnum (- *high* 1)))
 
+(define (fixnum-width) *fx-width*)
 (define (least-fixnum) *fx-min*)
 (define (greatest-fixnum) *fx-max*)
 

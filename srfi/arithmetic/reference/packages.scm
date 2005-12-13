@@ -39,7 +39,7 @@
 	  fxbitwise-not
 	  fxbitwise-and fxbitwise-ior fxbitwise-xor
 	  fxarithmetic-shift
-	  least-fixnum greatest-fixnum))
+	  fixnum-width least-fixnum greatest-fixnum))
 
 (define-structures ((fixnums fixnums-interface)
 		    (fixnums-r5rs (export r5rs->fixnum

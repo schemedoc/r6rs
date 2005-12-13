@@ -191,9 +191,6 @@ on the following issues:
     is that <code>read</code>, <code>write</code>, and several
     other procedures must know about the external representations
     of all numbers.
-<li>Should a minimum precision be required for fixnums or flonums?
-<li>Should the range of a fixnum be restricted to a power of two?
-    To a two's complement range?
 <li>The fixnum operations provide efficient fixnums that "wrap."
     However, they do not give efficient access to the hardware facilities
     for carry and overflow.  This would be desirable to implement
@@ -1129,14 +1126,14 @@ fixnum range.
 
 <p>
 Every implementation must define its fixnum range as a closed
-interval [<var>lo</var>, <var>hi</var>] such that <var>lo</var>
-and <var>hi</var> are (mathematical) integers with
-<var>lo</var> &lt;= 0 &lt; 1 &lt;= <var>hi</var>.
+interval [-2<sup><var>w</var>-1</sup>, 2<sup><var>w</var>-1</sup> - 1] such that <var>w</var>
+is a a (mathematical) integer
+<var>w</var> &gt;= 24.
 Every mathematical integer within an implementation's fixnum
 range must correspond to an exact integer that is representable
 within the implementation.
 The fixnum operations of an implementation will perform
-arithmetic modulo <var>hi-lo+1</var>.
+arithmetic modulo 2<sup><var>w</var></sup>.
 </p>
 
 <P>
@@ -1150,12 +1147,14 @@ otherwise returns <TT>#f</TT>.
 
 <P>
 <DL>
+<DT><U>procedure:</U> <CODE>fixnum-width</CODE>
 <DT><U>procedure:</U> <CODE>least-fixnum</CODE>
 <DT><U>procedure:</U> <CODE>greatest-fixnum</CODE>
 <DD>
 
-<P>These procedures return <var>lo</var> and <var>hi</var>, the
-minimum and the maximum value of the fixnum range, respectively.
+<P>These procedures return <var>w</var>,
+-2<sup><var>w</var>-1</sup> and 2<sup><var>w</var>-1</sup> - 1, the
+width, minimum and the maximum value of the fixnum range, respectively.
 </DL>
 
 
