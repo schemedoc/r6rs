@@ -235,7 +235,7 @@
 (define-unary intan fltan compnum-tan)
 (define-unary inasin flasin compnum-asin)
 (define-unary inacos flacos compnum-acos)
-(define-unary inatan1 flatan1 compnum-atan1)
+(define-unary inatan flatan compnum-atan1)
 
 ; from Larceny
 
@@ -266,12 +266,12 @@
       (let ((x z)
 	    (y (car rest)))
 	(cond ((and (flonum? x) (flonum? y))
-	       (flatan2 x y))
+	       (flatan x y))
 	      ((not (and (flonum? x) (flonum? y)))
 	       (error "ATAN: domain error: " x y)
 	       #t)
 	      (else
-	       (flatan2 x y))))))
+	       (flatan x y))))))
 
 (define (inexpt x y)
 

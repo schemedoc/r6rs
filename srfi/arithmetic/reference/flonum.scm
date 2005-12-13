@@ -32,8 +32,13 @@
 	flnan
 	(make-flonum (r5rs-op (flonum-inexact a) (flonum-inexact b))))))
 
-(define fl+ (make-fl*fl->fl +))
-(define fl- (make-fl*fl->fl -))
+(define fl+/2 (make-fl*fl->fl +))
+(define (fl+ . args)
+  (reduce (make-flonum 0.0) fl+/2 args))
+
+(define fl-/2 (make-fl*fl->fl -))
+(define (fl- arg0 . args)
+  (reduce (make-flonum 0.0) fl-/2 (cons arg0 args)))
 
 (define (make-fl->fl r5rs-op)
   (lambda (a)
@@ -41,10 +46,9 @@
 	flnan
 	(make-flonum (r5rs-op (flonum-inexact a))))))
 
-; unary minus---better name?
-(define fl~ (make-fl->fl -))
-
-(define fl* (make-fl*fl->fl *))
+(define fl*/2 (make-fl*fl->fl *))
+(define (fl* . args)
+  (reduce (make-flonum 1.0) fl*/2 args))
 
 (define (/* a b)
   (cond
@@ -69,17 +73,19 @@
    ((> a 0.0) r5rs-inf+)
    (else r5rs-inf-)))
 
-(define fl/ (make-fl*fl->fl /*))
+(define fl//2 (make-fl*fl->fl /*))
+(define (fl/ arg0 . args)
+  (reduce (make-flonum 1.0) fl//2 (cons arg0 args)))
 
 (define (make-fl*fl->val r5rs-op)
   (lambda (a b)
     (r5rs-op (flonum-inexact a) (flonum-inexact b))))
 
-(define fl= (make-fl*fl->val =))
-(define fl>= (make-fl*fl->val >=))
-(define fl<= (make-fl*fl->val <=))
-(define fl> (make-fl*fl->val >))
-(define fl< (make-fl*fl->val <))
+(define fl= (make-transitive-pred (make-fl*fl->val =)))
+(define fl>= (make-transitive-pred (make-fl*fl->val >=)))
+(define fl<= (make-transitive-pred (make-fl*fl->val <=)))
+(define fl> (make-transitive-pred (make-fl*fl->val >)))
+(define fl< (make-transitive-pred (make-fl*fl->val <)))
 
 (define (make-fl->val r5rs-op)
   (lambda (a)
@@ -92,12 +98,12 @@
 (define (flnegative? x)
   (fl< x (r5rs->flonum 0.0)))
 
-(define flmin (make-fl*fl->fl min))
-(define flmax (make-fl*fl->fl max))
+(define flmin (make-min/max fl<))
+(define flmax (make-min/max fl>))
 
 (define (flabs x)
   (if (flnegative? x)
-      (fl~ x)
+      (fl- x)
       x))
 
 (define flexp (make-fl->fl exp))
@@ -121,6 +127,11 @@
 (define flacos (make-fl->fl acos))
 (define flatan1 (make-fl->fl atan))
 (define flatan2 (make-fl*fl->fl atan))
+
+(define (flatan x . extra)
+  (if (null? extra)
+      (flatan1 x)
+      (flatan2 x (car extra))))
 
 (define (sqrt* z)
   (cond
@@ -173,9 +184,9 @@
 	    (r5rs->flonum 0.0))
 	   ((flnegative? y)
 	    (let ((n (fl* (r5rs->fixnum -2) x))
-		  (d (fl~ y)))
+		  (d (fl- y)))
 	      (if (fl< n d)
-		  (fl~ (flquotient (fl- d n) (fl* (r5rs->flonum 2.0) d)))
+		  (fl- (flquotient (fl- d n) (fl* (r5rs->flonum 2.0) d)))
 		  (flquotient (fl+ n (fl+ d (r5rs->flonum -1.0)))
 			      (fl* (r5rs->flonum 2.0) d)))))))
 	 (mod

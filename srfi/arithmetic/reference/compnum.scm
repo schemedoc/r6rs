@@ -78,8 +78,8 @@
 (define compnum-inf+ (make-compnum flinf+ (r5rs->flonum 0.0)))
 
 (define (compnum-angle z)
-  (flatan2 (compnum-imag z)
-	   (compnum-real z)))
+  (flatan (compnum-imag z)
+	  (compnum-real z)))
 
 (define (compnum-magnitude z)
   (let ((r (compnum-real z))

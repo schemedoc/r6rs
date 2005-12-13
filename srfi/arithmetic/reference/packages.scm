@@ -65,7 +65,7 @@
 	  flzero? flpositive? flnegative?
 	  flmin flmax flabs
 	  flexp fllog
-	  flsin flcos fltan flasin flacos flatan1 flatan2
+	  flsin flcos fltan flasin flacos flatan
 	  flsqrt flexpt
 	  flfloor flceiling fltruncate flround
 	  flinteger? 
@@ -81,7 +81,8 @@
   (open scheme
 	srfi-9 ; define-record-type
 	(subset define-record-types (define-record-discloser))
-	fixnums fixnums-r5rs)
+	fixnums fixnums-r5rs
+	nary)
   (files flonum))
 
 (define-interface bignums-interface

@@ -210,8 +210,6 @@ on the following issues:
   practical implementation of bignums in terms of fixnums.  It may be
   that we should consider including two sets of operators: <code>fx</code> operators
   that signal an error upon overflow and <code>wfx</code> operators that wrap.
-<li>Should the binary fixnum/flonum operations allow other than
-    two arguments?
 <li>What are the semantics of "safe mode" and "unsafe mode"?
     (This is a much larger question that R6RS should address.)
 <li>Should R6RS allow other inexact reals beside the flonums?
@@ -1346,11 +1344,11 @@ running in unsafe mode, in which case all bets are off.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fl=</CODE> <var>fl1</var> <var>fl2</var>
-<DT><U>procedure:</U> <CODE>fl&lt;</CODE> <var>fl1</var> <var>fl2</var>
-<DT><U>procedure:</U> <CODE>fl&lt;=</CODE> <var>fl1</var> <var>fl2</var>
-<DT><U>procedure:</U> <CODE>fl&gt;</CODE> <var>fl1</var> <var>fl2</var>
-<DT><U>procedure:</U> <CODE>fl&gt;=</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fl=</CODE> <var>fl1</var> <var>fl2</var> <var>fl3</var> ...
+<DT><U>procedure:</U> <CODE>fl&lt;</CODE> <var>fl1</var> <var>fl2</var> <var>fl3</var> ...
+<DT><U>procedure:</U> <CODE>fl&lt;=</CODE> <var>fl1</var> <var>fl2</var> <var>fl3</var> ...
+<DT><U>procedure:</U> <CODE>fl&gt;</CODE> <var>fl1</var> <var>fl2</var> <var>fl3</var> ...
+<DT><U>procedure:</U> <CODE>fl&gt;=</CODE> <var>fl1</var> <var>fl2</var> <var>fl3</var> ...
 <DD>
 
 <P>
@@ -1426,8 +1424,8 @@ according to the IEEE standards.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>flmax</CODE> <var>fl1</var> <var>fl2</var>
-<DT><U>procedure:</U> <CODE>flmin</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>flmax</CODE> <var>fl1</var> <var>fl2</var> ...
+<DT><U>procedure:</U> <CODE>flmin</CODE> <var>fl1</var> <var>fl2</var> ...
 <DD>
 
 <P>
@@ -1438,10 +1436,8 @@ These procedures return the maximum or minimum of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fl+</CODE> <var>fl1</var> <var>fl2</var>
-<DT><U>procedure:</U> <CODE>fl-</CODE> <var>fl1</var> <var>fl2</var>
-<DT><U>procedure:</U> <CODE>fl*</CODE> <var>fl1</var> <var>fl2</var>
-<DT><U>procedure:</U> <CODE>fl/</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fl+</CODE> <var>fl1</var> ...
+<DT><U>procedure:</U> <CODE>fl*</CODE> <var>fl1</var> ...
 <DD>
 
 
@@ -1450,6 +1446,28 @@ These procedures return the flonum sum, difference,
 product, or quotient of their flonum arguments.
 In general, they should return the flonum that best
 approximates the mathematical sum, difference, or quotient of their arguments.
+(For implementations that represent flonums as IEEE
+binary floating point numbers, the meaning of "best"
+is reasonably well-defined by the IEEE standards.)
+</P>
+
+</dl>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>fl-</CODE> <var>fl1</var> <var>fl2</var> ...
+<DT><U>procedure:</U> <CODE>fl-</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>fl/</CODE> <var>fl1</var> <var>fl2</var> ...
+<DT><U>procedure:</U> <CODE>fl/</CODE> <var>fl</var>
+<DD>
+
+<P>
+With two or more arguments, these procedures return the flonum sum, difference,
+product, or quotient of their flonum arguments, associating to the left.
+With one argument, however, they return the additive or multiplicative
+flonum inverse of their argument.
+In general, they should return the flonum that best
+approximates the mathematical sum, difference, quotient, or inverse of their arguments.
 (For implementations that represent flonums as IEEE
 binary floating point numbers, the meaning of "best"
 is reasonably well-defined by the IEEE standards.)
@@ -1572,18 +1590,18 @@ mode specified by the IEEE floating point standard.
 <DT><U>procedure:</U> <CODE>flcos</CODE> <var>fl</var>
 <DT><U>procedure:</U> <CODE>fltan</CODE> <var>fl</var>
 <DT><U>procedure:</U> <CODE>flasin</CODE> <var>fl</var>
-<DT><U>procedure:</U> <CODE>flatan1</CODE> <var>fl</var>
-<DT><U>procedure:</U> <CODE>flatan2</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>flatan</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flatan</CODE> <var>fl1</var> <var>fl2</var>
 <DD>
 
 <P>
 These procedures compute the usual transcendental functions.  <CODE>Fllog</CODE>
 computes the natural logarithm of <VAR>fl</VAR> (not the base ten logarithm).
-<CODE>Flasin</CODE>, <CODE>Flacos</CODE>, and <CODE>Flatan1</CODE> compute arcsine (sin<SUP>-1</SUP>),
+<CODE>Flasin</CODE>, <CODE>flacos</CODE>, and <CODE>flatan</CODE> compute arcsine (sin<SUP>-1</SUP>),
 arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
-<CODE>`(flatan1 <var>fl1</var> <var>fl2</var>)'</CODE> computes the
+<CODE>`(flatan <var>fl1</var> <var>fl2</var>)'</CODE> computes the
 arc tangent of <var>fl1</var>/<var>fl2</var>.  The range of
-<CODE>flatan1</CODE> and <CODE>flatan2</CODE> lies between -pi/2 and
+<CODE>flatan</CODE> lies between -pi/2 and
 pi/2, both inclusive if -0.0 is distinguished, both exclusive otherwise.
 
 <P>
@@ -1628,7 +1646,7 @@ arithmetic are encouraged to follow the relevant
 standards for these procedures.
 
 <P>
-Specifically, the range of <CODE>`(flatan2 <var>x</var>
+Specifically, the range of <CODE>`(flatan <var>x</var>
 <var>y</var>)'</CODE> is as in the following table. The asterisk (*)
 indicates that the entry applies to implementations that distinguish
 minus zero.
@@ -1781,8 +1799,8 @@ these functions.
 (fllog 0.0)                   ==&gt; -inf.0
 (fllog -0.0)                  ==&gt; unspecified ; if -0.0 is distinguished
 (fllog -inf.0)                ==&gt; +nan.0
-(flatan1 -inf.0)              ==&gt; -1.5707963267948965
-(flatan1 +inf.0)              ==&gt; 1.5707963267948965
+(flatan -inf.0)               ==&gt; -1.5707963267948965
+(flatan +inf.0)               ==&gt; 1.5707963267948965
 </PRE>
 </DL>
 

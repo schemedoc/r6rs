@@ -393,7 +393,7 @@
 (define-unary-flonum/compnum tan fltan compnum-tan)
 (define-unary-flonum/compnum asin flasin compnum-asin)
 (define-unary-flonum/compnum acos flacos compnum-acos)
-(define-unary-flonum/compnum atan1 flatan1 compnum-atan1)
+(define-unary-flonum/compnum atan1 flatan compnum-atan1)
 
 ; from Larceny
 
@@ -427,12 +427,12 @@
       (let ((x z)
 	    (y (car rest)))
 	(cond ((and (flonum? x) (flonum? y))
-	       (flatan2 x y))
+	       (flatan x y))
 	      ((not (and (real? x) (real? y)))
 	       (error "ATAN: domain error" x y)
 	       #t)
 	      (else
-	       (flatan2 (exact->inexact x) (exact->inexact y)))))))
+	       (flatan (exact->inexact x) (exact->inexact y)))))))
 
 (define (expt x y)
 
