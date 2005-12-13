@@ -168,9 +168,24 @@
 (define fxarithmetic-shift (make-fx*fx->fx arithmetic-shift))
 (define fxbitwise-not (make-fx->fx bitwise-not))
 (define fxbit-count (make-fx->fx bit-count))
-(define fxbitwise-and (make-fx*fx->fx bitwise-and))
-(define fxbitwise-ior (make-fx*fx->fx bitwise-ior))
-(define fxbitwise-xor (make-fx*fx->fx bitwise-xor))
+
+(define fxbitwise-and/2 (make-fx*fx->fx bitwise-and))
+(define (fxbitwise-and . args)
+  (reduce (make-fixnum -1)
+	  fxbitwise-and/2
+	  args))
+
+(define fxbitwise-ior/2 (make-fx*fx->fx bitwise-ior))
+(define (fxbitwise-ior . args)
+  (reduce (make-fixnum 0)
+	  fxbitwise-ior/2
+	  args))
+
+(define fxbitwise-xor/2 (make-fx*fx->fx bitwise-xor))
+(define (fxbitwise-xor . args)
+  (reduce (make-fixnum 0)
+	  fxbitwise-xor/2
+	  args))
 
 ; Operations with carry
 
