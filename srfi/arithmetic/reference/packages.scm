@@ -47,7 +47,8 @@
 	  fxbitwise-not
 	  fxbitwise-and fxbitwise-ior fxbitwise-xor
 	  fxarithmetic-shift
-	  fixnum-width least-fixnum greatest-fixnum))
+	  fixnum-width least-fixnum greatest-fixnum
+	  fx+/carry fx-/carry fx*/carry))
 
 (define-structures ((fixnums fixnums-interface)
 		    (fixnums-r5rs (export r5rs->fixnum
@@ -55,6 +56,7 @@
   (open scheme
 	bitwise
 	srfi-9 ; define-record-type
+	srfi-23 ; error
 	(subset define-record-types (define-record-discloser))
 	nary)
   (files fixnum))

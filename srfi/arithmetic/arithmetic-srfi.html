@@ -191,12 +191,6 @@ on the following issues:
     is that <code>read</code>, <code>write</code>, and several
     other procedures must know about the external representations
     of all numbers.
-<li>The fixnum operations provide efficient fixnums that "wrap."
-    However, they do not give efficient access to the hardware facilities
-    for carry and overflow.  This would be desirable to implement
-    efficient generic arithmetic on fixnums portably.  On the other hand,
-    there isn't much experience with formulating a portable interface to these
-    facilities.
 <li>
   The fixnum operators wrap on overflow, i.e., they perform modular
   arithmetic.  For many purposes, it would be better
@@ -1152,8 +1146,12 @@ width, minimum and the maximum value of the fixnum range, respectively.
 
 
 <P>
-We will use <var>fx</var>, <var>fx1</var> and <var>fx2</var> as metavariables
-that range over fixnums.
+We will use <var>fx</var>, <var>fx1</var> and <var>fx2</var> as
+metavariables that range over fixnums, <var>nfx</var>,
+<var>nfx1</var> and <var>nfx2</var> as metavariables that range over
+the non-negative fixnums, and <var>c</var>,
+<var>c1</var> and <var>c2</var> as metavariables that range over
+the fixnums {0, 1}.
 </P>
 <p>
 If an argument to the following procedures that corresponds to a fixnum
@@ -1262,6 +1260,66 @@ modulo 2<sup><var>w</var></sup>.  See the section on <a href="#integer-division"
 Integer Division</a>.
 </p>
 </dl>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>fx+/carry</CODE> <var>nfx1</var> <var>nfx2</var> <var>c</var>
+<DD>
+
+<P>
+This returns two non-negative fixnums.  <CODE>Fx+/carry</CODE>
+computes the sum <var>s</var> = <var>nfx1</var> + <var>nfx2</var> +
+<var>c</var> and splits it as <var>s</var> = <var>s0</var> +
+2<sup><var>w</var>-1</sup> <var>s1</var> such that
+0 &lt;= <var>s0</var> &lt;= 2<sup><var>w</var>-1</sup> -1 and
+0 &lt;= <var>s1</var> &lt;= 1.
+It returns <var>s0</var> = <code>`(mod <var>s</var>
+2<sup><var>w</var>-1</sup>)'</code> as its first return value,
+and <var>s1</var> = <code>`(mod <var>s</var> 2<sup><var>w</var>-1</sup>)'</code>
+as its second return value.
+</P>
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>fx*/carry</CODE> <var>nfx1</var> <var>nfx2</var> <var>c1</var> <var>c2</var>
+<DD>
+
+<P>
+This returns two non-negative fixnums.  <CODE>Fx*/carry</CODE>
+computes <var>u</var> = <var>nfx1</var> * <var>nfx2</var> +
+<var>c1</var> + <var>c2</var> and splits it as <var>u</var> = <var>u0</var> +
+2<sup><var>w</var>-1</sup> <var>u1</var> such that
+0 &lt;= <var>u0</var> &lt;= 2<sup><var>w</var>-1</sup> -1 and
+0 &lt;= <var>u1</var> &lt;= 2<sup><var>w</var>-1</sup> -1.
+It returns <var>u0</var> = <code>`(mod <var>u</var>
+2<sup><var>w</var>-1</sup>)'</code> as its first return value,
+and <var>u1</var> = <code>`(mod <var>u</var> 2<sup><var>w</var>-1</sup>)'</code>
+as its second return value.
+</P>
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>fx-/carry</CODE> <var>nfx1</var> <var>nfx2</var> <var>c</var>
+<DD>
+
+<P>
+This returns two non-negative fixnums.  <CODE>Fx-/carry</CODE>
+computes the difference <var>d</var> = <var>nfx1</var> - <var>nfx2</var> -
+<var>c</var> and splits it as <var>d</var> = <var>d0</var> -
+2<sup><var>w</var>-1</sup> <var>d1</var> such that
+0 &lt;= <var>d0</var> &lt;= 2<sup><var>w</var>-1</sup> -1 and
+0 &lt;= <var>d1</var> &lt;= 1.
+It returns <var>d0</var> = <code>`(mod <var>d</var>
+2<sup><var>w</var>-1</sup>)'</code> as its first return value,
+and <var>d1</var> = -<code>`(mod <var>d</var> 2<sup><var>w</var>-1</sup>)'</code>
+as its second return value.
+</P>
+</DD>
+</DL>
 
 <P>
 <DL>

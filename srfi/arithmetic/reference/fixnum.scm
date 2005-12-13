@@ -171,3 +171,51 @@
 (define fxbitwise-and (make-fx*fx->fx bitwise-and))
 (define fxbitwise-ior (make-fx*fx->fx bitwise-ior))
 (define fxbitwise-xor (make-fx*fx->fx bitwise-xor))
+
+; Operations with carry
+
+(define *carry-modulus* (+ *high* 1))
+
+(define (make-nnfx*nnfx*carry->fx fixnum-op)
+  (lambda (x y c)
+    (let ((xr (fixnum-rep x))
+	  (yr (fixnum-rep y))
+	  (cr (fixnum-rep c)))
+      (if (or (negative? xr) (negative? yr))
+	  (error "negative argument to fx+-with-carry" xr yr))
+      (if (or (< cr 0)
+	      (> cr 1))
+	  (error "invalid carry" cr))
+      (fixnum-op xr yr cr))))
+
+(define fx+/carry
+  (make-nnfx*nnfx*carry->fx
+   (lambda (xr yr cr)
+     (let ((sum (+ xr yr cr)))
+       (values (make-fixnum (r5rs-mod sum *carry-modulus*))
+	       (make-fixnum (r5rs-div sum *carry-modulus*)))))))
+
+(define fx-/carry
+  (make-nnfx*nnfx*carry->fx
+   (lambda (xr yr br)
+     (let ((difference (- (- xr yr) br)))
+       (values (make-fixnum (r5rs-mod difference *carry-modulus*))
+	       (make-fixnum (- (r5rs-div difference *carry-modulus*))))))))
+
+(define (fx*/carry x y z c)
+  (let ((xr (fixnum-rep x))
+	(yr (fixnum-rep y))
+	(zr (fixnum-rep z))
+	(cr (fixnum-rep c)))
+    (if (or (negative? xr) (negative? yr))
+	(error "negative argument to fx+-with-carry" xr yr))
+    (if (or (< zr 0)
+	    (> zr 1))
+	(error "invalid carry" zr))
+    (if (or (< cr 0)
+	    (> cr 1))
+	(error "invalid carry" cr))
+    (let ((result (+ (* xr yr) zr cr)))
+      (values (make-fixnum (r5rs-mod result *carry-modulus*))
+	      (make-fixnum (r5rs-div result *carry-modulus*))))))
+
