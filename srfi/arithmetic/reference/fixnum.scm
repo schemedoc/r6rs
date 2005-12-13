@@ -120,9 +120,6 @@
     (lambda (d m)
       m)))
 
-(define fxgcd (make-fx*fx->fx gcd))
-(define fxlcm (make-fx*fx->fx gcd))
-
 (define (make-fx*fx->val fixnum-op)
   (lambda (a b)
     (fixnum-op (fixnum-rep a) (fixnum-rep b))))
@@ -145,8 +142,6 @@
 
 (define fxmin (make-fx*fx->fx min))
 (define fxmax (make-fx*fx->fx max))
-
-(define fxabs (make-fx->fx abs))
 
 (define *fx-width* (make-fixnum *width*))
 (define *fx-min* (make-fixnum *low*))

@@ -155,8 +155,19 @@
 (define (/ arg0 . args)
   (reduce (r5rs->integer 1) //2 (cons arg0 args)))
 
+;; ABS is evil ...
+(define *minus-least-fixnum* (bignum-negate (fixnum->bignum (least-fixnum))))
+
+(define (fx-abs x)
+  (cond
+   ((fxnegative? x)
+    (if (fx= x (least-fixnum))
+	*minus-least-fixnum*
+	(fx~ x)))
+   (else x)))
+
 (define-unary abs
-  fxabs bignum-abs ratnum-abs
+  fx-abs bignum-abs ratnum-abs
   (make-typo-op/1 abs 'rational))
 
 (define-binary quotient icontagion/mike

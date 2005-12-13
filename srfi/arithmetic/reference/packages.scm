@@ -34,8 +34,7 @@
 	  fxdiv+mod fxdiv fxmod
 	  fx= fx>= fx<= fx> fx<
 	  fxzero? fxpositive? fxnegative? fxeven? fxodd?
-	  fxmin fxmax fxabs
-	  fxgcd fxlcm
+	  fxmin fxmax
 	  fxbitwise-not
 	  fxbitwise-and fxbitwise-ior fxbitwise-xor
 	  fxarithmetic-shift
