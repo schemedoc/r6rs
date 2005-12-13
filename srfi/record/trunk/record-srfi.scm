@@ -182,9 +182,11 @@
 
        (li
 	(p
-	 "Conversely, should the implicit-naming layer be dropped to simplify "
-	 "the proposal, and avoid potential hygiene problems with macros that "
-	 "expand into the implicit-naming layer?"))
+	 "Macros that expand into the implicit-naming layer might have "
+	 "unexpected behavior, as field names that are distinct as identifiers "
+	 "may not be distinct as symbols, which is how they're used.  For this "
+	 "reason, and to simplify the proposal should the implicit-naming layer "
+	 "be dropped?"))
 	        
        (li
 	(p
@@ -225,6 +227,11 @@
 	 "record-type-definition forms "
 	 "is presently unspecified.  Should this be tightened, and, if so, to what kind "
 	 "of generativity?"))
+
+       (li
+	(p
+	 "Record-types defined via the syntactic layer default to non-opaque.  "
+	 "Should they default to opaque instead?"))
 
        (li
 	(p
@@ -514,7 +521,8 @@
          "A " (code "define-type") " form defines a new record type "
          "along with associated construction procedure (which is distinguished "
 	 "from the constructor of the record type), predicate, "
-         "field accessors and field mutators.  These names are all bound in the "
+         "field accessors and field mutators.  The " (code "define-type") " form "
+	 "expands into a set of definitions in the "
 	 "environment where " (code "define-type") " appears; hence, it is possible to "
 	 "refer to the bindings (except for that of the record-type itself) recursively.")
 
@@ -629,7 +637,8 @@
 	   "If this option is specified, it means that the opacity of the type is "
 	   "the value specified as the operand.  "
 	   "It is also opaque if an opaque parent is specified. "
-	   "If the " (code "opaque") " option is not present, the record type is opaque."))
+	   "If the " (code "opaque") " option is not present, the record type is "
+	   "not opaque."))
 
          (dt
           (prototype "nongenerative" (meta "uid")))
@@ -694,16 +703,10 @@
 	 "must have names that are pairwise distinct.")
 	
 	(p
-	 "If the " (code "define-type") " form has a " (code "nongenerative") " clause, "
-	 "a subsequent evaluation of an identical " (code "define-type") " form will "
-	 "reuse the previously created rtd, and the procedures created will behave identically "
-	 "to the previously created ones.  If the "
-	 "implied arguments to " (code "make-record-type-descriptor") " are the same as with "
-	 "a previously evaluated " (code "define-type") " form, the rtd is "
-	 "also reused, and bindings will be created or modified according to the more recent form. "
-	 "If the implied arguments to " (code "make-record-type-descriptor") " are not the same, "
-	 "an error is signalled."
-	 )
+	 "For two non-generative record-type definitions with the same uid, if the "
+	 "implied arguments to " (code "make-record-type-descriptor") " "
+	 "would create an equivalent record-type descriptor, the created type "
+	 "is the same as the previous one.  Otherwise, an error is signalled.")
 	(p
 	 "Note again that, in the absence of a " (code "nongenerative") " clause, the "
 	 "question of expand-time or run-time generativity is unspecified.  Specifically, "

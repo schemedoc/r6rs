@@ -62,7 +62,7 @@
 (define-alist-extractor extract-parent-name extract-parent-name/cps parent-name #f)
 (define-alist-extractor extract-parent-rtd extract-parent-rtd/cps parent-rtd #f)
 (define-alist-extractor extract-sealed extract-sealed/cps sealed #f)
-(define-alist-extractor extract-opaque extract-opaque/cps opaque #t)
+(define-alist-extractor extract-opaque extract-opaque/cps opaque #f)
 (define-alist-extractor extract-nongenerative extract-nongenerative/cps nongenerative #f)
 (define-alist-extractor extract-init! extract-init!/cps init! values)
 
