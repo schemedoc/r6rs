@@ -108,7 +108,9 @@
        "the record instance.  This allows the creation of portable printers and "
        "inspectors.  A program may prevent access to a record's type and thereby "
        "protect the information stored in the record from the reflection mechanism "
-       "by declaring the type " (i "opaque") ".")
+       "by declaring the type " (i "opaque") ".  Thus, opacity as presented here "
+       "can be used to enforce abstraction barriers---it is not intended as a security "
+       "mechanism.")
 
       (p
        "Fresh record types may be generated at different times---for example, when "
