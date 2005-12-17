@@ -57,6 +57,7 @@
 (define-interface procedural-record-types-interface
   (export make-record-type-descriptor
 	  record-type-descriptor?
+	  make-record-type-maker
 	  record-constructor record-predicate
 	  record-accessor record-mutator))
 
@@ -70,12 +71,12 @@
 	  record-type-opaque?
 	  record-field-mutable?
 
-	  record? record-type-descriptor))
+	  record? record-rtd))
 
 (define-structures ((procedural-record-types procedural-record-types-interface)
 		    (record-reflection record-reflection-interface))
   (open scheme
-	(subset srfi-1 (find every any delete-duplicates))
+	(subset srfi-1 (find every any delete-duplicates split-at))
 	srfi-23 ; ERROR
 	srfi-26 ; CUT
 	opaque-cells
@@ -84,22 +85,24 @@
   (files procedural-record))
 
 (define-interface syntactic-record-types/explicit-interface
-  (export (define-type :syntax)
-	  (type-descriptor :syntax)))
+  (export (define-record-type :syntax)
+	  (record-type-descriptor :syntax)
+	  (record-type-maker :syntax)))
 
 (define-structure syntactic-record-types/explicit syntactic-record-types/explicit-interface
   (open scheme
-	srfi-9 ; DEFINE-RECORD-TYPE
+	srfi-23 ; ERROR
 	procedural-record-types)
   (files syntactic-record-explicit))
 
 (define-interface syntactic-record-types/implicit-interface
-  (export (define-type :syntax)
-	  (type-descriptor :syntax)))
+  (export (define-record-type :syntax)
+	  (record-type-descriptor :syntax)
+	  (record-type-maker :syntax)))
 
 (define-structure syntactic-record-types/implicit syntactic-record-types/implicit-interface
   (open scheme
 	(modify syntactic-record-types/explicit
-		(rename (define-type define-type/explicit))))
+		(rename (define-record-type define-record-type/explicit))))
   (files syntactic-record-implicit-r5rs
 	 syntactic-record-implicit-s48))

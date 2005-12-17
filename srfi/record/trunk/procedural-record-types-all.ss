@@ -31,11 +31,12 @@
 	   record-type-uid
 	   record-type-field-names
 	   record-type-opaque?
-	   record-constructor record-predicate
+	   make-record-type-maker record-constructor
+	   record-predicate
 	   record-accessor record-mutator
 	   record-field-mutable? record-type-generative?
-	   record? record-type-descriptor)
-  (require (only (lib "1.ss" "srfi") find every any delete-duplicates)
+	   record? record-rtd)
+  (require (only (lib "1.ss" "srfi") find every any delete-duplicates split-at)
 	   (lib "26.ss" "srfi")) ; CUT
   
   (require "opaque-cells.ss")
@@ -43,7 +44,3 @@
 
   (require (lib "include.ss"))
   (include "procedural-record.scm"))
-
-	   
-  
-  

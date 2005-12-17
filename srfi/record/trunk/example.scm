@@ -25,57 +25,97 @@
                (set! *failed-count* (+ *failed-count* 1)) ))
          (newline) )))))
 
+; procedural layer
+
+(define :point
+  (make-record-type-descriptor
+   'point #f
+   #f #f #f 
+   '((mutable x) (mutable y))))
+
+(define make-point
+  (record-constructor (make-record-type-maker :point #f #f)))
+
+(define point? (record-predicate :point))
+(define point-x (record-accessor :point 0))
+(define point-y (record-accessor :point 1))
+(define point-x-set! (record-mutator :point 0))
+(define point-y-set! (record-mutator :point 1))
+
+(define p1 (make-point 1 2))
+(check (point? p1) => #t)
+(check (point-x p1) => 1)
+(check (point-y p1) => 2)
+(point-x-set! p1 5)
+(check (point-x p1) => 5)
+
+(define :point2
+  (make-record-type-descriptor
+   'point2 :point 
+   #f #f #f '((mutable x) (mutable y))))
+
+(define make-point2
+  (record-constructor (make-record-type-maker :point2 #f #f)))
+(define point2? (record-predicate :point2))
+(define point2-xx (record-accessor :point2 0))
+(define point2-yy (record-accessor :point2 1))
+
+(define p2 (make-point2 1 2 3 4))
+(check (point? p2) => #t)
+(check (point-x p2) => 1)
+(check (point-y p2) => 2)
+(check (point2-xx p2) => 3)
+(check (point2-yy p2) => 4)
+
 ; explicit naming
 
-(define-type (point make-point point?) (x y)
-  (fields (x (point-x))
-          (y (point-y set-point-y!) y))
-  (opaque #f)
-  (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
+(define-record-type (point3 make-point3 point3?)
+  (fields (x (point3-x))
+          (y (point3-y set-point3-y!)))
+  (nongenerative point3-4893d957-e00b-11d9-817f-00111175eb9e))
 
-(define-type (cpoint make-cpoint cpoint?) (x y c)
-  (parent point x y)
-  (fields (rgb (cpoint-rgb cpoint-rgb-set!) (color->rgb c))))
+(define-record-type (cpoint make-cpoint cpoint?)
+  (parent point3)
+  (constructor-constructor
+   (lambda (p)
+     (lambda (x y c) 
+       ((p x y) (color->rgb c)))))
+  (fields (rgb (cpoint-rgb cpoint-rgb-set!))))
 
 (define (color->rgb c)
   (cons 'rgb c))
 
-(define p1 (make-point 1 2))
-(define p2 (make-cpoint 3 4 'red))
+(define p3-1 (make-point3 1 2))
+(define p3-2 (make-cpoint 3 4 'red))
 
-(check (point? p1) => #t)
-(check (point? p2) => #t)
-(check (point? (vector)) => #f)
-(check (point? (cons 'a 'b)) => #f)
-(check (cpoint? p1) => #f)
-(check (cpoint? p2) => #t)
-(check (point-x p1) => 1)
-(check (point-y p1) => 2)
-(check (point-x p2) => 3)
-(check (point-y p2) => 4)
-(check (cpoint-rgb p2) => '(rgb . red))
+(check (point3? p3-1) => #t)
+(check (point3? p3-2) => #t)
+(check (point3? (vector)) => #f)
+(check (point3? (cons 'a 'b)) => #f)
+(check (cpoint? p3-1) => #f)
+(check (cpoint? p3-2) => #t)
+(check (point3-x p3-1) => 1)
+(check (point3-y p3-1) => 2)
+(check (point3-x p3-2) => 3)
+(check (point3-y p3-2) => 4)
+(check (cpoint-rgb p3-2) => '(rgb . red))
 
-(set-point-y! p1 17)
-(check (point-y p1) => 17)
+(set-point3-y! p3-1 17)
+(check (point3-y p3-1) => 17)
 
-(check (record-type-descriptor p1) => (type-descriptor point))
+(check (record-rtd p3-1) => (record-type-descriptor point3))
 
-(define-type (point make-point point?) (x y)
-  (fields (x (point-x))
-          (y (point-y set-point-y!) y))
-  (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))
-
-(check (point? p1) => #t)
-
-(define-type (ex1 make-ex1 ex1?) a
-  (fields (f (ex1-f) a)))
+(define-record-type (ex1 make-ex1 ex1?)
+  (constructor-constructor (lambda (p) (lambda a (p a))))
+  (fields (f (ex1-f))))
 
 (define ex1-i1 (make-ex1 1 2 3))
 (check (ex1-f ex1-i1) => '(1 2 3))
 
-(define-type (ex2 make-ex2 ex2?) (a . b)
-  (fields (a (ex2-a) a)
-	  (b (ex2-b) b)))
+(define-record-type (ex2 make-ex2 ex2?)
+  (constructor-constructor (lambda (p) (lambda (a . b) (p a b))))
+  (fields (a (ex2-a))
+	  (b (ex2-b))))
 
 (define ex2-i1 (make-ex2 1 2 3))
 (check (ex2-a ex2-i1) => 1)
@@ -85,11 +125,16 @@
 
 (define *ex3-instance* #f)
 
-(define-type ex3 (x y t)
-  (parent cpoint x y 'red)
+(define-record-type ex3
+  (parent cpoint)
+  (constructor-constructor
+   (lambda (p)
+     (lambda (x y t)
+       (let ((r ((p x y 'red) t)))
+	 (set! *ex3-instance* r)
+	 r))))
   (fields 
-   (thickness mutable t))
-  (init! (lambda (p) (set! *ex3-instance* p)))
+   (thickness mutable))
   (sealed #t) (opaque #t))
 
 (define ex3-i1 (make-ex3 1 2 17))
@@ -104,11 +149,17 @@
 
 ; fancy constructor
 
-(define-type (unit-vector make-unit-vector unit-vector?) (x y z)
-  (let ((length (+ (* x x) (* y y) (* z z))))
-    (fields (x (unit-vector-x) (/ x length))
-	    (y immutable (/ y length))
-	    (z (unit-vector-z) (/ z length)))))
+(define-record-type (unit-vector make-unit-vector unit-vector?)
+  (constructor-constructor
+   (lambda (p)
+     (lambda (x y z)
+       (let ((length (+ (* x x) (* y y) (* z z))))
+	 (p  (/ x length)
+	     (/ y length)
+	     (/ z length))))))
+  (fields (x (unit-vector-x))
+	  (y (unit-vector-y))
+	  (z (unit-vector-z))))
 
 (newline)
 (display "correct tests: ")

@@ -24,13 +24,14 @@
 
 
 (module syntactic-record-types-implicit mzscheme
-  (provide define-type
-	   type-descriptor)
+  (provide define-record-type
+	   record-type-descriptor
+	   record-type-maker)
 
   (require (rename "syntactic-record-types-explicit.ss"
-		   define-type/explicit define-type)
+		   define-record-type/explicit define-record-type)
 	   (only "syntactic-record-types-explicit.ss"
-		 type-descriptor))
+		 record-type-descriptor record-type-maker))
 
   (require (lib "include.ss"))
   (include "syntactic-record-implicit-r5rs.scm")

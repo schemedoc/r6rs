@@ -1,4 +1,4 @@
-; Scheme-48-specific part of the implementation of DEFINE-TYPE for Records SRFI
+; Scheme-48-specific part of the implementation of DEFINE-RECORD-TYPE for Records SRFI
 
 ; Copyright (C) Michael Sperber (2005). All Rights Reserved. 
 ; 
@@ -22,7 +22,7 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(define-syntax define-type-2
+(define-syntax define-record-type-2
   (lambda (form rename compare)
     (let* ((name-spec (caddr form))
 	   (constructor-name
@@ -34,41 +34,37 @@
 		(caddr name-spec)
 		(string->symbol (string-append (symbol->string name-spec) "?")))))
       
-      `(,(rename 'define-type/explicit) (,(cadr form) ,constructor-name ,predicate-name)
-	,(list-ref form 3)		; formals
-	,@(list-ref form 4)))))		; simple clauses
+      `(,(rename 'define-record-type/explicit) (,(cadr form) ,constructor-name ,predicate-name)
+	,@(list-ref form 3)))))		; simple clauses
 
 
 (define-syntax process-fields-clause
   (lambda (form rename compare)
-    (let* ((record-name (symbol->string (list-ref form 2)))
+    (let* ((record-name (symbol->string (caddr form)))
 	   (simple-fields
 	    (map (lambda (field-spec)
 		   (let ((field-name (car field-spec)))
-		     (cons
+		     (list
 		      field-name
-		      (cons
-		       (if (pair? (cadr field-spec))
-			   (cadr field-spec)
-			   (cond
-			    ((compare (rename 'immutable) (cadr field-spec))
-			     (list (string->symbol
-				    (string-append record-name "-"
-						   (symbol->string field-name)))))
-			    ((compare (rename 'mutable) (cadr field-spec))
-			     (list (string->symbol
-				    (string-append record-name "-"
-						   (symbol->string field-name)))
-				   (string->symbol
-				    (string-append record-name "-"
-						   (symbol->string field-name)
-						   "-set!"))))))
-		       (cddr field-spec)))))
-		 (cdr (list-ref form 1))))
+		      (if (pair? (cadr field-spec))
+			  (cadr field-spec)
+			  (cond
+			   ((compare (rename 'immutable) (cadr field-spec))
+			    (list (string->symbol
+				   (string-append record-name "-"
+						  (symbol->string field-name)))))
+			   ((compare (rename 'mutable) (cadr field-spec))
+			    (list (string->symbol
+				   (string-append record-name "-"
+						  (symbol->string field-name)))
+				  (string->symbol
+				   (string-append record-name "-"
+						  (symbol->string field-name)
+						  "-set!")))))))))
+		 (cdr (cadr form))))
 	   (simple-fields-clause
-	    (cons (car (list-ref form 1)) simple-fields)))
-      `(,(rename 'define-type-1) ,(list-ref form 2) ,(list-ref form 3)
-	,(list-ref form 4)
-	,(list-ref form 5) (,simple-fields-clause . ,(list-ref form 6))
-	,(list-ref form 7)
-	,@(list-tail form 8)))))
+	    (cons (caadr form) simple-fields)))
+      `(,(rename 'define-record-type-1) ,(caddr form)
+	,(cadddr form)
+	,(append (list-ref form 4) (list simple-fields-clause))
+	,@(list-tail form 5)))))

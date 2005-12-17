@@ -1,4 +1,4 @@
-; PLT-specific part of the implementation of DEFINE-TYPE for Records SRFI
+; PLT-specific part of the implementation of DEFINE-RECORD-TYPE for Records SRFI
 
 ; Copyright (C) Michael Sperber (2005). All Rights Reserved. 
 ; 
@@ -22,21 +22,18 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(define-syntax define-type-2
+(define-syntax define-record-type-2
   (lambda (form)
     (syntax-case form ()
       ((_ ?record-name (?record-name-2 ?constructor-name ?predicate-name)
-       ?formals
        (?simple-clause ...))
 
        (syntax
 	(begin
-	  (define-type/explicit (?record-name ?constructor-name ?predicate-name)
-	    ?formals
+	  (define-record-type/explicit (?record-name ?constructor-name ?predicate-name)
 	    ?simple-clause ...))))
 
       ((_ ?record-name ?record-name-2
-       ?formals
        (?simple-clause ...))
 
        (with-syntax ((?constructor-name
@@ -56,8 +53,7 @@
 		     
 					    
        (syntax
-	(define-type-2 ?record-name (?record-name ?constructor-name ?predicate-name)
-	  ?formals
+	(define-record-type-2 ?record-name (?record-name ?constructor-name ?predicate-name)
 	  (?simple-clause ...))))))))
 
 (define-syntax process-fields-clause
@@ -65,8 +61,6 @@
     (syntax-case form (fields mutable immutable)
       ((_ (fields ?field-clause ...)
 	  ?record-name ?record-name-spec
-	  ?formals
-	  ?bindings* ?binding-clauses
 	  (?simple-clause ...)
 	  ?clause ...)
 
@@ -110,10 +104,7 @@
 			 clause)))
 		    (syntax->list (syntax (?field-clause ...))))))
 	   (syntax
-	    (define-type-1 
+	    (define-record-type-1 
 	      ?record-name ?record-name-spec
-	      ?formals
-	      ?bindings*
-	      ((fields ?simple-field ...) . ?binding-clauses)
-	      (?simple-clause ...)
+	      (?simple-clause ... (fields ?simple-field ...))
 	      ?clause ...))))))))

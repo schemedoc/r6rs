@@ -31,7 +31,7 @@
 	   record-type-field-names
 	   record-type-opaque?
 	   record-field-mutable?
-	   record? record-type-descriptor)
+	   record? record-rtd)
   (require "procedural-record-types-all.ss"))
 
 	   

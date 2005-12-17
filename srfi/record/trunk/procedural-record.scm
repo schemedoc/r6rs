@@ -157,7 +157,7 @@
 (define (record rtd . components)
   (apply typed-vector rtd components))
 
-(define (record-type-descriptor rec)
+(define (record-rtd rec)
   (typed-vector-type rec))
 
 (define (record-ref rtd rec index)
@@ -168,6 +168,88 @@
 
 (define (make-record-immutable! r)
   (make-typed-vector-immutable! r))
+
+; Constructing constructors
+
+(define :record-type-maker (make-vector-type 'record-type-maker '() #f))
+
+(define (make-record-type-maker rtd cons-cons previous)
+  (let ((parent (record-type-parent rtd)))
+    (if (and previous (not parent))
+	(error "mismatch between rtd and maker" rtd previous))
+
+    (if (and previous
+	     (not cons-cons)
+	     (record-type-maker-custom-cons-cons? previous))
+	(error "default maker procedure requested when parent maker has custom one"
+	       cons-cons previous)) 
+  
+    (let ((custom-cons-cons? (and cons-cons #t))
+	  (cons-cons (or cons-cons (default-cons-cons rtd)))
+	  (previous
+	   (if (or previous
+		   (not parent))
+	       previous
+	       (make-record-type-maker parent #f #f))))
+ 
+      (typed-vector :record-type-maker
+		    rtd cons-cons custom-cons-cons? previous))))
+
+(define (default-cons-cons rtd)
+  (let ((parent (record-type-parent rtd)))
+    (if (not parent)
+	(lambda (p)
+	  (lambda field-values
+	    (apply p field-values)))
+	(let ((parent-field-count (field-count parent)))
+	  (lambda (p)
+	    (lambda all-field-values
+	      (call-with-values
+		  (lambda () (split-at all-field-values parent-field-count))
+		(lambda (parent-field-values this-field-values)
+		  (apply (apply p parent-field-values) this-field-values)))))))))
+
+(define (record-type-maker-rtd maker)
+  (typed-vector-ref :record-type-maker maker 0))
+(define (record-type-maker-cons-cons maker)
+  (typed-vector-ref :record-type-maker maker 1))
+; this field is for error checking
+(define (record-type-maker-custom-cons-cons? maker)
+  (typed-vector-ref :record-type-maker maker 2))
+(define (record-type-maker-previous maker)
+  (typed-vector-ref :record-type-maker maker 3))
+
+; A "seeder" is the procedure passed to the cons conser, used to seed
+; the initial field values.
+
+(define (make-make-seeder real-rtd wrap for-maker)
+  (let recur ((for-maker for-maker))
+    (let* ((for-rtd (record-type-maker-rtd for-maker))
+	   (for-rtd-field-count (length (record-type-field-specs for-rtd))))
+      (cond
+       ((record-type-maker-previous for-maker)
+	=> (lambda (parent-maker)
+	     (let ((parent-cons-cons (record-type-maker-cons-cons parent-maker))
+		   (parent-make-seeder (recur parent-maker)))
+	       (lambda extension-field-values
+		 (lambda parent-cons-cons-args
+		   (lambda for-rtd-field-values
+		     (if (not (= (length for-rtd-field-values) for-rtd-field-count))
+			 (error "wrong number of arguments to record constructor"
+				for-rtd for-rtd-field-values))
+		     (apply (parent-cons-cons
+			     (apply parent-make-seeder
+				    (append for-rtd-field-values extension-field-values)))
+			    parent-cons-cons-args)))))))
+       (else
+	(lambda extension-field-values
+	  (lambda for-rtd-field-values
+	    (if (not (= (length for-rtd-field-values) for-rtd-field-count))
+		(error "wrong number of arguments to record constructor"
+		       for-rtd for-rtd-field-values))
+	    (wrap
+	     (apply record real-rtd
+		    (append for-rtd-field-values extension-field-values))))))))))
 
 ; does RTD-1 represent an ancestor of RTD-2?
 
@@ -180,22 +262,23 @@
 	(and rtd-2
 	     (loop (record-type-parent rtd-2))))))
 
-(define (record-constructor rtd)
-  (let ((component-count (field-count rtd))
-	(wrap (if (record-type-opaque? rtd)
-		  (lambda (r)
-		    (make-opaque-cell (lambda (access-key)
-					(and (record-type-descriptor? access-key)
-					     (rtd-ancestor? access-key rtd)))
-			      r))
-		  (lambda (r) r))))
-    (lambda components
-      (if (not (= (length components) component-count))
-	  (error "wrong number of arguments to record constructor" rtd components))
-      (let ((r (apply record rtd components)))
-	(if (record-type-immutable? rtd)
-	    (make-record-immutable! r))
-	(wrap r)))))
+(define (record-constructor maker)
+  (let* ((rtd (record-type-maker-rtd maker))
+	 (process
+	  (if (record-type-immutable? rtd)
+	      (lambda (r)
+		(make-record-immutable! r)
+		r)
+	      (lambda (r) r)))
+	 (wrap (if (record-type-opaque? rtd)
+		   (lambda (r)
+		     (make-opaque-cell (lambda (access-key)
+					 (and (record-type-descriptor? access-key)
+					      (rtd-ancestor? access-key rtd)))
+				       (process r)))
+		   process)))
+    ((record-type-maker-cons-cons maker)
+     ((make-make-seeder rtd wrap maker)))))
 
 (define (record-with-rtd? obj rtd)
   (has-vector-type? rtd obj))

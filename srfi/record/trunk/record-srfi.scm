@@ -127,7 +127,7 @@
       (ul
        (li 
 	(p
-        "The name " (code "define-type") " is used for both the "
+        "The name " (code "define-record-type") " is used for both the "
         "implicit-naming and explicit-naming syntactic interfaces. "
         "It is unclear whether both names should in fact be the same. "
         "With different names it would be easier to identify when only "
@@ -137,14 +137,6 @@
 	"more difficult to transition between the two interfaces, "
 	"and the name to use for partly implicit, partly explicit record "
 	"definitions might not be obvious."))
-
-       (li
-	(p
-	 "Should " (code "define-type") " be called " (code "define-record-type") 
-	 ", as argued "
-	 (a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00001.html")) "here")
-	 "?  If so, what should be the name of what's currently " (code "type-descriptor") "? "
-	 "(" (code "Record-type-descriptor") " is taken.)"))
 
        (li
 	(p
@@ -161,12 +153,8 @@
          "In the " (code "fields") " clause, a single identifier might serve as a shorthand "
          "for a " (code "mutable") " field clause:")
         (verbatim
-         "(define-type point (x y) (fields x y))")
-        (p
-         "Even more radically, a default " (code "fields") " clause could be provided, "
-         "with the constructor formals serving as implicit field names and initializers:")
-        (verbatim
-         "(define-type point (x y))")
+         "(define-record-type point (fields x y))")
+
 	(p
 	 "Allowing such abbreviations would make some record definitions more "
 	 "concise but may also discourage programmers from specifying valuable "
@@ -218,8 +206,8 @@
 	(p
 	 "There is no way to use a record-type descriptor created by a call to "
 	 (code "make-record-type-descriptor") " as a parent type in a "
-	 (code "define-type") " form.  Should this be rectified, for example by "
-	 "another " (code "define-type") " clause named " (code "parent-rtd") "?"))
+	 (code "define-record-type") " form.  Should this be rectified, for example by "
+	 "another " (code "define-record-type") " clause named " (code "parent-rtd") "?"))
 
        (li
 	(p
@@ -258,8 +246,9 @@
 	  "If so, should a record type be able to prevent copy/update for its "
 	  "children?")
 	 (li
-	  "Should records create via copy/update be passed to the initializer "
-	  "defined by the " (code "init!") " clauses?  A separately defined initializer?")))
+	  "How does update interact with the regular creation of new records? "
+	  "Specifically, can updaters be built using something similar to the "
+	  "makers used for creating constructors?")))
 
        (li
 	(p
@@ -350,7 +339,7 @@
          "The " (var "opaque?") " flag is a boolean.  If true, the "
          "returned record type is " (i "opaque") ".  This means that calls to "
          (code "record?") " will return " (code "#f") " and "
-	 (code "record-type-descriptor") " (see \"Reflection\" below) will signal an error. "
+	 (code "record-rtd") " (see \"Reflection\" below) will signal an error. "
          "The record type is also opaque if an opaque parent is supplied. "
          "If " (var "opaque?") " is false and an opaque parent is not supplied, "
          "the record is not opaque.")
@@ -407,17 +396,103 @@
          (code "#f") " otherwise."))
 
        (dt
+	(prototype "make-record-type-maker"
+		   (var "rtd")
+		   (var "cons-cons")
+		   (var "maker")))
+       (dd
+	(p
+	 "This returns a " (i "record-type maker") " (or " (i "maker")
+	 " for short) that can be used to create record constructors (via "
+	 (code "record-constructor") "; see below) or other makers. "
+	 (var "Rtd") " must be a record-type descriptor.  " (var "Cons-cons")
+	 " is a " (i "constructor constructor") ", a procedure of one parameter "
+	 "that must itself return a procedure, the " (i "constructor") ".  The "
+	 (var "cons-cons") " procedure will be called by " (code "record-constructor")
+	 " with a procedure " (var "c") " as an argument that  can be used to construct the "
+	 "record object itself and seed its fields with initial values.")
+	(p
+	 "If " (var "rtd") " is " (em "not") " an extension of another record type, "
+	 (var "c") " is a procedure with a parameter for every field of "
+	 (var "rtd") "; calling it will return a record object with the "
+	 "fields of " (var "rtd") " initialized to the arguments of the call.")
+
+	(p "Constructor-constructor example:")
+	(verbatim
+	 "(lambda (c) (lambda (v ...)  (c v ...)))")
+	(p
+	 "Here, the call to " (code "c") 
+	 " will return a record where the fields of " (var "rtd") " are "
+	 "simply initialized with the arguments " (code "v ...") ".")
+	(p
+	 "As the constructor constructor can be used to construct records of an "
+	 "extension of " (var "rtd") ", the record returned by " (var "c") 
+	 " may be of a record type extending " (var "rtd") ".  (See below.)")
+
+	(p
+	 "If " (var "rtd") " " (em "is") " an extension of another record type " (var "rtd'")
+	 ", " (var "maker") " itself must be a record-type maker of " (var "rtd'")
+	 " (except for default values; see below).  In this case, "
+	 (var "c") " is a procedure that accepts arguments that will be passed "
+	 "unchanged to the constructor of " (var "maker") "; " (var "c")
+	 " will return another procedure that accepts as argument the initial "
+	 "values for the fields of " (var "rtd") " and itself returns "
+	 "what the constructor of " (var "maker") " returns.  "
+	 "(this should typically be the record object itself)  "
+	 "with the field values of " (var "rtd'") " (and its parent and so on) "
+	 "initialized according to " (var "maker") " and with the field values of "
+	 (var "rtd") " initialized according to " (var "c") ".")
+
+	(p "Constructor-constructor example")
+	(verbatim
+	 "(lambda (c) (lambda (x ... v ...) ((p x ...) v ...)")
+	(p
+	 "This will initialize the fields of the parent of " (var "rtd")
+	 "according to " (var "maker") ", calling the associated constructor with "
+	 (code "x ...") " as arguments, and initializing the fields of " (var "rtd")
+	 " itself with " (code "v ...") ".")
+	(p
+	 "In other words, makers for a record type form a chain of "
+	 "constructor constructors exactly parallel to the chain of record-type parents. "
+	 "Each maker in the chain determines the field values for the "
+	 "associated record type.")
+
+	(p
+	 "If " (var "rtd") " is not an extension of another record type, "
+	 "then " (var "maker") " must be " (code "#f") ".")
+	(p
+	 (var "Cons-cons") " can be " (code "#f") ", specifying a default.  "
+	 "This is only admissible if either " (var "rtd")
+	 " is not an extension of another record type, or, if it is, " 
+	 " if " (var "maker") " itself was constructed with " 
+	 " a default constructor constructor.  In the first case, "
+	 (var "cons-cons") " will default to a procedure equivalent to the following:")
+	(verbatim
+	 "(lambda (c)"
+	 "  (lambda field-values"
+	 "    (apply c field-values)))")
+
+	(p
+	 "In the latter case, it will default to a constructor constructor "
+	 "that returns a constructor that will accept as many arguments "
+	 " as " (var "rtd") " has total fields (i.e. as the sum of the "
+	 "number of fields in the entire chain of record types) "
+	 " and will return a record with fields initialized to those arguments, "
+	 " with the field values for the parent coming before those of the "
+	 " extension in the argument list."))
+
+       (dt
         (prototype "record-constructor"
-                   (var "rtd")))
+                   (var "maker")))
 
        (dd
         (p
-         "Returns a procedure that returns a new instance of the record type "
-         "represented by " (var "rtd") ". "
-         "The procedure accepts one argument per field, in order, with parent "
-         "fields first (and grandparent fields before that, and so on).")
+         "Calls the constructor constructor of record-type maker " (var "maker")
+	 " with an appropriate procedure " (var "c") " as an argument "
+	 "(see the description of  " (code "make-record-type-maker") ") that "
+	 "will create a record of the record type associated with " (var "maker") ".")
 	(p
-	 "If " (var "rtd") " describes an opaque record type, then the values "
+	 "If the record type associated with " (var "maker") "is opaque, then the values "
 	 "created by such a constructor are not considered by the reflection "
 	 "procedures to be records; see "
 	 "the specification of " (code "record?") " below.")
@@ -505,25 +580,23 @@
       (h2 "Explicit-Naming Syntactic Layer")
 
       (p
-       "The record-type-defining form " (code "define-type") " is a
+       "The record-type-defining form " (code "define-record-type") " is a
         definition and can appear "
        "anywhere any other " (meta "definition") " can appear.")
 
       (dl
        (dt
-        (prototype "define-type"
+        (prototype "define-record-type"
                    (meta "name-spec")
-                   (meta "formals")
                    (meta "record clause") "*")
            " (syntax)")
        (dd
         (p
-         "A " (code "define-type") " form defines a new record type "
-         "along with associated construction procedure (which is distinguished "
-	 "from the constructor of the record type), predicate, "
-         "field accessors and field mutators.  The " (code "define-type") " form "
+         "A " (code "define-record-type") " form defines a new record type "
+         "along with associated maker and constructor, predicate, "
+         "field accessors and field mutators.  The " (code "define-record-type") " form "
 	 "expands into a set of definitions in the "
-	 "environment where " (code "define-type") " appears; hence, it is possible to "
+	 "environment where " (code "define-record-type") " appears; hence, it is possible to "
 	 "refer to the bindings (except for that of the record-type itself) recursively.")
 
         (p
@@ -531,44 +604,37 @@
 	 "procedure, and predicate.  It must take the following form.")
 
 	(p
-	 (code "(") (meta "record name") " " (meta "construction proc name") " " (meta "predicate name") (code ")"))
+	 (code "(") (meta "record name") " " (meta "constructor name") " " (meta "predicate name") (code ")"))
          
         (p
-         (meta "Record name") ", " (meta "construction proc name") ", and " (meta "predicate name")
+         (meta "Record name") ", " (meta "constructor name") ", and " (meta "predicate name")
          " must all be identifiers.")
 
         (p
          (meta "Record name") " becomes the name of the record type.  Additionally, "
 	 "it is bound by this definition "
 	 "to an expand-time or run-time description of the "
-         "record type for use as parent name in record definitions that extend "
+         "record type for use as parent name in syntactic record-type definitions that extend "
          "this definition.  It may also be used as a handle to gain access to the "
-         "underlying record-type descriptor (see " (code "type-descriptor") " below).")
+         "underlying record-type descriptor and maker (see " (code "record-type-descriptor")
+	 " and " (code "record-type-maker") " below).")
 
         (p
-         (meta "Construction proc name") " is defined by this definition to a construction procedure. "
-         "The construction procedure accepts the number(s) of arguments implied "
-         "by " (meta "formals") " and creates a new record instance of the "
-         "defined type with the fields initialized as described below.")
+         (meta "Constructor name") " is defined by this definition to a constructor for "
+	 "the defined record type, with a constructor constructor specified by the "
+	 (code "constructor-constructor") " clause, or, in its absence, using a default value. "
+	 "For details, see the description of the " (code "constructor-constructor")
+	 "clause below.")
 
         (p
          (meta "Predicate name") " is defined by this definition to a predicate for the defined "
          "record type.")
 
         (p
-         (meta "Formals") " must be a formal argument list as in R5RS. "
-         "The formals are visible as described below within the field "
-	 (meta "init expression") "s, parent "
-         (meta "constructor argument") "s, and the " (code "init!") " " 
-	 (meta "expression") ", if any.")
-
-        (p
          "Each " (meta "record clause") " must take one of the following forms; "
-	 "except for " (code "updater") " clauses, it is an error if multiple "
+	 "it is an error if multiple "
 	 (meta "record clause") "s of the same kind "
-	 "appear in a " (code "define-type") " form. "
-	 "If a " (code "let") " clause appears, it must contain the " (code "fields") 
-	 " clause and the " (code "parent") " clause (if any).  It is an error otherwise.")
+	 "appear in a " (code "define-record-type") " form.")
 
         (dl
          (dt (prototype "fields" (meta "field-spec") "*"))
@@ -577,46 +643,53 @@
            "where each " (meta "field-spec") " has one of the following forms")
           (dl
            (dt
-            (prototype (meta "field name") (code " (") (meta "accessor name") (code ")")
-		       (ebnf-opt (meta "init expression"))))
+            (prototype (meta "field name") (code " (") (meta "accessor name") (code ")")))
            (dt
-            (prototype (meta "field name") (code " (") (meta "accessor name") (meta "mutator name") (code ")")
-		       (ebnf-opt (meta "init expression")))))
+            (prototype (meta "field name") (code " (") (meta "accessor name") (meta "mutator name") (code ")"))))
           (p
            (meta "Field name") ", " (meta "accessor name") ", and " (meta "mutator name")
-           " must all be identifiers; " (meta "init expression") ", if present, must be an expression. "
+           " must all be identifiers. "
            "The first form declares an immutable field called " (meta "field name")
            ", with the corresponding "
            "accessor named " (meta "acccessor name") ". "
            "The second form declares a mutable field called " (meta "field name")
            ", with the corresponding "
            "accessor named " (meta "acccessor name") ", and with the corresponding "
-           "mutator named " (meta "mutator name") ". "
-           "In either form, " (meta "init expression") " specifies the initial "
-           "value of the field when it is created by the construction procedure. "
-	   "If " (meta "init expression") " is absent, it defaults to 
-	   " (meta "field name") ".  The " (meta "init expression") "s are evaluated "
-	   "in the scope of the " (var "formals") " as well as any " (code "let") 
-	   " clauses wrapped around the " (code "fields") " clause (see below).")
+           "mutator named " (meta "mutator name") ".")
 	  (p
 	   "The " (meta "field name") "s become, as symbols, "
 	   "the names of the fields of the record type being created, in the same order.  "
 	   "They are not used in any other way."))
 
          (dt
-          (prototype "parent" (meta "parent name") " " (meta "constructor argument") "*"))
+          (prototype "parent" (meta "parent name")))
          (dd
           (p
            "This specifies that the record type is to have parent type "
            (meta "parent name") ", where " (meta "parent name") " is the "
            (meta "record name") " of a record type previously defined using "
-	   (code "define-type") ". "
+	   (code "define-record-type") ". "
            "The absence of a " (code "parent") " clause implies a "
-           "record type with no parent type.")
-          (p
-           "Each " (meta "constructor argument") " must be an expression; the values of "
-           "these expressions become the values of the parent's formals in the "
-           "construction procedure."))
+           "record type with no parent type."))
+
+	 (dt
+	  (prototype "constructor-constructor" (meta "exp")))
+	 (dd
+	  (p
+	   (meta "Exp") " is evaluated in the same environment as the "
+	   (code "define-record-type") " form, and must evaluate to a "
+	   "constructor constructor appropriate for the record type being "
+	   "defined (see above in the description of " (code "make-record-type-maker")
+	   ").  The constructor constructor is used to create a record-type maker "
+	   "where, if the record-type being defined has a parent, the parent-type maker "
+	   "is that associated with the parent type specified in the " (code "parent")
+	   " clause.")
+	  (p
+	   "If no " (code "constructor-constructor") " clause is specified, a maker is still "
+	   "created using a default constructor constructor.  The rules for this are the same "
+	   "as for " (code "make-record-type-maker") ": the clause can only be absent "
+	   "if the record type defined has no parent type, or if the parent type itself "
+	   "specified a default constructor constructor."))
 
 	 (dt
 	  (prototype "sealed" (code "#t")))
@@ -651,51 +724,7 @@
            "may be generated once for each evaluation of the record definition "
            "or once for all evaluations of the record definition, but the type "
            "is guaranteed to be distinct even for verbatim copies of the same "
-           "record definition appearing in different parts of a program."))
-
-	 (dt
-	  (prototype "let" (code "(") (ebnf-* (meta "binding spec")) (code ")") 
-		     (meta "let or fields/parent clause") (code ")")))
-	 (dd
-	  (p
-	   "A " (code "let") " clause collectively wraps a " (code "let") " form "
-	   "around  the " (meta "init expression") "s in "
-	   "the " (code "fields") " clause, and the " (meta "constructor argument") "s "
-	   "in the " (code "parent") " clause.  The resulting form is evaluated "
-	   "in the environment of the body of the construction prodedure, with the formals "
-	   "bound.  I.e., if there is the following " (code "let") " clause:")
-	  (pre
-	   "  (let " (var "binding-specs-1") ,nl
-	   "    (let " (var "binding-specs-2") ,nl
-	   "      ..." ,nl
-	   "        (let " (var "binding-specs-n") ,nl
-	   "          (parent ...)" , nl          
-	   "          (fields ...)")
-	  (p
-	   "the construction procedure will look roughly like this:")
-	  (pre
-	   "(lambda " (var "formals") ,nl
-	   "  (let " (var "binding-specs-1") ,nl
-	   "    (let " (var "binding-specs-2") ,nl
-	   "      ..." ,nl
-	   "        (let " (var "binding-specs-n") ,nl
-	   "          ...) ...)))"))
-	 
-
-         (dt
-          (prototype "init!" (meta "expression")))
-         (dd
-          (p
-           "When this clause is specified, " (meta "expression") ", which "
-	   "is evaluated in the scope of the " (var "formals") ", must evaluate "
-	   "to a procedure that accepts a single argument.  "
-	   "The defined construction procedure "
-           "applies this " (i "initializer procedure") " to the new record instance, "
-           "before the instance is returned from the construction procedure. "
-           "Parent initializer procedures, if any, are applied before "
-	   "child initializer "
-           "expressions.  The return value of the initializer procedure "
-	   "is ignored.")))
+           "record definition appearing in different parts of a program.")))
 	
 	(p
 	 "Note that all bindings created by this form (for the record type, "
@@ -712,40 +741,48 @@
 	 "question of expand-time or run-time generativity is unspecified.  Specifically, "
 	 "the return value of the following expression in unspecified:")
 	(verbatim
-	 "(let ((f (lambda (x) (define-type r ---) (if x r? (make-r ---)))))"
+	 "(let ((f (lambda (x) (define-record-type r ---) (if x r? (make-r ---)))))"
 	 "  ((f #t) (f #f)))"))
 
-	       (dt
-        (prototype "type-descriptor"
+       (dt
+        (prototype "record-type-descriptor"
                    (meta "record name"))
         " (syntax)")
        (dd
         (p
-         "This evaluates to the record-type descriptor representing the type "
+         "This evaluates to the record-type descriptor associated with the type "
          "specified by " (meta "record-name") ".")
 	(p
 	 "Note that, in the absense, of a " (code "nongenerative") " clause, "
 	 "the return value of the following expression is unspecified:")
 	(verbatim
-	 "(let ((f (lambda () (define-type r ---) (type-descriptor r))))"
+	 "(let ((f (lambda () (define-record-type r ---) (record-type-descriptor r))))"
 	 "  (eqv? (f) (f)))")
 	(p
-	 "Note that " (code "type-descriptor") "  works on "
-	 "both opaque and non-opaque record types.")))
+	 "Note that " (code "record-type-descriptor") "  works on "
+	 "both opaque and non-opaque record types."))
 
+       (dt
+        (prototype "record-type-maker"
+                   (meta "record name"))
+        " (syntax)")
+       (dd
+        (p
+         "This evaluates to the record-type maker associated with the type "
+         "specified by " (meta "record-name") ".")))
 
       (h2 "Implicit-Naming Syntactic Layer")
 
       (p
-       "The " (code "define-type") " form of the implicit-naming syntactic layer is "
-       " a conservative extension of the " (code "define-type") " form of the "
+       "The " (code "define-record-type") " form of the implicit-naming syntactic layer is "
+       " a conservative extension of the " (code "define-record-type") " form of the "
        "explicit-naming layer: "
-       "a " (code "define-type") " form that conforms to the syntax of the "
+       "a " (code "define-record-type") " form that conforms to the syntax of the "
        "explicit-naming layer also conforms to the syntax of the "
        "implicit-naming layer, and any definition in the implicit-naming layer "
        "can be understood by its translation into the explicit-naming layer.")
       (p
-       "This means that a record type defined by the " (code "define-type") " form "
+       "This means that a record type defined by the " (code "define-record-type") " form "
        "of either layer can be used by the other.")
 
       (p
@@ -772,11 +809,9 @@
 
       (dl
        (dt
-	(prototype (meta "field name") (code " immutable")
-		   (ebnf-opt (meta "init expression"))))
+	(prototype (meta "field name") (code " immutable")))
        (dt
-	(prototype (meta "field name") (code " mutable")
-		   (ebnf-opt (meta "init expression")))))
+	(prototype (meta "field name") (code " mutable"))))
 
       (p
        "If " (meta "field-spec") " takes one of these forms, then the accessor name "
@@ -794,14 +829,18 @@
        "For example, the implicit-naming layer record definition:")
 
       (verbatim
-       "(define-type frob (n)"
-       "  (fields (widget mutable (make-widget n))))")
+       "(define-record-type frob"
+       "  (fields (widget mutable))"
+       "  (constructor-constructor"
+       "    (lambda (c) (c (make-widget n)))))")
 
       (p "is equivalent to the following explicit-naming layer record definition.")
 
       (verbatim
-       "(define-type (frob make-frob frob?) (n)"
-       "  (fields (widget (frob-widget frob-widget-set!) (make-widget n))))")
+       "(define-record-type (frob make-frob frob?)"
+       "  (fields (widget (frob-widget frob-widget-set!))"
+       "  (constructor-constructor"
+       "    (lambda (c) (c (make-widget n)))))")
 
       (p
        "With the explicit-naming layer, one can choose to specify just some of the "
@@ -809,9 +848,10 @@
        "accessor and mutator names for the " (code "widget") " field.")
    
       (verbatim
-       "(define-type frob (n)"
-       "  (fields (widget (getwid setwid!) (make-widget n))))")
-
+       "(define-record-type (frob make-frob frob?)"
+       "  (fields (widget (getwid setwid!))"
+       "  (constructor-constructor"
+       "    (lambda (c) (c (make-widget n)))))")
 
       (h2 "Reflection")
 
@@ -819,13 +859,12 @@
        "A set of procedures are provided for reflecting on records and their record-type descriptors. "
        "These procedures are designed to allow the writing of portable printers and inspectors. ")
       (p
-       "Note that " (code "record?") " and " (code "record-type-descriptor")
+       "Note that " (code "record?") " and " (code "record-rtd")
        " treat records of opaque record types as if they were "
        "not record.  On the other hand, the reflection procedures that operate on record-type "
        "descriptors themselves are not affected by opacity.  In other words, "
        "opacity controls whether a program can obtain an rtd from an instance.  If the program "
        "has access to the rtd through other means, it can reflect on it.")
-      
         
       (dl
        (dt
@@ -837,7 +876,7 @@
 	 "Returns " (code "#f") " otherwise."))
 
        (dt
-        (prototype "record-type-descriptor"
+        (prototype "record-rtd"
                    (var "rec")))
        (dd
         (p
@@ -845,7 +884,7 @@
          "The rtd of the most precise type is returned; that is, the type " (var "t") " such "
          "that " (var "rec") " is of type " (var "t") " but not of any type that extends "
          (var "t") ". "
-         "If the type is opaque, " (code "record-type-descriptor") " signals an error."))
+         "If the type is opaque, " (code "record-rtd") " signals an error."))
 
        (dt
         (prototype "record-type-name"
@@ -920,103 +959,29 @@
 
       (h1 (a (@ (name "design-rationale")) "Design Rationale"))
 
-      (h2 "Separate construction procedure in the syntactic layers")
-      
+      (h2 "Constructor constructors, makers, and constructors")
+
       (p
-       "The syntactic layers distinguish the construction procedure from the "
-       "constructor of the underlying record type.  This has several reasons:")
+       "The proposal contains infrastructure for creating specialized constructors, "
+       "rather than just creating default constructors that just accept the initial "
+       "values of all the fields as arguments.  The mechanism for creating "
+       "makers and constructors may seem overly complex at first.")
       (p
-       "The field-initialization syntax allows specifying the initial values "
-       "by name, rather than by position.")
-      (p
-       "The initial values of the fields will often need to be specially "
+       "The rationale for the design is that the initial values of the fields will "
+       "often need to be specially "
        "computed or default to constant values.  Moreover, the created record "
-       "might need to be registered somewhere before being ready for processing. "
-       "The mechanism for field initialization and the " (code "init!") " clause "
-       "largely obviates the need for separate procedures to do this.  (More on the "
-       (code "init!") " clause below.)")
+       "might need to be registered somewhere before being ready for processing.")
       (p
-       "Most importantly, the field initialization of a parent record type is available "
-       "to record types that extend it through the implicit chaining of the constructor "
-       "procedures.  This would be difficult to achieve if the field initialization "
-       "mechanism were not built into the " (code "define-type") " forms.")
-
-      (h2 "Field initialization and verbosity")
-
+       "Moreover, the maker mechanism allows the creation of such initializers in a "
+       "modular manner, separating the initialization concerns of the "
+       "parent types of those of the extensions.")
       (p
-       "To define a record type with two mutable fields, this proposal requires at least:")
-      (verbatim
-       "(define-type point (x y)"
-       "  (fields (x mutable)"
-       "          (y mutable)))")
-      (p
-       "While this is arguably verbose, the proposed syntax generalizes gracefully beyond this "
-       "trivial sort of record definition, as illustrated by the two record "
-       "definitions below.")
-      
-      (verbatim
-       "(define-type hash-table (pred hasher size)"
-       "  (fields (pred immutable pred)"
-       "          (hasher immutable hasher)"
-       "          (data mutable (make-vector (nearest-prime size)))"
-       "          (count mutable 0)))"
-       ""
-       "(define-type eq-hash-table (pred hasher size)"
-       "  (parent hash-table pred hasher size)"
-       "  (fields (gc-count mutable 0)))")
-
-      (p
-       "The first defines a " (code "hash-table") " record with four fields: "
-       (code "pred") ", " (code "hasher") ", "
-       (code "data") ", and " (code "count") ".  "
-       "Two of the fields, " (code "pred") " and " (code "hasher") ", are immutable "
-       "and set to the values of the first two constructor arguments.  The "
-       (code "data") " field is initialized to a vector whose size is a "
-       "function of the third constructor argument.  "
-       "The " (code "count") " field is initialized to zero.")
-
-      (p
-       "The second extends the " (code "hash-table") 
-       " record to form an " (code "eq-hash-table")
-       " record with an additional " (code "gc-count") " field, used in systems whose "
-       "collectors move objects to determine if a collection has occurred "
-       "since the last rehash.  The child record does not initialize the "
-       "parent fields directly but rather defers to the initialization code "
-       "in the parent record definition by passing along the constructor "
-       "arguments.")
-
-      (p
-       "If the custom field initialization were omitted, it would still be possible to perform "
-       "custom initialization by writing a separate constructor procedure, which "
-       "would wrap a record type's actual constructor.  See the previous item on why "
-       "that would create difficulties.")
-
-
-      (h2 (code "init!") " clause")
-
-      (p
-       "When constructing records, custom initialization code is commonly "
-       "required, because the initial field values often do not have a "
-       "one-to-one correspondence to the constructor arguments.  There may also "
-       "be a need to perform other construction-time initialization, such as "
-       "calling a procedure to \"register\" the new record.")
-
-      (p
-       "Internally, record construction involves an initialization step, and the "
-       (code "init!") " clause provides a hook into this step, in order to "
-       "support custom initialization.")
-
-      (p
-       "If this feature were omitted, many record-type definitions would require "
-       "a separate constructor procedure, with the same consequences as explained "
-       "above in the section on field initialization.")
-
-      (p
-       "The " (code "init!") " clause addresses this common requirement by "
-       "allowing arbitrary operations on the new record instance, before it is "
-       "returned from the constructor.  This eliminates the need to define a "
-       "constructor wrapper procedure, and means that the record type's defined "
-       "constructor can always be the actual constructor used by clients.")
+       "During the design phase as well as the discussion period of the SRFI, we "
+       "experimented with several mechanisms for achieving this purpose; "
+       "the one described here "
+       "achieves complete generality without cluttering the syntactic layer, "
+       "possibly sacrificing a bit of notational convenience in special cases, as "
+       "compared to previous versions of this proposal.")
 
       (h2 "Non-distinct field names")
 
@@ -1057,15 +1022,22 @@
       (h1 "Examples")
 
       (h2 "Procedural layer")
-
+      
       (verbatim
-       "(define point (make-record-type-descriptor 'point #f #f #f #f '((mutable x) (mutable y))))"
-       "(define make-point (record-constructor point))"
-       "(define point? (record-predicate point))"
-       "(define point-x (record-accessor point 'x))"
-       "(define point-y (record-accessor point 'y))"
-       "(define point-x-set! (record-mutator point 'x))"
-       "(define point-y-set! (record-mutator point 'y))"
+       "(define :point"
+       "  (make-record-type-descriptor"
+       "   'point #f"
+       "   #f #f #f "
+       "   '((mutable x) (mutable y))))"
+       ""
+       "(define make-point"
+       "  (record-constructor (make-record-type-maker :point #f #f)))"
+       ""
+       "(define point? (record-predicate :point))"
+       "(define point-x (record-accessor :point 0))"
+       "(define point-y (record-accessor :point 1))"
+       "(define point-x-set! (record-mutator :point 0))"
+       "(define point-y-set! (record-mutator :point 1))"
        ""
        "(define p1 (make-point 1 2))"
        "(point? p1) ; => #t"
@@ -1074,82 +1046,118 @@
        "(point-x-set! p1 5)"
        "(point-x p1) ; => 5"
        ""
-       "(define point2 (make-record-type-descriptor 'point2 point #f #f #f '((mutable x) (mutable y))))"
-       "(define make-point2 (record-constructor point2))"
-       "(define point2? (record-predicate point2))"
-       "(define point2-x (record-accessor point2 0))"
-       "(define point2-y (record-accessor point2 1))"
-       "(define point2-xx (record-accessor point2 2))"
-       "(define point2-yy (record-accessor point2 3))"
+       "(define :point2"
+       "  (make-record-type-descriptor"
+       "   'point2 :point "
+       "   #f #f #f '((mutable x) (mutable y))))"
+       ""
+       "(define make-point2"
+       "  (record-constructor (make-record-type-maker :point2 #f #f)))"
+       "(define point2? (record-predicate :point2))"
+       "(define point2-xx (record-accessor :point2 0))"
+       "(define point2-yy (record-accessor :point2 1))"
        ""
        "(define p2 (make-point2 1 2 3 4))"
        "(point? p2) ; => #t"
-       "(point2-x p2) ; => 1"
-       "(point2-y p2) ; => 2"
-       "(point2-xx p2) ; => 3"
-       "(point2-yy p2) ; => 4"
        "(point-x p2) ; => 1"
-       "(point2-x p1) ; error"
-       )
+       "(point-y p2) ; => 2"
+       "(point2-xx p2) ; => 3"
+       "(point2-yy p2) ; => 4")
 
       (h2 "Explicit-naming syntactic layer")
 
       (verbatim
-       "(define-type (pare kons pare?) (x y)"
-       "  (fields (x (kar set-kar!) x)"
-       "          (y (kdr) y)))"
+       "(define-record-type (point3 make-point3 point3?)"
+       "  (fields (x (point3-x))"
+       "          (y (point3-y set-point3-y!)))"
+       "  (nongenerative point3-4893d957-e00b-11d9-817f-00111175eb9e))"
        ""
-       "(pare? (kons 1 2)) ; => #t"
-       "(pare? (cons 1 2)) ; => #f"
-       "(kar (kons 1 2)) ; => 1"
-       "(kdr (kons 1 2)) ; => 2"
-       "(let ((k (kons 1 2)))"
-       "  (set-kar! k 3)"
-       "  (kar k)) ; => 3"
-       ""
-       "(define-type (point make-point point?) (x y)"
-       "  (fields (x (point-x) x)"
-       "          (y (point-y set-point-y!) y))"
-       "  (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))"
-       ""
-       "(define-type (cpoint make-cpoint cpoint?) (x y c)"
-       "  (parent point x y)"
-       "  (fields (rgb (cpoint-rgb cpoint-rgb-set!) (color->rgb c))))"
+       "(define-record-type (cpoint make-cpoint cpoint?)"
+       "  (parent point3)"
+       "  (constructor-constructor"
+       "   (lambda (p)"
+       "     (lambda (x y c) "
+       "       ((p x y) (color->rgb c)))))"
+       "  (fields (rgb (cpoint-rgb cpoint-rgb-set!))))"
        ""
        "(define (color->rgb c)"
        "  (cons 'rgb c))"
        ""
-       "(define p1 (make-cpoint 3 4 'red))"
-       "(point? p1) ; => #t"
-       "(cpoint-rgb p1) ; => (rgb . red)"
+       "(define p3-1 (make-point3 1 2))"
+       "(define p3-2 (make-cpoint 3 4 'red))"
        ""
-       "(define-type (unit-vector make-unit-vector unit-vector?) (x y z)"
-       "  (let ((length (+ (* x x) (* y y) (* z z))))"
-       "    (fields (x (unit-vector-x) (/ x length))"
-       "	    (y (unit-vector-y) (/ y length))"
-       "	    (z (unit-vector-z) (/ z length)))))")
+       "(point3? p3-1) ; => #t"
+       "(point3? p3-2) ; => #t"
+       "(point3? (vector)) ; => #f"
+       "(point3? (cons 'a 'b)) ; => #f"
+       "(cpoint? p3-1) ; => #f"
+       "(cpoint? p3-2) ; => #t"
+       "(point3-x p3-1) ; => 1"
+       "(point3-y p3-1) ; => 2"
+       "(point3-x p3-2) ; => 3"
+       "(point3-y p3-2) ; => 4"
+       "(cpoint-rgb p3-2) ; => '(rgb . red)"
+       ""
+       "(set-point3-y! p3-1 17)"
+       "(point3-y p3-1) ; => 17)"
+       ""
+       "(record-rtd p3-1) ; => (record-type-descriptor point3)"
+       ""
+       "(define-record-type (ex1 make-ex1 ex1?)"
+       "  (constructor-constructor (lambda (p) (lambda a (p a))))"
+       "  (fields (f (ex1-f))))"
+       ""
+       "(define ex1-i1 (make-ex1 1 2 3))"
+       "(ex1-f ex1-i1) ; => '(1 2 3)"
+       ""
+       "(define-record-type (ex2 make-ex2 ex2?)"
+       "  (constructor-constructor (lambda (p) (lambda (a . b) (p a b))))"
+       "  (fields (a (ex2-a))"
+       "          (b (ex2-b))))"
+       ""
+       "(define ex2-i1 (make-ex2 1 2 3))"
+       "(ex2-a ex2-i1) ; => 1"
+       "(ex2-b ex2-i1) ; => '(2 3)"
+       ""
+       "(define-record-type (unit-vector make-unit-vector unit-vector?)"
+       "  (constructor-constructor"
+       "   (lambda (p)"
+       "     (lambda (x y z)"
+       "       (let ((length (+ (* x x) (* y y) (* z z))))"
+       "         (p  (/ x length)"
+       "             (/ y length)"
+       "             (/ z length))))))"
+       "  (fields (x (unit-vector-x))"
+       "          (y (unit-vector-y))"
+       "          (z (unit-vector-z))))")
+
 
       (h2 "Implicit-naming syntactic layer")
 
       (verbatim
-       "(define-type (point make-point point?) (x y)"
-       "  (fields (x immutable x)"
-       "          (y mutable y))"
-       "  (nongenerative point-4893d957-e00b-11d9-817f-00111175eb9e))"
+       "(define *ex3-instance* #f)"
        ""
-       "(define *the-cpoint* #f)"
+       "(define-record-type ex3"
+       "  (parent cpoint)"
+       "  (constructor-constructor"
+       "   (lambda (p)"
+       "     (lambda (x y t)"
+       "       (let ((r ((p x y 'red) t)))"
+       "         (set! *ex3-instance* r)"
+       "         r))))"
+       "  (fields "
+       "   (thickness mutable))"
+       "  (sealed #t) (opaque #t))"
        ""
-       "(define-type cpoint (x y c)"
-       "  (parent point x y)"
-       "  (fields (rgb mutable (color->rgb c)))"
-       "  (init! (lambda (p) (set! *the-cpoint* p))))"
+       "(define ex3-i1 (make-ex3 1 2 17))"
+       "(ex3? ex3-i1) ; => #t"
+       "(cpoint-rgb ex3-i1) ; => '(rgb . red)"
+       "(ex3-thickness ex3-i1) ; => 17"
+       "(ex3-thickness-set! ex3-i1 18)"
+       "(ex3-thickness ex3-i1) ; => 18"
+       "*ex3-instance* ; => ex3-i1"
        ""
-       "(define cpoint-i1 (make-cpoint 1 2 'red))"
-       "(cpoint? cpoint-i1) ; => #t"
-       "(cpoint-rgb cpoint-i1) ; => (rgb . red)"
-       "(cpoint-rgb-set! cpoint-i1 '(rgb . blue))"
-       "(cpoint-rgb cpoint-i1) ; => (rgb . blue)"
-       "(eq? *the-cpoint* cpoint-i1) ; => #t")
+       "(record? ex3-i1) ; => #f")
       
       (h1 "Reference implementation")
 

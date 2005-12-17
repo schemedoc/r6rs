@@ -23,10 +23,10 @@
 ; SOFTWARE.
 
 (module syntactic-record-types-explicit mzscheme
-  (provide define-type
-	   type-descriptor)
+  (provide define-record-type
+	   record-type-descriptor
+	   record-type-maker)
 
-  (require (lib "9.ss" "srfi")) ; DEFINE-RECORD-TYPE
   (require "procedural-record-types.ss")
 
   (require (lib "include.ss"))

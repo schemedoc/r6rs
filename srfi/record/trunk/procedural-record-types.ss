@@ -25,10 +25,7 @@
 (module procedural-record-types mzscheme
   (provide make-record-type-descriptor
 	   record-type-descriptor?
-	   record-constructor record-predicate
+	   make-record-type-maker record-constructor
+	   record-predicate
 	   record-accessor record-mutator)
   (require "procedural-record-types-all.ss"))
-
-	   
-  
-  
