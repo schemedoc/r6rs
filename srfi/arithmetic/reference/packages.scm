@@ -377,25 +377,25 @@
 	)
   (files arithmetic-util))
 
-(define-interface generic-arithmetic/ex-interface
-  (export exnumber? excomplex? exrational? exinteger?
-	  ex= ex< ex<= ex>= ex>
-	  exzero? expositive? exnegative?
-	  exodd? exeven?
-	  exmin exmax
-	  ex+ ex- ex* ex/
-	  exabs
-	  exquotient exremainder exquotient+remainder
-	  exdiv exmod exdiv+mod
-	  exmodulo
-	  exgcd exlcm
-	  exnumerator exdenominator
-	  exfloor exceiling extruncate exround
-	  exmake-rectangular
-	  exremainder eximag-part
-	  exexpt))
+(define-interface generic-arithmetic/exact-interface
+  (export exact-number? exact-complex? exact-rational? exact-integer?
+	  exact=? exact<? exact<=? exact>=? exact>?
+	  exact-zero? exact-positive? exact-negative?
+	  exact-odd? exact-even?
+	  exact-min exact-max
+	  exact+ exact- exact* exact/
+	  exact-abs
+	  exact-quotient exact-remainder exact-quotient+remainder
+	  exact-div exact-mod exact-div+mod
+	  exact-modulo
+	  exact-gcd exact-lcm
+	  exact-numerator exact-denominator
+	  exact-floor exact-ceiling exact-truncate exact-round
+	  exact-make-rectangular
+	  exact-remainder exact-imag-part
+	  exact-expt))
 
-(define-structure generic-arithmetic/ex generic-arithmetic/ex-interface
+(define-structure generic-arithmetic/exact generic-arithmetic/exact-interface
   (open scheme-sans-arithmetic
 	integers-r5rs
 	fixnums
@@ -410,28 +410,28 @@
   (files contagion-ex
 	 generic-ex))
 
-(define-interface generic-arithmetic/in-interface
-  (export innumber? incomplex? inreal? inrational? ininteger?
-	  in= in< in<= in>= in>
-	  inzero? inpositive? innegative? innan?
-	  inodd? ineven?
-	  inmin inmax
-	  in+ in- in* in/
-	  inabs
-	  inquotient inremainder inquotient+remainder
-	  indiv+mod indiv inmod
-	  inmodulo
-	  ingcd inlcm
-	  innumerator indenominator
-	  infloor inceiling intruncate inround
-	  inexp insqrt inlog
-	  insin incos intan inasin inacos inatan
-	  inmake-rectangular inmake-polar
-	  inreal-part inimag-part
-	  inmagnitude inangle
-	  inexpt))
+(define-interface generic-arithmetic/inexact-interface
+  (export inexact-number? inexact-complex? inexact-real? inexact-rational? inexact-integer?
+	  inexact=? inexact<? inexact<=? inexact>=? inexact>?
+	  inexact-zero? inexact-positive? inexact-negative? inexact-nan?
+	  inexact-odd? inexact-even?
+	  inexact-min inexact-max
+	  inexact+ inexact- inexact* inexact/
+	  inexact-abs
+	  inexact-quotient inexact-remainder inexact-quotient+remainder
+	  inexact-div+mod inexact-div inexact-mod
+	  inexact-modulo
+	  inexact-gcd inexact-lcm
+	  inexact-numerator inexact-denominator
+	  inexact-floor inexact-ceiling inexact-truncate inexact-round
+	  inexact-exp inexact-sqrt inexact-log
+	  inexact-sin inexact-cos inexact-tan inexact-asin inexact-acos inexact-atan
+	  inexact-make-rectangular inexact-make-polar
+	  inexact-real-part inexact-imag-part
+	  inexact-magnitude inexact-angle
+	  inexact-expt))
 
-(define-structure generic-arithmetic/in generic-arithmetic/in-interface
+(define-structure generic-arithmetic/inexact generic-arithmetic/inexact-interface
   (open scheme-sans-arithmetic
 
 	;; all this just to implement innumerator and indenominator:
@@ -448,7 +448,7 @@
   (files contagion-in
 	 generic-in))
 
-(define-structure generic-arithmetic/ex generic-arithmetic/ex-interface
+(define-structure generic-arithmetic/exact generic-arithmetic/exact-interface
   (open scheme-sans-arithmetic
 	integers-r5rs
 	fixnums
@@ -532,7 +532,7 @@
 	flonums flonums-r5rs
 	compnums compnums-r5rs
 	rationals-to-flonums flonums-to-rationals
-	generic-arithmetic/in
+	generic-arithmetic/inexact
 	contagion-utils
 	arithmetic-utils
 	nary
@@ -545,32 +545,32 @@
 
 (define-structure r6rs/will (compound-interface (interface-of scheme-sans-arithmetic)
 						fixnums-interface flonums-interface
-						generic-arithmetic/ex-interface
-						generic-arithmetic/in-interface
+						generic-arithmetic/exact-interface
+						generic-arithmetic/inexact-interface
 						generic-arithmetic/will-interface
 						(interface-of strings-to-numbers)
 						(interface-of numbers-to-strings)
 						(interface-of r5rs-to-numbers))
   (open scheme-sans-arithmetic
 	fixnums flonums
-	generic-arithmetic/ex
-	generic-arithmetic/in
+	generic-arithmetic/exact
+	generic-arithmetic/inexact
 	generic-arithmetic/will
 	strings-to-numbers numbers-to-strings
 	r5rs-to-numbers))
 
 (define-structure r6rs/mike (compound-interface (interface-of scheme-sans-arithmetic)
 						fixnums-interface flonums-interface
-						generic-arithmetic/ex-interface
-						generic-arithmetic/in-interface
+						generic-arithmetic/exact-interface
+						generic-arithmetic/inexact-interface
 						generic-arithmetic/mike-interface
 						(interface-of strings-to-numbers)
 						(interface-of numbers-to-strings)
 						(interface-of r5rs-to-numbers))
   (open scheme-sans-arithmetic
 	fixnums flonums
-	generic-arithmetic/ex
-	generic-arithmetic/in
+	generic-arithmetic/exact
+	generic-arithmetic/inexact
 	generic-arithmetic/mike
 	strings-to-numbers numbers-to-strings
 	r5rs-to-numbers))
@@ -609,23 +609,23 @@
 	 test-generic-arithmetic-mike
 	 test-postlude))
 
-(define-structure test-generic-arithmetic/ex (export)
+(define-structure test-generic-arithmetic/exact (export)
   (open scheme-sans-arithmetic
 	(modify scheme (prefix r5rs:) (expose +))
 	r5rs-to-numbers
 	strings-to-numbers
-	generic-arithmetic/ex)
+	generic-arithmetic/exact)
   (files test-prelude
 	 test-generic-arithmetic-ex
 	 test-postlude))
 
-(define-structure test-generic-arithmetic/in (export)
+(define-structure test-generic-arithmetic/inexact (export)
   (open scheme-sans-arithmetic
 	(modify scheme (prefix r5rs:) (expose +))
 	(subset flonums (flinf+ flinf- flnan flnan?))
 	r5rs-to-numbers
 	strings-to-numbers
-	generic-arithmetic/in)
+	generic-arithmetic/inexact)
   (files test-prelude
 	 test-generic-arithmetic-in
 	 test-postlude))

@@ -3,23 +3,23 @@
 
 ; Generic inexact arithmetic
 
-(define (innumber? obj)
+(define (inexact-number? obj)
   (or (flonum? obj)
       (compnum? obj)))
 
-(define (incomplex? obj)
-  (innumber? obj))
+(define (inexact-complex? obj)
+  (inexact-number? obj))
 
-(define (inreal? obj)
+(define (inexact-real? obj)
   (flonum? obj))
 
-(define (inrational? obj)
-  (and (inreal? obj)
-       (not (or (in= obj flinf+)
-		(in= obj flinf-)
+(define (inexact-rational? obj)
+  (and (inexact-real? obj)
+       (not (or (inexact=? obj flinf+)
+		(inexact=? obj flinf-)
 		(flnan? obj)))))
 
-(define (ininteger? obj)
+(define (inexact-integer? obj)
   (and (flonum? obj)
        (flinteger? obj)))
 
@@ -39,23 +39,23 @@
 	(else
 	 (?contagion a b ?name)))))))
 
-(define-binary in=/2 econtagion/in
+(define-binary inexact=?/2 econtagion/in
   fl= compnum=)
 
-(define-binary in</2 pcontagion/in
-  fl< (make-typo-op/2 in< 'real))
-(define-binary in<=/2 pcontagion/in
-  fl<= (make-typo-op/2 in<= 'real))
-(define-binary in>=/2 pcontagion/in
-  fl>= (make-typo-op/2 in>= 'real))
-(define-binary in>/2 pcontagion/in
-  fl> (make-typo-op/2 in> 'real))
+(define-binary inexact<?/2 pcontagion/in
+  fl< (make-typo-op/2 inexact<? 'real))
+(define-binary inexact<=?/2 pcontagion/in
+  fl<= (make-typo-op/2 inexact<=? 'real))
+(define-binary inexact>=?/2 pcontagion/in
+  fl>= (make-typo-op/2 inexact>= 'real))
+(define-binary inexact>?/2 pcontagion/in
+  fl> (make-typo-op/2 inexact>? 'real))
 
-(define in= (make-transitive-pred in=/2))
-(define in< (make-transitive-pred in</2))
-(define in<= (make-transitive-pred in<=/2))
-(define in>= (make-transitive-pred in>=/2))
-(define in> (make-transitive-pred in>=/2))
+(define inexact=? (make-transitive-pred inexact=?/2))
+(define inexact<? (make-transitive-pred inexact<?/2))
+(define inexact<=? (make-transitive-pred inexact<=?/2))
+(define inexact>=? (make-transitive-pred inexact>=?/2))
+(define inexact>? (make-transitive-pred inexact>=?/2))
 
 (define-syntax define-unary
   (syntax-rules ()
@@ -69,200 +69,201 @@
 	(else
 	 (error "expects an inexact argument" ?name a)))))))
 
-(define-unary inzero? flzero? compnum-zero?) ; #### compnum case?
-(define-unary inpositive? flpositive?
-  (make-typo-op/1 inpositive? 'real))
-(define-unary innegative? flnegative?
-  (make-typo-op/1 innegative? 'real))
-(define-unary inodd? flodd?
-  (make-typo-op/1 inodd? 'real))
-(define-unary ineven? fleven?
-  (make-typo-op/1 ineven? 'real))
-(define-unary innan? flnan? never)
+(define-unary inexact-zero? flzero? compnum-zero?) ; #### compnum case?
+(define-unary inexact-positive? flpositive?
+  (make-typo-op/1 inexact-positive? 'real))
+(define-unary inexact-negative? flnegative?
+  (make-typo-op/1 inexact-negative? 'real))
+(define-unary inexact-odd? flodd?
+  (make-typo-op/1 inexact-odd? 'real))
+(define-unary inexact-even? fleven?
+  (make-typo-op/1 inexact-even? 'real))
+(define-unary inexact-nan? flnan? never)
 
-(define inmin (make-min/max in<))
-(define inmax (make-min/max in>))
+(define inexact-min (make-min/max inexact<?))
+(define inexact-max (make-min/max inexact>?))
 
-(define-binary in+/2 contagion/in fl+ compnum+)
-(define-binary in-/2 contagion/in fl- compnum-)
-(define-binary in*/2 contagion/in fl* compnum*)
-(define-binary in//2 contagion/in fl/ compnum/)
+(define-binary inexact+/2 contagion/in fl+ compnum+)
+(define-binary inexact-/2 contagion/in fl- compnum-)
+(define-binary inexact*/2 contagion/in fl* compnum*)
+(define-binary inexact//2 contagion/in fl/ compnum/)
 
-(define (in+ . args)
-  (reduce (r5rs->flonum 0.0) in+/2 args))
-(define (in- arg0 . args)
-  (reduce (r5rs->flonum 0.0) in-/2 (cons arg0 args)))
-(define (in* . args)
-  (reduce (r5rs->flonum 1.0) in*/2 args))
-(define (in/ arg0 . args)
-  (reduce (r5rs->flonum 1.0) in//2 (cons arg0 args)))
+(define (inexact+ . args)
+  (reduce (r5rs->flonum 0.0) inexact+/2 args))
+(define (inexact- arg0 . args)
+  (reduce (r5rs->flonum 0.0) inexact-/2 (cons arg0 args)))
+(define (inexact* . args)
+  (reduce (r5rs->flonum 1.0) inexact*/2 args))
+(define (inexact/ arg0 . args)
+  (reduce (r5rs->flonum 1.0) inexact//2 (cons arg0 args)))
 
-(define-unary inabs flabs (make-typo-op/1 inabs 'real))
+(define-unary inexact-abs flabs (make-typo-op/1 inexact-abs 'real))
 
-(define-binary inquotient contagion/in
+(define-binary inexact-quotient contagion/in
   flquotient
-  (make-typo-op/2 inquotient 'real))
+  (make-typo-op/2 inexact-quotient 'real))
   
-(define-binary inremainder contagion/in
+(define-binary inexact-remainder contagion/in
   flremainder
-  (make-typo-op/2 inremainder 'real))
+  (make-typo-op/2 inexact-remainder 'real))
 
-(define-binary inquotient+remainder contagion/in
-  inquotient+remainder
-  (make-typo-op/2 inquotient+remainder 'real))
+(define-binary inexact-quotient+remainder contagion/in
+  inexact-quotient+remainder
+  (make-typo-op/2 inexact-quotient+remainder 'real))
 
 ; from Scheme 48
 
-(define (inmodulo x y)
-  (if (and (ininteger? x) (ininteger? y))
-      (let* ((q (inquotient x y))
-	     (r (in- x (in* q y))))
-	(cond ((inzero? r)
+(define (inexact-modulo x y)
+  (if (and (inexact-integer? x) (inexact-integer? y))
+      (let* ((q (inexact-quotient x y))
+	     (r (inexact- x (inexact* q y))))
+	(cond ((inexact-zero? r)
 	       r)
-	      ((innegative? r)
-	       (if (innegative? y)
+	      ((inexact-negative? r)
+	       (if (inexact-negative? y)
 		   r
-		   (in+ r y)))
-	      ((innegative? y)
-	       (in+ r y))
+		   (inexact+ r y)))
+	      ((inexact-negative? y)
+	       (inexact+ r y))
 	      (else
 	       r)))
-      (error "inmodulo expects integral arguments" x y)))
+      (error "inexact-modulo expects integral arguments" x y)))
 
 ; from "Cleaning up the Tower"
 
-(define (indiv+mod x y)
+(define (inexact-div+mod x y)
   (let* ((div
 	  (cond
-	   ((inpositive? y)
-	    (let ((n (in* (innumerator x)
-			  (indenominator y)))
-		  (d (in* (indenominator x)
-			  (innumerator y))))
-	      (if (innegative? n)
-		  (in- (inquotient (in- (in- d n) (r5rs->flonum 1)) d))
-		  (inquotient n d))))
-	   ((inzero? y)
+	   ((inexact-positive? y)
+	    (let ((n (inexact* (inexact-numerator x)
+			       (inexact-denominator y)))
+		  (d (inexact* (inexact-denominator x)
+			       (inexact-numerator y))))
+	      (if (inexact-negative? n)
+		  (inexact- (inexact-quotient (inexact- (inexact- d n) (r5rs->flonum 1)) d))
+		  (inexact-quotient n d))))
+	   ((inexact-zero? y)
 	    (r5rs->flonum 0))
-	   ((innegative? y)
-	    (let ((n (in* (r5rs->flonum -2) 
-			  (innumerator x)
-			  (indenominator y)))
-		  (d (in* (indenominator x)
-			  (in- (innumerator y)))))
-	      (if (in< n d)
-		  (in- (inquotient (in- d n) (in* 2 d)))
-		  (inquotient (in+ n d (r5rs->flonum -1)) (in* 2 d)))))))
+	   ((inexact-negative? y)
+	    (let ((n (inexact* (r5rs->flonum -2) 
+			       (inexact-numerator x)
+			       (inexact-denominator y)))
+		  (d (inexact* (inexact-denominator x)
+			  (inexact- (inexact-numerator y)))))
+	      (if (inexact<? n d)
+		  (inexact- (inexact-quotient (inexact- d n) (inexact* 2 d)))
+		  (inexact-quotient (inexact+ n d (r5rs->flonum -1)) (inexact* 2 d)))))))
 	 (mod
-	  (in- x (in* div y))))
+	  (inexact- x (inexact* div y))))
     (values div mod)))
 
-(define (indiv x y)
+(define (inexact-div x y)
   (call-with-values
-      (lambda () (indiv+mod x y))
+      (lambda () (inexact-div+mod x y))
     (lambda (d m)
       d)))
 
-(define (inmod x y)
+(define (inexact-mod x y)
   (call-with-values
-      (lambda () (indiv+mod x y))
+      (lambda () (inexact-div+mod x y))
     (lambda (d m)
       m)))
 
-(define (ingcd/2 x y)
-  (if (and (ininteger? x) (ininteger? y))
-      (cond ((in< x (r5rs->flonum 0.0)) (ingcd/2 (in- x) y))
-	    ((in< y (r5rs->flonum 0.0)) (ingcd/2 x (in- y)))
-	    ((in< x y) (euclid y x))
+(define (inexact-gcd/2 x y)
+  (if (and (inexact-integer? x) (inexact-integer? y))
+      (cond ((inexact<? x (r5rs->flonum 0.0)) (inexact-gcd/2 (inexact- x) y))
+	    ((inexact<? y (r5rs->flonum 0.0)) (inexact-gcd/2 x (inexact- y)))
+	    ((inexact<? x y) (euclid y x))
 	    (else (euclid x y)))
       (error "ingcd inpects integral arguments" x y)))
 
 (define (euclid x y)
-  (if (inzero? y)
+  (if (inexact-zero? y)
       x
-      (euclid y (inremainder x y))))
+      (euclid y (inexact-remainder x y))))
 
-(define (inlcm/2 x y)
-  (let ((g (ingcd/2 x y)))
-    (if (inzero? g)
+(define (inexact-lcm/2 x y)
+  (let ((g (inexact-gcd/2 x y)))
+    (if (inexact-zero? g)
 	g
-	(in* (inquotient (inabs x) g)
-	     (inabs y)))))
+	(inexact* (inexact-quotient (inexact-abs x) g)
+		  (inexact-abs y)))))
 
-(define (ingcd . args)
-  (reduce (r5rs->flonum 0.0) ingcd/2 args))
+(define (inexact-gcd . args)
+  (reduce (r5rs->flonum 0.0) inexact-gcd/2 args))
 
-(define (inlcm . args)
-  (reduce (r5rs->flonum 1.0) inlcm/2 args))
+(define (inexact-lcm . args)
+  (reduce (r5rs->flonum 1.0) inexact-lcm/2 args))
 
 (define (flnumerator x)
   (integer->flonum (rational-numerator (flonum->rational x))))
 (define (fldenominator x)
   (integer->flonum (rational-denominator (flonum->rational x))))
 
-(define-unary innumerator
+(define-unary inexact-numerator
   flnumerator
-  (make-typo-op/1 innumerator 'real))
+  (make-typo-op/1 inexact-numerator 'real))
 
-(define-unary indenominator
+(define-unary inexact-denominator
   fldenominator
-  (make-typo-op/1 indenominator 'real))
+  (make-typo-op/1 inexact-denominator 'real))
 
 ;; floor is primitive
-(define-unary infloor
+(define-unary inexact-floor
   flfloor
-  (make-typo-op/1 infloor 'real))
+  (make-typo-op/1 inexact-floor 'real))
 
-(define (inceiling x)
-  (in- (infloor (in- x))))
+(define (inexact-ceiling x)
+  (inexact- (inexact-floor (inexact- x))))
 
-(define (intruncate x)
-  (if (innegative? x)
-      (inceiling x)
-      (infloor x)))
+(define (inexact-truncate x)
+  (if (inexact-negative? x)
+      (inexact-ceiling x)
+      (inexact-floor x)))
 
-(define (inround x)
-  (let* ((x+1/2 (in+ x (r5rs->flonum 0.5)))
-	 (r (infloor x+1/2)))
-    (if (and (in= r x+1/2)
-	     (inodd? r))
-	(in- r (r5rs->flonum 1.0))
+(define (inexact-round x)
+  (let* ((x+1/2 (inexact+ x (r5rs->flonum 0.5)))
+	 (r (inexact-floor x+1/2)))
+    (if (and (inexact=? r x+1/2)
+	     (inexact-odd? r))
+	(inexact- r (r5rs->flonum 1.0))
 	r)))
 
-(define-unary inexp flexp compnum-exp)
-(define-unary insin flsin compnum-sin)
-(define-unary incos flcos compnum-cos)
-(define-unary intan fltan compnum-tan)
-(define-unary inasin flasin compnum-asin)
-(define-unary inacos flacos compnum-acos)
-(define-unary inatan flatan compnum-atan1)
+(define-unary inexact-exp flexp compnum-exp)
+(define-unary inexact-sin flsin compnum-sin)
+(define-unary inexact-cos flcos compnum-cos)
+(define-unary inexact-tan fltan compnum-tan)
+(define-unary inexact-asin flasin compnum-asin)
+(define-unary inexact-acos flacos compnum-acos)
+(define-unary inexact-atan1 flatan compnum-atan1)
 
 ; from Larceny
 
-(define (inlog z)
+(define (inexact-log z)
   (cond ((and (flonum? z) (flpositive? z))
 	 (fllog z))
-	((or (compnum? z) (innegative? z))
-	 (in+ (inlog (inmagnitude z)) (in* (r5rs->compnum +1.0i) (inangle z))))
+	((or (compnum? z) (inexact-negative? z))
+	 (inexact+ (inexact-log (inexact-magnitude z))
+		   (inexact* (r5rs->compnum +1.0i) (inexact-angle z))))
 	(else
 	 (fllog z))))
 
 ; Square root
 ; Formula for complex square root from CLtL2, p310.
 
-(define (insqrt z)
+(define (inexact-sqrt z)
   (cond ((and (flonum? z) (not (flnegative? z)))
 	 (flsqrt z))
 	((compnum? z)
-	 (inexp (in/ (inlog z) (r5rs->flonum 2.0))))
-	((innegative? z)
-	 (inmake-rectangular (r5rs->flonum 0.0) (insqrt (in- z))))
+	 (inexact-exp (inexact/ (inexact-log z) (r5rs->flonum 2.0))))
+	((inexact-negative? z)
+	 (inexact-make-rectangular (r5rs->flonum 0.0) (inexact-sqrt (inexact- z))))
 	(else
 	 (flsqrt z))))
 
-(define (inatan z . rest)
+(define (inexact-atan z . rest)
   (if (null? rest)
-      (inatan1 z)
+      (inexact-atan1 z)
       (let ((x z)
 	    (y (car rest)))
 	(cond ((and (flonum? x) (flonum? y))
@@ -273,68 +274,69 @@
 	      (else
 	       (flatan x y))))))
 
-(define (inexpt x y)
+(define (inexact-expt x y)
 
   (define (e x y)
-    (cond ((inzero? y)
+    (cond ((inexact-zero? y)
 	   (r5rs->flonum 1.0))
-	  ((inodd? y)
-	   (in* x (e x (in- y (r5rs->flonum 1.0)))))
+	  ((inexact-odd? y)
+	   (inexact* x (e x (inexact- y (r5rs->flonum 1.0)))))
 	  (else 
-	   (let ((v (e x (inquotient y (r5rs->flonum 2.0)))))
-	     (in* v v)))))
+	   (let ((v (e x (inexact-quotient y (r5rs->flonum 2.0)))))
+	     (inexact* v v)))))
 
-  (cond ((inzero? x)
-	 (if (inzero? y)
+  (cond ((inexact-zero? x)
+	 (if (inexact-zero? y)
 	     (r5rs->flonum 1.0)
 	     (r5rs->flonum 0.0)))
-	((ininteger? y)
-	 (if (innegative? y)
-	     (in/ (inexpt x (in- y)))
+	((inexact-integer? y)
+	 (if (inexact-negative? y)
+	     (inexact/ (inexact-expt x (inexact- y)))
 	     (e x y)))
 	(else
-	 (inexp (in* y (inlog x))))))
+	 (inexact-exp (inexact* y (inexact-log x))))))
 
 
-(define (inmake-rectangular a b)
+(define (inexact-make-rectangular a b)
   (if (and (flonum? a)
 	   (flonum? b))
       (make-compnum a b)
-      (error "inmake-rectangular: non-real argument" a b)))
+      (error "inexact-make-rectangular: non-real argument" a b)))
 
 ; from Larceny
 
-(define (inmake-polar a b)
+(define (inexact-make-polar a b)
   (if (not (and (flonum? a) (flonum? b)))
       (begin
 	(error "make-polar: invalid arguments" a b)
 	#t)
-      (inmake-rectangular (in* a (incos b)) (in* a (insin b)))))
+      (inexact-make-rectangular (inexact* a (inexact-cos b))
+				(inexact* a (inexact-sin b)))))
 
-(define (inreal-part z)
+(define (inexact-real-part z)
   (cond
    ((compnum? z) (compnum-real z))
    ((flonum? z) z)
    (else
-    (error "inreal-part: invalid argument" z))))
+    (error "inexact-real-part: invalid argument" z))))
 
-(define (inimag-part z)
+(define (inexact-imag-part z)
   (cond
    ((compnum? z) (compnum-real z))
    ((flonum? z) (r5rs->flonum 0.0))
    (else
-    (error "inimag-part: invalid argument" z))))
+    (error "inexact-imag-part: invalid argument" z))))
 
-(define (inangle c)
-  (inatan (inimag-part c) (inreal-part c)))
+(define (inexact-angle c)
+  (inexact-atan (inexact-imag-part c) (inexact-real-part c)))
 
 ; NOTE: CLtL2 notes that this implementation may not be ideal for very
 ;       large or very small numbers.
 
-(define (inmagnitude c)
-  (let ((r (inreal-part c))
-	(i (inimag-part c)))
-    (insqrt (in+ (in* r r) (in* i i)))))
+(define (inexact-magnitude c)
+  (let ((r (inexact-real-part c))
+	(i (inexact-imag-part c)))
+    (inexact-sqrt (inexact+ (inexact* r r) (inexact* i i)))))
 
 ; end from Larceny
 

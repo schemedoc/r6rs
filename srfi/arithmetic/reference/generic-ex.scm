@@ -3,21 +3,21 @@
 
 ; Generic exact rational arithmetic
 
-(define (exnumber? obj)
+(define (exact-number? obj)
   (or (fixnum? obj)
       (bignum? obj)
       (ratnum? obj)
       (recnum? obj)))
 
-(define (excomplex? obj)
-  (exnumber? obj))
+(define (exact-complex? obj)
+  (exact-number? obj))
 
-(define (exrational? obj)
+(define (exact-rational? obj)
   (or (fixnum? obj)
       (bignum? obj)
       (ratnum? obj)))
 
-(define (exinteger? obj)
+(define (exact-integer? obj)
   (or (fixnum? obj)
       (bignum? obj)))
 
@@ -62,23 +62,23 @@
 	(else
 	 (?contagion a b ?name)))))))
 
-(define-binary ex=/2 econtagion/ex
+(define-binary exact=?/2 econtagion/ex
   fx= bignum= ratnum= recnum=)
 
-(define-binary ex</2 pcontagion/ex
-  fx< bignum< ratnum< (make-typo-op/2 ex< 'rational))
-(define-binary ex<=/2 pcontagion/ex
-  fx< bignum<= ratnum<= (make-typo-op/2 ex<= 'rational))
-(define-binary ex>=/2 pcontagion/ex
-  fx>= bignum>= ratnum>= (make-typo-op/2 ex>= 'rational))
-(define-binary ex>/2 pcontagion/ex
-  fx>= bignum> ratnum> (make-typo-op/2 ex> 'rational))
+(define-binary exact<?/2 pcontagion/ex
+  fx< bignum< ratnum< (make-typo-op/2 exact<? 'rational))
+(define-binary exact<=?/2 pcontagion/ex
+  fx< bignum<= ratnum<= (make-typo-op/2 exact<=? 'rational))
+(define-binary exact>=?/2 pcontagion/ex
+  fx>= bignum>= ratnum>= (make-typo-op/2 exact>=? 'rational))
+(define-binary exact>?/2 pcontagion/ex
+  fx>= bignum> ratnum> (make-typo-op/2 exact>? 'rational))
 
-(define ex= (make-transitive-pred ex=/2))
-(define ex< (make-transitive-pred ex</2))
-(define ex<= (make-transitive-pred ex<=/2))
-(define ex>= (make-transitive-pred ex>=/2))
-(define ex> (make-transitive-pred ex>=/2))
+(define exact=? (make-transitive-pred exact=?/2))
+(define exact<? (make-transitive-pred exact<?/2))
+(define exact<=? (make-transitive-pred exact<=?/2))
+(define exact>=? (make-transitive-pred exact>=?/2))
+(define exact>? (make-transitive-pred exact>=?/2))
 
 (define-syntax define-unary
   (syntax-rules ()
@@ -96,38 +96,38 @@
 	(else
 	 (error "expects an exact argument" ?name a)))))))
 
-(define-unary exzero? fxzero? bignum-zero? never never) 
-(define-unary expositive? fxpositive? bignum-positive? ratnum-positive?
-  (make-typo-op/1 expositive? 'rational))
-(define-unary exnegative? fxnegative? bignum-negative? ratnum-negative?
-  (make-typo-op/1 exnegative? 'rational))
-(define-unary exodd? fxodd? bignum-odd?
-  (make-typo-op/1 exodd? 'integer)
-  (make-typo-op/1 exodd? 'integer))
-(define-unary exeven? fxeven? bignum-even?
-  (make-typo-op/1 exeven? 'integer)
-  (make-typo-op/1 exeven? 'integer))
+(define-unary exact-zero? fxzero? bignum-zero? never never) 
+(define-unary exact-positive? fxpositive? bignum-positive? ratnum-positive?
+  (make-typo-op/1 exact-positive? 'rational))
+(define-unary exact-negative? fxnegative? bignum-negative? ratnum-negative?
+  (make-typo-op/1 exact-negative? 'rational))
+(define-unary exact-odd? fxodd? bignum-odd?
+  (make-typo-op/1 exact-odd? 'integer)
+  (make-typo-op/1 exact-odd? 'integer))
+(define-unary exact-even? fxeven? bignum-even?
+  (make-typo-op/1 exact-even? 'integer)
+  (make-typo-op/1 exact-even? 'integer))
 
-(define exmin (make-min/max ex<))
-(define exmax (make-min/max ex>))
+(define exact-min (make-min/max exact<?))
+(define exact-max (make-min/max exact>?))
 
-(define-binary ex+/2 contagion/ex
+(define-binary exact+/2 contagion/ex
   bignum+ ratnum+ recnum+)
-(define-binary ex-/2 contagion/ex
+(define-binary exact-/2 contagion/ex
   bignum- ratnum- recnum-)
-(define-binary ex*/2 contagion/ex
+(define-binary exact*/2 contagion/ex
   bignum* ratnum* recnum*)
-(define-binary ex//2 contagion/ex
+(define-binary exact//2 contagion/ex
   integer/ integer/ ratnum/ recnum/)
 
-(define (ex+ . args)
-  (reduce (r5rs->integer 0) ex+/2 args))
-(define (ex- arg0 . args)
-  (reduce (r5rs->integer 0) ex-/2 (cons arg0 args)))
-(define (ex* . args)
-  (reduce (r5rs->integer 1) ex*/2 args))
-(define (ex/ arg0 . args)
-  (reduce (r5rs->integer 1) ex//2 (cons arg0 args)))
+(define (exact+ . args)
+  (reduce (r5rs->integer 0) exact+/2 args))
+(define (exact- arg0 . args)
+  (reduce (r5rs->integer 0) exact-/2 (cons arg0 args)))
+(define (exact* . args)
+  (reduce (r5rs->integer 1) exact*/2 args))
+(define (exact/ arg0 . args)
+  (reduce (r5rs->integer 1) exact//2 (cons arg0 args)))
 
 ;; ABS is evil ...
 (define *minus-least-fixnum* (bignum-negate (fixnum->bignum (least-fixnum))))
@@ -140,166 +140,166 @@
 	(fx- x)))
    (else x)))
 
-(define-unary exabs
+(define-unary exact-abs
   fx-abs bignum-abs ratnum-abs
-  (make-typo-op/1 exabs 'rational))
+  (make-typo-op/1 exact-abs 'rational))
 
-(define-binary exquotient contagion/ex
+(define-binary exact-quotient contagion/ex
   fxquotient
   bignum-quotient
-  (make-typo-op/2 exquotient 'integer)
-  (make-typo-op/2 exquotient 'integer))
+  (make-typo-op/2 exact-quotient 'integer)
+  (make-typo-op/2 exact-quotient 'integer))
   
-(define-binary exremainder contagion/ex
+(define-binary exact-remainder contagion/ex
   fxremainder
   bignum-remainder
-  (make-typo-op/2 exremainder 'integer)
-  (make-typo-op/2 exremainder 'integer))
+  (make-typo-op/2 exact-remainder 'integer)
+  (make-typo-op/2 exact-remainder 'integer))
 
-(define-binary exquotient+remainder contagion/ex
+(define-binary exact-quotient+remainder contagion/ex
   fxquotient+remainder
   bignum-quotient+remainder
-  (make-typo-op/2 exquotient+remainder 'integer)
-  (make-typo-op/2 exquotient+remainder 'integer))
+  (make-typo-op/2 exact-quotient+remainder 'integer)
+  (make-typo-op/2 exact-quotient+remainder 'integer))
 
-(define (exmodulo x y)
-  (if (and (exinteger? x) (exinteger? y))
-      (let* ((q (exquotient x y))
-	     (r (ex- x (ex* q y))))
-	(cond ((exzero? r)
+(define (exact-modulo x y)
+  (if (and (exact-integer? x) (exact-integer? y))
+      (let* ((q (exact-quotient x y))
+	     (r (exact- x (exact* q y))))
+	(cond ((exact-zero? r)
 	       r)
-	      ((exnegative? r)
-	       (if (exnegative? y)
+	      ((exact-negative? r)
+	       (if (exact-negative? y)
 		   r
-		   (ex+ r y)))
-	      ((exnegative? y)
-	       (ex+ r y))
+		   (exact+ r y)))
+	      ((exact-negative? y)
+	       (exact+ r y))
 	      (else
 	       r)))
-      (error "ex-modulo expects integral arguments" x y)))
+      (error "exact-modulo expects integral arguments" x y)))
 
-(define (exdiv+mod x y)
+(define (exact-div+mod x y)
   (let* ((div
 	  (cond
-	   ((expositive? y)
-	    (let ((n (ex* (exnumerator x)
-			  (exdenominator y)))
-		  (d (ex* (exdenominator x)
-			  (exnumerator y))))
-	      (if (exnegative? n)
-		  (ex- (exquotient (ex- (ex- d n) (r5rs->integer 1)) d))
-		  (exquotient n d))))
-	   ((exzero? y)
+	   ((exact-positive? y)
+	    (let ((n (exact* (exact-numerator x)
+			     (exact-denominator y)))
+		  (d (exact* (exact-denominator x)
+			     (exact-numerator y))))
+	      (if (exact-negative? n)
+		  (exact- (exact-quotient (exact- (exact- d n) (r5rs->integer 1)) d))
+		  (exact-quotient n d))))
+	   ((exact-zero? y)
 	    (r5rs->integer 0))
-	   ((exnegative? y)
-	    (let ((n (ex* (r5rs->integer -2) 
-			  (exnumerator x)
-			  (exdenominator y)))
-		  (d (ex* (exdenominator x)
-			  (ex- (exnumerator y)))))
-	      (if (ex< n d)
-		  (ex- (exquotient (ex- d n) (ex* 2 d)))
-		  (exquotient (ex+ n d (r5rs->integer -1)) (ex* 2 d)))))))
+	   ((exact-negative? y)
+	    (let ((n (exact* (r5rs->integer -2) 
+			     (exact-numerator x)
+			     (exact-denominator y)))
+		  (d (exact* (exact-denominator x)
+			     (exact- (exact-numerator y)))))
+	      (if (exact<? n d)
+		  (exact- (exact-quotient (exact- d n) (exact* 2 d)))
+		  (exact-quotient (exact+ n d (r5rs->integer -1)) (exact* 2 d)))))))
 	 (mod
-	  (ex- x (ex* div y))))
+	  (exact- x (exact* div y))))
     (values div mod)))
 
-(define (exdiv x y)
+(define (exact-div x y)
   (call-with-values
-      (lambda () (exdiv+mod x y))
+      (lambda () (exact-div+mod x y))
     (lambda (d m)
       d)))
 
-(define (exmod x y)
+(define (exact-mod x y)
   (call-with-values
-      (lambda () (exdiv+mod x y))
+      (lambda () (exact-div+mod x y))
     (lambda (d m)
       m)))
 
-(define (exgcd/2 x y)
-  (if (and (exinteger? x) (exinteger? y))
-      (cond ((ex< x (r5rs->integer 0)) (exgcd/2 (ex- x) y))
-	    ((ex< y (r5rs->integer 0)) (exgcd/2 x (ex- y)))
-	    ((ex< x y) (euclid y x))
+(define (exact-gcd/2 x y)
+  (if (and (exact-integer? x) (exact-integer? y))
+      (cond ((exact<? x (r5rs->integer 0)) (exact-gcd/2 (exact- x) y))
+	    ((exact<? y (r5rs->integer 0)) (exact-gcd/2 x (exact- y)))
+	    ((exact<? x y) (euclid y x))
 	    (else (euclid x y)))
       (error "exgcd expects integral arguments" x y)))
 
 (define (euclid x y)
-  (if (exzero? y)
+  (if (exact-zero? y)
       x
-      (euclid y (exremainder x y))))
+      (euclid y (exact-remainder x y))))
 
-(define (exlcm/2 x y)
-  (let ((g (exgcd/2 x y)))
-    (if (exzero? g)
+(define (exact-lcm/2 x y)
+  (let ((g (exact-gcd/2 x y)))
+    (if (exact-zero? g)
 	g
-	(ex* (exquotient (exabs x) g)
-	     (exabs y)))))
+	(exact* (exact-quotient (exact-abs x) g)
+		(exact-abs y)))))
 
-(define (exgcd . args)
-  (reduce (r5rs->integer 0) exgcd/2 args))
+(define (exact-gcd . args)
+  (reduce (r5rs->integer 0) exact-gcd/2 args))
 
-(define (exlcm . args)
-  (reduce (r5rs->integer 1) exlcm/2 args))
+(define (exact-lcm . args)
+  (reduce (r5rs->integer 1) exact-lcm/2 args))
 
-(define-unary exnumerator
+(define-unary exact-numerator
   id id ratnum-numerator
-  (make-typo-op/1 exnumerator 'rational))
+  (make-typo-op/1 exact-numerator 'rational))
 
-(define-unary exdenominator
+(define-unary exact-denominator
   one one ratnum-denominator
-  (make-typo-op/1 exdenominator 'rational))
+  (make-typo-op/1 exact-denominator 'rational))
 
 ;; floor is primitive
-(define-unary exfloor
+(define-unary exact-floor
   id id ratnum-floor
-  (make-typo-op/1 exfloor 'rational))
+  (make-typo-op/1 exact-floor 'rational))
 
-(define (exceiling x)
-  (ex- (exfloor (ex- x))))
+(define (exact-ceiling x)
+  (exact- (exact-floor (exact- x))))
 
-(define (extruncate x)
-  (if (exnegative? x)
-      (exceiling x)
-      (exfloor x)))
+(define (exact-truncate x)
+  (if (exact-negative? x)
+      (exact-ceiling x)
+      (exact-floor x)))
 
-(define (exround x)
-  (let* ((x+1/2 (ex+ x (r5rs->ratnum 1/2)))
-	 (r (exfloor x+1/2)))
-    (if (and (ex= r x+1/2)
-	     (exodd? r))
-	(ex- r (r5rs->integer 1))
+(define (exact-round x)
+  (let* ((x+1/2 (exact+ x (r5rs->ratnum 1/2)))
+	 (r (exact-floor x+1/2)))
+    (if (and (exact=? r x+1/2)
+	     (exact-odd? r))
+	(exact- r (r5rs->integer 1))
 	r)))
 
-(define (exexpt x y)
+(define (exact-expt x y)
 
   (define (e x y)
-    (cond ((exzero? y)
+    (cond ((exact-zero? y)
 	   (r5rs->integer 1))
-	  ((exodd? y)
-	   (ex* x (e x (ex- y (r5rs->integer 1)))))
+	  ((exact-odd? y)
+	   (exact* x (e x (exact- y (r5rs->integer 1)))))
 	  (else 
-	   (let ((v (e x (exquotient y (r5rs->integer 2)))))
-	     (ex* v v)))))
+	   (let ((v (e x (exact-quotient y (r5rs->integer 2)))))
+	     (exact* v v)))))
 
-  (cond ((exzero? x)
-	 (if (exzero? y)
+  (cond ((exact-zero? x)
+	 (if (exact-zero? y)
 	     (r5rs->integer 1)
 	     (r5rs->integer 0)))
-	((exinteger? y)
-	 (if (exnegative? y)
-	     (ex/ (exexpt x (ex- y)))
+	((exact-integer? y)
+	 (if (exact-negative? y)
+	     (exact/ (exact-expt x (exact- y)))
 	     (e x y)))
 	(else
-	 (error "exexpt expects integer power" y))))
+	 (error "exact-expt expects integer power" y))))
 
-(define (exmake-rectangular a b)
-  (if (and (exrational? a)
-	   (exrational? b))
+(define (exact-make-rectangular a b)
+  (if (and (exact-rational? a)
+	   (exact-rational? b))
       (rectangulate a b)
-      (error "exmake-rectangular: non-rational argument" a b)))
+      (error "exact-make-rectangular: non-rational argument" a b)))
 
-(define-unary exreal-part id id id recnum-real) 
-(define-unary eximag-part one one one recnum-imag)
+(define-unary exact-real-part id id id recnum-real) 
+(define-unary exact-imag-part one one one recnum-imag)
 
 

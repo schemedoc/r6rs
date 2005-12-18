@@ -215,11 +215,11 @@ on the following issues:
     terms of the <code>+</code> procedure:
     <ol>
     <li><code>+</code> is not defined in R6RS.
-    <li><code>+</code> is defined to be a synonym for the <code>ex+</code>,
+    <li><code>+</code> is defined to be a synonym for the <code>exact+</code>,
         so its domain is restricted to exact arguments, and always
         returns an exact result.
-    <li><code>+</code> is defined as the union of the <code>ex+</code>
-        and <code>in+</code> procedures, so all of its arguments are
+    <li><code>+</code> is defined as the union of the <code>exact+</code>
+        and <code>inexact+</code> procedures, so all of its arguments are
         required to have the same exactness, and the exactness of its
         result is the same as the exactness of its arguments.
     <li><code>+</code> is defined as in R5RS, but with the increased
@@ -250,7 +250,7 @@ general complex numbers.
 </blockquote>
     Given that this SRFI suggests requiring all implementations to
     support the general complex numbers, should <code>abs</code> (and
-    <code>exabs</code> and <code>inabs</code>) be removed?
+    <code>exact-abs</code> and <code>inexact-abs</code>) be removed?
 <li>The <code>real?</code>, <code>rational?</code>, and <code>integer?</code> predicates must
     return false for complex numbers with an imaginary part
     of inexact zero, as non-realness is now contagious.
@@ -274,10 +274,10 @@ such as IEEE extended precision.  Are there any such implementations?
 Do we expect such implementations in the near future?
 <li>Should `<code>(floor +inf.0)</code>' return <code>+inf.0</code> or
     signal an error instead?  (Similarly for <code>ceiling</code>,
-    <code>flfloor</code>, <code>infloor</code>, etc.)
+    <code>flfloor</code>, <code>inexact-floor</code>, etc.)
 <li>The bitwise operations operate on exact integers only.  Should
     they live in the section on exact arithmetic?  Should they carry
-    <code>ex</code> prefixes?  Or should they be extended to work
+    <code>exact</code> prefixes?  Or should they be extended to work
     on inexact integers as well?
 <li>The division between regular procedures and library procedures is
     somewhat arbitrary.
@@ -1955,10 +1955,10 @@ its real part.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exnumber?</CODE> <var>ex</var>
-<DT><U>procedure:</U> <CODE>excomplex?</CODE> <var>ex</var>
-<DT><U>procedure:</U> <CODE>exrational?</CODE> <var>ex</var>
-<DT><U>procedure:</U> <CODE>exinteger?</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exact-number?</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exact-complex?</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exaxt-rational?</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exact-integer?</CODE> <var>ex</var>
 <DD>
 <P>
 These numerical type predicates can be applied to any kind of
@@ -1992,11 +1992,11 @@ mode.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>ex=</CODE> <var>ex1</var> <var>ex2</var> <var>ex3</var> ...
-<DT><U>procedure:</U> <CODE>ex&gt;</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
-<DT><U>procedure:</U> <CODE>ex&lt;</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
-<DT><U>procedure:</U> <CODE>ex&gt;=</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
-<DT><U>procedure:</U> <CODE>ex&lt;=</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
+<DT><U>procedure:</U> <CODE>exact=</CODE> <var>ex1</var> <var>ex2</var> <var>ex3</var> ...
+<DT><U>procedure:</U> <CODE>exact&gt;?</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
+<DT><U>procedure:</U> <CODE>exact&lt;?</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
+<DT><U>procedure:</U> <CODE>exact&gt;=?</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
+<DT><U>procedure:</U> <CODE>exact&lt;=?</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
 <DD>
 
 <P>
@@ -2011,28 +2011,28 @@ monotonically nondecreasing, or monotonically nonincreasing
 <P>
 <DL>
 <DD>
-<DT><U>library procedure:</U> <CODE>exzero?</CODE> <VAR>ex</VAR>
-<DT><U>library procedure:</U> <CODE>expositive?</CODE> <VAR>ef</VAR>
-<DT><U>library procedure:</U> <CODE>exnegative?</CODE> <VAR>ef</VAR>
-<DT><U>library procedure:</U> <CODE>exodd?</CODE> <VAR>ei</VAR>
-<DT><U>library procedure:</U> <CODE>exeven?</CODE> <VAR>ei</VAR>
+<DT><U>library procedure:</U> <CODE>exact-zero?</CODE> <VAR>ex</VAR>
+<DT><U>library procedure:</U> <CODE>exact-positive?</CODE> <VAR>ef</VAR>
+<DT><U>library procedure:</U> <CODE>exact-negative?</CODE> <VAR>ef</VAR>
+<DT><U>library procedure:</U> <CODE>exact-odd?</CODE> <VAR>ei</VAR>
+<DT><U>library procedure:</U> <CODE>exact-even?</CODE> <VAR>ei</VAR>
 <DD>
 
 <P>
 These numerical predicates test an exact number for a particular property,
 returning <TT>#t</TT> or <TT>#f</TT>.
-<CODE>Exzero?</code> tests if
-the number is <code>ex=</code> to zero, <code>expositive?</code> tests if it is greater
-than zero, <code>exnegative?</code> tests if it is less
-than zero, <code>exodd?</code> tests if it is odd, 
-<code>exeven?</code> tests if it is even. 
+<CODE>Exact-zero?</code> tests if
+the number is <code>exact=?</code> to zero, <code>exact-positive?</code> tests if it is greater
+than zero, <code>exact-negative?</code> tests if it is less
+than zero, <code>exact-odd?</code> tests if it is odd, 
+<code>exact-even?</code> tests if it is even. 
 </P>
 </DL>
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exmax</CODE> <var>ef1</var> <var>ef2</var> ...
-<DT><U>library procedure:</U> <CODE>exmin</CODE> <var>ef1</var> <var>ef2</var> ...
+<DT><U>library procedure:</U> <CODE>exact-max</CODE> <var>ef1</var> <var>ef2</var> ...
+<DT><U>library procedure:</U> <CODE>exact-min</CODE> <var>ef1</var> <var>ef2</var> ...
 <DD>
 
 <P>
@@ -2042,8 +2042,8 @@ These procedures return the maximum or minimum of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>ex+</CODE> <var>ex1</var> <var>ex2</var> ...
-<DT><U>procedure:</U> <CODE>ex*</CODE> <var>ex1</var> <var>ex2</var> ...
+<DT><U>procedure:</U> <CODE>exact+</CODE> <var>ex1</var> <var>ex2</var> ...
+<DT><U>procedure:</U> <CODE>exact*</CODE> <var>ex1</var> <var>ex2</var> ...
 <DD>
 
 <P>
@@ -2053,17 +2053,17 @@ These procedures return the sum or product of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>ex-</CODE> <var>ex1</var> <var>ex2</var> ...
-<DT><U>procedure:</U> <CODE>ex-</CODE> <var>ex</var>
-<DT><U>procedure:</U> <CODE>ex/</CODE> <var>ex1</var> <var>ex2</var> ...
-<DT><U>procedure:</U> <CODE>ex/</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exact-</CODE> <var>ex1</var> <var>ex2</var> ...
+<DT><U>procedure:</U> <CODE>exact-</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exact/</CODE> <var>ex1</var> <var>ex2</var> ...
+<DT><U>procedure:</U> <CODE>exact/</CODE> <var>ex</var>
 <DD>
 
 <P>
 With two or more arguments, these procedures return the difference or
 quotient of their arguments, associating to the left.  With one
 argument, however, they return the additive or multiplicative inverse
-of their argument. <CODE>Ex/</CODE> signals an error
+of their argument. <CODE>Exact/</CODE> signals an error
 if a divisor is 0.
 </p>
 
@@ -2071,7 +2071,7 @@ if a divisor is 0.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exabs</CODE> <VAR>ef</VAR>
+<DT><U>library procedure:</U> <CODE>exact-abs</CODE> <VAR>ef</VAR>
 <DD>
 
 <P>
@@ -2082,13 +2082,13 @@ This procedure returns the absolute value of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exdiv+mod</CODE> <var>ef1</var> <var>ef2</var>
-<DT><U>library procedure:</U> <CODE>exdiv</CODE> <var>ef1</var> <var>ef2</var>
-<DT><U>library procedure:</U> <CODE>exmod</CODE> <var>ef1</var> <var>ef2</var>
-<DT><U>library procedure:</U> <CODE>exquotient</CODE> <var>ei1</var> <var>ei2</var>
-<DT><U>library procedure:</U> <CODE>exmodulo+remainder</CODE> <var>ei1</var> <var>ei2</var>
-<DT><U>library procedure:</U> <CODE>exmodulo</CODE> <var>ei1</var> <var>ei2</var>
-<DT><U>library procedure:</U> <CODE>exremainder</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>procedure:</U> <CODE>exact-div+mod</CODE> <var>ef1</var> <var>ef2</var>
+<DT><U>library procedure:</U> <CODE>exact-div</CODE> <var>ef1</var> <var>ef2</var>
+<DT><U>library procedure:</U> <CODE>exact-mod</CODE> <var>ef1</var> <var>ef2</var>
+<DT><U>library procedure:</U> <CODE>exact-quotient</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>library procedure:</U> <CODE>exact-modulo+remainder</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>library procedure:</U> <CODE>exact-modulo</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>library procedure:</U> <CODE>exact-remainder</CODE> <var>ei1</var> <var>ei2</var>
 <DD>
 
 <P>
@@ -2100,8 +2100,8 @@ divisors, these procedures signal an error.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exgcd</CODE> <var>ei1</var> <var>ei2</var> ...
-<DT><U>library procedure:</U> <CODE>exlcm</CODE> <var>ei1</var> <var>ei2</var> ...
+<DT><U>library procedure:</U> <CODE>exact-gcd</CODE> <var>ei1</var> <var>ei2</var> ...
+<DT><U>library procedure:</U> <CODE>exact-lcm</CODE> <var>ei1</var> <var>ei2</var> ...
 <DD>
 <P>
 These procedures return the greatest common divisor or least common
@@ -2111,8 +2111,8 @@ multiple of their arguments.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>exnumerator</CODE> <var>ef</var>
-<DT><U>library procedure:</U> <CODE>exdenominator</CODE> <var>ef</var>
+<DT><U>library procedure:</U> <CODE>exact-numerator</CODE> <var>ef</var>
+<DT><U>library procedure:</U> <CODE>exact-denominator</CODE> <var>ef</var>
 <DD>
 <P>
 These procedures return the numerator or denominator of their argument.
@@ -2124,24 +2124,24 @@ denominator of 0 is defined to be 1.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exfloor</CODE> <var>ef</var>
-<DT><U>procedure:</U> <CODE>exceiling</CODE> <var>ef</var>
-<DT><U>procedure:</U> <CODE>extruncate</CODE> <var>ef</var>
-<DT><U>procedure:</U> <CODE>exround</CODE> <var>ef</var>
+<DT><U>procedure:</U> <CODE>exact-floor</CODE> <var>ef</var>
+<DT><U>procedure:</U> <CODE>exact-ceiling</CODE> <var>ef</var>
+<DT><U>procedure:</U> <CODE>exact-truncate</CODE> <var>ef</var>
+<DT><U>procedure:</U> <CODE>exact-round</CODE> <var>ef</var>
 <DD>
 <P>
 These procedures return exact integers.
-<CODE>Exfloor</CODE> returns the largest integer not larger than <VAR>ef</VAR>.
-<CODE>Exceiling</CODE> returns the smallest integer not smaller than <VAR>ef</VAR>.
-<CODE>Extruncate</CODE> returns the integer closest to <VAR>ef</VAR> whose absolute
-value is not larger than the absolute value of <VAR>ef</VAR>.  <CODE>Exround</CODE> returns the
+<CODE>Exact-floor</CODE> returns the largest integer not larger than <VAR>ef</VAR>.
+<CODE>Exact-ceiling</CODE> returns the smallest integer not smaller than <VAR>ef</VAR>.
+<CODE>Exact-truncate</CODE> returns the integer closest to <VAR>ef</VAR> whose absolute
+value is not larger than the absolute value of <VAR>ef</VAR>.  <CODE>Exact-round</CODE> returns the
 closest integer to <VAR>ef</VAR>, rounding to even when <VAR>ef</VAR> is halfway between two
 integers.
 </DL>
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>exexpt</CODE> <var>ef1</var> <var>ei2</var>
+<DT><U>procedure:</U> <CODE>exact-expt</CODE> <var>ef1</var> <var>ei2</var>
 <DD>
 <p>
 Returns <VAR>ef1</VAR> raised to the power <VAR>ei2</VAR>.
@@ -2152,18 +2152,18 @@ Otherwise, this procedure signals an error.
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>exmake-rectangular</CODE> <var>ex1</var> <var>ex2</var>
-<DT><U>procedure:</U> <CODE>exreal-part</CODE> <var>ex</var>
-<DT><U>procedure:</U> <CODE>eximag-part</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exact-make-rectangular</CODE> <var>ex1</var> <var>ex2</var>
+<DT><U>procedure:</U> <CODE>exact-real-part</CODE> <var>ex</var>
+<DT><U>procedure:</U> <CODE>exact-imag-part</CODE> <var>ex</var>
 <DD>
 <p>
-The arguments of <code>exmake-rectangular</code> must be exact
+The arguments of <code>exact-make-rectangular</code> must be exact
 rationals.  Suppose <VAR>z</VAR> is a complex number such that
 <VAR>z</VAR> = <VAR>ef1</VAR> + <VAR>ef2</VAR>*i.  Then:
 <PRE>
-(exmake-rectangular <VAR>ef1</VAR> <VAR>ef2</VAR>) ==&gt; <VAR>z</VAR>
-(exreal-part <VAR>z</VAR>)              ==&gt; <VAR>ef1</VAR>
-(eximag-part <VAR>z</VAR>)              ==&gt; <VAR>ef2</VAR>
+(exact-make-rectangular <VAR>ef1</VAR> <VAR>ef2</VAR>) ==&gt; <VAR>z</VAR>
+(exact-real-part <VAR>z</VAR>)              ==&gt; <VAR>ef1</VAR>
+(exact-imag-part <VAR>z</VAR>)              ==&gt; <VAR>ef2</VAR>
 </PRE>
 </DL>
 
@@ -2180,11 +2180,11 @@ arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>innumber?</CODE> <var>obj</var>
-<DT><U>procedure:</U> <CODE>incomplex?</CODE> <var>obj</var>
-<DT><U>procedure:</U> <CODE>inreal?</CODE> <var>obj</var>
-<DT><U>procedure:</U> <CODE>inrational?</CODE> <var>obj</var>
-<DT><U>procedure:</U> <CODE>ininteger?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>inexact-number?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>inexact-complex?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>inexact-real?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>inexact-rational?</CODE> <var>obj</var>
+<DT><U>procedure:</U> <CODE>inexact-integer?</CODE> <var>obj</var>
 <DD>
 <P>
 These numerical type predicates can be applied to any kind of
@@ -2217,11 +2217,11 @@ real metavariables.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>in=</CODE> <var>in1</var> <var>in2</var> <var>in3</var> ...
-<DT><U>procedure:</U> <CODE>in&gt;</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
-<DT><U>procedure:</U> <CODE>in&lt;</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
-<DT><U>procedure:</U> <CODE>in&gt;=</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
-<DT><U>procedure:</U> <CODE>in&lt;=</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
+<DT><U>procedure:</U> <CODE>inexact=?</CODE> <var>in1</var> <var>in2</var> <var>in3</var> ...
+<DT><U>procedure:</U> <CODE>inexact&gt;?</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
+<DT><U>procedure:</U> <CODE>inexact&lt;?</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
+<DT><U>procedure:</U> <CODE>inexact&gt;=?</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
+<DT><U>procedure:</U> <CODE>inexact&lt;=?</CODE> <var>ir1</var> <var>ir2</var> <var>ir3</var> ...
 <DD>
 
 <P>
@@ -2237,30 +2237,30 @@ predicates are required to be transitive.
 <P>
 <DL>
 <DD>
-<DT><U>library procedure:</U> <CODE>inzero?</CODE> <var>in</var>
-<DT><U>library procedure:</U> <CODE>inpositive?</CODE> <var>ir</var>
-<DT><U>library procedure:</U> <CODE>innegative?</CODE> <var>ir</var>
-<DT><U>library procedure:</U> <CODE>inodd?</CODE> <var>ii</var>
-<DT><U>library procedure:</U> <CODE>ineven?</CODE> <var>ii</var>
-<DT><U>library procedure:</U> <CODE>innan?</CODE> <var>in</var>
+<DT><U>library procedure:</U> <CODE>inexact-zero?</CODE> <var>in</var>
+<DT><U>library procedure:</U> <CODE>inexact-positive?</CODE> <var>ir</var>
+<DT><U>library procedure:</U> <CODE>inexact-negative?</CODE> <var>ir</var>
+<DT><U>library procedure:</U> <CODE>inexact-odd?</CODE> <var>ii</var>
+<DT><U>library procedure:</U> <CODE>inexact-even?</CODE> <var>ii</var>
+<DT><U>library procedure:</U> <CODE>inexact-nan?</CODE> <var>in</var>
 <DD>
 
 <P>
 These numerical predicates test an inexact number for a particular property,
 returning <TT>#t</TT> or <TT>#f</TT>.
-<CODE>Inzero?</code> tests if
-the number is <code>in=</code> to zero, <code>inpositive?</code> tests if it is greater
-than zero, <code>innegative?</code> tests if it is less
-than zero, <code>inodd?</code> tests if it is odd, 
-<code>ineven?</code> tests if it is even,
-<code>innan?</code> tests if it is a NaN.
+<CODE>Inexact-zero?</code> tests if
+the number is <code>inexact=?</code> to zero, <code>inexact-positive?</code> tests if it is greater
+than zero, <code>inexact-negative?</code> tests if it is less
+than zero, <code>inexact-odd?</code> tests if it is odd, 
+<code>inexact-even?</code> tests if it is even,
+<code>inexact-nan?</code> tests if it is a NaN.
 </P>
 </DL>
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>inmax</CODE> <var>ir1</var> <var>ir2</var> ...
-<DT><U>library procedure:</U> <CODE>inmin</CODE> <var>ir1</var> <var>ir2</var> ...
+<DT><U>library procedure:</U> <CODE>inexact-max</CODE> <var>ir1</var> <var>ir2</var> ...
+<DT><U>library procedure:</U> <CODE>inexact-min</CODE> <var>ir1</var> <var>ir2</var> ...
 <DD>
 
 <P>
@@ -2270,8 +2270,8 @@ These procedures return the maximum or minimum of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>in+</CODE> <var>in1</var> <var>in2</var> ...
-<DT><U>procedure:</U> <CODE>in*</CODE> <var>in1</var> <var>in2</var> ...
+<DT><U>procedure:</U> <CODE>inexact+</CODE> <var>in1</var> <var>in2</var> ...
+<DT><U>procedure:</U> <CODE>inexact*</CODE> <var>in1</var> <var>in2</var> ...
 <DD>
 
 <P>
@@ -2281,10 +2281,10 @@ These procedures return the sum or product of their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>in-</CODE> <var>in1</var> <var>in2</var> ...
-<DT><U>procedure:</U> <CODE>in-</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>in/</CODE> <var>in1</var> <var>in2</var> ...
-<DT><U>procedure:</U> <CODE>in/</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-</CODE> <var>in1</var> <var>in2</var> ...
+<DT><U>procedure:</U> <CODE>inexact-</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact/</CODE> <var>in1</var> <var>in2</var> ...
+<DT><U>procedure:</U> <CODE>inexact/</CODE> <var>in</var>
 <DD>
 
 <P>
@@ -2298,7 +2298,7 @@ of their argument.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>inabs</CODE> <VAR>in</VAR>
+<DT><U>library procedure:</U> <CODE>inexact-abs</CODE> <VAR>in</VAR>
 <DD>
 
 <P>
@@ -2309,13 +2309,13 @@ This procedure returns the absolute value of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>indiv+mod</CODE> <var>ir1</var> <var>ir2</var>
-<DT><U>library procedure:</U> <CODE>indiv</CODE> <var>ir1</var> <var>ir2</var>
-<DT><U>library procedure:</U> <CODE>inmod</CODE> <var>ir1</var> <var>ir2</var>
-<DT><U>library procedure:</U> <CODE>inquotient</CODE> <var>ii1</var> <var>ii2</var>
-<DT><U>library procedure:</U> <CODE>inmodulo+remainder</CODE> <var>ii1</var> <var>ii2</var>
-<DT><U>library procedure:</U> <CODE>inmodulo</CODE> <var>ii1</var> <var>ii2</var>
-<DT><U>library procedure:</U> <CODE>inremainder</CODE> <var>ii1</var> <var>ii2</var>
+<DT><U>procedure:</U> <CODE>inexact-div+mod</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>library procedure:</U> <CODE>inexact-div</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>library procedure:</U> <CODE>inexact-mod</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>library procedure:</U> <CODE>inexact-quotient</CODE> <var>ii1</var> <var>ii2</var>
+<DT><U>library procedure:</U> <CODE>inexact-modulo+remainder</CODE> <var>ii1</var> <var>ii2</var>
+<DT><U>library procedure:</U> <CODE>inexact-modulo</CODE> <var>ii1</var> <var>ii2</var>
+<DT><U>library procedure:</U> <CODE>inexact-remainder</CODE> <var>ii1</var> <var>ii2</var>
 <DD>
 
 <P>
@@ -2328,8 +2328,8 @@ meaningless inexact number.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>ingcd</CODE> <var>ii1</var> <var>ii2</var> ...
-<DT><U>library procedure:</U> <CODE>inlcm</CODE> <var>ii1</var> <var>ii2</var> ...
+<DT><U>library procedure:</U> <CODE>inexact-gcd</CODE> <var>ii1</var> <var>ii2</var> ...
+<DT><U>library procedure:</U> <CODE>inexact-lcm</CODE> <var>ii1</var> <var>ii2</var> ...
 <DD>
 <P>
 These procedures return the greatest common divisor or least common
@@ -2339,8 +2339,8 @@ multiple of their arguments.
 
 <P>
 <DL>
-<DT><U>library procedure:</U> <CODE>innumerator</CODE> <var>if</var>
-<DT><U>library procedure:</U> <CODE>indenominator</CODE> <var>if</var>
+<DT><U>library procedure:</U> <CODE>inexact-numerator</CODE> <var>if</var>
+<DT><U>library procedure:</U> <CODE>inexact-denominator</CODE> <var>if</var>
 <DD>
 <P>
 These procedures return the numerator or denominator of their argument.
@@ -2352,19 +2352,19 @@ denominator of 0 is defined to be 1.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>infloor</CODE> <var>ir</var>
-<DT><U>procedure:</U> <CODE>inceiling</CODE> <var>ir</var>
-<DT><U>procedure:</U> <CODE>intruncate</CODE> <var>ir</var>
-<DT><U>procedure:</U> <CODE>inround</CODE> <var>ir</var>
+<DT><U>procedure:</U> <CODE>inexact-floor</CODE> <var>ir</var>
+<DT><U>procedure:</U> <CODE>inexact-ceiling</CODE> <var>ir</var>
+<DT><U>procedure:</U> <CODE>inexact-truncate</CODE> <var>ir</var>
+<DT><U>procedure:</U> <CODE>inexact-round</CODE> <var>ir</var>
 <DD>
 <P>
 These procedures return inexact integers
 for real arguments that are
 not infinities or NaNs.  For such arguments,
-<CODE>infloor</CODE> returns the largest integer not larger than <VAR>ir</VAR>.
-<CODE>Inceiling</CODE> returns the smallest integer not smaller than <VAR>ir</VAR>.
-<CODE>Intruncate</CODE> returns the integer closest to <VAR>in</VAR> whose absolute
-value is not larger than the absolute value of <VAR>in</VAR>.  <CODE>Inround</CODE> returns the
+<CODE>inexact-floor</CODE> returns the largest integer not larger than <VAR>ir</VAR>.
+<CODE>Inexact-ceiling</CODE> returns the smallest integer not smaller than <VAR>ir</VAR>.
+<CODE>Inexact-truncate</CODE> returns the integer closest to <VAR>in</VAR> whose absolute
+value is not larger than the absolute value of <VAR>in</VAR>.  <CODE>Inexact-round</CODE> returns the
 closest integer to <VAR>in</VAR>, rounding to even when <VAR>in</VAR> is halfway between two
 integers.
 
@@ -2378,23 +2378,23 @@ mode specified by the IEEE floating point standard.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>inexp</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>inlog</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>insin</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>incos</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>intan</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>inasin</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>inatan</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>inatan</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>procedure:</U> <CODE>inexact-exp</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-log</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-sin</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-cos</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-tan</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-asin</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-atan</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-atan</CODE> <var>ir1</var> <var>ir2</var>
 <DD>
 
 <P>
-These procedures compute the usual transcendental functions.  <CODE>Inlog</CODE>
+These procedures compute the usual transcendental functions.  <CODE>Inexact-log</CODE>
 computes the natural logarithm of <VAR>in</VAR> (not the base ten logarithm).
-<CODE>Inasin</CODE>, <CODE>Inacos</CODE>, and <CODE>Inatan</CODE> compute arcsine (sin<SUP>-1</SUP>),
+<CODE>Inexact-asin</CODE>, <CODE>Inexact-acos</CODE>, and <CODE>Inexact-atan</CODE> compute arcsine (sin<SUP>-1</SUP>),
 arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
-The two-argument variant of <CODE>Inatan</CODE> computes <SAMP>`(inangle
-(inmake-rectangular <VAR>ir1</VAR> <VAR>ir2</VAR>))'</SAMP> (see below).
+The two-argument variant of <CODE>Inexact-atan</CODE> computes <SAMP>`(inexact-angle
+(inexact-make-rectangular <VAR>ir1</VAR> <VAR>ir2</VAR>))'</SAMP> (see below).
 
 <P>
 In general, the mathematical functions log, arcsine, arccosine, and
@@ -2432,7 +2432,7 @@ not yield a real result for the given arguments, the
 result may be <code>+nan.0</code>, or may be some meaningless inexact number.
 
 <P>
-Specifically, the range of <CODE>`(inatan <var>x</var>
+Specifically, the range of <CODE>`(inexact-atan <var>x</var>
 <var>y</var>)'</CODE> is as in the following table. The asterisk (*)
 indicates that the entry applies to implementations that distinguish
 minus zero.
@@ -2581,20 +2581,20 @@ these functions.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>insqrt</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-sqrt</CODE> <var>in</var>
 <DD>
 <P>
 Returns the principal square root of <VAR>z</VAR>. For a negative
 argument, the result may be <code>+nan.0</code>, or may be some
-meaningless inexact number.  With <code>inlog</code> defined as above,
-the value of <code>`(insqrt <var>in</var>)'</code> is defined as
-<CODE>`(inexp (in/ (inlog <var>in</var>) 2.0))'</CODE>.
+meaningless inexact number.  With <code>inexact-log</code> defined as above,
+the value of <code>`(inexact-sqrt <var>in</var>)'</code> is defined as
+<CODE>`(inexact-exp (inexact/ (inexact-log <var>in</var>) 2.0))'</CODE>.
 
 </DL>
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>inexpt</CODE> <var>in1</var> <var>in2</var>
+<DT><U>procedure:</U> <CODE>inexact-expt</CODE> <var>in1</var> <var>in2</var>
 <DD>
 <P>
 Returns <VAR>in1</VAR> raised to the power <VAR>in2</VAR>.
@@ -2606,19 +2606,19 @@ For nonzero <VAR>in1</VAR>
 
 <P>
 0.0<SUP><VAR>z</VAR></SUP> is 1 if <VAR>z</VAR> = 0.0, and 0.0 if
-<SAMP>`(inreal-part <VAR>z</VAR>)'</SAMP> is positive.  
+<SAMP>`(inexact-real-part <VAR>z</VAR>)'</SAMP> is positive.  
 Otherwise, this procedure reports a violation of an implementation restriction
 or returns an unspecified number.
 </DL>
 
 <p>
 <DL>
-<DT><U>procedure:</U> <CODE>inmake-rectangular</CODE> <var>ir1</var> <var>ir2</var>
-<DT><U>procedure:</U> <CODE>inmake-polar</CODE> <var>ir1</var> <var>ir2</var>
-<DT><U>procedure:</U> <CODE>inreal-part</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>inimag-part</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>inmagnitude</CODE> <var>in</var>
-<DT><U>procedure:</U> <CODE>inangle</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-make-rectangular</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>procedure:</U> <CODE>inexact-make-polar</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>procedure:</U> <CODE>inexact-real-part</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-imag-part</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-magnitude</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-angle</CODE> <var>in</var>
 <DD>
 <p>
 Suppose 
@@ -2629,12 +2629,12 @@ such that
 <VAR>z</VAR> = <VAR>in1</VAR> + <VAR>in2</VAR>*i = <VAR>in3</VAR> *
 e<SUP>i*<VAR>in4</VAR></SUP>.  Then (inexactly):
 <PRE>
-(inmake-rectangular <VAR>in1</VAR> <VAR>in2</VAR>) ==&gt; <VAR>z</VAR>
-(inmake-rectangular <VAR>in3</VAR> <VAR>in4</VAR>) ==&gt; <VAR>z</VAR>
-(inreal-part <VAR>z</VAR>)              ==&gt; <VAR>in1</VAR>
-(inimag-part <VAR>z</VAR>)              ==&gt; <VAR>in2</VAR>
-(inmagnitude <VAR>z</VAR>)              ==&gt; |<VAR>in3</VAR>|
-(inangle <VAR>z</VAR>)                  ==&gt; <VAR>in<span class=sub>angle</span></VAR>
+(inexact-make-rectangular <VAR>in1</VAR> <VAR>in2</VAR>) ==&gt; <VAR>z</VAR>
+(inexact-make-rectangular <VAR>in3</VAR> <VAR>in4</VAR>) ==&gt; <VAR>z</VAR>
+(inexact-real-part <VAR>z</VAR>)              ==&gt; <VAR>in1</VAR>
+(inexact-imag-part <VAR>z</VAR>)              ==&gt; <VAR>in2</VAR>
+(inexact-magnitude <VAR>z</VAR>)              ==&gt; |<VAR>in3</VAR>|
+(inexact-angle <VAR>z</VAR>)                  ==&gt; <VAR>in<span class=sub>angle</span></VAR>
 </PRE>
 
 <P>
@@ -2644,9 +2644,9 @@ some integer <VAR>n</VAR>.
 
 <P>
 <PRE>
-(inangle -1.0)         ==&gt; pi
-(inangle -1.0+0.0)     ==&gt; pi
-(inangle -1.0-0.0)     ==&gt; -pi ; if -0.0 is distinguished
+(inexact-angle -1.0)         ==&gt; pi
+(inexact-angle -1.0+0.0)     ==&gt; pi
+(inexact-angle -1.0-0.0)     ==&gt; -pi ; if -0.0 is distinguished
 </PRE>
 
 </DL>
