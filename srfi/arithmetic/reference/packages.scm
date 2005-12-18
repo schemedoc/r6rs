@@ -463,7 +463,7 @@
   (files contagion-ex
 	 generic-ex))
 
-(define-interface generic-arithmetic/will-interface
+(define-interface generic-arithmetic-interface
   (export number? complex? real? rational? integer?
 	  exact? inexact?
 	  = < > <= >=
@@ -484,7 +484,7 @@
 	  arithmetic-shift
 	  rationalize))
 
-(define-structure generic-arithmetic/will generic-arithmetic/will-interface
+(define-structure generic-arithmetic generic-arithmetic-interface
   (open scheme-sans-arithmetic
 	integers-r5rs
 	fixnums
@@ -499,8 +499,8 @@
 	nary
 	srfi-23 ; error
 	)
-  (files contagion-will
-	 generic-will))
+  (files contagion-generic
+	 generic))
 
 (define-interface generic-arithmetic/mike-interface
   (export number? complex? real? rational? integer?
@@ -543,35 +543,19 @@
 
 ; Putting it all together
 
-(define-structure r6rs/will (compound-interface (interface-of scheme-sans-arithmetic)
-						fixnums-interface flonums-interface
-						generic-arithmetic/exact-interface
-						generic-arithmetic/inexact-interface
-						generic-arithmetic/will-interface
-						(interface-of strings-to-numbers)
-						(interface-of numbers-to-strings)
-						(interface-of r5rs-to-numbers))
+(define-structure r6rs (compound-interface (interface-of scheme-sans-arithmetic)
+					   fixnums-interface flonums-interface
+					   generic-arithmetic/exact-interface
+					   generic-arithmetic/inexact-interface
+					   generic-arithmetic-interface
+					   (interface-of strings-to-numbers)
+					   (interface-of numbers-to-strings)
+					   (interface-of r5rs-to-numbers))
   (open scheme-sans-arithmetic
 	fixnums flonums
 	generic-arithmetic/exact
 	generic-arithmetic/inexact
-	generic-arithmetic/will
-	strings-to-numbers numbers-to-strings
-	r5rs-to-numbers))
-
-(define-structure r6rs/mike (compound-interface (interface-of scheme-sans-arithmetic)
-						fixnums-interface flonums-interface
-						generic-arithmetic/exact-interface
-						generic-arithmetic/inexact-interface
-						generic-arithmetic/mike-interface
-						(interface-of strings-to-numbers)
-						(interface-of numbers-to-strings)
-						(interface-of r5rs-to-numbers))
-  (open scheme-sans-arithmetic
-	fixnums flonums
-	generic-arithmetic/exact
-	generic-arithmetic/inexact
-	generic-arithmetic/mike
+	generic-arithmetic
 	strings-to-numbers numbers-to-strings
 	r5rs-to-numbers))
 
@@ -580,22 +564,22 @@
 (define-structure test-strings-to-numbers (export)
   (open scheme-sans-arithmetic
 	(modify scheme (prefix r5rs:) (expose +))
-	(subset generic-arithmetic/will (=))
+	(subset generic-arithmetic (=))
 	r5rs-to-numbers
 	strings-to-numbers numbers-to-strings)
   (files test-prelude
 	 test-string2number
 	 test-postlude))
 
-(define-structure test-generic-arithmetic/will (export)
+(define-structure test-generic-arithmetic (export)
   (open scheme-sans-arithmetic
 	(modify scheme (prefix r5rs:) (expose +))
 	(subset flonums (flinf+ flinf- flnan flnan?))
 	r5rs-to-numbers
 	strings-to-numbers
-	generic-arithmetic/will)
+	generic-arithmetic)
   (files test-prelude
-	 test-generic-arithmetic-will
+	 test-generic-arithmetic
 	 test-postlude))
 
 (define-structure test-generic-arithmetic/mike (export)
