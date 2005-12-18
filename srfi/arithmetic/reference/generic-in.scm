@@ -47,7 +47,7 @@
 (define-binary inexact<=?/2 pcontagion/in
   fl<= (make-typo-op/2 inexact<=? 'real))
 (define-binary inexact>=?/2 pcontagion/in
-  fl>= (make-typo-op/2 inexact>= 'real))
+  fl>= (make-typo-op/2 inexact>=? 'real))
 (define-binary inexact>?/2 pcontagion/in
   fl> (make-typo-op/2 inexact>? 'real))
 
