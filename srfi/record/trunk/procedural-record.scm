@@ -173,7 +173,7 @@
 
 (define :record-constructor-descriptor (make-vector-type 'record-constructor-descriptor '() #f))
 
-(define (make-record-constructor-descriptor rtd protocol previous)
+(define (make-record-constructor-descriptor rtd previous protocol)
   (let ((parent (record-type-parent rtd)))
     (if (and previous (not parent))
 	(error "mismatch between rtd and constructor descriptor" rtd previous))

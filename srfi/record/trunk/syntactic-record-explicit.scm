@@ -180,8 +180,8 @@
        (define $constructor-descriptor
 	 (make-record-constructor-descriptor
 	  $rtd
-	  (extract-protocol ?props)
-	  (extract-parent/cps ?props record-constructor-descriptor)))
+	  (extract-parent/cps ?props record-constructor-descriptor)
+	  (extract-protocol ?props)))
 
        (extract-record-name/cps
 	?props
