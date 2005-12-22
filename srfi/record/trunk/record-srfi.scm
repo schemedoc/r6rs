@@ -428,7 +428,7 @@
 	 " will return a record where the fields of " (var "rtd") " are "
 	 "simply initialized with the arguments " (code "v ...") ".")
 	(p
-	 "As the constructor constructor can be used to construct records of an "
+	 "As the protocol can be used to construct records of an "
 	 "extension of " (var "rtd") ", the record returned by " (var "new") 
 	 " may be of a record type extending " (var "rtd") ".  (See below.)")
 
@@ -473,7 +473,7 @@
 	 "This is only admissible if either " (var "rtd")
 	 " is not an extension of another record type, or, if it is, " 
 	 " if " (var "parent-constructor-descriptor") " itself was constructed with " 
-	 " a default constructor constructor.  In the first case, "
+	 " a default protocol.  In the first case, "
 	 (var "protocol") " will default to a procedure equivalent to the following:")
 	(verbatim
 	 "(lambda (p)"
@@ -481,7 +481,7 @@
 	 "    (apply p field-values)))")
 
 	(p
-	 "In the latter case, it will default to a constructor constructor "
+	 "In the latter case, it will default to a protocol "
 	 "that returns a constructor that will accept as many arguments "
 	 " as " (var "rtd") " has total fields (i.e. as the sum of the "
 	 "number of fields in the entire chain of record types) "
@@ -495,7 +495,7 @@
 
        (dd
         (p
-         "Calls the constructor constructor of record-constructor descriptor "
+         "Calls the protocol of record-constructor descriptor "
 	 (var "constructor-descriptor")
 	 " with an appropriate procedure " (var "c") " as an argument "
 	 "(see the description of  " (code "make-record-constructor-descriptor") ") that "
@@ -631,7 +631,7 @@
 
         (p
          (meta "Constructor name") " is defined by this definition to a constructor for "
-	 "the defined record type, with a constructor constructor specified by the "
+	 "the defined record type, with a protocol specified by the "
 	 (code "protocol") " clause, or, in its absence, using a default value. "
 	 "For details, see the description of the " (code "protocol")
 	 " clause below.")
@@ -688,18 +688,18 @@
 	  (p
 	   (meta "Exp") " is evaluated in the same environment as the "
 	   (code "define-record-type") " form, and must evaluate to a "
-	   "constructor constructor appropriate for the record type being "
+	   "protocol appropriate for the record type being "
 	   "defined (see above in the description of " (code "make-record-constructor-descriptor")
-	   ").  The constructor constructor is used to create a record-constructor descriptor "
+	   ").  The protocol is used to create a record-constructor descriptor "
 	   "where, if the record-type being defined has a parent, the parent-type constructor descriptor "
 	   "is that associated with the parent type specified in the " (code "parent")
 	   " clause.")
 	  (p
 	   "If no " (code "protocol") " clause is specified, a constructor descriptor is still "
-	   "created using a default constructor constructor.  The rules for this are the same "
+	   "created using a default protocol.  The rules for this are the same "
 	   "as for " (code "make-record-constructor-descriptor") ": the clause can be absent only "
 	   "if the record type defined has no parent type, or if the parent definition "
-	   "does not specify a constructor constructor."))
+	   "does not specify a protocol."))
 
 	 (dt
 	  (prototype "sealed" (code "#t")))
