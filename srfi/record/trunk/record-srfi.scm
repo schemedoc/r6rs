@@ -645,13 +645,9 @@
            "where each " (meta "field-spec") " has one of the following forms")
           (dl
            (dt
-            (prototype (code "immutable") (meta "field name") (meta "accessor name")))
+            (prototype (meta "field name") (code " (") (meta "accessor name") (code ")")))
            (dt
-            (prototype (meta "field name") (meta "accessor name")))
-           (dt
-            (prototype (code "mutable") (meta "field name") (meta "accessor name") (meta "mutator name")))
-           (dt
-            (prototype (meta "field name") (meta "accessor name") (meta "mutator name"))))
+            (prototype (meta "field name") (code " (") (meta "accessor name") (meta "mutator name") (code ")"))))
           (p
            (meta "Field name") ", " (meta "accessor name") ", and " (meta "mutator name")
            " must all be identifiers. "
@@ -815,9 +811,9 @@
 
       (dl
        (dt
-	(prototype (code "immutable") (meta "field name")))
+	(prototype (meta "field name") (code " immutable")))
        (dt
-	(prototype (code "mutable") (meta "field name"))))
+	(prototype (meta "field name") (code " mutable"))))
 
       (p
        "If " (meta "field-spec") " takes one of these forms, then the accessor name "
