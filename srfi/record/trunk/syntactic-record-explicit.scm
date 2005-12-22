@@ -49,8 +49,8 @@
 (define-alist-extractor extract-parent extract-parent/cps parent no-record-type)
 (define-alist-extractor extract-sealed extract-sealed/cps sealed #f)
 (define-alist-extractor extract-opaque extract-opaque/cps opaque #f)
-(define-alist-extractor extract-constructor-constructor extract-constructor-constructor/cps
-  constructor-constructor #f)
+(define-alist-extractor extract-protocol extract-protocol/cps
+  protocol #f)
 (define-alist-extractor extract-nongenerative extract-nongenerative/cps nongenerative #f)
 
 (define-alist-extractor extract-record-name extract-record-name/cps record-name cant-happen)
@@ -72,7 +72,7 @@
        ?clause ...))))
 
 (define-syntax define-record-type-1
-  (syntax-rules (parent constructor-constructor sealed nongenerative opaque fields)
+  (syntax-rules (parent protocol sealed nongenerative opaque fields)
     ;; find PARENT clause
     ((define-record-type-1 ?props
        ?field-specs
@@ -82,12 +82,12 @@
        ?field-specs
        ?clause ...))
 
-    ;; find CONSTRUCTOR-CONSTRUCTOR clause
+    ;; find PROTOCOL clause
     ((define-record-type-1 ?props
        ?field-specs
-       (constructor-constructor ?constructor-constructor)
+       (protocol ?protocol)
        ?clause ...)
-     (define-record-type-1 ((constructor-constructor ?constructor-constructor) . ?props)
+     (define-record-type-1 ((protocol ?protocol) . ?props)
        ?field-specs
        ?clause ...))
 
@@ -177,19 +177,20 @@
 				      (extract-opaque ?props)
 				      '((?mutability ?field-name) ...)))
 
-       (define $maker
-	 (make-record-type-maker $rtd
-				 (extract-constructor-constructor ?props)
-				 (extract-parent/cps ?props record-type-maker)))
+       (define $constructor-descriptor
+	 (make-record-constructor-descriptor
+	  $rtd
+	  (extract-protocol ?props)
+	  (extract-parent/cps ?props record-constructor-descriptor)))
 
        (extract-record-name/cps
 	?props
-	define-record-type-name $rtd $maker)
+	define-record-type-name $rtd $constructor-descriptor)
 
        (extract-constructor-name/cps
 	?props
 	define
-	(record-constructor $maker))
+	(record-constructor $constructor-descriptor))
        
        (extract-predicate-name/cps ?props
 				   define (record-predicate $rtd))
@@ -199,26 +200,26 @@
 
 (define-syntax define-record-type-name
   (syntax-rules ()
-    ((define-record-type-name ?name ?rtd ?maker)
+    ((define-record-type-name ?name ?rtd ?constructor-descriptor)
      (define-syntax ?name
-       (syntax-rules (descriptor maker)
+       (syntax-rules (descriptor constructor-descriptor)
 	 ((?name descriptor) ?rtd)
-	 ((?name maker) ?maker))))))
+	 ((?name constructor-descriptor) ?constructor-descriptor))))))
 
 (define-syntax no-record-type
-  (syntax-rules (descriptor maker)
+  (syntax-rules (descriptor constructor-descriptor)
     ((?name descriptor) #f)
-    ((?name maker) #f)))
+    ((?name constructor-descriptor) #f)))
 
 (define-syntax record-type-descriptor
   (syntax-rules ()
     ((record-type-descriptor ?record-type)
      (?record-type descriptor))))
 
-(define-syntax record-type-maker
+(define-syntax record-constructor-descriptor
   (syntax-rules ()
-    ((record-type-descriptor ?record-type)
-     (?record-type maker))))
+    ((record-constructor-descriptor ?record-type)
+     (?record-type constructor-descriptor))))
 
 (define-syntax define-record-fields
   (syntax-rules ()

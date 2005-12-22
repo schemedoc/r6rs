@@ -25,7 +25,7 @@
 (module syntactic-record-types-explicit mzscheme
   (provide define-record-type
 	   record-type-descriptor
-	   record-type-maker)
+	   record-constructor-descriptor)
 
   (require "procedural-record-types.ss")
 

@@ -171,17 +171,17 @@
 
 ; Constructing constructors
 
-(define :record-type-maker (make-vector-type 'record-type-maker '() #f))
+(define :record-constructor-descriptor (make-vector-type 'record-constructor-descriptor '() #f))
 
-(define (make-record-type-maker rtd cons-cons previous)
+(define (make-record-constructor-descriptor rtd cons-cons previous)
   (let ((parent (record-type-parent rtd)))
     (if (and previous (not parent))
-	(error "mismatch between rtd and maker" rtd previous))
+	(error "mismatch between rtd and constructor descriptor" rtd previous))
 
     (if (and previous
 	     (not cons-cons)
-	     (record-type-maker-custom-cons-cons? previous))
-	(error "default maker procedure requested when parent maker has custom one"
+	     (record-constructor-descriptor-custom-cons-cons? previous))
+	(error "default protocol requested when parent constructor descriptor has custom one"
 	       cons-cons previous)) 
   
     (let ((custom-cons-cons? (and cons-cons #t))
@@ -190,9 +190,9 @@
 	   (if (or previous
 		   (not parent))
 	       previous
-	       (make-record-type-maker parent #f #f))))
+	       (make-record-constructor-descriptor parent #f #f))))
  
-      (typed-vector :record-type-maker
+      (typed-vector :record-constructor-descriptor
 		    rtd cons-cons custom-cons-cons? previous))))
 
 (define (default-cons-cons rtd)
@@ -209,28 +209,28 @@
 		(lambda (parent-field-values this-field-values)
 		  (apply (apply p parent-field-values) this-field-values)))))))))
 
-(define (record-type-maker-rtd maker)
-  (typed-vector-ref :record-type-maker maker 0))
-(define (record-type-maker-cons-cons maker)
-  (typed-vector-ref :record-type-maker maker 1))
+(define (record-constructor-descriptor-rtd desc)
+  (typed-vector-ref :record-constructor-descriptor desc 0))
+(define (record-constructor-descriptor-cons-cons desc)
+  (typed-vector-ref :record-constructor-descriptor desc 1))
 ; this field is for error checking
-(define (record-type-maker-custom-cons-cons? maker)
-  (typed-vector-ref :record-type-maker maker 2))
-(define (record-type-maker-previous maker)
-  (typed-vector-ref :record-type-maker maker 3))
+(define (record-constructor-descriptor-custom-cons-cons? desc)
+  (typed-vector-ref :record-constructor-descriptor desc 2))
+(define (record-constructor-descriptor-previous desc)
+  (typed-vector-ref :record-constructor-descriptor desc 3))
 
 ; A "seeder" is the procedure passed to the cons conser, used to seed
 ; the initial field values.
 
-(define (make-make-seeder real-rtd wrap for-maker)
-  (let recur ((for-maker for-maker))
-    (let* ((for-rtd (record-type-maker-rtd for-maker))
+(define (make-make-seeder real-rtd wrap for-desc)
+  (let recur ((for-desc for-desc))
+    (let* ((for-rtd (record-constructor-descriptor-rtd for-desc))
 	   (for-rtd-field-count (length (record-type-field-specs for-rtd))))
       (cond
-       ((record-type-maker-previous for-maker)
-	=> (lambda (parent-maker)
-	     (let ((parent-cons-cons (record-type-maker-cons-cons parent-maker))
-		   (parent-make-seeder (recur parent-maker)))
+       ((record-constructor-descriptor-previous for-desc)
+	=> (lambda (parent-desc)
+	     (let ((parent-cons-cons (record-constructor-descriptor-cons-cons parent-desc))
+		   (parent-make-seeder (recur parent-desc)))
 	       (lambda extension-field-values
 		 (lambda parent-cons-cons-args
 		   (lambda for-rtd-field-values
@@ -262,8 +262,8 @@
 	(and rtd-2
 	     (loop (record-type-parent rtd-2))))))
 
-(define (record-constructor maker)
-  (let* ((rtd (record-type-maker-rtd maker))
+(define (record-constructor desc)
+  (let* ((rtd (record-constructor-descriptor-rtd desc))
 	 (process
 	  (if (record-type-immutable? rtd)
 	      (lambda (r)
@@ -277,8 +277,8 @@
 					      (rtd-ancestor? access-key rtd)))
 				       (process r)))
 		   process)))
-    ((record-type-maker-cons-cons maker)
-     ((make-make-seeder rtd wrap maker)))))
+    ((record-constructor-descriptor-cons-cons desc)
+     ((make-make-seeder rtd wrap desc)))))
 
 (define (record-with-rtd? obj rtd)
   (has-vector-type? rtd obj))

@@ -34,7 +34,7 @@
    '((mutable x) (mutable y))))
 
 (define make-point
-  (record-constructor (make-record-type-maker :point #f #f)))
+  (record-constructor (make-record-constructor-descriptor :point #f #f)))
 
 (define point? (record-predicate :point))
 (define point-x (record-accessor :point 0))
@@ -55,7 +55,7 @@
    #f #f #f '((mutable x) (mutable y))))
 
 (define make-point2
-  (record-constructor (make-record-type-maker :point2 #f #f)))
+  (record-constructor (make-record-constructor-descriptor :point2 #f #f)))
 (define point2? (record-predicate :point2))
 (define point2-xx (record-accessor :point2 0))
 (define point2-yy (record-accessor :point2 1))
@@ -76,7 +76,7 @@
 
 (define-record-type (cpoint make-cpoint cpoint?)
   (parent point3)
-  (constructor-constructor
+  (protocol
    (lambda (p)
      (lambda (x y c) 
        ((p x y) (color->rgb c)))))
@@ -106,14 +106,14 @@
 (check (record-rtd p3-1) => (record-type-descriptor point3))
 
 (define-record-type (ex1 make-ex1 ex1?)
-  (constructor-constructor (lambda (p) (lambda a (p a))))
+  (protocol (lambda (p) (lambda a (p a))))
   (fields (f (ex1-f))))
 
 (define ex1-i1 (make-ex1 1 2 3))
 (check (ex1-f ex1-i1) => '(1 2 3))
 
 (define-record-type (ex2 make-ex2 ex2?)
-  (constructor-constructor (lambda (p) (lambda (a . b) (p a b))))
+  (protocol (lambda (p) (lambda (a . b) (p a b))))
   (fields (a (ex2-a))
 	  (b (ex2-b))))
 
@@ -127,7 +127,7 @@
 
 (define-record-type ex3
   (parent cpoint)
-  (constructor-constructor
+  (protocol
    (lambda (p)
      (lambda (x y t)
        (let ((r ((p x y 'red) t)))
@@ -150,7 +150,7 @@
 ; fancy constructor
 
 (define-record-type (unit-vector make-unit-vector unit-vector?)
-  (constructor-constructor
+  (protocol
    (lambda (p)
      (lambda (x y z)
        (let ((length (+ (* x x) (* y y) (* z z))))

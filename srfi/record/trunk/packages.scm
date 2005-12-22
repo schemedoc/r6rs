@@ -57,7 +57,7 @@
 (define-interface procedural-record-types-interface
   (export make-record-type-descriptor
 	  record-type-descriptor?
-	  make-record-type-maker
+	  make-record-constructor-descriptor
 	  record-constructor record-predicate
 	  record-accessor record-mutator))
 
@@ -87,7 +87,7 @@
 (define-interface syntactic-record-types/explicit-interface
   (export (define-record-type :syntax)
 	  (record-type-descriptor :syntax)
-	  (record-type-maker :syntax)))
+	  (record-constructor-descriptor :syntax)))
 
 (define-structure syntactic-record-types/explicit syntactic-record-types/explicit-interface
   (open scheme
@@ -98,7 +98,7 @@
 (define-interface syntactic-record-types/implicit-interface
   (export (define-record-type :syntax)
 	  (record-type-descriptor :syntax)
-	  (record-type-maker :syntax)))
+	  (record-constructor-descriptor :syntax)))
 
 (define-structure syntactic-record-types/implicit syntactic-record-types/implicit-interface
   (open scheme

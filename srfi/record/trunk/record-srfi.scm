@@ -249,7 +249,7 @@
 	 (li
 	  "How does update interact with the regular creation of new records? "
 	  "Specifically, can updaters be built using something similar to the "
-	  "makers used for creating constructors?")))
+	  "descriptors used for creating constructors?")))
 
        (li
 	(p
@@ -397,19 +397,20 @@
          (code "#f") " otherwise."))
 
        (dt
-	(prototype "make-record-type-maker"
+	(prototype "make-record-constructor-descriptor"
 		   (var "rtd")
-		   (var "parent-maker")
-		   (var "cons-cons")))
+		   (var "parent-constructor-descriptor")
+		   (var "protocol")))
        (dd
 	(p
-	 "This returns a " (i "record-type maker") " (or " (i "maker")
+	 "This returns a " (i "record-constructor descriptor") " (or "
+	 (i "constructor descriptor")
 	 " for short) that can be used to create record constructors (via "
-	 (code "record-constructor") "; see below) or other makers. "
-	 (var "Rtd") " must be a record-type descriptor.  " (var "Cons-cons")
+	 (code "record-constructor") "; see below) or other constructor descriptors. "
+	 (var "Rtd") " must be a record-type descriptor.  " (var "protocol")
 	 " is a " (i "constructor constructor") ", a procedure of one parameter "
 	 "that must itself return a procedure, the " (i "constructor") ".  The "
-	 (var "cons-cons") " procedure is called by " (code "record-constructor")
+	 (var "protocol") " procedure is called by " (code "record-constructor")
 	 " with a procedure " (var "c") " as an argument that  can be used to construct the "
 	 "record object itself and seed its fields with initial values.")
 	(p
@@ -418,11 +419,11 @@
 	 (var "rtd") "; calling it will return a record object with the "
 	 "fields of " (var "rtd") " initialized to the arguments of the call.")
 
-	(p "Constructor-constructor example:")
+	(p "Protocol example:")
 	(verbatim
-	 "(lambda (c) (lambda (v ...)  (c v ...)))")
+	 "(lambda (new) (lambda (new ...)  (new v ...)))")
 	(p
-	 "Here, the call to " (code "c") 
+	 "Here, the call to " (code "new") 
 	 " will return a record where the fields of " (var "rtd") " are "
 	 "simply initialized with the arguments " (code "v ...") ".")
 	(p
@@ -432,42 +433,46 @@
 
 	(p
 	 "If " (var "rtd") " " (em "is") " an extension of another record type " (var "rtd'")
-	 ", " (var "parent-maker") " itself must be a record-type maker of " (var "rtd'")
+	 ", " (var "parent-constructor-descriptor") 
+	 " itself must be a constructor descriptor of " (var "rtd'")
 	 " (except for default values; see below).  In this case, "
 	 (var "c") " is a procedure that accepts arguments that will be passed "
-	 "unchanged to the constructor of " (var "parent-maker") "; " (var "c")
+	 "unchanged to the constructor of " (var "parent-constructor-descriptor") "; " (var "c")
 	 " will return another procedure that accepts as argument the initial "
 	 "values for the fields of " (var "rtd") " and itself returns "
-	 "what the constructor of " (var "parent-maker") " returns.  "
+	 "what the constructor of " (var "parent-constructor-descriptor") " returns.  "
 	 "(this should typically be the record object itself)  "
 	 "with the field values of " (var "rtd'") " (and its parent and so on) "
-	 "initialized according to " (var "parent-maker") " and with the field values of "
+	 "initialized according to " (var "parent-constructor-descriptor") " and with the field values of "
 	 (var "rtd") " initialized according to " (var "c") ".")
 
-	(p "Constructor-constructor example")
+	(p "Protocol example")
 	(verbatim
-	 "(lambda (c) (lambda (x ... v ...) ((p x ...) v ...)))")
+	 "(lambda (p)
+            (lambda (x ... v ...)
+              (let ((new (p x ...)))
+                (new v ...))))")
 	(p
 	 "This will initialize the fields of the parent of " (var "rtd")
-	 " according to " (var "parent-maker") ", calling the associated constructor with "
+	 " according to " (var "parent-constructor-descriptor") ", calling the associated constructor with "
 	 (code "x ...") " as arguments, and initializing the fields of " (var "rtd")
 	 " itself with " (code "v ...") ".")
 	(p
-	 "In other words, makers for a record type form a chain of "
-	 "constructor constructors exactly parallel to the chain of record-type parents. "
-	 "Each maker in the chain determines the field values for the "
+	 "In other words, constructor descriptors for a record type form a chain of "
+	 "protocols exactly parallel to the chain of record-type parents. "
+	 "Each constructor descriptor in the chain determines the field values for the "
 	 "associated record type.")
 
 	(p
 	 "If " (var "rtd") " is not an extension of another record type, "
-	 "then " (var "parent-maker") " must be " (code "#f") ".")
+	 "then " (var "parent-constructor-descriptor") " must be " (code "#f") ".")
 	(p
-	 (var "Cons-cons") " can be " (code "#f") ", specifying a default.  "
+	 (var "Protocol") " can be " (code "#f") ", specifying a default.  "
 	 "This is only admissible if either " (var "rtd")
 	 " is not an extension of another record type, or, if it is, " 
-	 " if " (var "parent-maker") " itself was constructed with " 
+	 " if " (var "parent-constructor-descriptor") " itself was constructed with " 
 	 " a default constructor constructor.  In the first case, "
-	 (var "cons-cons") " will default to a procedure equivalent to the following:")
+	 (var "protocol") " will default to a procedure equivalent to the following:")
 	(verbatim
 	 "(lambda (c)"
 	 "  (lambda field-values"
@@ -484,16 +489,17 @@
 
        (dt
         (prototype "record-constructor"
-                   (var "maker")))
+                   (var "constructor-descriptor")))
 
        (dd
         (p
-         "Calls the constructor constructor of record-type maker " (var "maker")
+         "Calls the constructor constructor of record-constructor descriptor "
+	 (var "constructor-descriptor")
 	 " with an appropriate procedure " (var "c") " as an argument "
-	 "(see the description of  " (code "make-record-type-maker") ") that "
-	 "will create a record of the record type associated with " (var "maker") ".")
+	 "(see the description of  " (code "make-record-constructor-descriptor") ") that "
+	 "will create a record of the record type associated with " (var "constructor-descriptor") ".")
 	(p
-	 "If the record type associated with " (var "maker") "is opaque, then the values "
+	 "If the record type associated with " (var "constructor-descriptor") "is opaque, then the values "
 	 "created by such a constructor are not considered by the reflection "
 	 "procedures to be records; see "
 	 "the specification of " (code "record?") " below.")
@@ -595,7 +601,7 @@
        (dd
         (p
          "A " (code "define-record-type") " form defines a new record type "
-         "along with associated maker and constructor, predicate, "
+         "along with associated constructor descriptor and constructor, predicate, "
          "field accessors and field mutators.  The " (code "define-record-type") " form "
 	 "expands into a set of definitions in the "
 	 "environment where " (code "define-record-type") " appears; hence, it is possible to "
@@ -618,14 +624,14 @@
 	 "to an expand-time or run-time description of the "
          "record type for use as parent name in syntactic record-type definitions that extend "
          "this definition.  It may also be used as a handle to gain access to the "
-         "underlying record-type descriptor and maker (see " (code "record-type-descriptor")
-	 " and " (code "record-type-maker") " below).")
+         "underlying record-type descriptor and constructor descriptor (see " (code "record-type-descriptor")
+	 " and " (code "record-constructor-descriptor") " below).")
 
         (p
          (meta "Constructor name") " is defined by this definition to a constructor for "
 	 "the defined record type, with a constructor constructor specified by the "
-	 (code "constructor-constructor") " clause, or, in its absence, using a default value. "
-	 "For details, see the description of the " (code "constructor-constructor")
+	 (code "protocol") " clause, or, in its absence, using a default value. "
+	 "For details, see the description of the " (code "protocol")
 	 " clause below.")
 
         (p
@@ -675,21 +681,21 @@
            "record type with no parent type."))
 
 	 (dt
-	  (prototype "constructor-constructor" (meta "exp")))
+	  (prototype "protocol" (meta "exp")))
 	 (dd
 	  (p
 	   (meta "Exp") " is evaluated in the same environment as the "
 	   (code "define-record-type") " form, and must evaluate to a "
 	   "constructor constructor appropriate for the record type being "
-	   "defined (see above in the description of " (code "make-record-type-maker")
-	   ").  The constructor constructor is used to create a record-type maker "
-	   "where, if the record-type being defined has a parent, the parent-type maker "
+	   "defined (see above in the description of " (code "make-record-constructor-descriptor")
+	   ").  The constructor constructor is used to create a record-constructor descriptor "
+	   "where, if the record-type being defined has a parent, the parent-type constructor descriptor "
 	   "is that associated with the parent type specified in the " (code "parent")
 	   " clause.")
 	  (p
-	   "If no " (code "constructor-constructor") " clause is specified, a maker is still "
+	   "If no " (code "protocol") " clause is specified, a constructor descriptor is still "
 	   "created using a default constructor constructor.  The rules for this are the same "
-	   "as for " (code "make-record-type-maker") ": the clause can be absent only "
+	   "as for " (code "make-record-constructor-descriptor") ": the clause can be absent only "
 	   "if the record type defined has no parent type, or if the parent definition "
 	   "does not specify a constructor constructor."))
 
@@ -765,12 +771,12 @@
 	 "both opaque and non-opaque record types."))
 
        (dt
-        (prototype "record-type-maker"
+        (prototype "record-constructor-descriptor"
                    (meta "record name"))
         " (syntax)")
        (dd
         (p
-         "This evaluates to the record-type maker associated with "
+         "This evaluates to the record-constructor descriptor associated with "
          (meta "record-name") ".")))
 
       (h2 "Implicit-Naming Syntactic Layer")
@@ -833,7 +839,7 @@
       (verbatim
        "(define-record-type frob"
        "  (fields (mutable widget))"
-       "  (constructor-constructor"
+       "  (protocol"
        "    (lambda (c) (c (make-widget n)))))")
 
       (p "is equivalent to the following explicit-naming layer record definition.")
@@ -841,7 +847,7 @@
       (verbatim
        "(define-record-type (frob make-frob frob?)"
        "  (fields (widget (frob-widget frob-widget-set!))"
-       "  (constructor-constructor"
+       "  (protocol"
        "    (lambda (c) (c (make-widget n))))))")
 
       (p
@@ -852,7 +858,7 @@
       (verbatim
        "(define-record-type (frob make-frob frob?)"
        "  (fields (widget (getwid setwid!))"
-       "  (constructor-constructor"
+       "  (protocol"
        "    (lambda (c) (c (make-widget n)))))")
 
       (h2 "Reflection")
@@ -965,7 +971,7 @@
 
       (h1 (a (@ (name "design-rationale")) "Design Rationale"))
 
-      (h2 "Constructor constructors, makers, and constructors")
+      (h2 "Protocols, constructor descriptors, and constructors")
 
       (p
        "The proposal contains infrastructure for creating specialized constructors, "
@@ -981,7 +987,7 @@
        "computed or default to constant values.  It also allows for operations to be "
        "performed on or with the resulting record, such as the registration "
        "of a widget record for finalization. "
-       "Moreover, the maker mechanism allows the creation of such initializers in a "
+       "Moreover, the constructor-descriptor mechanism allows the creation of such initializers in a "
        "modular manner, separating the initialization concerns of the "
        "parent types of those of the extensions.")
       (p
@@ -1040,7 +1046,7 @@
        "   '((mutable x) (mutable y))))"
        ""
        "(define make-point"
-       "  (record-constructor (make-record-type-maker :point #f #f)))"
+       "  (record-constructor (make-record-constructor-descriptor :point #f #f)))"
        ""
        "(define point? (record-predicate :point))"
        "(define point-x (record-accessor :point 0))"
@@ -1061,7 +1067,7 @@
        "   #f #f #f '((mutable x) (mutable y))))"
        ""
        "(define make-point2"
-       "  (record-constructor (make-record-type-maker :point2 #f #f)))"
+       "  (record-constructor (make-record-constructor-descriptor :point2 #f #f)))"
        "(define point2? (record-predicate :point2))"
        "(define point2-xx (record-accessor :point2 0))"
        "(define point2-yy (record-accessor :point2 1))"
@@ -1083,7 +1089,7 @@
        ""
        "(define-record-type (cpoint make-cpoint cpoint?)"
        "  (parent point3)"
-       "  (constructor-constructor"
+       "  (protocol"
        "   (lambda (p)"
        "     (lambda (x y c) "
        "       ((p x y) (color->rgb c)))))"
@@ -1113,14 +1119,14 @@
        "(record-rtd p3-1) ; => (record-type-descriptor point3)"
        ""
        "(define-record-type (ex1 make-ex1 ex1?)"
-       "  (constructor-constructor (lambda (p) (lambda a (p a))))"
+       "  (protocol (lambda (p) (lambda a (p a))))"
        "  (fields (f (ex1-f))))"
        ""
        "(define ex1-i1 (make-ex1 1 2 3))"
        "(ex1-f ex1-i1) ; => '(1 2 3)"
        ""
        "(define-record-type (ex2 make-ex2 ex2?)"
-       "  (constructor-constructor (lambda (p) (lambda (a . b) (p a b))))"
+       "  (protocol (lambda (p) (lambda (a . b) (p a b))))"
        "  (fields (a (ex2-a))"
        "          (b (ex2-b))))"
        ""
@@ -1129,7 +1135,7 @@
        "(ex2-b ex2-i1) ; => '(2 3)"
        ""
        "(define-record-type (unit-vector make-unit-vector unit-vector?)"
-       "  (constructor-constructor"
+       "  (protocol"
        "   (lambda (p)"
        "     (lambda (x y z)"
        "       (let ((length (+ (* x x) (* y y) (* z z))))"
@@ -1148,7 +1154,7 @@
        ""
        "(define-record-type ex3"
        "  (parent cpoint)"
-       "  (constructor-constructor"
+       "  (protocol"
        "   (lambda (p)"
        "     (lambda (x y t)"
        "       (let ((r ((p x y 'red) t)))"

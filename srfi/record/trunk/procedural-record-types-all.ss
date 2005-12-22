@@ -31,7 +31,7 @@
 	   record-type-uid
 	   record-type-field-names
 	   record-type-opaque?
-	   make-record-type-maker record-constructor
+	   make-record-constructor-descriptor record-constructor
 	   record-predicate
 	   record-accessor record-mutator
 	   record-field-mutable? record-type-generative?
