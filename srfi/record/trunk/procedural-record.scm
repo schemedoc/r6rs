@@ -173,19 +173,19 @@
 
 (define :record-constructor-descriptor (make-vector-type 'record-constructor-descriptor '() #f))
 
-(define (make-record-constructor-descriptor rtd cons-cons previous)
+(define (make-record-constructor-descriptor rtd protocol previous)
   (let ((parent (record-type-parent rtd)))
     (if (and previous (not parent))
 	(error "mismatch between rtd and constructor descriptor" rtd previous))
 
     (if (and previous
-	     (not cons-cons)
-	     (record-constructor-descriptor-custom-cons-cons? previous))
+	     (not protocol)
+	     (record-constructor-descriptor-custom-protocol? previous))
 	(error "default protocol requested when parent constructor descriptor has custom one"
-	       cons-cons previous)) 
+	       protocol previous)) 
   
-    (let ((custom-cons-cons? (and cons-cons #t))
-	  (cons-cons (or cons-cons (default-cons-cons rtd)))
+    (let ((custom-protocol? (and protocol #t))
+	  (protocol (or protocol (default-protocol rtd)))
 	  (previous
 	   (if (or previous
 		   (not parent))
@@ -193,9 +193,9 @@
 	       (make-record-constructor-descriptor parent #f #f))))
  
       (typed-vector :record-constructor-descriptor
-		    rtd cons-cons custom-cons-cons? previous))))
+		    rtd protocol custom-protocol? previous))))
 
-(define (default-cons-cons rtd)
+(define (default-protocol rtd)
   (let ((parent (record-type-parent rtd)))
     (if (not parent)
 	(lambda (p)
@@ -211,10 +211,10 @@
 
 (define (record-constructor-descriptor-rtd desc)
   (typed-vector-ref :record-constructor-descriptor desc 0))
-(define (record-constructor-descriptor-cons-cons desc)
+(define (record-constructor-descriptor-protocol desc)
   (typed-vector-ref :record-constructor-descriptor desc 1))
 ; this field is for error checking
-(define (record-constructor-descriptor-custom-cons-cons? desc)
+(define (record-constructor-descriptor-custom-protocol? desc)
   (typed-vector-ref :record-constructor-descriptor desc 2))
 (define (record-constructor-descriptor-previous desc)
   (typed-vector-ref :record-constructor-descriptor desc 3))
@@ -229,18 +229,18 @@
       (cond
        ((record-constructor-descriptor-previous for-desc)
 	=> (lambda (parent-desc)
-	     (let ((parent-cons-cons (record-constructor-descriptor-cons-cons parent-desc))
+	     (let ((parent-protocol (record-constructor-descriptor-protocol parent-desc))
 		   (parent-make-seeder (recur parent-desc)))
 	       (lambda extension-field-values
-		 (lambda parent-cons-cons-args
+		 (lambda parent-protocol-args
 		   (lambda for-rtd-field-values
 		     (if (not (= (length for-rtd-field-values) for-rtd-field-count))
 			 (error "wrong number of arguments to record constructor"
 				for-rtd for-rtd-field-values))
-		     (apply (parent-cons-cons
+		     (apply (parent-protocol
 			     (apply parent-make-seeder
 				    (append for-rtd-field-values extension-field-values)))
-			    parent-cons-cons-args)))))))
+			    parent-protocol-args)))))))
        (else
 	(lambda extension-field-values
 	  (lambda for-rtd-field-values
@@ -277,7 +277,7 @@
 					      (rtd-ancestor? access-key rtd)))
 				       (process r)))
 		   process)))
-    ((record-constructor-descriptor-cons-cons desc)
+    ((record-constructor-descriptor-protocol desc)
      ((make-make-seeder rtd wrap desc)))))
 
 (define (record-with-rtd? obj rtd)
