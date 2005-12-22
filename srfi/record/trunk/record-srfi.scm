@@ -408,14 +408,15 @@
 	 " for short) that can be used to create record constructors (via "
 	 (code "record-constructor") "; see below) or other constructor descriptors. "
 	 (var "Rtd") " must be a record-type descriptor.  " (var "protocol")
-	 " is a " (i "constructor constructor") ", a procedure of one parameter "
+	 " is a " (i "protocol") ", a procedure of one parameter "
 	 "that must itself return a procedure, the " (i "constructor") ".  The "
 	 (var "protocol") " procedure is called by " (code "record-constructor")
-	 " with a procedure " (var "c") " as an argument that  can be used to construct the "
+	 " with a procedure as an argument that  can be used to construct the "
 	 "record object itself and seed its fields with initial values.")
 	(p
 	 "If " (var "rtd") " is " (em "not") " an extension of another record type, "
-	 (var "c") " is a procedure with a parameter for every field of "
+	 " the protocol receives as argument a procedure " (var "new")
+	 " that has a parameter for every field of "
 	 (var "rtd") "; calling it will return a record object with the "
 	 "fields of " (var "rtd") " initialized to the arguments of the call.")
 
@@ -428,7 +429,7 @@
 	 "simply initialized with the arguments " (code "v ...") ".")
 	(p
 	 "As the constructor constructor can be used to construct records of an "
-	 "extension of " (var "rtd") ", the record returned by " (var "c") 
+	 "extension of " (var "rtd") ", the record returned by " (var "new") 
 	 " may be of a record type extending " (var "rtd") ".  (See below.)")
 
 	(p
@@ -436,22 +437,23 @@
 	 ", " (var "parent-constructor-descriptor") 
 	 " itself must be a constructor descriptor of " (var "rtd'")
 	 " (except for default values; see below).  In this case, "
-	 (var "c") " is a procedure that accepts arguments that will be passed "
-	 "unchanged to the constructor of " (var "parent-constructor-descriptor") "; " (var "c")
+	 " the protcol receives as argument a procedure " (var "p")
+	 " that accepts arguments that will be passed "
+	 "unchanged to the constructor of " (var "parent-constructor-descriptor") "; " (var "p")
 	 " will return another procedure that accepts as argument the initial "
 	 "values for the fields of " (var "rtd") " and itself returns "
 	 "what the constructor of " (var "parent-constructor-descriptor") " returns.  "
 	 "(this should typically be the record object itself)  "
 	 "with the field values of " (var "rtd'") " (and its parent and so on) "
 	 "initialized according to " (var "parent-constructor-descriptor") " and with the field values of "
-	 (var "rtd") " initialized according to " (var "c") ".")
+	 (var "rtd") " initialized according to " (var "p") ".")
 
 	(p "Protocol example")
 	(verbatim
-	 "(lambda (p)
-            (lambda (x ... v ...)
-              (let ((new (p x ...)))
-                (new v ...))))")
+	 "(lambda (p)"
+	 "  (lambda (x ... v ...)"
+	 "    (let ((construct (p x ...)))"
+	 "      (construct v ...))))")
 	(p
 	 "This will initialize the fields of the parent of " (var "rtd")
 	 " according to " (var "parent-constructor-descriptor") ", calling the associated constructor with "
@@ -474,9 +476,9 @@
 	 " a default constructor constructor.  In the first case, "
 	 (var "protocol") " will default to a procedure equivalent to the following:")
 	(verbatim
-	 "(lambda (c)"
+	 "(lambda (p)"
 	 "  (lambda field-values"
-	 "    (apply c field-values)))")
+	 "    (apply p field-values)))")
 
 	(p
 	 "In the latter case, it will default to a constructor constructor "
@@ -1119,14 +1121,14 @@
        "(record-rtd p3-1) ; => (record-type-descriptor point3)"
        ""
        "(define-record-type (ex1 make-ex1 ex1?)"
-       "  (protocol (lambda (p) (lambda a (p a))))"
+       "  (protocol (lambda (new) (lambda a (new a))))"
        "  (fields (f (ex1-f))))"
        ""
        "(define ex1-i1 (make-ex1 1 2 3))"
        "(ex1-f ex1-i1) ; => '(1 2 3)"
        ""
        "(define-record-type (ex2 make-ex2 ex2?)"
-       "  (protocol (lambda (p) (lambda (a . b) (p a b))))"
+       "  (protocol (lambda (new) (lambda (a . b) (new a b))))"
        "  (fields (a (ex2-a))"
        "          (b (ex2-b))))"
        ""
@@ -1136,12 +1138,12 @@
        ""
        "(define-record-type (unit-vector make-unit-vector unit-vector?)"
        "  (protocol"
-       "   (lambda (p)"
+       "   (lambda (new)"
        "     (lambda (x y z)"
        "       (let ((length (+ (* x x) (* y y) (* z z))))"
-       "         (p  (/ x length)"
-       "             (/ y length)"
-       "             (/ z length))))))"
+       "         (new  (/ x length)"
+       "               (/ y length)"
+       "               (/ z length))))))"
        "  (fields (x (unit-vector-x))"
        "          (y (unit-vector-y))"
        "          (z (unit-vector-z))))")
