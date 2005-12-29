@@ -407,22 +407,26 @@
 	 (i "constructor descriptor")
 	 " for short) that can be used to create record constructors (via "
 	 (code "record-constructor") "; see below) or other constructor descriptors. "
-	 (var "Rtd") " must be a record-type descriptor.  " (var "protocol")
-	 " is a " (i "protocol") ", a procedure of one parameter "
+	 (var "Rtd") " must be a record-type descriptor.  " (var "Protocol")
+	 " is a " (i "protocol") ", that describes how to initialize the fields "
+	 "of" (var "rtd") " in the record when it is constructed.  "
+	 "The protocol is a procedure of one parameter "
 	 "that must itself return a procedure, the " (i "constructor") ".  The "
 	 (var "protocol") " procedure is called by " (code "record-constructor")
-	 " with a procedure as an argument that  can be used to construct the "
-	 "record object itself and seed its fields with initial values.")
+	 " with a procedure as an argument that can be used to construct the "
+	 "record object itself and seed the fields of the parent types of " (var "rtd") 
+	 " with initial values.")
 	(p
 	 "If " (var "rtd") " is " (em "not") " an extension of another record type, "
-	 " the protocol receives as argument a procedure " (var "new")
+	 "then " (var "parent-constructor-descriptor") " must be " (code "#f") ".  "
+	 "In this case, the protocol receives as argument a procedure " (var "new")
 	 " that has a parameter for every field of "
-	 (var "rtd") "; calling it will return a record object with the "
-	 "fields of " (var "rtd") " initialized to the arguments of the call.")
+	 (var "rtd") "; " (var "new") " will return a record object with the "
+	 "fields of " (var "rtd") " initialized to its arguments.")
 
 	(p "Protocol example:")
 	(verbatim
-	 "(lambda (new) (lambda (new ...)  (new v ...)))")
+	 "(lambda (new) (lambda (v ...)  (new v ...)))")
 	(p
 	 "Here, the call to " (code "new") 
 	 " will return a record where the fields of " (var "rtd") " are "
@@ -430,23 +434,26 @@
 	(p
 	 "As the protocol can be used to construct records of an "
 	 "extension of " (var "rtd") ", the record returned by " (var "new") 
-	 " may be of a record type extending " (var "rtd") ".  (See below.)")
+	 " may actually be of a record type extending " (var "rtd") ".  (See below.)")
 
 	(p
 	 "If " (var "rtd") " " (em "is") " an extension of another record type " (var "rtd'")
 	 ", " (var "parent-constructor-descriptor") 
 	 " itself must be a constructor descriptor of " (var "rtd'")
 	 " (except for default values; see below).  In this case, "
-	 " the protcol receives as argument a procedure " (var "p")
-	 " that accepts arguments that will be passed "
+	 " the protocol receives as argument a procedure " (var "p")
+	 " whose arguments will be passed "
 	 "unchanged to the constructor of " (var "parent-constructor-descriptor") "; " (var "p")
 	 " will return another procedure that accepts as argument the initial "
 	 "values for the fields of " (var "rtd") " and itself returns "
-	 "what the constructor of " (var "parent-constructor-descriptor") " returns.  "
-	 "(this should typically be the record object itself)  "
+	 "what the constructor of " (var "parent-constructor-descriptor") " returned, "
 	 "with the field values of " (var "rtd'") " (and its parent and so on) "
-	 "initialized according to " (var "parent-constructor-descriptor") " and with the field values of "
+	 "initialized according to " (var "parent-constructor-descriptor") 
+	 " and with the field values of "
 	 (var "rtd") " initialized according to " (var "p") ".")
+	(p
+	 "As a matter of convention, the constructor created through the protocol "
+	 "should always return the record object itself.")
 
 	(p "Protocol example")
 	(verbatim
@@ -460,14 +467,11 @@
 	 (code "x ...") " as arguments, and initializing the fields of " (var "rtd")
 	 " itself with " (code "v ...") ".")
 	(p
-	 "In other words, constructor descriptors for a record type form a chain of "
+	 "Summarizing: the constructor descriptors for a record type form a chain of "
 	 "protocols exactly parallel to the chain of record-type parents. "
 	 "Each constructor descriptor in the chain determines the field values for the "
 	 "associated record type.")
 
-	(p
-	 "If " (var "rtd") " is not an extension of another record type, "
-	 "then " (var "parent-constructor-descriptor") " must be " (code "#f") ".")
 	(p
 	 (var "Protocol") " can be " (code "#f") ", specifying a default.  "
 	 "This is only admissible if either " (var "rtd")
