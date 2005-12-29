@@ -43,24 +43,27 @@
     (let* ((record-name (symbol->string (caddr form)))
 	   (simple-fields
 	    (map (lambda (field-spec)
-		   (let ((field-name (car field-spec)))
-		     (list
-		      field-name
-		      (if (pair? (cadr field-spec))
-			  (cadr field-spec)
+		   (let ((field-name (cadr field-spec))
+			 (mutability (car field-spec))
+			 (field-spec-length (length field-spec)))
+		     (append
+		      (list (car field-spec)
+			    field-name)
+		      (if (null? (cddr field-spec))
 			  (cond
-			   ((compare (rename 'immutable) (cadr field-spec))
+			   ((compare (rename 'immutable) mutability)
 			    (list (string->symbol
 				   (string-append record-name "-"
 						  (symbol->string field-name)))))
-			   ((compare (rename 'mutable) (cadr field-spec))
+			   ((compare (rename 'mutable) mutability)
 			    (list (string->symbol
 				   (string-append record-name "-"
 						  (symbol->string field-name)))
 				  (string->symbol
 				   (string-append record-name "-"
 						  (symbol->string field-name)
-						  "-set!")))))))))
+						  "-set!")))))
+			  (cddr field-spec)))))
 		 (cdr (cadr form))))
 	   (simple-fields-clause
 	    (cons (caadr form) simple-fields)))

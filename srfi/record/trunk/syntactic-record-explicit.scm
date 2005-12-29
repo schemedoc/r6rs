@@ -72,7 +72,7 @@
        ?clause ...))))
 
 (define-syntax define-record-type-1
-  (syntax-rules (parent protocol sealed nongenerative opaque fields)
+  (syntax-rules (parent protocol sealed nongenerative opaque fields mutable immutable)
     ;; find PARENT clause
     ((define-record-type-1 ?props
        ?field-specs
@@ -137,7 +137,7 @@
     ;; complete spec
     ((define-record-type-1 ?props
        (?field-spec ...)
-       (fields (?field-name (?accessor)) ?rest ...)
+       (fields (immutable ?field-name ?accessor) ?rest ...)
        ?clause ...)
      (define-record-type-1 ?props
        (?field-spec ... (immutable ?field-name (?accessor))) 
@@ -146,7 +146,7 @@
 
     ((define-record-type-1 ?props
        (?field-spec ...)
-       (fields (?field-name (?accessor ?mutator)) ?rest ...)
+       (fields (mutable ?field-name ?accessor ?mutator) ?rest ...)
        ?clause ...)
      (define-record-type-1 ?props
        (?field-spec ... (mutable ?field-name (?accessor ?mutator)))

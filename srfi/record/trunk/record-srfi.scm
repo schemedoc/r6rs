@@ -657,9 +657,9 @@
            "where each " (meta "field-spec") " has one of the following forms")
           (dl
            (dt
-            (prototype (meta "field name") (code " (") (meta "accessor name") (code ")")))
+            (prototype (code "immutable ") (meta "field name") (meta "accessor name")))
            (dt
-            (prototype (meta "field name") (code " (") (meta "accessor name") (meta "mutator name") (code ")"))))
+            (prototype (code "mutable ") (meta "field name") (meta "accessor name") (meta "mutator name"))))
           (p
            (meta "Field name") ", " (meta "accessor name") ", and " (meta "mutator name")
            " must all be identifiers. "
@@ -823,9 +823,9 @@
 
       (dl
        (dt
-	(prototype (meta "field name") (code " immutable")))
+	(prototype (code "immutable ") (meta "field name")))
        (dt
-	(prototype (meta "field name") (code " mutable"))))
+	(prototype (code "mutable ") (meta "field name"))))
 
       (p
        "If " (meta "field-spec") " takes one of these forms, then the accessor name "
@@ -852,9 +852,9 @@
 
       (verbatim
        "(define-record-type (frob make-frob frob?)"
-       "  (fields (widget (frob-widget frob-widget-set!))"
+       "  (fields (mutable widget frob-widget frob-widget-set!))"
        "  (protocol"
-       "    (lambda (c) (c (make-widget n))))))")
+       "    (lambda (c) (c (make-widget n)))))")
 
       (p
        "With the explicit-naming layer, one can choose to specify just some of the "
@@ -863,7 +863,7 @@
    
       (verbatim
        "(define-record-type (frob make-frob frob?)"
-       "  (fields (widget (getwid setwid!))"
+       "  (fields (mutable widget getwid setwid!))"
        "  (protocol"
        "    (lambda (c) (c (make-widget n)))))")
 
@@ -1089,8 +1089,8 @@
 
       (verbatim
        "(define-record-type (point3 make-point3 point3?)"
-       "  (fields (x (point3-x))"
-       "          (y (point3-y set-point3-y!)))"
+       "  (fields (immutable x point3-x)"
+       "          (mutable y point3-y set-point3-y!))"
        "  (nongenerative point3-4893d957-e00b-11d9-817f-00111175eb9e))"
        ""
        "(define-record-type (cpoint make-cpoint cpoint?)"
@@ -1099,7 +1099,7 @@
        "   (lambda (p)"
        "     (lambda (x y c) "
        "       ((p x y) (color->rgb c)))))"
-       "  (fields (rgb (cpoint-rgb cpoint-rgb-set!))))"
+       "  (fields (mutable rgb cpoint-rgb cpoint-rgb-set!)))"
        ""
        "(define (color->rgb c)"
        "  (cons 'rgb c))"
@@ -1126,15 +1126,15 @@
        ""
        "(define-record-type (ex1 make-ex1 ex1?)"
        "  (protocol (lambda (new) (lambda a (new a))))"
-       "  (fields (f (ex1-f))))"
+       "  (fields (immutable f ex1-f)))"
        ""
        "(define ex1-i1 (make-ex1 1 2 3))"
        "(ex1-f ex1-i1) ; => '(1 2 3)"
        ""
        "(define-record-type (ex2 make-ex2 ex2?)"
        "  (protocol (lambda (new) (lambda (a . b) (new a b))))"
-       "  (fields (a (ex2-a))"
-       "          (b (ex2-b))))"
+       "  (fields (immutable a ex2-a)"
+       "          (immutable b ex2-b)))"
        ""
        "(define ex2-i1 (make-ex2 1 2 3))"
        "(ex2-a ex2-i1) ; => 1"
@@ -1148,9 +1148,9 @@
        "         (new  (/ x length)"
        "               (/ y length)"
        "               (/ z length))))))"
-       "  (fields (x (unit-vector-x))"
-       "          (y (unit-vector-y))"
-       "          (z (unit-vector-z))))")
+       "  (fields (immutable x unit-vector-x)"
+       "          (immutable y unit-vector-y)"
+       "          (immutable z unit-vector-z)))")
 
 
       (h2 "Implicit-naming syntactic layer")
