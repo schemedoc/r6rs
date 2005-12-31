@@ -159,8 +159,8 @@
 	(p
 	 "Allowing such abbreviations would make some record definitions more "
 	 "concise but may also discourage programmers from specifying valuable "
-	 "field mutability information and taking advantage of nontrivial "
-	 "field initializers.  In any case, it is trivial to define forms like "
+	 "field mutability information.  "
+	 "In any case, it is trivial to define forms like "
 	 (code "define-struct") " on top of this proposal."))
 
        (li
