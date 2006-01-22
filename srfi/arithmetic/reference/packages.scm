@@ -46,7 +46,7 @@
 	  fxmin fxmax
 	  fxbitwise-not
 	  fxbitwise-and fxbitwise-ior fxbitwise-xor
-	  fxarithmetic-shift
+	  fxarithmetic-shift-left
 	  fixnum-width least-fixnum greatest-fixnum
 	  fx+/carry fx-/carry fx*/carry))
 
@@ -106,7 +106,7 @@
 
 	  bignum-bitwise-not
 	  bignum-bitwise-ior bignum-bitwise-xor bignum-bitwise-and
-	  bignum-arithmetic-shift))
+	  bignum-arithmetic-shift-left))
 
 (define-structures ((bignums bignums-interface)
 		    (bignums-r5rs (export bignum->r5rs r5rs->bignum)))
@@ -141,7 +141,7 @@
 
 	  integer-bitwise-not
 	  integer-bitwise-ior integer-bitwise-xor integer-bitwise-and
-	  integer-arithmetic-shift))
+	  integer-arithmetic-shift-left))
 
 (define-structures ((integers integers-interface)
 		    (integers-r5rs (export integer->r5rs r5rs->integer )))
@@ -396,7 +396,7 @@
 	  exact-expt
 	  exact-bitwise-not
 	  exact-bitwise-ior exact-bitwise-and exact-bitwise-xor
-	  exact-arithmetic-shift))
+	  exact-arithmetic-shift-left))
 
 (define-structure generic-arithmetic/exact generic-arithmetic/exact-interface
   (open scheme-sans-arithmetic
@@ -519,7 +519,7 @@
 	  exact->inexact inexact->exact number->flonum
 	  bitwise-not
 	  bitwise-ior bitwise-and bitwise-xor
-	  arithmetic-shift
+	  arithmetic-shift-left
 	  rationalize))
 
 (define-structure generic-arithmetic/mike generic-arithmetic/mike-interface

@@ -109,9 +109,9 @@
 	   (adjoin-digit next
 			 (recur (high-digits m) carry)))))))
 
-; arithmetic-shift
+; arithmetic-shift-left
 
-(define (bignum-arithmetic-shift m n)
+(define (bignum-arithmetic-shift-left m n)
   (make-integer (bignum-sign m)
 		(cond ((bignum-positive? n)
 		       (shift-left-magnitude (bignum-magnitude m) n))
@@ -128,17 +128,17 @@
 	  (and (bignum? n)
 	       (bignum< n big-log-radix)))
       (let* ((n (x->fixnum n))
-	     (mask (fx- (fxarithmetic-shift (r5rs->fixnum 1) (fx- log-radix n))
+	     (mask (fx- (fxarithmetic-shift-left (r5rs->fixnum 1) (fx- log-radix n))
 			(r5rs->fixnum 1))))
 	(let recur ((mag mag)
 		    (low (r5rs->fixnum 0)))
 	  (if (zero-magnitude? mag)
 	      (adjoin-digit low zero-magnitude)
 	      ;; Split the low digit into left and right parts, and shift
-	      (let ((left (fxarithmetic-shift (low-digit mag)
-					      (fx- n log-radix))) ;shift right
-		    (right (fxarithmetic-shift (fxbitwise-and (low-digit mag) mask)
-					       n)))
+	      (let ((left (fxarithmetic-shift-left (low-digit mag)
+						   (fx- n log-radix))) ;shift right
+		    (right (fxarithmetic-shift-left (fxbitwise-and (low-digit mag) mask)
+						    n)))
 		(adjoin-digit (fxbitwise-ior low right)
 			      (recur (high-digits mag)
 				     left))))))
@@ -153,15 +153,15 @@
 	  (and (bignum? n)
 	       (bignum> n (bignum-negate big-log-radix))))
       (let* ((n (x->fixnum n))
-	     (mask (fx- (fxarithmetic-shift (r5rs->fixnum 1) (fx- (r5rs->fixnum 0) n))
+	     (mask (fx- (fxarithmetic-shift-left (r5rs->fixnum 1) (fx- (r5rs->fixnum 0) n))
 			(r5rs->fixnum 1))))
 	(let recur ((mag mag))
 	  (let ((low (low-digit mag))
 		(high (high-digits mag)))
 	    (adjoin-digit
-	     (fxbitwise-ior (fxarithmetic-shift low n)
-			    (fxarithmetic-shift (fxbitwise-and mask (low-digit high))
-						(fx+ n log-radix)))
+	     (fxbitwise-ior (fxarithmetic-shift-left low n)
+			    (fxarithmetic-shift-left (fxbitwise-and mask (low-digit high))
+						     (fx+ n log-radix)))
 	     (if (zero-magnitude? high)
 		 zero-magnitude
 		 (recur high))))))
@@ -192,7 +192,7 @@
 		      (bignum<= n (bignum-negate big-log-radix))))
 	     (digit-recur (high-digits mag) (bignum+ (x->bignum n) big-log-radix) carry)
 	     (let* ((n (x->fixnum n))
-		    (mask (fx- (fxarithmetic-shift (r5rs->fixnum 1) (fx- (r5rs->fixnum 0) n))
+		    (mask (fx- (fxarithmetic-shift-left (r5rs->fixnum 1) (fx- (r5rs->fixnum 0) n))
 			       (r5rs->fixnum 1))))
 	       (let recur ((mag mag) (low digits) (carry carry))
 		 (let ((high-digits (high-digits mag)))
@@ -201,9 +201,9 @@
 			 (negate-low-digit high-digits carry))
 		     (lambda (high carry)
 		       (adjoin-digit
-			(fxbitwise-ior (fxarithmetic-shift low n)
-				       (fxarithmetic-shift (fxbitwise-and mask high)
-							   (fx+ n log-radix)))
+			(fxbitwise-ior (fxarithmetic-shift-left low n)
+				       (fxarithmetic-shift-left (fxbitwise-and mask high)
+								(fx+ n log-radix)))
 			(if (zero-magnitude? high-digits)
 			    (fixnum->magnitude carry)
 			    (recur high-digits high carry))))))))))))))
@@ -211,8 +211,8 @@
 ;(define (tst)
 ;  (let* ((m (random))
 ;         (n (bitwise-and m 63))
-;         (m1 (integer-arithmetic-shift
-;              (integer-arithmetic-shift m n)
+;         (m1 (integer-arithmetic-shift-left
+;              (integer-arithmetic-shift-left m n)
 ;              (- 0 n))))
 ;    (list n m m1 (= m m1))))
 ;(define random (make-random 17))

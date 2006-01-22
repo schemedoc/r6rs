@@ -165,7 +165,7 @@
 
 ; these are built into Scheme 48
 ; check SRFI 60 for a reference implementation
-(define fxarithmetic-shift (make-fx*fx->fx arithmetic-shift))
+(define fxarithmetic-shift-left (make-fx*fx->fx arithmetic-shift))
 (define fxbitwise-not (make-fx->fx bitwise-not))
 (define fxbit-count (make-fx->fx bit-count))
 

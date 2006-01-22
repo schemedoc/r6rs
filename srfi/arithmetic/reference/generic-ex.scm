@@ -345,23 +345,23 @@
 	  (make-binary-bitwise-op fxbitwise-xor bignum-bitwise-xor)
 	  args))
 
-(define (exact-arithmetic-shift a b)
+(define (exact-arithmetic-shift-left a b)
 
   (define (fail)
-    (error "exact-arithmetic-shift expects exact integer arguments" a b))
+    (error "exact-arithmetic-shift-left expects exact integer arguments" a b))
 
   (cond
    ((fixnum? a)
     (cond
      ((fixnum? b)
-      (bignum-arithmetic-shift (fixnum->bignum a) (fixnum->bignum b)))
+      (bignum-arithmetic-shift-left (fixnum->bignum a) (fixnum->bignum b)))
      ((bignum? b)
-      (bignum-arithmetic-shift (fixnum->bignum a) b))
+      (bignum-arithmetic-shift-left (fixnum->bignum a) b))
      (else (fail))))
    ((bignum? a)
     (cond
      ((fixnum? b)
-      (bignum-arithmetic-shift a (fixnum->bignum b)))
+      (bignum-arithmetic-shift-left a (fixnum->bignum b)))
      ((bignum? b)
-      (bignum-arithmetic-shift a (fixnum->bignum b)))
+      (bignum-arithmetic-shift-left a (fixnum->bignum b)))
      (else (fail))))))

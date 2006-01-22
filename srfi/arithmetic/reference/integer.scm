@@ -149,4 +149,4 @@
   (make-binary-bitwise-op fxbitwise-xor bignum-bitwise-xor))
 (define integer-bitwise-and
   (make-binary-bitwise-op fxbitwise-and bignum-bitwise-and))
-(define integer-arithmetic-shift (make-int*int->val bignum-arithmetic-shift))
+(define integer-arithmetic-shift-left (make-int*int->val bignum-arithmetic-shift-left))

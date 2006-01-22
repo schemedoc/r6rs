@@ -190,7 +190,7 @@
 	  (loop (fx+ (r5rs->fixnum 1) l)
 		(fx* r(r5rs->fixnum 2)) (fx* rm (r5rs->fixnum 2)))))))
 
-(define radix (fxarithmetic-shift (r5rs->fixnum 1) log-radix))
+(define radix (fxarithmetic-shift-left (r5rs->fixnum 1) log-radix))
 
 (define zero-magnitude '())
 (define zero-magnitude? null?)

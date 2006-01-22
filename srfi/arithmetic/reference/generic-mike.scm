@@ -391,25 +391,25 @@
 (define (bitwise-xor . args)
   (reduce (r5rs->integer 1) bitwise-xor/2 args))
 
-(define (arithmetic-shift a b)
+(define (arithmetic-shift-left a b)
 
   (define (fail)
-    (error "arithmetic-shift expects exact integer arguments" a b))
+    (error "arithmetic-shift-left expects exact integer arguments" a b))
 
   (cond
    ((fixnum? a)
     (cond
      ((fixnum? b)
-      (bignum-arithmetic-shift (fixnum->bignum a) (fixnum->bignum b)))
+      (bignum-arithmetic-shift-left (fixnum->bignum a) (fixnum->bignum b)))
      ((bignum? b)
-      (bignum-arithmetic-shift (fixnum->bignum a) b))
+      (bignum-arithmetic-shift-left (fixnum->bignum a) b))
      (else (fail))))
    ((bignum? a)
     (cond
      ((fixnum? b)
-      (bignum-arithmetic-shift a (fixnum->bignum b)))
+      (bignum-arithmetic-shift-left a (fixnum->bignum b)))
      ((bignum? b)
-      (bignum-arithmetic-shift a (fixnum->bignum b)))
+      (bignum-arithmetic-shift-left a (fixnum->bignum b)))
      (else (fail))))))
 
 (define (exact->inexact x)
