@@ -82,8 +82,8 @@
 
 (define (rational->flonum r)
   (cond
-;;   ((exact-integer? r)
- ;;   (integer->flonum r))
+   ((exact-integer? r)
+    (integer->flonum r))
    ((rational< r (r5rs->integer 0))
     (fl- (r5rs->flonum 0.0) (rational->flonum (ratnum-abs r))))
    (else
