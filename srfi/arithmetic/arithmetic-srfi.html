@@ -1327,13 +1327,27 @@ arguments modulo 2<sup><var>w</var></sup>.
 <P>
 <DL>
 <DT><U>procedure:</U> <CODE>fxarithmetic-shift-left</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fxlogical-shift-left</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fxlogical-shift-right</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 <P>
-This procedure conceptually shifts the two's complement representation of
+The <code>fxarithmetic-shift-left</code> procedure conceptually shifts
+the two's complement representation of
 <VAR>fx1</VAR> <VAR>fx2</VAR> bits left when <VAR>fx2</VAR> &gt; 0,
 and -<VAR>fx2</VAR> bits right when <VAR>fx2</VAR> &lt; 0, extending
 the sign.  (It returns <VAR>fx1</VAR> when <VAR>fx2</VAR> = 0.)  It
-returns the result of that shift congruent mod 2<sup><var>w</var></sup>.
+returns the result of that shift congruent mod
+2<sup><var>w</var></sup>.
+
+<P>
+For the <code>fxlogical-shift-left</code> and
+<code>fxlogical-shift-right</code> procedures, <VAR>fx2</VAR> must be
+a non-negative fixnum; if it is not, all bets are off.
+These procedures conceptually shift
+the two's complement representation of
+<VAR>fx1</VAR> <VAR>fx2</VAR> bits left and right respectively, 
+dropping any bits "shifted out" in the process. 
+(They return <VAR>fx1</VAR> when <VAR>fx2</VAR> = 0.)
 </DD>
 </DL>
 

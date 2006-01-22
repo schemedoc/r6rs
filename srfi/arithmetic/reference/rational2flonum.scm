@@ -3,11 +3,13 @@
 
 ; from Scheme 48
 
+(define *modulus* (fx- (greatest-fixnum) (fx 1)))
+
 (define (integer->flonum k)
   (or (maybe-fixnum->flonum k)
-      (fl+ (fl* (fixnum->flonum (greatest-fixnum))
-		(integer->flonum (integer-quotient k (greatest-fixnum))))
-	   (fixnum->flonum (integer-remainder k (greatest-fixnum))))))
+      (fl+ (fl* (fixnum->flonum *modulus*)
+		(integer->flonum (integer-quotient k *modulus*)))
+	   (fixnum->flonum (integer-remainder k *modulus*)))))
 
 (define (maybe-fixnum->flonum k)    ;Returns #f is k is a bignum
   (if (fixnum? k)
@@ -80,8 +82,8 @@
 
 (define (rational->flonum r)
   (cond
-   ((exact-integer? r)
-    (integer->flonum r))
+;;   ((exact-integer? r)
+ ;;   (integer->flonum r))
    ((rational< r (r5rs->integer 0))
     (fl- (r5rs->flonum 0.0) (rational->flonum (ratnum-abs r))))
    (else

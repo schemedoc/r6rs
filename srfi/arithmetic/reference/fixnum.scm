@@ -50,7 +50,7 @@
 (define (r5rs-mod x y)
   (- x (* (r5rs-div x y) y)))
 
-(define *modulus* (- *high* *low*))
+(define *modulus* (+ (- *high* *low*) 1))
 
 ; Sebastian Egner provided this.
 (define (rep x)
@@ -152,7 +152,7 @@
 
 (define *fx-width* (make-fixnum *width*))
 (define *fx-min* (make-fixnum *low*))
-(define *fx-max* (make-fixnum (- *high* 1)))
+(define *fx-max* (make-fixnum *high*))
 
 (define (fixnum-width) *fx-width*)
 (define (least-fixnum) *fx-min*)
@@ -186,6 +186,30 @@
   (reduce (make-fixnum 0)
 	  fxbitwise-xor/2
 	  args))
+
+(define (fxlogical-shift-left fx1 fx2)
+  (cond
+   ((fxnegative? fx2)
+    (error "negative shift argument to fxlogical-shift-left" fx1 fx2))
+   ((fxzero? fx2) fx1)
+   ((fx> fx2 *fx-width*) (make-fixnum 0))
+   (else
+    (fxbitwise-and/2 (fxarithmetic-shift-left (fxbitwise-and/2 fx1 *fx-max*) fx2)
+		     *fx-max*))))
+
+(define (fxlogical-shift-right fx1 fx2)
+  (cond
+   ((fxnegative? fx2)
+    (error "negative shift argument to fxlogical-shift-left" fx1 fx2))
+   ((fxzero? fx2) fx1)
+   ((fxpositive? fx1)
+    (fxarithmetic-shift-left fx1 (fx- fx2)))
+   ((fx> fx2 *fx-width*) (make-fixnum 0))
+   (else
+    (fxbitwise-ior/2
+     (fxarithmetic-shift-left (fxbitwise-and/2 fx1 *fx-max*) (fx- fx2))
+     (fxlogical-shift-left (make-fixnum 1)
+			   (fx- *fx-width* fx2 (make-fixnum 1)))))))
 
 ; Operations with carry
 

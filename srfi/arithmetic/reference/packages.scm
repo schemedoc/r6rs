@@ -47,6 +47,7 @@
 	  fxbitwise-not
 	  fxbitwise-and fxbitwise-ior fxbitwise-xor
 	  fxarithmetic-shift-left
+	  fxlogical-shift-left fxlogical-shift-right
 	  fixnum-width least-fixnum greatest-fixnum
 	  fx+/carry fx-/carry fx*/carry))
 
