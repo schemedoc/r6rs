@@ -302,4 +302,66 @@
 (define-unary exact-real-part id id id recnum-real) 
 (define-unary exact-imag-part one one one recnum-imag)
 
+(define-unary exact-bitwise-not fxbitwise-not bignum-bitwise-not
+  (make-typo-op/1 exact-bitwise-not 'exact-integer)
+  (make-typo-op/1 exact-bitwise-not 'exact-integer))
 
+(define (make-binary-bitwise-op fix-op big-op)
+
+  (lambda (a b)
+    (define (fail)
+      (error "bitwise operation expects exact integer arguments" a b))
+
+    (cond
+     ((fixnum? a)
+      (cond
+       ((fixnum? b)
+	(fix-op a b))
+       ((bignum? b)
+	(big-op (fixnum->bignum a) b))
+       (else (fail))))
+     ((bignum? a)
+      (cond
+       ((fixnum? b)
+	(big-op a (fixnum->bignum b)))
+       ((bignum? b)
+	(big-op a b))
+       (else (fail))))
+     (else
+      (fail)))))
+
+(define (exact-bitwise-ior . args)
+  (reduce (r5rs->integer 0)
+	  (make-binary-bitwise-op fxbitwise-ior bignum-bitwise-ior)
+	  args))
+
+(define (exact-bitwise-and . args)
+  (reduce (r5rs->integer -1)
+	  (make-binary-bitwise-op fxbitwise-and bignum-bitwise-and)
+	  args))
+
+(define (exact-bitwise-xor . args)
+  (reduce (r5rs->integer 0)
+	  (make-binary-bitwise-op fxbitwise-xor bignum-bitwise-xor)
+	  args))
+
+(define (exact-arithmetic-shift a b)
+
+  (define (fail)
+    (error "exact-arithmetic-shift expects exact integer arguments" a b))
+
+  (cond
+   ((fixnum? a)
+    (cond
+     ((fixnum? b)
+      (bignum-arithmetic-shift (fixnum->bignum a) (fixnum->bignum b)))
+     ((bignum? b)
+      (bignum-arithmetic-shift (fixnum->bignum a) b))
+     (else (fail))))
+   ((bignum? a)
+    (cond
+     ((fixnum? b)
+      (bignum-arithmetic-shift a (fixnum->bignum b)))
+     ((bignum? b)
+      (bignum-arithmetic-shift a (fixnum->bignum b)))
+     (else (fail))))))

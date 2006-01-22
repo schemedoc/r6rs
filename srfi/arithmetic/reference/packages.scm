@@ -393,7 +393,10 @@
 	  exact-floor exact-ceiling exact-truncate exact-round
 	  exact-make-rectangular
 	  exact-remainder exact-imag-part
-	  exact-expt))
+	  exact-expt
+	  exact-bitwise-not
+	  exact-bitwise-ior exact-bitwise-and exact-bitwise-xor
+	  exact-arithmetic-shift))
 
 (define-structure generic-arithmetic/exact generic-arithmetic/exact-interface
   (open scheme-sans-arithmetic
@@ -479,9 +482,6 @@
 	  sqrt expt
 	  make-rectangular make-polar real-part imag-part magnitude angle
 	  exact->inexact inexact->exact number->flonum
-	  bitwise-not
-	  bitwise-ior bitwise-and bitwise-xor
-	  arithmetic-shift
 	  rationalize))
 
 (define-structure generic-arithmetic generic-arithmetic-interface
