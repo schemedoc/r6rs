@@ -135,6 +135,8 @@
 
     integer-length))
 
+; end from Scheme 48
+
 ; assumes r is positive
 ; we want (inexact->exact (ceiling (log2 r)))
 (define (ratnum-log2 r)

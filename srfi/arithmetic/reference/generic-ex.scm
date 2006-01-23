@@ -302,6 +302,116 @@
 (define-unary exact-real-part id id id recnum-real) 
 (define-unary exact-imag-part one one one recnum-imag)
 
+; from Brad Lucier:
+
+(define (exact-integer-sqrt x)
+
+  (if (exact-negative? x)
+      (error "exact-integer-sqrt: negative argument" x))
+
+  ;; x is non-negative.  Returns (values s r) where
+  ;; x = s^2+r, x < (s+1)^2
+
+  ;; Derived from the paper "Karatsuba Square Root" by Paul Zimmermann,
+  ;; INRIA technical report RR-3805, 1999.  (Used in gmp 4.*)
+
+  ;; Note that the statement of the theorem requires that
+  ;; b/4 <= high-order digit of x < b which can be impossible when b is a
+  ;; power of 2; the paper later notes that it is the lower bound that is 
+  ;; necessary, which we preserve.
+
+  (if (and (fixnum? x)
+           ;; we require that
+           ;; (< (flsqrt (- (* y y) 1)) y) => #t
+           ;; whenever x=y^2 is in this range.  Here we assume that we
+	   ;; have at least as much precision as IEEE double precision and 
+           ;; we round to nearest.
+	   (exact<=? x (r5rs->integer 4503599627370496))) ; 2^52
+      (let* ((s (flonum->fixnum (flsqrt (fixnum->flonum x)))) 
+
+             (r (fx- x (fx* s s))))
+        (values s r))
+      (let ((length/4
+             (fxarithmetic-shift-left
+              (fx+ (exact-integer-length x) (r5rs->integer 1))
+              (r5rs->integer -2))))
+	(call-with-values
+	    (lambda ()
+	      (exact-integer-sqrt
+	       (exact-arithmetic-shift-left
+		x
+		(fx- (fxarithmetic-shift-left length/4 (r5rs->integer 1))))))
+	  (lambda (s-prime r-prime)
+	    (call-with-values
+		(lambda ()
+		  (exact-div+mod
+		   (exact+ (exact-arithmetic-shift-left r-prime length/4)
+			   (extract-bit-field length/4 length/4 x))
+		   (exact-arithmetic-shift-left s-prime (r5rs->integer 1))))
+	      (lambda (q u)
+		(let ((s
+		       (exact+ (exact-arithmetic-shift-left s-prime length/4) q))
+		      (r
+		       (exact- (exact+ (exact-arithmetic-shift-left u length/4)
+				       (extract-bit-field length/4 (r5rs->integer 0) x))
+			       (exact* q q))))
+		  (if (exact-negative? r)
+		      (values  (exact- s (r5rs->integer 1))
+			       (exact+ r
+				       (exact- (exact-arithmetic-shift-left s (r5rs->integer 1))
+					       (r5rs->integer 1))))
+		      (values s r))))))))))
+
+;; helper for EXACT-INTEGER-SQRT
+;; extract bits of n3, at index n2 (from the right), n1 bits wide
+(define (extract-bit-field n1 n2 n3)
+  (exact-bitwise-and (exact-arithmetic-shift-left n3 (exact- n2))
+		     (exact- (exact-arithmetic-shift-left (r5rs->integer 1) n1) 
+			     (r5rs->integer 1))))
+
+
+; Integer-length, a la Common Lisp, written in portable Scheme.
+
+; from Scheme 48
+
+(define-syntax cons-stream
+  (syntax-rules ()
+    ((cons-stream head tail)
+     (cons head (delay tail)))))
+(define head car)
+(define (tail s) (force (cdr s)))
+
+(define exact-integer-length
+  (let ()
+    (define useful
+      (let loop ((p (exact-expt (r5rs->integer 2) (r5rs->integer 8))) (n (r5rs->integer 4)))
+	(cons-stream (cons p n)
+		     (loop (exact* p p) (exact* n (r5rs->integer 2))))))
+    
+    (define upto-16
+      (vector (r5rs->integer 0) (r5rs->integer 1) 
+	      (r5rs->integer 2) (r5rs->integer 2)
+	      (r5rs->integer 3) (r5rs->integer 3) (r5rs->integer 3) (r5rs->integer 3)
+	      (r5rs->integer 4) (r5rs->integer 4) (r5rs->integer 4) (r5rs->integer 4)
+	      (r5rs->integer 4) (r5rs->integer 4) (r5rs->integer 4) (r5rs->integer 4)))
+    
+    (define (recur n)
+      (if (exact<? n (r5rs->integer 16))
+	  (vector-ref upto-16 (integer->r5rs n))
+	  (let loop ((s useful) (prev (r5rs->integer 16)))
+	    (let ((z (head s)))
+	      (if (exact<? n (car z))
+		  (exact+ (cdr z) (recur (exact-quotient n prev)))
+		  (loop (tail s) (car z)))))))
+    (define (integer-length n)
+      (if (exact<? n (r5rs->integer 0))
+	  (recur (exact- (r5rs->integer -1) n))
+	  (recur n)))
+
+    integer-length))
+
+; end from Scheme 48
+
 (define-unary exact-bitwise-not fxbitwise-not bignum-bitwise-not
   (make-typo-op/1 exact-bitwise-not 'exact-integer)
   (make-typo-op/1 exact-bitwise-not 'exact-integer))

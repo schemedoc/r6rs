@@ -395,6 +395,7 @@
 	  exact-make-rectangular
 	  exact-remainder exact-imag-part
 	  exact-expt
+	  exact-integer-sqrt
 	  exact-bitwise-not
 	  exact-bitwise-ior exact-bitwise-and exact-bitwise-xor
 	  exact-arithmetic-shift-left))
@@ -406,6 +407,7 @@
 	bignums
 	ratnums ratnums-r5rs
 	recnums
+	(subset flonums (flsqrt flonum->fixnum fixnum->flonum)) ; for EXACT-INTEGER-SQRT
 	contagion-utils
 	arithmetic-utils
 	nary
@@ -451,21 +453,6 @@
 	)
   (files contagion-in
 	 generic-in))
-
-(define-structure generic-arithmetic/exact generic-arithmetic/exact-interface
-  (open scheme-sans-arithmetic
-	integers-r5rs
-	fixnums
-	bignums
-	ratnums ratnums-r5rs
-	recnums
-	contagion-utils
-	arithmetic-utils
-	nary
-	srfi-23 ; error
-	)
-  (files contagion-ex
-	 generic-ex))
 
 (define-interface generic-arithmetic-interface
   (export number? complex? real? rational? integer?

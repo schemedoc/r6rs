@@ -92,3 +92,22 @@
 (check (exact-numerator (numerical exact/ 3 -4)) ==> -3)
 (check (numerical exact-denominator 0) ==> 1)
 
+(for-each (lambda (n)
+	    (check
+	     (call-with-values
+		 (lambda ()
+		   (numerical exact-integer-sqrt n))
+	       (lambda (s r)
+		 (and (exact=? (r5rs->number n)
+			       (exact+ (exact* s s) r))
+		      
+		      (exact<? (r5rs->number n)
+			       (exact* (exact+ s (r5rs->number 1))
+				       (exact+ s (r5rs->number 1)))))))
+	     => #t))
+	  '(10
+	    100 10000 100000000 10000000000000000 
+	    100000000000000000000000000000000
+	    10000000000000000000000000000000000000000000000000000000000000000))
+				       
+		      
