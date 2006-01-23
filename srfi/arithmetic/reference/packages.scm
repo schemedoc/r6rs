@@ -456,6 +456,7 @@
 
 (define-interface generic-arithmetic-interface
   (export number? complex? real? rational? integer?
+	  real-valued? rational-valued? integer-valued?
 	  exact? inexact?
 	  = < > <= >=
 	  zero? positive? negative? odd? even? nan?

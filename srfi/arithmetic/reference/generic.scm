@@ -20,6 +20,11 @@
       (ratnum? obj)
       (flonum? obj)))
 
+(define (real-valued? obj)
+  (or (real? obj)
+      (and (compnum? obj)
+	   (zero? (compnum-imag obj)))))
+
 (define (rational? obj)
   (or (fixnum? obj)
       (bignum? obj)
@@ -29,11 +34,23 @@
 		    (= obj flinf-)
 		    (flnan? obj))))))
 
+(define (rational-valued? obj)
+  (or (rational? obj)
+      (and (compnum? obj)
+	   (zero? (compnum-imag obj))
+	   (rational? (compnum-real obj)))))
+
 (define (integer? obj)
   (or (fixnum? obj)
       (bignum? obj)
       (and (flonum? obj)
 	   (flinteger? obj))))
+
+(define (integer-valued? obj)
+  (or (integer? obj)
+      (and (compnum? obj)
+	   (zero? (compnum-imag obj))
+	   (integer? (compnum-real obj)))))
 
 (define (exact? obj)
   (or (fixnum? obj)

@@ -223,17 +223,6 @@ general complex numbers.
     Given that this SRFI suggests requiring all implementations to
     support the general complex numbers, should <code>abs</code> (and
     <code>exact-abs</code> and <code>inexact-abs</code>) be removed?
-<li>The <code>real?</code>, <code>rational?</code>, and <code>integer?</code> predicates must
-    return false for complex numbers with an imaginary part
-    of inexact zero, as non-realness is now contagious.
-    This causes possibly unexpected behavior: <SAMP>`(zero?
-    0+0.0i)'</SAMP> returns true despite <SAMP>`(integer?
-    0+0.0i)'</SAMP> returning false.
-    Possibly, new predicates <code>realistic?</code>,
-    <code>rationalistic?</code>, and <code>integral?</code> should be
-    added to say that a number can be coerced to the specified type
-    (and back) without loss.
-    (See the <a href="#design-rationale">Design Rationale</a>.)
 <li>Most Scheme implementations represent an inexact complex number as
     a pair of two inexact reals, representing the real and imaginary
     parts of the number, respectively.  Should R6RS mandate the
@@ -678,16 +667,6 @@ is true.
 (integer? -inf.0)                      ==&gt;  #f
 </PRE>
 
-
-<BLOCKQUOTE>
-<P>
-<EM>Note:</EM>
-The behavior of these type predicates on inexact numbers is
-unreliable, because any inaccuracy may
-affect the result.
-</BLOCKQUOTE>
-
-
 <BLOCKQUOTE>
 <P>
 <font color=red>
@@ -705,6 +684,55 @@ support some kind of non-complex numbers.
 </strike>
 </font>
 </BLOCKQUOTE>
+
+
+<P>
+<DL>
+<DT><span class=add><U>procedure:</U> <CODE>real-valued?</CODE> <var>obj</var></span>
+<DT><span class=add><U>procedure:</U> <CODE>rational-valued?</CODE> <var>obj</var></span>
+<DT><span class=add><U>procedure:</U> <CODE>integer-valued?</CODE> <var>obj</var></span>
+<DD>
+
+<P>
+<span class=add>
+These numerical type predicates can be applied to any kind of
+argument, including non-numbers.  They return <code>#t</code>
+if the object is equal in the sense of <code>=</code> to an object
+of the named type, and otherwise they return <code>#f</code>.
+</span>
+</P>
+</DL>
+
+<PRE>
+<span class=add>(real-valued? 3)                       ==&gt;  #t</span>
+<span class=add>(real-valued? -2.5+0.0i)               ==&gt;  #t</span>
+<span class=add>(real-valued? -2.5+0i)                 ==&gt;  #t</span>
+<span class=add>(real-valued? -2.5)                    ==&gt;  #t</span>
+<span class=add>(real-valued? #e1e10)                  ==&gt;  #t</span>
+<span class=add>(real-valued? -inf.0)                  ==&gt;  #t</span>
+<span class=add>(real-valued? +nan.0)                  ==&gt;  #t</span>
+<span class=add>(rational-valued? -inf.0)              ==&gt;  #f</span>
+<span class=add>(rational-valued? +nan.0)              ==&gt;  #f</span>
+<span class=add>(rational-valued? 6/10)                ==&gt;  #t</span>
+<span class=add>(rational-valued? 6/10+0.0i)           ==&gt;  #t</span>
+<span class=add>(rational-valued? 6/10+0i)             ==&gt;  #t</span>
+<span class=add>(rational-valued? 6/3)                 ==&gt;  #t</span>
+<span class=add>(integer-valued? 3+0i)                 ==&gt;  #t</span>
+<span class=add>(integer-valued? 3+0.0i)               ==&gt;  #t</span>
+<span class=add>(integer-valued? 3.0)                  ==&gt;  #t</span>
+<span class=add>(integer-valued? 3.0+0.0i)             ==&gt;  #t</span>
+<span class=add>(integer-valued? 8/4)                  ==&gt;  #t</span>
+</PRE>
+
+
+<BLOCKQUOTE>
+<P>
+<EM>Note:</EM>
+The behavior of these type predicates on inexact numbers is
+unreliable, because any inaccuracy may
+affect the result.
+</BLOCKQUOTE>
+
 
 </DL>
 
