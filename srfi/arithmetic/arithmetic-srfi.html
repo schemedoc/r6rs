@@ -2809,7 +2809,7 @@ When in doubt, consult a numerical analyst.
 <DT><U>procedure:</U> <CODE>negative?</CODE> <VAR>x</VAR>
 <DT><U>procedure:</U> <CODE>odd?</CODE> <VAR>n</VAR>
 <DT><U>procedure:</U> <CODE>even?</CODE> <VAR>n</VAR>
-<DT><U>procedure:</U> <CODE>nan?</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>nan?</CODE> <VAR>x</VAR>
 <DD>
 
 
@@ -2914,10 +2914,8 @@ or return an unspecified number.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>-</CODE> <var>z1</var> <var>z2</var>
 <DT><U>procedure:</U> <CODE>-</CODE> <VAR>z</VAR>
 <DT><U><FONT COLOR="red"><STRIKE>optional</STRIKE></FONT> procedure:</U> <CODE>-</CODE> <var>z1</var> <var>z2</var> ...
-<DT><U>procedure:</U> <CODE>/</CODE> <var>z1</var> <var>z2</var>
 <DT><U>procedure:</U> <CODE>/</CODE> <VAR>z</VAR>
 <DT><U><FONT COLOR="red"><STRIKE>optional</STRIKE></FONT> procedure:</U> <CODE>/</CODE> <var>z1</var> <var>z2</var> ...
 <DD>
@@ -2945,6 +2943,10 @@ however, they return the additive or multiplicative inverse of their argument.
 (/ 0.0 0)                              ==&gt;  +nan.0
 (/ 0.0 0.0)                            ==&gt;  +nan.0
 </PRE>
+<P>
+If any of these procedures are applied to mixed non-rational real and
+non-real complex arguments, they either report a violation of an implementation restriction
+or return an unspecified number.
 
 </DL>
 
@@ -3455,7 +3457,7 @@ or returns an unspecified number.
 (expt 0 5+.0000312i)        ==&gt;  0
 (expt 0 -5)                 ==&gt;  <span class=del>+inf.0</span> <span class=add><I>unspecified</I></span>
 (expt 0 -5+.0000312i)       ==&gt;  <span class=del>+inf.0</span> <span class=add><I>unspecified</I></span>
-(expt 0 0)                  ==&gt;  <span class=del>+nan.0</span> <span class=add></span>
+(expt 0 0)                  ==&gt;  <span class=del>+nan.0</span> <span class=add>1</span>
 (expt 0.0 0.0)              ==&gt;  <span class=del>+nan.0</span> <span class=add>1.0</span>
 </PRE>
 
