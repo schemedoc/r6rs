@@ -292,7 +292,7 @@
 	   ((zero? y)
 	    (r5rs->integer 0))
 	   ((negative? y)
-	    (let ((n (* -2 
+	    (let ((n (* (r5rs->integer -2)
 			(numerator x)
 			(denominator y)))
 		  (d (* (denominator x)

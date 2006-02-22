@@ -464,6 +464,7 @@
 	  + * - /
 	  abs
 	  quotient remainder quotient+remainder modulo
+	  div mod div+mod
 	  gcd lcm
 	  numerator denominator
 	  floor ceiling truncate round
