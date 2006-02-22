@@ -1,0 +1,132 @@
+---++About the Scheme 48 module system
+Jonathan A. Rees, with minor modifications by Mike Sperber
+
+*Historical account:*
+
+Initially the biggest program running in Scheme 48 was the run-time
+system, which consisted of everything not implemented by the VM,
+including =read=, =write=, and the byte-code compiler.  Following the
+principle of following R^3RS closely, we started out with a single
+namespace for all top-level definitions in this program.  For user
+programs there was a separate namespace, created using an ad hoc
+mechanism.  The second namespace was necessary in order to support the
+R^3RS principle of allowing users to redefine arbitrary names.
+
+From the start there was a configuration issue.  Some sets of files
+were used for bootstrap; notably, the byte-code compiler had to run in
+the various Scheme implementations we used as a bootstrap platform.
+Others only made sense in the run-time.  We did not want to invent a
+module system, so there were three lists of files:
+
+   * Those used for cross-compiling only (e.g. implementation in
+     portable Scheme of functions that were supported directly by the VM)
+   * Those used for both cross-compiling and for the native system
+   * Those used only in the native system
+
+In effect, there was a configuration language that declared consistent
+sets of files that could be composed into systems of various sorts.
+Since systems ran on a variety of R^3RS platforms, none of which had a
+module system, each system had to have the property that no name was
+defined twice.  A particular name could have more than one definition
+in the code base, but only if the definitions never coresided in a
+system.
+
+This configuration language became more elaborate as it was challenged
+by more elaborate demands.  One such demand was the introduction of
+the 'static linker', a mechanism that allowed the construction of new
+heap images (for execution by a VM) without depending on a running VM.
+Another much more complicated challenge was the mobile robot version.
+The run-time system for the mobot used a subset of the features of the
+full system, but the dependencies between parts and specification of
+load order was complicated.  For example, files A B C D E might be
+needed by the full system with that load order, while the mobile robot
+only needed A C E.
+
+To keep track of the growing complexity, especially load order issues
+and the proliferation of file lists, we added dependency information
+to the configuration language.  Dependency tokens were introduced, and
+a 'module' was now not just a file list but file list plus
+requirements (a list of tokens) and provisions (another list of
+tokens).  To use a module, you had to get modules providing the tokens
+required by the module.  To find all modules required for a system, it
+sufficed to do a topological sort on the provide/require graph
+(assuming each token had only one module providing it - see below).
+
+Since, for the most part, modules only communicate through the
+namespace, it made sense at this point to specify which names were
+involved in the communication implicit in each token.  Tokens
+therefore became 'interfaces' - lists of names whose bindings were to
+be transmitted.  In a single namespace system this information is
+harmless but not very useful, except for consistency checking tools
+that I wanted to write but never got around to writing.  However, the
+interfaces can be checked in another way: not by an external tool, but
+by the creation of limited namespaces that made sure that bindings not
+requested through a provide were never seen.
+
+A side benefit of namespace limitation was principled support for the
+isolated user namespace: it no longer needed to be a special case.
+
+It is important that names are associated with provide/require tokens
+and not with either the provider or the requirer.  First, it is
+symmetrical - knowing whether a particular name is exported is just as
+important as knowing whether it's imported.  Second, it's modular, and
+therefore eliminates error that would result from repetition: the
+list needn't be replicated among multiple providers and requirers.
+
+This historical account should explain many of the features of the
+module system, including:
+
+   * Configuration and namespace control do NOT reside with 'ordinary'
+    Scheme code because:
+      * The Scheme code still has to be understood by Scheme
+      implementations that don't know about this module system (and
+      probably already have a different one)
+      * The configuration language must be declarative because it must
+      be processed in a variety of ways (e.g. it gets translated into
+      other module languages, including Common Lisp packages and
+      Makefiles)
+      * The names involved in the module system (both 'keywords' and
+      user-defined names such as module and interface names) must
+      themselves live in a namespace disjoint from user code, since it
+      must be possible to (for example) manipulate empty
+      or hostile namespaces (those with incompatible definitions of
+      the module primitives)
+      * The code being configured may come from, or may end up being
+      loaded into, an environment that doesn't know about the modules
+      system
+   * The 'require' list must *explicitly* demand Scheme language
+    bindings, because sometimes either don't have them or don't want
+    them, or you want a variant (e.g. R^4RS vs. R^6RS).
+   * You don't have to look at _any_ source files to be able to figure
+    out dependencies and visibilities.  In particular, you don't have
+    to what language or syntax is used in writing the source files.
+  - You have complete control of visibility - there are no special
+    keywords (such as =require=) of any kind inside of source files.
+  - It has a very smooth adoption path; you can pick and choose which
+    aspects you want to buy into
+
+Now, you could say these are inconvenient historical accidents, but I
+believe these are good principles, and in doing things this way we
+have come across aspects of a good design.
+
+I think we may have failed to find a good solution in the situation
+where two modules both 'provide' the same token.  This is a difficult
+problem, and we have experimented with a few approaches including the
+'functor' idea from Standard ML's module system and an inference-based
+linker.  [Editor's note: This is described in Richard Kelsey's paper
+"The Missing Link."]  I eventually gave up and decided I did not want
+to invent a module system, and decided to disallow this.  (The current
+configuration language in a way has its roots in Common Lisp
+'defpackage' and 'defsystem', which are decidedly hostile to
+parametric modules.)  In practice we deal with the problem by pushing
+it up one meta-level and 'loading' different combinations of
+configurations to obtain systems that are parameterized differently
+(cf. alt-packages etc.).
+
+For small systems - say, two to five files - I find writing
+configurations a nuisance because I don't like having to create the
+separate file.  So I have some sympathy for people who want to put
+export and dependency information inside modules.  But it is basically
+a wrongheaded style.  It doesn't scale.
+
+-- Main.MichaelSperber - 27 Dec 2004

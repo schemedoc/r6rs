@@ -1,0 +1,189 @@
+---+ R6RS Macro Proposal
+
+%TOC%
+
+The following proposal has been copied from a mailing list post (Sep 2004):
+
+|  *From:*| R. Kent Dybvig |
+|  *Subject:*| r6rs macros |
+|  *Date:*| Wed Sep 15 17:39:18 EDT 2004 |
+
+Here is my proposal in brief.  I don't have time and don't perceive the
+need to expand this into a full-blown detailed and precise proposal at
+this time, since syntax-case is well documented elsewhere.
+
+---++ Proposal
+
+I propose we make the following changes/additions to the r5rs macro 
+system for r6rs:
+
+---+++ syntax objects
+  syntax objects are opaque datatypes.  syntax objects may be created
+  by the expander or by the programmer via the =syntax= form or
+  =datum->syntax-object= (see below).
+
+  syntax-objects may be coerced to data via =syntax-object->datum=
+  (see below)
+
+  terminology note: a syntax-object representing an identifier is
+  referred to as an identifier.
+
+---+++ transformers
+  =define-syntax=, =let-syntax=, or =letrec-syntax= right-hand-sides are
+  transformers.  a transformer is an expression that evaluates (at
+  expansion time) to a procedure of one argument.  the expander
+  applies a transformer to a syntax object representing the input
+  form.
+
+---+++ define-syntax
+  no change in syntax, but allow =define-syntax= to appear wherever other
+  definitions can appear
+
+---+++ syntax-rules
+  =syntax-rules= evaluates to a procedure of one argument.
+
+  =syntax-rules= is as in r5rs with the following extensions:
+
+   * patterns are generalized slightly to allow a fixed number of
+    subpatterns to appear after an ellipsis, e.g., (x ... y z)
+
+   * an optional fender may appear between the pattern and
+    template of any clause.  the clause is chosen only if the
+    pattern matches the input and (if present) the fender
+    evaluates to a non-false value.  within the fender, the
+    pattern variables appearing within the pattern are bound
+    to the corresponding pieces of the input.
+
+  =syntax-rules= may be defined as a macro in terms of syntax-case.
+
+---+++ syntax-case
+  =syntax-case= has the following syntax:
+
+<pre>
+  (syntax-case expr (literal ...) clause ...)
+</pre>
+
+  where clause takes one of the two forms below.
+
+<pre>
+    (pattern expression)
+    (pattern fender expression)
+</pre>
+
+  =(literal ...)= and fenders are as in syntax-rules.
+
+  as with fenders, the pattern variables in pattern are bound
+  to the corresponding pieces of the input within expression.
+
+  patterns are similar to syntax-rules patterns except that the
+  pattern need not be list structured and, if list structured,
+  the first subform is not treated specially
+
+  the following transformers for =or= are equivalent:
+
+<pre>
+      (syntax-rules ()
+        ((_) #f)
+        ((_ e) e)
+        ((_ e1 e2 ...) (let ((t e1)) (if t t (or e2 ...)))))
+
+      (lambda (x)
+        (syntax-case x ()
+          ((_) #'#f)
+          ((_ e) #'e)
+          ((_ e1 e2 ...) #'(let ((t e1)) (if t t (or e2 ...))))))
+</pre>
+
+---+++ syntax
+  the syntax =(syntax datum)= which may be abbreviated =#'datum=, evaluates
+  to a syntax object if =datum= contains no pattern variables.  if =datum=
+  contains pattern variables, =#'datum= is reconstructed with the
+  pattern variables replaced by their values.  any constant portions
+  of =datum= (portions not containing pattern variables) are are syntax
+  objects, while any reconstructed pairs and vectors are actual pairs
+  and vectors.  The empty list is treated specially: it is always
+  reconstructed as the empty list unless nested within an otherwise
+  constant portion of the data.  ellipses are used as in syntax-rules
+  templates.
+
+  examples: assume =a= is a pattern variable bound to =1=
+            and =b= is a pattern variable bound to a list =(2 3 4)=
+
+<pre>
+    #'a => 1
+    #'(b ...) => (2 3 4)
+    (map number? #'(b ...))
+    #'(a b ...) => (1 2 3 4)
+    #'c => #<syntax c>              ; we may or may not specify how
+    #'(c d e) => #<syntax (c d e)>  ; syntax-objects print
+    #'((a) c d) => ((1) . #<syntax (c d)>)
+</pre>
+
+---+++ syntax-object->datum
+  is bound to a procedure that takes a single argument.  if the argument
+  is a syntax-object, it is coerced to data.  if the argument is a pair
+  or vector, =syntax-object->datum= recursively reconstructs the pair or
+  vector, coercing any syntax-objects it finds into data.
+
+---+++ datum->syntax-object
+  is bound to a procedure of two arguments.  the first is a template
+  identifier and the second is an arbitrary object.  =datum->syntax-object=
+  converts the object into a syntax object with all of the markings
+  necessary to make the object appear to the expander as if it appeared
+  in the source or macro output where and when the template identifier
+  first appeared.
+
+---+++ generate-temporaries
+  is bound to a procedure of one argument.  the argument must be a
+  proper list, the contents of which is of no consequence.
+  =generate-temporaries= returns a list of unique identifiers as long
+  as the input list.
+
+---+++ identifier?
+  is bound to a procedure of one argument.  it returns true if the
+  argument is an identifier (syntax object representing an identifier),
+  otherwise false.
+
+---+++ bound-identifier=?
+  is bound to a procedure of two arguments, which must both be
+  identifiers.  it returns true if a binding for either in the output
+  of a macro would capture references to the other.
+
+---+++ free-identifier=?
+  is bound to a procedure of two arguments, which must both be
+  identifiers.  it returns true if the two identifiers would refer
+  to the same binding if inserted into the output of a macro as
+  free identifiers. 
+
+  note: we may also need <code>literal-identifier=?</code> if we add modules
+
+---+++ identifier-syntax
+  identifier-syntax is an additional way to define transformers for
+  simulated variables.  it takes one of the following two forms:
+
+<pre>
+    (identifier-syntax template)
+
+    (identifier-syntax
+      [id template]
+      [(set! id expr) template])
+</pre>
+
+---+++ with-syntax
+  with-syntax is a local binding construct (like let) for pattern
+  variables.  it takes the following form:
+
+<pre>
+     (with-syntax ((pattern expr) ...) expr)
+</pre>
+
+  e.g.,
+
+<pre>
+     (with-syntax ((a 1) ((b ...) '(2 3 4))) #'(a b ...)) => (1 2 3 4)
+</pre>
+
+  it is may be defined as a macro in terms of syntax-case.
+
+Note:
+  we may also want to consider adding =fluid-let-syntax=

@@ -1,0 +1,530 @@
+-- Main.MatthewFlatt - 13 Nov 2004, revised 8 Dec 2004
+
+
+*Unicode* defines a standard mapping between sequences of integers and
+human-readable ``characters.'' More precisely, Unicode distinguishes
+between *glyphs*, which are printed for humans to read, and
+*characters*, which are abstract entities that map to glyphs
+(sometimes in a way that's sensitive to surrounding
+characters). Furthermore, different sequences of integers---or *code*
+*points* in Unicode terminology---sometimes correspond to the same
+character. The relationships among code points, characters, and glyphs
+are subtle and complex.
+
+Despite this complexity, most things that a literate human would call
+a ``character'' can be represented by a single code point in Unicode
+(though there may exist code-point sequences that represent that same
+character). For example, Roman letters, Cyrillic letters, Hebrew
+consonants, and most Chinese characters fall into this category. Thus,
+the ``code point'' approximation of ``character'' works well for many
+purposes. Core Scheme characters should be defined as Unicode *scalar*
+*values*, which includes all code points except those designated as
+surrogates. For the remainder of this discussion, we use ``character''
+interchangeably with ``Unicode code point'' or ``Unicode scalar value''.
+
+For official information on the Unicode standard, see
+http://www.unicode.org/. For a thorough but more accessible
+introduction, see _Unicode Demystified_ by Richard Gillam.
+
+
+---++ Characters and Integers
+
+Scheme should define `integer->char' and `char->integer' to convert a
+character to and from the integer that corresponds to the character's
+Unicode code-point value. The `char<?' procedure should be defined as
+`(lambda (a b) (< (char->integer a) (char->integer b))', `char=?'
+should be `(lambda (a b) (= (char->integer a) (char->integer b))', and
+so on.
+
+The domain of integers accepted by `integer->char' (and the range
+produced by `char->integer') should be as follows:
+
+ [0,#xD7FF] union [0xE000, #x10FFFF]
+
+The range [#xD800, #xDFFF] is explicitly excluded by Unicode's
+definition of *scalar values* to avoid collisions with various
+encodings and APIs. In particular, the range [#xD800, #xDFFF] is used
+for ``surrogates'' to encode characters from [#x10000, #x10FFFF] in
+UTF-16, and neither the UTF-8 nor UTF-16 encoding can express
+code points in [#xD800, #xDFFF].
+
+-- Main.MarcFeeley - 7 Dec 2004
+%RED%
+   * Is the range [#x10000, #x10FFFF] important?  It implies that
+     each character in a string occupies more than 16 bits (in an
+     array implementation with O(1) indexing).  That range is not
+     supported by Java and Windows.  I want to make sure there is
+     a practical use for this because the space usage is a concern.
+      * %BLUE% This is discussed in the "Note:" section (below). If
+         the note is missing something, can you be more specific?
+         ---  Main.MatthewFlatt - 8 Dec 2004 %ENDCOLOR%
+
+
+   * The code #xFFFE is the BOM (byte-order-mark) which allows
+     Unicode streams to be marked with the byte order.  I would
+     think that it is useful to do `(write-char (integer->char #xFFFE))'
+     and `(char=? (read-char) (integer->char #xFFFE))' to write
+     and read the BOM.  Is there any use to treat BOM as an invalid
+     character.  In fact wouldn't it be sufficient to define
+     the interval [0, #x10FFFF], or [0, #xFFFF], as the valid
+     Unicode characters.  Couldn't we take the point of view that
+     the restrictions on the set of valid Unicode characters is a
+     concept that is application dependent (i.e. Scheme characters
+     would be a superset of Unicode).
+      * %BLUE% I've revised the text to include #xFFFE and #xFFFF as
+        characters, because they are indeed scalar values. However,
+        the range [#xD800, #DFFF] remains excluded.
+         ---  Main.MatthewFlatt - 8 Dec 2004 %ENDCOLOR%
+      * %BLUE% Making Scheme characters a superset of of Unicode creates
+        problems, because it means that some Scheme strings cannot be
+        encoded in UTF-8. More generally, it complicates the interface
+        between Scheme programs and programs that expect Unicode
+        strings. (I originally made MzScheme characters the original
+        UCS characters, which is a superset of Unicode, and it created
+        problems interacting with libraries. Even UCS reduced its
+        character space to that of Unicode---or so I'm told, but I
+        have not consulted any UCS standards.)
+         ---  Main.MatthewFlatt - 8 Dec 2004 %ENDCOLOR%
+
+   * If we do restrict the code points for valid characters, shouldn't
+     we use the ones defined by the Unicode standard
+     (see http://www.unicode.org/Public/UNIDATA/PropList.txt which
+     indicates many noncharacter code points).
+      * %BLUE% Trying to sort this out lead me to the correct definition of
+        *code point* and *scalar value* in the standard. In short,
+        none of the ranges in that database should be excluded.
+        --  Main.MatthewFlatt - 8 Dec 2004%ENDCOLOR%
+
+%ENDCOLOR%
+
+---- 
+ Note: A `char' in Java is not a Unicode code point. Instead, it is a
+ number in [0, #xFFFF] to be interpreted as a UTF-16 code unit when
+ possible. In particular, Java `char' in the range [#xD800, #xDFFF]
+ corresponds to half of a Unicode code point. The advantage of this
+ strategy is that a character fits into 16 bits. Another advantage is
+ that it interoperates with Java and other libraries. One problem with
+ this strategy is that operations like `char-downcase' are not defined
+ by Unicode for code-point halves. (Java works around this problem by
+ overloading character predicates to accept an integer as well as a
+ character.) A second problem is that it's possible to create a string
+ that is not a valid UTF-16 encoding, which means that a string does
+ not reliably represent a Unicode scalar-value sequence; programmers are
+ forced to understand the difference and manage it.
+----
+
+---++ Strings and Symbols
+
+As Scheme string should remain defined as in R5RS: a fixed-length
+array of characters. Since Scheme characters are to be defined as
+Unicode code points, Scheme strings are thus Unicode code-point
+sequences.
+
+Symbols should map 1-to-1 with immutable strings, as in R5RS, so that
+a symbol also corresponds to a Unicode code-point sequence. If `read'
+remains case-insensitive, then input characters should be downcased to
+form strings (avoids both the Geman-ezset and Turkish-i problems).
+
+---
+ Note: Assuming that Scheme continues to support mutable strings, many
+ implementations will choose to implement strings as arrays of 32-bit
+ values. Another possibility is to use 16-bit values for strings whose
+ characters fall in the range [#x0000, #xFFFF]; a Java-based
+ implementation might choose this strategy to maximize
+ interoperability with Java. Symbols, in contrast, can easily be
+ encoded, since they are immutable. MzScheme uses a UTF-8 encoding for
+ its symbols.
+---
+
+---++ Character and String Literals
+
+The following escape characters should be added to Scheme's string
+syntax:
+
+   * \a: alarm (ASCII 7)
+   * \b: backspace (ASCII 8)
+   * \t: tab (ASCII 9)
+   * \n: linefeed (ASCII 10)
+   * \v: vertical tab (ASCII 11)
+   * \f: formfeed (ASCII 12)
+   * \r: return (ASCII 13)
+   * \e: escape (ASCII 27)
+   * \': quote (ASCII 39, same as unquoted)
+   * \": quotes        [as in R5RS]
+   * \\: backslash     [as in R5RS]
+   * \&lt;o&gt;, \&lt;o&gt;&lt;o&gt;, \&lt;o&gt;&lt;o&gt;&lt;o&gt;: octal, where the sequence of &lt;o&gt;s
+                                forms an octal number between #o0 and #o377
+   *  \&lt;newline&gt;: elided (allows a single-line string to span source lines)
+   *  \x&lt;x&gt;&lt;x&gt; should be added: hx, two digits
+   *  \u&lt;x&gt;...&lt;x&gt;: hex, up to four digits
+   *  \U&lt;x&gt;...&lt;x&gt;: hex, up to six digits
+
+Any other character in a string after a backslash is an error.
+
+-- Main.MarcFeeley - 7 Dec 2004
+%RED%
+   * What is the motivation for \' since it does not need to be
+     escaped.  Is this for compatibility with C?  In that case
+     \x&lt;x&gt;&lt;x&gt; should be added (it is valid according to the ANSI C
+     K&R book).
+      * %BLUE% Yes, \' is for compatibility with C. I added \x&lt;x&gt;&lt;x&gt;,
+        which I left out only because I thought it wasn't standard.
+        --  Main.MatthewFlatt - 8 Dec 2004 %ENDCOLOR%
+
+   * In Java the \uXXXX escapes are processed before lexical analysis.
+     This means that in a Java source code file the 8 characters "\u0021" are
+     transformed to the 3 characters "!" before the lexer processes
+     them.  That same string could have been written "!\u0022 because the
+     \u0022 corresponds to a double-quote.  Is this what is being proposed,
+     or are the \uXXXX escapes translated by the lexer?
+      * %BLUE% The proposal is to treat \uXXXX like \xXX, by which I mean that
+        it's handled by the lexer (and only in a string). So this isn't
+        really the same as Java's \u, and maybe it's a bad idea to use
+        the same sequence.
+        --  Main.MatthewFlatt - 8 Dec 2004%ENDCOLOR%
+
+   * Should any other character after a backslash be an error?
+      * %BLUE%That was the intent. Fixed above.
+        --  Main.MatthewFlatt - 8 Dec 2004%ENDCOLOR%
+
+%ENDCOLOR%
+
+---
+ Note: All but \u and \U are compatible with C. Only four hex digits
+ are allowed with \u for compatibility with Java, hence \U to
+ accommodate up to six. Java requires *exactly* four digits for \u,
+ and that might be a good idea. (Does standard C constrain \x to two
+ hex digits?)
+
+ Note: MzScheme treats \&lt;return&gt; and \&lt;return&gt;&lt;newline&gt; the same as
+ \&lt;newline&gt;. This helps avoid unnecessary confusion due to varying
+ line-termination conventions, but it's not standard anywhere, as far
+ as I know.
+
+-- Main.MarcFeeley - 7 Dec 2004
+%RED%
+   * I think the end-of-line encoding should be handled before the lexer sees
+     the characters.  So this is an issue of character I/O and how
+     to specify to the compiler which end-of-line encoding is used for
+     source code files.
+      * %BLUE%That makes sense.  I've been most successful, though,
+        avoiding "text" mode, and instead recognizing all end-of-line
+        conventions everywhere.
+        --  Main.MatthewFlatt - 8 Dec 2004 %ENDCOLOR%
+
+%ENDCOLOR%
+---
+
+Character constants:
+
+   * #\nul         (ASCII 0)
+   * #\alarm       (ASCII 7)
+   * #\backspace   (ASCII 8)
+   * #\tab         (ASCII 9)
+   * #\newline     (ASCII 10)   [as in R5RS]
+   * #\vtab        (ASCII 11)
+   * #\page        (ASCII 12)
+   * #\return      (ASCII 13)
+   * #\esc         (ASCII 27)
+   * #\space       (ASCII 32)   [as in R5RS]
+   * #\rubout      (ASCII 127)
+   * #\&lt;o&gt;&lt;o&gt;&lt;o&gt;   octal
+   * #\u&lt;x&gt;...&lt;x&gt;  hex, up to four digits
+   * #\U&lt;x&gt;...&lt;x&gt;  hex, up to six digits
+
+-- Main.MarcFeeley - 7 Dec 2004
+%RED%
+   * For symmetry with the string escape characters we should add:
+     #\bel (or #\alarm) and #\esc .
+      * %BLUE% Sounds good to me. Added above.
+        --  Main.MatthewFlatt - 8 Dec 2004 %ENDCOLOR%
+
+   * Is octal notation really useful?  Why limit it to 3 digits?
+      * %BLUE% If we have octal representation of characters in
+        string (where they have a long tradition), then I think we
+        want a character syntax, too. 
+        The implementations I tried currently limit to 3 digits,
+        and I have no deeper rationale.
+         --  Main.MatthewFlatt - 8 Dec 2004 %ENDCOLOR%
+
+   * Gambit-C uses the notation #\&lt;num&gt; where &lt;num&gt; is
+     an exact integer in any of the syntaxes for numbers that start with
+     a sharp sign, for example all the following are valid
+     space characters: #\#d32 #\#x20 #\#x0020 #\#e3.2e1 .
+%ENDCOLOR%
+
+---++ Character Predicates
+
+Scheme should provide the following character predicates, based on the
+character sets defined by SRFI-14:
+
+   * char-alphabetic?
+   * char-lower-case?
+   * char-upper-case?
+   * char-title-case?
+   * char-numeric?
+   * char-symbolic?
+   * char-punctuation?
+   * char-graphic?
+   * char-whitespace?
+   * char-blank?
+   * char-iso-control?
+
+-- Main.MarcFeeley - 7 Dec 2004
+%RED%
+   * Some of these classes are not clear to me in the presence of Unicode.
+     For example the Euro sign does not appear in SRFI 14 (should it be
+     a punctuation or a symbol?).  In any case we should use the
+     character class definitions of Unicode.  For example the alphabetic
+     property in Unicode is more than the characters A-Z/a-z.
+      * %BLUE% I believe that SRFI-14 is perfectly clear on
+        Unicode. The examples in the SRFI are exhasutive only for
+        certain ASCII and Latin-1 sets (clearly labeled), and the Euro
+        sign is not in Latin-1, but the definitions cover all of
+        Unicode. (I'm a little concerned that
+        Olin made up a new set of predicates on top of Unicode's
+        established predicates. But he seems to have done a
+        thorough job, and these predicates do not preclude
+        Unicode-defined predicates.)
+        --  Main.MatthewFlatt - 8 Dec 2004%ENDCOLOR%
+
+   * Should we use the Unicode property ID_Start (Characters that can
+     start an identifier) and ID_Continue (Characters that can continue
+     an identifier) for the lexical syntax of identifiers.
+      * %BLUE% Maybe so. Is this consistent with R5RS, or would we need to add
+        or remove some characters?
+        --  Main.MatthewFlatt - 8 Dec 2004%ENDCOLOR%
+
+%ENDCOLOR%
+
+---++ Locales
+
+Besides printing and reading characters, humans also compare character
+strings, and humans perform operations such as changing characters to
+uppercase.  To make programs geographically portable, humans must
+agree to compare or upcase characters consistently, at least in
+certain contexts. The Unicode standard provides standard case mappings
+on code points, and the Unicode downcase mapping should be used, for
+example, to case-normalize Scheme symbols.
+
+In other contexts, global agreement is unnecessary, and the user's
+culture should determine a string operation, such as when sorting a
+list of file names, perhaps case-insensitively. A *locale* captures
+information about a user's culture-specific interpretation of
+character sequences. In particular, a locale determines how strings
+are sorted, how a lowercase character is converted to an uppercase
+character, and how strings are compared without regard to case. (A
+locale also determines a default encoding, as discussed in the next
+section.)
+
+String operations such as `string-ci=?' should NOT be sensitive to the
+current locale, because they should be portable. Meanwhile, Scheme
+should provide operations like `string-locale-ci=?' to produce results
+that are consistent with the current locale.
+
+-- Main.MarcFeeley - 7 Dec 2004
+%RED%
+   * Alternatively `string-ci=?' could be locale sensitive and the
+     default locale would be "neutral".  To get a locale sensitive
+     comparison for a specific locale you would then use `call-with-locale'.
+      * %BLUE% The default locale shouldn't be neutral; there's an
+        established protocol on each system for setting the default
+        locale, and it interacts with encodings. I also worry that
+        making `string-ci=?'  locale-sensitive will lead to fragile
+        libraries, since the library implementor is unlikely to
+        remember to wrap `call-with-locale' around the call to obtain
+        consistent results.
+        --  Main.MatthewFlatt - 8 Dec 2004 %ENDCOLOR%
+
+%ENDCOLOR%
+
+Operations like `string-ci=?' should be defined in terms of character
+operations like `char-ci=?', using the Unicode code-point values and
+Unicode's standard case mapping. Code-point sequences should not be
+normalized (e.g., using Unicode Normalized Form D) for this
+comparison. In particular, `string=?' should be defined simply as
+`(lambda (a b) (equal? (string->list a) (string->list b)))'.
+
+Scheme might provide operations such as `string-unicode=?'  that are
+locale-independent, but that compare strings at the level of Unicode
+characters (instead of mere code points). However, Unicode defines
+several different normalizations for code points for characters: C, D,
+KC, and KD. If Scheme provides a mechanism for temporarily selecting a
+locale (i.e., `call-with-locale'), these different normalizations
+could be viewed as different locales for the purpose of
+comparison. More reasonably, these comparisons could be relegated to a
+future collation library.
+
+In general, locale-sensitive string comparisons may also convert a
+string into one of the Unicode normzlied forms before comparison, but
+locale-specific rules may include transformations that are not part of
+the Unicode standard. In any case, locale-specific operations are
+generally ill-defined for individual characters, so locale-sensitive
+character operations should not be provided by Scheme. (To the degree
+that they make sense, locale-sensitive character operations can be
+performed using one-character strings.)
+
+-- Main.MarcFeeley - 7 Dec 2004
+%RED%
+   * A more radical approach would be to do away with Scheme characters
+     altogether and only have strings (`substring' would have to be
+     used instead of `string-ref').  The internal representation could
+     represent one character strings specially, so it would not change
+     the space usage.
+   * I also think strings should be immutable.
+%ENDCOLOR%
+
+---++ Encodings
+
+-- Main.MarcFeeley - 7 Dec 2004
+%RED%
+   * I haven't read this part yet.
+%ENDCOLOR%
+
+The "Uni" of Unicode means that every member of every existing
+character set has a representative in Unicode. All mechanisms for
+encoding characters into bytes, therefore, can be viewed as encodings
+of Unicode character sequences as byte sequences, with the proviso
+that some characters cannot be converted to bytes in some
+encodings. At the same time, for most encodings, not every byte
+sequence is a valid, i.e., it cannot be mapped to characters.
+
+*UTF-8* is the most popular encoding of Unicode. UTF-8 maps every
+Unicode string to a unique byte sequence, but not all byte sequences
+are valid UTF-8 encodings. The UTF-8 encoding is popular because it
+has many nice properties: ASCII strings map to themselves, no string's
+encoding in bytes is more than four times its length in characters,
+etc. UTF-8 should be Scheme's default encoding whenever a default is
+needed.
+
+Some encodings are defined in terms of 16-bit or 32-bit units instead
+of bytes. For example, *UTF-16* defines an encoding of Unicode into
+16-bit units.  By selecting an endianness, such encodings imply a byte
+encoding. For example, *UTF-16BE* is an encoding of Unicode into bytes
+that is obtained by first using UTF-16, and then encoding each 16-bit
+unit into two bytes big-endian.
+
+Scheme should provide functions to convert between strings and byte
+sequences (i.e., SRFI-4's `u8vector's) for at least the following
+encodings:
+
+   * "ISO-8859-1"  (a.k.a. "LATIN-1")
+    This encoding has the nice property that every byte sequence is
+    a valid encoding, but it cannot encode all Unicode strings.
+   * "UTF-8"
+   * "UTF-16BE"
+   * "UTF-16LE"
+    These are standard encodings defined by Unicode.
+   * "UTF-16"
+    An alias for "UTF-16BE" or "UTF-16LE", depending on the
+    current platform.
+
+In addition to the above encodings, a Scheme implementation should
+also support an encoding that is associated with the current locale,
+and a locale's encoding is not necessarily any of the above.  Under
+Unix (including Mac OS X), file names, environment variables,
+command-line arguments, and characters through stdio are communicated
+using the locale's encoding. Under Windows, file names, environment
+variables, and command-line arguments are always communicated in terms
+of UTF-16, independent of the locale; thus, UTF-16 is effectively the
+encoding for all locales under Windows, except for stdio.
+
+---
+ Note: The core conversion interface should probably resemble `iconv',
+ but with many convenience functions such as `bytes->string/utf-8' and
+ `string->bytes/locale'.
+---
+
+---++ Filenames and Unicode
+
+In a Unix filesystem, a filename is represented as a sequence of
+bytes.  For displaying names to this use, this byte sequence is
+typically decoded using the locale's encoding, but there is no
+guarantee that a filename's byte sequence is a valid encoding. (The
+HFS+ filesystem ensures that every filename is a UTF-8 encoding, but
+this is unusual among filesystems.)
+
+In a Windows filesystem, a filename is represented as a sequence of
+UTF-16 code units. Again, there is no guarantee that a filename is a
+valid UTF-16 encoding (i.e., it's just like a Java string), so the
+situation is analogous to Unix, with UTF-16 is the encoding for all
+locales under Windows.
+
+To resolve a string as a filename, the string should be encoded using
+the locale's encoding. Not all files are accessible as strings,
+however, since not all filenames are valid encodings. A reliable
+filesystem library for Scheme should therefore introduce an abstract
+datatype for paths. A `path->string' procedure can produce a
+displayable version of the path, and `string->path' can convert a
+string to a path object. Meanwhile, a procedure that returns a list of
+files in a directory can do so without losing information.
+
+---
+ Note: Java has a `File' class for representing paths, but Java
+ nevertheless defines path components to be `String's. Experiments
+ suggest that Java programs cannot necessarily access all files on a
+ filesystem. There is no problem under Windows, however, because the
+ definition of a `String' as a UTF-16 code-unit sequence corresponds
+ exactly to the definition of a Windows filename.
+
+ Note: In addition to `path->string' and `string->path', MzScheme
+ provides `path->bytes' and `bytes->path'. The bytes procedures are
+ guaranteed to not lose information, so they can be used for
+ marshaling.  In addition, for any reasonable locale, they map ASCII
+ characters in the obvious way, so they can be use to manipulate
+ filenames non-atomically (e.g., to replace a suffix or change every
+ "_" to "-").
+---
+
+---++ Ports and Unicode
+
+Scheme's `read-char' procedure should obviously return
+characters. Similarly, Scheme's `read' (and hence the concrete syntax
+of Scheme) should be defined in terms of characters from a port, and
+not bytes.
+
+Of course, OS-level streams consume and produce bytes, instead of
+characters, and Scheme programs should be allowed to read and write
+bytes as well as characters. In the same way that Scheme should
+distinguish character strings from byte arrays, Scheme might
+distinguish character-producing ports from byte-producing ports. For
+example, stdin would be a byte stream, and it must be explicitly
+wrapped to obtain a character stream. An encoding is specified when
+the wrapper is generated. The advantage of this approach is that it
+makes the encoding process explicit.
+
+Another possibility is to have a single kind of port, and allow either
+bytes or characters to be read from the port. In this case, the
+encoding becomes a feature of every port, possibly specified when the
+port is created. The advantage of this approach is that multiple users
+of, say, stdin share the same stream of characters, instead of
+potentially different streams created by multiple wrappers on a byte
+stream. (Decoding characters typically requires lookahead into a byte
+stream.)
+
+---
+
+ Notes: 
+
+ Java uses the first approach: basic streams are byte streams, and
+ they are wrapped to produce character streams.
+
+ Gambit-C uses the second approach: all byte ports support character
+ operations, an an encoding is supplied when the port is created. The
+ C++ standard library is similar. But Gambit-C also supports character
+ ports that are not byte ports.
+
+ MzScheme uses a hybrid approach that favors the UTF-8 encoding.
+ MzScheme does not allow a programmer to select an encoding when
+ opening a port. Instead, all character operations on a port decode
+ bytes as UTF-8. To support encodings other than UTF-8, a MzScheme
+ programmer would wrap a port to convert bytes in some encoding to
+ bytes in a UTF-8 encoding.
+
+ Since MzScheme ports support arbitrary peek ahead (instead of just
+ `peek-byte'), and since the UTF-8 decoding process doesn't have to
+ keep state, MzScheme ports can allow interleaved byte and character
+ operations in a well-defined way. Also, operations such as
+ character-regexp matches can be implemented efficiently in terms of a
+ byte-regexp matcher (i.e., construct a byte-regexp that matches all
+ UTF-8 encodings that would match the original char-regexp).

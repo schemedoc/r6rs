@@ -1,0 +1,696 @@
+<PRE>
+Collated list of issues up for vote, December 6, 2004.
+
+Please vote on each of the following 26 motions by placing a Y
+(yea/yes) or N (nay/no) next to your name.  To refresh your memory,
+the opinions of each editor is under their name.  I have numbered the
+motions and rewritten them to clarify their meaning and take into
+account the discussion in Snowbird.  I have also added motions for
+proposals that came up during the discussions at the Snowbird
+meetings.
+
+
+================================================================
+DELETIONS from R5RS
+
+(1) The motion is to remove transcript-{on,off} from the standard.
+
+  Clinger: Y
+
+  Dybvig: Y
+    No objection.
+
+  Feeley: Y
+    Yes.
+
+  Flatt: Y
+    In favor.
+
+  Kelsey: Y
+    Yes.
+
+  Serrano: Y
+    Yes, let's remove them.
+
+  Sperber: Y
+    By all means.
+
+
+(2) The motion is to remove FORCE and DELAY from the standard.
+
+  Clinger: N
+    I think the main argument for keeping these in R6RS is that they
+    are really hard to implement correctly.  They don't belong in the
+    core, but they'll be reimplemented badly if we don't put them into
+    a standard library.
+
+  Dybvig: N
+    I agree with Will that these should be in a standard library.
+
+  Feeley: N
+    No, they are useful.  They could be put in a standard library however.
+
+  Flatt: N
+    Neutral.
+
+  Kelsey: N
+    No.
+
+  Serrano: Y
+    Yes, let's remove them too.
+
+  Sperber: N
+    Why?  Again, I find these very useful.
+
+
+(3) The motion is to move FORCE and DELAY out of the core language
+    and into a standard library.
+
+  Clinger: Y
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: Y
+
+  Serrano: Y
+
+  Sperber: Y
+
+
+(4) The motion is to remove multiple values from the standard.
+
+  Clinger: N
+    I don't see the point of removing these.  Multiple values have
+    demonstrated their worth in several implementations, including at
+    least Chez Scheme, Larceny, and PLT Scheme.  What advantage would
+    accrue from removing them?
+
+  Dybvig: N
+    I believe that they should remain and that we should in fact add
+    let-values from SRFI 11.
+
+  Feeley: Y
+    I think multiple values are a wart in the language.  I'm only
+    mildly in favor for removing them and will not pursue the issue
+    unless others support removal.
+
+  Flatt: N
+    Weakly opposed. (Like others, I find multiple values useful.)
+
+  Kelsey: N
+    No.
+
+  Serrano: N
+    No, let's keep them. If we keep them in the language, we can
+    design a construction that enables compilers to handle MV without
+    allocation structures on the heap. If it is only a library, I'm
+    afraid this would be nearly impossible.
+
+  Sperber: N
+    Like Manuel and Kent, I don't see any particular need for this.  I
+    think the present specification fits Scheme very well, and I've
+    found them to be very useful.  I'd probably add some syntactic
+    sugar in a library, but other than that, I'd leave them alone.
+
+
+================================================================
+INCOMPATIBLE CHANGES to R5RS
+
+(5) The motion is to make the lexical syntax case-sensitive.
+
+  Clinger: N
+    I'm only weakly opposed to this change.  The main reason I'm
+    voting no is that I don't find the proponents' arguments very
+    convincing, and I suspect that many in the community who say
+    they want this change don't have any better arguments to give.
+    I haven't seen a real answer to my original suggestion, which
+    was:
+
+    This would break at least some real code.  If the perceived need
+    for case-sensitive identifiers is to communicate with other
+    languages, then let's invent some lexical syntax such as
+    {hashCode} or |hashCode| that allows programmers to write
+    case-sensitive identifiers.  That wouldn't break any R5RS code.
+
+  Dybvig: Y
+    I wouldn't mind breaking some existing code to make symbols case
+    sensitive.  My reasons have only to do with expanding the namespace.
+    For example, I find it really useful to write, e.g., Expr for the
+    procedure that handles exprs, and use expr as the name of Expr's argument.
+
+  Feeley: Y
+    I support this for two reasons, 1) more elegant interfacing with
+    languages that are case-sensitive, 2) because case-insensitivity
+    is a concept that is dependent on natural language (English,
+    French, Turkish, etc).  The first reason is arguable and very much
+    a question of taste but the second reason is hard to go against,
+    especially if source code can be written in Unicode.  The classic
+    example is that the lowercase version of "I" is "i" in most
+    languages but "dotless-i" in Turkish.  So "i" and "I" are not the
+    same case-insensitive identifiers to a Turk.  Adopting a
+    case-sensitive syntax would eliminate this issue.
+
+  Flatt: Y
+    Neutral.  DrScheme's teaching languages are case-sensitive, and
+    it's not clear to me whether this increases or decreases confusion
+    for beginners.  Those who prefer case sensitivity in PLT Scheme
+    put "#cs" in front of an S-expression (usually a module) to make
+    it case sensitive, and this seems to work well.
+
+  Kelsey: N
+    No.
+
+  Serrano: Y
+    YES!!! Strongly yes.
+
+  Sperber: N
+    I also don't see any pressing concrete need for this.  (Marc: 
+    maybe you could elborate how this would improve interoperability?)
+    Sure, the specification needs to handle extended character sets,
+    but Tom Lord's has just shown one simple way to address this in
+    his SRFI 52 draft.
+    I actually like case-insensitive syntax, and at least one HCI
+    person (who gave a talk at the Pittburgh ICFP) seems to think that
+    it's the better way to go.
+
+
+================================================================
+EXTENSIONS that would break implementation-specific extensions
+
+(6) The motion is to require a particular evaluation order for the
+    subexpression of applications and let expressions.
+
+  Clinger: N
+    I could be persuaded to change my vote on this, but the debates
+    on comp.lang.scheme have convinced me that the proponents of
+    this change do not themselves agree on a rationale for the
+    change, and many (if not most) have refused even to recognize
+    the existence of opposing viewpoints.  If one of the editors
+    were to advocate for this change, I'd listen, but none of the
+    editors are voting Y as I write this.  (One is probably voting
+    N by mistake.)  My original remarks are still relevant:
+
+    www.schemers.org lists 60 implementations of Scheme.  Some of
+    these implementations have defined an implementation-specific
+    order of evaluation, and have told their users they can rely on
+    this order of evaluation.  No matter what order we choose--- if we
+    can even agree on one among ourselves, which I doubt--- it will
+    break code that was written to rely upon other orders of
+    evaluation.
+
+  Dybvig: N
+    I don't mind specifying that internal defines are ordered from
+    left to right, but I object to specifying the order in which the
+    subexpressions of an application or right-hand sides of let and
+    letrec are evaluated.  The unspecified order gives the programmer
+    a way to express that evaluation order is unimportant, and we'd
+    lose that entirely.  Said another way, a fixed evaluation order
+    forces overspecification.
+    I've considered the argument that it's easier to prove programs
+    correct or to portably test programs if the evaluation order is
+    specified, but a simple way around that is to first transform the
+    program to make the order explicit, then prove or test the
+    program, and draw conclusions only about the transformed program.
+
+  Feeley: N
+    Neutral.  I don't think it solves any problems and it would be
+    harder for the compiler to perform some optimizations.
+
+  Flatt: N
+    Strongly in favor.
+
+  Kelsey: N
+    Torn.  It would help make code portable but there are
+    implementations out there that might be hard to change.  On this
+    one I feel strongly both ways.
+
+  Serrano: N
+    I'm rather neutral. I agree that a left-to-right evaluation order
+    is intuitive and I agree that for portability enforcing an
+    evaluation order is important.
+
+  Sperber: Undecided.
+
+
+(7) The motion is to require that the letrec* form be added (it is like
+    letrec but evaluates binding expressions from left to right).
+
+  Clinger: Y
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: Y
+
+  Serrano: Y
+
+  Sperber: Y
+
+
+(8) The motion is to specify internal definitions in terms of letrec*,
+    so that internal definition are be evaluated from left to right.
+
+  Clinger: Y
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: Y
+
+  Serrano: Y
+
+  Sperber: Y
+
+
+(9) The motion is to add support for processes.
+
+  Clinger: N
+    Here we have the same issue as with evaluation order, and we also
+    have the fact that a process semantics that makes sense for many
+    architectures and OSs isn't going to make sense for all.  Support
+    for processes may belong in standard libraries, but that support
+    should not be required of all R6RS-conforming implementations.
+
+  Dybvig: N
+    Pthreads is fairly ubiquitous these days, so it might be useful to
+    have a standard thread system based on pthreads.  This is probably
+    better as an SRFI in the short term, however.
+
+  Feeley: N
+    Neutral.  Processes/threads are important but I doubt we can
+    arrive at a consensus on a process model and API.  I think we
+    should discuss this further.  Perhaps my threading SRFIs can be
+    used as a starting point.
+
+  Flatt: N
+    Opposed. (These should all be future work via SRFIs.)
+
+  Kelsey: N
+    This needs to be a (successful) SRFI first.
+
+  Serrano: Y
+    Yes.
+
+  Sperber: N
+
+
+(10) The motion is to add support for network programming.
+
+  Clinger: N
+    IMO this is more appropriate for standardization than processes,
+    and belongs in a standard library, but should not be required of
+    all implementations.
+
+  Dybvig: N
+    This should go into a standard library.
+
+  Feeley: N
+    Neutral.  Like processes I doubt we can arrive at a consensus on a
+    networking model and API.  It would be best to start with a SRFI.
+
+  Flatt: N
+    Opposed. (These should all be future work via SRFIs.)
+
+  Kelsey: N
+    This needs to be a (successful) SRFI first.
+
+  Serrano: Y
+    Yes.
+
+  Sperber: N
+
+
+(11) The motion is to add object-oriented programming.
+
+  Clinger: N
+    There are many incompatible extensions for object-oriented
+    programming.  We can't standardize here without breaking a lot of
+    implementation-specific code.  If there were a clear winner among
+    the OO extensions, it would be one thing, but I don't see a clear
+    consensus at this time.
+
+  Dybvig: N
+    This is probably too controversial.
+
+  Feeley: N
+    Against.  It would be best to start with a SRFI.
+
+  Flatt: N
+    Opposed. (These should all be future work via SRFIs.)
+
+  Kelsey: N
+    This needs to be a (successful) SRFI first.
+
+  Serrano: N
+    No. I don't think that we can arrive at a consensus in a
+    reasonably short period.
+
+  Sperber: N
+
+
+(12) The motion is to require all datums to be serializable, that is all
+     datums must obey write/read invariance, in particular symbols.
+
+  Clinger: Y
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: Y
+
+  Serrano: Y
+
+  Sperber: Y
+
+
+================================================================
+EXTENSIONS to R5RS (controversial and probably unnecessary)
+
+(13) The motion is to add a box type.
+
+  Clinger: N
+    This just isn't very important.
+
+  Dybvig: N
+    I never use boxes myself, so I'd prefer to let them die.  There's
+    not much advantage to including them once we have records.
+
+  Feeley: Y
+    I weakly support this.
+
+  Flatt: N
+    Neutral.
+
+  Kelsey: Y
+    More needed SRFIs.
+
+  Serrano: N
+    What for? Against. 
+
+  Sperber: Y
+
+
+================================================================
+EXTENSIONS to R5RS (controversial or difficult but necessary)
+
+(14) The motion is to add Unicode support (for character and string
+     types and for source code).  [Details are to be worked out.]
+
+  Clinger: Y
+
+  Dybvig: Y
+    Yes (as part of the core).
+
+  Feeley: Y
+    I strongly support this.
+
+  Flatt: Y
+    Neutral.
+
+  Kelsey: Y
+    Maybe.  We should at least adjust the language to make it more
+    compatible with unicode.
+
+  Serrano: Y
+    I'm afraid we have to deal with unicode
+
+  Sperber: Y
+
+
+(15) The motion is to require a mode where "it is an error" means "an
+     error is signalled".  [Details of how this mode is requested still
+     need to be determined.]
+
+  Clinger: Y
+
+  Dybvig: Y
+    Yes.
+
+  Feeley: Y
+    I support this for most errors (some errors are too hard to
+    detect).  I think the standard should explicitly say which
+    exception is raised by each type of error.
+
+  Flatt: Y
+    In favor.
+
+  Kelsey: Y
+    Yes, depending on the details of which errors are included.
+
+  Serrano: Y
+    I agree with Marc,
+      I support this for most errors (some errors are too hard to detect).
+      I think the standard should explicitly say which exception is raised
+      by each type of error.
+
+  Sperber: Y
+    I suggested this, so I must be for it.
+
+
+================================================================
+EXTENSIONS to R5RS (probably not terribly controversial)
+
+(16) The motion is to add the #| ... |# lexical syntax for multiline
+     comments which supports nested comments.
+
+  Clinger: Y
+
+  Dybvig: Y
+    Yes.  Plus #;<s-expr> to comment out s-expressions.  This came up
+    at some point but didn't make this list.
+
+  Feeley: Y
+    Yes.
+
+  Flatt: Y
+    Neutral.
+
+  Kelsey: Y
+    Yes.
+
+  Serrano: Y
+    Yes.
+
+  Sperber: Y
+
+
+(17) The motion is to add the #;<expression> lexical syntax for
+     expression comments.
+
+  Clinger: Y
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: Y
+
+  Serrano: Y
+
+  Sperber: N
+
+
+(18) The motion is to require a single object to be end-of-file.
+
+  Clinger: Y
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: Y
+
+  Serrano: Y
+
+  Sperber: Y
+
+
+(19) The motion is to add a lexical syntax for the end-of-file object
+     (possibly #!eof).
+
+  Clinger: N
+    This is not an extension to the R5RS; it is an incompatible
+    change.
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: N
+
+  Kelsey: N
+
+  Serrano: N
+
+  Sperber: N
+
+
+(20) The motion is to require the end-of-file object to be distinct
+     from all other types (in particular characters).
+
+  Clinger: Y
+    The R5RS already requires end-of-file objects to be distinct
+    from all objects that can be read by the READ procedure, but
+    if we're going to discard that invariant then we'll need to
+    replace it with some other.  So this issue depends somewhat
+    on #19 above.
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: Y
+
+  Serrano: Y
+
+  Sperber: Y
+
+
+(21) The motion is to add a nullary procedure that returns the end-of-file
+     object.
+
+  Clinger: Y
+
+  Dybvig: N
+    If 19 is voted down, I'll change this to Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: Y
+
+  Serrano: Y
+
+  Sperber: Y
+
+
+(22) The motion is to add more escape characters in strings.  [The
+     details need to be worked out.]
+
+  Clinger: Y
+
+  Dybvig: Y
+    Yes.
+
+  Feeley: Y
+    Yes.
+
+  Flatt: Y
+    Neutral.
+
+  Kelsey: Y
+    Yes.
+
+  Serrano: Y
+    Yes.
+
+  Sperber: Y
+
+
+(23) The motion is to add the \n escape for newline in strings.
+
+  Clinger: Y
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: Y
+
+  Serrano: Y
+
+  Sperber: Y
+
+
+(24) The motion is to require that, in the lexical syntax, #f, #t, and
+     characters be followed by a delimiter.
+
+  Clinger: Y
+
+  Dybvig: Y
+    Yes.
+
+  Feeley: Y
+    Yes.  It will make the following external representations
+    possible: #f64(...) and #record-name(...) whether they are
+    standard or implementation specific extensions.
+
+  Flatt: abstain
+    Neutral.
+
+  Kelsey: Y
+    Yes.
+
+  Serrano: Y
+    Yes.
+
+  Sperber: undecided
+    I'm agnostic on this.-
+
+
+(25) The motion is to require that, in the lexical syntax, balanced
+     square brackets be equivalent to balanced parentheses (except in
+     the syntax of vectors).
+
+  Clinger: N
+    I oppose '[x y z], for example.
+
+  Dybvig: Y
+
+  Feeley: Y
+
+  Flatt: Y
+
+  Kelsey: N
+
+  Serrano: N
+
+  Sperber: Y
+
+
+(26) The motion is to add hash tables to the standard library. [Details
+     need to be worked out.]
+
+  Clinger: abstain
+    This should be tied to a more definite proposal.
+
+  Dybvig: Y
+    Yes (library).
+
+  Feeley: Y
+    Neutral.
+
+  Flatt: Y
+    Neutral.
+
+  Kelsey: undecided (need to see definite proposal first)
+
+  Serrano: Y
+    Yes.
+
+  Sperber: undecided (need to see definite proposal first)
+</PRE>
+
+-- Main.MarcFeeley - 06 Dec 2004

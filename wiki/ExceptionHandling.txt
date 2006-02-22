@@ -1,0 +1,106 @@
+---+ Exceptions
+
+At the Snowbird meeting, Mike did a a presentation about the
+exceptions system described in SRFIs 34-36.
+
+[[http://srfi.schemers.org/srfi-34/][SRFI 34: Exception Handling for Programs]]
+
+[[http://srfi.schemers.org/srfi-35/][SRFI 35: Conditions]]
+
+[[http://srfi.schemers.org/srfi-36/][SRFI 36: I/O Conditions]]
+
+SRFIs 34 and 35 basically stand as a proposal for R6RS.
+
+---++ Scope and Rationale
+
+SRFIs 34 and 35 do not cover every single aspect of what people
+consider to be within the purview of an "exception system."
+Specifally, they do not cover:
+
+   * bugs (more about that later)
+   * exceptions meant to support system extensions
+   * asynchronous interrupts
+
+Rather, SRFIs 34 and 35 are meant to support communication between
+different programs (or parts of a program) that were written
+independently of one another.
+
+This is why SRFI 34 involves manipulation of the dynamic environment
+and the current continuation that may make it slower than a
+system-level exception system may need to be.
+
+Also, this is why the condition system in 35 is very rich---it allows
+constructing composite conditions, effectively representing several
+exceptional situations at once.  (SRFI 12 also had this general
+ability, but made it extremely awkward to construct condition type
+hierarchies.) It isn't particulary pretty---but represents a
+compromise between a single-inheritance system for describing
+exceptions, which would not be able to describe some exceptional
+situations, and a full-blown multiple-inheritance object system such
+as Common Lisp's.
+
+In practice (as observed in the development version of Scheme 48,
+which implements SRFIs 34-36), usage of the condition system is quite
+simple, both to write and to read.
+
+---++ Issues
+
+---+++ Handler continuation
+
+This issue was raised by Will Clinger at the Snowbird meeting:
+
+SRFI 34 specifies that the continuation of a handler invoked by
+=raise= is unspecified except for its dynamic environment.  This is to
+prevent programmers from encoding non-obvious assumptions about the
+continuation into their code.  The reference implementation actually
+signals an error (or, rather, a _bug_).  It might make sense to
+actually _require_ the implementation to signal an error.
+
+---+++ Restricting =raise= to condition objects
+
+SRFI 34 has =raise= accept arbitrary arguments.  This was done solely
+to be able to supersede SRFI 35 independently of SRFI 34.  R6RS should
+probably require the argument to =raise= to be a condition object.
+
+---+++ I/O conditions
+
+These should be the part of the upcoming I/O system specification---as
+the condition types in SRFI 36 are closely tied to the R5RS I/O
+system, the condition types in the actual I/O system may be different.
+
+---+++ Exceptions raised by primitives
+
+This is still an open issue---most situations that are "an error" or
+require an implementation to signal an error are actually properly
+bugs in the program.  (See below.)  The notable exception is I/O (see
+above).  It is unclear what kind of condition should represent
+"division by zero".
+
+---++ Bugs
+
+SRFIs 34 and 35 were written exclusively to handle exceptional
+situations in a program's execution, not bugs.  (Where a bug is
+typically a situation that a program can avoid, such as an argument
+type error.)
+
+In a short brainstorm situation, Matthew Flatt convinced Mike Sperber
+that bugs are often hard to distinguish from errors, and that both
+should also be part of the same exception system.  We suggest adding a
+new condition type =&bug= like this:
+
+<verbatim>
+                 &serious
+                /        \
+              &error    &bug
+</verbatim>
+
+This ensures that a predicate checking for a error doesn't
+accidentally catch a bug as well.  Of course, a 
+
+<verbatim>
+(guard condition (else ...))
+</verbatim>
+
+form would still catch bugs.  This should be discouraged.
+
+-- Main.MichaelSperber - 26 Feb 2005

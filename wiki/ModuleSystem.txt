@@ -1,0 +1,331 @@
+---+ Module System Design Issues
+
+---++ The "configuration language" issue
+
+The biggest source of disagreement is the question of how separate the
+configuration language is from the core language.
+
+To illustrate the issue, it's best to consider the respective module
+systems of Chez Scheme, PLT Scheme, and Scheme 48.  For more detailed
+information, consult the manuals of these systems.  Of further
+interest might be
+
+Oscar Waddell and R. Kent Dybvig: Extending the Scope of Syntactic
+Abstraction
+
+[[http://www.cs.indiana.edu/~dyb/pubs/popl99.pdf]]
+
+Matthew Flatt: Composable and Compilable Macros
+
+[[http://www.cs.utah.edu/plt/publications/macromod.pdf]]
+
+Jonathan Rees's account of the design of the Scheme 48 module system:
+
+[[SchemeFEModules]]
+
+There's also documentation of these Scheme systems, each of which
+includes a chapter on the respective module language.
+
+Here's a summary of how the respective module systems work:
+
+   1. In Chez Scheme, the =module= form is a regular language construct - it
+  can occur wherever =&lt;definition&gt;= can occur in the R5RS syntax.  As a
+  result, macros can expand into =module= and its subforms.
+  Specifically, the exports and imports of a module can be generated
+  by macro expansion.  Also, local modules are possible.
+   2. In PLT Scheme, the =module= form, along with its first operand, is
+  special - it's outside the core language, and macros cannot expand
+  into it. However, the =provide= and =require= forms used to specify
+  imports and exports, are regular top-level forms.  They aren't
+  hardwired into the =module= form, but instead are usually part of the
+  initial language that is specified in the first operand to =module=.
+  =Require= and =provide= only work at the top level - no local modules.
+   3. In Scheme 48, the configuration language for defining modules
+  ("structures") and interfaces is completely separate from the core
+  language, and the two do not mix.   Specifically, the import form
+  (called OPEN) cannot appear in a structure body, and thus cannot
+  result from regular macro expansion.
+
+(Bigloo also has a completely separate configuration language.)
+
+Further points along the spectrum are possible: For example, a local
+import form would move the PLT module system more in the direction of
+the Chez module system.
+
+Here are very short summaries arguing for the three specific designs:
+
+---+++!! Chez Scheme
+
+(from a message by Kent Dybvig):
+
+<verbatim>
+  We should be able to write macros that expand into require, provide,
+  and even module forms.  The opening paragraph of the r5rs expresses
+  the guiding principle here:
+
+      *    Programming languages should be designed not by piling feature on top
+    of feature, but by removing the weaknesses and restrictions that make
+    additional features appear necessary.  Scheme demonstrates that a very
+    small number of rules for forming expressions, with no restrictions
+    on how they are composed, suffice to form a practical and efficient
+    programming language that is flexible enough to support most of the
+    major programming paradigms in use today.
+
+  Note specifically the part about "no restrictions on how they are
+  composed".  I realize I may be the only one, but I truly dislike having
+  any reserved words or un-abstractable meta language.
+</verbatim>
+
+---+++!! PLT Scheme:
+
+[Mike's words, not approved by Matthew.]
+
+!MzScheme's configuration language, =module= manages things at the file
+level - it specifies how to find the definition for a module, given
+its name, and allows separate compilation at the module level.  This
+gets harder when =module= itself is in the extensible part of the
+language.
+
+The body of a =module= form is in the extensible part of the language,
+to facilitate the definition of new kinds of linking/component/module
+systems within the body of a module mform.
+
+---+++! Scheme 48
+
+(adapted from a text written by Jonathan Rees; full text at
+[[SchemeFEModules]]):
+
+   *  Configuration and namespace control do _not_ reside with 'ordinary'
+  Scheme code because:
+      * The Scheme code still has to be understood by Scheme
+    implementations that don't know about this module system (and
+    probably already have a different one)
+      * The configuration language must be declarative because it must
+    be processed in a variety of ways (e.g. it gets translated into
+    other module languages, including Common Lisp packages and
+    Makefiles)
+      * The names involved in the module system (both 'keywords' and
+    user-defined names such as module and interface names) must
+    themselves live in a namespace disjoint from user code, since it
+    must be possible to (for example) manipulate empty
+    or hostile namespaces (those with incompatible definitions of
+    the module primitives)
+      * The code being configured may come from, or may end up being
+    loaded into, an environment that doesn't know about the modules
+    system
+   * The 'require' list must *explicitly* demand Scheme language
+  bindings, because sometimes either don't have them or don't want
+  them, or you want a variant (e.g. R4RS vs. R6RS).
+   * You don't have to look at _any_ source files to be able to figure
+  out dependencies and visibilities.  In particular, you don't have
+  to what language or syntax is used in writing the source files.
+   * You have complete control of visibility - there are no special
+  keywords (such as =require=) of any kind inside of source files.
+
+
+---++ The "implicit exports" issue
+
+A macro exported from a module can make bindings available that are
+not in the list of exports - the list of names a client of the module
+is supposed to use directly, like this:
+
+<verbatim>
+(define bar 'baz)
+
+(define-syntax foo
+  (syntax-rules ()
+    ((foo) bar)))
+</verbatim>
+
+Chez Scheme requires these "implicit exports" to appear in the regular
+export list of a module.  !MzScheme doesn't.  Scheme 48 requires the
+implicit exports to be attached to the macro definition for unhygienic
+macros, but not for macros defined using =syntax-rules=.
+
+While not semantically necessary, having the "implicit exports" listed
+explicitly enables optimizations in Chez Scheme.
+
+Thus, two design dimensions are on the table:
+
+   * whether the program must list "implicit exports"
+   * whether the program must list them with the macro definition or with
+ the module definition
+
+For the first dimension, the choices on the table are:
+
+   * never
+   * for non-hygienic macros only
+   * always
+
+Two posts on the subject:
+
+---++++!!Richard:
+
+<verbatim>
+     * Must one declare "implicit" exports, i.e., local identifiers,
+       references to which may be contained in the expanded output of an
+       exported macro?  [...]
+
+   My views on these two issues are, in decreasing order of preference:
+
+       1.  [...] yes
+
+Now that I have thought about this a bit more, this is my preference
+as well, with caveat that I would prefer that the declarations of
+"implicit" exports be done automatically for uses of SYNTAX-RULES.
+When there is ambiguity about what references a macro might introduce,
+as there can be with other kinds of macro definitions, then any needed
+declaration should be part of the macro definition, not part of any
+module declaration.  I think that this makes it easier to keep the
+declarations correct, as well as allowing them to be done automatically
+for sufficiently simple macro definitions, such as those using
+SYNTAX-RULES.
+</verbatim>
+
+---++++!!Kent:
+
+<verbatim>
+From an aesthetic point of view, I agree with you.  Unfortunately, the
+implementation cannot generally determine from a module alone,
+i.e., without knowing how it is used, the module's implicit exports.
+By recursively searching through the syntax objects of exported macros,
+we can determine an initial set of implicit exports, then compute the
+transitive closure of this set to make a conservative approximation of
+the set of implicit exports.  These syntax objects may include arbitrary
+data, including possibly cyclic data, that will end up quoted.  This is
+a complicated and potentially expensive process that forces us to scan
+through data we would not otherwise have to scan and in the end yields
+imperfect information that hinders static analysis, copy propagation,
+inlining, etc.
+</verbatim>
+
+---++ The phase separation issue
+
+In Chez Scheme and Scheme 48, a module is instantiated only once, and
+the instantiation is re-used every time the module is imported.
+Specifically, the instantiation is re-used every time the syntax
+transformers defined by that module are used.  This can lead to
+different compilation results depending on the history of the module's
+use.
+
+In !MzScheme, a module is instantiated anew for each phase.  This makes the
+expansion result reproducible.  Details are in Matthew's paper
+
+[[http://www.cs.utah.edu/plt/publications/macromod.pdf]]
+
+Positions on the issue:
+
+---++++!!Matthew:
+
+<verbatim>
+PLT Scheme is a microcosm of the problem. MzScheme, DrScheme, mzc, mzc
+--exe, and Check Syntax all manipulate a program in very different
+ways, and prior to `module', we were not able to make these tools work
+consistently. But `module' was specifically designed to solve this
+problem, and it has.
+
+[...]
+</verbatim>
+
+---++++!!Kent:
+
+<verbatim>
+Right---I should have remembered that from your paper, and I can see
+how it handles your example.  I'm not quite ready to bite off on it,
+though; multiple instantiations and evaluations of a module body add
+a lot of complexity and expense for what is, after all, just a bit of
+error checking.
+</verbatim>
+
+---++ The "modules vs. files" issue
+
+In Chez Scheme and Scheme 48, module definitions must be explicitly
+loaded into the system before they can be used.  (KENT: I'm unsure
+about how Chez really works.  Please correct.)  (In Scheme 48, the
+module definitions can be loaded separately from their bodies.)  This
+determines what an import refers to.  In !MzScheme (with the exception
+of some built-in modules for language specifications), an import
+refers to a file that must contain a module definition with the same
+name.
+
+This raises the general question how module identifiers (in whatever
+format) are connected to the corresponding module definitions.  Among
+the sub-issues are:
+
+   * Is it possible to define more than one module in a single file?
+   * Is it possible to define a module in a single file?
+   * Is it possible to have an import refer to different modules
+  depending on context?
+   *- Does the association between module identifiers (in whatever format)
+  and modules always happen as an implicit part of module definition,
+  or is it specified separately.
+
+---++ The "what's an import" issue and the "explicit interfaces" issue
+
+In the Scheme 48 configuration language, interfaces are separate
+entities - several modules can share an interface, and it's possible
+to define several modules with different interfaces sharing a single
+implementation.  In Chez Scheme, interfaces are listed in the =module=
+form, but aren't entities separate from modules.  In !MzScheme,
+interfaces are implicit in the sense that they arise from the =provide=
+forms in the module body.
+
+In all three module systems, imports are of modules, not of
+interfaces, and thus in principle always refer to a specific
+implementation, not an interface.
+
+As the Scheme 48 module system is about expressing system
+configurations, and not just scope management, it uses interfaces to
+establish the links between modules and their clients.  (Details can
+be found on [[SchemeFEModules]].)
+
+Carrying this idea further means making imports refer to interfaces,
+not to modules, and to have a linker connect the imports with the
+module definitions.  Details about a possible module system with this
+property are at:
+
+[[http://mumble.net/~kelsey/papers/missing-link.ps.gz]]
+
+(NOTE: Mike is not sure whether that makes Richard's system a
+"component system" are not.)
+
+This issue is complicated; several positions on it are possible:
+
+A. establish the principle that imports always refer to modules, not
+   interfaces<br>
+B. establish the principle that imports always refer to interfaces,
+   not modules<br>
+C. design a system that initially works like A. for R6RS and can be
+   extended later to have imports refer to interfaces as well
+
+Note also that the name listed in an import, even if it's not an
+interface, can function as a parameter rather than a fixed reference
+to another module.  This issue also has implications for the "local
+modules", the "modules vs. files", and the "separate configuration
+language" issues.
+
+---++ The "export annotation" issue
+
+In Scheme 48, macro exports must be annotated with a =:syntax= tag.
+Also, value exports can carry optional type annotations, which are
+used for type checking.  (In Bigloo, the type annotations are used for
+optimization, too.)  In Chez Scheme and !MzScheme, whose module systems
+are about scope management only, these annotations do not exist.
+
+---++ The "separate compilation" issue
+
+This is currently not controversial, but an issue nevertheless:  All
+module systems currently under discussion do not allow true
+independent compilation: a change in the body of one module can make
+re-compilation of a depedendent module necessary, because the change
+may involve an exported macro.
+
+They do support independent compilation in the sense that compilation
+dependencies follow the module dependencies and never go in the other
+direction.
+
+True independent compilation would require making the macros part of
+the module interfaces - this is currently the subject of active
+research and probably not suitable for the R6RS deadline.
+
+-- Main.MichaelSperber - 08 Jan 2005
