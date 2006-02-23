@@ -83,6 +83,7 @@
 		    (flonums-r5rs (export r5rs->flonum flonum->r5rs)))
   (open scheme
 	srfi-9 ; define-record-type
+	srfi-23 ; error
 	(subset define-record-types (define-record-discloser))
 	fixnums fixnums-r5rs
 	nary)
@@ -175,7 +176,7 @@
 	  ratnum-positive? ratnum-negative?
 	  ratnum-abs
 	  ratnum-min ratnum-max
-	  ratnum-truncate ratnum-floor
+	  ratnum-truncate ratnum-floor ratnum-ceiling ratnum-round
 	  ratnum->string))
 
 (define-structures ((ratnums ratnums-interface)

@@ -361,32 +361,30 @@
   fldenominator
   (make-typo-op/1 denominator 'real))
 
-;; floor is primitive
 (define-unary floor
   id id ratnum-floor
   (make-typo-op/1 floor 'real)
   flfloor
   (make-typo-op/1 floor 'real))
 
-; from Scheme 48
+(define-unary ceiling
+  id id ratnum-ceiling
+  (make-typo-op/1 ceiling 'real)
+  flceiling
+  (make-typo-op/1 ceiling 'real))
 
-(define (ceiling x)
-  (- (floor (- x))))
+(define-unary truncate
+  id id ratnum-truncate
+  (make-typo-op/1 truncate 'real)
+  fltruncate
+  (make-typo-op/1 truncate 'real))
 
-(define (truncate x)
-  (if (negative? x)
-      (ceiling x)
-      (floor x)))
+(define-unary round
+  id id ratnum-round
+  (make-typo-op/1 round 'real)
+  flround
+  (make-typo-op/1 round 'real))
 
-(define (round x)
-  (let* ((x+1/2 (+ x (r5rs->ratnum 1/2)))
-	 (r (floor x+1/2)))
-    (if (and (= r x+1/2)
-	     (odd? r))
-	(- r (r5rs->integer 1))
-	r)))
-
-; end from Scheme 48
 
 (define-syntax define-unary-flonum/compnum
   (syntax-rules ()
