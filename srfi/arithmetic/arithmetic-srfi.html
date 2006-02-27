@@ -2654,6 +2654,15 @@ some integer <VAR>n</VAR>.
 (inexact-angle -1.0-0.0)     ==&gt; -pi ; if -0.0 is distinguished
 </PRE>
 
+<P>
+Moreover, suppose <VAR>in1</VAR>, <VAR>in2</VAR>
+are such that either <VAR>in1</VAR> or <VAR>in2</VAR> is
+an infinity, then
+
+<PRE>
+(inexact-make-rectangular <VAR>in1</VAR> <VAR>in2</VAR>) ==&gt; <VAR>z</VAR>
+(inexact-magnitude <VAR>z</VAR>)              ==&gt; +inf.0
+</PRE>
 </DL>
 
 
@@ -3548,9 +3557,21 @@ where -pi <FONT color="red"><STRIKE>&lt;</STRIKE>&lt;=</FONT> x<span class=sub>a
 <VAR>n</VAR> for some integer <VAR>n</VAR>.
 
 <P>
+<FONT color="red">
+Moreover, suppose <VAR>x1</VAR>, <VAR>x2</VAR>
+are such that either <VAR>x1</VAR> or <VAR>x2</VAR> is
+an infinity, then</FONT>
+
+<PRE>
+<FONT color="red">(make-rectangular <VAR>x1</VAR> <VAR>x2</VAR>)      ==&gt; <VAR>z</VAR></FONT>
+<FONT color="red">(magnitude <VAR>z</VAR>)                 ==&gt; +inf.0</font>
+</PRE>
+
+<P>
 <FONT color="red"><code>Make-polar</code>, <code>magnitude</code>, and
 <code>angle</code> may return inexact results even when given exact
 arguments.</FONT>
+
 
 <P>
 <PRE>

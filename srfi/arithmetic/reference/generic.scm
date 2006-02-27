@@ -545,7 +545,12 @@
 (define (magnitude c)
   (let ((r (real-part c))
 	(i (imag-part c)))
-    (sqrt (+ (* r r) (* i i)))))
+    (if (or (= r flinf+)
+	    (= r flinf-)
+	    (= i flinf+)
+	    (= i flinf-))
+	flinf+
+	(sqrt (+ (* r r) (* i i))))))
 
 ; end from Larceny
 
