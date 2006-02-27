@@ -2677,9 +2677,15 @@ inexactness is contagious.  The generic operations
 generally return the correct exact result when all
 of their arguments are exact and the result is
 mathematically well-defined, but return an inexact
-result when any argument is inexact.  As indicated
-in the specification of individual operations, some
-exceptions to this rule are allowed (but not required).</FONT>
+result when any argument is inexact.  
+Exceptions are <code>sqrt</code>, <code>exp</code>,
+<code>log</code>, <code>sin</code>, <code>cos</code>,
+<code>tan</code>, <code>asin</code>, <code>acos</code>,
+<code>atan</code>, <code>expt</code>, <code>make-polar</code>,
+<code>magnitude</code>, and <code>angle</code>, which are
+allowed (but not required) to return inexact results even when given exact
+arguments, as indicated
+in the specification of these procedures.</FONT>
 
 <P>
 <FONT color="red">
@@ -3209,6 +3215,10 @@ negative infinity, then that is the value returned by the function
 applied to <CODE>-inf.0</CODE>.
 
 <P>
+<FONT color="red">These procedures may return inexact results even
+when given exact arguments.</FONT>
+
+<P>
 <FONT color="red">
 In the event that these formulae do
 not yield a real result for the given arguments, the
@@ -3416,9 +3426,12 @@ when given <CODE>+inf.0</CODE>,
 Returns the principal square root of <VAR>z</VAR>.  For <FONT
 color="red"><STRIKE>real</STRIKE> rational</FONT> <VAR>z</VAR>, the
 result will have either positive real part, or zero real part and
-non-negative imaginary part.  <FONT color="red">With <code>exp</code> and <code>log</code>
+non-negative imaginary part.
+<FONT color="red">With <code>exp</code> and <code>log</code>
 defined as above, the value of <code>`(sqrt <var>z</var>)'</code>
 <CODE>`(exp (/ (log <var>z</var>) 2.0))'</CODE>.
+<code>Sqrt</code> may return an inexact result even when given
+an exact argument.
 </FONT>
 
 <PRE>
@@ -3452,6 +3465,16 @@ Otherwise, this procedure reports a violation of an implementation restriction
 or returns an unspecified number.
 </FONT>
 
+<P>
+<FONT COLOR="red">For an exact rational <var>z1</var> and an exact
+integer <var>z2</var>, <SAMP>`(expt <var>z1</var>
+<var>z2</var>)'</SAMP> must return an exact result.  For all other
+values of <var>z1</var> and <var>z2</var>, <SAMP>`(expt <var>z1</var>
+<var>z2</var>)'</SAMP> may return an inexact result, even when both
+<var>z1</var> and <var>z2</var> are exact.
+</FONT>
+
+<P>
 <FONT COLOR="red"><STRIKE>0^0 is 1.</STRIKE></FONT>
 <P>
 <FONT COLOR="red"><STRIKE>For inexact arguments not both zero</STRIKE></FONT>
@@ -3523,6 +3546,11 @@ Then
 where -pi <FONT color="red"><STRIKE>&lt;</STRIKE>&lt;=</FONT> x<span class=sub>angle</span>
 &lt;= pi with <VAR>x<span class=sub>angle</span></VAR> = <VAR>in4</VAR> + 2pi
 <VAR>n</VAR> for some integer <VAR>n</VAR>.
+
+<P>
+<FONT color="red"><code>Make-polar</code>, <code>magnitude</code>, and
+<code>angle</code> may return inexact results even when given exact
+arguments.</FONT>
 
 <P>
 <PRE>
