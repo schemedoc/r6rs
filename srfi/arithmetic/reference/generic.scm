@@ -532,8 +532,8 @@
 
 (define (imag-part z)
   (cond
-   ((recnum? z) (recnum-real z))
-   ((compnum? z) (compnum-real z))
+   ((recnum? z) (recnum-imag z))
+   ((compnum? z) (compnum-imag z))
    (else (r5rs->integer 0))))
 
 (define (angle c)
