@@ -2662,14 +2662,32 @@ some integer <VAR>n</VAR>.
 <P>In this model of arithmetic, the section on exactness reads as follows:
 
 <BLOCKQUOTE>
+
 Scheme numbers are either <I>exact</I> or <I>inexact</I>.  A number is
 exact if it was written as an exact constant or was derived from exact
-numbers using only exact operations.  A number is inexact if it <FONT
-COLOR=red><STRIKE>is infinite, if it </STRIKE></FONT>was written as an
+numbers using only exact operations.  
+<FONT color="red"><STRIKE>A number is inexact if it 
+is infinite, if it was written as an
 inexact constant, if it was derived using inexact ingredients, or if
-it was derived using inexact operations. <FONT COLOR=red>The generic
-operations all implement inexact operations.</FONT>  Thus inexactness
-is a contagious property of a number.
+it was derived using inexact operations.   Thus inexactness
+is a contagious property of a number.</STRIKE>
+A number is inexact if it was written as an inexact
+constant or was derived from inexact numbers.  Thus
+inexactness is contagious.  The generic operations
+generally return the correct exact result when all
+of their arguments are exact and the result is
+mathematically well-defined, but return an inexact
+result when any argument is inexact.  As indicated
+in the specification of individual operations, some
+exceptions to this rule are allowed (but not required).</FONT>
+
+<P>
+<FONT color="red">
+One general exception to the rule above is that an
+implementation may return an exact result despite
+inexact arguments if that exact result would be
+the correct result for all possible substitutions
+of exact arguments for the inexact ones.</FONT>
 
 <P>
 <FONT COLOR="red"><STRIKE>Each exact number corresponds to a single mathematical number.  It is
@@ -2690,8 +2708,7 @@ the implementation.</font>
 
 <P>
 If two implementations produce exact results for a computation 
-that did not involve inexact intermediate results <FONT COLOR="red">or the
-results of numerical predicates</FONT>, the two ultimate results will be
+that did not involve inexact intermediate results, the two ultimate results will be
 mathematically equivalent.  This is generally not true of computations
 involving inexact numbers because approximate methods such as floating
 point arithmetic may be used, but it is the duty of each
@@ -2709,12 +2726,12 @@ See section 6.2.3.
 </STRIKE></FONT>
 
 <P>
-With the exception of <CODE>inexact-&#62;exact</CODE>
-<FONT COLOR="red"><STRIKE><code>exact-round</code>, <code>exact-ceiling</code>,
-<code>exact-floor</code>, and <code>exact-truncate</code></STRIKE></FONT>,
+<FONT COLOR="red"><STRIKE>With the exception of <CODE>inexact-&#62;exact</CODE>
+<code>exact-round</code>, <code>exact-ceiling</code>,
+<code>exact-floor</code>, and <code>exact-truncate</code>,
 the operations
 described in this section must
-return inexact results when given any inexact arguments.
+return inexact results when given any inexact arguments.</STRIKE></FONT>
 </BLOCKQUOTE>
 
 <P>
