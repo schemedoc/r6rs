@@ -1827,9 +1827,7 @@ these functions.
 <P>
 Returns the principal square root of <VAR>z</VAR>. For a negative
 argument, the result may be <code>+nan.0</code>, or may be some
-meaningless flonum.  With <code>flexp</code> and <code>fllog</code>
-defined as above, the value of <code>`(flsqrt <var>fl</var>)'</code>
-is defined as <CODE>`(flexp (fl/ (fllog <var>fl</var>) 2.0))'</CODE>.
+meaningless flonum.
 
 <PRE>
 (flsqrt +inf.0)               ==>  +inf.0
@@ -2591,9 +2589,12 @@ these functions.
 <P>
 Returns the principal square root of <VAR>z</VAR>. For a negative
 argument, the result may be <code>+nan.0</code>, or may be some
-meaningless inexact number.  With <code>inexact-log</code> defined as above,
-the value of <code>`(inexact-sqrt <var>in</var>)'</code> is defined as
-<CODE>`(inexact-exp (inexact/ (inexact-log <var>in</var>) 2.0))'</CODE>.
+meaningless inexact number.  With log defined as above,
+the value of <code>`(inexact-sqrt <var>in</var>)'</code> could be
+expressed as
+
+<P>
+<VAR>e</VAR><SUP>(log <var>in</var>) / 2</SUP>
 
 </DL>
 
@@ -3169,7 +3170,10 @@ all.
 
 
 <P>
-These procedures compute the usual transcendental functions.  <CODE>Log</CODE>
+These procedures compute the usual transcendental functions.  
+<FONT color="red"><code>Exp</code> computes the base-<var>e</var> exponential 
+of <VAR>z</VAR>.</FONT>
+<CODE>Log</CODE>
 computes the natural logarithm of <VAR>z</VAR> (not the base ten logarithm).
 <CODE>Asin</CODE>, <CODE>acos</CODE>, and <CODE>atan</CODE> compute arcsine (sin<SUP>-1</SUP>),
 arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
@@ -3436,17 +3440,22 @@ Returns the principal square root of <VAR>z</VAR>.  For <FONT
 color="red"><STRIKE>real</STRIKE> rational</FONT> <VAR>z</VAR>, the
 result will have either positive real part, or zero real part and
 non-negative imaginary part.
-<FONT color="red">With <code>exp</code> and <code>log</code>
-defined as above, the value of <code>`(sqrt <var>z</var>)'</code>
-<CODE>`(exp (/ (log <var>z</var>) 2.0))'</CODE>.
-<code>Sqrt</code> may return an inexact result even when given
+<FONT color="red">With log defined as above,
+the value of <code>`(sqrt <var>in</var>)'</code> could be
+expressed as</FONT>
+
+<P>
+<FONT color="red"><VAR>e</VAR><SUP>(log <var>in</var>) / 2</SUP></FONT>
+
+<P>
+<FONT color="red"><code>Sqrt</code> may return an inexact result even when given
 an exact argument.
 </FONT>
 
 <PRE>
 (sqrt -5)                   ==&gt;  0.0+2.23606797749979i
 (sqrt +inf.0)               ==&gt;  +inf.0
-(sqrt -inf.0)               ==&gt;  <span class=del>+nan.0</span> <span class=add><I>unspecified</I></span>
+(sqrt -inf.0)               ==&gt;  <span class=del>+nan.0</span> <span class=add>+inf.0i</span>
 </PRE>
 
 </DL>
