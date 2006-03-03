@@ -22,6 +22,9 @@ concise:  \arbno{\meta{thing}} means zero or more occurrences of
 \meta{thing}; and \atleastone{\meta{thing}} means at least one
 \meta{thing}.
 
+Matching pairs of parentheses that occur in the rules of
+Section~\ref{expressions} and the following sections can also be
+matching pairs of brackets.
 
 \subsection{Lexical structure}
 
@@ -37,14 +40,16 @@ within a token.
 characters, and dot) may be terminated by any \meta{delimiter}, but not
 necessarily by anything else.
 
+
+
 The following five characters are reserved for future extensions to the
-language: {\tt \verb"[" \verb"]" \verb"{" \verb"}" \verb"|"}
+language: {\tt \verb"{" \verb"}" \verb"|"}
 
 \begin{grammar}%
 \meta{token} \: \meta{identifier} \| \meta{boolean} \| \meta{number}\index{identifier}
 \>  \| \meta{character} \| \meta{string}
-\>  \| ( \| ) \| \sharpsign( \| \singlequote{} \| \backquote{} \| , \| ,@ \| {\bf.}
-\meta{delimiter} \: \meta{whitespace} \| ( \| ) \| " \| ;
+\>  \| ( \| ) \| \openbracket{} \| \closedbracket{} \| \sharpsign( \| \singlequote{} \| \backquote{} \| , \| ,@ \| {\bf.}
+\meta{delimiter} \: \meta{whitespace} \| ( \| ) \| \openbracket{} \| \closedbracket{} " \| ;
 \meta{whitespace} \: \meta{space or newline}
 \meta{comment} \: ; \= $\langle$\rm all subsequent characters up to a
 		    \>\ \rm line break$\rangle$\index{comment}
@@ -181,6 +186,7 @@ successfully parses.  Note that any string that parses as an
 
 
 \subsection{Expressions}
+\label{expressions}
 
 \begin{grammar}%
 \meta{expression} \: \meta{variable}
