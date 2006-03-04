@@ -203,10 +203,19 @@
   bignum+ ratnum+ recnum+ fl+ compnum+)
 (define-binary minus/2 contagion/will
   bignum- ratnum- recnum- fl- compnum-)
-(define-binary */2 contagion/will
-  bignum* ratnum* recnum* fl* compnum/)
 (define-binary //2 contagion/will
   integer/ ratnum/ recnum/ fl/ compnum/)
+
+(define-binary */2-helper contagion/will
+  bignum* ratnum* recnum* fl* compnum/)
+;; might be done faster with a different contagion matrix
+(define (*/2 n1 n2)
+  (if (or (and (fixnum? n1)
+	       (fx= n1 (r5rs->integer 0)))
+	  (and (fixnum? n2)
+	       (fx= n2 (r5rs->integer 0))))
+      0
+      (*/2-helper n1 n2)))
 
 (define (+ . args)
   (reduce (r5rs->integer 0) plus/2 args))
