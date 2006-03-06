@@ -1,0 +1,231 @@
+Tentative Classification of R6RS Exceptions
+===========================================
+
+(FIXME:  This probably should be filed under "exceptions"
+rather than "safety", but Mike and I are working together
+on this and it was convenient to use the safety directory
+that has already been committed.)
+
+
+Terminology
+===========
+
+*  "must raise a ZYX exception" means that, in safe mode,
+implementations must detect the situation and raise an
+exception with a condition of type ZYX.
+
+*  "should raise a ZYX exception" means that implementations
+are encouraged, but not required, to detect the situation
+and to raise an exception with a condition of type ZYX.
+
+*  "may raise a ZYX exception" means that implementations
+are allowed, but not required or encouraged, to detect
+the situation and to raise an exception with a condition
+of type ZYX.
+
+*  "might raise a ZYX exception" means that implementations
+are allowed, but discouraged, to detect the situation
+and to raise an exception with a condition of type ZYX.
+
+*  "returns an unspecified value" means that the value
+to be returned is not specified for the situation, but
+implementations are not allowed to raise an exception.
+
+The classification above can be abbreviated as
+must/should/may/might/returns.
+
+If an implementation is unable to perform an action or
+return a value in a way compatible with the R6RS, then
+it must raise an &implementation-restriction exception.
+
+
+Tentative Condition Hierarchy
+=============================
+
+&condition
+  &message
+    &warning
+  &serious
+    &error
+      &implementation-restriction
+      &io
+      ...
+    &violation
+      &nonstandard
+      &defect
+        &lexical
+        &syntax
+        &domain
+          &type
+          &list          ; not a proper list
+          &alist         ; not a proper list of pairs
+          &immutable
+        &incompatible    ; arguments okay singly but not together
+          &index         ; index out of range
+        &result          ; result not well-defined
+        &undefined
+        ...
+
+
+The R5RS List Type Should Not Be a Type
+=======================================
+
+Revise R5RS 1.3.3 to remove "list, list1, ... listj, ..."
+from the list of naming conventions that imply types, and
+replace it with "llobjc, llobj1, ... llobjj, ...", which
+means a list-like object, i.e. the empty list or a pair.
+
+Revise the procedure entries that require a list as an
+argument, and say those procedures take a llobj as
+argument instead.  For those procedures that should be
+encouraged but not required to raise an exception if one
+of their arguments is not a proper list, revise their
+description to say they should raise a &list exception.
+(All such procedures should appears in the table below.)
+
+Tentative Reclassification of R5RS Situations
+=============================================
+
+section syntax/procedure               r5rs        r6rs
+1.3.2   all procedures                 error       must &type
+1.3.3   all procedures                 error       must &type
+3.4     side-effecting procedures      error       should &immutable
+4       all expressions                error       must &syntax (!!!!!)
+4.1.1   reference to unbound variable  error       should &undefined
+4.1.2   side effect to constant        error       should &immutable
+4.1.4   lambda (formal occurs twice)   error       must &syntax
+4.2.2   let (formal occurs twice)      error       must &syntax
+4.2.2   letrec (formal occurs twice)   error       must &syntax
+4.2.2   letrec (letrec restriction)    error       should &undefined
+4.2.4   do (formal occurs twice)       error       must &syntax
+4.3.1   let-syntax (keyword twice)     error       should &syntax
+4.3.2   patterns (variable twice)      error       should &syntax
+4.3.2   patterns (... in literals)     error       should &syntax
+4.3.2   patterns (no match)            error       must &syntax
+5.2.1   set! (unbound variable)        error       should &undefined (!!!!!)
+5.2.1   set! (w/o defining)            unspecified should &undefined (!!!!!)
+5.2.1   set! (immutable environment)   unspecified should &immutable (!!!!!)
+5.3     define-syntax (ambiguity)      error       should &syntax
+6.1     side effect to constant        error       should &immutable
+6.2.3   index not exact integer        error       must &type
+6.2.6   number->string                 error       may &result
+6.3.2   car of empty list              error       must &type (!!!!!)
+6.3.2   cdr of empty list              error       must &type (!!!!!)
+6.3.2   set-car! on immutable          error       should &immutable
+6.3.2   caar through cddddr            error       must &domain
+6.3.2   length                         error       must &list (!!!!!)
+6.3.2   append (all but last arg)      error       must &list
+6.3.2   reverse                        error       must &list
+6.3.2   list-tail                      error       must &index (but not &list)
+6.3.2   list-ref                       error       must &index (but not &list)
+6.3.2   memq, memv, member             error       should &list
+6.3.2   assq, assv, assoc              error       should &list
+6.3.2   assq, assv, assoc              error       should &alist
+6.3.3   symbol->string (see string-set!)
+6.3.4   integer->char                              should &domain
+6.3.5   make-string                                must &domain
+6.3.5   string-ref                     error       must &index
+6.3.5   string-set!                    error       should &immutable
+6.3.5   string-set!                    error       must &index
+6.3.5   substring                                  must &domain
+6.3.5   substring                                  must &incompatible
+6.3.5   list->string                               must &list (!!!!!)
+6.3.5   list->string                               must &domain
+6.3.6   make-vector                                must &domain
+6.3.6   vector-ref                     error       must &index
+6.3.6   vector-set!                    error       must &index
+6.3.6   vector-set!                    error       should &immutable
+6.3.6   list->vector                               must &list (!!!!!)
+6.4     apply                                      must &list
+6.4     map, for-each                              must &list (!!!!!)
+6.4     map, for-each                              must &incompatible (!!!!!)
+6.4     force                                      may &domain
+6.4     force (too few or many)                    may &violation (see values)
+6.4     call-with-current-continuation             may &violation (see values)
+6.4     values (too few or many)       unspecified may &violation
+6.4     call-with-values                           may &violation (see values)
+6.4     dynamic-wind                   unspecified might &violation
+6.5     eval                                       must &syntax
+6.5     eval (nonstandard 2nd arg)                 should &domain
+6.5     eval (illegal definitions)                 should &violation
+6.5     scheme-report-environment      signals     may &domain (if not 6)
+6.5     null-environment               signals     may &domain (if not 6)
+6.5     interaction-environment        optional    may &nonstandard
+6.6     all i/o procedures                         may &io
+6.6.1   call-with-input-file           signals     must &io
+6.6.1   call-with-output-file          signals     must &io
+6.6.1   open-input-file                signals     must &io
+6.6.1   open-output-file               signals     must &io
+6.6.1   call-with-input-file                       may &domain
+6.6.1   call-with-output-file                      may &domain
+6.6.1   open-input-file                            may &domain
+6.6.1   open-output-file                           may &domain
+6.6.2   read (incomplete token)        signals     must &lexical
+6.6.2   read (nonstd external rep)                 must &lexical (!!!!!)
+6.6.3   write, display, write-char                 may &incompatible
+6.6.4   load                                       may &domain
+6.6.4   load                                       must &io
+6.6.4   load                                       may &lexical
+6.6.4   load                                       should &syntax
+6.6.4   load                                       should &violation
+
+
+I have not yet gotten to the implementation restrictions
+or unspecified values.
+
+
+Issues
+======
+
+Exceptions marked by (!!!!!) may be controversial:
+
+4       all expressions                error       must &syntax (!!!!!)
+5.2.1   set! (unbound variable)        error       should &undefined (!!!!!)
+5.2.1   set! (w/o defining)            unspecified should &undefined (!!!!!)
+5.2.1   set! (immutable environment)   unspecified should &immutable (!!!!!)
+6.3.2   car of empty list              error       must &type (!!!!!)
+6.3.2   cdr of empty list              error       must &type (!!!!!)
+6.3.2   length                         error       must &list (!!!!!)
+6.3.5   list->string                               must &list (!!!!!)
+6.3.6   list->vector                               must &list (!!!!!)
+6.4     map, for-each                              must &list (!!!!!)
+6.4     map, for-each                              must &incompatible (!!!!!)
+6.6.2   read (nonstd external rep)                 must &lexical (!!!!!)
+
+Many implementations support extensions of the R5RS program
+syntax, so requiring them to raise a &syntax exception on
+illegal syntax will break a lot of non-portable code.
+
+Some programmers would prefer that assignments to unbound
+variables or to variables defined in libraries be required
+to raise an &undefined exception, and/or that assignments
+to variables bound in a scheme-report-environment be
+required to raise an &immutable exception.  For some others,
+their right to redefine + is inalienable.
+
+Most of the programmers who want car of the empty list to
+be defined have gone over to Common Lisp, but requiring
+car of the empty list to raise an exception will make it
+harder to implement a Scheme-like language on top of Common
+Lisp.
+
+Some implementors, and even a few programmers, might object
+to requiring the length, list->string, list->vector, map,
+and for-each procedures to raise a &list exception when
+their argument is a circular list.
+
+Similarly, some programmers might object to requiring the
+map and for-each procedures to raise an &incompatible
+exception when their lists aren't all the same length.
+
+Many implementations support extensions of the R5RS lexical
+syntax, so requiring them to raise a &lexical exception on
+illegal lexical syntax will break a lot of non-portable code.
+
+(Implementations could provide a way for programmers to
+install implementation-specific exception handlers that
+ignore the &lexical exception and continue the program,
+but the SRFI 34 exception mechanism is inadequate for
+this, and continuable exceptions are likely to be too
+slow if constructed on top of the SRFI 34 mechanism.)
+
