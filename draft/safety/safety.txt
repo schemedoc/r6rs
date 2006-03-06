@@ -1,37 +1,222 @@
-Here are some changes and new proposals that came out of
-yesterday's telephone conversation.
+Current Proposal(s) for Safe/Unsafe Mode and Declarations
+=========================================================
 
-To allow macros to expand into a set of definitions that
-are governed by an accompanying declaration, the R5RS
-syntax for <body> and <declaration> should change to
+
+Goals
+=====
+
+We want to make it easier for people to write Scheme
+programs and to debug them.
+
+We want to make it easier for people to write portable
+programs in Scheme.
+
+We want to tell people that Scheme is buzzword-compatible.
+
+
+How Safe Mode Contributes to Goals
+==================================
+
+Reliable detection of programmed errors ("bugs") makes it
+easier to debug and to write programs.
+
+Reliable detection of violations of the language standard
+makes it harder for people to write non-portable programs,
+whether by accident or on purpose.
+
+Reliable detection of bugs and violations makes it easier
+for people to maintain a straight face when claiming that
+Scheme is strongly typed.
+
+
+How Unsafe Mode Contributes to Goals
+====================================
+
+Not checking for bugs makes it easier to write Scheme
+programs that run fast or interact with unsafe legacy
+code.  In some cases, not checking for bugs may be the
+best way to accomplish some task using Scheme instead
+of using some language that would be much less safe.
+
+Not checking for violations makes it easier for systems
+to provide features that are absent from the language
+standard, and to experiment with extensions that may
+become standard in the future.
+
+Not checking for bugs and violations makes it easier
+to claim that Scheme has feature X "in practice", or
+that Scheme programs run as fast as programs written
+in language Y.
+
+
+Tentative Design
+================
+
+Design of the so-called safe and unsafe modes interacts
+strongly with the exception and condition systems, and
+to some extent with the library and macro systems.
+
+In what follows, I will assume a hierarchy of condition
+types, as in SRFI 35.  For this note, I will assume the
+following specific hierarchy of conditions (with tree
+structure implied by indentation):
+
+&condition
+  &message
+    &warning
+  &serious
+    &error
+      &implementation-restriction
+      ...
+    &violation
+      &nonstandard
+      &defect
+        &lexical
+        &syntax
+        &domain
+        &result
+        ...
+
+The R6RS will refer to many condition types not shown above,
+but the examples above should give you some idea.
+
+We should extend or revise the R5RS classification of
+situations that are relevant to safety or portability.
+The word "error" evidently carries some baggage, so we
+might want to avoid it.  Here is one possible rephrasing
+of the R5RS classification:
+
+*  "must raise a ZYX exception" means that, in safe mode,
+implementations must detect the situation and raise an
+exception with a condition of type ZYX.
+
+*  "should raise a ZYX exception" means that implementations
+are encouraged, but not required, to detect the situation
+and to raise an exception with a condition of type ZYX.
+
+*  "may raise a ZYX exception" means that implementations
+are allowed, but not required or encouraged, to detect
+the situation and to raise an exception with a condition
+of type ZYX.
+
+*  "might raise a ZYX exception" means that implementations
+are allowed, but discouraged, to detect the situation
+and to raise an exception with a condition of type ZYX.
+
+*  "returns an unspecified value" means that the value
+to be returned is not specified for the situation, but
+implementations are not allowed to raise an exception.
+
+If an implementation is unable to perform an action or
+return a value in a way compatible with the R6RS, then
+it must raise an &implementation-restriction exception.
+
+We should use some such classification to re-classify
+every situation that the R5RS describes as signalling
+an error, an error, a violation of an implementation
+restriction, having unspecified or undefined effect,
+or yielding an unspecified value.  We should also
+classify some situations that the R5RS overlooked,
+such as syntax errors.
+
+We should specify every situation in which a conforming
+implementation of Scheme is required to raise an exception,
+and should also identify situations in which a conforming
+implementation is allowed to raise an exception.  We should
+also specify a condition type for the condition that is to
+be raised in each identified situation.  Assuming a design
+similar to SRFI 35, implementations would then be free to
+use any sub-condition-type of the specified condition, and
+to combine them with arbitrarily many other condition
+types.
+
+We should insist that the default exception handlers
+report certain kinds of exceptions.  Programmers will
+be able to override the default handlers using some
+mechanism that resembles that of SRFI 34.
+
+The R6RS should also allow implementations to provide ways
+for programmers to declare that certain kinds of exceptions
+should be handled in implementation-dependent ways.
+
+For example, a programmer might use one of these
+implementation-specific declarations to declare that
+#3(a b c) should be treated as #(a b c) when read by
+the READ procedure.
+
+For another example, a programmer might use one of these
+implementation-specific declarations to declare that the
+operations exported from a standard fixnum library may
+use an exception handler that does not report &domain
+conditions.  These nonstandard exception handlers would
+be free to handle exceptions in ways that cannot even
+be expressed in R6RS Scheme, for example by returning
+an incorrect answer or incurring a segmentation fault.
+
+Many of these implementation-specific declarations are
+likely to have static rather than dynamic scope.  There
+are several ways to explain this, and several proposals
+are currently under consideration.  See "Declaration
+Semantics" below.
+
+One of the guiding principles of the most recent draft
+of the R6RS status report says we will provide some
+standard way to declare whether run-time safety checks
+are desired.  This can be done by extending the library
+mechanism to allow such declarations, and by devising
+a syntax for such declarations that has some portable
+semantics while leaving room for implementations to
+interpret the details as they see fit.
+
+Such declarations could also be allowed to appear at the
+head of any body that permits internal definitions.
+
+
+Declaration Syntax
+==================
+
+This section is extremely tentative because of interactions
+with library syntax.  For now, let us suppose that the
+<body> syntax of SRFI 83 will be changed to
+
+<body> = <impexp-form>* <declaration>* <comdef-form>*
+
+and that the <body> and <definition> syntax of R5RS will
+be changed to
 
 <body> --> <declaration>* <definition>* <sequence>
 <definition> --> (define <variable> <expression>)
       | (define (<variable> <def formals>) <body>)
       | (begin <declaration>* <definition>*)
 
-Declarations at the very beginning of a <body> would apply
-to the entire <body>.  Declarations that occur with a
-definition of the form (begin <declaration>* <definition>*)
-would apply only to the definitions in that form.
+The scope of a declaration is the library in which it
+appears, the expression that immediately surrounds the
+<body> at whose head it appears, or the group of
+definitions at whose head it appears.
 
-We have agreed to get rid of inline and type declarations.
-The safety quality has been renamed to safe, and the word
-safe by itself may now be used as synonym for (safe 3).
-As before, unsafe is a synonym for (safe 0).  The revised
-proposal for declaration syntax is
+The current proposal for declaration syntax is
 
 <declaration> --> (declare <declarespec>*)
 <declarespec> --> unsafe
-                | safe | (safe <priority>)
-                | fast | (fast <priority>)
-                | small | (small <priority>)
-                | debug | (debug <priority>)
+                | <quality>
+                | (<quality> <priority>)
+<quality> --> safe | fast | small | debug
 <priority> --> 0 | 1 | 2 | 3
+
+Priority 3 is the highest priority.  Priority 0 means
+the quality is not a priority at all.
+
+The unsafe <declarespec> is a synonym for (safe 0).
+The safe <declarespec> is a synonym for (safe 3), and
+similarly for fast, small, and debug.
+
+
+Declaration Pragmatics
+======================
 
 For safe, the default priority must be 1 or higher.
 When the priority for safe is 1 or higher, implementations
-must raise all required exceptions and let them handled
+must raise all required exceptions and let them be handled
 by the usual R6RS exception mechanism.
 
 Beyond that, the detailed interpretation of declarations
@@ -39,8 +224,10 @@ will vary in different implementations.  In particular,
 implementations are free to ignore declarations, and
 may observe some declarations while ignoring others.
 
-(Thus a safe declaration that occurs within the scope
-of an unsafe declaration may not have any effect.)
+(One possible exception to the above is that we may want
+require implementations that implement an unsafe mode to
+pay attention to any declarations that increase the safe
+priority within an unsafe section of code.)
 
 The following descriptions of each quality may provide
 some guidance for programmers and implementors.
@@ -53,19 +240,25 @@ for exceptional situations, and the raising and handling
 of exceptions in response to those situations.  The higher
 the priority, the more likely an exception will be raised.
 
-At priority 0, an implementation is allowed to use exception
-handlers that ignore even required exceptions and continue
-the computation with an incorrect result, or to use handlers
-that terminate the computation in an unpleasant fashion.
+At priority 0, an implementation is allowed to ignore any
+R6RS requirements for raising an exception.  In situations
+for which the R6RS allows or requires the implementation
+to raise an exception, the implementation may ignore the
+situation and continue the computation with an incorrect
+result, may terminate the computation in an unpleasant
+fashion, or may destroy the invariants of run-time data
+structures in ways that cause unexpected and mysterious
+misbehavior even in code that comes within the scope of
+a safe declaration.  All bets are off.
 
 At priority 1 and higher, an implementation must raise all
 exceptions required by the R6RS, handle those exceptions
-using the exception mechanism described by the R6RS, and use
-the default exception handlers described by the R6RS.
+using the exception mechanism described by the R6RS, and
+use the default exception handlers described by the R6RS.
 
-At higher priorities, implementations may be more likely to
-raise exceptions that are allowed but not required by the
-R6RS.
+At higher priorities, implementations may be more likely
+to raise exceptions that are allowed but not required by
+the R6RS.
 
 Most implementations are able to recognize some violations
 when parsing, expanding macros, or compiling a definition
@@ -85,7 +278,7 @@ fast
 
 This quality's priority influences the speed of the code
 it governs.  At high priorities, the code is likely to
-run faster, but this improvement is constrained by other
+run faster, but that improvement is constrained by other
 qualities and may come at the expense of the small and
 debug qualities.
 
@@ -107,28 +300,154 @@ original source code and information displayed by debugging
 tools.  At low priorities, some debugging tools may not be
 usable.
 
-                                * * *
 
-The condition hierarchy I assumed for the foregoing looks
-like this (with tree structure implied by indentation):
+Declaration Semantics
+=====================
 
-&condition
-  &message
-    &warning
-  &serious
-    &error
-      &implementation-restriction
-      ...
-    &violation
-      &nonstandard
-      &defect
-        &lexical
-        &syntax
-        &domain
-        &result
-        ...
+As for the semantics of declarations, at least three
+different stories have been proposed.
 
-This is compatible with SRFI 35, contrary to what I wrote
-a few days ago.
+Will originally proposed that unsafe declarations be
+explained as allowing implementations to establish
+nonstandard exception handlers that do arbitrarily
+perverse things.
 
-Will
+Mike found that confusing, and proposed that unsafe
+declarations be explained as a relaxation of the R6RS
+requirements for raising an exception.
+
+Kent proposed a semantics that elevates declarations
+from the level of pragmatics to a device that allows
+syntax-case macros to communicate by attaching 7 bits
+of arbitrary information about the context of every
+identifier.
+
+
+Kent's Proposed Semantics
+=========================
+
+To bring the scoping rules for declarations in line with lexical scoping
+and referential transparency, and also to limit unnecessary freedom to
+ignore safe declarations in some cases where unsafe and safe declarations
+are mixed, I would like propose the following treatement of declarations.
+
+ * A declaration appearing in a <body> associates the specified safe,
+   fast, small, and debug priorities with each free identifier within the
+   <body>, except where the declaration is shadowed by a conflicting
+   declaration.
+
+ * If the declare keyword of a declaration is introduced into the output
+   of a macro, the declaration affects only the identifiers introduced by
+   the macro.  Similarly, an identifier introduced by the macro is
+   affected only by such declarations and declarations whose scope
+   includes the macro definition.
+
+ * A standard syntactic form (recognized as such because its identifying
+   keyword is an identifier reference resolving to a keyword imported from
+   the r6rs core language or standard library) whose identifying keyword
+   has safe priority 0 has unspecified behavior if a situation for which
+   the implementation is allowed or required to raise an exception arises
+   directly from the use of the syntactic form.
+
+ * A standard procedure reference (recognized as such because it is an
+   identifier reference resolving to a variable binding imported from the
+   r6rs core language or standard library) may evaluate to different
+   versions of the standard procedure depending on the priorities
+   associated with the reference.  In particular, if the standard
+   procedure reference is associated with safe priority 0, the standard
+   procedure reference may evaluate to an unsafe version of the standard
+   procedure.  An unsafe version has unspecified behavior if a situation
+   for which the implementation is allowed or required to raise an
+   exception arises directly from the use of that standard procedure.
+
+ * Assuming unbound variables are possible in the standard, the behavior
+   of an unbound reference to a variable associated with safe priority 0
+   is unspecified.
+
+This proposal differs from Will's proposal, as I understand it, in the
+following ways:
+
+1. The scope of a declaration is more precisely specified (and possibly
+   different from what Will had in mind).
+
+2. It requires that safe code embedded within or run from unsafe code
+   must raise all required exceptions, as long as no potentially
+   exception-causing situation arises directly from the use of the unsafe
+   code.
+
+Also, the notion that exceptions are always raised but are handled in an
+unspecified manner in unsafe mode, which Mike, at least, found confusing,
+is gone, but I believe that's an expository detail only.
+
+The following illustrates difference 2.  Let's assume that all of the free
+identifiers in the code below resolve to the corresponding standard
+keyword or procedure bindings.  Let's also assume that the standard
+procedure to which + is bound is required to raise a &nonnumeric exception
+if any of its arguments are not numbers and that it returns normally
+without raising an exception in all other cases.  Then the expression:
+
+  (begin
+    (declare unsafe)
+    (let ([x (+ 3)])
+      (declare safe)
+      (+ 'b)))
+
+has unspecified behavior with Will's proposal, even though the outer call
+to (possibly unsafe) + returns normally, because the inner safe
+declaration can be ignored.  It must raise a &nonnumeric exception with
+mine.  Similarly,
+
+  (begin
+    (declare unsafe)
+    (+ 'a (begin (declare safe) (+ 'b))))
+
+has unspecified behavior with Will's proposal but must raise a &nonnumeric
+exception with mine.  The first argument to the outer (possibly unsafe) +
+is not a number, but the exception is raised by the inner call to + before
+the outer call is made, due to applicative-order evaluation.
+
+In both systems,
+
+  (begin
+    (declare unsafe)
+    (let ([x (+ 'a)])
+      (declare safe)
+      (+ 'b)))
+
+has unspecified behavior, because the first (possibly unsafe) + receives a
+non-numeric argument, at which point all bets are off.
+
+Note that an implementation is free to ignore all declarations with either
+proposal, but with mine it is effectively required not to ignore a safe
+declaration that appears within the scope of an unsafe declaration if it
+does not also ignore the unsafe declaration.
+
+A likely side implication of my proposal is that eqv? might return either
+#t or #f when applied to two versions of a primitive that might differ due
+to differing declarations.  For example,
+
+  (eqv? (begin (declare safe) +)
+        (begin (declare unsafe) +))
+
+can return either #t or #f.  This doesn't bother me in the slightest,
+but we could require that eqv? return #t in situations such as this.
+In practice, this would likely cause most implementations to use the
+same (default) version of the standard procedure whenever the value
+might escape.
+
+If we agree to this proposal, then I also intend to suggest that an
+identifier-priority procedure be included in the standard syntax-case
+system.  This procedure can be used to extract a priority associated with
+an identifier, e.g.:
+
+  (define-syntax frobitate
+    (lambda (x)
+      (syntax-case x ()
+        [(k (x ...) e)
+         (if (= (identifier-priority 'safe #'k) 0)
+             #'<unsafe code>
+             #'<safe code>)])))
+
+This will allow user-defined syntactic forms to be sensitive to declared
+priorities.  In conjunction with identifier macros, it will also allow a
+similar effect for user-defined procedures.
