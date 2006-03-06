@@ -1,0 +1,134 @@
+Here are some changes and new proposals that came out of
+yesterday's telephone conversation.
+
+To allow macros to expand into a set of definitions that
+are governed by an accompanying declaration, the R5RS
+syntax for <body> and <declaration> should change to
+
+<body> --> <declaration>* <definition>* <sequence>
+<definition> --> (define <variable> <expression>)
+      | (define (<variable> <def formals>) <body>)
+      | (begin <declaration>* <definition>*)
+
+Declarations at the very beginning of a <body> would apply
+to the entire <body>.  Declarations that occur with a
+definition of the form (begin <declaration>* <definition>*)
+would apply only to the definitions in that form.
+
+We have agreed to get rid of inline and type declarations.
+The safety quality has been renamed to safe, and the word
+safe by itself may now be used as synonym for (safe 3).
+As before, unsafe is a synonym for (safe 0).  The revised
+proposal for declaration syntax is
+
+<declaration> --> (declare <declarespec>*)
+<declarespec> --> unsafe
+                | safe | (safe <priority>)
+                | fast | (fast <priority>)
+                | small | (small <priority>)
+                | debug | (debug <priority>)
+<priority> --> 0 | 1 | 2 | 3
+
+For safe, the default priority must be 1 or higher.
+When the priority for safe is 1 or higher, implementations
+must raise all required exceptions and let them handled
+by the usual R6RS exception mechanism.
+
+Beyond that, the detailed interpretation of declarations
+will vary in different implementations.  In particular,
+implementations are free to ignore declarations, and
+may observe some declarations while ignoring others.
+
+(Thus a safe declaration that occurs within the scope
+of an unsafe declaration may not have any effect.)
+
+The following descriptions of each quality may provide
+some guidance for programmers and implementors.
+
+safe
+====
+
+This quality's priority influences the degree of checking
+for exceptional situations, and the raising and handling
+of exceptions in response to those situations.  The higher
+the priority, the more likely an exception will be raised.
+
+At priority 0, an implementation is allowed to use exception
+handlers that ignore even required exceptions and continue
+the computation with an incorrect result, or to use handlers
+that terminate the computation in an unpleasant fashion.
+
+At priority 1 and higher, an implementation must raise all
+exceptions required by the R6RS, handle those exceptions
+using the exception mechanism described by the R6RS, and use
+the default exception handlers described by the R6RS.
+
+At higher priorities, implementations may be more likely to
+raise exceptions that are allowed but not required by the
+R6RS.
+
+Most implementations are able to recognize some violations
+when parsing, expanding macros, or compiling a definition
+or expression whose evaluation has not yet commenced in
+the usual sense.  Implementations are allowed to use
+nonstandard exception handlers at those times, and are
+encouraged to raise &lexical and &syntax exceptions for
+violations detected at those times, even if the definition
+or expression that contains the violation will never be
+executed.  Implementations are also allowed to raise a
+&warning exception at those times if they determine that
+some subexpression would inevitably raise some kind of
+&violation exception were it ever to be evaluated.
+
+fast
+====
+
+This quality's priority influences the speed of the code
+it governs.  At high priorities, the code is likely to
+run faster, but this improvement is constrained by other
+qualities and may come at the expense of the small and
+debug qualities.
+
+small
+=====
+
+This quality's priority influences the amount of computer
+memory needed to represent and to run the code.  At high
+priorities, the code is likely to occupy less memory and
+to require less memory during evaluation.
+
+debug
+=====
+
+This quality's priority influences the programmer's ability
+to debug the code.  At high priorities, the programmer is
+more likely to understand the correspondence between the
+original source code and information displayed by debugging
+tools.  At low priorities, some debugging tools may not be
+usable.
+
+                                * * *
+
+The condition hierarchy I assumed for the foregoing looks
+like this (with tree structure implied by indentation):
+
+&condition
+  &message
+    &warning
+  &serious
+    &error
+      &implementation-restriction
+      ...
+    &violation
+      &nonstandard
+      &defect
+        &lexical
+        &syntax
+        &domain
+        &result
+        ...
+
+This is compatible with SRFI 35, contrary to what I wrote
+a few days ago.
+
+Will

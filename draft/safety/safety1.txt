@@ -1,0 +1,618 @@
+Safe and Unsafe Modes:  A Sermon on Safety
+==========================================
+
+This note describes a tentative design, including a
+declaration mechanism, but its main purpose is to provoke
+discussion.
+
+At Snowbird, we discussed (and may have voted on) doing
+away with all of the "is an error" situations of the R5RS
+by requiring them to signal an error (in some way that we
+have not yet specified).  We have also discussed some kind
+of "unsafe mode", in which implementations would not be
+required to signal an error in situations for which they
+are required to signal an error.
+
+Those are symptoms of something.  My diagnosis is
+schizophrenic design.  The etiology, I believe, is a
+conflict of goals.  I also believe that, with proper
+treatment, the prognosis is good.
+
+My purpose in this note is to warn against an overly
+simplistic approach to this morass, and to make some
+concrete suggestions on how we might proceed.  First,
+however, I think it is useful to examine the conflicting
+goals, and to review both the de jure status quo (R5RS)
+and de facto practice (actual programs and systems).
+
+
+Goals
+=====
+
+We want to make it easier for people to write Scheme
+programs and to debug them.
+
+We want to make it easier for people to write portable
+programs in Scheme.
+
+We want to tell people that Scheme is buzzword-compatible.
+
+
+How Safe Mode Contributes to Goals
+==================================
+
+Reliable detection of programmed errors ("bugs") makes it
+easier to debug and to write programs.
+
+Reliable detection of violations of the language standard
+makes it harder for people to write non-portable programs,
+whether by accident or on purpose.
+
+Reliable detection of bugs and violations makes it easier
+for people to maintain a straight face when claiming that
+Scheme is strongly typed.
+
+
+How Unsafe Mode Contributes to Goals
+====================================
+
+Not checking for bugs makes it easier to write Scheme
+programs that run fast or interact with unsafe legacy
+code.  In some cases, not checking for bugs may be the
+best way to accomplish some task using Scheme instead
+of using some language that would be much less safe.
+
+Not checking for violations makes it easier for systems
+to provide features that are absent from the language
+standard, and to experiment with extensions that may
+become standard in the future.
+
+Not checking for bugs and violations makes it easier
+to claim that Scheme has feature X "in practice", or
+that Scheme programs run as fast as programs written
+in language Y.
+
+
+Status Quo (R5RS)
+=================
+
+R5RS 1.3.1 requires every implementation to support all
+features not marked as optional.  Several major features
+of the language, including all numbers outside of some
+small subrange of the integers, are effectively optional.
+
+"Implementations are free to omit optional features of
+Scheme or to add extensions, provided the extensions
+are not in conflict with the language reported here.
+In particular, implementations must support portable
+code by providing a syntactic mode that preempts no
+lexical conventions of this report."  The R5RS does
+not say how a programmer can specify this portable
+syntactic mode.
+
+R5RS 1.3.2 defines four distinct phrases that describe
+situations relevant to safety and portability, and uses
+a few other phrases without defining them.
+
+"An error is signalled" means that implementations must
+detect and report the situation.  The R5RS does not
+explain how such situations are to be reported.
+
+"An error" is a situation that implementations are
+encouraged to detect and to report, but are not required
+to detect and to report.
+
+"May report a violation of an implementation restriction"
+applies to situations that are themselves discouraged,
+usually because the situation is caused by an incomplete
+or flawed implementation, but that implementations are
+encouraged but not required to detect and to report.
+
+"Unspecified effect" and "undefined effect" describe
+situations in which implementations are allowed, but
+not required, to signal an error.  It appears that the
+only difference between an error and a situation with
+unspecified or undefined effect is that implementations
+are *not* encouraged to signal an error for situations
+with unspecified or undefined effect.
+
+"Unspecified" describes situations in which an expression
+is required to evaluate to some value without signalling
+an error, but the value itself is not specified by the
+R5RS.  Any dependence upon the value therefore becomes
+a violation of portability.
+
+A moderately complete list of all such situations that
+are mentioned in the R5RS will be supplied as an appendix
+to this note.
+
+
+Status Quo (Actual Programs and Systems)
+========================================
+
+Most major implementations of Scheme implement all or
+most features of the R5RS, but a few features are left
+unimplemented by a few major implementations and by many
+of the simpler implementations.  Major features that are
+sometimes left unimplemented, or implemented in a way
+that violates the R5RS, include:
+
+*  proper tail recursion
+*  first class continuations
+*  complex numbers
+*  exact rational numbers
+*  exact integers
+*  inexact numbers
+*  macros
+
+Most implementations also extend the R5RS syntax in some
+way.  Although implementations are required to provide a
+mode that preempts no lexical conventions of the R5RS,
+it is often inconvenient and sometimes impossible to enter
+this required mode.  Examples of syntactic extensions and
+violations include:
+
+*  case sensitivity
+*  square brackets as an alternative to parentheses
+*  extended syntax for symbols, e.g. ->vector, |aList|
+*  creative uses of the # character, e.g. #|...|#, #;
+*  non-standard syntax for vectors, e.g. #3(a b c)
+
+To my knowledge, all implementations signal an error for
+the few cases in which that is actually required by the
+R5RS.
+
+To my knowledge, no implementation signals an error for
+every error mentioned or implied by the R5RS.  Some of
+the errors that are especially likely to go undetected
+include:
+
+*  square brackets as an alternative to parentheses
+*  extended syntax for symbols, e.g. ->vector, |aList|
+*  creative uses of the # character, e.g. #|...|#, #;
+*  non-standard syntax as input to the READ procedure
+*  mutating the value of a literal constant
+*  mutating the string returned by SYMBOL->STRING
+*  illegal arguments to standard procedures, e.g.
+    *  (car '())
+    *  (list-ref '(a b c d e f . g) 3)
+    *  (memq 'c '(a b c d e f . g))
+    *  (force 0)                         ; see note below
+    *  (+ (delay (* 3 7)) 13)            ; see note below
+    *  (load "fib.fasl")         ; not Scheme source code
+*  assigning to a variable that has not been defined
+*  multiple occurrences of the same identifier among
+    the formal parameters of a lambda expression, or
+    among the variables bound by various other constructs
+*  violation of the LETREC restriction
+*  use of _ where SYNTAX-RULES requires the macro name
+*  other extended patterns for SYNTAX-RULES
+*  shadowing a syntactic keyword whose meaning is needed
+    to determine whether some form is an internal definition
+*  reading from a closed port
+
+Note:  Although (force 0) and (+ (delay (* 3 7)) 13) are
+errors, the R5RS explicitly says that, in some systems,
+they may evaluate to 0 and 34, respectively.
+
+The R5RS does not explicitly describe syntax errors as
+errors, but this was probably just an oversight.  Most
+implementations signal an error when they detect a syntax
+error.  Examples of syntax errors that are especially
+likely to go undetected include:
+
+*  unquoted empty list or vector used as an expression
+*  various extensions to the syntax of formal parameters
+*  (define x)
+*  (define ((curried-plus x) y) (+ x y))
+*  (begin) used as an expression
+*  syntax definitions other than at top level
+
+All implementations impose implementation restrictions.
+Some of the implementation restrictions whose violations
+are especially likely to go undetected or unreported
+include:
+
+* 36893488147419103232    ; silent coercion to inexact
+* (expt 2 65)             ; silent coercion to inexact
+* 3/4                     ; silent coercion to inexact
+* (/ 3 4)                 ; silent coercion to inexact
+* (max 0.0 1/10)          ; loss of accuracy
+
+To my knowledge, no implementation reliably detects all
+uses of unspecified values.
+
+Many implementations fail to detect situations that the R5RS
+describes as having unspecified or undefined effect.  These
+include:
+
+*  returning other than one value to a continuation that was
+    not created by CALL-WITH-VALUES
+*  using a captured continuation to enter or to exit the
+    before or after computations of a call to DYNAMIC-WIND
+*  (set! car "Audi") without defining car first
+*  nonstandard escape syntax in a string, e.g. "Hello!\n"
+*  opening a file for output when the file already exists
+
+
+Summary of Current Practice and Opinion
+=======================================
+
+All implementations that claim R5RS-conformance detect
+and signal all errors they are required to signal.
+
+Most will detect and report most (but not all) domain errors.
+
+None detect and report all errors.
+
+Most have implemented extensions that encourage programmers
+to write errorful code.
+
+Several things that are classified as errors by the R5RS
+are likely to become correct and portable R6RS code.
+
+Several other things that the R5RS classifies as errors are
+nonetheless popular, and may become correct and portable code
+in some future standard for Scheme.
+
+A few compiled implementations provide some way for
+programmers to generate code that omits run-time checks
+needed for safety.
+
+
+Tentative Conclusions
+=====================
+
+One programmer's error is another programmer's extension.
+
+We should not start out by assuming that everything the
+R5RS describes as an error ought to signal an error in
+the R6RS.  If we were to do that, we would break a lot
+of working code.  This code is not portable, of course,
+but its errors are considered to be standard practice
+within the implementations that provide the errorful
+extensions.
+
+While the freedom to extend R5RS has given us valuable
+experience with new features, including some that are
+likely to find their way into R6RS, widespread but less
+than universal support for such extensions has also been
+a problem for portability.
+
+The R5RS requirement for a standard syntactic mode has
+not been effective.  This too has created problems for
+portability.
+
+Several of the R6RS editors have been closely associated
+with compiled systems that allow programmers to disable
+run-time checks.  In systems that offer this choice,
+relatively few programs use the unsafe mode.  We should
+therefore try not to let the unsafe mode of these systems
+exert undue influence on the R6RS.
+
+
+Tentative Design
+================
+
+Design of the so-called safe and unsafe modes interacts
+strongly with the exception and condition systems, and
+to some extent with the library mechanism.
+
+In what follows, I will assume a hierarchy of condition
+types, as in SRFI 35.  For this note, I will assume the
+following specific hierarchy of conditions, which is not
+quite compatible with SRFI 35:
+
+                    &condition
+                     /     \
+                    /       \
+              &message     &serious
+                            /     \
+                           /       \
+                 &violation         &error
+                 /   |                 |
+                /    |                 |
+    &nonstandard  &defect  &implementation-restriction
+                     |
+             +-------+-------+--------+---...
+             |       |       |        |
+         &domain &result &immutable &type
+
+The R6RS will refer to many condition types not shown above,
+but the examples above should give you some idea.
+
+We should extend or revise the R5RS classification of
+situations that are relevant to safety or portability.
+The word "error" evidently carries some baggage, so we
+might want to avoid it.  Here is one possible rephrasing
+of the R5RS classification:
+
+*  "raises a ZYX exception" means that implementations
+must detect the situation and raise an exception with a
+condition of type ZYX.
+
+*  "should raise a ZYX exception" means that implementations
+are encouraged, but not required, to detect the situation
+and to raise an exception with a condition of type ZYX.
+
+*  "may raise a ZYX exception" means that implementations
+are allowed, but not required or encouraged, to detect
+the situation and to raise an exception with a condition
+of type ZYX.
+
+*  "returns an unspecified value" means that the value
+to be returned is not specified for the situation, but
+implementations are not allowed to raise an exception.
+
+If an implementation is unable to perform an action or
+return a value specified by the R6RS, then it may raise
+an &implementation-restriction exception.
+
+We should use some such classification to re-classify
+every situation that the R5RS describes as signalling
+an error, an error, a violation of an implementation
+restriction, having unspecified or undefined effect,
+or yielding an unspecified value.  We should also
+classify some situations that the R5RS overlooked,
+such as syntax errors.
+
+We should specify every situation in which a conforming
+implementation of Scheme is required to raise an exception,
+and should also identify situations in which a conforming
+implementation is allowed to raise an exception.  We should
+also specify a condition type for the condition that is to
+be raised in each identified situation.  Assuming a design
+similar to SRFI 35, implementations would then be free to
+use any sub-condition-type of the specified condition, and
+to combine them with arbitrarily many other condition
+types.
+
+We should insist that the default exception handlers
+report certain kinds of exceptions.  Programmers will
+be able to override the default handlers using some
+mechanism that resembles that of SRFI 34.
+
+The R6RS should also allow implementations to provide ways
+for programmers to declare that certain kinds of exceptions
+should be handled in implementation-dependent ways.
+
+For example, a programmer might use one of these
+implementation-specific declarations to declare that
+#3(a b c) should be treated as #(a b c) when read by
+the READ procedure.
+
+For another example, a programmer might use one of these
+implementation-specific declarations to declare that the
+operations exported from a standard fixnum library may
+use an exception handler that does not report &domain
+conditions.  These nonstandard exception handlers would
+be free to handle exceptions in ways that cannot even
+be expressed in R6RS Scheme, for example by returning
+an incorrect answer or incurring a segmentation fault.
+
+These implementation-specific declarations are likely
+to have static rather than dynamic scope.  This can
+be explained in terms of installing a dynamic handler
+on entry to some specific procedures, and un-installing
+that handler around all calls out of those procedures.
+(This is fiction, because implementations are unlikely
+to implement it this way, but that doesn't matter.)
+
+One of the guiding principles of the most recent draft
+of the R6RS status report says we will provide some
+standard way to declare whether such safety checks are
+desired.  This can be done by extending the library
+mechanism to allow such declarations, and by devising
+a syntax for such declarations that has some portable
+semantics while leaving room for implementations to
+interpret the details as they see fit.
+
+Such declarations could also be allowed to appear at the
+head of any body that permits internal definitions.
+
+
+Declaration Syntax
+==================
+
+This section is extremely tentative because of interactions
+with library syntax.  For now, let us suppose that the
+<body> syntax of SRFI 83 were changed to
+
+<body> = <impexp-form>* <declaration>* <comdef-form>*
+
+and that the <body> syntax of R5RS were changed to
+
+<body> --> <declaration>* <definition>* <sequence>
+
+The variable-specific declarations of a library <body>
+may refer to the variables imported by the library as
+well as to variables defined by the library.
+
+The variable-specific declarations of an R5RS <body>
+may refer only to the variables bound by the binding
+construct that immediately surrounds the <body>.
+
+The syntax of a declaration might be
+
+<declaration> --> (declare <declarespec>*)
+<declarespec> --> unsafe | (safety <priority>)
+                | fast | (fast <priority>)
+                | small | (small <priority>)
+                | debug | (debug <priority>)
+                | (inline <variable>*)
+                | (type <typespec> <variable>*)
+<priority> --> 0 | 1 | 2 | 3
+<typespec> --> #t
+             | number? | complex? | real? | rational? | integer?
+             | exact? | inexact? | fixnum? | flonum?
+             | (< _ <bound>) | (< <bound> _) | (< <bound> _ <bound>)
+             | (<= _ <bound>) | (<= <bound> _) | (<= <bound> _ <bound>)
+             | boolean? | symbol? | null? | pair? | list?
+             | char? | string? | vector?
+             | input-port? | output-port?
+             | <rtd>
+             | procedure?
+             | (procedure? <typespec>)
+             | (procedure? <typespec> (<typespec>*))
+             | (and <typespec>*)
+<bound> --> <number> | <variable>
+<rtd> --> <variable>  ; its value must be a record-type-descriptor
+
+The scope of a declaration is the library in which it
+appears, or the expression that immediately surrounds
+the <body> at whose head it appears.
+
+
+Declaration Semantics
+=====================
+
+Implementations are always allowed to ignore declarations.
+
+Implementations are also allowed to interpret declarations
+by interpreting a <declarespec> as follows.
+
+The safety, fast, small, and debug declarations provide
+hints to the implementation concerning the programmers'
+priorities with respect to safety, speed, space, and
+debugging.  Priority 3 is the highest priority.
+Priority 0 means the quality is not a priority at all.
+Except for safety, implementations are allowed to
+interpret these priorities as they wish, and may use
+whatever default priorities they wish.
+
+For safety, a priority of 1 or higher implies the normal
+semantics as specified in the R6RS.  An implementation's
+default priority for safety must be 1 or greater, which
+implies that all exceptions mentioned in the R6RS will
+be detected, raised, and handled in the normal way.  A
+(safety 0) declaration is equivalent to an unsafe
+declaration.
+
+An unsafe declaration gives implementations permission
+to use arbitrarily perverse exception handlers when
+evaluating expressions within the scope of the declaration.
+In particular, an unsafe declaration gives implementations
+permission to use exception handlers that ignore exceptions
+and continue the computation with an incorrect result,
+or to use exception handlers that terminate the computation
+in an unpleasant fashion.
+
+An inline declaration names variables that, according to the
+programmers who wrote the declaration, are never assigned.
+
+Implementations may use inline declarations to raise
+an &immutable exception if one of the variables is assigned,
+to generate faster or smaller code, or to make the program
+easier to debug, depending upon the priorities for safety,
+fast, small, and debug.  Implementations are permitted
+to trust an inline declaration even if safety is nonzero.
+
+Note:  Inside a library whose language is scheme://r6rs,
+all R6RS procedures whose names are not shadowed by a
+definition of the same name within the library can be
+inlined, even in the absence of inline declarations.
+If the variables exported by a library are immutable
+outside the library, then the same holds true for
+variables imported from other libraries.  Thus the
+inline declaration serves primarily as a hint that
+inlining the named variables is, in the programmer's
+opinion, a good idea, and as a request that the
+programmer be informed if any of the named variables
+are assigned.
+
+A type declaration describes the values of variables.
+The #t <typespec> provides no information about the
+value.  A <typespec> that names a unary predicate of
+the R6RS asserts that predicate to be true of all the
+variables named in the type declaration; similarly
+for the fixnum? and flonum? predicates.
+
+Note:  A fixnum? declaration is not strong enough to
+allow implementations to avoid checking for overflow
+on arithmetic operations that involve fixnum.  If a
+programmer wishes to omit overflow checking, then
+the fixnum-specific operations of SRFI 77 should be
+used in addition to or instead of a declaration.
+
+A <typespec> that names a variable <rtd> asserts that
+the value of <rtd> is a record-type-descriptor, and
+asserts that (record-predicate <rtd>) is true of all
+the variables to which the type declaration applies.
+
+A <typespec> that uses < or <= to bound an underscore
+asserts that all of the variables that act as bounds
+are rational, that all of the variables to which the
+type declaration applies are rational, and that the
+bounds hold when any of the variables to which the type
+declaration applies are substituted for the underscore.
+
+A <typespec> of the form (procedure? <typespec0>)
+asserts that the variables to which the declaration
+applies have procedures as values, and that the values
+those procedures return are described by <typespec0>.
+A <typespec> of the form
+
+(procedure? <typespec0> (<typespec1> ... <typespecN>))
+
+asserts (procedure? <typespec0>), and also asserts
+that the procedures take N arguments, that they should
+not be given fewer than N nor more than N arguments,
+and that the procedures' arguments should always
+satisfy <typespec1> through <typespecN>.
+
+A <typespec> of the form (and <typespec>*) asserts
+that all of the variables to which the declaration
+applies are described by all of the <typespec>*.
+
+Implementations may use type declarations to raise
+a &type exception if one of the type declarations is
+violated, to generate faster or smaller code, or to
+improve debugging, depending upon the priorities for
+safety, fast, small, and debug.  Implementations are
+*not* permitted to trust a type declaration unless
+safety is 0 (unsafe).
+
+Note:  The list? and extended procedure? declarations
+are unlikely to be enforced, even if safety is a high
+priority, because those declarations cannot be checked
+in constant time.  Furthermore a wrapped procedure
+would not have the same semantics with respect to eq?
+as the original.
+
+
+Issues
+======
+
+The &violation and &defect condition types may correspond
+to what Mike has been calling a &surprise or &bug.  I prefer
+the names in this note.
+
+SRFI 83 anticipates the possibility of a <language> other
+than "scheme://r6rs", but "it is expected that <body> will
+follow Scheme's lexical conventions, so that read can
+process any library declaration."  This appears to imply
+that it will be impossible to write a library definition
+that contains non-conforming syntax such as #3(a b c).
+(I don't have a problem with that.)
+
+SRFI 83 doesn't seem to define <X-set>.  I'm assuming that
+<X-set> is the same as <import-set>.
+
+It is not at all clear where declarations should go in the
+library syntax.
+
+SRFI 83 doesn't say whether exported variables can be
+assigned outside of the library code.
+
+Allowing macros to expand into declarations is desirable,
+but is not essential and might cause some problems for
+macro expansion of LET* and other constructs.
+
+
+Appendix: List of R5RS Situations
+=================================
+
+This appendix is still under construction, and will be
+provided later.
+
+Will

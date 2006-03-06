@@ -1,0 +1,563 @@
+Appendix: R5RS errors and unspecified effect or values
+======================================================
+
+
+An Error is Signalled
+=====================
+
+by SCHEME-REPORT-ENVIRONMENT and by NULL-ENVIRONMENT if
+their argument is neither 5 nor another value supported
+by the implementation [R5RS 6.5];
+
+by CALL-WITH-INPUT-FILE, CALL-WITH-OUTPUT-FILE,
+OPEN-INPUT-FILE, and OPEN-OUTPUT-FILE if the file cannot
+be opened [R5RS 6.6.1];
+
+by READ if an end of file is encountered in the middle of
+reading an external representation [R5RS 6.6.2].
+
+
+
+It is an Error
+==============
+
+1.3.2
+For example, it is an error for a procedure to be passed an
+argument that the procedure is not explicitly specified to
+handle, even though such domain errors are seldom mentioned in
+this report. Implementations may extend a procedure's domain
+of definition to include such arguments.
+
+1.3.3
+It is an error for an operation to be presented with an argument
+that it is not specified to handle. For succinctness, we follow
+the convention that if an argument name is also the name of a
+type listed in section 3.2 Disjointness of types, then that
+argument must be of the named type. For example, the header
+line for vector-ref given above dictates that the first argument
+to vector-ref must be a vector. The following naming conventions
+also imply type restrictions:
+
+    obj
+        any object
+    list, list1, ... listj, ...
+        list (see section see section 6.3.2 Pairs and lists)
+    z, z1, ... zj, ...
+        complex number
+    x, x1, ... xj, ...
+        real number
+    y, y1, ... yj, ...
+        real number
+    q, q1, ... qj, ...
+        rational number
+    n, n1, ... nj, ...
+        integer
+    k, k1, ... kj, ...
+        exact non-negative integer
+
+3.4
+It is an error to attempt to store a new value into a location
+that is denoted by an immutable object.
+
+4.1.1
+It is an error to reference an unbound variable.
+
+4.1.2
+It is an error to alter a constant (i.e. the value of a literal
+expression) using a mutation procedure like set-car! or string-set!.
+
+4.1.4 (lambda)
+It is an error for a <variable> to appear more than once in
+<formals>.
+
+4.2.2 (let)
+It is an error for a <variable> to appear more than once in the
+list of variables being bound.
+
+4.2.2 (letrec)
+It is an error for a <variable> to appear more than once in the
+list of variables being bound.
+
+One restriction on `letrec' is very important: it must be
+possible to evaluate each <init> without assigning or referring
+to the value of any <variable>. If this restriction is violated,
+then it is an error. 
+
+4.2.4 (do)
+It is an error for a <variable> to appear more than once in the
+list of `do' variables. 
+
+4.3.1 (let-syntax)
+It is an error for a <keyword> to appear more than once in the
+list of keywords being bound.
+
+4.3.2 (pattern language)
+It is an error for the same pattern variable to appear more than
+once in a <pattern>.
+
+It is an error for `...' to appear in <literals>.
+Within a pattern the identifier `...' must follow the last
+element of a nonempty sequence of subpatterns.
+
+It is an error to use a macro keyword, within the scope of its
+binding, in an expression that does not match any of the
+patterns.
+
+It is an error if the output cannot be built up as specified.
+
+5.2.1 (set!)
+...whereas it would be an error to perform a `set!' on an
+unbound variable. 
+
+5.3 (syntax definitions)
+Although macros may expand into definitions and syntax
+definitions in any context that permits them, it is an error for
+a definition or syntax definition to shadow a syntactic keyword
+whose meaning is needed to determine whether some form in the
+group of forms that contains the shadowing definition is in fact
+a definition, or, for internal definitions, is needed to
+determine the boundary between the group and the expressions
+that follow the group. For example, the following are errors:
+
+(define define 3)
+
+(begin (define begin list))
+
+(let-syntax
+  ((foo (syntax-rules ()
+          ((foo (proc args ...) body ...)
+           (define proc
+             (lambda (args ...)
+               body ...))))))
+  (let ((x 3))
+    (foo (plus x y) (+ x y))
+    (define foo x)
+    (plus foo x)))
+
+6.1 (equivalence predicates)
+Since it is an error to modify constant objects (those returned by
+literal expressions), implementations are permitted, though not
+required, to share structure between constants where appropriate.
+Thus the value of eqv? on constants is sometimes
+implementation-dependent.
+
+6.2.3 (implementation restrictions)
+The length, vector-length, and string-length procedures must
+return an exact integer, and it is an error to use anything but
+an exact integer as an index.
+
+6.2.6 (number->string)
+It is an error if no possible result makes this expression true.
+
+The error case can occur only when z is not a complex number
+or is a complex number with a non-rational real or imaginary part.
+
+6.3.2 (car)
+Note that it is an error to take the car of the empty list.
+
+6.3.2 (cdr)
+Note that it is an error to take the cdr of the empty list.
+
+6.3.2 (set-car!)
+(define (g) '(constant-list))
+(set-car! (g) 3)                       ==>  error
+
+6.3.2 (list-tail)
+It is an error if list has fewer than k elements.
+
+6.3.2 (list-ref)
+It is an error if list has fewer than k elements.
+
+6.3.3 (symbol->string)
+It is an error to apply mutation procedures like string-set!
+to strings returned by this procedure.
+
+6.3.3 (string-set!)
+(define (g) "***")
+(string-set! (g) 0 #\?)                ==>  error
+(string-set! (symbol->string 'immutable)
+             0
+             #\?)                      ==>  error
+
+6.3.6 (vector-set!)
+(vector-set! '#(0 1 2) 1 "doe")        ==>  error  ; constant vector
+
+6.6.2 (read)
+It is an error to read from a closed port.
+
+7.3 (derived expression types)
+The following `letrec' macro uses the symbol `<undefined>' in
+place of an expression which returns something that when stored
+in a location makes it an error to try to obtain the value
+stored in the location (no such expression is defined in
+Scheme).
+
+
+Unspecified or Undefined Effect Occurs When
+===========================================
+
+zero values are returned to a continuation that was not created
+by CALL-WITH-VALUES;
+
+more than one value is returned to a continuation that was not
+created by CALL-WITH-VALUES;
+
+zero values, or more than one value, are returned when a delayed
+promise is forced;
+
+a captured continuation is used to enter or to exit the dynamic
+extent of the before or after computations performed by a call
+to DYNAMIC-WIND;
+
+some top-level binding that was not introduced by a definition
+is altered via assignment;
+
+some variable bound in a SCHEME-REPORT-ENVIRONMENT is assigned;
+
+a backslash is written within a string that is not followed by
+a doublequote or backslash;
+
+the file being opened for output by CALL-WITH-OUTPUT-FILE,
+WITH-OUTPUT-TO-FILE, or OPEN-OUTPUT-FILE already exists.
+
+
+Implementation Restrictions
+===========================
+
+1.3.2
+This report uses the phrase "may report a violation of an
+implementation restriction" to indicate circumstances under
+which an implementation is permitted to report that it is unable
+to continue execution of a correct program because of some
+restriction imposed by the implementation. Implementation
+restrictions are of course discouraged, but implementations are
+encouraged to report violations of implementation restrictions.
+
+For example, an implementation may report a violation of an
+implementation restriction if it does not have enough storage to
+run a program. 
+
+6.2.2 (exactness)
+Rational operations such as `+' should always produce exact
+results when given exact arguments. If the operation is unable
+to produce an exact result, then it may either report the
+violation of an implementation restriction or it may silently
+coerce its result to an inexact value. See section 6.2.3
+Implementation restrictions.
+
+6.2.3 (implementation restrictions)
+Implementations of Scheme are not required to implement the
+whole tower of subtypes given in section 6.2.1 Numerical types,
+but they must implement a coherent subset....
+
+Implementations may also support only a limited range of numbers
+of any type, subject to the requirements of this section. The
+supported range for exact numbers of any type may be different
+from the supported range for inexact numbers of that type....
+
+....Furthermore any integer constant within the index
+range, if expressed by an exact integer syntax, will indeed be
+read as an exact integer, regardless of any implementation
+restrictions that may apply outside this range. Finally, the
+procedures listed below will always return an exact integer
+result provided all their arguments are exact integers and the
+mathematically expected result is representable as an exact
+integer within the implementation:
+
++            -             *
+quotient     remainder     modulo
+max          min           abs
+numerator    denominator   gcd
+lcm          floor         ceiling
+truncate     round         rationalize
+expt
+
+Implementations are encouraged, but not required, to support
+exact integers and exact rationals of practically unlimited size
+and precision, and to implement the above procedures and the `/'
+procedure in such a way that they always return exact results
+when given exact arguments. If one of these procedures is unable
+to deliver an exact result when given exact arguments, then it
+may either report a violation of an implementation restriction
+or it may silently coerce its result to an inexact number. Such
+a coercion may cause an error later.
+
+In particular, implementations that use flonum representations
+must follow these rules: A flonum result must be represented
+with at least as much precision as is used to express any of the
+inexact arguments to that operation. It is desirable (but not
+required) for potentially inexact operations such as `sqrt',
+when applied to exact arguments, to produce exact answers
+whenever possible (for example the square root of an exact 4
+ought to be an exact 2). If, however, an exact number is
+operated upon so as to produce an inexact result (as by `sqrt'),
+and if the result is represented as a flonum, then the most
+precise flonum format available must be used; but if the result
+is represented in some other way then the representation must
+have at least as much precision as the most precise flonum
+format available.
+
+Although Scheme allows a variety of written notations for
+numbers, any particular implementation may support only some of
+them. For example, an implementation in which all numbers are
+real need not support the rectangular and polar notations for
+complex numbers. If an implementation encounters an exact
+numerical constant that it cannot represent as an exact number,
+then it may either report a violation of an implementation
+restriction or it may silently represent the constant by an
+inexact number. 
+
+6.2.5 (max, min)
+If `min' or `max' is used to compare numbers of mixed exactness,
+and the numerical value of the result cannot be represented as
+an inexact number without loss of accuracy, then the procedure
+may report a violation of an implementation restriction.
+
+6.2.5 (exact->inexact)
+If an exact argument has no reasonably close inexact equivalent,
+then a violation of an implementation restriction may be
+reported. 
+
+6.2.5 (inexact->exact)
+If an inexact argument has no reasonably close exact equivalent,
+then a violation of an implementation restriction may be
+reported.
+
+
+Unspecified Values
+==================
+
+1.3.2
+If the value of an expression is said to be "unspecified," then
+the expression must evaluate to some object without signalling
+an error, but the value depends on the implementation; this
+report explicitly does not say what value should be returned. 
+
+1.3.5
+By convention, the names of procedures that store values into
+previously allocated locations (see section see section 3.4
+Storage model) usually end in "!". Such procedures are called
+mutation procedures. By convention, the value returned by a
+mutation procedure is unspecified. 
+
+3.5 (tail recursion)
+(lambda ()
+  (if (g)
+      (let ((x (h)))
+        x)
+      (and (g) (f))))
+
+Note: Implementations are allowed, but not required, to
+recognize that some non-tail calls, such as the call to `h'
+above, can be evaluated as though they were tail calls. In the
+example above, the `let' expression could be compiled as a tail
+call to `h'. (The possibility of `h' returning an unexpected
+number of values can be ignored, because in that case the effect
+of the `let' is explicitly unspecified and
+implementation-dependent.) 
+
+4.1.3 (procedure calls)
+The operator and operand expressions are evaluated (in an
+unspecified order) and the resulting procedure is passed the
+resulting arguments.
+
+Note: In contrast to other dialects of Lisp, the order of
+evaluation is unspecified, and the operator expression and the
+operand expressions are always evaluated with the same
+evaluation rules. 
+
+Note: Although the order of evaluation is otherwise unspecified,
+the effect of any concurrent evaluation of the operator and
+operand expressions is constrained to be consistent with some
+sequential order of evaluation. The order of evaluation may be
+chosen differently for each procedure call. 
+
+4.1.5 (if)
+If <test> yields a false value and no <alternate> is specified,
+then the result of the expression is unspecified. 
+
+4.1.6 (set!)
+The result of the `set!' expression is unspecified. 
+
+4.2.1 (cond)
+If all <test>s evaluate to false values, and there is no else
+clause, then the result of the conditional expression is
+unspecified;
+
+4.2.1 (case)
+If the result of evaluating <key> is different from every
+<datum>, then if there is an else clause its expressions are
+evaluated and the result(s) of the last is(are) the result(s) of
+the `case' expression; otherwise the result of the `case'
+expression is unspecified. 
+
+4.2.2 (let)
+Semantics: The <init>s are evaluated in the current environment
+(in some unspecified order), ...
+
+4.2.2 (letrec)
+Semantics: The <variable>s are bound to fresh locations holding
+undefined values, the <init>s are evaluated in the resulting
+environment (in some unspecified order), ...
+
+4.2.4 (do)
+The <init> expressions are evaluated (in some unspecified
+order), ...
+
+Each iteration begins by evaluating <test>; if the result is
+false (see section see section 6.3.1 Booleans), then the
+<command> expressions are evaluated in order for effect, the
+<step> expressions are evaluated in some unspecified order, ...
+
+If <test> evaluates to a true value, then the <expression>s are
+evaluated from left to right and the value(s) of the last
+<expression> is(are) returned. If no <expression>s are present,
+then the value of the `do' expression is unspecified. 
+
+6.1 (eqv?)
+(eqv? "" "")                           ==>  unspecified
+(eqv? '#() '#())                       ==>  unspecified
+(eqv? (lambda (x) x)
+      (lambda (x) x))                  ==>  unspecified
+(eqv? (lambda (x) x)
+      (lambda (y) y))                  ==>  unspecified
+
+(define gen-loser
+  (lambda ()
+    (let ((n 0))
+      (lambda () (set! n (+ n 1)) 27))))
+(let ((g (gen-loser)))
+  (eqv? g g))                          ==>  #t
+(eqv? (gen-loser) (gen-loser))         ==>  unspecified
+
+(letrec ((f (lambda () (if (eqv? f g) 'both 'f)))
+         (g (lambda () (if (eqv? f g) 'both 'g))))
+  (eqv? f g))
+                                       ==>  unspecified
+
+Since it is an error to modify constant objects (those returned
+by literal expressions), implementations are permitted, though
+not required, to share structure between constants where
+appropriate. Thus the value of `eqv?' on constants is sometimes
+implementation-dependent.
+
+(eqv? '(a) '(a))                       ==>  unspecified
+(eqv? "a" "a")                         ==>  unspecified
+(eqv? '(b) (cdr '(a b)))               ==>  unspecified
+
+6.1 (eq?)
+(eq? '(a) '(a))                        ==>  unspecified
+(eq? "a" "a")                          ==>  unspecified
+(eq? "" "")                            ==>  unspecified
+(eq? 2 2)                              ==>  unspecified
+(eq? #\A #\A)                          ==>  unspecified
+(let ((n (+ 2 3)))
+  (eq? n n))                           ==>  unspecified
+
+6.1 (equal?)
+(equal? (lambda (x) x)
+        (lambda (y) y))                ==>  unspecified
+
+6.2.6 (number->string)
+If z is inexact, the radix is 10, and the above expression can
+be satisfied by a result that contains a decimal point, then the
+result contains a decimal point and is expressed using the
+minimum number of digits (exclusive of exponent and trailing
+zeroes) needed to make the above expression true [howtoprint],
+[howtoread]; otherwise the format of the result is unspecified.
+
+Rationale: If z is an inexact number represented using flonums,
+and the radix is 10, then the above expression is normally
+satisfied by a result containing a decimal point. The
+unspecified case allows for infinities, NaNs, and non-flonum
+representations.
+
+6.3.2 (set-car!)
+The value returned by `set-car!' is unspecified.
+
+(define (f) (list 'not-a-constant-list))
+(set-car! (f) 3)                       ==>  unspecified
+
+6.3.2 (set-cdr!)
+The value returned by `set-cdr!' is unspecified. 
+
+6.3.2 (memq)
+(memq 101 '(100 101 102))              ==>  unspecified
+
+6.3.2 (assq)
+(assq 5 '((2 3) (5 7) (11 13)))        ==>  unspecified
+
+6.3.5 (strings)
+A string constant may continue from one line to the next, but
+the exact contents of such a string are unspecified. 
+
+6.3.5 (make-string)
+If char is given, then all elements of the string are
+initialized to char, otherwise the contents of the string are
+unspecified. 
+
+6.3.5 (string-set!)
+`String-set!' stores char in element k of string and returns an
+unspecified value. 
+
+(define (f) (make-string 3 #\*))
+(string-set! (f) 0 #\?)                ==>  unspecified
+
+6.3.5 (string-fill!)
+Stores char in every element of the given string and returns an
+unspecified value. 
+
+6.3.6 (make-vector)
+If a second argument is given, then each element is initialized
+to fill. Otherwise the initial contents of each element is
+unspecified. 
+
+6.3.6 (vector-set!)
+The value returned by `vector-set!' is unspecified.
+
+6.3.6 (vector-fill!)
+The value returned by `vector-fill!' is unspecified.
+
+6.4 (map)
+The dynamic order in which proc is applied to the elements of
+the lists is unspecified. 
+
+6.4 (for-each)
+Unlike `map', `for-each' is guaranteed to call proc on the
+elements of the lists in order from the first element(s) to the
+last, and the value returned by `for-each' is unspecified.
+
+6.4 (force)
+(eqv? (delay 1) 1)                ==>  unspecified
+(pair? (delay (cons 1 2)))        ==>  unspecified
+
+6.4 (call-with-current-continuation)
+The effect of passing no value or more than one value to
+continuations that were not created by call-with-values is
+unspecified. 
+
+6.6.1 (close-input-port, close-output-port)
+The value returned is unspecified.
+
+6.6.3 (write)
+`Write' returns an unspecified value.
+
+6.6.3 (display)
+`Display' returns an unspecified value.
+
+6.6.3 (newline)
+Returns an unspecified value.
+
+6.6.3 (write-char)
+...and returns an unspecified value.
+
+6.6.4 (load)
+It is unspecified whether the results of the expressions are
+printed.  The `load' procedure does not affect the values
+returned by `current-input-port' and `current-output-port'.
+`Load' returns an unspecified value. 
+
+6.6.4 (transcript-on, transcript-off)
+The values returned by these procedures are unspecified.
+
+
