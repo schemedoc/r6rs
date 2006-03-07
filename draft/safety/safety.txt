@@ -225,9 +225,9 @@ implementations are free to ignore declarations, and
 may observe some declarations while ignoring others.
 
 (One possible exception to the above is that we may want
-require implementations that implement an unsafe mode to
-pay attention to any declarations that increase the safe
-priority within an unsafe section of code.)
+to require implementations that implement an unsafe mode
+to pay attention to any declarations that increase the
+safe priority within an unsafe section of code.)
 
 The following descriptions of each quality may provide
 some guidance for programmers and implementors.
@@ -316,11 +316,9 @@ Mike found that confusing, and proposed that unsafe
 declarations be explained as a relaxation of the R6RS
 requirements for raising an exception.
 
-Kent proposed a semantics that elevates declarations
-from the level of pragmatics to a device that allows
-syntax-case macros to communicate by attaching 7 bits
-of arbitrary information about the context of every
-identifier.
+Kent proposed a semantics that explains unsafe mode
+(and other declarations) as a property that attaches
+to identifiers and is preserved by hygienic macros.
 
 
 Kent's Proposed Semantics
@@ -434,20 +432,3 @@ but we could require that eqv? return #t in situations such as this.
 In practice, this would likely cause most implementations to use the
 same (default) version of the standard procedure whenever the value
 might escape.
-
-If we agree to this proposal, then I also intend to suggest that an
-identifier-priority procedure be included in the standard syntax-case
-system.  This procedure can be used to extract a priority associated with
-an identifier, e.g.:
-
-  (define-syntax frobitate
-    (lambda (x)
-      (syntax-case x ()
-        [(k (x ...) e)
-         (if (= (identifier-priority 'safe #'k) 0)
-             #'<unsafe code>
-             #'<safe code>)])))
-
-This will allow user-defined syntactic forms to be sensitive to declared
-priorities.  In conjunction with identifier macros, it will also allow a
-similar effect for user-defined procedures.
