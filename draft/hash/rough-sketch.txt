@@ -1,0 +1,166 @@
+R6RS Hash Tables (rough sketch)
+===============================
+
+In the interests of expedience, many of the descriptions here have been taken or adapted from the descriptions for Larceny, SRFI-69, and MIT Scheme.  Any inconsistencies between descriptions will be corrected in the next draft.
+
+
+Constructors
+------------
+
+Procedure: make-eq-hash-table [initial-capacity] => hash-table 
+
+    Returns a newly allocated hash table that accepts arbitrary objects as keys, and compares those keys with eq?
+
+Procedure: make-eqv-hash-table [initial-capacity] => hash-table
+
+    Returns a newly allocated hash table that accepts arbitrary objects as keys, and compares those keys with eqv?
+
+Procedure: make-hash-table hash-function equivalence-predicate [initial-capacity] => hash-table
+
+    Returns a newly allocated mutable hash table using hash-function as the hash function and equivalence-predicate as the procedure used to compare keys.  The hash-function must accept a key and return a non-negative exact integer. [Larceny]
+
+
+Basic hash table procedures
+---------------------------
+
+Procedure: hash-table? value => boolean
+
+    Returns #t if value was created by one of the hash table constructors.
+
+Procedure: hash-table-size hash-table => integer
+
+    Returns the number of keys contained within the hashtable.
+
+Procedure: hash-table-ref hash-table key => object
+
+    Returns the value associated with key in the hash-table if the hash table contains key; otherwise raises an exception [TODO: hash table exception types].
+
+Procedure: hash-table-get/flag hash-table key flag  => object
+
+    Returns the value associated with key in the hash-table if the hash table contains key; otherwise returns flag.
+
+Procedure: hash-table-get/thunk hash-table key thunk => object
+
+    Returns the value associated with key in the hash-table if the hash table contains key; otherwise tail-calls thunk.
+
+Procedure: hash-table-get hash-table key => object
+
+    Equivalent to (hash-table-get/flag hash-table key #f)
+
+Procedure: hash-table-set! hash-table key value => unspecified
+
+    Changes the hash-table to associate key with value, replacing any existing association for key.
+
+Procedure: hash-table-delete! hash-table key => unspecified
+
+    Removes any association for key within the hash-table.
+
+Procedure: hash-table-contains hash-table
+
+    Returns true iff the hash table contains an entry for key.
+
+Procedure: hash-table-update! hash-table procedure
+
+    Equivalent to: (hash-table-set! hash-table key
+                                    (procedure (hash-table-ref hash-table key)))
+
+    Raises an exception if the hash table does not contain an entry for key.
+
+Procedure: hash-table-update/flag! hash-table procedure flag
+
+    Equivalent to: (hash-table-set! hash-table key flag
+                                    (procedure (hash-table-ref hash-table key flag)))
+
+Procedure: hash-table-update/thunk! hash-table procedure thunk
+
+    Equivalent to: (hash-table-set! hash-table key flag
+                                    (procedure (hash-table-ref hash-table key thunk)))
+
+Procedure: hash-table-fold hash-table procedure init => value
+
+    For every association in hash-table, calls procedure with three arguments: the association key, the association value, and an accumulated value. The accumulated value is init for the first invocation of procedure, and for subsequent invocations of procedure, the return value of the previous invocation of procedure. The return value of hash-table-fold is the value of the last invocation of procedure.
+
+Procedure: hash-table-copy hash-table => hashtable
+
+    Returns a copy of hash-table.
+
+Procedure: hash-table-clear! hash-table => unspecified
+
+    Removes all associations from hash-table.  
+    Equivalent to: (hash-table-fold hash-table (lambda (k v a) (hash-table-delete! hash-table k)) (if #f #f))
+
+Procedure: hash-table-for-each procedure hash-table => unspecified
+
+    The procedure must accept two arguments, a key and the value associated with that key. The procedure is called once for each key-value association in hash-table. The order of these calls is indeterminate.
+    Equivalent to: (hash-table-fold hash-table (lambda (k v a) (procedure k v)) (if #f #f))
+
+Hash functions
+--------------
+
+Procedure: eq-hash object => integer
+
+    Returns a hash value for object based on its location.  This procedure is the hash function used by make-eq-hash-table.
+
+Procedure: eqv-hash object => integer
+
+    This procedure is the hash function used by make-eqv-hash-table.
+
+Procedure: equal-hash object => integer
+
+    Returns a hash value for object based on its contents.
+
+Procedure: string-hash string => integer
+
+    Returns a hash value for string based on its content.
+
+Procedure: string-ci-hash string => integer
+
+    Returns a hash value for string based on its content, ignoring case.
+
+Procedure: symbol-hash symbol => integer
+
+    Returns a hash value for symbol based on its print name.
+
+
+Reflective procedures
+---------------------
+
+Procedure: hash-table-equivalence-predicate hash-table => procedure
+
+    Returns the equivalence predicate used by hash-table to compare keys.
+
+Procedure: hash-table-hash-function hash-table => procedure
+
+    Returns the hash function used by hash-table.
+
+Procedure: hash-table-mutable? hash-table => boolean
+
+    Returns mutability status of hash-table.
+
+
+Derived procedures
+------------------
+
+The following potentially useful procedures can easily be implemented in terms of hash-table-fold:
+
+hash-table->alist hash-table = (hash-table-fold hash-table (lambda (k v a) (cons (cons k v) a)) '())
+hash-table-keys hash-table   = (hash-table-fold hash-table (lambda (k v a) (cons k a)) '())
+hash-table-values hash-table = (hash-table-fold hash-table (lambda (k v a) (cons v a)) '())
+
+
+Issues, notes & todo items
+==========================
+
+Constructors: Eq and eqv hash tables could be constructed simply by providing the eq? or eqv? procedures to the generic constructor make-hash-table, which would obviate the two constructors make-eq-hash-table and make-eqv-hash-table.  It would then be up to the implementation to detect this if necessary, in order to support any required behavior such as rehashing on garbage collection.  However, modifying behavior based on testing the identity of procedures could be considered poor style.  If so, then an approach more like that of MIT Scheme could be used, in which a rehash-after-gc? flag is provided to a hash table constructor-constructor.  The MIT Scheme approach is more general, allowing the programmer to define gc-dependent hash functions.
+
+Immutability: The proposal should probably support immutable hash tables, which can be constructed from a provided assoc list.  The appropriate constructor(s) need to be defined, supporting the various hash table options, preferably without doubling the number of constructors.
+
+Complexity: It may be appropriate to specify constraints on complexity, such as: O(1) for retrieval of elements from hash tables; constant time for hash-table-size.
+
+Concurrency: R6RS does not deal with concurrency.  Should this proposal say anything about it?
+
+Omission of procedures: some procedures could perhaps be omitted, e.g. there are four retrieval procedures.  Which one(s) should be omitted, if any?
+
+hash-table-map: omitted because a single appropriate specification is not obvious, and it can easily be implemented in terms of hash-table-fold.
+
+Names: should it be hash-table or hashtable?
