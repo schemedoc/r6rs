@@ -66,15 +66,19 @@ Procedure: hash-table-update! hash-table procedure
 
     Raises an exception if the hash table does not contain an entry for key.
 
-Procedure: hash-table-update/flag! hash-table procedure flag
+Procedure: hash-table-update!/flag hash-table procedure flag
 
-    Equivalent to: (hash-table-set! hash-table key flag
-                                    (procedure (hash-table-ref hash-table key flag)))
+    Equivalent to, but potentially more efficient than:
 
-Procedure: hash-table-update/thunk! hash-table procedure thunk
+    (hash-table-set! hash-table key
+                     (procedure (hash-table-get/flag hash-table key flag)))
 
-    Equivalent to: (hash-table-set! hash-table key flag
-                                    (procedure (hash-table-ref hash-table key thunk)))
+Procedure: hash-table-update!/thunk hash-table procedure thunk
+
+    Equivalent to, but potentially more efficient than:
+
+    (hash-table-set! hash-table key
+                     (procedure (hash-table-get/thunk hash-table key thunk)))
 
 Procedure: hash-table-fold hash-table procedure init => value
 
@@ -153,14 +157,19 @@ Issues, notes & todo items
 
 Constructors: Eq and eqv hash tables could be constructed simply by providing the eq? or eqv? procedures to the generic constructor make-hash-table, which would obviate the two constructors make-eq-hash-table and make-eqv-hash-table.  It would then be up to the implementation to detect this if necessary, in order to support any required behavior such as rehashing on garbage collection.  However, modifying behavior based on testing the identity of procedures could be considered poor style.  If so, then an approach more like that of MIT Scheme could be used, in which a rehash-after-gc? flag is provided to a hash table constructor-constructor.  The MIT Scheme approach is more general, allowing the programmer to define gc-dependent hash functions.
 
+Limit proposal scope: Should *only* eq and eqv hash tables be specified?
+
 Immutability: The proposal should probably support immutable hash tables, which can be constructed from a provided assoc list.  The appropriate constructor(s) need to be defined, supporting the various hash table options, preferably without doubling the number of constructors.
 
 Complexity: It may be appropriate to specify constraints on complexity, such as: O(1) for retrieval of elements from hash tables; constant time for hash-table-size.
 
 Concurrency: R6RS does not deal with concurrency.  Should this proposal say anything about it?
 
-Omission of procedures: some procedures could perhaps be omitted, e.g. there are four retrieval procedures.  Which one(s) should be omitted, if any?
+Omission of procedures: some procedures could perhaps be omitted, e.g. there are four retrieval procedures.  Which one(s) should be omitted, if any?  See next point.
 
-hash-table-map: omitted because a single appropriate specification is not obvious, and it can easily be implemented in terms of hash-table-fold.
+Side effects in thunks: thunks provided to procedures such as 
+such as hash-table-ref/thunk, which accept thunks, have the potential 
+
+hash-table-map: omitted because a single appropriate specification is not obvious, and any reasonable specification can easily be implemented in terms of hash-table-fold.
 
 Names: should it be hash-table or hashtable?
