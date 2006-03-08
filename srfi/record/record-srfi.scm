@@ -625,7 +625,8 @@
          " must all be identifiers.")
 
         (p
-         (meta "Record name") " becomes the name of the record type.  Additionally, "
+         (meta "Record name") ", taken as a symbol becomes the name of the record type.  "
+	 "Additionally, "
 	 "it is bound by this definition "
 	 "to an expand-time or run-time description of the "
          "record type for use as parent name in syntactic record-type definitions that extend "
