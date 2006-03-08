@@ -35,9 +35,13 @@ Procedure: hash-table-ref hash-table key => object
 
     Returns the value associated with key in the hash-table if the hash table contains key; otherwise raises an exception [TODO: hash table exception types].
 
-Procedure: hash-table-get/flag hash-table key flag  => object
+Procedure: hash-table-get/default hash-table key default  => object
 
-    Returns the value associated with key in the hash-table if the hash table contains key; otherwise returns flag.
+    Returns the value associated with key in the hash-table if the hash table contains key; otherwise returns default.
+
+Procedure: hash-table-get/call hash-table key f => object
+
+    Returns the value associated with key in the hash-table if the hash table contains key; otherwise tail-calls f on key.
 
 Procedure: hash-table-get/thunk hash-table key thunk => object
 
@@ -45,7 +49,7 @@ Procedure: hash-table-get/thunk hash-table key thunk => object
 
 Procedure: hash-table-get hash-table key => object
 
-    Equivalent to (hash-table-get/flag hash-table key #f)
+    Equivalent to (hash-table-get/default hash-table key #f)
 
 Procedure: hash-table-set! hash-table key value => unspecified
 
@@ -55,7 +59,7 @@ Procedure: hash-table-delete! hash-table key => unspecified
 
     Removes any association for key within the hash-table.
 
-Procedure: hash-table-contains hash-table
+Procedure: hash-table-contains? hash-table key
 
     Returns true iff the hash table contains an entry for key.
 
@@ -66,12 +70,12 @@ Procedure: hash-table-update! hash-table procedure
 
     Raises an exception if the hash table does not contain an entry for key.
 
-Procedure: hash-table-update!/flag hash-table procedure flag
+Procedure: hash-table-update!/default hash-table procedure default
 
     Equivalent to, but potentially more efficient than:
 
     (hash-table-set! hash-table key
-                     (procedure (hash-table-get/flag hash-table key flag)))
+                     (procedure (hash-table-get/default hash-table key default)))
 
 Procedure: hash-table-update!/thunk hash-table procedure thunk
 
@@ -79,6 +83,13 @@ Procedure: hash-table-update!/thunk hash-table procedure thunk
 
     (hash-table-set! hash-table key
                      (procedure (hash-table-get/thunk hash-table key thunk)))
+
+Procedure: hash-table-update!/call hash-table procedure f
+
+    Equivalent to, but potentially more efficient than:
+
+    (hash-table-set! hash-table key
+                     (procedure (hash-table-get/thunk hash-table key f)))
 
 Procedure: hash-table-fold hash-table procedure init => value
 
@@ -90,8 +101,7 @@ Procedure: hash-table-copy hash-table => hashtable
 
 Procedure: hash-table-clear! hash-table => unspecified
 
-    Removes all associations from hash-table.  
-    Equivalent to: (hash-table-fold hash-table (lambda (k v a) (hash-table-delete! hash-table k)) (if #f #f))
+    Removes all associations from hash-table.
 
 Procedure: hash-table-for-each procedure hash-table => unspecified
 
@@ -167,7 +177,7 @@ Concurrency: R6RS does not deal with concurrency.  Should this proposal say anyt
 
 Omission of procedures: some procedures could perhaps be omitted, e.g. there are four retrieval procedures.  Which one(s) should be omitted, if any?  Procedures which take failure thunks are candidates for omission.
 
-Side-effects in thunks: in some cases, a thunk which mutates the hash table being operated on could cause problems.  May be better to omit any such procedures.
+Side-effects in higher-order procedures: in some cases, a procedure which mutates the hash table being operated on could cause problems.  This should be addressed somehow, if only by a statement that the behavior caused by such procedures is unspecified.
 
 hash-table-map: omitted because a single appropriate specification is not obvious, and any reasonable specification can easily be implemented in terms of hash-table-fold.
 
