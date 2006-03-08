@@ -111,14 +111,6 @@ Procedure: hash-table-for-each procedure hash-table => unspecified
 Hash functions
 --------------
 
-Procedure: eq-hash object => integer
-
-    Returns a hash value for object based on its location.  This procedure is the hash function used by make-eq-hash-table.
-
-Procedure: eqv-hash object => integer
-
-    This procedure is the hash function used by make-eqv-hash-table.
-
 Procedure: equal-hash object => integer
 
     Returns a hash value for object based on its contents.
@@ -145,7 +137,7 @@ Procedure: hash-table-equivalence-predicate hash-table => procedure
 
 Procedure: hash-table-hash-function hash-table => procedure
 
-    Returns the hash function used by hash-table.
+    Returns the hash function used by hash-table.  This procedure is not defined [FIXME: specific behavior, e.g. exception?] on hash tables created by calling make-eq-hash-table or make-eqv-hash-table.
 
 Procedure: hash-table-mutable? hash-table => boolean
 
@@ -171,9 +163,9 @@ Limit proposal scope: Should *only* eq and eqv hash tables be specified?
 
 Immutability: The proposal should probably support immutable hash tables, which can be constructed from a provided assoc list.  The appropriate constructor(s) need to be defined, supporting the various hash table options, preferably without doubling the number of constructors.
 
-Complexity: It may be appropriate to specify constraints on complexity, such as: O(1) for retrieval of elements from hash tables; constant time for hash-table-size.
+Complexity: It may be appropriate to specify constraints on complexity, such as constant time for hash-table-size, or SRFI 69's "Given a good hash function, this operation should have an (amortised) complexity of O(1) with respect to the number of associations in hash-table."
 
-Concurrency: R6RS does not deal with concurrency.  Should this proposal say anything about it?
+Concurrency: R6RS does not deal with concurrency.  Even if this proposal does not say anything about that, it should be considered.  Any implementation that supports concurrency is going to have to implement some kind of mutual exclusion for operations that have side effects, and some will need a bit of mutual exclusion even for hash-table-ref.  As specified, the updating operations are not atomic, so they create no new problems.  The hash-table-fold and hash-table-for-each procedures already have a problem, even without concurrency.
 
 Omission of procedures: some procedures could perhaps be omitted, e.g. there are four retrieval procedures.  Which one(s) should be omitted, if any?  Procedures which take failure thunks are candidates for omission.
 
