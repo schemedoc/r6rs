@@ -100,6 +100,16 @@ definition of {\cf delay}.
          body1 body2 ...)))))
 \end{scheme}
 
+\begin{scheme}
+(define-syntax \ide{letrec*}
+  (syntax-rules ()
+    ((letrec* ((var1 init1) ...) body ...)
+     (let ((var1 <undefined>) ...)
+       (set! var1 init1)
+       ...
+       body ...))))
+\end{scheme}
+
 The following {\cf letrec} macro uses the symbol {\cf <undefined>}
 in place of an expression which returns something that when stored in
 a location makes it an error to try to obtain the value stored in the
