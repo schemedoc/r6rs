@@ -47,7 +47,10 @@ Tentative Condition Hierarchy
     &warning
   &serious
     &error
+      &non-continuable   ; handler wasn't expected to return
       &implementation-restriction
+        &no-infinities   ; cannot represent +inf.0, -inf.0
+        &no-nans         ; cannot represent +nan.0, -nan.0, nan.0
       &io
       ...
     &violation
@@ -55,15 +58,41 @@ Tentative Condition Hierarchy
       &defect
         &lexical
         &syntax
+          &undefined     ; reference or assignment to undefined variable
         &domain
           &type
+            &boolean
+            &symbol
+            &char
+            &vector
+            &procedure
+            &pair
+            &number
+              &complex
+              &real
+              &rational
+              &integer
+              &exact         ; not an exact complex number
+                &exact-rational
+                  &exact-integer
+                    &index   ; not an exact non-negative integer
+                    &fixnum  ; not an exact integer within fixnum range
+              &inexact       ; not an inexact complex number
+                &inexact-real
+                  &flonum    ; not a flonum
+                  &inexact-rational
+                    &inexact-integer
+            &string
+            &port
+              &input-port
+              &output-port
+            &llobj       ; not a list-like object (null or pair)
           &list          ; not a proper list
           &alist         ; some element is not a pair
           &immutable
         &incompatible    ; arguments okay singly but not together
           &index         ; index out of range
         &result          ; result not well-defined
-        &undefined
         ...
 
 
@@ -83,6 +112,26 @@ of their arguments is not a proper list, revise their
 description to say they should raise a &list exception.
 (All such procedures should appear in the table below.)
 
+
+Continuing From an Exception
+============================
+
+The R6RS should explain what will happen if an exception
+handler returns a value to its continuation.  I'd suggest
+some general policy such as "Except as noted, returning
+from an exception handler that is raised for one of the
+situations described in this report may raise a
+&non-continuable exception."
+
+Specific exceptions to this general policy should be noted.
+For example:
+
+An exception handler may handle a &no-infinities or
+&no-nans exception by returning a real number, which
+will be used in place of the infinity or NaN that the
+implementation cannot represent.
+
+
 Tentative Reclassification of R5RS Situations
 =============================================
 
@@ -92,7 +141,7 @@ section syntax/procedure               r5rs        r6rs
 1.3.3   all procedures                 error       must &type
 3.4     side-effecting procedures      error       should &immutable
 4       all expressions                error       must &syntax (!!!!!)
-4.1.1   reference to unbound variable  error       should &undefined (!!!!!)
+4.1.1   reference to unbound variable  error       must &undefined (!!!!!)
 4.1.2   side effect to constant        error       should &immutable
 4.1.4   lambda (formal occurs twice)   error       must &syntax
 4.2.2   let (formal occurs twice)      error       must &syntax
@@ -103,8 +152,8 @@ section syntax/procedure               r5rs        r6rs
 4.3.2   patterns (variable twice)      error       should &syntax
 4.3.2   patterns (... in literals)     error       should &syntax
 4.3.2   patterns (no match)            error       must &syntax
-5.2.1   set! (unbound variable)        error       should &undefined (!!!!!)
-5.2.1   set! (w/o defining)            unspecified should &undefined (!!!!!)
+5.2.1   set! (unbound variable)        error       must &undefined (!!!!!)
+5.2.1   set! (w/o defining)            unspecified must &undefined (!!!!!)
 5.2.1   set! (immutable environment)   unspecified should &immutable (!!!!!)
 5.3     define-syntax (ambiguity)      error       should &syntax
 6.1     side effect to constant        error       should &immutable
@@ -181,9 +230,9 @@ Issues
 Exceptions marked by (!!!!!) may be controversial:
 
 4       all expressions                error       must &syntax (!!!!!)
-4.1.1   reference to unbound variable  error       should &undefined (!!!!!)
-5.2.1   set! (unbound variable)        error       should &undefined (!!!!!)
-5.2.1   set! (w/o defining)            unspecified should &undefined (!!!!!)
+4.1.1   reference to unbound variable  error       must &undefined (!!!!!)
+5.2.1   set! (unbound variable)        error       must &undefined (!!!!!)
+5.2.1   set! (w/o defining)            unspecified must &undefined (!!!!!)
 5.2.1   set! (immutable environment)   unspecified should &immutable (!!!!!)
 6.3.2   car of empty list              error       must &type (!!!!!)
 6.3.2   cdr of empty list              error       must &type (!!!!!)
@@ -198,12 +247,19 @@ Many implementations support extensions of the R5RS program
 syntax, so requiring them to raise a &syntax exception on
 illegal syntax will break a lot of non-portable code.
 
-Some programmers would prefer that assignments to unbound
-variables or to variables defined in libraries be required
-to raise an &undefined exception, and/or that assignments
-to variables bound in a scheme-report-environment be
-required to raise an &immutable exception.  For some others,
-their right to assign a new value to + is inalienable.
+Within a library, at least three editors (Mike, Kent, Will)
+want references and assignments to unbound variables and
+assignments to variables defined in some other library or
+in the core language to be required to raise a &syntax
+exception.  With an interactive read/eval/print loop,
+however, it is convenient to allow references and assignments
+to as-yet-undefined variables.
+
+If assignments to variables defined in other libraries must
+raise an &undefined exception, then shouldn't new definitions
+and assignments to variables defined in the environments
+returned by scheme-report-environment and null-environment
+also be required to raise an exception?
 
 Most of the programmers who want car of the empty list to
 be defined have gone over to Common Lisp, but requiring
@@ -224,10 +280,7 @@ Many implementations support extensions of the R5RS lexical
 syntax, so requiring them to raise a &lexical exception on
 illegal lexical syntax will break a lot of non-portable code.
 
-(Implementations could provide a way for programmers to
-install implementation-specific exception handlers that
-ignore the &lexical exception and continue the program,
-but the SRFI 34 exception mechanism is inadequate for
-this, and continuable exceptions are likely to be too
-slow if constructed on top of the SRFI 34 mechanism.)
+(Implementations could, however, make it easy for programmers
+to install implementation-specific exception handlers that
+ignore the &lexical exception and continue the program.)
 
