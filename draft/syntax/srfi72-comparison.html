@@ -1,0 +1,245 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
+<head>
+ <title>SRFI 72 - Comparison with syntax-case</title>
+ <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+</head>
+<body bgcolor="#ffffff">
+<a name="PageTop"></a>
+<h1><a name="_SRFI_72_Comparison_with_syntax_"> </a>  SRFI 72 - Comparison with syntax-case </h1>
+<p />
+<p />
+<ul>
+<li> <a href="#1_Introduction">1. Introduction</a>
+</li>
+<li> <a href="#2_Low_level_hygienic_macro_facil">2. "Low-level" hygienic macro facility</a>
+<ul>
+<li> <a href="#2_1_Syntax_quoting_forms">2.1 Syntax quoting forms</a>
+</li>
+<li> <a href="#2_2_Syntax_representation">2.2 Syntax representation</a>
+</li>
+<li> <a href="#2_3_Transformer_definition_synta">2.3 Transformer definition syntax</a>
+</li>
+</ul>
+</li>
+<li> <a href="#3_Modified_hygiene_rule">3. Modified hygiene rule</a>
+<ul>
+<li> <a href="#3_1_Changing_the_rules">3.1 Changing the rules</a>
+</li>
+<li> <a href="#3_2_Impact_on_the_R6RS">3.2 Impact on the R6RS</a>
+</li>
+</ul>
+</li>
+</ul>
+<p />
+<h2><a name="1_Introduction"> 1. Introduction </a></h2>
+<p />
+SRFI 72 offers a number of interesting features, some of which could be considered as changes to the specification of syntax-case, without necessarily adopting the entire proposal.  Some of the more interesting features of SRFI 72 are as follows:
+<p />
+<ul>
+<li> A <a href="#3_Modified_hygiene_rule">modified hygiene rule</a> intended to address a weakness which arises when writing syntax-case macros which depend on syntax-generating procedural code.  This rule could be adopted as a change to the specification of syntax-case.
+</li>
+<li> A <a href="#2_2_Syntax_representation">list-based representation for syntax</a> which allows syntax to be manipulated using car, cdr, cons etc.  While this raises some concerns related to e.g. representing source location information, it should be noted that the SRFI 72 syntax representation does use an abstract data type for identifiers, so is not completely "open", and could be compatibly extended by implementations.  Various acceptable ways to address the source location issue may exist.
+</li>
+<li> A useful <a href="#2_Low_level_hygienic_macro_facil">lower-level macro facility</a> which is hygienic by default and independent of syntax-case.  This facility is enabled and supported by the <code>quasisyntax</code> form, the list-based representation for syntax, and a <a href="#2_3_Transformer_definition_synta">simplified transformer definition syntax</a>.
+</li>
+</ul>
+<p />
+<h2><a name="2_Low_level_hygienic_macro_facil"> 2. "Low-level" hygienic macro facility </a></h2>
+<p />
+In SRFI 72, the core macro facility does not support a full syntax-case-like pattern-matching capability.  Instead, it provides a set of features which combine to provide a very useful lower-level macro facility which is hygienic by default, while still supporting hygiene-breaking in the same kinds of ways that syntax-case does.  The main features which support this are as follows:
+<p />
+<ul>
+<li> <code>syntax</code> as a pure syntax quoting form and <code>quasisyntax</code> as a quasiquote-like syntax quoting form
+</li>
+<li> a list-based representation for syntax which simplifies procedural syntax manipulation, which also supports a syntax-case-style syntax object API, i.e. with procedures such as <code>syntax-object-&gt;datum</code>.
+</li>
+<li> a simplified transformer definition syntax which supports basic pattern matching on a single macro signature, similar to that of an ordinary procedure definition or a defmacro definition.
+</li>
+</ul>
+<p />
+Syntax-case is implemented on top of this core, to provide a full syntax pattern-matching facility, and syntax-rules is implemented in terms of syntax-case as usual.
+<p />
+This low-level/high-level division is similar to the one described in the R4RS "Macros" appendix, except that in this case, the facility is highly compatible with syntax-case.
+<p />
+The components listed above are briefly described and compared to syntax-case in the following three sections.
+<p />
+<h3><a name="2_1_Syntax_quoting_forms"> 2.1 Syntax quoting forms </a></h3>
+<p />
+In traditional syntax-case, syntax is quoted/constructed using the <code>syntax</code> form, also written as <code>#'</code>.  This form can contain (unescaped) references to pattern variables.  Pattern variable bindings are created by the <code>syntax-case</code> form, which performs pattern matching on input syntax and binds it to pattern variables.  Syntax-case also includes a <code>with-syntax</code> form, which is a simple <code>let</code> style binding form for pattern variables, implemented in terms of the <code>syntax-case</code> form.
+<p />
+MzScheme's syntax-case implementation adds to this by including support for the <code>quasisyntax</code> form, also written as <code>#`</code>.  In addition to containing unescaped references to pattern variables, this form can include Scheme expressions which are evaluated at expand time.  Such expressions are escaped using <code>unsyntax</code> and <code>unsyntax-splicing</code> (which can be written as <code>#,</code> and <code>#,@</code> respectively).
+<p />
+In SRFI 72, syntax-case is not part of the core macro system, and there is no facility for referencing pattern variables from within syntax templates.  At the core level, the <code>syntax</code> form is a pure quoting form, the equivalent of <code>quote</code> for syntax.  To introduce non-literal syntax into a syntax template, the <code>quasisyntax</code> form is used, in conjunction with the ordinary Scheme <code>unquote</code> form.  Use of <code>unquote</code> is possible because list structure is used to represent syntax.
+<p />
+SRFI 72 implements syntax-case on top of this core, replacing its own <code>syntax</code> form with one that supports unescaped pattern variables, and implementing <code>with-syntax</code> and <code>syntax-rules</code> in terms of <code>syntax-case</code>.
+<p />
+To illustrate some of these points, all of the following expressions return a syntax object representing the syntax <code>(let ((y (+ 2 2))) y)</code>.  The comments specify which systems each expression works under.
+<p />
+<div class="scheme"><pre><span class="comment">; works in Chez/psyntax, MzScheme, and SRFI 72's syntax-case
+</span>(<span class="variable">with-syntax</span> ((<span class="variable">x</span> (<span class="variable">syntax</span> (<span class="builtin">+</span> <span class="selfeval">2</span> <span class="selfeval">2</span>))))
+  (<span class="variable">syntax</span> (<span class="keyword">let</span> ((<span class="variable">y</span> <span class="variable">x</span>)) <span class="variable">y</span>)))
+
+<span class="comment">; works in Chez/psyntax, MzScheme, and SRFI 72's syntax-case
+</span>(<span class="keyword">syntax-case</span> (<span class="builtin">list</span> (<span class="variable">syntax</span> (<span class="builtin">+</span> <span class="selfeval">2</span> <span class="selfeval">2</span>))) ()
+  ((<span class="variable">x</span>) (<span class="variable">syntax</span> (<span class="keyword">let</span> ((<span class="variable">y</span> <span class="variable">x</span>)) <span class="variable">y</span>))))
+
+<span class="comment">; works in MzScheme only
+</span>(<span class="variable">quasisyntax</span> (<span class="keyword">let</span> ((<span class="variable">y</span> <span class="selfeval">#</span><span class="keyword">,</span>(<span class="variable">syntax</span> (<span class="builtin">+</span> <span class="selfeval">2</span> <span class="selfeval">2</span>)))) <span class="variable">y</span>))
+
+<span class="comment">; works in SRFI 72 only (with or without syntax-case)
+</span>(<span class="variable">quasisyntax</span> (<span class="keyword">let</span> ((<span class="variable">y</span> <span class="keyword">,</span>(<span class="variable">syntax</span> (<span class="builtin">+</span> <span class="selfeval">2</span> <span class="selfeval">2</span>)))) <span class="variable">y</span>))
+</pre></div>
+<p />
+<h3><a name="2_2_Syntax_representation"> 2.2 Syntax representation </a></h3>
+<p />
+In traditional syntax-case, syntax objects are essentially fully opaque, accessible only through the syntax object API.  There are (were?) some cases in Chez/psyntax where lists of syntax objects are represented as Scheme lists, but none in MzScheme's syntax-case.
+<p />
+In SRFI 72, syntax is represented using "<i>a graph whose nodes are Scheme pairs or vectors and whose leaves are constants or identifiers</i>".  This graph matches the structure of the source code, allowing syntax to be manipulated directly using car, cdr, cons, etc.  All values except identifiers are self-representing, i.e. they are not wrapped in any way.  Identifiers are represented using an abstract data type, which is an opaque type that can only be accessed via syntax object procedures such as <code>syntax-object-&gt;datum</code> and <code>bound-identifier=?</code>.
+<p />
+Here are some examples of using pair accessors to access syntax in SRFI 72:
+<p />
+<div class="scheme"><pre>(<span class="builtin">cadr</span> (<span class="variable">syntax</span> (<span class="builtin">+</span> <span class="selfeval">2</span> <span class="selfeval">3</span>))) <span class="keyword">=&gt;</span> <span class="selfeval">2</span>
+(<span class="builtin">cadr</span> (<span class="variable">syntax</span> (<span class="builtin">+</span> <span class="variable">b</span> <span class="selfeval">3</span>))) <span class="keyword">=&gt;</span> <span class="variable">&lt;&lt;syntax</span> <span class="variable">object</span> <span class="variable">representing</span> <span class="variable">the</span> <span class="variable">identifier</span> <span class="keyword">'</span><span class="variable">b</span><span class="keyword">'</span><span class="variable">&gt;&gt;</span>
+(<span class="variable">syntax-object-&gt;datum</span> (<span class="builtin">cadr</span> (<span class="variable">syntax</span> (<span class="builtin">+</span> <span class="variable">b</span> <span class="selfeval">3</span>)))) <span class="keyword">=&gt;</span> <span class="variable">b</span>
+</pre></div>
+<p />
+As mentioned in the introduction, while a list-based syntax representation raises some concerns related to representing source location information, the SRFI 72 syntax representation does use an abstract data type for identifiers, so is not completely "open", and could be compatibly extended by implementations. 
+<p />
+André van Tonder has implemented DrScheme-compatible source location tracking which relies on a global weak hash table, following a method "worked out by Dybvig and Hieb".  This implementation is available <a href="http://www.het.brown.edu/people/andre/macros/index.htm">here</a>.
+<p />
+On the SRFI 72 discussion list, Mike raised some objections to the idea of having to resort to a global weak hash table for this purpose.  There may be alternatives, though: the SRFI mentions using "an extra wrapper for each identifier occurrence to give it its own identity", in which case source location information for identifiers could be stored directly in their wrappers, and source location information for lists could be stored e.g. in the identifier wrapper for the identifier at the head of each list.  These source location structures would typically be flat, not nested, since they would only need to be nested in cases where the head identifier has functionality similar to that of <code>quote</code>, and where the quoted list consists of nested lists of literals without identifiers in the head position.  This approach would at least eliminate the need for weak reference machinery. (Note that this paragraph is referring to possible implementation extensions, not to anything that would be specified in the R6RS.)
+<p />
+<h3><a name="2_3_Transformer_definition_synta"> 2.3 Transformer definition syntax </a></h3>
+<p />
+In addition to the usual syntaxes for the definition of syntax-case and syntax-rules macros, SRFI 72 supports a <code>define-syntax</code> form which matches on a single macro signature, similar to that of an ordinary procedure definition or a defmacro definition.  This can be useful for simple cases, for example:
+<p />
+<div class="scheme"><pre>(<span class="keyword">define-syntax</span> (<span class="variable">swap!</span> <span class="variable">a</span> <span class="variable">b</span>)
+  (<span class="variable">quasisyntax</span>
+    (<span class="keyword">let</span> ((<span class="variable">temp</span> <span class="keyword">,</span><span class="variable">a</span>))
+      (<span class="keyword">set!</span> <span class="keyword">,</span><span class="variable">a</span> <span class="keyword">,</span><span class="variable">b</span>)
+      (<span class="keyword">set!</span> <span class="keyword">,</span><span class="variable">b</span> <span class="variable">temp</span>))))
+</pre></div>
+<p />
+<h2><a name="3_Modified_hygiene_rule"> 3. Modified hygiene rule </a></h2>
+<p />
+SRFI 72 identifies a weakness in the hygiene algorithm used by syntax-case.  The section in the SRFI entitled "Improved hygiene" is worth reading.  For convenience, here's a syntax-case version of the first example under that heading, which runs under Chez/psyntax and PLT.  The code is not exactly idiomatic, but it's intended to demonstrate a problem which can potentially arise whenever a macro depends on syntax-generating procedural code:
+<p />
+<div class="scheme"><pre>(<span class="keyword">let-syntax</span>
+    ((<span class="variable">main</span> (<span class="keyword">lambda</span> (<span class="variable">stx</span>)
+             (<span class="keyword">let</span> ((<span class="variable">make-swap</span> (<span class="keyword">lambda</span> (<span class="variable">x</span> <span class="variable">y</span>)
+                                (<span class="variable">with-syntax</span> ((<span class="variable">x</span> <span class="variable">x</span>) (<span class="variable">y</span> <span class="variable">y</span>))
+                                  (<span class="variable">syntax</span>
+                                    (<span class="keyword">let</span> ((<span class="variable">t</span> <span class="variable">x</span>)) <span class="comment">; offending t
+</span>                                      (<span class="keyword">set!</span> <span class="variable">x</span> <span class="variable">y</span>)
+                                      (<span class="keyword">set!</span> <span class="variable">y</span> <span class="variable">t</span>)))))))
+               (<span class="keyword">syntax-case</span> <span class="variable">stx</span> ()
+                 ((<span class="variable">_</span>)
+                  (<span class="variable">with-syntax</span> ((<span class="variable">swap</span> (<span class="variable">make-swap</span> (<span class="variable">syntax</span> <span class="variable">s</span>) (<span class="variable">syntax</span> <span class="variable">t</span>))))
+                    (<span class="variable">syntax</span>
+                      (<span class="keyword">let</span> ((<span class="variable">s</span> <span class="selfeval">1</span>) (<span class="variable">t</span> <span class="selfeval">2</span>))
+                        <span class="variable">swap</span>
+                        (<span class="builtin">list</span> <span class="variable">s</span> <span class="variable">t</span>))))))))))
+  (<span class="variable">main</span>)) <span class="comment">;=&gt; (1 2)
+</span></pre></div>
+<p />
+In "traditional" syntax-case implementations, the binding marked "offending t" above captures the <code>t</code> bound to the parameter <code>y</code> in the example, resulting in a failure of the attempted swap.  The <code>let</code> expression in question expands to:
+<p />
+<div class="scheme"><pre>(<span class="keyword">let</span> ((<span class="variable">t</span> <span class="variable">s</span>)) (<span class="keyword">set!</span> <span class="variable">s</span> <span class="variable">t</span>) (<span class="keyword">set!</span> <span class="variable">t</span> <span class="variable">t</span>))
+</pre></div>
+<p />
+...whereas it was intended to expand to something like:
+<p />
+<div class="scheme"><pre>(<span class="keyword">let</span> ((<span class="variable">t1</span> <span class="variable">s</span>)) (<span class="keyword">set!</span> <span class="variable">s</span> <span class="variable">t</span>) (<span class="keyword">set!</span> <span class="variable">t</span> <span class="variable">t1</span>))
+</pre></div>
+<p />
+This happens because, as the SRFI puts it, "the hygiene algorithm regards all identifiers with the same name introduced during the entire duration of a macro invocation as identical," i.e. all <code>syntax</code> forms in the same macro invocation share the same namespace, even if they appear in separate procedures and <code>syntax-case</code> expressions.
+<p />
+Avoiding this unintended capture in a procedure such as <code>make-swap</code> requires the same sort of tricks that unhygienic macro systems need: to safely introduce an identifier like <code>t</code> requires using a name generated by e.g. generate-temporaries.
+<p />
+In this particular example, a more natural way to fix the problem would be to write <code>make-swap</code> as a macro.  This would resolve the hygiene issue, since there'd be two separate macro invocations, and their <code>syntax</code> forms would use independent namespaces.  But in the general case, this issue makes it potentially unsafe to depend on syntax-generating procedural code within syntax-case macros.  The SRFI provides another example which is a bit more subtle, using a recursive macro which doesn't depend on an external procedure.
+<p />
+<h3><a name="3_1_Changing_the_rules"> 3.1 Changing the rules </a></h3>
+<p />
+The SRFI defines and implements a "modified hygiene rule" which addresses this issue, by specifying in part that "<i>A binding for an identifier can only capture a reference to another if both were present in the source or introduced during a single evaluation of a syntax or quasisyntax form</i>".
+<p />
+This has consequences which are minor in individual cases, but potentially widespread.  The example above, which produces an answer (albeit not the desired one) under Chez, PLT, Gambit, SISC, and Chicken, raises errors when run under the SRFI 72 implementation of syntax-case, because the modified hygiene rule does not capture some variables that would otherwise be captured.  In this case, the problem can be fixed by the addition of a <code>with-syntax</code> expression to ensure that the same <code>s</code> and <code>t</code> variables are used throughout its scope, so that a working version for SRFI 72 (which also produces the desired answer) is as follows:
+<p />
+<div class="scheme"><pre>(<span class="keyword">let-syntax</span>
+    ((<span class="variable">main</span> (<span class="keyword">lambda</span> (<span class="variable">stx</span>)
+             (<span class="keyword">let</span> ((<span class="variable">make-swap</span> (<span class="keyword">lambda</span> (<span class="variable">x</span> <span class="variable">y</span>)
+                                (<span class="variable">with-syntax</span> ((<span class="variable">x</span> <span class="variable">x</span>) (<span class="variable">y</span> <span class="variable">y</span>))
+                                  (<span class="variable">syntax</span>
+                                    (<span class="keyword">let</span> ((<span class="variable">t</span> <span class="variable">x</span>))
+                                      (<span class="keyword">set!</span> <span class="variable">x</span> <span class="variable">y</span>)
+                                      (<span class="keyword">set!</span> <span class="variable">y</span> <span class="variable">t</span>)))))))
+               (<span class="keyword">syntax-case</span> <span class="variable">stx</span> ()
+                 ((<span class="variable">_</span>)
+                  (<span class="variable">with-syntax</span> ((<span class="variable">s</span> (<span class="variable">syntax</span> <span class="variable">s</span>)) (<span class="variable">t</span> (<span class="variable">syntax</span> <span class="variable">t</span>)))    <span class="comment">; new
+</span>                    (<span class="variable">with-syntax</span> ((<span class="variable">swap</span> (<span class="variable">make-swap</span> <span class="variable">s</span> <span class="variable">t</span>)))
+                      (<span class="variable">syntax</span>
+                        (<span class="keyword">let</span> ((<span class="variable">s</span> <span class="selfeval">1</span>) (<span class="variable">t</span> <span class="selfeval">2</span>))
+                          <span class="variable">swap</span>
+                          (<span class="builtin">list</span> <span class="variable">s</span> <span class="variable">t</span>)))))))))))
+  (<span class="variable">main</span>))  <span class="comment">;=&gt; (2 1)
+</span></pre></div>
+<p />
+Note that SRFI 72 allows this example to be implemented more simply using <code>quasisyntax</code>.  It is instructive to compare the above version to the more concise quasisyntax-based implementation given in the SRFI:
+<p />
+<div class="scheme"><pre>(<span class="keyword">let-syntax</span> ((<span class="variable">main</span> (<span class="keyword">lambda</span> (<span class="variable">form</span>)
+                     (<span class="keyword">define</span> (<span class="variable">make-swap</span> <span class="variable">x</span> <span class="variable">y</span>)
+                       (<span class="variable">quasisyntax</span> 
+                        (<span class="keyword">let</span> ((<span class="variable">t</span> <span class="keyword">,</span><span class="variable">x</span>))
+                          (<span class="keyword">set!</span> <span class="keyword">,</span><span class="variable">x</span> <span class="keyword">,</span><span class="variable">y</span>)
+                          (<span class="keyword">set!</span> <span class="keyword">,</span><span class="variable">y</span> <span class="variable">t</span>))))
+                     (<span class="variable">quasisyntax</span>
+                      (<span class="keyword">let</span> ((<span class="variable">s</span> <span class="selfeval">1</span>)
+                            (<span class="variable">t</span> <span class="selfeval">2</span>))
+                        <span class="keyword">,</span>(<span class="variable">make-swap</span> (<span class="variable">syntax</span> <span class="variable">s</span>) (<span class="variable">syntax</span> <span class="variable">t</span>))
+                        (<span class="builtin">list</span> <span class="variable">s</span> <span class="variable">t</span>))))))
+  (<span class="variable">main</span>))  <span class="comment">;=&gt; (2 1)
+</span></pre></div>
+<p />
+In the latter example, the unquoted call to <code>make-swap</code> is nested within a quasisyntax form, which according to the modified hygiene rule ("<i>...the evaluation of any nested, unquoted syntax or quasisyntax forms counts as part of the evaluation of an enclosing quasisyntax</i>") means that the <code>s</code> and <code>t</code> syntax passed to <code>make-swap</code> will automatically be captured by the variables of the same name bound in the enclosing <code>let</code>.
+<p />
+However, if the <code>syntax</code> form is used instead of <code>quasisyntax</code>, then the <code>make-swap</code> procedure has to be called from outside the <code>syntax</code> form, e.g. as part of a <code>with-syntax</code> expression.  Having done that, under the modified hygiene rule, the following code will fail after expand-time (whenever unbound variables are detected):
+<p />
+<div class="scheme"><pre>(<span class="variable">with-syntax</span> ((<span class="variable">swap</span> (<span class="variable">make-swap</span> (<span class="variable">syntax</span> <span class="variable">s</span>) (<span class="variable">syntax</span> <span class="variable">t</span>))))
+  (<span class="variable">syntax</span> 
+    (<span class="keyword">let</span> ((<span class="variable">s</span> <span class="selfeval">1</span>) (<span class="variable">t</span> <span class="selfeval">2</span>))
+      <span class="variable">swap</span>
+      (<span class="builtin">list</span> <span class="variable">s</span> <span class="variable">t</span>))))
+</pre></div>
+<p />
+This fails because the <code>s</code> and <code>t</code> identifiers passed to <code>make-swap</code> will not be captured by their namesakes bound in the <code>let</code>.  The expansion of the <code>let</code> looks like this:
+<p />
+<div class="scheme"><pre>((<span class="keyword">lambda</span> (<span class="variable">@s#782</span> <span class="variable">@t#783</span>) (<span class="builtin">list</span> <span class="variable">t#top</span> <span class="variable">s#top</span>) (<span class="builtin">list</span> <span class="variable">@s#782</span> <span class="variable">@t#783</span>)) <span class="selfeval">1</span> <span class="selfeval">2</span>)
+</pre></div>
+<p />
+To force capture in this case, something more like the following is needed, to ensure that the same <code>s</code> and <code>t</code> are used throughout the expression:
+<p />
+<div class="scheme"><pre>(<span class="variable">with-syntax</span> ((<span class="variable">s</span> (<span class="variable">syntax</span> <span class="variable">s</span>)) (<span class="variable">t</span> (<span class="variable">syntax</span> <span class="variable">t</span>)))
+  (<span class="variable">with-syntax</span> ((<span class="variable">swap</span> (<span class="variable">make-swap</span> <span class="variable">s</span> <span class="variable">t</span>)))
+    (<span class="variable">syntax</span>
+      (<span class="keyword">let</span> ((<span class="variable">s</span> <span class="selfeval">1</span>) (<span class="variable">t</span> <span class="selfeval">2</span>))
+        <span class="variable">swap</span>
+        (<span class="builtin">list</span> <span class="variable">s</span> <span class="variable">t</span>)))))
+</pre></div>
+<p />
+To summarize, the SRFI 72 modified hygiene rule tends to be better suited for use with the <code>quasisyntax</code> form than the <code>syntax</code> form, because of the issue just described.  This means that it would probably not make sense to adopt the modified hygiene rule without also specifying <code>quasisyntax</code> as part of the macro system.
+<p />
+The issues described above should not be problematic when writing new macros with SRFI 72.  Converting existing syntax-case macros to work with the modified hygiene rule will require some changes of the kind described above.
+<p />
+<h3><a name="3_2_Impact_on_the_R6RS"> 3.2 Impact on the R6RS </a></h3>
+<p />
+R6RS could specify the SRFI 72 modified hygiene rule as part of the specification of syntax-case, along with the <code>quasisyntax</code> form (since the modified hygiene rule appears to be easier to work with if <code>quasisyntax</code> is available).  This would address the weakness in syntax-case for macros which depend on syntax-generating procedural code, but would necessitate changes to existing syntax-case code.
+<p />
+This would be a change made purely in order to address the hygiene issue, which would be agnostic with respect to the question of whether syntax-case is implemented in terms of some lower-level system such as that proposed by SRFI 72.
+<p />
+<p />
+<p />
+<p />
+<a name="PageBottom"></a>
+</body>
+</html>
