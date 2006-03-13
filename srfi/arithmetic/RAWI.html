@@ -1,0 +1,586 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HEAD>
+<TITLE>Infinities in Scheme</TITLE>
+<META NAME="keywords"
+ CONTENT="IEEE floating point, infinity, inf, NaN, scheme, R5RS, R4RS">
+<META NAME="description"
+ CONTENT="Survey of Scheme treatments of infinities and their syntax.">
+</HEAD>
+<BODY>
+<TABLE WIDTH="100%">
+<TR>
+ <TD VALIGN=TOP ROWSPAN=2>
+  <IMG SRC="infty.png" WIDTH=96 HEIGHT=64 ALT="Infinity symbol">
+
+ <TD VALIGN=TOP ALIGN=LEFT>
+ <A HREF="http://swiss.csail.mit.edu/~jaffer/III/RAWI">
+ http://swiss.csail.mit.edu/~jaffer/III/RAWI</A>
+
+<TR>
+ <TD ALIGN=LEFT><H1>Infinities in Scheme</H1>
+
+</TABLE>
+<HR>
+<H2>Introduction</H2>
+<P>
+The three special values <SAMP>inf</SAMP>, <SAMP>-inf</SAMP>, and
+<SAMP>nan</SAMP> of IEEE Standard 754 are well-defined and integrated
+into 754's arithmetic system.&nbsp;&nbsp;
+</P>
+<P>
+With nearly every Scheme implementation using IEEE floating-point
+numbers, we should consider advancing the language to reap more of the
+benefits of IEEE-754 by standardizing Scheme syntaxes for
+infinities.&nbsp;&nbsp; Doing so would also improve storage and
+communication of numerical data between programs.&nbsp;&nbsp;
+</P>
+<P>
+This article contains research conducted for the
+<A HREF="http://srfi.schemers.org/srfi-70/srfi-70.html">SRFI-70</A>
+proposal for numbers in the next revision of
+<A HREF="http://swiss.csail.mit.edu/~jaffer/Scheme">
+The Algorithmic Language Scheme</A>.&nbsp;&nbsp; It has been updated for
+<A HREF="http://swiss.csail.mit.edu/~jaffer/SCM">SCM 5e2</A> which
+implements SRFI-70.&nbsp;&nbsp;
+</P>
+<H2>Background</H2>
+<P>
+Checks for division by zero (and their absence) remain one of the most
+common programming errors.&nbsp;&nbsp; <A HREF="#Table-1">Table&nbsp;1</A>,
+for example, shows Scheme48 and MIT-Scheme signaling errors evaluating
+<CODE>(string-&#62;number&nbsp;"1/0")</CODE>.&nbsp;&nbsp;
+Is it merely a coincidence that these implementations are the
+least tolerant (among those tested) of division by zeros?&nbsp;&nbsp;
+</P>
+<P>
+The realization that division by zero "works" lets initialization of
+variables precede bounds checks and gives flexibility in placement of
+those checks.&nbsp;&nbsp; Halting of programs need not occur in order
+to test limit and corner cases.&nbsp;&nbsp; Preserving infinities in
+data sets can free presentation programs from imposing arbitrary range
+limits.&nbsp;&nbsp;
+</P>
+<H2>Apparatus</H2>
+<UL>
+<LI><P>Scheme interpreter or compiler.</P>
+<LI><P>The Scheme program <A HREF="inf.scm">"inf.scm"</A></P>
+</UL>
+<H2>Procedures</H2>
+<UL>
+<LI><P>Invoke Scheme interactively, then <CODE>(load "inf.scm")</CODE>;
+   </P>
+</UL>
+or
+<UL>
+<LI><P>Edit the end of "inf.scm" to call <CODE>trydivs</CODE> with or
+     without an argument as appropriate for the Scheme's
+     <CODE>eval</CODE>.&nbsp;&nbsp; Then compile "inf.scm" and run.</P>
+</UL>
+<H2>Method</H2>
+<P>
+<CODE>real-infs</CODE> in <A HREF="inf.scm">"inf.scm"</A> is a list of
+all known (to me) literal representations of <SAMP>inf</SAMP>,
+<SAMP>-inf</SAMP>, and <SAMP>nan</SAMP>.&nbsp;&nbsp;
+</P>
+<P>
+<CODE>complex-infs</CODE> in "inf.scm" is a list of the combinations
+within each group of infinity representations in one or both
+components of complex numbers.&nbsp;&nbsp;
+</P>
+<P>
+The procedure <CODE>str2num</CODE> prints its string argument, tries
+to convert that string to a number, and writes out that number on the
+same line if successful.&nbsp;&nbsp;
+</P>
+<UL>
+<LI><P><CODE>str2num</CODE> is called with each string in
+     <CODE>real-infs</CODE>.&nbsp;&nbsp;</P>
+
+<LI><P><CODE>str2num</CODE> is called with each string in
+     <CODE>complex-infs</CODE>.&nbsp;&nbsp;</P>
+
+<LI><P>The procedure <CODE>trydivs</CODE> calls <CODE>/</CODE> with all
+     possible combinations of one or two exact or inexact zeros,
+     printing each expression and its result.&nbsp;&nbsp;</P>
+
+<LI><P>The procedure <CODE>inex-props</CODE> calls <CODE>/</CODE> with
+     the combinations having inexact denominator "<CODE>0.</CODE>" and
+     prints HTML rows detailing the numerical predicates applied to
+     the ratio.&nbsp;&nbsp;</P>
+
+</UL>
+<P>
+If an error occurs while interactively running "inf.scm", the tests
+can be run manually:
+</P>
+<UL>
+<LI><PRE>(for-each str2num real-infs)</PRE>
+<LI><PRE>(for-each str2num complex-infs)</PRE>
+<LI><PRE>(trydivs (interaction-environment))</PRE>
+<LI><PRE>(inex-props (interaction-environment))</PRE>
+</UL>
+
+<H2>string-&#62;number</H2>
+
+<A NAME="Table-1"></A>
+<TABLE BORDER=2>
+<CAPTION>Table 1: <CODE>string-&#62;number</CODE> of (real) infinity strings</CAPTION>
+<TR><TH>Input <TH>glibc 2.2 strtod()<TH>Gambit 3.0<TH>Mz Scheme 209<TH>SCM 5e2<TH>kawa 1.7<TH>Scheme 48 0.57<TH>MIT Scheme 7.8
+<TR><TD ALIGN=RIGHT><TT>"+inf.0"</TT><TD ALIGN=RIGHT><TT>inf</TT> [2]<TD><TD ALIGN=RIGHT><TT>+inf.0</TT><TD ALIGN=RIGHT><TT>+inf.0</TT><TD>
+<TR><TD ALIGN=RIGHT><TT>"-inf.0"</TT><TD ALIGN=RIGHT><TT>-inf</TT>[2]<TD><TD ALIGN=RIGHT><TT>-inf.0</TT><TD ALIGN=RIGHT><TT>-inf.0</TT><TD>
+<TR><TD ALIGN=RIGHT><TT>"+nan.0"</TT><TD ALIGN=RIGHT><TT>nan</TT> [2]<TD><TD ALIGN=RIGHT><TT>+nan.0</TT><TD><TD>
+<TR><TD ALIGN=RIGHT><TT>"-nan.0"</TT><TD ALIGN=RIGHT><TT>nan</TT> [2]<TD><TD ALIGN=RIGHT><TT>+nan.0</TT><TD><TD>
+<TR><TD ALIGN=RIGHT><TT>"nan.0" </TT><TD ALIGN=RIGHT><TT>nan</TT> [2]
+<TR><TD ALIGN=RIGHT><TT>"+inf." </TT><TD ALIGN=RIGHT><TT>inf</TT> [1]<TD ALIGN=RIGHT><TT>+inf.</TT><TD><TD><TD>
+<TR><TD ALIGN=RIGHT><TT>"-inf." </TT><TD ALIGN=RIGHT><TT>-inf</TT>[1]<TD ALIGN=RIGHT><TT>-inf.</TT><TD><TD><TD>
+<TR><TD ALIGN=RIGHT><TT>"+nan." </TT><TD ALIGN=RIGHT><TT>nan</TT> [1]<TD ALIGN=RIGHT><TT>+nan.</TT><TD><TD><TD>
+<TR><TD ALIGN=RIGHT><TT>"-nan." </TT><TD ALIGN=RIGHT><TT>nan</TT> [1]
+<TR><TD ALIGN=RIGHT><TT>"nan."  </TT><TD ALIGN=RIGHT><TT>nan</TT> [1]
+<TR><TD ALIGN=RIGHT><TT>"+INF"  </TT><TD ALIGN=RIGHT><TT>inf</TT>
+<TR><TD ALIGN=RIGHT><TT>"-Inf"  </TT><TD ALIGN=RIGHT><TT>-inf</TT>
+<TR><TD ALIGN=RIGHT><TT>"inf"   </TT><TD ALIGN=RIGHT><TT>inf</TT>
+<TR><TD ALIGN=RIGHT><TT>"+NAN"  </TT><TD ALIGN=RIGHT><TT>nan</TT>
+<TR><TD ALIGN=RIGHT><TT>"-Nan"  </TT><TD ALIGN=RIGHT><TT>nan</TT>
+<TR><TD ALIGN=RIGHT><TT>"nan"   </TT><TD ALIGN=RIGHT><TT>nan</TT>
+<TR><TD ALIGN=RIGHT><TT>"+#.#"  </TT><TD><TD><TD><TD><TD><TD ALIGN=RIGHT><TT>5.5</TT>
+<TR><TD ALIGN=RIGHT><TT>"-#.#"  </TT><TD><TD><TD><TD><TD><TD ALIGN=RIGHT><TT>-5.5</TT>
+<TR><TD ALIGN=RIGHT><TT>"#.#"   </TT><TD><TD><TD><TD><TD><TD>
+<TR><TD ALIGN=RIGHT><TT>"1/0"   </TT><TD><TD><TD><TD ALIGN=RIGHT><TT>+inf.0</TT><TD ALIGN=RIGHT><TT>1/0</TT><TD ALIGN=RIGHT>[r]<TD ALIGN=RIGHT>[s]
+<TR><TD ALIGN=RIGHT><TT>"-1/0"  </TT><TD><TD ALIGN=RIGHT><TT>()</TT><TD><TD ALIGN=RIGHT><TT>-inf.0</TT><TD ALIGN=RIGHT><TT>-1/0</TT><TD ALIGN=RIGHT>[r]<TD ALIGN=RIGHT>[s]
+<TR><TD ALIGN=RIGHT><TT>"0/0"   </TT><TD><TD><TD><TD ALIGN=RIGHT><TT>0/0</TT><TD><TD ALIGN=RIGHT>[r]<TD ALIGN=RIGHT>[s]
+<TR><TD ALIGN=RIGHT><TT>"#i0/0" </TT><TD><TD ALIGN=RIGHT>[n]<TD><TD ALIGN=RIGHT><TT>0/0</TT><TD ALIGN=RIGHT><TT>#i0/0</TT><TD ALIGN=RIGHT>[r]<TD ALIGN=RIGHT>[s]
+</TABLE>
+<TABLE CELLPADDING=4>
+<TR><TD>[1], [2]<TD><I>Characters left at end</I>
+<TR><TD>[s]<TD>;Division by zero signaled by /.
+<TR><TD>[r]<TD>Error: rational division by zero
+<TR><TD>[n]<TD>*** ERROR -- NUMBER expected<BR>
+(exact->inexact #f)
+</TABLE>
+<STRONG>Notes:</STRONG>
+<UL>
+ <LI> Empty entries indicate <CODE>#f</CODE> was returned.&nbsp;&nbsp;
+ <LI> <CODE>scanf()</CODE> reads identically with
+      <CODE>strtod()</CODE>.&nbsp;&nbsp;
+ <LI> <CODE>strtod()</CODE> also accepts "<SAMP>infinity</SAMP>", but
+      no substrings of it other than "<SAMP>inf</SAMP>".&nbsp;&nbsp;
+ <LI> Gambit <CODE>string-&#62;number</CODE> returns <CODE>()</CODE>.&nbsp;&nbsp;
+      when passed <CODE>"-1/0"</CODE> or <CODE>"-0/0"</CODE>.&nbsp;&nbsp;
+ <LI> Gambit <CODE>string-&#62;number</CODE> does not accept <CODE>"-nan."</CODE>.&nbsp;&nbsp;
+ <LI> MzScheme <CODE>string-&#62;number</CODE> accepts <CODE>"-nan.0"</CODE>.&nbsp;&nbsp;
+</UL>
+
+<A NAME="Table-2"></A>
+<TABLE>
+<CAPTION>Table 2a: <CODE>string-&#62;number</CODE> of complex infinity strings</CAPTION>
+<TR VALIGN=TOP><TD>
+ <TABLE BORDER=1>
+ <TR><TH>Input                                <TH>Gambit 3.0
+ <TR><TD ALIGN=RIGHT><TT>"inf.+i"        </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.+i"       </TT><TD ALIGN=RIGHT><TT>-inf.+i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.+i"       </TT><TD ALIGN=RIGHT><TT>+nan.+i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.+i"       </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"+inf.i"        </TT><TD ALIGN=RIGHT><TT>+inf.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.i"        </TT><TD ALIGN=RIGHT><TT>-inf.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.i"        </TT><TD ALIGN=RIGHT><TT>+nan.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.i"        </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"0+inf.i"       </TT><TD ALIGN=RIGHT><TT>+inf.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"0-inf.i"       </TT><TD ALIGN=RIGHT><TT>-inf.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"0+nan.i"       </TT><TD ALIGN=RIGHT><TT>+nan.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"0-nan.i"       </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"inf.+inf.i"    </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"inf.-inf.i"    </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"inf.+nan.i"    </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"inf.-nan.i"    </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.+inf.i"   </TT><TD ALIGN=RIGHT><TT>-inf.+inf.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.-inf.i"   </TT><TD ALIGN=RIGHT><TT>-inf.-inf.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.+nan.i"   </TT><TD ALIGN=RIGHT><TT>-inf.+nan.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.-nan.i"   </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.+inf.i"   </TT><TD ALIGN=RIGHT><TT>+nan.+inf.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.-inf.i"   </TT><TD ALIGN=RIGHT><TT>+nan.-inf.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.+nan.i"   </TT><TD ALIGN=RIGHT><TT>+nan.+nan.i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.-nan.i"   </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.+inf.i"   </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.-inf.i"   </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.+nan.i"   </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.-nan.i"   </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"+1/0i"</TT> ...     <TD ALIGN=RIGHT>[g]
+ </TABLE>
+<TD>
+ <TABLE BORDER=1>
+ <TR><TH>Input                                <TH>Mz Scheme 209
+ <TR><TD ALIGN=RIGHT><TT>"inf.0+i"       </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.0+i"      </TT><TD ALIGN=RIGHT><TT>-inf.0+1.0i  </TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.0+i"      </TT><TD ALIGN=RIGHT><TT>+nan.0+1.0i  </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.0+i"      </TT><TD ALIGN=RIGHT><TT>+nan.0+1.0i  </TT>
+ <TR><TD ALIGN=RIGHT><TT>"+inf.0i"       </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.0i"       </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.0i"       </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.0i"       </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"0+inf.0i"      </TT><TD ALIGN=RIGHT><TT>0+inf.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"0-inf.0i"      </TT><TD ALIGN=RIGHT><TT>0-inf.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"0+nan.0i"      </TT><TD ALIGN=RIGHT><TT>0+nan.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"0-nan.0i"      </TT><TD ALIGN=RIGHT><TT>0+nan.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"inf.0+inf.0i"  </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"inf.0-inf.0i"  </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"inf.0+nan.0i"  </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"inf.0-nan.0i"  </TT><TD>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.0+inf.0i" </TT><TD ALIGN=RIGHT><TT>-inf.0+inf.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.0-inf.0i" </TT><TD ALIGN=RIGHT><TT>-inf.0-inf.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.0+nan.0i" </TT><TD ALIGN=RIGHT><TT>-inf.0+nan.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-inf.0-nan.0i" </TT><TD ALIGN=RIGHT><TT>-inf.0+nan.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.0+inf.0i" </TT><TD ALIGN=RIGHT><TT>+nan.0+inf.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.0-inf.0i" </TT><TD ALIGN=RIGHT><TT>+nan.0-inf.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.0+nan.0i" </TT><TD ALIGN=RIGHT><TT>+nan.0+nan.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"+nan.0-nan.0i" </TT><TD ALIGN=RIGHT><TT>+nan.0+nan.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.0+inf.0i" </TT><TD ALIGN=RIGHT><TT>+nan.0+inf.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.0-inf.0i" </TT><TD ALIGN=RIGHT><TT>+nan.0-inf.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.0+nan.0i" </TT><TD ALIGN=RIGHT><TT>+nan.0+nan.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-nan.0-nan.0i" </TT><TD ALIGN=RIGHT><TT>+nan.0+nan.0i</TT>
+ </TABLE>
+</TABLE>
+<TABLE>
+<CAPTION>Table 2b: <CODE>string-&#62;number</CODE> of complex infinity strings</CAPTION>
+<TR VALIGN=TOP><TD>
+<TD>
+ <TABLE BORDER=1>
+ <TR><TH>Input                           <TH>SCM 5e2
+ <TR><TD ALIGN=RIGHT><TT>"1/0+i"    </TT><TD ALIGN=RIGHT><TT>+inf.0</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0+i"   </TT><TD ALIGN=RIGHT><TT>-inf.0</TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0+i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"+1/0i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"+0/0i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-0/0i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"1/0+1/0i" </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"1/0-1/0i" </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"1/0+0/0i" </TT><TD ALIGN=RIGHT><TT>      </TT>
+ <TR><TD ALIGN=RIGHT><TT>"1/0-0/0i" </TT><TD ALIGN=RIGHT><TT>      </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0+1/0i"</TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0-1/0i"</TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0+0/0i"</TT><TD ALIGN=RIGHT><TT>      </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0-0/0i"</TT><TD ALIGN=RIGHT><TT>      </TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0+1/0i" </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0-1/0i" </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0+0/0i" </TT><TD ALIGN=RIGHT><TT>      </TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0-0/0i" </TT><TD ALIGN=RIGHT><TT>      </TT>
+ </TABLE>
+<TD>
+ <TABLE BORDER=1>
+ <TR><TH>Input                           <TH>SCM 5e2
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0+i"    </TT><TD ALIGN=RIGHT><TT>+inf.0</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0+i"   </TT><TD ALIGN=RIGHT><TT>-inf.0</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0+i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i+1/0i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i+0/0i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-0/0i"    </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0+1/0i" </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0-1/0i" </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0+0/0i" </TT><TD ALIGN=RIGHT><TT>	     </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0-0/0i" </TT><TD ALIGN=RIGHT><TT>	     </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0+1/0i"</TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0-1/0i"</TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0+0/0i"</TT><TD ALIGN=RIGHT><TT>	     </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0-0/0i"</TT><TD ALIGN=RIGHT><TT>	     </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0+1/0i" </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0-1/0i" </TT><TD ALIGN=RIGHT><TT>0/0   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0+0/0i" </TT><TD ALIGN=RIGHT><TT>      </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0-0/0i" </TT><TD ALIGN=RIGHT><TT>      </TT>
+ </TABLE>
+<TD>
+ <TABLE BORDER=1>
+ <TR><TH>Input                           <TH>Kawa 1.7
+ <TR><TD ALIGN=RIGHT><TT>"1/0+i"    </TT><TD ALIGN=RIGHT><TT>1/0+1i   </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0+i"   </TT><TD ALIGN=RIGHT><TT>-1/0+1i  </TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0+i"    </TT><TD ALIGN=RIGHT><TT>	      </TT>
+ <TR><TD ALIGN=RIGHT><TT>"+1/0i"    </TT><TD ALIGN=RIGHT><TT>+1/0i    </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0i"    </TT><TD ALIGN=RIGHT><TT>-1/0i    </TT>
+ <TR><TD ALIGN=RIGHT><TT>"+0/0i"    </TT><TD ALIGN=RIGHT><TT>         </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-0/0i"    </TT><TD ALIGN=RIGHT><TT>         </TT>
+ <TR><TD ALIGN=RIGHT><TT>"1/0+1/0i" </TT><TD ALIGN=RIGHT><TT>1/0+1/0i </TT>
+ <TR><TD ALIGN=RIGHT><TT>"1/0-1/0i" </TT><TD ALIGN=RIGHT><TT>1/0-1/0i </TT>
+ <TR><TD ALIGN=RIGHT><TT>"1/0+0/0i" </TT><TD ALIGN=RIGHT><TT>         </TT>
+ <TR><TD ALIGN=RIGHT><TT>"1/0-0/0i" </TT><TD ALIGN=RIGHT><TT>         </TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0+1/0i"</TT><TD ALIGN=RIGHT><TT>-1/0+1/0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0-1/0i"</TT><TD ALIGN=RIGHT><TT>-1/0-1/0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0+0/0i"</TT><TD ALIGN=RIGHT><TT></TT>
+ <TR><TD ALIGN=RIGHT><TT>"-1/0-0/0i"</TT><TD ALIGN=RIGHT><TT></TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0+1/0i" </TT><TD ALIGN=RIGHT><TT></TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0-1/0i" </TT><TD ALIGN=RIGHT><TT></TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0+0/0i" </TT><TD ALIGN=RIGHT><TT></TT>
+ <TR><TD ALIGN=RIGHT><TT>"0/0-0/0i" </TT><TD ALIGN=RIGHT><TT></TT>
+ </TABLE>
+<TD>
+ <TABLE BORDER=1>
+ <TR><TH>Input                             <TH>Kawa 1.7
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0+i"    </TT><TD ALIGN=RIGHT><TT>#i1/0+1.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0+i"   </TT><TD ALIGN=RIGHT><TT>#i1/0+1.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0+i"    </TT><TD ALIGN=RIGHT><TT>#i0/0+1.0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i+1/0i"    </TT><TD ALIGN=RIGHT><TT>#i+1/0i	 </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0i"    </TT><TD ALIGN=RIGHT><TT>#i+1/0i	 </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i+0/0i"    </TT><TD ALIGN=RIGHT><TT>#i+0/0i	 </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-0/0i"    </TT><TD ALIGN=RIGHT><TT>#i+0/0i	 </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0+1/0i" </TT><TD ALIGN=RIGHT><TT>#i1/0+1/0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0-1/0i" </TT><TD ALIGN=RIGHT><TT>#i1/0-1/0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0+0/0i" </TT><TD ALIGN=RIGHT><TT>		 </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i1/0-0/0i" </TT><TD ALIGN=RIGHT><TT>		 </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0+1/0i"</TT><TD ALIGN=RIGHT><TT>#i1/0+1/0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0-1/0i"</TT><TD ALIGN=RIGHT><TT>#i1/0-1/0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0+0/0i"</TT><TD ALIGN=RIGHT><TT>		 </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i-1/0-0/0i"</TT><TD ALIGN=RIGHT><TT>		 </TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0+1/0i" </TT><TD ALIGN=RIGHT><TT>#i0/0+1/0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0-1/0i" </TT><TD ALIGN=RIGHT><TT>#i0/0-1/0i</TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0+0/0i" </TT><TD ALIGN=RIGHT><TT></TT>
+ <TR><TD ALIGN=RIGHT><TT>"#i0/0-0/0i" </TT><TD ALIGN=RIGHT><TT></TT>
+ </TABLE>
+</TABLE>
+<TABLE CELLPADDING=4>
+<TR><TD>[g]<TD>*** ERROR -- REAL expected<BR>
+                    (make-rectangular #f 1)
+</TABLE>
+<STRONG>Notes:</STRONG>
+<UL>
+ <LI> Empty entries indicate <CODE>#f</CODE> was returned.&nbsp;&nbsp;
+ <LI> MzScheme <CODE>string-&#62;number</CODE> accepts imaginary
+      infinities only with a real 0 part prepended,
+      eg.&nbsp;<CODE>"0+inf.0i"</CODE>.&nbsp;&nbsp;
+ <LI> Kawa strings beginning with <CODE>"#i-"</CODE> lose the minus
+      sign.
+ <LI> SCM returns the same results with <CODE>"#i"</CODE> prefixes.
+</UL>
+
+<H2>Reading and Writing Infinities</H2>
+<P>
+The floating-point string conversions in GNU glibc 2.2 support reading
+and writing of infinite values:
+</P>
+<UL>
+<LI><CODE>&nbsp;inf</CODE> is positive infinity;
+<LI><CODE>     -inf</CODE> is negative infinity;
+<LI><CODE>&nbsp;nan</CODE> is Not-a-Number.
+</UL>
+<P>
+IEEE 754 does <STRONG>not</STRONG> specify string representations for
+inf and nan.&nbsp;&nbsp; These names were apparently chosen to match
+754 nomenclature.
+</P>
+<P>
+Although not specified by the
+<A HREF="../Scheme.html.jis">Revised<SUP>5</SUP>
+Report on the Algorithmic Language Scheme</A>, a few Scheme
+implementations support reading and literal use of their
+representations of infinities.&nbsp;&nbsp;
+</P>
+<P>
+The richness of Scheme's syntax of numerical constants provides
+several opportunities to support infinities.&nbsp;&nbsp; An idea which has
+occurred to several authors independently is to use <CODE>#</CODE> in
+place of <STRONG>all</STRONG> digits in a number:
+</P>
+<UL>
+<LI> <CODE>+#.#</CODE> is positive infinity;
+<LI> <CODE>-#.#</CODE> is negative; and
+<LI> <CODE>&nbsp;#.#</CODE> is NaN (not a number).
+</UL>
+<P>
+This notation is compact and would not be easily mistaken for any
+other Scheme object.&nbsp;&nbsp; The problem arises when these objects are
+components of complex numbers.&nbsp;&nbsp; The coefficient of <CODE>i</CODE> must
+be prefixed by a sign, making <CODE>+#.#i</CODE> ambiguous.&nbsp;&nbsp;
+Remediations like disallowing complex NaNs would be modifying
+semantics in pursuit of syntax; not a good practice.&nbsp;&nbsp;
+</P>
+<P>
+Gambit and MzScheme both use strings derived from IEEE-754
+nomenclature:
+</P>
+<UL>
+<LI><CODE>+inf.</CODE> versus <CODE>+inf.0</CODE>
+<LI><CODE>-inf.</CODE> versus <CODE>-inf.0</CODE>
+<LI><CODE>+nan.</CODE> versus <CODE>+nan.0</CODE>
+</UL>
+<P>
+Requiring the leading sign character prevents confusion with
+identifiers, but "<SAMP>+inf</SAMP>" spoofs
+"<SAMP>+i</SAMP>".&nbsp;&nbsp; NaN, an intrinsically unsigned
+construct, is required to have a sign prefix by both
+systems.&nbsp;&nbsp; Gambit does not recognize "<SAMP>-nan.</SAMP>" as
+NaN.&nbsp;&nbsp; MzScheme recognizes both "<SAMP>+nan.0</SAMP>" and
+"<SAMP>-nan.0</SAMP>" as NaN, but always prints
+"<SAMP>+nan.0</SAMP>".&nbsp;&nbsp;
+</P>
+<!-- <P>As for nits, both these representations require a subtle change to -->
+<!-- R5RS number syntax as these new reals require a sign prefix (which is -->
+<!-- not required currently).&nbsp;&nbsp; Parsing strings beginning with -->
+<!-- <SAMP>+i</SAMP> requires further lookahead in the input stream than -->
+<!-- current Scheme syntax.&nbsp;&nbsp;</P> -->
+<P>
+SCM 5d8 printed infinities as rational numbers with denominators of
+"<SAMP>0</SAMP>".&nbsp;&nbsp; SCM's existing reader decodes this
+format without modification:
+</P>
+<UL>
+<LI> <SAMP>&nbsp;1/0</SAMP> is positive infinity;
+<LI> <SAMP>-1/0</SAMP> is negative infinity; and
+<LI> <SAMP>&nbsp;0/0</SAMP> is NaN (not a number).
+</UL>
+<P>
+Kawa's infinities look like inexact rational numbers.&nbsp;&nbsp
+<!-- Prepending <SAMP>#i</SAMP> (eg.&nbsp;<SAMP>#i1/0</SAMP>, -->
+<!-- <SAMP>#i-1/0</SAMP>, <SAMP>#i0/0</SAMP>) is less evocative than the -->
+<!-- compact 3 and 4 character versions.&nbsp;&nbsp; -->
+</P>
+<P>
+Since an implementation is allowed to coerce the result of division
+by 0 to inexact, SCM always does so.&nbsp;&nbsp;
+</P>
+<BLOCKQUOTE>
+If one of these procedures is unable to deliver an exact result when
+given exact arguments, then it may either report a violation of an
+implementation restriction or it may silently coerce its result to an
+inexact number.&nbsp;&nbsp;
+</BLOCKQUOTE>
+
+<H2>Division by zero</H2>
+<P>
+<A HREF="#Table-3">Table 3</A> catalogs the results of dividing exact
+and inexact numbers by exact and inexact zeros.&nbsp;&nbsp; In both
+MzScheme and MIT-Scheme <CODE>(/&nbsp;0&nbsp;0.)</CODE> returns
+"<SAMP>0</SAMP>".&nbsp;&nbsp; An inexact "<SAMP>0.</SAMP>" is
+apparently weaker than an exact "<SAMP>0</SAMP>" in those
+implementations.&nbsp;&nbsp;
+</P>
+<A NAME="Table-3"></A>
+<TABLE BORDER=1>
+<CAPTION>Table 3: Division by Zero</CAPTION>
+<TR><TH>quotient                                    <TH>Kawa 1.7                 <TH>SCM 5e2*                 <TH>Guile 1.3.4              <TH>Bigloo 2.5c              <TH>glibc 2.2 printf         <TH>Elk 3.0                    <TH>Gambit 3.0                <TH>Mz Scheme 209              <TH>MIT Scheme 7.8        <TH>Scheme 48 0.57
+<TR><TD><TT>(/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.)</TT><TD ALIGN=RIGHT><TT>#i1/0 </TT><TD ALIGN=RIGHT><TT>+inf.0</TT> <TD ALIGN=RIGHT><TT>+#.#</TT><TD ALIGN=RIGHT><TT>+#.#</TT><TD ALIGN=RIGHT><TT>inf</TT> <TD ALIGN=RIGHT><TT>Inf.0</TT> <TD ALIGN=RIGHT><TT>+inf.</TT><TD ALIGN=RIGHT><TT>+inf.0</TT><TD ALIGN=RIGHT>[t]       <TD ALIGN=RIGHT>[r]
+<TR><TD><TT>(/&nbsp;-1.&nbsp;0.)               </TT><TD ALIGN=RIGHT><TT>#i-1/0</TT><TD ALIGN=RIGHT><TT>-inf.0</TT><TD ALIGN=RIGHT><TT>-#.#</TT><TD ALIGN=RIGHT><TT>-#.#</TT><TD ALIGN=RIGHT><TT>inf</TT> <TD ALIGN=RIGHT><TT>-Inf.0</TT><TD ALIGN=RIGHT><TT>-inf.</TT><TD ALIGN=RIGHT><TT>-inf.0</TT><TD ALIGN=RIGHT>[t]       <TD ALIGN=RIGHT>[r]
+<TR><TD><TT>(/&nbsp;-1&nbsp;&nbsp;0.)          </TT><TD ALIGN=RIGHT><TT>#i-1/0</TT><TD ALIGN=RIGHT><TT>-inf.0</TT><TD ALIGN=RIGHT><TT>-#.#</TT><TD ALIGN=RIGHT><TT>-#.#</TT><TD ALIGN=RIGHT><TT>-inf</TT><TD ALIGN=RIGHT><TT>-Inf.0</TT><TD ALIGN=RIGHT><TT>-inf.</TT><TD ALIGN=RIGHT><TT>-inf.0</TT><TD ALIGN=RIGHT>[t]       <TD ALIGN=RIGHT>[r]
+<TR><TD><TT>(/&nbsp;&nbsp;0.&nbsp;0.)          </TT><TD ALIGN=RIGHT><TT>#i0/0 </TT><TD ALIGN=RIGHT><TT>0/0   </TT> <TD ALIGN=RIGHT><TT>#.# </TT><TD ALIGN=RIGHT><TT>#.# </TT><TD ALIGN=RIGHT><TT>nan</TT> <TD ALIGN=RIGHT><TT>NaN</TT>   <TD ALIGN=RIGHT><TT>+nan.</TT><TD ALIGN=RIGHT><TT>+nan.0</TT><TD ALIGN=RIGHT>[a]       <TD ALIGN=RIGHT>[r]
+<TR><TD><TT>(/&nbsp;&nbsp;0&nbsp;&nbsp;0.)     </TT><TD ALIGN=RIGHT><TT>#i0/0 </TT><TD ALIGN=RIGHT><TT>0/0   </TT> <TD ALIGN=RIGHT><TT>#.# </TT><TD ALIGN=RIGHT><TT>#.# </TT><TD ALIGN=RIGHT><TT>nan</TT> <TD ALIGN=RIGHT><TT>NaN</TT>   <TD ALIGN=RIGHT><TT>+nan.</TT><TD ALIGN=RIGHT><TT>0</TT>     <TD ALIGN=RIGHT><TT>0</TT><TD ALIGN=RIGHT>[r]
+<TR><TD><TT>(/&nbsp;-1.&nbsp;0)                </TT><TD ALIGN=RIGHT><TT>#i-1/0</TT><TD ALIGN=RIGHT><TT>-inf.0</TT><TD ALIGN=RIGHT><TT>-#.#</TT><TD ALIGN=RIGHT><TT>-#.#</TT><TD ALIGN=RIGHT><TT>-inf</TT><TD ALIGN=RIGHT>[e]            <TD ALIGN=RIGHT>[g]           <TD ALIGN=RIGHT>[d]            <TD ALIGN=RIGHT>[t]       <TD ALIGN=RIGHT>[r]
+<TR><TD><TT>(/&nbsp;&nbsp;0.&nbsp;0)           </TT><TD ALIGN=RIGHT><TT>#i0/0 </TT><TD ALIGN=RIGHT><TT>0/0   </TT> <TD ALIGN=RIGHT><TT>#.# </TT><TD ALIGN=RIGHT><TT>#.# </TT><TD ALIGN=RIGHT><TT>nan</TT> <TD ALIGN=RIGHT>[e]            <TD ALIGN=RIGHT>[g]           <TD ALIGN=RIGHT>[d]            <TD ALIGN=RIGHT>[a]       <TD ALIGN=RIGHT>[r]
+<TR><TD><TT>(/&nbsp;&nbsp;0&nbsp;&nbsp;0)      </TT><TD ALIGN=RIGHT><TT>[j]   </TT><TD ALIGN=RIGHT><TT>0/0   </TT> <TD ALIGN=RIGHT><TT>#.# </TT><TD ALIGN=RIGHT>[b]          <TD ALIGN=RIGHT>[c]          <TD ALIGN=RIGHT>[e]            <TD ALIGN=RIGHT>[g]           <TD ALIGN=RIGHT>[d]            <TD ALIGN=RIGHT>[s]       <TD ALIGN=RIGHT>[r]
+<TR><TD><TT>(/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0) </TT><TD ALIGN=RIGHT><TT>1/0   </TT><TD ALIGN=RIGHT><TT>+inf.0</TT> <TD ALIGN=RIGHT><TT>+#.#</TT><TD ALIGN=RIGHT>[b]          <TD ALIGN=RIGHT>[c]          <TD ALIGN=RIGHT>[e]            <TD ALIGN=RIGHT>[g]           <TD ALIGN=RIGHT>[d]            <TD ALIGN=RIGHT>[s]       <TD ALIGN=RIGHT>[r]
+<TR><TD><TT>(/&nbsp;-1&nbsp;&nbsp;0)           </TT><TD ALIGN=RIGHT><TT>-1/0  </TT><TD ALIGN=RIGHT><TT>-inf.0</TT><TD ALIGN=RIGHT><TT>-#.#</TT><TD ALIGN=RIGHT>[b]          <TD ALIGN=RIGHT>[c]          <TD ALIGN=RIGHT>[e]            <TD ALIGN=RIGHT>[g]           <TD ALIGN=RIGHT>[d]            <TD ALIGN=RIGHT>[s]       <TD ALIGN=RIGHT>[r]
+</TABLE>
+
+<TABLE CELLPADDING=4>
+<TR><TD>*<TD>Earlier versions of SCM printed identically to Guile.
+<TR><TD>[a]<TD>;Anonymous arithmetic error
+<TR><TD>[b]<TD>*** ERROR:bigloo:arithmetic procedure:<BR>`floating point' exception -- reached
+<TR><TD>[c]<TD>Floating point exception
+<TR><TD>[d]<TD>/: division by zero
+<TR><TD>[e]<TD>/: argument out of range: 0
+<TR><TD>[g]<TD>*** ERROR IN (stdin)@7.19 -- Division by zero
+<TR><TD>[j]<TD>java.lang.ArithmeticException: / by zero
+<TR><TD>[r]<TD>Error: rational division by zero
+<TR><TD>[s]<TD>;Division by zero signaled by /.
+<TR><TD>[t]<TD>;Division by zero
+</TABLE>
+
+<A NAME="Table-4"></A>
+<TABLE BORDER=2 CELLPADDING=2>
+<CAPTION>Table 4: Properties of special quotients</CAPTION>
+<TR><TH><TH><TH>inexact<TH>exact<TH>rational<TH>integer<TH>real<TH>positive<TH>zero<TH>negative
+<TR><TH ROWSPAN=3>Guile
+    <TD ALIGN=RIGHT><TT>+#.#</TT><TH>*<TH><TH>*<TH>*<TH>*<TH>*<TH><TH>
+<TR><TD ALIGN=RIGHT><TT>-#.#</TT><TH>*<TH><TH>*<TH>*<TH>*<TH><TH><TH>*
+<TR><TD ALIGN=RIGHT><TT>#.#</TT><TH>*<TH><TH>*<TH><TH>*<TH><TH><TH>
+<TR><TH ROWSPAN=3>Mz Scheme
+    <TD ALIGN=RIGHT><TT>+inf.0</TT><TH>*<TH><TH>*<TH>*<TH>*<TH>*<TH><TH>
+<TR><TD ALIGN=RIGHT><TT>-inf.0</TT><TH>*<TH><TH>*<TH>*<TH>*<TH><TH><TH>*
+<TR><TD ALIGN=RIGHT><TT>+nan.0</TT><TH>*<TH><TH>*<TH><TH>*<TH><TH><TH>
+<TR><TH ROWSPAN=3>Elk
+    <TD ALIGN=RIGHT><TT>Inf.0</TT><TH>*<TH><TH>*<TH>*<TH>*<TH>*<TH><TH>
+<TR><TD ALIGN=RIGHT><TT>-Inf.0</TT><TH>*<TH><TH>*<TH>*<TH>*<TH><TH><TH>*
+<TR><TD ALIGN=RIGHT><TT>NaN</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH>
+<TR><TH ROWSPAN=3>Bigloo
+    <TD ALIGN=RIGHT><TT>+#.#</TT><TH>*<TH><TH>*<TH><TH>*<TH>*<TH><TH>
+<TR><TD ALIGN=RIGHT><TT>-#.#</TT><TH>*<TH><TH>*<TH><TH>*<TH><TH><TH>*
+<TR><TD ALIGN=RIGHT><TT>#.#</TT><TH>*<TH><TH>*<TH><TH>*<TH><TH><TH>
+<TR><TH ROWSPAN=3>Gambit
+    <TD ALIGN=RIGHT><TT>+inf.</TT><TH>*<TH><TH><TH><TH>*<TH>*<TH><TH>
+<TR><TD ALIGN=RIGHT><TT>-inf.</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH>*
+<TR><TD ALIGN=RIGHT><TT>+nan.</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH>
+<TR><TH ROWSPAN=3>SCM
+    <TD ALIGN=RIGHT><TT>+inf.0</TT><TH>*<TH><TH><TH><TH>*<TH>*<TH><TH>
+<TR><TD ALIGN=RIGHT><TT>-inf.0</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH>*
+<TR><TD ALIGN=RIGHT><TT>0/0</TT><TH>*<TH><TH><TH><TH><TH><TH><TH>
+<TR><TH ROWSPAN=5>Kawa
+    <TD ALIGN=RIGHT><TT>#i1/0</TT><TH>*<TH><TH><TH><TH>*<TH>*<TH><TH>
+<TR><TD ALIGN=RIGHT><TT>#i-1/0</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH>*
+<TR><TD ALIGN=RIGHT><TT>#i0/0</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH>
+<TR><TD ALIGN=RIGHT><TT>1/0</TT><TH><TH>*<TH>*<TH><TH>*<TH>*<TH><TH>
+<TR><TD ALIGN=RIGHT><TT>-1/0</TT><TH><TH>*<TH>*<TH><TH>*<TH><TH><TH>*
+<!-- <TR><TH ROWSPAN=5>Kawa -->
+<!--     <TD ALIGN=RIGHT><TT>#i1/0</TT><TH>*<TH><TH><TH><TH>*<TH>*<TH><TH> -->
+<!-- <TR><TD ALIGN=RIGHT><TT>#i-1/0</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH>* -->
+<!-- <TR><TD ALIGN=RIGHT><TT>#i-1/0</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH>* -->
+<!-- <TR><TD ALIGN=RIGHT><TT>#i0/0</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH> -->
+<!-- <TR><TD ALIGN=RIGHT><TT>#i0/0</TT><TH>*<TH><TH><TH><TH>*<TH><TH><TH> -->
+</TABLE>
+<P>
+<A HREF="#Table-4">Table 4</A> shows the numerical properties of each
+of the special values.&nbsp;&nbsp; Only Kawa supports (2) exact
+infinities.&nbsp;&nbsp; For inexact infinities the only variations are
+in the <STRONG>rational</STRONG> and <STRONG>integer</STRONG> columns.
+</P>
+
+<H2>Discussion</H2>
+<P>
+The glibc syntax for infinities has two undesirable aspects:
+</P>
+<UL>
+<LI><P>Nothing visually distinguishes <SAMP>inf</SAMP> and
+    <SAMP>nan</SAMP> from text words.</P>
+
+<LI><P><SAMP>Inf</SAMP> and <SAMP>nan</SAMP> will be meaningless
+    acronyms to people unfamiliar with IEEE-754 who encounter them in
+    data files.</P>
+</UL>
+<P>
+Gambit and MzScheme address the first problem by requiring a sign
+prefix.&nbsp;&nbsp; Glibc reads signed infinities, so they would
+interoperate in one direction.&nbsp;&nbsp; But both implementations
+add suffixes to <SAMP>inf</SAMP> and <SAMP>nan</SAMP> which
+<CODE>strtod()</CODE> and <CODE>scanf()</CODE> do not ignore.
+</P>
+<P>
+<!-- The denominator of <SAMP>0</SAMP> infinity representations improve -->
+<!-- both aspects. -->
+The <A HREF="http://srfi.schemers.org/srfi-70/mail-archive/threads.html">SRFI-70
+discussions</A> found general agreement on the <CODE>+inf.0</CODE> and
+<CODE>-inf.0</CODE> syntaxes for real infinities.
+</P>
+<H2>Conclusion</H2>
+<P>
+This survey of infinities in Scheme shows general agreement among
+implementations that scalar infinities are inexact reals.&nbsp;&nbsp;
+Most allow infinities as independent real and imaginary components of
+complex numbers.
+</P>
+<P>
+Several implementations provide read/write invariance of inexact
+complex infinities; but their syntaxes are incompatible.&nbsp;&nbsp;
+Implementations should adopt the syntaxes <CODE>+inf.0</CODE> and
+<CODE>-inf.0</CODE>, which should also be incorporated into the next
+Scheme standard.
+<!-- Settling on one signed-nan-inf or denominator-of-0 format for -->
+<!-- infinities would eliminate needless incompatibility and augment -->
+<!-- Scheme's substantial numerical capabilities. -->
+</P>
+<ADDRESS>Copyright 2003, 2006 Aubrey Jaffer</ADDRESS>
+<HR>
+<TABLE WIDTH="100%" ALIGN=CENTER><TR>
+<TD COLSPAN=3>
+I am a guest and *not* a member of the MIT Artificial Intelligence Lab.<BR>
+My actions and comments do not reflect in any way on
+MIT<A HREF="http://validator.w3.org/check?uri=http://swiss.csail.mit.edu/~jaffer/III/RAWI">.</A><BR>
+
+<TR><TD WIDTH=5><TD><ADDRESS>agj @ alum.mit.edu</ADDRESS>
+<TD ALIGN=RIGHT><A HREF="..">Go Figure!</A>
+</TABLE>
+</BODY>
