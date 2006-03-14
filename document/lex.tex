@@ -91,21 +91,28 @@ to Scheme, but the end of the line is visible as whitespace.  This
 prevents a comment from appearing in the middle of an identifier or
 number.
 
-\begin{scheme}
-;;; The FACT procedure computes the factorial
-;;; of a non-negative integer.
-(define fact
-  (lambda (n)
-    (if (= n 0)
-        1        ;Base case: return 1
-        (* n (fact (- n 1))))))%
-\end{scheme}
-
 Another way to indicate a comment is to prefix a \hyper{datum} (cf.\
 Section~\ref{datumsyntax}) with {\tt \#;}, possibly with whitespace in
 between.  The comment consists of the comment prefix {\tt \#;} and the
 \hyper{datum}.  (This notation is useful for ``commenting out''
 sections of code.)
+
+Moreover, block comments may be indicated with properly nested {\tt
+  \#|} and {\tt |\#} pairs.
+
+\begin{scheme}
+\#|
+   The FACT procedure computes the factorial
+   of a non-negative integer.
+|\#
+(define fact
+  (lambda (n)
+    ;; base case
+    (if (= n 0)
+        \#;(= n 1)
+        1       ; identity of *
+        (* n (fact (- n 1))))))%
+\end{scheme}
 
 \section{Other notations}
 
