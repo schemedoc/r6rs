@@ -1,0 +1,634 @@
+\documentclass[twoside,twocolumn]{algol60}
+
+\usepackage{verbatim}
+
+\input{commands}
+
+% FIXME:
+\newcommand{\syntax}{{\em Syntax: }}
+\newcommand{\semantics}{{\em Semantics: }}
+
+\makeindex
+
+\begin{document}
+
+\chapter{Exceptions and Conditions}
+
+% FIXME: Intro
+
+\section{Exceptions}
+
+% FIXME \mainindex{exceptions}
+
+This section describes Scheme's exception-handling and
+exception-raising constructs.  This specification follows
+SRFI~34~\cite{SRFI34}.
+
+Exception handlers are one-argument procedures that determine the
+action the program takes when an exceptional situation is signalled.
+The system implicitly maintains a current exception handler.
+
+\mainindex{current exception handler}The program raises an exception
+by invoking the current exception handler, passing to it an object
+encapsulating information about the exception. Any procedure accepting
+one argument may serve as an exception handler and any object may be
+used to represent an exception.
+
+The system maintains the current exception handler as part of the
+dynamic environment of the program, the context for {\tt
+  dynamic-wind}. The dynamic environment can be thought of as that
+part of a continuation that does not specify the destination of any
+returned values. It includes the {\tt dynamic-wind} context, and the
+current exception handler.
+
+The initial current exception handler of handles all {\tt \&serious}
+conditions by interrupting the program and reporting that an exception
+has been raised, and displaying some information about the condition
+object that was provided.  Moreover, the initial handler
+returns when passed any other (``non-serious'') condition.
+
+\subsection{Establishing Exception Handlers}
+
+\begin{entry}{%
+\proto{with-exception-handler}{ \var{handler} \var{thunk}}{procedure}}
+
+Returns the result(s) of invoking \var{thunk}. \var{Handler} must be a
+procedure that accepts one argument. It is installed as the current
+exception handler for the dynamic extent (as determined by {\tt
+  dynamic-wind}) of the invocation of \var{thunk}.
+\end{entry}
+
+\begin{entry}{%
+\pproto{(guard ( \hyper{var} \hyperi{clause} \hyperii{clause2} \dotsfoo)  \hyper{body})}{library \exprtype}}
+% FIXME \mainschindex{do}
+
+\syntax
+Each \hyper{clause} should have the same form as a {\tt cond} clause.
+
+\semantics 
+Evaluating a {\tt guard} form evaluates \hyper{body} with an exception
+handler that binds the raised object to \hyper{var} and within the scope of
+that binding evaluates the clauses as if they were the clauses of a
+{\tt cond} expression. That implicit {\tt cond} expression is evaluated with the
+continuation and dynamic environment of the {\tt guard} expression. If every
+\hyper{clause}'s \hyper{test} evaluates to false and there is no else clause, then
+raise is re-invoked on the raised object within the dynamic
+environment of the original call to raise except that the current
+exception handler is that of the {\tt guard} expression.  
+\end{entry}
+
+\subsection{Raising Exceptions}
+
+\begin{entry}{%
+\proto{raise}{ \var{obj}}{procedure}}
+
+Raises a non-continuable exception by invoking the current exception
+handler on \var{obj}. The handler is called with a continuation whose
+dynamic environment is that of the call to {\tt raise}, except that
+the current exception handler is the one that was in place for the
+call to {\tt`with-exception-handler} that installed the handler being
+called.  The continuation of the handler will raise a non-continuable
+{\tt \&non-continuable} exception.
+\end{entry}
+
+\begin{entry}{%
+\proto{raise-continuable}{ \var{obj}}{procedure}}
+
+Raises a continuable exception by invoking the current exception
+handler on \var{obj}. The handler is called with a continuation that
+is equivalent to the continuation of the call to {\tt
+  raise-continuable} with these two exceptions: (1) the current
+exception handler is the one that was in place for the call to {\tt
+  with-exception-handler} that installed the handler being called, and
+(2) if the handler being called returns, then it will again become the
+current exception handler.  If the handler returns, the value(s) it
+returns become(s) the value(s) returned by the call to
+{\tt raise-continuable}.
+\end{entry}
+
+\subsection{Examples}
+
+% FIXME: uses of `display' and so on
+
+\begin{scheme}
+(call-with-current-continuation
+ (lambda (k)
+   (with-exception-handler
+     (lambda (x)
+       (display "condition: ")
+       (write x)
+       (newline)
+       (k 'exception))
+     (lambda ()
+       (+ 1 (raise 'an-error))))))
+   {\it prints:} condition: an-error
+   \ev exception%
+ \end{scheme}
+
+\begin{scheme}
+(call-with-current-continuation
+ (lambda (k)
+   (with-exception-handler
+     (lambda (x)
+       (display "something went wrong")
+       (newline)
+       'dont-care)
+     (lambda ()
+       (+ 1 (raise 'an-error))))))
+   {\it prints:} something went wrong
+   {\it and then interrupts the program, reporting a}
+   {\it{\tt \&non-continuable} exception}%
+\end{scheme}
+
+\begin{scheme}
+(guard (condition
+         (else
+          (display "condition: ")
+          (write condition)
+          (newline)
+          'exception))
+  (+ 1 (raise 'an-error)))
+    {\it prints:} condition: an-error
+    \ev exception%
+\end{scheme}
+
+\begin{scheme}
+(guard (condition
+         (else
+          (display "something went wrong")
+          (newline)
+          'dont-care))
+ (+ 1 (raise 'an-error)))
+    {\it prints:} something went wrong
+    \ev dont-care%
+\end{scheme}
+
+\begin{scheme}
+(call-with-current-continuation
+ (lambda (k)
+   (with-exception-handler
+     (lambda (x)
+       (display "reraised ") (write x) (newline)
+       (k 'zero))
+     (lambda ()
+       (guard (condition
+                ((positive? condition) 'positive)
+                ((negative? condition) 'negative))
+        (raise 1))))))
+    \ev positive%
+\end{scheme}
+
+\begin{scheme} 
+(call-with-current-continuation
+ (lambda (k)
+   (with-exception-handler
+     (lambda (x)
+       (display "reraised ") (write x) (newline)
+       (k 'zero))
+     (lambda ()
+       (guard (condition
+                ((positive? condition) 'positive)
+                ((negative? condition) 'negative))
+        (raise -1))))))
+    \ev negative%
+\end{scheme}
+
+\begin{scheme}  
+(call-with-current-continuation
+ (lambda (k)
+   (with-exception-handler
+     (lambda (x)
+       (display "reraised ") (write x) (newline)
+       (k 'zero))
+     (lambda ()
+       (guard (condition
+                ((positive? condition) 'positive)
+                ((negative? condition) 'negative))
+        (raise 0))))))
+    {\it prints:} reraised 0
+    \ev zero%
+\end{scheme}
+
+\begin{scheme}  
+(guard (condition
+         ((assq 'a condition) => cdr)
+         ((assq 'b condition)))
+  (raise (list (cons 'a 42))))
+    \ev 42%
+\end{scheme}
+
+\begin{scheme}  
+(guard (condition
+         ((assq 'a condition) => cdr)
+         ((assq 'b condition)))
+  (raise (list (cons 'b 23))))
+    \ev (b . 23)%
+\end{scheme}
+
+% FIXME: examples for `raise-continuable'
+
+% FIXME References
+% SRFI 12: Exception Handling by William Clinger, R. Kent Dybvig, Matthew Flatt, and Marc Feeley
+% SRFI 18: Multithreading support by Marc Feeley
+% Richard Kelsey's 1996 proposal 
+% Proposal for Exception Handling in Scheme by Dan Friedman, Chris Haynes, and Kent Dybvig
+% Kent Pitman's history paper 
+% The Conditions chapter from the Common Lisp HyperSpec 
+% The Conditions chapter by Kent M. Pitman in Common Lisp the Language, 2nd edition by Guy L. Steele
+% The Conditions chapter in the Dylan Reference Manual 
+% The Exceptions chapter in Programming in Standard ML by Robert Harper
+
+\section{Conditions}
+
+The section describes's Scheme constructs for creating and inspecting
+condition types and values. A condition value encapsulates information
+about an exceptional situation, or exception. Scheme also defines a
+number of basic condition types.  This specification follows
+SRFI~35~\cite{SRFI35}.
+
+Conditions are values that communicate information about exceptional
+situations between parts of a program. Code that detects an exception
+may be in a different part of the program than the code that handles
+it. In fact, the former may have been written independently from the
+latter. Consequently, to facilitate effective handling of exceptions,
+conditions must communicate as much information as possible as
+accurately as possible, and still allow effective handling by code
+that did not precisely anticipate the nature of the exception that
+occurred.
+
+Scheme conditions provides two mechanisms to enable this kind of
+communication subtyping among condition types allows handling code to
+determine the general nature of an exception even though it does not
+anticipate its exact nature, compound conditions allow an exceptional
+situation to be described in multiple ways.
+
+\subsection{Condition objects}
+
+Conditions are objects with named fields. Each condition belongs to
+one or more condition types. Each condition type specifies a set of
+field names. A condition belonging to a condition type includes a
+value for each of the type's field names. These values can be
+extracted from the condition by using the appropriate field name.
+
+There is a tree of condition types with the distinguished {\tt
+  \&condition} as its root. All other condition types have a parent
+condition type.
+
+A condition belonging to several condition types with a common
+supertype may have distinct values for the supertype's fields for each
+type. The type used to access a field determines which of the values
+is returned. The program can extract each of these field values
+separately.  
+
+\subsubsection{Procedures}
+
+\begin{entry}{%
+\proto{make-condition-type}{ \var{id} \var{parent} \var{field-names}}{procedure}}
+
+{\cf Make-condition-type} returns a new condition type. \var{Id} must
+be a symbol that serves as a symbolic name for the condition type.
+\var{Parent} must itself be a condition type. \var{Field-names} must
+be a list of symbols. It identifies the fields of the conditions
+associated with the condition type.
+
+\var{Field-names} must be disjoint from the field names of
+\var{parent} and its ancestors. 
+\end{entry}
+
+\begin{entry}{%
+\proto{condition-type?}{ \var{thing}}{procedure}}
+
+{\cf Condition-type?} is a predicate for condition types: it returns
+\schtrue{} if thing is a condition type, and \schfalse{} otherwise
+\end{entry}
+
+\begin{entry}{%
+\proto{make-condition}{ \var{type} \var{field-name} \var{value} \dotsfoo}{procedure}}
+
+{\cf Make-condition} creates a condition value belonging condition
+type type. The following arguments must be, in turn, a field name and
+an arbitrary value. There must be such a pair for each field of
+\var{type} and its direct and indirect supertypes. {\cf
+  Make-condition} returns the condition value, with the argument
+values associated with their respective fields. 
+\end{entry}
+
+\begin{entry}{%
+\proto{condition?}{ \var{thing}}{procedure}}
+
+{\cf Condition?} is a predicate for conditions: it returns \schtrue{}
+if \var{thing} is a condition type, and \schfalse{} otherwise
+\end{entry}
+
+\begin{entry}{%
+\proto{condition-has-type?}{ \var{condition} \var{condition-type}}{procedure}}
+
+{\cf Condition-has-type?} tests if condition condition belongs to
+condition type \var{condition-type}. It returns \schtrue{} if any of
+condition's types includes \var{condition-type} either directly or as
+an ancestor and \schfalse{} otherwise.
+
+FIXME It is an error if \var{condition} is not a condition, or if
+\var{condition-type} is not a condition type.
+\end{entry}
+
+\begin{entry}{%
+\proto{condition-ref}{ \var{condition} \var{field-name}}{procedure}}
+
+\var{Condition} must be a condition, and \var{field-name} a symbol.
+Moreover, \var{condition} must belong to a condition type which has a
+field name called \var{field-name}, or one of its (direct or indirect)
+supertypes must have the field. {\cf Condition-ref} returns the value
+associated with \var{field-name}.
+
+FIXME It is an error to refer to a field the condition does not have.
+\end{entry}
+
+\begin{entry}{%
+\proto{make-compound-condition}{ \vari{condition} \varii{condition} \dotsfoo}{procedure}}
+
+{\cf Make-compound-condition} returns a compound condition belonging
+to all condition types that the \var{condition}s belong to.
+
+{\cf Condition-ref}, when applied to a compound condition will return
+the value from the first of the \var{condition}s that has such a field.
+\end{entry}
+
+\begin{entry}{%
+\proto{extract-condition}{ \var{condition} \var{condition-type}}{procedure}}
+
+\var{Condition} must be a condition belonging to \var{condition-type}.
+{\cf Extract-condition} returns a condition of condition type
+\var{condition-type} with the field values specified by
+\var{condition}.
+
+If \var{condition} is a compound condition, {\cf extract-condition}
+extracts the field values from the subcondition belonging to
+\var{condition-type} that appeared first in the call to {\cf
+  make-compound-condition} that created the the condition. The
+returned condition may be newly created; it is possible for
+
+\begin{scheme}
+(let* ((\&c (make-condition-type
+              'c \&condition '()))
+       (c0 (make-condition \&c))
+       (c1 (make-compound-condition c0)))
+  (eq? c0 (extract-condition c1 \&c)))
+\end{scheme}
+%
+to return false. 
+\end{entry}
+
+\subsubsection{Macros}
+
+
+\begin{entry}{%
+\pproto{(define-condition-type \hyper{condition-type}  \hyper{supertype}}{library \exprtype}}
+{\tt\obeyspaces\\
+  \hyper{predicate}\\
+  \hyperi{field-spec} \dotsfoo}
+
+This defines a new condition type. \hyper{Condition-type},
+\hyper{supertypes}, and \hyper{predicate} must all be identifiers.
+{\cf Define-condition-type} defines an identifier
+\hyper{condition-type} to some value describing the condition type.
+\hyper{Supertype} must be the name of a previously defined condition
+type.
+
+{\cf Define-condition-type} also defines \hyper{predicate} to a
+predicate that identifies conditions associated with that type, or
+with any of its subtypes.
+
+Each \hyper{field-spec} must be of the form
+%
+\begin{scheme}
+(\hyper{field} \hyper{accessor})
+\end{scheme}
+%
+where both \hyper{field} and \hyper{accessor} must be identifiers.
+{\cf Define-condition-type} defines each \hyper{accessor} to a
+procedure which extracts the value of the named field from a condition
+associated with this condition type.  
+\end{entry}
+
+\begin{entry}{%
+\proto{condition}{ \hyperi{type-field-binding} \dotsfoo}{library \exprtype}}
+
+This creates a condition value. Each \hyper{type-field-binding} must be of
+the form
+%
+\begin{scheme}
+(\hyper{condition-type} \hyperi{field-binding} \dotsfoo)
+\end{scheme}
+%
+Each \hyper{field-binding}
+must be of the form
+%
+\begin{scheme}
+(\hyper{field} \hyper{exp})  
+\end{scheme}
+%
+where \hyper{field} is a field identifier from the definition of
+\hyper{condition-type}.
+
+The \hyper{exp} are evaluated in some unspecified order; their values
+can later be extracted from the condition object via the accessors of
+the associated condition types or their supertypes.
+
+The condition returned by condition is created by a call of form
+%
+\begin{scheme}
+(make-compound-condition
+  (make-condition \hyper{condition-type} '\hyper{field-name} \hyper{value} \dotsfoo)
+  \dotsfoo)
+\end{scheme}
+%
+with the condition types retaining their order from the {\cf
+  condition} form.  The field names and values are duplicated as
+necessary as described below.
+
+Each \hyper{type-field-binding} must contain field bindings for all
+fields of \hyper{condition-type} without duplicates. There is an exception
+to this rule: if a field binding is missing, and the field belongs to
+a supertype shared with one of the other \hyper{type-field-binding}
+subforms, then the value defaults to that of the first such binding in
+the condition form.  
+\end{entry}
+
+\subsubsection{Standard Conditions}
+
+\begin{entry}{{\tt\&condition}}
+
+This is the root of the entire condition type hierarchy. It has a no
+fields.
+\end{entry}
+
+\begin{entry}{{\tt\&message}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&message \&condition
+  message-condition?
+  (message condition-message))
+\end{scheme}
+%
+It carries a message further describing the nature of the condition to
+humans.  
+\end{entry}
+
+\begin{entry}{{\tt\&warning}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&warning \&condition
+  warning?)
+\end{scheme}
+%
+This type describes conditions that can safely be ignored.
+\end{entry}
+
+\begin{entry}{{\tt\&serious}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&serious \&condition
+  serious-condition?)
+\end{scheme}
+
+This type describes conditions serious enough that they cannot safely
+be ignored. This condition type is primarily intended as a supertype
+of other condition types. 
+\end{entry}
+
+\begin{entry}{{\tt\&error}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&error \&serious
+  error?)
+\end{scheme}
+%
+This condition describes errors, typically caused by something that
+has gone wrong in the interaction of the program with the external
+world or the user.
+\end{entry}
+
+\begin{entry}{{\tt\&violation}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&violation \&serious
+  violation?)
+\end{scheme}
+%
+This condition describes violations of the language standard or a
+library standard, typically caused by a programming error.
+\end{entry}  
+
+\begin{entry}{{\tt\&non-continuable}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&non-continuable \&violation
+  non-continuable?)
+\end{scheme}
+%
+This condition denotes that an exception handler invoked via
+\texttt{raise} returned.
+\end{entry}
+
+
+\subsection{Examples}
+
+\begin{scheme}
+(define-condition-type \&c \&condition
+  c?
+  (x c-x))
+
+(define-condition-type \&c1 \&c
+  c1?
+  (a c1-a))
+
+(define-condition-type \&c2 \&c
+  c2?
+  (b c2-b))
+\end{scheme}
+
+\begin{scheme}
+(define v1 (make-condition \&c1 'x "V1" 'a "a1"))
+
+(c? v1)        \ev \schtrue
+(c1? v1)       \ev \schtrue
+(c2? v1)       \ev \schfalse
+(c-x v1)       \ev "V1"
+(c1-a v1)      \ev "a1"
+\end{scheme}
+
+\begin{scheme}
+(define v2 (condition (\&c2
+                        (x "V2")
+                        (b "b2"))))
+
+(c? v2)        \ev \schtrue
+(c1? v2)       \ev \schfalse
+(c2? v2)       \ev \schtrue
+(c-x v2)       \ev "V2"
+(c2-b v2)      \ev "b2"
+\end{scheme}
+
+\begin{scheme}
+(define v3 (condition (\&c1
+                       (x "V3/1")
+                       (a "a3"))
+                      (\&c2
+                       (b "b3"))))
+
+(c? v3)        \ev \schtrue
+(c1? v3)       \ev \schtrue
+(c2? v3)       \ev \schtrue
+(c-x v3)       \ev "V3/1"
+(c1-a v3)      \ev "a3"
+(c2-b v3)      \ev "b3"
+\end{scheme}
+
+\begin{scheme}
+(define v4 (make-compound-condition v1 v2))
+
+(c? v4)        \ev \schtrue
+(c1? v4)       \ev \schtrue
+(c2? v4)       \ev \schtrue
+(c-x v4)       \ev "V1"
+(c1-a v4)      \ev "a1"
+(c2-b v4)      \ev "b2"
+\end{scheme}
+
+\begin{scheme}
+(define v5 (make-compound-condition v2 v3))
+
+(c? v5)        \ev \schtrue
+(c1? v5)       \ev \schtrue
+(c2? v5)       \ev \schtrue
+(c-x v5)       \ev "V2"
+(c1-a v5)      \ev "a3"
+(c2-b v5)      \ev "b2"
+\end{scheme}
+
+
+
+% FIXME References
+% SRFI 12: Exception Handling by William Clinger, R. Kent Dybvig, Matthew Flatt, and Marc Feeley
+% Richard Kelsey's 1996 proposal 
+% Kent Pitman's history paper 
+% The Conditions chapter from the Common Lisp HyperSpec 
+% The Conditions chapter by Kent M. Pitman in Common Lisp the Language, 2nd edition by Guy L. Steele
+% The Conditions chapter in the Dylan Reference Manual 
+
+
+
+\end{document}
