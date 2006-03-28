@@ -126,24 +126,6 @@
 	q
 	(integer- q (r5rs->integer 1)))))
 
-(define (ratnum-ceiling p)
-  (let* ((n (ratnum-numerator p))
-	 (q (integer-quotient n (ratnum-denominator p))))
-    (if (integer< (r5rs->integer 0) n)
-	(integer+ q (r5rs->integer 1))
-	q)))
-
-(define (ratnum-round x)
-  (let ((x+1/2 (ratnum+ x (r5rs->ratnum 1/2))))
-    (cond
-     ((ratnum? x+1/2)
-      (ratnum-floor x+1/2))
-     ((integer-odd? x+1/2)
-      (integer- x+1/2 (r5rs->integer 1)))
-     (else
-      x+1/2))))
-	
-
 (define (ratnum->string r radix)
   (string-append
    (integer->string (ratnum-numerator r) radix)

@@ -130,15 +130,13 @@
 (check (numerical truncate 3.5) ==> 3.0)
 (check (inexact? (numerical round 3.5)) => #t)
 
-(check (numerical round 8/3) ==> 3)
-(check (numerical round -8/3) ==> -3)
-(check (numerical round 7/3) ==> 2)
-(check (numerical round -7/3) ==> -2)
 (check (numerical round 7/2) ==> 4)
-(check (numerical round -7/2) ==> -4)
 (check (exact? (numerical round 7/2)) => #t)
 (check (numerical round 7) ==> 7)
 (check (exact? (numerical round 7)) => #t)
+
+(check (floor flinf+) => (=) flinf+)
+(check (ceiling flinf-) => (=) flinf-)
 
 (check (sqrt flinf+) => (=) flinf+)
 

@@ -208,21 +208,26 @@
   fldenominator
   (make-typo-op/1 inexact-denominator 'real))
 
+;; floor is primitive
 (define-unary inexact-floor
   flfloor
   (make-typo-op/1 inexact-floor 'real))
 
-(define-unary inexact-ceiling
-  flceiling
-  (make-typo-op/1 inexact-ceiling 'real))
+(define (inexact-ceiling x)
+  (inexact- (inexact-floor (inexact- x))))
 
-(define-unary inexact-truncate
-  fltruncate
-  (make-typo-op/1 inexact-truncate 'real))
+(define (inexact-truncate x)
+  (if (inexact-negative? x)
+      (inexact-ceiling x)
+      (inexact-floor x)))
 
-(define-unary inexact-round
-  flround
-  (make-typo-op/1 inexact-round 'real))
+(define (inexact-round x)
+  (let* ((x+1/2 (inexact+ x (r5rs->flonum 0.5)))
+	 (r (inexact-floor x+1/2)))
+    (if (and (inexact=? r x+1/2)
+	     (inexact-odd? r))
+	(inexact- r (r5rs->flonum 1.0))
+	r)))
 
 (define-unary inexact-exp flexp compnum-exp)
 (define-unary inexact-sin flsin compnum-sin)

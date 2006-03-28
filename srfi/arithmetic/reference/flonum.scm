@@ -147,19 +147,10 @@
 (define flsqrt (make-fl->fl sqrt*))
 (define flexpt (make-fl*fl->fl expt))
 
-(define (make-rounder name r5rs-proc)
-  (lambda (x)
-    (let ((i (flonum-inexact x)))
-      (if (or (= r5rs-inf+ i)
-	      (= r5rs-inf- i)
-	      (not (= i i)))
-	  (error (string-append name ": infinite or NaN argument") x)
-	  (make-flonum (r5rs-proc (flonum-inexact x)))))))
-
-(define flfloor (make-rounder "floor" floor))
-(define flceiling (make-rounder "ceiling" ceiling))
-(define fltruncate (make-rounder "truncate" truncate))
-(define flround (make-rounder "round" round))
+(define flfloor (make-fl->fl floor))
+(define flceiling (make-fl->fl ceiling))
+(define fltruncate (make-fl->fl truncate))
+(define flround (make-fl->fl round))
 
 (define (fixnum->flonum fx)
   (make-flonum (fixnum->r5rs fx)))
