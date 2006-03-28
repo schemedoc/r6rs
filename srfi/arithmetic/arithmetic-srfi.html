@@ -62,6 +62,7 @@ archive of the mailing list</A>.
       <li><a href="#Rationale">Rationale</a></li>
       <li><a href="#Specification">Specification</a>
 	<ul>
+	  <li><a href="#InfinitiesNaN">Infinites and NaNs</a></li>
 	  <li><a href="#ExternalRepresentations">External Representations</a></li>
 	  <li><a href="#SafeUnsafeMode">Safe and Unsafe Mode</a></li>
 	  <li><a href="#EquivalenceOfObjects">Equivalence of
@@ -303,6 +304,32 @@ We assume that Section 6.2.3 ("Implementation restrictions") of R5RS
 remains essentially as it stands.  The text of this SRFI describes the
 differences between the proposed additions and changes to R5RS and/or
 SRFI 70.
+
+<h2><a name="InfinitiesNaN">Infinities and NaNs</a></h2>
+
+<P>
+Positive infinity is a real number, whose value is indeterminate, that
+is less than all other real numbers.  Negative infinity is real
+number, whose value is indeterminate, that is greater than all other
+real numbers.
+
+<P>
+NaN is a real number whose value is so indeterminate that it might
+represent any real number within the closed interval [negative
+infinity,positive infinity].
+
+<P>
+Scheme implementations are not required to provide number objects for
+infinities or NaN.  The rest of this SRFI is written as though an
+implementation does provide them, however, and specifies many
+operations with respect to these numbers.  This specification is
+consistent with the IEEE 754 standard.  An implementation must
+either adhere to the specification as written here if it does provide
+infinities and NaNs, or alternatively raise an exception denoting an
+implementation restriction whenever the specification says that an
+operation would return an infinity or NaN.  This includes converting
+between number objects and external representations as well as the
+reading of program source code.
 
 <h2><a name="ExternalRepresentations">External Representations</a></h2>
 
@@ -598,10 +625,6 @@ is true.
 <span class=add>(real? -2.5+0i)                        ==&gt;  #t</span>
 (real? -2.5)                           ==&gt;  #t
 (real? #e1e10)                         ==&gt;  #t
-(real? -inf.0)                         ==&gt;  #t
-<span class=add>(real? +nan.0)                         ==&gt;  #t</span>
-(rational? -inf.0)                     ==&gt;  #f
-<span class=add>(rational? +nan.0)                     ==&gt;  #f</span>
 (rational? 6/10)                       ==&gt;  #t
 (rational? 6/3)                        ==&gt;  #t
 (integer? 3+0i)                        ==&gt;  #t
@@ -610,8 +633,11 @@ is true.
 
 <span class=add>(number? +nan.0)                       ==&gt;  #t</span>
 <span class=add>(complex? +nan.0)                      ==&gt;  #t</span>
-(complex? +inf.0)                      ==&gt;  #t
+<span class=add>(real? +nan.0)                         ==&gt;  #t</span>
 <span class=add>(rational? +nan.0)                     ==&gt;  #f</span>
+(complex? +inf.0)                      ==&gt;  #t
+(real? -inf.0)                         ==&gt;  #t
+(rational? -inf.0)                     ==&gt;  #f
 (integer? -inf.0)                      ==&gt;  #f
 </PRE>
 
@@ -658,7 +684,7 @@ of the named type, and otherwise they return <code>#f</code>.
 <span class=add>(real-valued? -2.5)                    ==&gt;  #t</span>
 <span class=add>(real-valued? #e1e10)                  ==&gt;  #t</span>
 <span class=add>(real-valued? -inf.0)                  ==&gt;  #t</span>
-<span class=add>(real-valued? +nan.0)                  ==&gt;  #t</span>
+<span class=add>(real-valued? +nan.0)                  ==&gt;  #</span>
 <span class=add>(rational-valued? -inf.0)              ==&gt;  #f</span>
 <span class=add>(rational-valued? +nan.0)              ==&gt;  #f</span>
 <span class=add>(rational-valued? 6/10)                ==&gt;  #t</span>
@@ -1384,22 +1410,11 @@ predicates are required to be transitive.
 (fl= +inf.0 +inf.0)           ==&gt;  #t
 (fl= -inf.0 +inf.0)           ==&gt;  #f
 (fl= -inf.0 -inf.0)           ==&gt;  #t
-(fl= 0.0 -0.0)                ==&gt;  <I>unspecified</I>
-(fl&lt; 0.0 -0.0)                ==&gt;  <I>unspecified</I>
-(fl= +nan.0 <var>fl</var>)               ==&gt;  <I>unspecified</I>
-(fl= +nan.0 <var>fl</var>)               ==&gt;  <I>unspecified</I>
-(fl&lt; +nan.0 <var>fl</var>)               ==&gt;  <I>unspecified</I>
+(fl= 0.0 -0.0)                ==&gt;  #t
+(fl&lt; 0.0 -0.0)                ==&gt;  #f
+(fl= +nan.0 <var>fl</var>)               ==&gt;  #f
+(fl&lt; +nan.0 <var>fl</var>)               ==&gt;  #f
 </PRE>
-
-The following behavior is strongly recommended but not required by 
-R6RS:
-<P>
-<pre>
-(fl= 0.0 -0.0)                 ==&gt;  #t
-(fl&lt; -0.0 0.0)                 ==&gt;  #f
-(fl= +nan.0 +nan.0)            ==&gt;  #f
-</pre>
-
 </DL>
 
 <P>
@@ -1436,7 +1451,7 @@ than zero, <code>flodd?</code> tests if it is odd,
 <em>Note:</em>
 `<code>(flnegative? -0.0)</code>' must return <code>#f</code>,
 else it would lose the correspondence with
-<code>(fl< -0.0 0.0)</code>, which is <code>#f</code>
+<code>(fl&lt; -0.0 0.0)</code>, which is <code>#f</code>
 according to the IEEE standards.
 </p>
 </blockquote>
@@ -1471,6 +1486,12 @@ binary floating point numbers, the meaning of "best"
 is reasonably well-defined by the IEEE standards.)
 </P>
 
+<P>
+<PRE>
+(fl+ +inf.0 -inf.0)      ==&gt;  +nan.0
+(fl+ +nan.0 <var>fl</var>)          ==&gt;  +nan.0
+(fl* +nan.0 <var>fl</var>)          ==&gt;  +nan.0
+</PRE>
 </dl>
 
 <P>
@@ -1492,6 +1513,10 @@ approximates the mathematical sum, difference, quotient, or inverse of their arg
 binary floating point numbers, the meaning of "best"
 is reasonably well-defined by the IEEE standards.)
 </P>
+<P>
+<PRE>
+(fl- +inf.0 +inf.0)      ==&gt;  +nan.0
+</PRE>
 
 <P>
 For undefined quotients, <code>fl/</code> behaves as specified by the
@@ -1808,8 +1833,8 @@ these functions.
 (fllog 0.0)                   ==&gt; -inf.0
 (fllog -0.0)                  ==&gt; unspecified ; if -0.0 is distinguished
 (fllog -inf.0)                ==&gt; +nan.0
-(flatan -inf.0)               ==&gt; -1.5707963267948965
-(flatan +inf.0)               ==&gt; 1.5707963267948965
+(flatan -inf.0)               ==&gt; -1.5707963267948965 ; approximately
+(flatan +inf.0)               ==&gt; 1.5707963267948965  ; approximately
 </PRE>
 </DL>
 
@@ -2912,6 +2937,7 @@ These procedures return the sum or product of their arguments.
 (* +inf.0 +inf.0)                      ==&gt;  +inf.0
 (* +inf.0 -inf.0)                      ==&gt;  -inf.0
 (* 0 +inf.0)                           ==&gt;  <span class=del>+nan.0</span> <span class=add>0</span>
+<span class=add>(* 0 +nan.0)                           ==&gt;  0 or +nan.0</span>
 </PRE>
 
 For any real number <VAR>x</VAR> that is neither
@@ -2921,6 +2947,12 @@ infinite nor NaN:
 (+ +inf.0 <VAR>x</VAR>)                           ==&gt;  +inf.0
 (+ -inf.0 <VAR>x</VAR>)                           ==&gt;  -inf.0
 <span class=add>(+ +nan.0 <VAR>x</VAR>)                           ==&gt;  +nan.0</span>
+</PRE>
+
+<span class=add>For any real number <VAR>x</VAR> that is neither
+infinite nor NaN nor 0:</span>
+
+<PRE>
 <span class=add>(* +nan.0 <VAR>x</VAR>)                           ==&gt;  +nan.0</span>
 </PRE>
 
@@ -2958,7 +2990,7 @@ however, they return the additive or multiplicative inverse of their argument.
 (/ 1.0 0)                              ==&gt;  +inf.0
 (/ -1 0.0)                             ==&gt;  -inf.0
 (/ +inf.0)                             ==&gt;  0.0
-(/ 0 0.0)                              ==&gt;  <span class=del>+nan.0</span> <span class=add>unspecified</span>
+(/ 0 0.0)                              ==&gt;  <span class=del>+nan.0</span> <span class=add>+nan.0 or 0</span>
 (/ 0.0 0)                              ==&gt;  +nan.0
 (/ 0.0 0.0)                            ==&gt;  +nan.0
 </PRE>
@@ -3137,7 +3169,7 @@ all.
 
 (rationalize +inf.0 3)                 ==&gt;  +inf.0
 (rationalize +inf.0 +inf.0)            ==&gt;  +nan.0
-(rationalize 3 +inf.0)                 ==&gt;  0
+(rationalize 3 +inf.0)                 ==&gt;  0.0
 </PRE>
 
 </DL>
@@ -3397,8 +3429,8 @@ these functions.
 (log 0.0)                      ==&gt; -inf.0
 <span class=add>(log 0)                        is an error</span>
 (log -inf.0)                   ==&gt; <span class=del>+nan.0</span> <span class=add>+inf.0+<VAR>pi</VAR>i</span>
-(atan -inf.0)                  ==&gt; -1.5707963267948965
-(atan +inf.0)                  ==&gt; 1.5707963267948965
+(atan -inf.0)                  ==&gt; -1.5707963267948965 ; approximately
+(atan +inf.0)                  ==&gt; 1.5707963267948965  ; approximately
 <span class=add>(log -1.0+0.0i)                ==&gt; 0.0+<VAR>pi</VAR>i</span>
 <span class=add>(log -1.0-0.0i)                ==&gt; 0.0-<VAR>pi</VAR>i ; if -0.0 is distinguished</span>
 </PRE>
