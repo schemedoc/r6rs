@@ -28,6 +28,7 @@
   (define hex-digits (string->list "0123456789abcdefABCDEF"))
   (define standard-delimiters (string->list ";',`()[]{}\""))
   (define special-initials (string->list "!$%&*/:<=>?^_~"))
+  (define special-subsequents (string->list "+-@."))
   (define excluded-symbol-chars
     '(#\u0313 #\u0F3A #\u0F3B #\u0F3C #\u0F3D #\u1680 #\u169B #\u169C
       #\u180E #\u2000 #\u2001 #\u2002 #\u2003 #\u2004 #\u2005 #\u2006
@@ -63,7 +64,8 @@
 		    (memq ch standard-delimiters)
 		    (memq ch special-initials)
 		    (memq ch '(#\. #\+ #\-)) ; mapped separately for numbers
-		    (char=? ch #\#))
+		    (char=? ch #\#)
+		    (char=? ch #\\))
 		;; Either allowed by R6RS, or not allowed by MzScheme:
 		(loop (add1 i))
 		;; Allowed by MzScheme but not R6RS:
@@ -88,7 +90,7 @@
     (for-each (lambda (c) 
 		(unless (memv c hex-digits)
 		  (raise-bad (format " (expected hex digit, found ~a) " c))))
-	      (cdr chars))
+	      chars)
     (let loop ([n 0][chars chars])
       (if (null? chars)
 	  (begin
@@ -102,7 +104,7 @@
   ;; read-delimited-string : (-> char/eof) (char -> bool) bool (char -> bool)
   ;;                         input-port .... -> string
   ;;  Reads a string or symbol
-  (define (read-delimited-string read-next-char closer? 
+  (define (read-delimited-string init-ch read-next-char closer? 
 				 all-escapes? ok-char?
 				 port
 				 what src line col pos)
@@ -125,13 +127,13 @@
       (hex-value ch))
 
     ;; loop to read string/symbol characters; track the length for error reporting
-    (let loop ([chars null][len 1])
-      (let ([ch (read-next-char port)])
+    (let loop ([chars null][len (if init-ch 0 1)][init-ch init-ch])
+      (let ([ch (or init-ch (read-next-char port))])
 	(cond
+	 ;; closing quote or delimiter
+	 [(closer? ch) (list->string (reverse chars))]
 	 ;; eof
 	 [(eof-object? ch) (raise-bad-eof len)]
-	 ;; closing quote or bar
-	 [(closer? ch) (list->string (reverse chars))]
 	 ;; escape
 	 [(char=? ch #\\)
 	  (let ([ch (read-char port)])
@@ -152,7 +154,8 @@
 				    (format "bad \\x escape in ~a~a" what str)
 				    src line col pos len)))
 				chars)
-			  len)]
+			  len
+			  #f)]
 		   [(memv ch hex-digits)
 		    (xloop (+ len 1) (cons ch l))]
 		   [else
@@ -175,10 +178,10 @@
 		    (read-char port)
 		    (w-loop (+ len 1))]
 		   [else
-		    (loop chars len)])))]
+		    (loop chars len #f)])))]
 	     ;; space escape
 	     [(char=? #\space ch)
-	      (loop (cons #\space chars) (+ len 2))]
+	      (loop (cons #\space chars) (+ len 2) #f)]
 	     ;; other escapes
 	     [else (let ([v (case ch
 			      [(#\a) 7]
@@ -196,9 +199,9 @@
 			       (raise-read-error 
 				(format "illegal escape for ~a: \\~a" what ch)
 				src line col pos (+ len 2))])])
-		     (loop (cons (integer->char v) chars) (+ len 2)))]))]
+		     (loop (cons (integer->char v) chars) (+ len 2) #f))]))]
 	 ;; other character
-	 [(ok-char? ch) (loop (cons ch chars) (+ len 1))]
+	 [(ok-char? ch) (loop (cons ch chars) (+ len 1) #f)]
 	 [else
 	  (raise-read-error 
 	   (format "illegal character for ~a: ~a" what ch)
@@ -207,8 +210,8 @@
   ;; read-symbol
   (define (read-symbol ch port src line col pos)
     (string->symbol (string-append
-		     (string ch)
 		     (read-delimited-string 
+		      ch
 		      ;; read-next-char
 		      (lambda (port)
 			(let ([ch (peek-char port)])
@@ -223,7 +226,8 @@
 				ch))))
 		      ;; closer?
 		      (lambda (ch)
-			(or (member ch standard-delimiters)
+			(or (eof-object? ch)
+			    (member ch standard-delimiters)
 			    (char-whitespace? ch)))
 		      #f 
 		      ;; ok-char?
@@ -231,25 +235,42 @@
 			(or (char-alphabetic? ch)
 			    (char-numeric? ch)
 			    (member ch special-initials)
+			    (member ch special-subsequents)
 			    (and (> (char->integer ch) 127)
 				 (not (member ch excluded-symbol-chars)))))
 		      port "symbol" src line col pos))))
 
   ;; read-number
-  ;;  Use MzScheme's reader, then reject symbol results
   (define (read-number ch port src line col pos)
-    (let ([v (read/recursive port ch #f)])
-      (if (number? v)
-	  v
-	  (raise-read-error 
-	   (format "illegal symbol: ~a" v)
-	   src line col pos (string-length (symbol->string v))))))
-  
+    (let loop ([l (list ch)]
+	       [len 1])
+      (let ([ch (peek-char port)])
+	(cond
+	 [(or (eof-object? ch)
+	      (char-whitespace? ch)
+	      (memv ch standard-delimiters))
+	  (let* ([s (list->string (reverse l))]
+		 [n (string->number s)])
+	    (if n
+		n
+		(let ([sym (string->symbol s)])
+		  (case sym
+		    [(+ - ...)
+		     ;; A peculiar-identifier
+		     sym]
+		    [else
+		     (raise-read-error 
+		      (format "illegal symbol: ~a" s)
+		      src line col pos len)]))))]
+	 [else
+	  (loop (cons (read-char port) l) (+ len 1))]))))
+	 
   ;; read-quoted-string
   ;;  Reader macro for "
   (define (read-quoted-string ch port src line col pos)
-    (read-delimited-string read-char 
-			   (lambda (ch) (char=? ch #\"))
+    (read-delimited-string #f read-char
+			   ;; closer?
+			   (lambda (ch) (and (char? ch) (char=? ch #\")))
 			   #t (lambda (ch) #t)
 			   port 
 			   "string" src line col pos))
@@ -354,6 +375,7 @@
      #\\ 'dispatch-macro read-character
      ;; Symbols:
      #f 'non-terminating-macro read-symbol
+     #\\ 'non-terminating-macro read-symbol
      ;; Characters not allowed in symbols:
      (append
       (apply
