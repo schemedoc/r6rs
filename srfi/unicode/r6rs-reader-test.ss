@@ -117,6 +117,7 @@
   (test-hex-error "\\x0000d900")
   (test-hex-error "\\x00125678")
 
+  (test-sym-error "a\u0F3Cb")
   (test-sym-error "|")
   (test-sym-error "|a|")
   (test-sym-error "+a")
