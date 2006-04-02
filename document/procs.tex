@@ -2684,12 +2684,8 @@ when the escape procedure was created.  Calling the escape procedure
 may cause the invocation of \var{before} and \var{after} thunks installed using
 \ide{dynamic-wind}.
 
-The escape procedure accepts the same number of arguments as the continuation to
-the original call to \callcc.
-Except for continuations created by the {\cf call-with-values}
-procedure, all continuations take exactly one value.  The
-effect of passing no value or more than one value to continuations
-that were not created by {\tt call-with-values} is unspecified.
+The escape procedure accepts the same number of arguments as the
+continuation to the original call to \callcc.
 
 \vest The escape procedure that is passed to \var{proc} has
 unlimited extent just like any other procedure in Scheme.  It may be stored
@@ -2771,8 +2767,6 @@ some people use the name \ide{call/cc} instead.
 \proto{values}{ obj $\ldots$}{procedure}}
 
 Delivers all of its arguments to its continuation.
-Except for continuations created by the \ide{call-with-values}
-procedure, all continuations take exactly one value.
 {\tt Values} might be defined as follows:
 \begin{scheme}
 (define (values . things)
@@ -2780,6 +2774,17 @@ procedure, all continuations take exactly one value.
     (lambda (cont) (apply cont things))))
 \end{scheme}
 
+The continuations of all commands (represented by \meta{command} in
+the formal syntax) within a sequence of expressions (represented by
+\meta{sequence} in the formal syntax) in {\cf lambda}, {\cf
+  begin}, {\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*}, {\cf
+  case}, {\cf cond}, and {\cf do} forms take an arbitrary number of
+values.
+
+Except for these and the continuations created by the {\cf
+  call-with-values} procedure, all other continuations take exactly
+one value.  The effect of passing an inappropriate number of values to
+a continuation is unspecified.
 \end{entry}
 
 \begin{entry}{%
