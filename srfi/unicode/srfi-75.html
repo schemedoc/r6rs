@@ -167,7 +167,7 @@ Unicode standard specifies how the textual data of most of the world's
 languages is represented and handled.  Several operating systems,
 programming languages, libraries, and software tools have now embraced
 the Unicode standard.  Adding Unicode support to Scheme, as specified
-by this SRFI, will allow
+by this SRFI, will allow</p>
 
 <ul>
   <li> multilingual text processing;
@@ -177,7 +177,7 @@ by this SRFI, will allow
        languages, libraries, and software tools that support Unicode; and
   <li> improved portability of programs between R6RS Scheme
        implementations.
-</ul></p>
+</ul>
 
 <p>The SRFI mandates a specific set of values for characters, a
 specific definition of strings in terms of characterm, and a specific
@@ -383,6 +383,7 @@ following set of named characters is defined by this SRFI:
 <p>
 To allow denoting any Unicode character using the ASCII subset of
 Unicode, this SRFI specifies the following escape syntax:
+</p>
 
 <ul>
 
@@ -392,7 +393,6 @@ Unicode, this SRFI specifies the following escape syntax:
        <code>&lt;x&gt;</code>s forms a hexadecimal number between 0 and #x10FFFF 
        excluding the range [#xD800, #xDFFF].
 </ul>
-</p>
 
 <p>
 All character syntaxes are case-sensitive, except that
@@ -432,6 +432,7 @@ delimiter (which is why no specific terminator is needed after the last
 <p>As in R5RS, a string datum is enclosed between double quotes ("),
  where a backslash adjusts the meaning of a character within the
  double quotes. The set of escape sequences is as follows:
+</p>
 
 <ul>
   <li> <code>\a</code> : alarm, Unicode 7
@@ -454,7 +455,7 @@ delimiter (which is why no specific terminator is needed after the last
        at least one and no more than eight <code>&lt;x&gt;</code>s are provided,
        and the sequence of two <code>&lt;x&gt;</code>s forms a hexadecimal number between 0 and 
        #xFFFF excluding the range [#xD800, #xDFFF]
-</ul></p>
+</ul>
 
 <p>These escape sequences are case-sensitive, except that
 <code>&lt;x&gt;</code> can be an uppercase or lowercase hexadecimal
@@ -487,7 +488,7 @@ double quote) denotes the same string literal as
 </pre>
 
 
-<a name="symbols"><h3>Symbol Lexical Syntax</h3>
+<h3><a name="symbols">Symbol Lexical Syntax</a></h3>
 
 <p>The syntax of symbols extends R5RS in three ways:
 <ul>
@@ -605,12 +606,15 @@ and <a
 href="http://www.unicode.org/Public/UNIDATA/CaseFolding.txt">CaseFolding.txt</a>
 from the Unicode Consortium.) The following Scheme procedures map
 characters consistent with the Unicode specification:
+</p>
+
 <ul> 
 <li> <code>char-upcase</code>
 <li> <code>char-downcase</code>
 <li> <code>char-titlecase</code>
 <li> <code>char-foldcase</code>
 </ul>
+
 These procedures take a character argument and return a character
 result.  If the argument is an uppercase or titlecase character, and
 if there is a single character which is its lowercase form, then
@@ -623,7 +627,6 @@ conversion, even ignoring the user's locale; in general, case mappings
 require the context of a string, both in arguments and in result.  See
 <code>string-upcase</code> and <code>string-downcase</code> for more
 general case-conversion procedures.
-</p>
 
 <p>Case-insensitive character-comparison procedures are defined as
 follows:
@@ -682,6 +685,8 @@ representing its Unicode general category, one of
  three are defined as scalar values having the Unicode "Uppercase"
  property, the "Lowercase" property, and the "Lt" general category,
  respectively.
+</p>
+
 <ul> 
  <li> <code>char-alphabetic?</code> 
  <li> <code>char-numeric?</code>
@@ -689,9 +694,9 @@ representing its Unicode general category, one of
  <li> <code>char-upper-case?</code>
  <li> <code>char-lower-case?</code> <li> 
  <code>char-title-case?</code>
- </ul></p>
+ </ul>
 
-<p>Examples:
+<p>Examples:</p>
 <pre>
   (char&lt;? #\z #\&#xDF;) =&gt; #t
   (char&lt;? #\z #\Z) =&gt; #f
@@ -732,14 +737,14 @@ representing its Unicode general category, one of
   (char-lower-case? #\x00AA) =&gt; #t
   (char-title-case? #\I) =&gt; #f
   (char-title-case? #\x01C5) =&gt; #t
-</pre></p>
+</pre>
 
 
 <h3>String Procedures</h3>
 
 <p>The following string procedures are defined as in R5RS, which means
 that they are defined by pointwise operation on the string's
-characters:
+characters:</p>
 <ul>
  <li> <code>string&lt;?</code>
  <li> <code>string&gt;?</code>
@@ -747,7 +752,6 @@ characters:
  <li> <code>string&lt;=?</code>
  <li> <code>string&gt;=?</code>
 </ul>
-</p>
 
 <p>The following string operations are <i>not</i> defined in terms of
 character-by-character conversions. Instead, they are defined as in
@@ -774,6 +778,7 @@ string can be different than the length of the input string:
  <li> <code>string-normalize-nfkc</code>
 </ul>
 
+<p>
 These procedures take a string argument argument and return a string
 result.  The <code>string-upcase</code> procedure converts a string to
 uppercase, <code>string-downcase</code> converts a string to
@@ -796,7 +801,7 @@ The <code>string-normalize-nfd</code>,
  respectively.
 
 <p>Case-insensitive string-comparison procedures are defined as
-follows:
+follows:</p>
 <pre>
    ;; string-ci-comparator itself is not part of this SRFI; it is
    ;; used only to define other procedures
@@ -851,7 +856,7 @@ follows:
   (string-ci=? "Stra&#xDF;e" "Strasse") =&gt; #t
   (string-ci=? "Stra&#xDF;e" "STRASSE") =&gt; #t
   (string-ci=? "&#x03A7;&#x0391;&#x039F;&#x03A3;" "&#x03C7;&#x03B1;&#x03BF;&#x03C3;") =&gt; #t
-</pre></p>
+</pre>
 
 
 <h1>Reference Implementation</h1>
