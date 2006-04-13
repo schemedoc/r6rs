@@ -1196,7 +1196,7 @@
        "The implementation of the explicit-naming syntactic layer also assumes "
        (code "letrec*") " semantics (as specified by the upcoming R6RS) for internal definitions "
        "to support internal record-type definitions. "
-       "The explicit-naming syntactic layer cannot be implemented using " (code "syntax-rules")
+       "The implicit-naming syntactic layer cannot be implemented using " (code "syntax-rules")
        " alone.  Two implementations, one for Scheme 48 using explicit renaming, and one for "
        "PLT Scheme using " (code "syntax-case") " are provided.")
       
