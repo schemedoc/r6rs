@@ -13,9 +13,9 @@ described informally in previous chapters of this report.
 This section provides a formal syntax for Scheme written in an extended
 BNF.
 
-All spaces in the grammar are for legibility.  Case is insignificant;
-for example, {\cf \#x1A} and {\cf \#X1a} are equivalent.  \meta{empty}
-stands for the empty string.
+All spaces in the grammar are for legibility.  Case is significant
+except in hexadecimal literals; for example, {\cf \#x1A} and {\cf
+  \#X1a} are equivalent.  \meta{empty} stands for the empty string.
 
 The following extensions to BNF are used to make the description more
 concise:  \arbno{\meta{thing}} means zero or more occurrences of
@@ -37,10 +37,9 @@ of tokens.
 within a token.
 
 \vest Tokens which require implicit termination (identifiers, numbers,
-characters, and dot) may be terminated by any \meta{delimiter}, but not
-necessarily by anything else.
-
-
+and dot) may be terminated by any \meta{delimiter}, but not
+necessarily by anything else.  Characters must be terminated by a
+\meta{delimiter} or by the end of the input.
 
 The following three characters are reserved for future extensions to the
 language: {\tt \verb"{" \verb"}" \verb"|"}
@@ -50,9 +49,13 @@ language: {\tt \verb"{" \verb"}" \verb"|"}
 \>  \| \meta{character} \| \meta{string}
 \>  \| ( \| ) \| \openbracket{} \| \closedbracket{} \| \sharpsign( \| \singlequote{} \| \backquote{} \| , \| ,@ \| {\bf.}
 \meta{delimiter} \: \meta{whitespace} \| ( \| ) \| \openbracket{} \| \closedbracket{} " \| ;
-\meta{whitespace} \: \meta{space or newline}
+\meta{whitespace} \: \meta{horizontal tab} \| \meta{linefeed}
+\> \| \meta{vertical tab} \| \meta{form feed} \meta{carriage return}
+\> \| \meta{any character whose category is Zs, Zl, or Zp}
+\meta{inta-line whitespace} \: $\langle${\rm any \meta{whitespace}}
+\> \quad {\rm that is not \meta{linefeed}}
 \meta{comment} \: ; \= $\langle$\rm all subsequent characters up to a
-		    \>\ \rm line break$\rangle$\index{comment}
+		    \>\ \rm linefeed$\rangle$\index{comment}
 \qquad \= \| \meta{nested comment}
 \> \| \#; \meta{datum}
 \meta{nested comment} \: \#| \= \meta{comment text}
@@ -73,15 +76,27 @@ language: {\tt \verb"{" \verb"}" \verb"|"}
 \begin{grammar}%
 \meta{identifier} \: \meta{initial} \arbno{\meta{subsequent}}
  \>  \| \meta{peculiar identifier}
-\meta{initial} \: \meta{letter} \| \meta{special initial}
-\meta{letter} \: a \| b \| c \| ... \| z
+\meta{initial} \: \meta{constituent} \| \meta{special initial}
+ \> \| \meta{symbol escape}
+\meta{letter} \:  a \| b \| c \| ... \| z
+\> \| A \| B \| C \| ... \| Z
+\meta{constituent} \: \meta{letter}
+ \> \| $\langle${\rm any character whose scalar value is greater than}
+ \> \quad {\rm 127, and whose category is Lu, Lt, Lm, Lo, Mn, Mc,}
+ \> \quad {\rm Me, Nd, Nl, No, Pd, Pc, Po, Sc, Sm, Sk, So, or Co}$\rangle$
 
 \meta{special initial} \: ! \| \$ \| \% \| \verb"&" \| * \| / \| : \| < \| =
  \>  \| > \| ? \| \verb"^" \| \verb"_" \| \verb"~"
 \meta{subsequent} \: \meta{initial} \| \meta{digit}
  \>  \| \meta{special subsequent}
+ \> \| \meta{symbol escape}
 \meta{digit} \: 0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7 \| 8 \| 9
+\meta{hex digit} \: \meta{digit}
+ \> \| a \| A \| b \| B \| c \| C \| d \| D \| e \| E \| f \| F
 \meta{special subsequent} \: + \| - \| .\ \| @
+\meta{symbol escape} \: \backwhack{}x\meta{hex scalar value};
+\meta{hex scalar value} \: \atleastone{\meta{hex digit}}
+ \> {\rm with at most 8 digits}
 \meta{peculiar identifier} \: + \| - \| ...
 %\| 1+ \| -1+
 \meta{syntactic keyword} \: \meta{expression keyword}\index{keyword}\index{syntactic keyword}
@@ -96,13 +111,18 @@ language: {\tt \verb"{" \verb"}" \verb"|"}
 \hbox to 1\wd0{\hfill}\ \rm also a \meta{syntactic keyword}$\rangle$
 
 \meta{boolean} \: \schtrue{} \| \schfalse{}
-\meta{character} \: \#\backwhack{} \meta{any character}
- \>  \| \#\backwhack{} \meta{character name}
-\meta{character name} \: space \| newline
+\meta{character} \: \#\backwhack{}\meta{any character}
+ \>  \| \#\backwhack{}\meta{character name}
+ \>  \| \#\backwhack{}x\meta{hex scalar value}
+\meta{character name} \: nul \| alarm \| backspace \| tab
+\> \| linefeed \| vtab \| page \| return \| esc
+\> \| space \| delete
 \todo{Explain what happens in the ambiguous case.}
 \meta{string} \: " \arbno{\meta{string element}} "
 \meta{string element} \: \meta{any character other than \doublequote{} or \backwhack}
- \>  \| \backwhack\doublequote{} \| \backwhack\backwhack %
+ \> \| \backwhack{}a \| \backwhack{}b \| \backwhack{}t \| \backwhack{}n \| \backwhack{}v \| \backwhack{}f \| \backwhack{}r
+ \>  \| \backwhack\doublequote{} \| \backwhack\backwhack 
+ \>  \| \meta{linefeed} \meta{intra-line whitespace}
 \end{grammar}
 
 
@@ -165,7 +185,7 @@ decimal points or exponents must be in decimal radix.
 \meta{digit 2} \: 0 \| 1
 \meta{digit 8} \: 0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7
 \meta{digit 10} \: \meta{digit}
-\meta{digit 16} \: \meta{digit $10$} \| a \| b \| c \| d \| e \| f %
+\meta{digit 16} \: \meta{hex digit}
 \end{grammar}
 
 \todo{Mark Meyer of TI sez, shouldn't we allow {\tt 1e3/2}?}

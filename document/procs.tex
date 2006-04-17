@@ -1815,26 +1815,31 @@ the way enumerated values are used in Pascal.
 writing an identifier; see sections~\ref{syntaxsection}
 and~\ref{identifiersyntax}.
 
-\vest It is guaranteed that any symbol that has been returned as part of
-a literal expression, or read using the {\cf read} procedure, and
-subsequently written out using the {\cf write} procedure, will read back
-in as the identical symbol (in the sense of {\cf eqv?}).  The
-{\cf string\coerce{}symbol} procedure, however, can create symbols for
-which this write/read invariance may not hold because their names
-contain special characters or letters in the non-standard case.
+\vest It is guaranteed that any symbol written out using the {\cf
+  write} procedure, will read back in as the identical symbol (in the
+sense of {\cf eqv?}).
 
-\begin{note}
-Some implementations of Scheme have a feature known as ``slashification''
-in order to guarantee write/read invariance for all symbols, but
-historically the most important use of this feature has been to
-compensate for the lack of a string data type.
+A symbol literal is formed using {\cf quote}.  Any character within a
+symbol literal may be specified by its scalar value, using the {\tt
+  \sharpsign\backwhack{}x} escape notation.
 
-\vest Some implementations also have ``uninterned symbols'', which
-defeat write/read invariance even in implementations with slashification,
-and also generate exceptions to the rule that two symbols are the same
-if and only if their names are spelled the same.
-\end{note}
-
+\begin{scheme}
+Hello \ev Hello
+'H\backwhack{}x65;llo \ev Hello
+'$\lambda$ \ev $\lambda$
+'\backwhack{}x3BB; \ev $\lambda$
+(string->symbol "a b") \ev a\backwhack{}x20;b
+(string->symbol "a\backwhack{}\backwhack{}b") \ev a\backwhack{}x5C;b
+'a\backwhack{}x20;b \ev a\backwhack{}x20;b
+'|a b| \>\>; \emph{parse error}
+\>\>\textrm{; (illegal character}
+\>\>\textrm{; vertical bar)}
+'a\backwhack{}nb  \>\>; \emph{parse error}
+\>\>\textrm{; (illegal use of backslash)}
+'a\backwhack{}x20 \>\>; \emph{parse error}
+\>\>\textrm{; (missing semi-colon to}
+\>\>\textrm{; terminate \backwhack{}x escape)}
+\end{scheme}
 
 \begin{entry}{%
 \proto{symbol?}{ obj}{procedure}}
@@ -1855,25 +1860,14 @@ Returns \schtrue{} if \var{obj} is a symbol, otherwise returns \schfalse.
 \begin{entry}{%
 \proto{symbol->string}{ symbol}{procedure}}
 
-Returns the name of \var{symbol} as a string.  If the symbol was part of
-an object returned as the value of a literal expression
-(section~\ref{literalsection}) or by a call to the {\cf read} procedure,
-and its name contains alphabetic characters, then the string returned
-will contain characters in the implementation's preferred standard
-case---some implementations will prefer upper case, others lower case.
-If the symbol was returned by {\cf string\coerce{}symbol}, the case of
-characters in the string returned will be the same as the case in the
-string that was passed to {\cf string\coerce{}symbol}.  It is an error
+Returns the name of \var{symbol} as a string.  It is an error
 to apply mutation procedures like \ide{string-set!} to strings returned
 by this procedure.
-
-The following examples assume that the implementation's standard case is
-lower case:
 
 \begin{scheme}
 (symbol->string 'flying-fish)     
                                   \ev  "flying-fish"
-(symbol->string 'Martin)          \ev  "martin"
+(symbol->string 'Martin)          \ev  "Martin"
 (symbol->string
    (string->symbol "Malvina"))     
                                   \ev  "Malvina"%
@@ -1884,20 +1878,13 @@ lower case:
 \begin{entry}{%
 \proto{string->symbol}{ string}{procedure}}
 
-Returns the symbol whose name is \var{string}.  This procedure can
-create symbols with names containing special characters or letters in
-the non-standard case, but it is usually a bad idea to create such
-symbols because in some implementations of Scheme they cannot be read as
-themselves.  See {\cf symbol\coerce{}string}.
-
-The following examples assume that the implementation's standard case is
-lower case:
+Returns the symbol whose name is \var{string}. 
 
 \begin{scheme}
-(eq? 'mISSISSIppi 'mississippi)  \lev  \schtrue
+(eq? 'mISSISSIppi 'mississippi)  \lev  \schfalse
 (string->symbol "mISSISSIppi")  \lev%
   {\rm{}the symbol with name} "mISSISSIppi"
-(eq? 'bitBlt (string->symbol "bitBlt"))     \lev  \schfalse
+(eq? 'bitBlt (string->symbol "bitBlt"))     \lev  \schtrue
 (eq? 'JollyWog
      (string->symbol
        (symbol->string 'JollyWog)))  \lev  \schtrue
@@ -1912,14 +1899,51 @@ lower case:
 \subsection{Characters}
 \label{charactersection}
 
-Characters are objects that represent printed characters such as
-letters and digits.  
+\mainindex{Unicode}
+\mainindex{scalar value}
+
+\defining{Characters} are objects that represent Unicode scalar
+values~\cite{Unicode41}.
+
+\begin{note}
+  Unicode defines a standard mapping between sequences of {\em code
+  points}\mainindex{code point} (integers in the range 0 to \#x10FFFF
+  in the latest version of the standard) and human-readable
+  ``characters.'' More precisely, Unicode distinguishes between
+  glyphs, which are printed for humans to read, and characters, which
+  are abstract entities that map to glyphs (sometimes in a way that's
+  sensitive to surrounding characters).  Furthermore, different
+  sequences of code points sometimes correspond to the same character.
+  The relationships among code points, characters, and glyphs are
+  subtle and complex.
+
+  Despite this complexity, most things that a literate human would
+  call a ``character'' can be represented by a single code point in
+  Unicode (though there may exist code-point sequences that represent
+  that same character). For example, Roman letters, Cyrillic letters,
+  Hebrew consonants, and most Chinese characters fall into this
+  category. Thus, the ``code point'' approximation of ``character''
+  works well for many purposes. It is thus appropriate to define
+  Scheme characters as Unicode {\em scalar values}\mainindex{scalar
+    value}, which includes all code points except those designated as
+  surrogates. A \defining{surrogate} is a code point in the range
+  \#xD800 to \#xDFFF that is used in pairs in the UTF-16 encoding to
+  encode a supplementary character (whose code is in the range
+  \#x10000 to \#x10FFFF).
+\end{note}
+
+
 %There is no requirement that the data type of
 %characters be disjoint from other data types; implementations are
 %encouraged to have a separate character data type, but may choose to
 %represent characters as integers, strings, or some other type.
-Characters are written using the notation \sharpsign\backwhack\hyper{character}
-or \sharpsign\backwhack\hyper{character name}.
+Character literals are written using the notation
+\sharpsign\backwhack\hyper{character} or
+\sharpsign\backwhack\hyper{character name} or
+\sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}, where the latter
+specifies the scalar value of a character with a hexadecimal number of
+no more than eight digits.
+
 For example:
 
 $$
@@ -1928,18 +1952,49 @@ $$
 {\tt \#\backwhack{}A}&; upper case letter\\
 {\tt \#\backwhack{}(}&; left parenthesis\\
 {\tt \#\backwhack{} }&; the space character\\
-{\tt \#\backwhack{}space}&; the preferred way to write a space\\
-{\tt \#\backwhack{}newline}&; the newline character\\
+{\tt \#\backwhack{}nul}& ; Unicode 0\\
+{\tt \#\backwhack{}alarm}& ; Unicode 7\\
+{\tt \#\backwhack{}backspace}& ; Unicode 8\\
+{\tt \#\backwhack{}tab}& ; Unicode 9\\
+{\tt \#\backwhack{}linefeed}& ; Unicode 10\\
+{\tt \#\backwhack{}vtab}& ; Unicode 11\\
+{\tt \#\backwhack{}page}& ; Unicode 12\\
+{\tt \#\backwhack{}return}& ; Unicode 13\\
+{\tt \#\backwhack{}esc}& ; Unicode 27\\
+{\tt \#\backwhack{}space}& ; Unicode 32;\\& \quad the preferred way to write a space\\
+{\tt \#\backwhack{}delete}& : Unicode 127\\[1ex]
+
+{\tt \#\backwhack{}xFF}& ; Unicode 255\\
+{\tt \#\backwhack{}x03BB}& ; Unicode 955\\
+{\tt \#\backwhack{}x00006587}& ; Unicode 25991\\
+{\tt \#\backwhack{}$\lambda$}& ; Unicode 955\\[1ex]
+
+{\tt \#\backwhack{}x0001z}& ; parse error\\
+{\tt \#\backwhack{}$\lambda$x}& ; parse error\\
+{\tt \#\backwhack{}alarmx}& ; parse error\\
+{\tt \#\backwhack{}alarm x}& ; Unicode 7 followed by {\tt x}\\
+{\tt \#\backwhack{}Alarm}& ; parse error\\
+{\tt \#\backwhack{}alert}& ; parse error\\
+{\tt \#\backwhack{}xA}& ; Unicode 10\\
+{\tt \#\backwhack{}xFF}& ; Unicode 255\\
+{\tt \#\backwhack{}xff}& ; Unicode 255\\
+{\tt \#\backwhack{}x ff}& ; Unicode 120 followed by another datum, \\& \quad {\tt ff}\\
+{\tt \#\backwhack{}x(ff)}& ; Unicode 120 followed by another datum, \\& \quad a parenthesized {\tt ff}\\
+{\tt \#\backwhack{}(x)}& ; parse error\\
+{\tt \#\backwhack{}(x}& ; parse error\\
+{\tt \#\backwhack{}((x)}& ; Unicode 40 followed by another datum, \\& \quad parenthesized {\tt x}\\
+{\tt \#\backwhack{}x00110000}& ; parse error (out of range)\\
+{\tt \#\backwhack{}x000000001}& ; parse error (too many digits)\\
+{\tt \#\backwhack{}xD800}& ; parse error (in excluded range)
 \end{tabular}
 $$
 
-Case is significant in \sharpsign\backwhack\hyper{character}, but not in
-\sharpsign\backwhack{\rm$\langle$character name$\rangle$}.  % \hyper doesn't
-                                                            % allow a linebreak
-If \hyper{character} in
-\sharpsign\backwhack\hyper{character} is alphabetic, then the character
-following \hyper{character} must be a delimiter character such as a
-space or parenthesis.  This rule resolves the ambiguous case where, for
+Case is significant in \sharpsign\backwhack\hyper{character}, and in in
+\sharpsign\backwhack{\rm$\langle$character name$\rangle$}, % \hyper doesn't allow a linebreak
+but not in \sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}.  
+The character after a character literal
+must be a delimiter character such as a
+space or parenthesis.  This rule resolves various ambiguous cases, for
 example, the sequence of characters ``{\tt\sharpsign\backwhack space}''
 could be taken to be either a representation of the space character or a
 representation of the character ``{\tt\sharpsign\backwhack s}'' followed
@@ -1966,6 +2021,25 @@ Returns \schtrue{} if \var{obj} is a character, otherwise returns \schfalse.
 
 \end{entry}
 
+\begin{entry}{%
+\proto{char->integer}{ char}{procedure}
+\proto{integer->char}{ \vr{n}}{procedure}}
+
+Given a character, {\cf char\coerce{}integer} returns its scalar value
+as an exact integer.  Given an exact integer that is
+s scalar value, i.e.\ a number in $\left[0, \#x\textrm{D7FF}\right] \cup
+\left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]$,
+{\cf integer\coerce{}char}
+returns its associated character.
+
+\begin{scheme}
+(integer->char 32) \ev \sharpsign\backwhack{}space
+(char->integer (integer->char 5000))
+\ev 5000
+(integer->char \sharpsign{}xD800) \ev \textit{error}
+\end{scheme}
+\end{entry}
+
 
 \begin{entry}{%
 \proto{char=?}{ \vari{char} \varii{char}}{procedure}
@@ -1976,23 +2050,95 @@ Returns \schtrue{} if \var{obj} is a character, otherwise returns \schfalse.
 
 \label{characterequality}
 \nodomain{Both \vari{char} and \varii{char} must be characters.}
-These procedures impose a total ordering on the set of characters.  It
-is guaranteed that under this ordering:
-
-\begin{itemize}
-\item The upper case characters are in order.  For example, {\cf 
-   (char<?\ \#\backwhack{}A \#\backwhack{}B)} returns \schtrue.
-\item The lower case characters are in order.  For example, {\cf 
-   (char<?\ \#\backwhack{}a \#\backwhack{}b)} returns \schtrue.
-\item The digits are in order.  For example, {\cf 
-   (char<?\ \#\backwhack{}0 \#\backwhack{}9)} returns \schtrue.
-\item Either all the digits precede all the upper case letters, or vice versa.
-\item Either all the digits precede all the lower case letters, or vice versa.
-\end{itemize}
+These procedures impose a total ordering on the set of characters
+according to their scalar values.
 
 Some implementations may generalize these procedures to take more than
 two arguments, as with the corresponding numerical predicates.
 
+\begin{scheme}
+(char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}\ss) \ev \schtrue
+(char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schfalse
+\end{scheme}
+
+\begin{note}
+These procedures could be defined as follows:
+%
+\begin{scheme}
+; char-comparator is not itself part of the
+; specification; it is used only to define 
+; other procedures
+(define (char-comparator num-comp)
+  (lambda (a-char b-char)
+    (num-comp (char->integer a-char)
+              (char->integer b-char))))
+
+(define char=? (char-comparator =))
+(define char<? (char-comparator <))
+(define char>? (char-comparator >))
+(define char<=? (char-comparator <=))
+(define char>=? (char-comparator >=))
+\end{scheme}
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{char-upcase}{ char}{library procedure}
+\proto{char-downcase}{ char}{library procedure}
+\proto{char-titlecase}{ char}{library procedure}
+\proto{char-foldcase}{ char}{library procedure}}
+
+\nodomain{\var{Char} must be a character.}
+These procedures take a character argument and return a character
+result. If the argument is an upper case or title case character, and if
+there is a single character which is its lower case form, then
+{\cf char-downcase} returns that character. If the argument is a lower case
+or title case character, and if there is a single character which is
+its uppercase form, then {\cf char-upcase} returns that character.
+If the argument is a lower case
+or upper case character, and if there is a single character which is
+its titlecase form, then {\cf char-titlecase} returns that character.
+%
+FIXME: \texttt{char-foldcase} isn't defined.
+%
+Otherwise, the character returned is the same as the argument.
+
+\begin{scheme}
+(char-upcase \sharpsign\backwhack{}i) \ev \sharpsign\backwhack{}I
+(char-downcase \sharpsign\backwhack{}i) \ev \sharpsign\backwhack{}i
+(char-titlecase \sharpsign\backwhack{}i) \ev \sharpsign\backwhack{}I
+(char-foldcase \sharpsign\backwhack{}i) \ev \sharpsign\backwhack{}i
+
+(char-upcase \sharpsign\backwhack{}\ss) \ev \sharpsign\backwhack{}\ss
+(char-downcase \sharpsign\backwhack{}\ss) \ev \sharpsign\backwhack{}\ss
+(char-titlecase \sharpsign\backwhack{}\ss) \ev \sharpsign\backwhack{}\ss
+(char-foldcase \sharpsign\backwhack{}\ss) \ev \sharpsign\backwhack{}\ss
+
+(char-upcase \sharpsign\backwhack{}$\Sigma$) \ev \sharpsign\backwhack{}$\Sigma$
+(char-downcase \sharpsign\backwhack{}$\Sigma$) \ev \sharpsign\backwhack{}$\sigma$
+(char-titlecase \sharpsign\backwhack{}$\Sigma$) \ev \sharpsign\backwhack{}$\Sigma$
+(char-foldcase \sharpsign\backwhack{}$\Sigma$) \ev \sharpsign\backwhack{}$\sigma$
+
+(char-upcase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\Sigma$
+(char-downcase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\varsigma$
+(char-titlecase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\Sigma$
+(char-foldcase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\sigma$
+\end{scheme}
+
+\begin{note}
+  Unicode defines locale-independent mappings from scalar values to
+  scalar values for upcase, downcase, titlecase, and case-folding
+  operations. (These mappings can be extracted from {\cf
+    UnicodeData.txt} and {\cf CaseFolding.txt} from the Unicode
+  Consortium.) These procedures map characters consistent with the
+  Unicode specification.
+
+  Note that this is an incomplete approximation to case conversion,
+  even ignoring the user's locale; in general, case mappings require
+  the context of a string, both in arguments and in result. See {\cf
+    string-upcase} and {\cf string-downcase} for more general
+  case-conversion procedures.
+\end{note}
 \end{entry}
 
 
@@ -2004,12 +2150,37 @@ two arguments, as with the corresponding numerical predicates.
 \proto{char-ci>=?}{ \vari{char} \varii{char}}{library procedure}}
 
 \nodomain{Both \vari{char} and \varii{char} must be characters.}
-These procedures are similar to {\cf char=?}\ et cetera, but they treat
-upper case and lower case letters as the same.  For example, {\cf
-(char-ci=?\ \#\backwhack{}A \#\backwhack{}a)} returns \schtrue.  Some
-implementations may generalize these procedures to take more than two
-arguments, as with the corresponding numerical predicates.
+These procedures are similar to {\cf char=?}\ et cetera, but operate
+on the fold-cased versions of the characters.
 
+Some implementations may generalize these procedures to take more than
+two arguments, as with the corresponding numerical predicates.
+
+\begin{scheme}
+(char-ci<? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schfalse
+(char-ci=? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schtrue
+(char-ci=? \sharpsign\backwhack{}$\varsigma$ \sharpsign\backwhack{}$\sigma$) \ev \schtrue
+\end{scheme}
+
+\begin{note}
+These procedures could be defined as follows:
+%
+\begin{scheme}
+; char-ci-comparator is not itself part of the
+; specification; it is used only to define 
+; other procedures
+(define (char-ci-comparator cs-comp)
+  (lambda (a-char b-char)
+    (cs-comp (char-foldcase a-char)
+             (char-foldcase b-char))))
+
+(define char-ci=? (char-ci-comparator char=?))
+(define char-ci<? (char-ci-comparator char<?))
+(define char-ci>? (char-ci-comparator char>?))
+(define char-ci<=? (char-ci-comparator char<=?))
+(define char-ci>=? (char-ci-comparator char>=?))
+\end{scheme}
+\end{note}
 \end{entry}
 
 
@@ -2018,96 +2189,96 @@ arguments, as with the corresponding numerical predicates.
 \proto{char-numeric?}{ char}{library procedure}
 \proto{char-whitespace?}{ char}{library procedure}
 \proto{char-upper-case?}{ letter}{library procedure}
-\proto{char-lower-case?}{ letter}{library procedure}}
+\proto{char-lower-case?}{ letter}{library procedure}
+\proto{char-title-case?}{ letter}{library procedure}}
 
 These procedures return \schtrue{} if their arguments are alphabetic,
-numeric, whitespace, upper case, or lower case characters, respectively,
-otherwise they return \schfalse.  The following remarks, which are specific to
-the ASCII character set, are intended only as a guide:  The alphabetic characters
-are the 52 upper and lower case letters.  The numeric characters are the
-ten decimal digits.  The whitespace characters are space, tab, line
-feed, form feed, and carriage return.
-\end{entry}
+numeric, whitespace, upper case, lower case, or title case characters,
+respectively, otherwise they return \schfalse.
 
-
-%%R4%%\begin{entry}{%
-%\proto{char-upper-case?}{ letter}{procedure}
-%\proto{char-lower-case?}{ letter}{procedure}}
-%
-%\domain{\var{Letter} must be an alphabetic character.}
-%These procedures return \schtrue{} if their arguments are upper case or
-%lower case characters, respectively, otherwise they return \schfalse.
-%\end{entry}
-
-
-\begin{entry}{%
-\proto{char->integer}{ char}{procedure}
-\proto{integer->char}{ \vr{n}}{procedure}}
-
-Given a character, {\cf char\coerce{}integer} returns an exact integer
-representation of the character.  Given an exact integer that is the image of
-a character under {\cf char\coerce{}integer}, {\cf integer\coerce{}char}
-returns that character.  These procedures implement order-preserving isomorphisms
-between the set of characters under the \ide{char<=?}\ ordering and some
-subset of the integers under the {\cf <=}\ ordering.  That is, if
+A character is alphabetic if it is a Unicode letter, i.e.\ if it is in
+one of categories Lu, Ll, Lt, Lm, and Lo.  A character is numeric if
+it is in categeory Nd.  A characters is whitespace if it is in one of
+the space, line, or paragraph separator categories (Zs, Zl or Zp), or
+if is Unicode 9 (Horizontal tabulation), Unicode 10 (Line feed),
+Unicode 11 (Vertical tabulation), Unicode 12 (Form feed), or Unicode
+13 (Carriage return).  A character is upper case if it has the Unicode
+``Uppercase'' property, lower case if it has the ``Lowercase''
+property, and title case if it is in the Lt general category,
+respectively.
 
 \begin{scheme}
-(char<=? \vr{a} \vr{b}) \evalsto \schtrue  {\rm{}and}  %
-(<= \vr{x} \vr{y}) \evalsto \schtrue%
+(char-alphabetic? \sharpsign\backwhack{}a) \ev \schtrue{}
+(char-numeric? \sharpsign\backwhack{}1) \ev \schtrue{}
+(char-whitespace? \sharpsign\backwhack{}space) \ev \schtrue{}
+(char-whitespace? \sharpsign\backwhack{}x00A0) \ev \schtrue{}
+(char-upper-case? \sharpsign\backwhack{}$\Sigma$) \ev \schtrue{}
+(char-lower-case? \sharpsign\backwhack{}$\sigma$) \ev \schtrue{}
+(char-lower-case? \sharpsign\backwhack{}x00AA) \ev \schtrue{}
+(char-title-case? \sharpsign\backwhack{}I) \ev \schfalse{}
+(char-title-case? \sharpsign\backwhack{}x01C5) \ev \schtrue{}
 \end{scheme}
-
-\noindent and \vr{x} and \vr{y} are in the domain of
-{\cf integer\coerce{}char}, then
-
-\begin{scheme}
-(<= (char\coerce{}integer \vr{a})
-    (char\coerce{}integer \vr{b}))         \ev  \schtrue
-
-(char<=? (integer\coerce{}char \vr{x})
-         (integer\coerce{}char \vr{y}))     \ev  \schtrue%
-\end{scheme}
-
 \end{entry}
 
-
-\begin{entry}{%
-\proto{char-upcase}{ char}{library procedure}
-\proto{char-downcase}{ char}{library procedure}}
-
-\nodomain{\var{Char} must be a character.}
-These procedures return a character \varii{char} such that {\cf
-(char-ci=? \var{char} \varii{char})}.  In addition, if \var{char} is
-alphabetic, then the result of {\cf char-upcase} is upper case and the
-result of {\cf char-downcase} is lower case.
-
-\end{entry}
-
+FIXME: Add \texttt{char-general-category}
 
 \subsection{Strings}
 \label{stringsection}
 
 Strings are sequences of characters.  
-%In some implementations of Scheme
-%they are immutable; other implementations provide destructive procedures
-%such as {\cf string-set!}\ that alter string objects.
-\vest Strings are written as sequences of characters enclosed within doublequotes
-({\cf "}).  A doublequote can be written inside a string only by escaping
-it with a backslash (\backwhack{}), as in
+\vest String literals are written as sequences of characters enclosed within doublequotes
+({\cf "}).  Within a string literal, various escape
+sequences\mainindex{escape sequence} denote characters other than
+themselves.  Escape sequences always start with a backslash (\backwhack{}):
 
-\begin{scheme}
-"The word \backwhack{}"recursion\backwhack{}" has many meanings."%
-\end{scheme}
+\begin{itemize}
+\item{\tt \backwhack{}a} : alarm, Unicode 7
+\item{\tt \backwhack{}b} : backspace, Unicode 8 
+\item{\tt \backwhack{}t} : tab, Unicode 9 
+\item{\tt \backwhack{}n} : linefeed, Unicode 10 
+\item{\tt \backwhack{}v} : vertical tab, Unicode 11 
+\item{\tt \backwhack{}f} : formfeed, Unicode 12 
+\item{\tt \backwhack{}r} : return, Unicode 13 
+\item{\tt \backwhack{}}\verb|"| : doublequote, Unicode 34 
+\item{\tt \backwhack{}\backwhack{}} : backslash, Unicode 92 
+\item{\tt \backwhack{}\hyper{linefeed}\hyper{intraline whitespace}} : nothing
+\item{\tt \backwhack{}\ } : space, Unicode 32(useful for terminating the
+  previous escape sequence before continuing with whitespace)
+\item{\tt \backwhack{}x\atleastone{\hyper{digit 16}}} : (note the
+  terminating semi-colon) where no more than eight \hyper{digit 16}s
+  are provided, and the sequence of \hyper{digit 16}s forms a
+  hexadecimal number between 0 and \sharpsign{}xFFFF excluding the
+  range $\left[\sharpsign{}x\textrm{D800},
+    \sharpsign{}x\textrm{DFFF}\right]$.
+\end{itemize}
 
-A backslash can be written inside a string only by escaping it with another
-backslash.  Scheme does not specify the effect of a backslash within a
-string that is not followed by a doublequote or backslash.
+These escape sequences are case-sensitive, except that \hyper{digit
+  16} can be an uppercase or lowercase hexadecimal digit.
 
-\vest A string constant may continue from one line to the next, but
-the exact contents of such a string are unspecified.
-% this is
-%usually a bad idea because 
-%the exact effect may vary from one computer
-%system to another.
+Any other character in a string after a backslash is an error. Any
+character outside of an escape sequence and not a doublequote stands
+for itself in the string literal. For example the single-character
+string {\tt "$\lambda$"} (double quote, a lower case lambda, double
+quote) denotes the same string literal as {\tt "\backwhack{}x03bb;"}.
+
+Examples:
+
+\begin{center}
+  \begin{tabular}{ll}
+    {\tt "abc"}    & ; Unicode sequence 97, 98, 99\\
+    {\tt "\backwhack{}x41;bc"} & ; ``Abc'', Unicode sequence 65, 98, 99\\
+    {\tt "\backwhack{}x41; bc"} & ; ``A bc'', Unicode sequence 65, 32, 98, 99\\
+    {\tt "\backwhack{}x41bc;"} & ; Unicode sequence 16828\\
+    {\tt "\backwhack{}x41"} & ; parse error\\
+    {\tt "\backwhack{}x;"} & ; parse error\\
+    {\tt "\backwhack{}x41bx;"} & ; parse error\\
+    {\tt "\backwhack{}x00000041;"} & ; ``A'', Unicode sequence 65\\
+    {\tt "\backwhack{}x0010FFFF;"} &  ; Unicode sequence \#x10FFFF\\
+    {\tt "\backwhack{}x00110000;"}&  ; parse error (out of range)\\
+    {\tt "\backwhack{}x000000001;"}& ; parse error (too many digits)\\
+    {\tt "\backwhack{}xD800;"}&      ; parse error (in excluded range)
+  \end{tabular}
+\end{center}
 
 \vest The {\em length} of a string is the number of characters that it
 contains.  This number is an exact, non-negative integer that is fixed when the
@@ -2193,15 +2364,14 @@ and returns an unspecified value.  % <!>
 
 
 \begin{entry}{%
-\proto{string=?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string-ci=?}{ \vari{string} \varii{string}}{library procedure}}
+\proto{string=?}{ \vari{string} \varii{string}}{library procedure}}
 
 Returns \schtrue{} if the two strings are the same length and contain the same
 characters in the same positions, otherwise returns \schfalse.
-{\cf String-ci=?}\ treats
-upper and lower case letters as though they were the same character, but
-{\cf string=?}\ treats upper and lower case as distinct characters.
 
+\begin{scheme}
+(string=? "Straﬂe" "Strasse") \ev \schfalse
+\end{scheme}
 \end{entry}
 
 
@@ -2209,11 +2379,7 @@ upper and lower case letters as though they were the same character, but
 \proto{string<?}{ \vari{string} \varii{string}}{library procedure}
 \proto{string>?}{ \vari{string} \varii{string}}{library procedure}
 \proto{string<=?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string>=?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string-ci<?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string-ci>?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string-ci<=?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string-ci>=?}{ \vari{string} \varii{string}}{library procedure}}
+\proto{string>=?}{ \vari{string} \varii{string}}{library procedure}}
 
 These procedures are the lexicographic extensions to strings of the
 corresponding orderings on characters.  For example, {\cf string<?}\ is
@@ -2226,8 +2392,119 @@ Implementations may generalize these and the {\cf string=?}\ and
 {\cf string-ci=?} procedures to take more than two arguments, as with
 the corresponding numerical predicates.
 
+\begin{scheme}
+(string<? "z" "\ss") \ev \schtrue
+(string<? "z" "zz") \ev \schtrue
+(string<? "z" "Z") \ev \schfalse
+\end{scheme}
 \end{entry}
 
+\begin{entry}{%
+\proto{string-upcase}{ \var{string}}{library procedure}
+\proto{string-downcase}{ \var{string}}{library procedure}
+\proto{string-titlecase}{ \var{string}}{library procedure}
+\proto{string-foldcase}{ \var{string}}{library procedure}}
+
+These procedures take a string argument argument and return a string
+result.  They are defined as in terms of Unicode's locale-independent
+case mappings from scalar-value sequences to scalar-value sequences.
+In particular, the length of the result string can be different than
+the length of the input string.
+
+The {\cf string-upcase} procedure converts a string to upper case,
+{\cf string-downcase} converts a string to lowercase, and {\cf
+  string-foldcase} converts the string to its case-folded counterpart.
+The {\cf string-titlecase} procedure converts the first character to
+title case in each contiguous sequence of cased characters within
+\var{string}, and it downcases all other cased characters; for the
+purposes of detecting cased-character sequences, case-ignorable
+characters are ignored (i.e., they do not interrupt the sequence).
+
+\begin{scheme}
+(string-upcase "Hi") \ev "HI"
+(string-downcase "Hi") \ev "hi"
+(string-foldcase "Hi") \ev "hi"
+
+(string-upcase "Stra\ss{}e") \ev "STRASSE"
+(string-downcase "Stra\ss{}e") \ev "stra\ss{}e"
+(string-foldcase "Stra\ss{}e") \ev "strasse"
+(string-downcase "STRASSE")  \ev "strasse"
+
+(string-downcase "$\Sigma$") \ev "$\sigma$"
+
+; \textrm{Chi Alpha Omicron Sigma}:
+(string-upcase "$\mathit{XAO}\Sigma$") \ev "$\mathit{XAO}\Sigma$" 
+(string-downcase "$\mathit{XAO}\Sigma$") \ev "$\chi\alpha{}o\varsigma$"
+(string-downcase "$\mathit{XAO}\Sigma\Sigma$") \ev "$\chi\alpha{}o\sigma\varsigma$"
+(string-downcase "$\mathit{XAO}\Sigma~\Sigma$") \ev "$\chi\alpha{}o\varsigma~\sigma$"
+(string-foldcase "$\mathit{XAO}\Sigma\Sigma$") \ev "$\chi\alpha{}o\sigma\sigma$"
+(string-upcase "$\chi\alpha{}o\varsigma$") \ev "$\mathit{XAO}\Sigma$"
+(string-upcase "$\chi\alpha{}o\sigma$") \ev "$\mathit{XAO}\Sigma$"
+
+(string-titlecase "kNock KNoCK")
+\ev "Knock Knock"
+(string-titlecase "who's there?")
+\ev "Who's There?"
+(string-titlecase "r6rs") \ev "R6Rs"
+(string-titlecase "R6RS") \ev "R6Rs"
+\end{scheme}
+
+\begin{note}
+  These mappings can be extracted from {\cf UnicodeData.txt}, and {\cf
+    SpecialCasing.txt}, from the Unicode Consortium.
+
+  Since each of these procedures is locale-independent, they may not
+  be completely appropriate for some locales.
+\end{note}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{string-ci=?}{ \vari{string} \varii{string}}{library procedure}
+\proto{string-ci<?}{ \vari{string} \varii{string}}{library procedure}
+\proto{string-ci>?}{ \vari{string} \varii{string}}{library procedure}
+\proto{string-ci<=?}{ \vari{string} \varii{string}}{library procedure}
+\proto{string-ci>=?}{ \vari{string} \varii{string}}{library procedure}}
+
+\nodomain{Both \vari{string} and \varii{string} must be strings.}
+These procedures are similar to {\cf string=?}\ et cetera, but operate
+on the fold-cased versions of the strings.
+
+Some implementations may generalize these procedures to take more than
+two arguments, as with the corresponding numerical predicates.
+
+\begin{scheme}
+(string-ci<? "z" "Z") \ev \schfalse
+(string-ci=? "z" "Z") \ev \schtrue
+(string-ci=? "Stra\ss{}e" "Strasse") 
+\ev \schtrue
+(string-ci=? "Stra\ss{}e" "STRASSE")
+\ev \schtrue
+(string-ci=? "$\mathit{XAO}\Sigma$" "$\chi\alpha{}o\sigma$")
+\ev \schtrue
+\end{scheme}
+
+\begin{note}
+These procedures could be defined as follows:
+%
+\begin{scheme}
+; string-ci-comparator itself is not part of the
+; specification; it is used only to define 
+; other procedures
+(define (string-ci-comparator cs-comp)
+  (lambda (a-string b-string)
+    (cs-comp (string-foldcase a-string)
+             (string-foldcase b-string))))
+
+(define string-ci=? (string-ci-comparator string=?))
+(define string-ci<? (string-ci-comparator string<?))
+(define string-ci>? (string-ci-comparator string>?))
+(define string-ci<=? (string-ci-comparator string<=?))
+(define string-ci>=? (string-ci-comparator string>=?))
+\end{scheme}
+\end{note}
+
+\end{entry}
 
 \begin{entry}{%
 \proto{substring}{ string start end}{library procedure}}
@@ -2283,6 +2560,27 @@ unspecified value.  % <!>
 
 \end{entry}
 
+\begin{entry}{
+\proto{string-normalize-nfd}{ \var{string}}{library procedure}
+\proto{string-normalize-nfkd}{ \var{string}}{library procedure}
+\proto{string-normalize-nfc}{ \var{string}}{library procedure}
+\proto{string-normalize-nfkc}{ \var{string}}{library procedure}}
+  
+These procedures take a string argument argument and return a string
+result.  They each return a string that is the input string normalized
+to Unicode form D, KD, C, or KC, respectively.
+
+\begin{scheme}
+(string-normalize-nfd "\backwhack{}xE9;")
+\ev "\backwhack{}x65;\backwhack{}x301;"
+(string-normalize-nfc "\backwhack{}xE9;")
+\ev "\backwhack{}xE9;"
+(string-normalize-nfd "\backwhack{}x65;\backwhack{}x301;")
+\ev "\backwhack{}x65;\backwhack{}x301;"
+(string-normalize-nfc "\backwhack{}x65;\backwhack{}x301;")
+\ev "\backwhack{}xE9;"
+\end{scheme}
+\end{entry}
 
 \subsection{Vectors}
 \label{vectorsection}
