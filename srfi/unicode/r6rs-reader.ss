@@ -30,9 +30,11 @@
   (define special-initials (string->list "!$%&*/:<=>?^_~"))
   (define special-subsequents (string->list "+-@."))
   (define excluded-symbol-chars
-    '(#\U0020 #\U0028 #\U0029 #\U005B #\U005D #\U007B #\U007D #\U00A0
-      #\U00AB #\U00AD #\U00BB #\U0313 #\U0600 #\U0601 #\U0602 #\U0603
-      #\U06DD #\U070F #\U0F3A #\U0F3B #\U0F3C #\U0F3D #\U1680 #\U169B
+    '(#\U80 #\U81 #\U82 #\U83 #\U84 #\U85 #\U86 #\U87 #\U88 #\U89
+      #\U8A #\U8B #\U8C #\U8D #\U8E #\U8F #\U90 #\U91 #\U92 #\U93
+      #\U94 #\U95 #\U96 #\U97 #\U98 #\U99 #\U9A #\U9B #\U9C #\U9D
+      #\U9E #\U9F #\UA0 #\UAB #\UAD #\UBB #\U600 #\U601 #\U602 #\U603
+      #\U6DD #\U70F #\UF3A #\UF3B #\UF3C #\UF3D #\U1680 #\U169B
       #\U169C #\U17B4 #\U17B5 #\U180E #\U2000 #\U2001 #\U2002 #\U2003
       #\U2004 #\U2005 #\U2006 #\U2007 #\U2008 #\U2009 #\U200A #\U200B
       #\U200C #\U200D #\U200E #\U200F #\U2018 #\U2019 #\U201A #\U201B
