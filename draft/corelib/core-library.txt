@@ -1,0 +1,214 @@
+R6RS Core vs. Library Split
+===========================
+This proposal provides a sketch of the core vs. library split in the R6RS.  It does not address the question of how the library system specifies its own version.  It assumes that libraries must specify the language they depend on as an ordinary library import, e.g. "(import r6rs)" or "(import r6r6-core)".
+
+As an overview, the names of the proposed libraries are as follows:
+
+* r6rs-core
+* syntax-rules
+* syntax-case
+* exceptions
+* conditions
+* bytes
+* arithmetic-fixnum
+* arithmetic-flonum
+* arithmetic-fx
+* arithmetic-exact
+* arithmetic-inexact
+* arithmetic-generic
+* primitive-i/o
+* port-i/o
+* promises
+* eval
+* records
+* records-procedural
+* records-explicit
+* records-implicit (subsumes records-explicit)
+* records-reflection
+* hash-tables
+
+In addition to the above, some composite libraries are defined, consisting of combinations of the above libraries:
+
+* r6rs-small
+* r6rs
+* r6rs-big
+
+The contents of these libraries are summarized below.
+
+
+Library: r6rs-core
+------------------
+This library defines the core Scheme language.  The rationale for the contents of the core needs to be documented.  The r6rs-core library contains the following features:
+
+* All of the primitive expression types described in R5RS 4.1, including if, lambda, quote, set!
+* 'define' - definitions as described in R5RS 5.2
+* R5RS 4.2.1 Conditionals: cond, case, and, or
+* R5RS 4.2.2 Binding constructs: let, let*, letrec, letrec*
+* R5RS 4.2.3 Sequencing: begin
+* R5RS 4.2.4 Iteration: do, named let
+* R5RS 4.2.6 Quasiquotation: quasiquote, unquote, unquote-splicing
+* R5RS 6.1 Equivalence predicates
+* R5RS 6.2 Generic arithmetic procedures (excluding flonum- and fixnum-specific procedures)
+* R5RS 6.3 Other data types: booleans, pairs and lists, symbols, chars, strings, vectors and related procedures.
+* values, call-with-values, "let-values", etc.
+
+* R5RS 6.4: procedure? apply map for-each call-with-current-continuation dynamic-wind
+* Exception and conditions (SRFI 34 and 35)
+
+This library includes features which some client libraries may wish to exclude.  The SRFI 83 "except" clause can be used for this purpose, e.g.
+
+(library "hello" "scheme://r6rs"
+  (import (except "r6rs" do named-let)
+          ...)
+  ...)
+
+
+Library: syntax-rules
+---------------------
+Provides define-syntax, let-syntax, letrec-syntax, and the syntax-rules macro system.
+
+
+Library: syntax-case
+--------------------
+Provides define-syntax, let-syntax, letrec-syntax, the syntax-case macro system, and syntax-rules.
+
+
+Library: exceptions
+-------------------
+SRFI 34
+
+
+Library: conditions
+-------------------
+SRFI 35
+
+
+Library: bytes
+--------------
+SRFI 74
+
+
+Library: arithmetic-fixnum
+--------------------------
+Mostly procedures whose names begin with fixnum.
+
+
+Library: arithmetic-fx
+----------------------
+Mostly procedures whose names begin with fx.
+
+
+Library: arithmetic-flonum
+--------------------------
+Flonum procedures.
+
+
+Library: arithmetic-exact
+-------------------------
+Exact arithmetic procedures.
+
+
+Library: arithmetic-inexact
+---------------------------
+Inexact arithmetic procedures.
+
+
+Library: arithmetic-generic
+---------------------------
+Generic arithmetic procedures.
+
+
+Library: primitive-i/o
+----------------------
+SRFI 79
+
+
+Library: port-i/o
+-----------------
+SRFI 81
+
+
+Library: promises
+-----------------
+delay and force.
+
+
+Library: eval
+-------------
+load, eval, scheme-report-environment, null-environment, interaction-environment
+
+
+Library: records-procedural
+---------------------------
+SRFI 76 procedural layer
+
+
+Library: records-explicit
+-------------------------
+SRFI 76 explicit-naming syntactic layer
+
+
+Library: records-implicit
+-------------------------
+SRFI 76 implicit-naming syntactic layer (subsumes explicit-naming layer)
+
+
+Library: records-reflection
+---------------------------
+SRFI 76 explicit-naming syntactic layer
+
+
+Library: hash-tables
+--------------------
+Hash tables, hash functions (latter possibly separate library).
+
+
+Library: r6rs-small
+-------------------
+This library provides an augmented version of the core language with some basic features to provide a complete yet small language.  It is composed of the following libraries:
+
+    r6rs-core
+    syntax-rules
+    records-explicit
+
+Mike suggests including "error" and "violation" convenience procedures to raise exceptions.
+
+
+Library: r6rs
+-------------
+This library provides a fairly complete set of R6RS features, excluding certain libraries not considered part of the base R6RS language.  Composition:
+
+    r6rs-core
+    syntax-case
+    records-explicit
+    exceptions
+    conditions
+    arithmetic-generic
+    primitive-i/o
+    port-i/o
+
+
+Library: r6rs-big
+-----------------
+This library provides all features defined in the R6RS.  Composition:
+
+    r6rs
+    bytes
+    promises
+    eval
+    arithmetic-fixnum
+    arithmetic-flonum
+    arithmetic-fx
+    arithmetic-exact
+    arithmetic-inexact
+    records-procedural
+    records-implicit
+    records-reflection
+    hash-tables
+
+
+Issue: R5RS support
+-------------------
+Mike suggests that "R5RS compatibility should be considered for specific libraries, i.e. I/O, but not as a whole---that would be hard to do for a number of reasons, starting with lexical syntax."
+
+**end**
