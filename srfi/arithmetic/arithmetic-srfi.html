@@ -195,28 +195,41 @@ on the following issues:
 <li>Fixnums are somewhat arbitrarily required to have a
     two's complement range of at least 24 bits, so every
     exact integer within [-8388608,8388607] is a fixnum.
-<li>Is it really useful for <code>fx+</code>, <code>fx-</code>, and
-    <code>fx*</code> to take more than two arguments?
-    This requires them to perform linear-bounded-precision
-    arithmetic instead of fixed precision arithmetic.
-<li>The bitwise operations of this SRFI are specified consistently
+<li>The bitwise operations of this SRFI are not entirely consistent
     with those of
-    <a href="http://srfi.schemers.org/srfi-60/srfi-60.html">SRFI 60</a>,
-    but the ordering of arguments is sometimes inconsistent with the
-    Scheme convention of having the aggregate first, then the index,
-    then the new value.  This inconsistency is seen in the
+    <a href="http://srfi.schemers.org/srfi-60/srfi-60.html">SRFI 60</a>.
+    The order of arguments to the following procedures has been
+    changed for consistency with the Scheme convention of passing
+    the aggregate first, then the index, and then the new value:
     <code>exact-bit-set?</code>,
     <code>exact-copy-bit</code>,
     <code>fixnum-bit-set?</code>,
     <code>fx-bit-set?</code>,
     <code>fixnum-copy-bit</code>, and
-    <code>fxcopy-bit</code>
-    procedures.
-    The ordering of arguments to the
+    <code>fxcopy-bit</code>.
+    The ordering of arguments to the following procedures have
+    also been changed so the original value comes first, then
+    the two integers that select the bit field, and then the
+    bit source or rotation count:
+    <code>exact-copy-bit-field</code>,
+    <code>fixnum-copy-bit-field</code>,
+    <code>fxcopy-bit-field</code>,
     <code>exact-rotate-bit-field</code>,
     <code>fixnum-rotate-bit-field</code>, and
-    <code>fxotate-bit-field</code>
-    procedures could also be questioned.
+    <code>fxrotate-bit-field</code>.
+    Furthermore new shift operations have been introduced that
+    require a non-negative shift count:
+    <code>exact-arithmetic-shift-left</code>,
+    <code>exact-arithmetic-shift-right</code>,
+    <code>fixnum-arithmetic-shift-left</code>,
+    <code>fixnum-arithmetic-shift-right</code>,
+    <code>fxarithmetic-shift-left</code>,
+    <code>fxarithmetic-shift-right</code>,
+    <code>fixnum-logical-shift-left</code>,
+    <code>fixnum-logical-shift-right</code>.
+<li>If the fixnum argument to <code>fixnum-bit-count</code> and
+    <code>fxbit-count</code> is negative, should they return a
+    negative result?
 </ul>
 
 <h1><a name="RevisionHistory">Revision History</a></h1>
@@ -235,7 +248,8 @@ on the following issues:
     <a href="http://srfi.schemers.org/srfi-60/srfi-60.html">SRFI 60</a>
     have been added, but they have been renamed using
     <code>exact-</code>, <code>fixnum-</code>, or <code>fx</code>
-    prefixes.
+    prefixes, and the order of arguments has been changed in some
+    cases.
 <li>Fixnums are now restricted to a two's complement range
     with at least 24 bits.
 <li>The fixnum operators that wrap on overflow have been
@@ -922,12 +936,12 @@ the given number in the given radix such that
 
 
 <PRE>
-(let ((number <VAR>number</VAR>)
-      (radix <VAR>radix</VAR>))
-  (eqv? number
-        (string-&gt;number (number-&gt;string number
-                                        radix)
-                        radix)))
+    (let ((number <VAR>number</VAR>)
+          (radix <VAR>radix</VAR>))
+      (eqv? number
+            (string-&gt;number (number-&gt;string number
+                                            radix)
+                            radix)))
 </PRE>
 
 <P>
@@ -1249,9 +1263,8 @@ This section specifies two kinds of operations on fixnums.
 Operations whose names begin with <code>fixnum</code>
 perform arithmetic modulo 2<sup><var>w</var></sup>.
 Operations whose names begin with <code>fx</code>
-perform arithmetic of linear-bounded precision on
-their fixnum arguments, and signal an error if the
-result is not a fixnum.
+perform integer arithmetic on their fixnum arguments,
+but signal an error if the result is not a fixnum.
 </p>
 
 <blockquote>
@@ -1282,12 +1295,10 @@ and saves programmers from having to remember which
 names are supplied.
 </blockquote>
 
-<P>
+<p>
 We will use <var>fx</var>, <var>fx1</var> and <var>fx2</var> as
-metavariables that range over fixnums, and <var>c</var>,
-<var>c1</var> and <var>c2</var> as metavariables that range over
-the fixnums {0, 1}.
-</P>
+metavariables that range over fixnums.
+</p>
 <p>
 If an argument to the following procedures that corresponds to a fixnum
 metavariable is not actually a fixnum, then these procedures signal an
@@ -1398,8 +1409,8 @@ their arguments.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fx+</CODE> <var>fx1</var> ...
-<DT><U>procedure:</U> <CODE>fx*</CODE> <var>fx1</var> ...
+<DT><U>procedure:</U> <CODE>fx+</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fx*</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 
 <P>
@@ -1409,20 +1420,14 @@ if that sum or product is not a fixnum, unless the implementation
 is running in unsafe mode, in which case all bets are off.
 </p>
 
-<pre>
-(fx+ (least-fixnum) (least-fixnum))                                      ==&gt;  <var>error</var>
-(fx+ (least-fixnum) (least-fixnum) (greatest-fixnum) (greatest-fixnum))  ==&gt;  -2
-(fx* 1000000 1000000 0 1000000 1000000)                                  ==&gt;  0
-</pre>
-
-<BLOCKQUOTE>
-<P>
-<EM>Note:</EM>
-In safe mode, any result returned by a call to <code>fx+</code>
-or <code>fx*</code> is equal to the result that would have been
-returned had <code>fixnum+</code> or <code>fixnum*</code>
-been called instead.
-</BLOCKQUOTE>
+<blockquote>
+<p>
+<em>Rationale:</em>
+These procedures are restricted to two arguments because their
+generalizations to three or more arguments would require
+precision proportional to the number of arguments.
+</p>
+</blockquote>
 
 </DD>
 </DL>
@@ -1446,13 +1451,13 @@ of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fx-</CODE> <var>fx1</var> <var>fx2</var> ...
+<DT><U>procedure:</U> <CODE>fx-</CODE> <var>fx1</var> <var>fx2</var>
 <DT><U>procedure:</U> <CODE>fx-</CODE> <var>fx</var>
 <DD>
 <p>
-With two or more arguments, this procedure returns
-the difference of its arguments, associating to the
-left, provided that difference is a fixnum.
+With two arguments, this procedure returns
+the difference of its arguments, provided
+that difference is a fixnum.
 </p>
 <p>
 With one argument, this procedure returns the additive
@@ -1464,7 +1469,7 @@ An error is signalled if the mathematically correct
 result of this procedure is not a fixnum.
 </p>
 <pre>
-(fx- (least-fixnum) (least-fixnum) (least-fixnum) (greatest-fixnum))  ==&gt;  1
+(fx- (least-fixnum))  ==&gt;  <var>error</var>
 </pre>
 </DL>
 
@@ -1538,10 +1543,10 @@ in which case all bets are off.
 <P>
 Returns the two fixnum results of the following computation:
 <pre>
-        (let* ((s (+ <var>fx1</var> <var>fx2</var> <var>fx3</var>))
-               (s0 (mod0 s (expt 2 (fixnum-width))))
-               (s1 (div0 s (expt 2 (fixnum-width)))))
-          (values s0 s1))
+    (let* ((s (+ <var>fx1</var> <var>fx2</var> <var>fx3</var>))
+           (s0 (mod0 s (expt 2 (fixnum-width))))
+           (s1 (div0 s (expt 2 (fixnum-width)))))
+      (values s0 s1))
 </pre>
 </P>
 
@@ -1552,7 +1557,7 @@ The results returned by the
 <code>fixnum+/carry</code>,
 <code>fixnum-/carry</code>, and
 <code>fixnum*/carry</code>
-procedures must depend upon the precision <var>w</var>,
+procedures depend upon the precision <var>w</var>,
 so there are no <code>fx</code> equivalents to these procedures.
 </blockquote>
 
@@ -1567,10 +1572,10 @@ so there are no <code>fx</code> equivalents to these procedures.
 <P>
 Returns the two fixnum results of the following computation:
 <pre>
-        (let* ((d (- <var>fx1</var> <var>fx2</var> <var>fx3</var>))
-               (d0 (mod0 d (expt 2 (fixnum-width))))
-               (d1 (div0 d (expt 2 (fixnum-width)))))
-          (values d0 d1))
+    (let* ((d (- <var>fx1</var> <var>fx2</var> <var>fx3</var>))
+           (d0 (mod0 d (expt 2 (fixnum-width))))
+           (d1 (div0 d (expt 2 (fixnum-width)))))
+      (values d0 d1))
 </pre>
 </P>
 </DD>
@@ -1584,10 +1589,10 @@ Returns the two fixnum results of the following computation:
 <P>
 Returns the two fixnum results of the following computation:
 <pre>
-        (let* ((s (+ (* <var>fx1</var> <var>fx2</var>) <var>fx3</var>))
-               (s0 (mod0 s (expt 2 (fixnum-width))))
-               (s1 (div0 s (expt 2 (fixnum-width)))))
-          (values s0 s1))
+    (let* ((s (+ (* <var>fx1</var> <var>fx2</var>) <var>fx3</var>))
+           (s0 (mod0 s (expt 2 (fixnum-width))))
+           (s1 (div0 s (expt 2 (fixnum-width)))))
+      (values s0 s1))
 </pre>
 </P>
 
@@ -1596,8 +1601,8 @@ Returns the two fixnum results of the following computation:
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fixnum-bitwise-not</CODE> <var>fx</var>
-<DT><U>procedure:</U> <CODE>fxbitwise-not</CODE> <var>fx</var>
+<DT><U>procedure:</U> <CODE>fixnum-not</CODE> <var>fx</var>
+<DT><U>procedure:</U> <CODE>fxnot</CODE> <var>fx</var>
 <DD>
 <P>
 Both of these procedures return the unique fixnum
@@ -1610,12 +1615,12 @@ to the one's-complement of their argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fixnum-bitwise-and</CODE> <var>fx1</var> ...
-<DT><U>procedure:</U> <CODE>fixnum-bitwise-ior</CODE> <var>fx1</var> ...
-<DT><U>procedure:</U> <CODE>fixnum-bitwise-xor</CODE> <var>fx1</var> ...
-<DT><U>procedure:</U> <CODE>fxbitwise-and</CODE> <var>fx1</var> ...
-<DT><U>procedure:</U> <CODE>fxbitwise-ior</CODE> <var>fx1</var> ...
-<DT><U>procedure:</U> <CODE>fxbitwise-xor</CODE> <var>fx1</var> ...
+<DT><U>procedure:</U> <CODE>fixnum-and</CODE> <var>fx1</var> ...
+<DT><U>procedure:</U> <CODE>fixnum-ior</CODE> <var>fx1</var> ...
+<DT><U>procedure:</U> <CODE>fixnum-xor</CODE> <var>fx1</var> ...
+<DT><U>procedure:</U> <CODE>fxand</CODE> <var>fx1</var> ...
+<DT><U>procedure:</U> <CODE>fxior</CODE> <var>fx1</var> ...
+<DT><U>procedure:</U> <CODE>fxxor</CODE> <var>fx1</var> ...
 <DD>
 <P>
 These procedures return the fixnum that is the bit-wise
@@ -1630,15 +1635,15 @@ identity for the operation.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fixnum-bitwise-if</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var>
-<DT><U>procedure:</U> <CODE>fxbitwise-if</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var>
+<DT><U>procedure:</U> <CODE>fixnum-if</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var>
+<DT><U>procedure:</U> <CODE>fxif</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var>
 <DD>
 <P>
 These procedures return the fixnum result of the following
 computation:
 <pre>
-        (bitwise-ior (bitwise-and <var>fx1</var> <var>fx2</var>)
-                     (bitwise-and (bitwise-not <var>fx1</var>) <var>fx3</var>))
+    (fixnum-ior (fixnum-and <var>fx1</var> <var>fx2</var>)
+                (fixnum-and (fixnum-not <var>fx1</var>) <var>fx3</var>))
 </pre>
 </P>
 </DD>
@@ -1668,13 +1673,13 @@ representation of <var>fx</var>.
 These procedures return the fixnum result of the following
 computation:
 <pre>
-        (do ((result 0 (+ result 1))
-             (bits (if (fixnum-negative? <var>fx</var>)
-                       (fixnum- <var>fx</var>)
-                       <var>fx</var>)
-                   (fixnum-logical-shift bits -1)))
-            ((fixnum-zero? bits)
-             result))
+    (do ((result 0 (+ result 1))
+         (bits (if (fixnum-negative? <var>fx</var>)
+                   (fixnum- <var>fx</var>)
+                   <var>fx</var>)
+               (fixnum-logical-shift-right bits 1)))
+        ((fixnum-zero? bits)
+         result))
 </pre>
 </P>
 </DD>
@@ -1703,12 +1708,16 @@ If the argument is 0, then -1 is returned.
 <DT><U>procedure:</U> <CODE>fixnum-bit-set?</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 <P>
-Returns the fixnum result of the following computation:
+If the second argument is non-negative, this procedure
+returns the fixnum result of the following computation:
 <pre>
-        (not (fixnum-zero?
-              (fixnum-bitwise-and (fixnum-logical-shift 1 <var>fx1</var>)
-                                  <var>fx2</var>)))
+    (not (fixnum-zero?
+          (fixnum-and <var>fx1</var>
+                      (fixnum-logical-shift-left 1 <var>fx2</var>))))
 </pre>
+If the second argument is negative, then an error is signalled,
+unless the implementation is running in unsafe mode, in which
+case all bets are off.
 </P>
 </DD>
 </DL>
@@ -1732,13 +1741,17 @@ same result returned by <code>fixnum-bit-set?</code>.
 <DT><U>procedure:</U> <CODE>fixnum-copy-bit</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var>
 <DD>
 <P>
-Returns the fixnum result of the following computation:
+If the second argument is non-negative, then this procedure
+returns the fixnum result of the following computation:
 <pre>
-        (let* ((mask (fixnum-logical-shift 1 <var>fx1</var>)))
-          (fixnum-bitwise-if mask
-                             (fixnum-logical-shift <var>fx3</var> <var>fx1</var>)
-                             <var>fx2</var>))
+    (let* ((mask (fixnum-logical-shift-left 1 <var>fx2</var>)))
+      (fixnum-if mask
+                 (fixnum-logical-shift-left <var>fx3</var> <var>fx2</var>)
+                 <var>fx2</var>))
 </pre>
+If the second argument is negative, then an error is signalled,
+unless the implementation is running in unsafe mode, in which
+case all bets are off.
 </P>
 </DD>
 </DL>
@@ -1748,7 +1761,7 @@ Returns the fixnum result of the following computation:
 <DT><U>procedure:</U> <CODE>fxcopy-bit</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var>
 <DD>
 <P>
-If the first argument is negative, or greater than or equal
+If the second argument is negative, or greater than or equal
 to <code>(fixnum-width)</code>, or the third argument is
 anything other than 0 or 1, then an error is signalled,
 unless the implementation is running in unsafe mode, in which
@@ -1763,13 +1776,19 @@ same result returned by <code>fixnum-copy-bit</code>.
 <DT><U>procedure:</U> <CODE>fixnum-bit-field</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var>
 <DD>
 <P>
-Returns the fixnum result of the following computation:
+If the second and third arguments are non-negative,
+this procedure
+returns the fixnum result of the following computation:
 <pre>
-        (let* ((mask (fixnum-bitwise-not
-                      (fixnum-logical-shift -1 <var>fx3</var>))))
-          (fixnum-logical-shift (fixnum-bitwise-and <var>fx1</var> mask)
-                                (fixnum- <var>fx2</var>)))
+    (let* ((mask (fixnum-not
+                  (fixnum-logical-shift-left -1 <var>fx3</var>))))
+      (fixnum-logical-shift-right (fixnum-and <var>fx1</var> mask)
+                                  <var>fx2</var>))
 </pre>
+If the second or third argument is negative,
+then an error is signalled,
+unless the implementation is running in unsafe mode, in which
+case all bets are off.
 </P>
 </DD>
 </DL>
@@ -1795,18 +1814,24 @@ same result returned by <code>fixnum-bit-field</code>.
 <DT><U>procedure:</U> <CODE>fixnum-copy-bit-field</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var> <var>fx4</var>
 <DD>
 <P>
-Returns the fixnum result of the following computation:
+If the second and third arguments are non-negative,
+this procedure
+returns the fixnum result of the following computation:
 <pre>
-        (let* ((to    <var>fx1</var>)
-               (from  <var>fx2</var>)
-               (start <var>fx3</var>)
-               (end   <var>fx4</var>)
-               (mask1 (fixnum-logical-shift -1 start))
-               (mask2 (fixnum-bitwise-not
-                       (fixnum-logical-shift -1 end)))
-               (mask (fixnum-bitwise-and mask1 mask2)))
-          (fixnum-bitwise-if mask from to))
+    (let* ((to    <var>fx1</var>)
+           (start <var>fx2</var>)
+           (end   <var>fx3</var>)
+           (from  <var>fx4</var>)
+           (mask1 (fixnum-logical-shift-left -1 start))
+           (mask2 (fixnum-not
+                   (fixnum-logical-shift-left -1 end)))
+           (mask (fixnum-and mask1 mask2)))
+      (fixnum-if mask from to))
 </pre>
+If the second or third argument is negative,
+then an error is signalled,
+unless the implementation is running in unsafe mode, in which
+case all bets are off.
 </P>
 </DD>
 </DL>
@@ -1816,9 +1841,9 @@ Returns the fixnum result of the following computation:
 <DT><U>procedure:</U> <CODE>fxcopy-bit-field</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var> <var>fx4</var>
 <DD>
 <P>
-If the third or fourth argument is negative,
+If the second or third argument is negative,
 or greater than <code>(fixnum-width)</code>,
-or the third argument is greater than the fourth,
+or the second argument is greater than the third,
 then an error is signalled,
 unless the implementation is running in unsafe mode, in which
 case all bets are off.  Otherwise this procedure returns the
@@ -1835,7 +1860,7 @@ same result returned by <code>fixnum-copy-bit-field</code>.
 Returns the unique fixnum that is congruent mod 2<sup><var>w</var></sup>
 to the result of the following computation:
 <pre>
-        (exact-floor (* <var>fx1</var> (expt 2 <var>fx2</var>)))
+    (exact-floor (* <var>fx1</var> (expt 2 <var>fx2</var>)))
 </pre>
 </P>
 </DD>
@@ -1843,7 +1868,7 @@ to the result of the following computation:
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fxarithmetic-shift</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var> <var>fx4</var>
+<DT><U>procedure:</U> <CODE>fxarithmetic-shift</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 <P>
 If the absolute value of the second argument 
@@ -1852,7 +1877,7 @@ then an error is signalled,
 unless the implementation is running in unsafe mode, in which
 case all bets are off.  If
 <pre>
-        (exact-floor (* <var>fx1</var> (expt 2 <var>fx2</var>)))
+    (exact-floor (* <var>fx1</var> (expt 2 <var>fx2</var>)))
 </pre>
 is a fixnum, then that fixnum is returned.  Otherwise an
 error is signalled, unless the implementation is running
@@ -1863,29 +1888,86 @@ in unsafe mode, in which case all bets are off.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>fixnum-logical-shift</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fixnum-arithmetic-shift-left</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fixnum-arithmetic-shift-right</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 <P>
-Returns the result of the following computation:
+If the second argument is non-negative, then
+<code>fixnum-arithmetic-shift-left</code>
+returns the same result as <code>fixnum-arithmetic-shift</code>,
+and
+<code>(fixnum-arithmetic-shift-right <var>fx1</var> <var>fx2</var>)</code>
+returns the same result as
+<code>(fixnum-arithmetic-shift <var>fx1</var> (fixnum- <var>fx2</var>))</code>.
+If the second argument is negative,
+then an error is signalled,
+unless the implementation is running in unsafe mode, in which
+case all bets are off.
+</P>
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>fxarithmetic-shift-left</CODE> <var>fx1</var> <var>fx2</var>
+<DT><U>procedure:</U> <CODE>fxarithmetic-shift-right</CODE> <var>fx1</var> <var>fx2</var>
+<DD>
+<P>
+If the second argument is non-negative, then
+<code>fxarithmetic-shift-left</code>
+behaves the same as <code>fxarithmetic-shift</code>,
+and
+<code>(fxarithmetic-shift-right <var>fx1</var> <var>fx2</var>)</code>
+behaves the same as
+<code>(fxarithmetic-shift <var>fx1</var> (fixnum- <var>fx2</var>))</code>.
+If the second argument is negative,
+then an error is signalled,
+unless the implementation is running in unsafe mode, in which
+case all bets are off.
+</P>
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>fixnum-logical-shift-left</CODE> <var>fx1</var> <var>fx2</var>
+<DD>
+<P>
+This procedure behaves the same as <code>fixnum-arithmetic-shift-left</code>.
+</P
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>fixnum-logical-shift-right</CODE> <var>fx1</var> <var>fx2</var>
+<DD>
+<P>
+If the second argument is non-negative, then this procedure
+returns the result of the following computation:
 <pre>
-        (let* ((n       <var>fx1</var>)
-               (shift   <var>fx2</var>)
-               (shifted (fixnum-arithmetic-shift n shift)))
-          (if (fixnum-negative? shift)
-              (let* ((mask-width (fixnum+ (fixnum-width) shift))
-                     (mask (fixnum-bitwise-not
-                            (fixnum-logical-shift -1 mask-width))))
-                (fixnum-bitwise-and shifted mask))
-              shifted))
+    (let* ((n       <var>fx1</var>)
+           (shift   <var>fx2</var>)
+           (shifted (fixnum-arithmetic-shift-right n shift)))
+      (let* ((mask-width (fixnum- (fixnum-width)
+                                  (fixnum-mod shift (fixnum-width))))
+             (mask (fixnum-not
+                    (fixnum-logical-shift-left -1 mask-width))))
+        (fixnum-and shifted mask))
 </pre>
+If the second argument is negative,
+then an error is signalled,
+unless the implementation is running in unsafe mode, in which
+case all bets are off.
 </P>
 
 <blockquote>
 <p>
 <em>Note:</em>
-The result of <code>fixnum-logical-shift</code>
+The results of <code>fixnum-logical-shift-left</code>
+and <code>fixnum-logical-shift-left</code>
 can depend upon the precision <var>w</var>,
-so it has no <code>fx</code> equivalent.
+so they have no <code>fx</code> equivalents.
 </blockquote>
 
 </DD>
@@ -1896,22 +1978,24 @@ so it has no <code>fx</code> equivalent.
 <DT><U>procedure:</U> <CODE>fixnum-rotate-bit-field</CODE> <var>fx1</var> <var>fx2</var> <var>fx3</var> <var>fx4</var>
 <DD>
 <P>
-Returns the result of the following computation:
+If the second, third, and fourth arguments are non-negative,
+this procedure
+returns the result of the following computation:
 <pre>
-        (let* ((n     <var>fx1</var>)
-               (count <var>fx2</var>)
-               (start <var>fx3</var>)
-               (end   <var>fx4</var>)
-               (width (fixnum- end start)))
-          (if (fixnum-positive? width)
-              (let* ((count (fixnum-mod count width))
-                     (field0 (fixnum-bit-field n start end))
-                     (field1 (fixnum-logical-shift field0 count))
-                     (field2 (fixnum-logical-shift field0
-                                                   (fixnum- width count)))
-                     (field (fixnum-bitwise-ior field1 field2)))
-                (fixnum-copy-bit-field n field start end))
-              n))
+    (let* ((n     <var>fx1</var>)
+           (start <var>fx2</var>)
+           (end   <var>fx3</var>)
+           (count <var>fx4</var>)
+           (width (fixnum- end start)))
+      (if (fixnum-positive? width)
+          (let* ((count (fixnum-mod count width))
+                 (field0 (fixnum-bit-field n start end))
+                 (field1 (fixnum-logical-shift-left field0 count))
+                 (field2 (fixnum-logical-shift-right field0
+                                                     (fixnum- width count)))
+                 (field (fixnum-ior field1 field2)))
+            (fixnum-copy-bit-field n field start end))
+          n))
 </pre>
 </P>
 </DD>
@@ -1924,8 +2008,8 @@ Returns the result of the following computation:
 <P>
 If the second, third, or fourth argument is negative,
 or greater than <code>(fixnum-width)</code>,
-or the second argument is greater than or equal to
-the difference between the fourth and third arguments,
+or the fourth argument is greater than or equal to
+the difference between the third and second arguments,
 then an error is signalled,
 unless the implementation is running in unsafe mode, in which
 case all bets are off.  Otherwise this procedure returns the
@@ -2770,7 +2854,7 @@ non-negative exact integers <var>s</var> and <var>r</var> where
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exact-bitwise-not</CODE> <var>ei</var>
+<DT><U>procedure:</U> <CODE>exact-not</CODE> <var>ei</var>
 <DD>
 <P>
 Returns the exact integer whose two's complement representation
@@ -2783,9 +2867,9 @@ of its argument.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exact-bitwise-and</CODE> <var>ei1</var> ...
-<DT><U>procedure:</U> <CODE>exact-bitwise-ior</CODE> <var>ei1</var> ...
-<DT><U>procedure:</U> <CODE>exact-bitwise-xor</CODE> <var>ei1</var> ...
+<DT><U>procedure:</U> <CODE>exact-and</CODE> <var>ei1</var> ...
+<DT><U>procedure:</U> <CODE>exact-ior</CODE> <var>ei1</var> ...
+<DT><U>procedure:</U> <CODE>exact-xor</CODE> <var>ei1</var> ...
 <DD>
 <P>
 These procedures return the exact intger that is the bit-wise
@@ -2800,13 +2884,13 @@ identity for the operation.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exact-bitwise-if</CODE> <var>ei1</var> <var>ei2</var> <var>ei3</var>
+<DT><U>procedure:</U> <CODE>exact-if</CODE> <var>ei1</var> <var>ei2</var> <var>ei3</var>
 <DD>
 <P>
 Returns the exact integer that is the result of the following computation:
 <pre>
-        (exact-bitwise-ior (exact-bitwise-and <var>ei1</var> <var>ei2</var>)
-                           (exact-bitwise-and (exact-bitwise-not <var>ei1</var>) <var>ei3</var>))
+    (exact-ior (exact-and <var>ei1</var> <var>ei2</var>)
+               (exact-and (exact-not <var>ei1</var>) <var>ei3</var>))
 </pre>
 </P>
 </DD>
@@ -2834,13 +2918,13 @@ representation of its argument.
 These procedures return the exact integer that is the result of the following
 computation:
 <pre>
-        (do ((result 0 (+ result 1))
-             (bits (if (exact-negative? <var>ei</var>)
-                       (exact- <var>ei</var>)
-                       <var>ei</var>)
-                   (exact-arithmetic-shift bits -1)))
-            ((exact-zero? bits)
-             result))
+    (do ((result 0 (+ result 1))
+         (bits (if (exact-negative? <var>ei</var>)
+                   (exact- <var>ei</var>)
+                   <var>ei</var>)
+               (exact-arithmetic-shift bits -1)))
+        ((exact-zero? bits)
+         result))
 </pre>
 </P>
 </DD>
@@ -2868,12 +2952,12 @@ If the argument is 0, then -1 is returned.
 <DT><U>procedure:</U> <CODE>exact-bit-set?</CODE> <var>ei1</var> <var>ei2</var>
 <DD>
 <P>
-If the first argument is negative, then an error is signalled.
+If the second argument is negative, then an error is signalled.
 Otherwise returns the result of the following computation:
 <pre>
-        (not (exact-zero?
-              (exact-bitwise-and (exact-arithmetic-shift 1 <var>ei1</var>)
-                                 <var>ei2</var>)))
+    (not (exact-zero?
+          (exact-and (exact-arithmetic-shift-left 1 <var>ei2</var>)
+                     <var>ei1</var>)))
 </pre>
 </P>
 </DD>
@@ -2884,13 +2968,14 @@ Otherwise returns the result of the following computation:
 <DT><U>procedure:</U> <CODE>exact-copy-bit</CODE> <var>ei1</var> <var>ei2</var> <var>ei3</var>
 <DD>
 <P>
-If the first argument is negative, then an error is signalled.
+If the second argument is negative, or the third argument
+is anything other than 0 or 1, then an error is signalled.
 Otherwise returns the result of the following computation:
 <pre>
-        (let* ((mask (exact-arithmetic-shift 1 <var>ei1</var>)))
-          (exact-bitwise-if mask
-                            (exact-arithmetic-shift <var>ei3</var> <var>ei1</var>)
-                            <var>ei2</var>))
+    (let* ((mask (exact-arithmetic-shift-left 1 <var>ei2</var>)))
+      (exact-if mask
+                (exact-arithmetic-shift-left <var>ei3</var> <var>ei2</var>)
+                <var>ei1</var>))
 </pre>
 </P>
 </DD>
@@ -2906,10 +2991,10 @@ or the second argument is greater than the third,
 then an error is signalled.
 Otherwise returns the result of the following computation:
 <pre>
-        (let* ((mask (exact-bitwise-not
-                      (exact-arithmetic-shift -1 <var>ei3</var>))))
-          (exact-arithmetic-shift (exact-bitwise-and <var>ei1</var> mask)
-                                  (exact- <var>ei2</var>)))
+    (let* ((mask (exact-not
+                  (exact-arithmetic-shift-left -1 <var>ei3</var>))))
+      (exact-arithmetic-shift-right (exact-and <var>ei1</var> mask)
+                                    <var>ei2</var>))
 </pre>
 </P>
 </DD>
@@ -2920,20 +3005,20 @@ Otherwise returns the result of the following computation:
 <DT><U>procedure:</U> <CODE>exact-copy-bit-field</CODE> <var>ei1</var> <var>ei2</var> <var>ei3</var> <var>ei4</var>
 <DD>
 <P>
-If the third or fourth argument is negative,
-or the third argument is greater than the fourth,
+If the second or third argument is negative,
+or the second argument is greater than the third,
 then an error is signalled.
 Otherwise returns the result of the following computation:
 <pre>
-        (let* ((to    <var>ei1</var>)
-               (from  <var>ei2</var>)
-               (start <var>ei3</var>)
-               (end   <var>ei4</var>)
-               (mask1 (exact-arithmetic-shift -1 start))
-               (mask2 (exact-bitwise-not
-                       (exact-arithmetic-shift -1 end)))
-               (mask (exact-bitwise-and mask1 mask2)))
-          (exact-bitwise-if mask from to))
+    (let* ((to    <var>fx1</var>)
+           (start <var>fx2</var>)
+           (end   <var>fx3</var>)
+           (from  <var>fx4</var>)
+           (mask1 (exact-logical-shift-left -1 start))
+           (mask2 (exact-not
+                   (exact-arithmetic-shift-left -1 end)))
+           (mask (fixnum-and mask1 mask2)))
+      (exact-if mask from to))
 </pre>
 </P>
 </DD>
@@ -2946,8 +3031,27 @@ Otherwise returns the result of the following computation:
 <P>
 Returns the exact integer result of the following computation:
 <pre>
-        (exact-floor (* <var>ei1</var> (expt 2 <var>ei2</var>)))
+    (exact-floor (* <var>ei1</var> (expt 2 <var>ei2</var>)))
 </pre>
+</P>
+</DD>
+</DL>
+
+<P>
+<DL>
+<DT><U>procedure:</U> <CODE>exact-arithmetic-shift-left</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>procedure:</U> <CODE>exact-arithmetic-shift-right</CODE> <var>ei1</var> <var>ei2</var>
+<DD>
+<P>
+If the second argument is non-negative, then
+<code>exact-arithmetic-shift-left</code>
+returns the same result as <code>exact-arithmetic-shift</code>,
+and
+<code>(exact-arithmetic-shift-right <var>fx1</var> <var>fx2</var>)</code>
+returns the same result as
+<code>(exact-arithmetic-shift <var>fx1</var> (exact- <var>fx2</var>))</code>.
+If the second argument is negative,
+then an error is signalled.
 </P>
 </DD>
 </DL>
@@ -2957,26 +3061,25 @@ Returns the exact integer result of the following computation:
 <DT><U>procedure:</U> <CODE>exact-rotate-bit-field</CODE> <var>ei1</var> <var>ei2</var> <var>ei3</var> <var>ei4</var>
 <DD>
 <P>
-If the second, third, or fourth argument is negative,
-or the second argument is greater than or equal to
-the difference between the fourth and third arguments,
+If the second, third, and fourth arguments are non-negative,
+or the fourth argument is greater than or equal to the
+difference between the second and third arguments,
 then an error is signalled.
-Otherwise returns the result of the following computation:
 <pre>
-        (let* ((n     <var>ei1</var>)
-               (count <var>ei2</var>)
-               (start <var>ei3</var>)
-               (end   <var>ei4</var>)
-               (width (exact- end start)))
-          (if (exact-positive? width)
-              (let* ((count (exact-mod count width))
-                     (field0 (exact-bit-field n start end))
-                     (field1 (exact-arithmetic-shift field0 count))
-                     (field2 (exact-arithmetic-shift field0
-                                                     (exact- width count)))
-                     (field (exact-bitwise-ior field1 field2)))
-                (exact-copy-bit-field n field start end))
-              n))
+    (let* ((n     <var>ei1</var>)
+           (start <var>ei2</var>)
+           (end   <var>ei3</var>)
+           (count <var>ei4</var>)
+           (width (exact- end start)))
+      (if (exact-positive? width)
+          (let* ((count (exact-mod count width))
+                 (field0 (exact-bit-field n start end))
+                 (field1 (exact-arithmetic-shift field0 count))
+                 (field2 (exact-arithmetic-shift field0
+                                                 (exact- width count)))
+                 (field (exact-ior field1 field2)))
+            (exact-copy-bit-field n field start end))
+          n))
 </pre>
 </P>
 </DD>
