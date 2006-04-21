@@ -1,0 +1,469 @@
+From shap@eros-os.org  Thu Apr 13 23:28:44 2006
+Received: from moose.cs.indiana.edu (moose.cs.indiana.edu [129.79.247.191])
+	by whale.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3E3Sh1q003289
+	for <dyb@whale.cs.indiana.edu>; Thu, 13 Apr 2006 23:28:43 -0400 (EDT)
+Received: from eros.cs.jhu.edu (eros.cs.jhu.edu [128.220.223.245])
+	by moose.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3E3SfGr010416
+	for <dyb@cs.indiana.edu>; Thu, 13 Apr 2006 23:28:42 -0400 (EDT)
+Received: from [192.168.2.32] (c-68-33-84-43.hsd1.md.comcast.net [68.33.84.43])
+	(authenticated bits=0)
+	by eros.cs.jhu.edu (8.13.6/8.13.6) with ESMTP id k3E3SV1e002426
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO);
+	Thu, 13 Apr 2006 23:28:32 -0400
+Subject: R6RS suggestion
+From: "Jonathan S. Shapiro" <shap@eros-os.org>
+To: dyb@cs.indiana.edu
+Cc: "Jonathan S. Shapiro" <shap@eros-os.org>, jar@mumble.net
+Content-Type: text/plain
+Date: Thu, 13 Apr 2006 23:28:40 -0400
+Message-Id: <1144985320.29108.37.camel@vmx.eros-os.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 (2.6.0-1) 
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.3.0.1, Antispam-Data: 2006.04.13.201104
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='__CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+Status: RO
+
+Kent:
+
+I would appreciate it if you would pass this on to the R6RS guardians,
+either with or without your endorsement as you feel appropriate. I'm not
+quite sure where it should be sent.
+
+
+I gather that one key goal for R6RS is to make Scheme practically useful
+in substantial systems. In light of this, I would like to make a firm
+request and two suggestions. 
+
+The request: the R6RS specification should not contain fundamentally
+irreconcilable specifications. I refer specifically to the interactions
+between dynamic-wind and call/cc, and the fact that the requirements of
+dynamic-wind cannot be met in the presence of continuations with
+indefinite extent. Whatever solution is chosen to address this, the
+resulting specification must not be self-contradicatory.
+
+
+Suggestion 1: continuations should be restricted to dynamic extent. I
+believe that JAR has come to a similar conclusion. I recognize that this
+is likely to spark holy wars. Here is the rationale:
+
+  1. If Scheme is to be useful for real systems, it *must* incorporate
+     sufficient mechanisms for error recovery. dynamic-wind is a fine
+     mechanism for doing this, but it has to work 100% of the time.
+
+  2. Indefinite extent continuations are clever (which, note, is a four
+     letter word in the context of language design), but if utility is
+     a serious goal then error recovery is much more important than the
+     fractional percentage of scheme programs that rely on indefinite
+     extent continuations.
+
+  3. A key use of Scheme in recent years has been scripting languages.
+     When a calling sequence interleaves the C stack and the scheme
+     stack, indefinite extent continuations simply don't work at all.
+     Dynamic extent continuations can be re-framed as an error result
+     that is returned from scheme to C, and this can be propagated
+     upward to properly unwind the stack.
+
+Suggestion 2: Whatever the purists may believe, Scheme is not a
+functional language. It admits set!, and set! is actually used. In light
+of this, it is simply insane that the order of argument evaluation
+should be unspecified. There is ample evidence that differences of
+argument evaluation order leads to real bugs in real programs. If the
+order of scheme argument evaluation is undefined, then it is effectively
+non-deterministic from the perspective of the programmer. Under these
+conditions, robust programming is rendered less likely.
+
+Given this, I propose that unless somebody can demonstrate a real-world
+example in which (a) underspecifying evaluation order demonstrably helps
+in an overwhelmingly substantial way, and (b) compile-time analysis that
+the expressions are state-free is insufficient to achieve the same
+efficiency, and (c) the pragmatically achieved utility is so
+overwhelming as to justify the documented hazards of unsafe programming,
+argument evaluation order should be specified. My personal preference is
+left to right, but what is important is to specify a consistent
+ordering.
+
+Best regards, and hope all is well.
+
+
+Jonathan S. Shapiro, Ph.D.
+Assistant Professor
+Department of Computer Science
+Johns Hopkins University
+
+From jar@mumble.net  Fri Apr 14 00:43:00 2006
+Received: from moose.cs.indiana.edu (moose.cs.indiana.edu [129.79.247.191])
+	by whale.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3E4h0BP008813
+	for <dyb@whale.cs.indiana.edu>; Fri, 14 Apr 2006 00:43:00 -0400 (EDT)
+Received: from pluto.mumble.net (postfix@pluto.mumble.net [206.123.75.20])
+	by moose.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3E4gxnA018297
+	for <dyb@cs.indiana.edu>; Fri, 14 Apr 2006 00:42:59 -0400 (EDT)
+Received: from [192.168.1.177] (unknown [222.90.72.74])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(No client certificate requested)
+	by pluto.mumble.net (Postfix) with ESMTP id 8F70B9802A;
+	Fri, 14 Apr 2006 04:42:57 +0000 (UTC)
+In-Reply-To: <1144985320.29108.37.camel@vmx.eros-os.org>
+References: <1144985320.29108.37.camel@vmx.eros-os.org>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B3552305-850D-4FEC-BD1E-292C4815BF3A@mumble.net>
+Cc: dyb@cs.indiana.edu
+Content-Transfer-Encoding: 7bit
+From: Jonathan A Rees <jar@mumble.net>
+Subject: Re: R6RS suggestion
+Date: Fri, 14 Apr 2006 12:43:00 +0800
+To: "Jonathan S. Shapiro" <shap@eros-os.org>
+X-Mailer: Apple Mail (2.746.2)
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.3.0.1, Antispam-Data: 2006.04.13.211109
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='__CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+Status: RO
+
+
+On Apr 14, 2006, at 11:28 AM, Jonathan S. Shapiro wrote:
+
+> Kent:
+>
+> I would appreciate it if you would pass this on to the R6RS guardians,
+> either with or without your endorsement as you feel appropriate.  
+> I'm not
+> quite sure where it should be sent.
+>
+>
+> I gather that one key goal for R6RS is to make Scheme practically  
+> useful
+> in substantial systems. In light of this, I would like to make a firm
+> request and two suggestions.
+
+Are the goals for R6RS articulated anywhere? If so this would be a  
+welcome innovation.
+
+> Suggestion 1: continuations should be restricted to dynamic extent. I
+> believe that JAR has come to a similar conclusion.
+
+Not true. Sorry. We had this restriction in T and Pseudoscheme, but  
+never claimed that either was Scheme. Remove first-class  
+continuations and you lose a major competitive advantage.
+
+There may be ways to address this issue, though.
+
+>  In light
+> of this, it is simply insane that the order of argument evaluation
+> should be unspecified.
+
+Debated many many times on the rrrs-authors list. I'd suggest you  
+check the archives but can't think of good search terms.. maybe  
+'order' and 'evaluation'. The language captures Sussman's view, which  
+paraphrased might be that you shouldn't rely on testing to establish  
+correctness, and inter-platform determinism is overrated. Sussman and  
+many in the community are neither purist nor pragmatist, so logical  
+and practical arguments are ineffective. The trump criterion is  
+usually a fuzzy one having to do with how well the language serves  
+for communicating ideas. By that argument, allowing programs to  
+depend on obscure and arbitrary features (like argument eval order)  
+will encourage the creation of programs that are hard to read...  
+oops, I meant to be neutral here, sorry.
+
+This is the kind of conversation that used to take place on rrrs- 
+authors. I don't know where it happens now.
+
+From shap@eros-os.org  Fri Apr 14 06:20:42 2006
+Received: from moose.cs.indiana.edu (moose.cs.indiana.edu [129.79.247.191])
+	by whale.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3EAKa6a026951
+	for <dyb@whale.cs.indiana.edu>; Fri, 14 Apr 2006 06:20:36 -0400 (EDT)
+Received: from eros.cs.jhu.edu (eros.cs.jhu.edu [128.220.223.245])
+	by moose.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3EAKZag022062
+	for <dyb@cs.indiana.edu>; Fri, 14 Apr 2006 06:20:36 -0400 (EDT)
+Received: from [192.168.2.32] (c-68-33-84-43.hsd1.md.comcast.net [68.33.84.43])
+	(authenticated bits=0)
+	by eros.cs.jhu.edu (8.13.6/8.13.6) with ESMTP id k3EAKNIx013711
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO);
+	Fri, 14 Apr 2006 06:20:24 -0400
+Subject: Re: R6RS suggestion
+From: "Jonathan S. Shapiro" <shap@eros-os.org>
+To: Jonathan A Rees <jar@mumble.net>
+Cc: shap@eros-os.org, dyb@cs.indiana.edu
+In-Reply-To: <B3552305-850D-4FEC-BD1E-292C4815BF3A@mumble.net>
+References: <1144985320.29108.37.camel@vmx.eros-os.org>
+	 <B3552305-850D-4FEC-BD1E-292C4815BF3A@mumble.net>
+Content-Type: text/plain
+Date: Fri, 14 Apr 2006 06:20:32 -0400
+Message-Id: <1145010032.29108.43.camel@vmx.eros-os.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 (2.6.0-1) 
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.3.0.1, Antispam-Data: 2006.04.14.025104
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='__CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __FRAUD_419_BADTHINGS 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+Status: RO
+
+On Fri, 2006-04-14 at 12:43 +0800, Jonathan A Rees wrote:
+> The language captures Sussman's view, which  
+> paraphrased might be that you shouldn't rely on testing to establish  
+> correctness, and inter-platform determinism is overrated. Sussman and  
+> many in the community are neither purist nor pragmatist, so logical  
+> and practical arguments are ineffective...
+
+It is this type of attitude that killed Scheme. One might have hoped
+that a new generation might have overcome such childishness. So much for
+any hope for R6RS.
+
+How does Sussman propose that programs should be tested? Or is he
+unaware of the concrete evidence that program verification is NOT more
+effective than testing?
+
+shap
+
+From shap@eros-os.org  Fri Apr 14 06:40:42 2006
+Received: from moose.cs.indiana.edu (moose.cs.indiana.edu [129.79.247.191])
+	by whale.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3EAec2L027858
+	for <dyb@whale.cs.indiana.edu>; Fri, 14 Apr 2006 06:40:38 -0400 (EDT)
+Received: from eros.cs.jhu.edu (eros.cs.jhu.edu [128.220.223.245])
+	by moose.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3EAebd6023761
+	for <dyb@cs.indiana.edu>; Fri, 14 Apr 2006 06:40:37 -0400 (EDT)
+Received: from [192.168.2.32] (c-68-33-84-43.hsd1.md.comcast.net [68.33.84.43])
+	(authenticated bits=0)
+	by eros.cs.jhu.edu (8.13.6/8.13.6) with ESMTP id k3EAeRjh013942
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO);
+	Fri, 14 Apr 2006 06:40:27 -0400
+Subject: Re: R6RS suggestion
+From: "Jonathan S. Shapiro" <shap@eros-os.org>
+To: Jonathan A Rees <jar@mumble.net>
+Cc: shap@eros-os.org, dyb@cs.indiana.edu
+In-Reply-To: <B3552305-850D-4FEC-BD1E-292C4815BF3A@mumble.net>
+References: <1144985320.29108.37.camel@vmx.eros-os.org>
+	 <B3552305-850D-4FEC-BD1E-292C4815BF3A@mumble.net>
+Content-Type: text/plain
+Date: Fri, 14 Apr 2006 06:40:35 -0400
+Message-Id: <1145011235.29108.66.camel@vmx.eros-os.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 (2.6.0-1) 
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.3.0.1, Antispam-Data: 2006.04.14.031109
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='__CP_NAME_BODY 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+Status: RO
+
+On Fri, 2006-04-14 at 12:43 +0800, Jonathan A Rees wrote:
+> On Apr 14, 2006, at 11:28 AM, Jonathan S. Shapiro wrote:
+>
+> > Suggestion 1: continuations should be restricted to dynamic extent. I
+> > believe that JAR has come to a similar conclusion.
+> 
+> Not true. Sorry. We had this restriction in T and Pseudoscheme, but  
+> never claimed that either was Scheme. Remove first-class  
+> continuations and you lose a major competitive advantage.
+
+It is not clear to me that this is a competitive advantage, but the
+Scheme community will go its own way on this as always.
+
+My point about irreconcilable specifications remains. I'm aware of all
+of the various papers about reconciling dynamic-wind and call/cc. None
+of them (so far as I can find) deal sensibly with calling an indefinite
+extent continuation referenced via a global variable from within the
+"during" phase -- even after the various proposed rewrites and
+wrappings. Also, none of them reconcile invoking a continuation in the
+AFTER phase with the wrappings.
+
+If call/cc remains as currently specified then the description of
+dynamic-wind must be reduced in strength to clarify that the desired
+behavior is unachievable. This will, of course, reveal the silliness of
+the dynamic-wind construct as currently defined, and the infeasibility
+of sensible error handling in Scheme.
+
+Some may then argue "it is all fine as long as nobody uses continuations
+foolishly". These people need to consider the types of composability
+failures identifier in Mark Miller's dissertation, and need further to
+consider that their argument tacitly admits that call/cc is too powerful
+to be used sensibly in its current form. But of course, this assumes
+that pragmatism is a design criteria.
+
+Look, I *like* call/cc. It's extremely cool, and it provoked a lot of
+thought when I was a kid learning programming languages. But now I'm an
+adult with a lot of hardcore experience building real systems, and
+(assuming JAR has characterized Sussman's view fairly) any language
+design aesthetic that excludes correctness and consistency is simply too
+dangerous to live in the real world. In that case, much as I love it, it
+is time for Scheme to die.
+
+I also think that its okay for Scheme to remain a research language, but
+I'm not sure what research the language is advancing...
+
+
+shap
+
+From jar@mumble.net  Fri Apr 14 09:27:18 2006
+Received: from moose.cs.indiana.edu (moose.cs.indiana.edu [129.79.247.191])
+	by whale.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3EDRHCU008470
+	for <dyb@whale.cs.indiana.edu>; Fri, 14 Apr 2006 09:27:17 -0400 (EDT)
+Received: from pluto.mumble.net (postfix@pluto.mumble.net [206.123.75.20])
+	by moose.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3EDRGse015951
+	for <dyb@cs.indiana.edu>; Fri, 14 Apr 2006 09:27:17 -0400 (EDT)
+Received: from [192.168.1.177] (unknown [222.90.72.74])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(No client certificate requested)
+	by pluto.mumble.net (Postfix) with ESMTP id D8CCC98B4C;
+	Fri, 14 Apr 2006 13:27:14 +0000 (UTC)
+In-Reply-To: <1145011235.29108.66.camel@vmx.eros-os.org>
+References: <1144985320.29108.37.camel@vmx.eros-os.org> <B3552305-850D-4FEC-BD1E-292C4815BF3A@mumble.net> <1145011235.29108.66.camel@vmx.eros-os.org>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C5D98DAD-BABE-4468-9ACF-FD6CEEC70438@mumble.net>
+Cc: dyb@cs.indiana.edu
+Content-Transfer-Encoding: 7bit
+From: Jonathan A Rees <jar@mumble.net>
+Subject: Re: R6RS suggestion
+Date: Fri, 14 Apr 2006 21:27:09 +0800
+To: "Jonathan S. Shapiro" <shap@eros-os.org>
+X-Mailer: Apple Mail (2.746.2)
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.3.0.1, Antispam-Data: 2006.04.14.055107
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='__CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+Status: RO
+
+I think many would say call-with-current-continuation is the soul of  
+scheme. Dynamic-wind isn't. If cwcc is inconsistent with error  
+handling (forgetting about dnamic-wind as it stands), that's very  
+interesting and the demonstration should be vetted.
+
+It appears that you know much more about this subject than I do, so I  
+will assume that you're right. Maybe this issue is the one that kills  
+Scheme (supposing one might consider it alive). The question of the  
+right language remains an interesting one.
+
+The discussion is worth having. I haven't heard it before and don't  
+know where it should take place. I haven't been involved in this  
+stuff for a very long time so probably the issues have already  
+surfaced in some forum that I don't take part in.
+
+From shap@eros-os.org  Fri Apr 14 12:57:01 2006
+Received: from moose.cs.indiana.edu (moose.cs.indiana.edu [129.79.247.191])
+	by whale.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3EGv0LH028932
+	for <dyb@whale.cs.indiana.edu>; Fri, 14 Apr 2006 12:57:01 -0400 (EDT)
+Received: from eros.cs.jhu.edu (eros.cs.jhu.edu [128.220.223.245])
+	by moose.cs.indiana.edu (8.13.6/8.13.6/IUCS_2.72) with ESMTP id k3EGuxPb022562
+	for <dyb@cs.indiana.edu>; Fri, 14 Apr 2006 12:57:00 -0400 (EDT)
+Received: from [192.168.2.32] (c-68-33-84-43.hsd1.md.comcast.net [68.33.84.43])
+	(authenticated bits=0)
+	by eros.cs.jhu.edu (8.13.6/8.13.6) with ESMTP id k3EGun1q023574
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO);
+	Fri, 14 Apr 2006 12:56:49 -0400
+Subject: Re: R6RS suggestion
+From: "Jonathan S. Shapiro" <shap@eros-os.org>
+To: Jonathan A Rees <jar@mumble.net>
+Cc: shap@eros-os.org, dyb@cs.indiana.edu
+In-Reply-To: <C5D98DAD-BABE-4468-9ACF-FD6CEEC70438@mumble.net>
+References: <1144985320.29108.37.camel@vmx.eros-os.org>
+	 <B3552305-850D-4FEC-BD1E-292C4815BF3A@mumble.net>
+	 <1145011235.29108.66.camel@vmx.eros-os.org>
+	 <C5D98DAD-BABE-4468-9ACF-FD6CEEC70438@mumble.net>
+Content-Type: text/plain
+Date: Fri, 14 Apr 2006 12:56:58 -0400
+Message-Id: <1145033818.29108.152.camel@vmx.eros-os.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 (2.6.0-1) 
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.3.0.1, Antispam-Data: 2006.04.14.093109
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='__CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+Status: RO
+
+[Kent: I had not intended to start a debate in your inbox. I'll continue
+to CC you until you say otherwise in the interests of continuity, but
+please feel free to drop out.]
+
+JAR:
+
+I hope this *isn't* a discussion that kills scheme. Not to worry. My
+rationale on the statement is entirely pragmatic, so I suspect that it
+won't satisfy some of the community, and the suggestion of Scheme's
+demise will prove to have been exaggerated. :-)
+
+In the intervening years since Scheme emerged, other languages have let
+us validate exception handling as a useful, well founded, and
+pragmatically helpful construct. Compare the idiomatic code patterns of
+C with (god help us) C++: every substantive procedure call in C requires
+at least one line of error check and a conditional return. It's hell on
+the coder and hell on the compiler. These added lines are not exempt
+from the general rules about coding error rates. So exceptions are "A
+Good Thing (tm)". Unfortunately, call/cc (in either variant) renders
+them impossible. Call/cc with indefinite extent is worse, but either
+presents a problem.
+
+The recovery code that occurs in the catch block (or in some variants,
+the finally block) is safety-critical code. It *must* occur. In my
+experience, this code is already difficult to get right, and I would be
+extremely surprised if there exist *any* examples that can get it right
+in the face of the sort of re-entrancy that indefinite extent
+continuations require. I am not aware of any work on successful
+programming idioms or patterns that would support this. Indeed, I am not
+aware of any cohesive presentation of idioms and patterns for effective
+use of indefinite-extent continuations in general. Isolated patterns
+exist and have been used to great effect, but no cohesive treatment.
+
+Even if such patterns and idioms exist, safety critical code is
+*exactly* the sort of place where added complexity should be avoided at
+any cost -- and certainly should not be imposed by the design of the
+language.
+
+And it seems clear that indefinite extent continuations are incompatible
+with this sort of recovery code. First, they can be used to evade it,
+violating the safety requirements and assumptions of the program.
+Second, they can be used to invoke it in ways that programmers are
+ill-prepared to handle correctly. Yes, it is *possible* to write code
+that will not suffer this problem. No, it is *not* possible to do so in
+large systems, because one programmer must not be required to assume
+that the second programmer is either cooperative or competent.
+
+Note that I'm actually making two arguments that are mutually
+intertwined here:
+
+1. call/cc with indefinite extent is too powerful to be safe.
+2. Catch blocks must not be evaded.
+
+Point [2] raises an interesting problem. Consider a continuation
+invocation (either dynamic or indefinite continuations) that resumes
+execution outside the dynamic extent of a pending try/finally block
+(constructed using whatever means seem appropriate). Note that in this
+case the "finally" block will not run, and safety critical code will not
+be executed. In the absence of finalization I cannot see any way to
+program safely in such a language, and I think that by now it is
+generally agreed that finalization is not a good way to do things like
+release orphaned resources (great for last-gasp, but not suitable as a
+preferred means of recovery).
+
+And as I write this last bit, it dawns on me that I am arguing for
+something much more invasive than a re-examination of call/cc, because
+restricting them to dynamic extent isn't good enough to support robust
+catch/finally blocks. In consequence, the try/catch issue involves a
+much more fundamental language design issue than I had noticed. [On the
+other hand, I'm grateful for having seen this before adding dynamic
+extent call/cc to BitC!]
+
+Anyway, that's the heart of my thinking. I can expand, reword, or
+massage as needed, but let's see first if there is some obvious flaw in
+this that I have failed to note. The challenge is to demonstrate a
+non-evadable exception handling mechanism in the presence of either form
+of call/cc.
+
+At minimum, I seem to have raised an interesting design quandry: how
+should non-local returns and catch/finally blocks interact in a language
+that wishes to support safety?
+
+shap
+
+
+
+On Fri, 2006-04-14 at 21:27 +0800, Jonathan A Rees wrote:
+> I think many would say call-with-current-continuation is the soul of  
+> scheme. Dynamic-wind isn't. If cwcc is inconsistent with error  
+> handling (forgetting about dnamic-wind as it stands), that's very  
+> interesting and the demonstration should be vetted.
+> 
+> It appears that you know much more about this subject than I do, so I  
+> will assume that you're right. Maybe this issue is the one that kills  
+> Scheme (supposing one might consider it alive). The question of the  
+> right language remains an interesting one.
+> 
+> The discussion is worth having. I haven't heard it before and don't  
+> know where it should take place. I haven't been involved in this  
+> stuff for a very long time so probably the issues have already  
+> surfaced in some forum that I don't take part in.
+
+
