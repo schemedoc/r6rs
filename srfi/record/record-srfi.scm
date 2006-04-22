@@ -1260,7 +1260,9 @@
        (h1 "Acknowledgements")
 
        (p
-	"We are grateful to Donovan Kolbly who did extensive pre-draft editing.")
+	"We are grateful to Donovan Kolbly who did extensive pre-draft editing. "
+	"Moreover, many members of the Scheme community who posted on the SRFI "
+	"mailing list were instrumental in improving the proposal.")
 
        (p
 	"This SRFI was written in consultation with the other R6RS editors: "
