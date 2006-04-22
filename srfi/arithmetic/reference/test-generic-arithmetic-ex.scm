@@ -25,7 +25,7 @@
 (check (exact=? (numerical exact-make-rectangular 4 2) 
 		(numerical exact-make-rectangular 4 0)) => #f)
 (check (exact=? (numerical exact-make-rectangular 4 2) (r5rs->number 4)) => #f)
-(check (exact=? (numerical exact-make-rectangular #e1e40 0) (r5rs->number #e1e40)) => #t)
+(check (exact=? (numerical exact-make-rectangular 10000000000000000000000000000000000000000 0) (r5rs->number 10000000000000000000000000000000000000000)) => #t)
 
 (check (numerical exact-zero? 3218943724243) => #f)
 (check (numerical exact-zero? 0) => #t)
