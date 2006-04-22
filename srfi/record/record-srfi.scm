@@ -1230,8 +1230,15 @@
 
       (ul
        (li
-        (a (@ (href "http://zurich.csail.mit.edu/pipermail/rrrs-authors/1992-May/001303.html"))
+        (a (@ (href "http://www.swiss.ai.mit.edu/ftpdir/scheme-mail/HTML/rrrs-1992/msg00036.html"))
            "Pavel Curtis's 1989 proposal"))
+
+       (li
+	"Pavel Curtis: " 
+	(a (@ (href "ftp://ftp.cs.indiana.edu/pub/scheme-repository/doc/prop/records-mvalues.ps.gz"))
+	   "The Scheme of Things") ". "
+	(i "Lisp Pointers") ", volume IV, number 1, "
+	"July 1990-March 1991.")
 
        (li
         (a (@ (href "http://srfi.schemers.org/srfi-9/")) "SRFI 9: Defining Record Types") " by Richard A. Kelsey")
