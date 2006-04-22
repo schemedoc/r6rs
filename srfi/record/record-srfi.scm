@@ -257,11 +257,15 @@
 	 "a symbol, as argued "
 	 (a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00056.html")) "here")
 	 "?"))
-	
-       )
 
-      (p
-       "We invite members of the Scheme community to express their opinions on these issues.")
+       (li
+	(p
+	 "The " (code "sealed") " clause presently lacks a clear rationale, and may "
+	 "prohibit desirable extensions to an existing program where source code "
+	 "is unavailable or cannot be modified.  Should it be flushed?  Discussion "
+	 "on the topic can be found "
+	 (a (@ (href "http://srfi.schemers.org/srfi-76/mail-archive/msg00103.html")) "here")
+	 ".")))
 
       (h1 "Specification")
 
