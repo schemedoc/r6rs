@@ -1805,8 +1805,12 @@ its uppercase form, then {\cf char-upcase} returns that character.
 If the argument is a lower case
 or upper case character, and if there is a single character which is
 its titlecase form, then {\cf char-titlecase} returns that character.
-%
-FIXME: \texttt{char-foldcase} isn't defined.
+Finally, if the character has a case-folded character, {\cf char-foldcase}
+returns that character. Otherwise, the character returned is the same
+as the argument. For Turkish characters 0 ({\tt \#\backwhack{}x130})
+and 1 ({\tt \#\backwhack{}x131}),
+{\cf char-foldcase} behaves as the identity function, otherwise it is the
+same as {\cf char-downcase} composed with {\cf char-upcase}.
 %
 Otherwise, the character returned is the same as the argument.
 
@@ -1837,14 +1841,14 @@ Otherwise, the character returned is the same as the argument.
   scalar values for upcase, downcase, titlecase, and case-folding
   operations. (These mappings can be extracted from {\cf
     UnicodeData.txt} and {\cf CaseFolding.txt} from the Unicode
-  Consortium.) These procedures map characters consistent with the
-  Unicode specification.
+  Consortium, ignoring Turkish mappings in the latter.) These
+  procedures map characters consistent with the Unicode specification.
 
-  Note that this is an incomplete approximation to case conversion,
-  even ignoring the user's locale; in general, case mappings require
-  the context of a string, both in arguments and in result. See {\cf
-    string-upcase} and {\cf string-downcase} for more general
-  case-conversion procedures.
+  Note that these character-based procedures are an incomplete
+  approximation to case conversion, even ignoring the user's locale;
+  in general, case mappings require the context of a string, both in
+  arguments and in result. See {\cf string-upcase} and {\cf
+    string-downcase} for more general case-conversion procedures.
 \end{note}
 \end{entry}
 
@@ -1927,7 +1931,23 @@ respectively.
 \end{scheme}
 \end{entry}
 
-FIXME: Add \texttt{char-general-category}
+\begin{entry}{%
+\proto{char-general-category}{ char}{library procedure}}
+
+This procedure takes a character and returns a symbol representing its
+Unicode general category, one of \ide{lu}, \ide{ll}, \ide{lt},
+\ide{lm}, \ide{lo}, \ide{mn}, \ide{mc}, \ide{me}, \ide{nd}, \ide{nl},
+\ide{no}, \ide{ps}, \ide{pe}, \ide{pi}, \ide{pf}, \ide{pd}, \ide{pc},
+\ide{po}, \ide{sc}, \ide{sm}, \ide{sk}, \ide{so}, \ide{zs}, \ide{zp},
+\ide{zl}, \ide{cc}, \ide{cf}, \ide{cs}, \ide{co}, or \ide{cn}.
+
+\begin{scheme}
+(char-general-category \#\backwhack{}a) \ev ll
+(char-general-category \#\backwhack{}space) \lev zs
+(char-general-category \#\backwhack{}x10FFFF) \lev cn  
+\end{scheme}
+\end{entry}
+
 
 \subsection{Strings}
 \label{stringsection}
@@ -2119,13 +2139,15 @@ In particular, the length of the result string can be different than
 the length of the input string.
 
 The {\cf string-upcase} procedure converts a string to upper case,
-{\cf string-downcase} converts a string to lowercase, and {\cf
-  string-foldcase} converts the string to its case-folded counterpart.
-The {\cf string-titlecase} procedure converts the first character to
-title case in each contiguous sequence of cased characters within
-\var{string}, and it downcases all other cased characters; for the
-purposes of detecting cased-character sequences, case-ignorable
-characters are ignored (i.e., they do not interrupt the sequence).
+{\cf string-downcase} converts a string to lowercase. The {\cf
+  string-foldcase} procedure converts the string to its case-folded
+counterpart, using the full case-folding mapping, but without the
+special mappings for Turkic languages.  The {\cf string-titlecase}
+procedure converts the first character to title case in each
+contiguous sequence of cased characters within \var{string}, and it
+downcases all other cased characters; for the purposes of detecting
+cased-character sequences, case-ignorable characters are ignored
+(i.e., they do not interrupt the sequence).
 
 \begin{scheme}
 (string-upcase "Hi") \ev "HI"
@@ -2157,8 +2179,9 @@ characters are ignored (i.e., they do not interrupt the sequence).
 \end{scheme}
 
 \begin{note}
-  These mappings can be extracted from {\cf UnicodeData.txt}, and {\cf
-    SpecialCasing.txt}, from the Unicode Consortium.
+  These mappings can be extracted from {\cf UnicodeData.txt}, {\cf
+    SpecialCasing.txt}, and {\cf CaseFolding.txt} from the Unicode
+  Consortium.
 
   Since each of these procedures is locale-independent, they may not
   be completely appropriate for some locales.
