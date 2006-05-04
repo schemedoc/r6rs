@@ -1,0 +1,95 @@
+Enumeration Types
+=================
+
+Enumeration types are record types for which there are a fixed number
+of instances, all of which are created at the same time as the record
+type itself.
+
+The syntax for defining an enumerated type is:
+
+(define-enum-type <tag> <type-name>
+  <predicate-name>
+  <vector-of-instances-name>
+  <name-accessor> <name-constructor>
+  <index-accessor>
+  (<instance-name> ...))
+
+This defines a new record type, bound to <type-name>, with as many
+ instances as there are <instance-name>'s.
+<Vector-of-instances-name> is bound to a vector containing the instances
+ of the type in the same order as the <instance-name> list.
+<Tag> is bound to a macro that when given an <instance-name> expands
+ into an expression that returns the corresponding instance.
+The name lookup is done at macro-expansion time.
+<Predicate-name> is a predicate for the new type.
+<Name-accessor> and <index-accessor> are accessors for the
+ name and index (in <vector-of-instances>) of instances of the type.
+<Name-constructor> is a procedure that accepts a symbol naming an
+instance, and returns the corresponding instance.  If it is applied
+to a symbol that does not name an instance, the procedure bound to
+<name-constructor> returns #f.
+
+Example:
+
+(define-enum-type color :color
+  color?
+  colors
+  color-name name->color
+  color-index
+  (black white purple maroon))
+
+(color-name (vector-ref colors 0)) => black
+(color-name (color white))         => white
+(color-name (name->color 'white))  => white
+(color-index (color purple))       => 2
+
+Enumeration-Set Types
+=====================
+
+Enumeration-set types work naturally with the enumeration types, but
+are not tied to them.  The syntax for defining such a type is:
+
+(define-enum-set-type <id> <type-name> <predicate> <constructor>
+   <element-syntax> <element-predicate> <all-elements> <element-index-ref>)
+
+This defines <id> to be syntax for constructing sets, <type-name> to
+be a value representing the type, <predicate> to be a predicate for
+those sets, and <constructor> a procedure for constructing one from a
+list.
+
+<Element-syntax> must be the name of a macro for constructing set
+elements from names (akin to the <tag> argument to
+`define-enum-type').  <Element-predicate> must be a predicate for
+the element type, <all-elements> a vector of all values of the element
+type, and <element-index-ref> must return the index of an element
+within the <all-elements> vector.
+
+(enum-set->list enum-set) => list
+(enum-set-member? enum-set enumerand) => boolean
+(enum-set=? enum-set enum-set) => boolean
+(enum-set-union enum-set enum-set) => enum-set
+(enum-set-intersection enum-set enum-set => enum-set
+(enum-set-negation enum-set) => enum-set
+
+`Enum-set->list' converts a set into a list of its elements.
+`Enum-set-member?' tests for membership.  `Enum-set=?' tests two sets
+of equal type for equality.  (If its arguments are not of the same
+type, `enum-set=?' raises an exception.)  `Enum-set-union' computes
+the union of two sets of equal type, `enum-set-intersection' computes
+the intersection, and `enum-set-negation' computes the complement of a
+set.
+
+Here is an example.  Given the above enumerated type `color', we can
+define sets of colors:
+
+(define-enum-set-type color-set :color-set
+                      color-set?
+                      make-color-set
+  color color? colors color-index)
+
+> (map color-name (enum-set->list (color-set black white)))
+(black white)
+> (map color-name (enum-set->list (enum-set-negation (color-set black white))))
+(purple maroon)
+> (enum-set-member? (color-set black white) (color white))
+#t
