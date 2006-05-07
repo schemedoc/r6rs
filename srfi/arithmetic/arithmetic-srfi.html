@@ -244,6 +244,8 @@ on the following issues:
     non-negative representatives in all cases.
     The new <code>div0</code> and <code>mod0</code> operators
     provide representatives centered around zero.
+<li>The <code>quotient</code>, <code>remainder</code>, and
+    <code>modulo</code> procedures were removed.
 <li>Most of the bitwise operations of
     <a href="http://srfi.schemers.org/srfi-60/srfi-60.html">SRFI 60</a>
     have been added, but they have been renamed using
@@ -346,13 +348,11 @@ make it easier for an implementation to generate efficient numerical
 code.
 
 <p>
-Moreover, unlike SRFI 70, this SRFI doesn't extend
-<code>quotient</code>, <code>remainder</code>, and <code>modulo</code>
-to real numbers, but instead provides additional operations
-<code>div</code>, <code>mod</code>, <code>div0</code>, and
-<code>mod0</code>, which are slightly more
-generally applicable and easier to specify.  It also does not extend
-the <code>gcd</code> and <code>lcm</code> to rational numbers.  
+Moreover, unlike SRFI 70, this alternative operations for integer
+division <code>div</code>, <code>mod</code>, <code>div0</code>, and
+<code>mod0</code>, which are slightly more generally applicable and
+easier to specify.  It also does not extend the <code>gcd</code> and
+<code>lcm</code> to rational numbers.
 
 <P>
 The sections on <a href="#Fixnums">Fixnums</a>, <a
@@ -1048,197 +1048,74 @@ An implementation may return <CODE>#f</CODE> for <CODE>"+nan.0"</CODE>.</STRIKE>
 <h2><a name="integer-division">Integer Division</a></h2>
 
 <P>
-<FONT COLOR="red">
-The <code>div</code>, <code>mod</code>, <code>div+mod</code>,
-<code>div0</code>, <code>mod0</code>, <code>div0+mod0</code>,
-and <code>quotient+remainder</code>
-procedures are new and not in SRFI 70.  The definitions of
-<code>quotient</code> and <code>remainder</code> are as in
-R5RS, not as in SRFI 70.</font>
-
-<P>
 For various kinds of arithmetic (fixnum, flonum, exact, inexact, and
 generic), this SRFI provides operations for performing integer
-division.  Their variants differ mainly in the domains they operate
-on, not in substance.  The following specification is of the general
-variant.  Later sections will link back to this one where appropriate.
-</P>
-
-<P>
-<DL>
-<DT><U>procedure:</U> <CODE>div+mod</CODE> <var>x1</var> <var>x2</var>
-<DT><U>procedure:</U> <CODE>div</CODE> <var>x1</var> <var>x2</var>
-<DT><U>procedure:</U> <CODE>mod</CODE> <var>x1</var> <var>x2</var>
-<DD>
+division.  They rely on mathematical operations <var>div</var>,
+<var>mod</var>, <var>div<sub>0</sub></var>, and
+<var>mod<sub>0</sub></var>, that are defined as follows:
 
 <p>
-<CODE>div</CODE> returns an integer, <CODE>mod</code> returns a real,
-and <code>div+mod</code> returns two values, an integer and a real.
-The results are specified by
+<var>div</var>, <var>mod</var>, <var>div<sub>0</sub></var>, and
+<var>mod<sub>0</sub></var> each accept two real numbers <var>x<sub>1</sub></var> and
+<var>x<sub>2</sub></var> as operands, where <var>x<sub>2</sub></var> must be nonzero.
+
+<P>
+<var>div</var> returns an integer, <var>mod</var> returns a real.
+Their results are specified by
 <PRE>
-(div <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>n<span class=sub>d</span></VAR>
-(mod <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>x<span class=sub>m</span></VAR>
-(div+mod <VAR>x1</VAR> <VAR>x2</VAR>)              ==&gt; <VAR>n<span class=sub>d</span></VAR>  <VAR>x<span class=sub>m</span></VAR> ; two return values
+<VAR>x<sub>1</sub></VAR> <var>div</var> <VAR>x<sub>2</sub></VAR>         ==&gt; <VAR>n<span class=sub>d</span></VAR>
+<VAR>x<sub>1</sub></VAR> <var>mod</var> <VAR>x<sub>2</sub></VAR>         ==&gt; <VAR>x<span class=sub>m</span></VAR>
 </PRE>
 where
 <ol>
-<li><VAR>x1</VAR> = <VAR>n<span class=sub>d</span></VAR> * <VAR>x2</VAR> +
+<li><VAR>x<sub>1</sub></VAR> = <VAR>n<span class=sub>d</span></VAR> * <VAR>x<sub>2</sub></VAR> +
     <VAR>x<span class=sub>m</span></VAR></li>
-<li>0 &lt;= <VAR>x<span class=sub>m</span></VAR> &lt; |<VAR>x2</VAR>|
+<li>0 &lt;= <VAR>x<span class=sub>m</span></VAR> &lt; |<VAR>x<sub>2</sub></VAR>|
 </ol>
-provided <VAR>x1</VAR> is neither infinite nor a NaN,
-and <VAR>x2</VAR> is nonzero.
-</p>
 
-<BLOCKQUOTE>
-<P>
-<EM>Rationale:</EM> These operations generalize integer division to real
-numbers.  Even with integer arguments, they are better suited than
-<CODE>quotient</CODE> and <CODE>remainder</CODE> to implement modular
-reduction <A href="#egner-at-al-2004">[Egner et al. 2004]</A>.
-</BLOCKQUOTE>
-</DD>
-</DL>
-
-<P>
-<DL>
-<DT><U>procedure:</U> <CODE>div0+mod0</CODE> <var>x1</var> <var>x2</var>
-<DT><U>procedure:</U> <CODE>div0</CODE> <var>x1</var> <var>x2</var>
-<DT><U>procedure:</U> <CODE>mod0</CODE> <var>x1</var> <var>x2</var>
-<DD>
-
-<p>
-These procedures are like
-<code>div</code>, <code>mod</code>, and <code>div+mod</code>,
-except the result of <code>mod0</code> lies within a half-open
-interval centered on zero.
-</p>
-
-<p?
-<CODE>div0</CODE> returns an integer, <CODE>mod0</code> returns a real,
-and <code>div0+mod0</code> returns two values, an integer and a real.
-The results are specified by
+<P>Examples:</P>
 <PRE>
-(div <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>n<span class=sub>d</span></VAR>
-(mod <VAR>x1</VAR> <VAR>x2</VAR>)                  ==&gt; <VAR>x<span class=sub>m</span></VAR>
-(div+mod <VAR>x1</VAR> <VAR>x2</VAR>)              ==&gt; (div <VAR>x1</VAR> <VAR>x2</VAR>) (mod <VAR>x1</VAR> <VAR>x2</VAR>) ; two return values
+5 <var>div</var> 3    =  1
+5 <var>div</var> -3   =  -1
+
+5 <var>mod</var> 3    =  2
+5 <var>mod</var> -3   =  2
+</PRE>
+
+<P>
+<var>Div<sub>0</sub></var> and <var>mod<sub>0</sub></var> are like
+<var>div</var> and <var>mod</var>, except the result of
+<var>mod<sub>0</sub></var> lies within a half-open interval centered
+on zero.  The results are specified by
+</p>
+
+
+<PRE>
+<VAR>x<sub>1</sub></VAR> <var>div<sub>0</sub></var> <VAR>x<sub>2</sub></VAR>        ==&gt; <VAR>n<span class=sub>d</span></VAR>
+<VAR>x<sub>1</sub></VAR> <var>mod<sub>0</sub></var> <VAR>x<sub>2</sub></VAR>        ==&gt; <VAR>x<span class=sub>m</span></VAR>
 </PRE>
 where:
 <ol>
-<li><VAR>x1</VAR> = <VAR>n<span class=sub>d</span></VAR> * <VAR>x2</VAR> +
+<li><VAR>x<sub>1</sub></VAR> = <VAR>n<span class=sub>d</span></VAR> * <VAR>x<sub>2</sub></VAR> +
     <VAR>x<span class=sub>m</span></VAR></li>
-<li>-|<VAR>x2</VAR>/2| &le; <VAR>x<span class=sub>m</span></VAR> &lt;
-    |<VAR>x2</VAR>/2|</li>
+<li>-|<VAR>x<sub>2</sub></VAR>/2| &le; <VAR>x<span class=sub>m</span></VAR> &lt;
+    |<VAR>x<sub>2</sub></VAR>/2|</li>
 </ol>
-provided <VAR>x1</VAR> is neither infinite nor a NaN,
-and <VAR>x2</VAR> is nonzero.
-</p>
+
+<P>Examples:</P>
+<PRE>
+5 <var>div</var> 3    =  2
+5 <var>div</var> -3   =  -2
+
+5 <var>mod</var> 3    =  -1
+5 <var>mod</var> -3   =  -1
+</PRE>
 
 <BLOCKQUOTE>
 <P>
 <EM>Rationale:</EM>
 The half-open symmetry about zero is convenient for some purposes.
 </BLOCKQUOTE>
-</DD>
-</DL>
-
-<P>
-<DL>
-<DT><U>procedure:</U> <CODE>quotient+remainder</CODE> <var>n1</var> <var>n2</var>
-<DT><U>procedure:</U> <CODE>quotient</CODE> <var>n1</var> <var>n2</var>
-<DT><U>procedure:</U> <CODE>remainder</CODE> <var>n1</var> <var>n2</var>
-<DT><U>procedure:</U> <CODE>modulo</CODE> <var>n1</var> <var>n2</var>
-<DD>
-
-<P>
-These procedures implement number-theoretic (integer)
-division.  <VAR>n2</VAR> should be non-zero.
-<code>Quotient</code>, <code>remainder</code>, and <code>modulo</code>
-return integers; <code>quotient+remainder</code> returns two integers.
-
-<PRE>
-(quotient+remainder <VAR>n1</VAR> <VAR>n2</VAR>)         ==&gt; (quotient <VAR>n1</VAR> <VAR>n2</VAR>) (remainder <VAR>n1</VAR> <VAR>n2</VAR>) ; two return values
-</PRE>
-
-<P>
-If <VAR>n1</VAR>/<VAR>n2</VAR> is an integer:
-
-<PRE>
-(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&gt; <VAR>n1</VAR>/<VAR>n2</VAR>
-(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&gt; 0
-(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&gt; 0
-</PRE>
-
-If <VAR>n1</VAR>/<VAR>n2</VAR> is not an integer:
-
-<PRE>
-(quotient <VAR>n1</VAR> <VAR>n2</VAR>)                   ==&gt; <VAR>n<span class=sub>q</span></VAR>
-(remainder <VAR>n1</VAR> <VAR>n2</VAR>)                  ==&gt; <VAR>n<span class=sub>r</span></VAR>
-(modulo <VAR>n1</VAR> <VAR>n2</VAR>)                     ==&gt; <VAR>n<span class=sub>m</span></VAR>
-</PRE>
-
-<P>
-where <VAR>n<span class=sub>q</span></VAR> is <VAR>n1</VAR>/<VAR>n2</VAR> rounded towards zero,
-0 &lt; |<VAR>n<span class=sub>r</span></VAR>| &lt; |<VAR>n2</VAR>|, 0 &lt; |<VAR>n<span class=sub>m</span></VAR>| &lt; |<VAR>n2</VAR>|,
-<VAR>n<span class=sub>r</span></VAR> and <VAR>n<span class=sub>m</span></VAR> differ from
-<VAR>n1</VAR> by an integral multiple of <VAR>n2</VAR>,
-<VAR>n<span class=sub>r</span></VAR> has the same sign as <VAR>n1</VAR>, and
-<VAR>n<span class=sub>m</span></VAR> has the same sign as <VAR>n2</VAR>.
-
-<P>
-From this we can conclude that for integers <VAR>n1</VAR> and <VAR>n2</VAR> with
-<VAR>n2</VAR> not equal to 0,
-
-<PRE>
-     (= <VAR>n1</VAR> (+ (* <VAR>n2</VAR> (quotient <VAR>n1</VAR> <VAR>n2</VAR>))
-           (remainder <VAR>n1</VAR> <VAR>n2</VAR>)))
-                                       ==&gt;  #t
-</PRE>
-
-provided all numbers involved in that computation are exact.
-
-
-<PRE>
-(quotient+remainder 13 4)              ==&gt;  3 1
-(modulo 13 4)                          ==&gt;  1
-(remainder 13 4)                       ==&gt;  1
-
-(quotient+remainder -13 4)             ==&gt;  -3 -1
-(modulo -13 4)                         ==&gt;  3
-(remainder -13 4)                      ==&gt;  -1
-
-(quotient+remainder -13 4)             ==&gt;  -3 1
-(modulo 13 -4)                         ==&gt;  -3
-(remainder 13 -4)                      ==&gt;  1
-
-(modulo -13 -4)                        ==&gt;  -1
-(remainder -13 -4)                     ==&gt;  -1
-</PRE>
-
-<P>
-<CODE>Quotient</CODE>, <CODE>remainder</CODE> and <CODE>modulo</CODE>
-can easily be defined through <CODE>div</CODE> and <CODE>mod</CODE>:
-
-<PRE>
-(define (sign n)
-  (cond
-    ((positive? n) 1)
-    ((negative? n) -1)
-    (else 0)))
-
-(define (quotient n1 n2)
-  (* (sign n1) (sign n2) (div (abs n1) (abs n2))))
-
-(define (remainder n1 n2)
-  (* (sign n1) (mod (abs n1) (abs n2))))
-
-(define (modulo n1 n2)
-  (* (sign n2) (mod (* (sign n2) n1) (abs n2))))
-</PRE>
-
-
-</DD>
-</DL>
 
 <h2><a name="Fixnums">Fixnums</a></h2>
 
@@ -1481,10 +1358,6 @@ result of this procedure is not a fixnum.
 <DT><U>procedure:</U> <CODE>fixnum-div0+mod0</CODE> <var>fx1</var> <var>fx2</var>
 <DT><U>procedure:</U> <CODE>fixnum-div0</CODE> <var>fx1</var> <var>fx2</var>
 <DT><U>procedure:</U> <CODE>fixnum-mod0</CODE> <var>fx1</var> <var>fx2</var>
-<DT><U>procedure:</U> <CODE>fixnum-quotient</CODE> <var>fx1</var> <var>fx2</var>
-<DT><U>procedure:</U> <CODE>fixnum-quotient+remainder</CODE> <var>fx1</var> <var>fx2</var>
-<DT><U>procedure:</U> <CODE>fixnum-modulo</CODE> <var>fx1</var> <var>fx2</var>
-<DT><U>procedure:</U> <CODE>fixnum-remainder</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 
 <p>
@@ -1508,16 +1381,13 @@ in which case all bets are off.
 <DT><U>procedure:</U> <CODE>fxdiv0+mod0</CODE> <var>fx1</var> <var>fx2</var>
 <DT><U>procedure:</U> <CODE>fxdiv0</CODE> <var>fx1</var> <var>fx2</var>
 <DT><U>procedure:</U> <CODE>fxmod0</CODE> <var>fx1</var> <var>fx2</var>
-<DT><U>procedure:</U> <CODE>fxquotient</CODE> <var>fx1</var> <var>fx2</var>
-<DT><U>procedure:</U> <CODE>fxquotient+remainder</CODE> <var>fx1</var> <var>fx2</var>
-<DT><U>procedure:</U> <CODE>fxmodulo</CODE> <var>fx1</var> <var>fx2</var>
-<DT><U>procedure:</U> <CODE>fxremainder</CODE> <var>fx1</var> <var>fx2</var>
 <DD>
 
 <p>
-These procedures implement number-theoretic integer division 
-as described in the section on
-<a href="#integer-division">Integer Division</a>.
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in the section on <a href="#integer-division">Integer
+Division</a>.
 An error is signalled if a result specified by that section
 is not a fixnum,
 unless the implementation is running in unsafe mode,
@@ -2243,15 +2113,17 @@ This returns the absolute value of its argument.
 <DT><U>procedure:</U> <CODE>fldiv+mod</CODE> <var>fl1</var> <var>fl2</var>
 <DT><U>procedure:</U> <CODE>fldiv</CODE> <var>fl1</var> <var>fl2</var>
 <DT><U>procedure:</U> <CODE>flmod</CODE> <var>fl1</var> <var>fl2</var>
-<DT><U>procedure:</U> <CODE>flquotient</CODE> <var>ifl1</var> <var>ifl2</var>
-<DT><U>procedure:</U> <CODE>flmodulo+remainder</CODE> <var>ifl1</var> <var>ifl2</var>
-<DT><U>procedure:</U> <CODE>flmodulo</CODE> <var>ifl1</var> <var>ifl2</var>
-<DT><U>procedure:</U> <CODE>flremainder</CODE> <var>ifl1</var> <var>ifl2</var>
+<DT><U>procedure:</U> <CODE>fldiv0+mod0</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>fldiv0</CODE> <var>fl1</var> <var>fl2</var>
+<DT><U>procedure:</U> <CODE>flmod0</CODE> <var>fl1</var> <var>fl2</var>
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division.  See the
-section on <a href="#integer-division">Integer Division</a>.  For zero
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in the section on <a href="#integer-division">Integer
+Division</a>.
+For zero
 divisors, these procedures may return a NaN or some
 meaningless flonum.
 </p>
@@ -2756,17 +2628,27 @@ This procedure returns the absolute value of its argument.
 <DT><U>procedure:</U> <CODE>exact-div+mod</CODE> <var>ef1</var> <var>ef2</var>
 <DT><U>procedure:</U> <CODE>exact-div</CODE> <var>ef1</var> <var>ef2</var>
 <DT><U>procedure:</U> <CODE>exact-mod</CODE> <var>ef1</var> <var>ef2</var>
-<DT><U>procedure:</U> <CODE>exact-quotient</CODE> <var>ei1</var> <var>ei2</var>
-<DT><U>procedure:</U> <CODE>exact-modulo+remainder</CODE> <var>ei1</var> <var>ei2</var>
-<DT><U>procedure:</U> <CODE>exact-modulo</CODE> <var>ei1</var> <var>ei2</var>
-<DT><U>procedure:</U> <CODE>exact-remainder</CODE> <var>ei1</var> <var>ei2</var>
+<DT><U>procedure:</U> <CODE>exact-div0+mod0</CODE> <var>ef1</var> <var>ef2</var>
+<DT><U>procedure:</U> <CODE>exact-div0</CODE> <var>ef1</var> <var>ef2</var>
+<DT><U>procedure:</U> <CODE>exact-mod0</CODE> <var>ef1</var> <var>ef2</var>
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division.  See the
-section on <a href="#integer-division">Integer Division</a>.  For zero
-divisors, these procedures signal an error.
-</p>
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in the section on <a href="#integer-division">Integer
+Division</a>.  In each case, <VAR>x1</VAR> must be neither infinite
+nor a NaN, and <VAR>x2</VAR> must be nonzero; otherwise, an exception
+is raised.
+<PRE>
+(exact-div <var>x1</var> <var>x2</var>)         ==&gt; <var>x1</var> <var>div</var> <var>x2</var>
+(exact-mod <var>x1</var> <var>x2</var>)         ==&gt; <var>x1</var> <var>mod</var> <var>x2</var>
+(exact-div+mod <var>x1</var> <var>x2</var>)     ==&gt; <var>x1</var> <var>div</var> <var>x2</var>, <var>x1</var> <var>mod</var> <var>x2</var> ; two return values
+(exact-div0 <var>x1</var> <var>x2</var>)        ==&gt; <var>x1</var> <var>div<sub>0</sub></var> <var>x2</var>
+(exact-mod0 <var>x1</var> <var>x2</var>)        ==&gt; <var>x1</var> <var>mod<sub>0</sub></var> <var>x2</var>
+(exact-div0+mod0 <var>x1</var> <var>x2</var>)   ==&gt; <var>x1</var> <var>div<sub>0</sub></var> <var>x2</var>, <var>x1</var> <var>mod<sub>0</sub></var> <var>x2</var> ; two return values
+</PRE>
+
 </dl>
 
 <P>
@@ -3252,18 +3134,27 @@ This procedure returns the absolute value of its argument.
 <DT><U>procedure:</U> <CODE>inexact-div+mod</CODE> <var>ir1</var> <var>ir2</var>
 <DT><U>procedure:</U> <CODE>inexact-div</CODE> <var>ir1</var> <var>ir2</var>
 <DT><U>procedure:</U> <CODE>inexact-mod</CODE> <var>ir1</var> <var>ir2</var>
-<DT><U>procedure:</U> <CODE>inexact-quotient</CODE> <var>ii1</var> <var>ii2</var>
-<DT><U>procedure:</U> <CODE>inexact-modulo+remainder</CODE> <var>ii1</var> <var>ii2</var>
-<DT><U>procedure:</U> <CODE>inexact-modulo</CODE> <var>ii1</var> <var>ii2</var>
-<DT><U>procedure:</U> <CODE>inexact-remainder</CODE> <var>ii1</var> <var>ii2</var>
+<DT><U>procedure:</U> <CODE>inexact-div0+mod0</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>procedure:</U> <CODE>inexact-div0</CODE> <var>ir1</var> <var>ir2</var>
+<DT><U>procedure:</U> <CODE>inexact-mod0</CODE> <var>ir1</var> <var>ir2</var>
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division.  See the
-section on <a href="#integer-division">Integer Division</a>.  For zero
-divisors, these procedures signal an error or may return some
-meaningless inexact number.
-</p>
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in the section on <a href="#integer-division">Integer
+Division</a>.  In each case, <VAR>x1</VAR> must be neither infinite
+nor a NaN, and <VAR>x2</VAR> must be nonzero; otherwise, an exception
+is raised.
+<PRE>
+(inexact-div <var>x1</var> <var>x2</var>)         ==&gt; <var>x1</var> <var>div</var> <var>x2</var>
+(inexact-mod <var>x1</var> <var>x2</var>)         ==&gt; <var>x1</var> <var>mod</var> <var>x2</var>
+(inexact-div+mod <var>x1</var> <var>x2</var>)     ==&gt; <var>x1</var> <var>div</var> <var>x2</var>, <var>x1</var> <var>mod</var> <var>x2</var> ; two return values
+(inexact-div0 <var>x1</var> <var>x2</var>)        ==&gt; <var>x1</var> <var>div<sub>0</sub></var> <var>x2</var>
+(inexact-mod0 <var>x1</var> <var>x2</var>)        ==&gt; <var>x1</var> <var>mod<sub>0</sub></var> <var>x2</var>
+(inexact-div0+mod0 <var>x1</var> <var>x2</var>)   ==&gt; <var>x1</var> <var>div<sub>0</sub></var> <var>x2</var>, <var>x1</var> <var>mod<sub>0</sub></var> <var>x2</var> ; two return values
+</PRE>
+
 </dl>
 
 <P>
@@ -3949,19 +3840,34 @@ or return an unspecified number.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>div+mod</CODE> <var>x1</var> <var>x2</var>
-<DT><U>procedure:</U> <CODE>div</CODE> <var>x1</var> <var>x2</var>
-<DT><U>procedure:</U> <CODE>mod</CODE> <var>x1</var> <var>x2</var>
-<DT><U>procedure:</U> <CODE>quotient</CODE> <var>n1</var> <var>n2</var>
-<DT><U>procedure:</U> <CODE>modulo+remainder</CODE> <var>n1</var> <var>n2</var>
-<DT><U>procedure:</U> <CODE>modulo</CODE> <var>n1</var> <var>n2</var>
-<DT><U>procedure:</U> <CODE>remainder</CODE> <var>n1</var> <var>n2</var>
+<DT><span class=add><U>procedure:</U> <CODE>div+mod</CODE> <var>x1</var> <var>x2</var></span>
+<DT><span class=add><U>procedure:</U> <CODE>div</CODE> <var>x1</var> <var>x2</var></span>
+<DT><span class=add><U>procedure:</U> <CODE>mod</CODE> <var>x1</var> <var>x2</var></span>
+<DT><span class=add><U>procedure:</U> <CODE>div0+mod0</CODE> <var>x1</var> <var>x2</var></span>
+<DT><span class=add><U>procedure:</U> <CODE>div0</CODE> <var>x1</var> <var>x2</var></span>
+<DT><span class=add><U>procedure:</U> <CODE>mod0</CODE> <var>x1</var> <var>x2</var></span>
 <DD>
 
 <P>
-These procedures implement number-theoretic integer division.  See the
-section on <a href="#integer-division">Integer Division</a>.
-</p>
+<span class=add>
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in the section on <a href="#integer-division">Integer
+Division</a>.  In each case, <VAR>x1</VAR> must be neither infinite
+nor a NaN, and <VAR>x2</VAR> must be nonzero; otherwise, an exception
+is raised.
+</span>
+
+
+<PRE>
+<span class=add>(div <var>x1</var> <var>x2</var>)         ==&gt; <var>x1</var> <var>div</var> <var>x2</var></span>
+<span class=add>(mod <var>x1</var> <var>x2</var>)         ==&gt; <var>x1</var> <var>mod</var> <var>x2</var></span>
+<span class=add>(div+mod <var>x1</var> <var>x2</var>)     ==&gt; <var>x1</var> <var>div</var> <var>x2</var>, <var>x1</var> <var>mod</var> <var>x2</var> ; two return values</span>
+<span class=add>(div0 <var>x1</var> <var>x2</var>)        ==&gt; <var>x1</var> <var>div<sub>0</sub></var> <var>x2</var></span>
+<span class=add>(mod0 <var>x1</var> <var>x2</var>)        ==&gt; <var>x1</var> <var>mod<sub>0</sub></var> <var>x2</var></span>
+<span class=add>(div0+mod0 <var>x1</var> <var>x2</var>)   ==&gt; <var>x1</var> <var>div<sub>0</sub></var> <var>x2</var>, <var>x1</var> <var>mod<sub>0</sub></var> <var>x2</var> ; two return values</span>
+</PRE>
+
 </dl>
 
 <P>
