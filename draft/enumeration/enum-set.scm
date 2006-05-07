@@ -11,6 +11,7 @@
      (begin
        (define <type>
 	 (make-enum-set-type '?constructor-name
+			     ?enum-elements-proc
 			     (?enum-elements-proc)
 			     ?enum-index))
 
@@ -42,12 +43,12 @@
 (define-record-type (enum-set-type make-enum-set-type enum-set-type?)
  (fields
    (immutable id        enum-set-type-id)
+   (immutable universe  enum-set-type-universe)
    (immutable values    enum-set-type-values)
    (immutable index-ref enum-set-type-index-ref)))
 
 (define (enum-set-universe enum-set)
-  ;; vector-copy for the lazy
-  (list->vector (vector->list (enum-set-type-values (enum-set-type enum-set)))))
+  (enum-set-type-universe (enum-set-type enum-set)))
 
 ; The mask is settable to allow for destructive operations.  There aren't
 ; any such yet.
@@ -94,8 +95,8 @@
 
 ; #### expensive
 (define (enum-set-universe<=? enum-set0 enum-set1)
-  (let ((u0 (enum-set-universe enum-set0))
-	(u1 (enum-set-universe enum-set1)))
+  (let ((u0 (enum-set-type-values (enum-set-type enum-set0)))
+	(u1 (enum-set-type-values (enum-set-type enum-set1))))
     (lset<= (vector->list u0) (vector->list u1))))
 
 (define (enum-set-members<=? enum-set0 enum-set1)
@@ -113,8 +114,8 @@
     (error "invalid arguments" enum-set=? enum-set0 enum-set1))))
 
 (define (enum-set-universe=? enum-set0 enum-set1)
-  (let ((u0 (enum-set-universe enum-set0))
-	(u1 (enum-set-universe enum-set1)))
+  (let ((u0 (enum-set-type-values (enum-set-type enum-set0)))
+	(u1 (enum-set-type-values (enum-set-type enum-set1))))
     (lset= (vector->list u0) (vector->list u1))))
 
 (define (enum-set-members=? enum-set0 enum-set1)

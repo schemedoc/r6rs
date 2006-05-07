@@ -104,8 +104,9 @@ sets of color:
 (enum-set-difference enum-set enum-set)
 (enum-set-complement enum-set) => enum-set
 
-` enum-set-universe' returns a vector of the members of the
-enumeration type, in order.
+`enum-set-universe' returns the thunk used in the position of
+<elements> in the `define-enum-set-type' form; that thunk returns a
+vector of the members of the enumeration type, in order.
 
 `enum-set->list' returns a list of the symbols that belong to an
 enumeration set.
@@ -134,7 +135,7 @@ enumeration type as universe, and returns their difference.
 `enum-set-complement' takes an enumeration set and returns
 its complement with respect to its universe.
 
-(enum-set-universe (color-set))   => #(black white purple maroon)
+((enum-set-universe (color-set))) => #(black white purple maroon)
 
 (enum-set->list (color-set))      => ()
 
