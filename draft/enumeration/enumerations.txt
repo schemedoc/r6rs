@@ -1,95 +1,166 @@
 Enumeration Types
 =================
 
-Enumeration types are record types for which there are a fixed number
-of instances, all of which are created at the same time as the record
-type itself.
+Enumeration types are subtypes of Scheme's standard symbol
+types.  Each enumeration type represents a fixed set of
+symbols, which are specified when the enumeration type is
+defined.
 
 The syntax for defining an enumerated type is:
 
-(define-enum-type <tag> <type-name>
+(define-enum-type <type-name>
+  <elements-name>
   <predicate-name>
-  <vector-of-instances-name>
-  <name-accessor> <name-constructor>
   <index-accessor>
-  (<instance-name> ...))
+  (<symbol> ...))
 
-This defines a new record type, bound to <type-name>, with as many
- instances as there are <instance-name>'s.
-<Vector-of-instances-name> is bound to a vector containing the instances
- of the type in the same order as the <instance-name> list.
-<Tag> is bound to a macro that when given an <instance-name> expands
- into an expression that returns the corresponding instance.
-The name lookup is done at macro-expansion time.
-<Predicate-name> is a predicate for the new type.
-<Name-accessor> and <index-accessor> are accessors for the
- name and index (in <vector-of-instances>) of instances of the type.
-<Name-constructor> is a procedure that accepts a symbol naming an
-instance, and returns the corresponding instance.  If it is applied
-to a symbol that does not name an instance, the procedure bound to
-<name-constructor> returns #f.
+This defines a macro <type-name> and three procedures:
+<elements-name>, <predicate-name>, and <index-accessor>.  <elements-name>
+will be a procedure of no arguments that returns symbols that comprise
+the enumeration type, in the same order as they were specified.
+<predicate-name> will take an arbitrary object, returning true if and
+only if the object is one of the symbols returned by <type-name>.
+<index-accessor> takes an arbitrary object, returning false if the
+object is not one of the symbols returned by <type-name>; if the
+object is one of the symbols returned by <type-name>, then
+<index-accessor> returns its 0-origin index within the vector returned
+by <type-name>.
+
+<type-name> will be a macro of one operand, which must be one of the
+enumeration symbols.  It will return the corresponding symbol.  If the
+operand is not a symbol or if the symbol is not a member of the
+enumeration type, an expansion-time exception will be raised.
+
+The <type-name> procedure also serves as the canonical
+representation of the enumerated type.
 
 Example:
 
-(define-enum-type color :color
-  color?
+Example:
+
+(define-enum-type color
   colors
-  color-name name->color
+  color?
   color-index
   (black white purple maroon))
 
-(color-name (vector-ref colors 0)) => black
-(color-name (color white))         => white
-(color-name (name->color 'white))  => white
+(colors)                           => #(black white purple maroon)
+(color? 'black)                    => #t
+(color? 'gold)                     => #f
+(color black)                      => 'black
+(color purpel)                     => <expansion-time error>
 (color-index (color purple))       => 2
 
 Enumeration-Set Types
 =====================
 
-Enumeration-set types work naturally with the enumeration types, but
-are not tied to them.  The syntax for defining such a type is:
+Enumeration-set types work naturally with the enumeration types.
+The syntax for defining such a type is:
 
-(define-enum-set-type <id> <type-name> <predicate> <constructor>
-   <element-syntax> <element-predicate> <all-elements> <element-index-ref>)
+(define-enum-set-type <constructor-syntax> <constructor> <predicate>
+  <enum-type> <elements> <element-index>)
 
-This defines <id> to be syntax for constructing sets, <type-name> to
-be a value representing the type, <predicate> to be a predicate for
-those sets, and <constructor> a procedure for constructing one from a
-list.
+where <constructor-syntax> is an identifier that will be bound to a
+constructor macro, <constructor> is an identifier that will be bound
+to a constructor procedure, and <predicate> is an identifier that will
+be bound to a predicate for the enumeration-set type being defined.
 
-<Element-syntax> must be the name of a macro for constructing set
-elements from names (akin to the <tag> argument to
-`define-enum-type').  <Element-predicate> must be a predicate for
-the element type, <all-elements> a vector of all values of the element
-type, and <element-index-ref> must return the index of an element
-within the <all-elements> vector.
+<enum-type>, <elements>, and <element-index> define the enumeration
+type upon which the enumeration-set-type is based.  <enum-type> must
+be a macro corresponding to the <type-name> macro defined by
+`define-enum-type', i.e. take a symbol operand and return the
+corresponding enumeration member.  <elements> must be a thunk
+returning a vector of the elements of the enumeration, and
+<element-index> must be a procedure accepting an enumeration element
+and returning a corresponding index.
 
-(enum-set->list enum-set) => list
-(enum-set-member? enum-set enumerand) => boolean
+The <constructor-syntax> macro takes any number of symbol operands,
+each of which must identify a member of the enumeration via the
+<enum-type> macro.  The <constructor> procedure will accept a list of
+enumeration elements and return the corresponding enumeration set.
+The <predicate> procedure will accept any object and return #t if the
+object is an enumeration set of the type being defined, #f otherwise.
+
+The representation of an enumeration set is not specified
+by this proposal.
+
+Given the enumerated type `color', for example, we can define
+sets of color:
+
+(define-enum-set-type color-set make-color-set color-set?
+  color colors color-index)
+
+(color-set? (color-set black white))                             => #t
+(color-set? (make-color-set (list (color black) (color white)))) => #t
+(color-set? '(black white))                                      => #f
+
+(enum-set-universe enum-set)
+(enum-set->list enum-set)
+(enum-set-member? symbol enum-set)
+(enum-set-subset? enum-set enum-set)
 (enum-set=? enum-set enum-set) => boolean
 (enum-set-union enum-set enum-set) => enum-set
 (enum-set-intersection enum-set enum-set => enum-set
-(enum-set-negation enum-set) => enum-set
+(enum-set-difference enum-set enum-set)
+(enum-set-complement enum-set) => enum-set
 
-`Enum-set->list' converts a set into a list of its elements.
-`Enum-set-member?' tests for membership.  `Enum-set=?' tests two sets
-of equal type for equality.  (If its arguments are not of the same
-type, `enum-set=?' raises an exception.)  `Enum-set-union' computes
-the union of two sets of equal type, `enum-set-intersection' computes
-the intersection, and `enum-set-negation' computes the complement of a
-set.
+` enum-set-universe' returns a vector of the members of the
+enumeration type, in order.
 
-Here is an example.  Given the above enumerated type `color', we can
-define sets of colors:
+`enum-set->list' returns a list of the symbols that belong to an
+enumeration set.
 
-(define-enum-set-type color-set :color-set
-                      color-set?
-                      make-color-set
-  color color? colors color-index)
+`enum-set-member?' returns true if and only if its first argument is
+an element of its second argument.
 
-> (map color-name (enum-set->list (color-set black white)))
-(black white)
-> (map color-name (enum-set->list (enum-set-negation (color-set black white))))
-(purple maroon)
-> (enum-set-member? (color-set black white) (color white))
-#t
+`enum-set-subset?' returns true if and only if the universe of its
+first argument is a subset of the universe of its second argument
+(considered as sets of symbols) and every element of its first
+argument is a member of its second.
+
+`enum-set=?' returns true if and only if its first argument is a
+subset of its second and vice versa, as determined by the
+enum-set-subset? procedure.
+
+`enum-set-union' takes two enumeration sets that share the same
+enumeration type as universe, and returns their union.
+
+`enum-set-intersection' takes two enumeration sets that share the same
+enumeration type as universe, and returns their intersection.
+
+`enum-set-difference' takes two enumeration sets that share the same
+enumeration type as universe, and returns their difference.
+
+`enum-set-complement' takes an enumeration set and returns
+its complement with respect to its universe.
+
+(enum-set-universe (color-set))   => #(black white purple maroon)
+
+(enum-set->list (color-set))      => ()
+
+(color-set purpel)                => <expansion-time error>
+
+(enum-set-member? 'white (make-color-set '(white)))  =>  #t
+
+(enum-set-subset? (color-set white)
+                  (enum-set-complement (color-set black))) => #t
+
+(enum-set=? (color-set black maroon)
+            (enum-set-complement
+             (color-set white purple)))  =>  #t
+
+(define-enum-type other-color
+  other-colors
+  other-color?
+  other-color-index
+  (black white green red blue purple maroon))
+
+(define-enum-set-type other-color-set make-other-color-set other-color-set?
+  other-color other-colors other-color-index)
+
+(enum-set-subset? (color-set white) (other-color-set black white red green))
+  => #t
+
+(enum-set=? (color-set black white) (other-color-set black white))
+  => #t
+

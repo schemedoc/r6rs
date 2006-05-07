@@ -1,84 +1,53 @@
 ; Copyright (c) 1993-2006 by Richard Kelsey and Jonathan Rees. See file COPYING.
 
 ; Sets over finite types.
-;
-; (define-enum-set-type id type-name predicate constructor
-;   element-syntax element-predicate all-elements element-index-ref)
-;
-; Defines ID to be syntax for constructing sets, PREDICATE to be a predicate
-; for those sets, and CONSTRUCTOR an procedure for constructing one
-; from a list.
-;
-; (enum-set->list <enum-set>)                   -> <list>
-; (enum-set-member? <enum-set> <enumerand>)     -> <boolean>
-; (enum-set=? <enum-set> <enum-set>)            -> <boolean>
-; (enum-set-union <enum-set> <enum-set>)        -> <enum-set>
-; (enum-set-intersection <enum-set> <enum-set>) -> <enum-set>
-; (enum-set-negation <enum-set>)                -> <enum-set>
-;
-; Given an enumerated type:
-;   (define-enumerated-type color :color
-;     color?
-;     colors
-;     color-name
-;     color-index
-;     (red blue green))
-; we can define sets of colors:
-;   (define-enum-set-type color-set :color-set
-;                         color-set?
-;                         make-color-set
-;     color color? colors color-index)
-;
-;   (enum-set->list (color-set red blue))
-;     -> (#{Color red} #{Color blue})
-;   (enum-set->list (enum-set-negation (color-set red blue)))
-;     -> (#{Color green})
-;   (enum-set-member? (color-set red blue) (color blue))
-;     -> #t
+
+; ,open syntactic-record-types/explicit bitwise srfi-1 srfi-23
 
 (define-syntax define-enum-set-type
   (syntax-rules ()
-    ((define-enum-set-type id type predicate constructor
-       element-syntax element-predicate all-elements element-index-ref)
+    ((define-enum-set-type ?constructor-syntax ?constructor ?predicate
+       ?enum-type ?enum-elements-proc ?enum-index)
      (begin
-       (define type
-	 (make-enum-set-type 'id
-			     element-predicate
-			     all-elements
-			     element-index-ref))
-       (define (predicate x)
+       (define <type>
+	 (make-enum-set-type '?constructor-name
+			     (?enum-elements-proc)
+			     ?enum-index))
+
+       (define (?predicate x)
 	 (and (enum-set? x)
 	      (eq? (enum-set-type x)
-		   type)))
-       (define (constructor elements)
-	 (if (every element-predicate elements)
-	     (make-enum-set type (elements->mask elements element-index-ref))
-	     (error "invalid set elements" element-predicate elements)))
-       (define-enum-set-maker id constructor element-syntax)))))
+		   <type>)))
 
-; (define-enum-set-maker id constructor element-syntax)
+       (define (<constructor> elements)
+	 (if (every ?enum-index elements)
+	     (make-enum-set <type> (elements->mask elements ?enum-index))
+	     (error "invalid set elements" ?enum-index elements)))
 
-(define-syntax define-enum-set-maker
-  (syntax-rules ()
-    ((define-enum-set-maker ?id ?constructor ?element-syntax)
-     (begin
-       (define-syntax helper
+       (define-syntax <helper>
 	 (syntax-rules ()
-	   ((helper (?name . ?rest) ?elements)
-	    (helper ?rest ((?element-syntax ?name) . ?elements)))
-	   ((helper () ?elements)
-	    (?constructor (list . ?elements)))))
-       (define-syntax ?id
+	   ((<helper> (?name . ?rest) ?elements)
+	    (<helper> ?rest ((?enum-type ?name) . ?elements)))
+	   ((<helper> () ?elements)
+	    (<constructor> (list . ?elements)))))
+
+       (define ?constructor <constructor>)
+
+       (define-syntax ?constructor-syntax
 	 (syntax-rules ()
-	   ((?id . ?names)
-	    (helper ?names ()))))))))
+	   ((?constructor-syntax . ?names)
+	    (<helper> ?names ()))))))))
+
 
 (define-record-type (enum-set-type make-enum-set-type enum-set-type?)
-  (fields
+ (fields
    (immutable id        enum-set-type-id)
-   (immutable predicate enum-set-type-predicate)
    (immutable values    enum-set-type-values)
    (immutable index-ref enum-set-type-index-ref)))
+
+(define (enum-set-universe enum-set)
+  ;; vector-copy for the lazy
+  (list->vector (vector->list (enum-set-type-values (enum-set-type enum-set)))))
 
 ; The mask is settable to allow for destructive operations.  There aren't
 ; any such yet.
@@ -87,9 +56,6 @@
   (fields
    (immutable type enum-set-type)
    (mutable mask enum-set-mask set-enum-set-mask!)))
-
-(define (enum-set-has-type? enum-set enum-set-type)
-  (eq? (enum-set-type enum-set) enum-set-type))
 
 (define (make-set-constructor id predicate values index-ref)
   (let ((type (make-enum-set-type id predicate values index-ref)))
@@ -106,20 +72,53 @@
       ((null? elements)
        mask)))
 				  
-(define (enum-set-member? enum-set element)
-  (if ((enum-set-type-predicate (enum-set-type enum-set))
-         element)
+(define (enum-set-member? element enum-set)
+  (if ((enum-set-type-index-ref (enum-set-type enum-set))
+       element)
       (not (= (bitwise-and (enum-set-mask enum-set)
 			   (element-mask element (enum-set-type enum-set)))
 	      0))
-      (error "invalid arguments" enum-set-member? enum-set element)))
+      (error "invalid arguments" enum-set-member? element enum-set)))
+
+(define (enum-set-subset? enum-set0 enum-set1)
+  (cond
+   ((eq? (enum-set-type enum-set0)
+	 (enum-set-type enum-set1))
+    (= (bitwise-ior (enum-set-mask enum-set0)
+		    (enum-set-mask enum-set1))
+       (enum-set-mask enum-set1)))
+   ((enum-set-universe<=? enum-set0 enum-set1)
+    (enum-set-members<=? enum-set0 enum-set1))
+   (else
+    (error "invalid arguments" enum-set-subset? enum-set0 enum-set1))))
+
+; #### expensive
+(define (enum-set-universe<=? enum-set0 enum-set1)
+  (let ((u0 (enum-set-universe enum-set0))
+	(u1 (enum-set-universe enum-set1)))
+    (lset<= (vector->list u0) (vector->list u1))))
+
+(define (enum-set-members<=? enum-set0 enum-set1)
+  (lset<= (enum-set->list enum-set0) (enum-set->list enum-set1)))
 
 (define (enum-set=? enum-set0 enum-set1)
-  (if (eq? (enum-set-type enum-set0)
-          (enum-set-type enum-set1))
-      (= (enum-set-mask enum-set0) 
-        (enum-set-mask enum-set1))
-      (error "invalid arguments" enum-set=? enum-set0 enum-set1)))
+  (cond
+   ((eq? (enum-set-type enum-set0)
+	 (enum-set-type enum-set1))
+    (= (enum-set-mask enum-set0) 
+       (enum-set-mask enum-set1)))
+   ((enum-set-universe=? enum-set0 enum-set1)
+    (enum-set-members=? enum-set0 enum-set1))
+   (else
+    (error "invalid arguments" enum-set=? enum-set0 enum-set1))))
+
+(define (enum-set-universe=? enum-set0 enum-set1)
+  (let ((u0 (enum-set-universe enum-set0))
+	(u1 (enum-set-universe enum-set1)))
+    (lset= (vector->list u0) (vector->list u1))))
+
+(define (enum-set-members=? enum-set0 enum-set1)
+  (lset= (enum-set->list enum-set0) (enum-set->list enum-set1)))
 
 (define (element-mask element enum-set-type)
   (arithmetic-shift 1
@@ -160,7 +159,7 @@
 				  (enum-set-mask enum-set1)))
       (error "invalid arguments" enum-set-union enum-set0 enum-set1)))
 
-(define (enum-set-negation enum-set)
+(define (enum-set-complement enum-set)
   (let* ((type (enum-set-type enum-set))
 	 (mask (- (arithmetic-shift 1
 				    (vector-length (enum-set-type-values type)))
@@ -169,8 +168,5 @@
 		   (bitwise-and (bitwise-not (enum-set-mask enum-set))
 				mask))))
 
-
-(define-enum-set-type color-set :color-set
-                      color-set?
-                      make-color-set
-  color color? colors color-index)
+(define-enum-set-type color-set make-color-set color-set?
+  color colors color-index)
