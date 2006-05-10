@@ -10,6 +10,9 @@
 (define (never x)
   #f)
 
+(define (always x)
+  #t)
+
 (define (make-typo-op/1 proc type)
   (lambda (a)
     (error "type mismatch" proc type a)))

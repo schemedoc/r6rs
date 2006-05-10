@@ -164,6 +164,15 @@
 (check (flnan? (rationalize flinf+ flinf+)) => #t)
 (check (rationalize (r5rs->number 3) flinf+) ==> 0)
 
+(check (numerical infinite? 5) => #f)
+(check (infinite? flinf+) => #t)
+(check (infinite? flinf-) => #t)
+(check (nan? (string->number "+nan.0")) => #t)
+(check (infinite? (string->number "+nan.0")) => #f)
+(check (finite? (string->number "+nan.0")) => #f)
+(check (numerical nan? 5) => #f)
+(check (numerical finite? 5) => #t)
+
 (check (angle flinf+) ==> 0.0)
 (check (angle flinf-) ==> 3.141592653589793)
 

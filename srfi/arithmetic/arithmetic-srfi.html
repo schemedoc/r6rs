@@ -1995,6 +1995,8 @@ predicates are required to be transitive.
 <DT><U>procedure:</U> <CODE>flnegative?</CODE> <var>fl</var>
 <DT><U>procedure:</U> <CODE>flodd?</CODE> <var>ifl</var>
 <DT><U>procedure:</U> <CODE>fleven?</CODE> <var>ifl</var>
+<DT><U>procedure:</U> <CODE>flfinite?</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>flinfinite?</CODE> <var>fl</var>
 <DT><U>procedure:</U> <CODE>flnan?</CODE> <var>fl</var>
 <DD>
 
@@ -2008,12 +2010,18 @@ it is <code>fl=</code> to zero, <code>flpositive?</code> tests if it is greater
 than zero, <code>flnegative?</code> tests if it is less
 than zero, <code>flodd?</code> tests if it is odd, 
 <code>fleven?</code> tests if it is even,
+<code>flfinite?</code> tests if it is not an infinity and not a NaN,
+<code>flinfinite?</code> tests if it is an infinity,
 <code>flnan?</code> tests if it is a NaN.
 </P>
 
 <P>
 <PRE>
-(flnegative? -0.0) ==&gt; #f
+(flnegative? -0.0)   ==&gt; #f
+(flfinite? +inf.0)   ==&gt; #f
+(flfinite? 5.0)      ==&gt; #t
+(flinfinite? 5.0)    ==&gt; #f
+(flinfinite? +inf.0) ==&gt; #t
 </PRE>
 
 <BLOCKQUOTE>
@@ -3064,6 +3072,8 @@ predicates are required to be transitive.
 <DT><U>procedure:</U> <CODE>inexact-negative?</CODE> <var>ir</var>
 <DT><U>procedure:</U> <CODE>inexact-odd?</CODE> <var>ii</var>
 <DT><U>procedure:</U> <CODE>inexact-even?</CODE> <var>ii</var>
+<DT><U>procedure:</U> <CODE>inexact-finite?</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-infinite?</CODE> <var>in</var>
 <DT><U>procedure:</U> <CODE>inexact-nan?</CODE> <var>in</var>
 <DD>
 
@@ -3075,6 +3085,8 @@ the number is <code>inexact=?</code> to zero, <code>inexact-positive?</code> tes
 than zero, <code>inexact-negative?</code> tests if it is less
 than zero, <code>inexact-odd?</code> tests if it is odd, 
 <code>inexact-even?</code> tests if it is even,
+<code>inexact-finite?</code> tests if it is not an infinity and not a NaN,
+<code>inexact-infinite?</code> tests if it is an infinity,
 <code>inexact-nan?</code> tests if it is a NaN.
 </P>
 </DL>
@@ -3672,7 +3684,9 @@ When in doubt, consult a numerical analyst.
 <DT><U>procedure:</U> <CODE>negative?</CODE> <VAR>x</VAR>
 <DT><U>procedure:</U> <CODE>odd?</CODE> <VAR>n</VAR>
 <DT><U>procedure:</U> <CODE>even?</CODE> <VAR>n</VAR>
-<DT><U>procedure:</U> <CODE>nan?</CODE> <VAR>x</VAR>
+<DT><U>procedure:</U> <CODE>finite?</CODE> <VAR>x</VAR>
+<DT><U>procedure:</U> <CODE>infinite?</CODE> <VAR>x</VAR>
+<DT><span class=add><U>procedure:</U> <CODE>nan?</CODE> <VAR>x</VAR></span></dt>
 <DD>
 
 
@@ -3684,12 +3698,19 @@ the number is <code>=</code> to zero, <code>positive?</code> tests if it is grea
 than zero, <code>negative?</code> tests if it is less
 than zero, <code>odd?</code> tests if it is odd, 
 <code>even?</code> tests if it is even,
+<code>finite?</code> tests if it is not an infinity and not a NaN,
+<code>infinite?</code> tests if it is an infinity,
 <code>nan?</code> tests if it is a NaN.
 
 
 <PRE>
-(positive? +inf.0)            ==>  #t
-(negative? -inf.0)            ==>  #t
+(positive? +inf.0)            ==&gt;  #t
+(negative? -inf.0)            ==&gt;  #t
+(finite? +inf.0)              ==&gt;  #f
+(finite? 5)                   ==&gt;  #t
+(finite? 5.0)                 ==&gt;  #t
+(infinite? 5.0)               ==&gt;  #f
+(infinite? +inf.0)            ==&gt;  #t
 </PRE>
 
 </DL>
@@ -3755,7 +3776,7 @@ These procedures return the sum or product of their arguments.
 (* -5 +inf.0)                          ==&gt;  -inf.0
 (* +inf.0 +inf.0)                      ==&gt;  +inf.0
 (* +inf.0 -inf.0)                      ==&gt;  -inf.0
-(* 0 +inf.0)                           ==&gt;  <span class=add>0 or +nan.0</span></span>
+(* 0 +inf.0)                           ==&gt;  <span class=add>0 or +nan.0</span>
 <span class=add>(* 0 +nan.0)                           ==&gt;  0 or +nan.0</span>
 </PRE>
 

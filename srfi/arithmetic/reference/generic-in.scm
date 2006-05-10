@@ -78,7 +78,12 @@
   (make-typo-op/1 inexact-odd? 'real))
 (define-unary inexact-even? fleven?
   (make-typo-op/1 inexact-even? 'real))
-(define-unary inexact-nan? flnan? never)
+(define-unary inexact-nan? flnan? 
+  (make-typo-op/1 inexact-nan? 'real))
+(define-unary inexact-finite? flnan? 
+  (make-typo-op/1 inexact-finite? 'real))
+(define-unary inexact-infinite? flnan? 
+  (make-typo-op/1 inexact-infinite? 'real))
 
 (define inexact-min (make-min/max inexact<?))
 (define inexact-max (make-min/max inexact>?))

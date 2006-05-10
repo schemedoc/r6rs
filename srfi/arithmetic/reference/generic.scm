@@ -185,7 +185,19 @@
   fleven?
   (make-typo-op/1 even? 'integer))
 
-(define-unary nan? never never never never flnan? never)
+(define-unary nan? never never never
+    (make-typo-op/1 nan? 'real)
+    flnan?
+    (make-typo-op/1 nan? 'real))
+(define-unary finite?
+  always always always
+  (make-typo-op/1 finite? 'real)
+  flfinite?
+  (make-typo-op/1 finite? 'real))
+(define-unary infinite? never never never
+  (make-typo-op/1 infinite? 'real)
+  flinfinite? 
+  (make-typo-op/1 infinite? 'real))
 
 (define-binary min/2 contagion/will
   fxmin bignum-min ratnum-min (make-typo-op/2 < 'real)

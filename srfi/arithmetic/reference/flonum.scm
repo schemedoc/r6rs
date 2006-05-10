@@ -210,11 +210,6 @@
 
 (define flinteger? (make-fl->val integer?))
 
-(define (flinf+? x)
-  (fl= x flinf+))
-(define (flinf-? x)
-  (fl= x flinf-))
-
 (define r5rs-inf+ 1e1025)
 (define r5rs-inf- -1e1025)
 (define r5rs-nan (- r5rs-inf+ r5rs-inf+))
@@ -226,3 +221,14 @@
 
 (define flnan? (make-fl->val (lambda (x) (not (= x x)))))
 
+(define (infinite?* x)
+  (or (= x r5rs-inf+)
+      (= x r5rs-inf-)))
+
+(define flinfinite? (make-fl->val infinite?*))
+
+(define (finite?* x)
+  (and (= x x)
+       (not (infinite?* x))))
+
+(define flfinite? (make-fl->val finite?*))

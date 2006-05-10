@@ -77,7 +77,7 @@
 	  flodd? fleven?
 	  flonum->fixnum fixnum->flonum
 	  flinf+ flinf- flnan
-	  flinf+? flinf-? flnan?))
+	  flinfinite? flfinite? flnan?))
 
 (define-structures ((flonums flonums-interface)
 		    (flonums-r5rs (export r5rs->flonum flonum->r5rs)))
@@ -368,7 +368,7 @@
 
 (define-interface arithmetic-utils-interface
   (export make-typo-op/2 make-typo-op/1
-	  never id one one/flo))
+	  never always id one one/flo))
 
 (define-structure arithmetic-utils arithmetic-utils-interface
   (open scheme-sans-arithmetic
@@ -419,7 +419,8 @@
 (define-interface generic-arithmetic/inexact-interface
   (export inexact-number? inexact-complex? inexact-real? inexact-rational? inexact-integer?
 	  inexact=? inexact<? inexact<=? inexact>=? inexact>?
-	  inexact-zero? inexact-positive? inexact-negative? inexact-nan?
+	  inexact-zero? inexact-positive? inexact-negative?
+	  inexact-nan? inexact-finite? inexact-infinite?
 	  inexact-odd? inexact-even?
 	  inexact-min inexact-max
 	  inexact+ inexact- inexact* inexact/
@@ -459,7 +460,8 @@
 	  real-valued? rational-valued? integer-valued?
 	  exact? inexact?
 	  = < > <= >=
-	  zero? positive? negative? odd? even? nan?
+	  zero? positive? negative? odd? even?
+	  finite? infinite? nan?
 	  max min
 	  + * - /
 	  abs
