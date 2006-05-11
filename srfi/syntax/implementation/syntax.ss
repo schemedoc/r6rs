@@ -41,6 +41,12 @@ Compatibility notes:
  - the quasiquote transformer supports Alan Bawden's PEPM '99 nested
    quasiquote extensions
 
+ - implements (define id) syntax
+
+ - implements when and unless
+
+ - implements fresh-syntax form mentioned in SRFI issues section
+
  - should use R6RS exception/condition facilities rather than
    implementation-dependent error hook
 
@@ -50,6 +56,10 @@ Compatibility notes:
  - should support R6RS libraries
 
  - should use R6RS records in place of vector-based structures
+
+ - should use R6RS (unspecified) instead of (void)
+
+ - should add support for R6RS case-lambda
 |#
 
 #| ------------------------------------------------------------------------
@@ -68,7 +78,7 @@ implementation.
 (let ()
  ;; target implementation customization
   (begin
-    (define eval-hook eval)
+    (define eval-hook (lambda (x) (eval x)))
 
     (define error-hook (lambda (who why what) (error who "~a ~s" why what)))
 
@@ -101,7 +111,7 @@ implementation.
         [(_ src test-expr then-expr else-expr)
          `(if ,test-expr ,then-expr ,else-expr)]
         [(_ src test-expr then-expr)
-         `(if ,test-expr ,then-expr)]))
+         `(if ,test-expr ,then-expr (void))]))
 
     (define build-global-reference
       (lambda (src var)
@@ -176,14 +186,6 @@ implementation.
             (let ([a (apply f (car ls) (map car more))])
               (and a (andmap (cdr ls) (map cdr more) a)))))))
 
-  (define-syntax when
-    (syntax-rules ()
-      [(_ test e1 e2 ...) (if test (begin e1 e2 ...))]))
-
-  (define-syntax unless
-    (syntax-rules ()
-      [(_ test e1 e2 ...) (when (not test) (begin e1 e2 ...))]))
-
   (define-syntax define-structure
     (lambda (x)
       (define construct-name
@@ -238,15 +240,6 @@ implementation.
        (call-with-values (lambda () expr) (lambda formals form1 form2 ...)))))
 
  ;; start of expander-specific code
-
- ;; syntax-error is used to generate syntax error messages
-  (define syntax-error
-    (lambda (object . messages)
-      (for-each (lambda (x) (arg-check string? x 'syntax-error)) messages)
-      (let ([message (if (null? messages)
-                         "invalid syntax"
-                         (apply string-append messages))])
-        (error-hook #f message (strip object '())))))
 
  ;; syntax objects consist of an expression and a wrap comprised of a
  ;; list of marks and list of substitutions.
@@ -692,8 +685,8 @@ implementation.
                        (parse (cons (add-subst rib (chi-macro value e)) (cdr e*))
                          r mr id* var* rhs*)]
                       [(local-syntax)
-                       (let-values ([(e* r mr) (chi-local-syntax value e r mr)])
-                         (parse (append e* (cdr e*)) r mr id* var* rhs*))]
+                       (let-values ([(new-e* r mr) (chi-local-syntax value e r mr)])
+                         (parse (append new-e* (cdr e*)) r mr id* var* rhs*))]
                       [else
                        (unless (valid-bound-ids? id*)
                          (invalid-ids-error id* outer-e "locally defined identifier"))
@@ -715,7 +708,8 @@ implementation.
           [(_ name e) (id? #'name) (values #'name #'e)]
           [(_ (name . args) e1 e2 ...)
            (and (id? #'name) (valid-args? #'args))
-           (values #'name #'(lambda args e1 e2 ...))])))
+           (values #'name #'(lambda args e1 e2 ...))]
+          [(_ name) (id? #'name) (values #'name #'(void))])))
 
     (define parse-define-syntax
       (lambda (e)
@@ -988,144 +982,157 @@ implementation.
                      (list (chi #'expr r mr))))
                  (syntax-error e "invalid literals list in"))]))))
 
-    (global-extend 'core 'syntax
-      (let ()
-        (define gen-syntax
-          (lambda (src e r maps ellipsis?)
-            (if (id? e)
-                (let ([label (id->label e)])
-                  (let ([b (label->binding label r)])
-                    (if (eq? (binding-type b) 'syntax)
-                        (let-values ([(var maps)
-                                      (let ([var.lev (binding-value b)])
-                                        (gen-ref src (car var.lev) (cdr var.lev) maps))])
-                          (values `(ref ,var) maps))
-                        (if (ellipsis? e)
-                            (syntax-error src "misplaced ellipsis in syntax form")
-                            (values `(quote ,e) maps)))))
-                (syntax-case e ()
-                  [(dots e)
-                   (ellipsis? #'dots)
-                   (gen-syntax src #'e r maps (lambda (x) #f))]
-                  [(x dots . y)
-                   (ellipsis? #'dots)
-                   (let f ([y #'y]
-                           [k (lambda (maps)
-                                (let-values ([(x maps)
-                                              (gen-syntax src #'x r
-                                                (cons '() maps) ellipsis?)])
-                                  (if (null? (car maps))
-                                      (syntax-error src "extra ellipsis in syntax form")
-                                      (values (gen-map x (car maps)) (cdr maps)))))])
-                     (syntax-case y ()
-                       [() (k maps)]
-                       [(dots . y)
-                        (ellipsis? #'dots)
-                        (f #'y
-                           (lambda (maps)
-                             (let-values ([(x maps) (k (cons '() maps))])
-                               (if (null? (car maps))
-                                   (syntax-error src "extra ellipsis in syntax form")
-                                   (values (gen-mappend x (car maps)) (cdr maps))))))]
-                       [_ (let-values ([(y maps) (gen-syntax src y r maps ellipsis?)])
-                            (let-values ([(x maps) (k maps)])
-                              (values (gen-append x y) maps)))]))]
-                  [(x . y)
-                   (let-values ([(xnew maps) (gen-syntax src #'x r maps ellipsis?)])
-                     (let-values ([(ynew maps) (gen-syntax src #'y r maps ellipsis?)])
-                       (values (gen-cons e #'x #'y xnew ynew) maps)))]
-                  [#(x1 x2 ...)
-                   (let ([ls #'(x1 x2 ...)])
-                     (let-values ([(lsnew maps)
-                                   (gen-syntax src ls r maps ellipsis?)])
-                       (values (gen-vector e ls lsnew) maps)))]
-                  [_ (values `(quote ,e) maps)]))))
-        (define gen-ref
-          (lambda (src var level maps)
-            (if (= level 0)
-                (values var maps)
-                (if (null? maps)
-                    (syntax-error src "missing ellipsis in syntax form")
-                    (let-values ([(outer-var outer-maps)
-                                  (gen-ref src var (- level 1) (cdr maps))])
-                      (cond
-                        [(assq outer-var (car maps)) =>
-                         (lambda (b) (values (cdr b) maps))]
-                        [else
-                         (let ([inner-var (gen-var #'tmp)])
-                           (values
-                             inner-var
-                             (cons
-                               (cons (cons outer-var inner-var) (car maps))
-                               outer-maps)))]))))))
-        (define gen-append
-          (lambda (x y)
-            (if (equal? y '(quote ())) x `(append ,x ,y))))
-        (define gen-mappend
-          (lambda (e map-env)
-            `(apply (primitive append) ,(gen-map e map-env))))
-        (define gen-map
-          (lambda (e map-env)
-            (let ([formals (map cdr map-env)]
-                  [actuals (map (lambda (x) `(ref ,(car x))) map-env)])
-              (cond
-               ; identity map equivalence:
-               ; (map (lambda (x) x) y) == y
-                [(eq? (car e) 'ref)
-                 (car actuals)]
-               ; eta map equivalence:
-               ; (map (lambda (x ...) (f x ...)) y ...) == (map f y ...)
-                [(andmap
-                   (lambda (x) (and (eq? (car x) 'ref) (memq (cadr x) formals)))
-                   (cdr e))
-                 `(map (primitive ,(car e))
-                       ,@(map (let ([r (map cons formals actuals)])
-                                (lambda (x) (cdr (assq (cadr x) r))))
-                              (cdr e)))]
-                [else `(map (lambda ,formals ,e) ,@actuals)]))))
-        (define gen-cons
-          (lambda (e x y xnew ynew)
-            (case (car ynew)
-              [(quote)
-               (if (eq? (car xnew) 'quote)
-                   (let ([xnew (cadr xnew)] [ynew (cadr ynew)])
-                     (if (and (eq? xnew x) (eq? ynew y))
-                         `(quote ,e)
-                         `(quote (,xnew . ,ynew))))
-                   (if (eq? (cadr ynew) '())
-                       `(list ,xnew)
-                       `(cons ,xnew ,ynew)))]
-              [(list) `(list ,xnew ,@(cdr ynew))]
-              [else `(cons ,xnew ,ynew)])))
-        (define gen-vector
-          (lambda (e ls lsnew)
+    (let ()
+      (define fresh-mark
+        (lambda (x fm)
+          (if fm
+              (anti-mark (add-mark m x))
+              x)))
+      (define gen-syntax
+        (lambda (src e r maps ellipsis? vec? fm)
+          (if (id? e)
+              (let ([label (id->label e)])
+                (let ([b (label->binding label r)])
+                  (if (eq? (binding-type b) 'syntax)
+                      (let-values ([(var maps)
+                                    (let ([var.lev (binding-value b)])
+                                      (gen-ref src (car var.lev) (cdr var.lev) maps))])
+                        (values `(ref ,var) maps))
+                      (if (ellipsis? e)
+                          (syntax-error src "misplaced ellipsis in syntax form")
+                          (values `(quote ,e) maps)))))
+              (syntax-case e ()
+                [(dots e)
+                 (ellipsis? #'dots)
+                 (if vec?
+                     (syntax-error src "misplaced ellipsis in syntax form")
+                     (gen-syntax src #'e r maps (lambda (x) #f) #f fm))]
+                [(x dots . y)
+                 (ellipsis? #'dots)
+                 (let f ([y #'y]
+                         [k (lambda (maps)
+                              (let-values ([(x maps)
+                                            (gen-syntax src #'x r
+                                              (cons '() maps) ellipsis? #f fm)])
+                                (if (null? (car maps))
+                                    (syntax-error src "extra ellipsis in syntax form")
+                                    (values (gen-map x (car maps)) (cdr maps)))))])
+                   (syntax-case y ()
+                     [() (k maps)]
+                     [(dots . y)
+                      (ellipsis? #'dots)
+                      (f #'y
+                         (lambda (maps)
+                           (let-values ([(x maps) (k (cons '() maps))])
+                             (if (null? (car maps))
+                                 (syntax-error src "extra ellipsis in syntax form")
+                                 (values (gen-mappend x (car maps)) (cdr maps))))))]
+                     [_ (let-values ([(y maps) (gen-syntax src y r maps ellipsis? vec? fm)])
+                          (let-values ([(x maps) (k maps)])
+                            (values (gen-append x y) maps)))]))]
+                [(x . y)
+                 (let-values ([(xnew maps) (gen-syntax src #'x r maps ellipsis? #f fm)])
+                   (let-values ([(ynew maps) (gen-syntax src #'y r maps ellipsis? vec? fm)])
+                     (values (gen-cons e #'x #'y xnew ynew) maps)))]
+                [#(x1 x2 ...)
+                 (let ([ls #'(x1 x2 ...)])
+                   (let-values ([(lsnew maps) (gen-syntax src ls r maps ellipsis? #t fm)])
+                     (values (gen-vector e ls lsnew) maps)))]
+                [() vec? (values '(quote ()) maps)]
+                [_ (values `(quote ,e) maps)]))))
+      (define gen-ref
+        (lambda (src var level maps)
+          (if (= level 0)
+              (values var maps)
+              (if (null? maps)
+                  (syntax-error src "missing ellipsis in syntax form")
+                  (let-values ([(outer-var outer-maps)
+                                (gen-ref src var (- level 1) (cdr maps))])
+                    (cond
+                      [(assq outer-var (car maps)) =>
+                       (lambda (b) (values (cdr b) maps))]
+                      [else
+                       (let ([inner-var (gen-var #'tmp)])
+                         (values
+                           inner-var
+                           (cons
+                             (cons (cons outer-var inner-var) (car maps))
+                             outer-maps)))]))))))
+      (define gen-append
+        (lambda (x y)
+          (if (equal? y '(quote ())) x `(append ,x ,y))))
+      (define gen-mappend
+        (lambda (e map-env)
+          `(apply (primitive append) ,(gen-map e map-env))))
+      (define gen-map
+        (lambda (e map-env)
+          (let ([formals (map cdr map-env)]
+                [actuals (map (lambda (x) `(ref ,(car x))) map-env)])
             (cond
-              [(eq? (car lsnew) 'quote)
-               (if (eq? (cadr lsnew) ls)
-                   `(quote ,e)
-                   `(quote #(,@(cadr lsnew))))]
-              [(eq? (car lsnew) 'list) `(vector ,@(cdr lsnew))]
-              [else `(list->vector ,lsnew)])))
-        (define regen
-          (lambda (x)
-            (case (car x)
-              [(ref) (build-lexical-reference no-source (cadr x))]
-              [(primitive) (build-primref no-source (cadr x))]
-              [(quote) (build-data no-source (cadr x))]
-              [(lambda) (build-lambda no-source (cadr x) #f (regen (caddr x)))]
-              [(map)
-               (let ([ls (map regen (cdr x))])
-                 (build-application no-source
-                   (build-primref no-source 'map)
-                   ls))]
-              [else
+             ; identity map equivalence:
+             ; (map (lambda (x) x) y) == y
+              [(eq? (car e) 'ref)
+               (car actuals)]
+             ; eta map equivalence:
+             ; (map (lambda (x ...) (f x ...)) y ...) == (map f y ...)
+              [(andmap
+                 (lambda (x) (and (eq? (car x) 'ref) (memq (cadr x) formals)))
+                 (cdr e))
+               `(map (primitive ,(car e))
+                     ,@(map (let ([r (map cons formals actuals)])
+                              (lambda (x) (cdr (assq (cadr x) r))))
+                            (cdr e)))]
+              [else `(map (lambda ,formals ,e) ,@actuals)]))))
+      (define gen-cons
+        (lambda (e x y xnew ynew)
+          (case (car ynew)
+            [(quote)
+             (if (eq? (car xnew) 'quote)
+                 (let ([xnew (cadr xnew)] [ynew (cadr ynew)])
+                   (if (and (eq? xnew x) (eq? ynew y))
+                       `(quote ,e)
+                       `(quote (,xnew . ,ynew))))
+                 (if (eq? (cadr ynew) '())
+                     `(list ,xnew)
+                     `(cons ,xnew ,ynew)))]
+            [(list) `(list ,xnew ,@(cdr ynew))]
+            [else `(cons ,xnew ,ynew)])))
+      (define gen-vector
+        (lambda (e ls lsnew)
+          (cond
+            [(eq? (car lsnew) 'quote)
+             (if (eq? (cadr lsnew) ls)
+                 `(quote ,e)
+                 `(quote #(,@(cadr lsnew))))]
+            [(eq? (car lsnew) 'list) `(vector ,@(cdr lsnew))]
+            [else `(list->vector ,lsnew)])))
+      (define regen
+        (lambda (x)
+          (case (car x)
+            [(ref) (build-lexical-reference no-source (cadr x))]
+            [(primitive) (build-primref no-source (cadr x))]
+            [(quote) (build-data no-source (cadr x))]
+            [(lambda) (build-lambda no-source (cadr x) #f (regen (caddr x)))]
+            [(map)
+             (let ([ls (map regen (cdr x))])
                (build-application no-source
-                 (build-primref no-source (car x))
-                 (map regen (cdr x)))])))
+                 (build-primref no-source 'map)
+                 ls))]
+            [else
+             (build-application no-source
+               (build-primref no-source (car x))
+               (map regen (cdr x)))])))
+      (global-extend 'core 'syntax
         (lambda (e r mr)
           (syntax-case e ()
             [(_ x)
-             (let-values ([(e maps) (gen-syntax e #'x r '() ellipsis?)])
+             (let-values ([(e maps) (gen-syntax e #'x r '() ellipsis? #f #f)])
+               (regen e))])))
+      (global-extend 'core 'fresh-syntax
+        (lambda (e r mr)
+          (syntax-case e ()
+            [(_ x)
+             (let-values ([(e maps) (gen-syntax e #'x r '() ellipsis? #f (gen-mark))])
                (regen e))]))))
   )
 
@@ -1320,7 +1327,9 @@ implementation.
     (set! generate-temporaries
       (lambda (ls)
         (arg-check list? ls 'generate-temporaries)
-        (map (lambda (x) (make-syntax-object x top-mark* top-subst*)) ls)))
+        (map (lambda (x)
+               (make-syntax-object (gensym-hook) top-mark* top-subst*))
+             ls)))
 
     (set! free-identifier=?
       (lambda (x y)
@@ -1333,6 +1342,15 @@ implementation.
          (arg-check id? x 'bound-identifier=?)
          (arg-check id? y 'bound-identifier=?)
          (bound-id=? x y)))
+
+   ;; syntax-error is used to generate syntax error messages
+    (set! syntax-error
+      (lambda (object . messages)
+        (for-each (lambda (x) (arg-check string? x 'syntax-error)) messages)
+        (let ([message (if (null? messages)
+                           "invalid syntax"
+                           (apply string-append messages))])
+          (error-hook #f message (strip object '())))))
 
     (set! make-variable-transformer
       (lambda (p)
@@ -1586,4 +1604,12 @@ implementation.
              [(set! var rhs) #'exp2]
              [(id x (... ...)) #'(exp1 x (... ...))]
              [id (identifier? #'id) #'exp1])))]))
+
+  (global-extend 'macro 'when
+    (syntax-rules ()
+      [(_ test e1 e2 ...) (if test (begin e1 e2 ...))]))
+
+  (global-extend 'macro 'unless
+    (syntax-rules ()
+      [(_ test e1 e2 ...) (when (not test) (begin e1 e2 ...))]))
 )
