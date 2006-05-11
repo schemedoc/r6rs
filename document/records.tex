@@ -366,11 +366,12 @@ The field selected is the one corresponding the the \var{k}th element
    
 Given a record-type descriptor \var{rtd} and an exact non-negative
 integer \var{k} that specifies one of the mutable fields of \var{rtd},
-{\cf record-accessor} returns a two-argument procedure that, given a
+{\cf record-mutator} returns a two-argument procedure that, given a
 record \var{r} of the type represented by \var{rtd} and an object
 \var{obj}, stores \var{obj} within the field of \var{r} specified by
 \var{k}. The \var{k} argument is as in {\cf record-accessor}. If
 \var{k} specifies an immutable field, an error is signalled.
+The mutator returns the unspecified value.
 \end{entry}
 
 \begin{scheme}
@@ -395,7 +396,7 @@ record \var{r} of the type represented by \var{rtd} and an object
 (point? p1) \ev \schtrue{}
 (point-x p1) \ev 1
 (point-y p1) \ev 2
-(point-x-set! p1 5)
+(point-x-set! p1 5) \ev \theunspecified
 (point-x p1) \ev 5
 
 (define :point2
