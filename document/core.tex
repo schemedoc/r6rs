@@ -3221,44 +3221,22 @@ returns its associated character.
 
 
 \begin{entry}{%
-\proto{char=?}{ \vari{char} \varii{char}}{procedure}
-\proto{char<?}{ \vari{char} \varii{char}}{procedure}
-\proto{char>?}{ \vari{char} \varii{char}}{procedure}
-\proto{char<=?}{ \vari{char} \varii{char}}{procedure}
-\proto{char>=?}{ \vari{char} \varii{char}}{procedure}}
+\proto{char=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char<?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char>?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char<=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char>=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}}
 
 \label{characterequality}
 \nodomain{Both \vari{char} and \varii{char} must be characters.}
 These procedures impose a total ordering on the set of characters
 according to their scalar values.
 
-Some implementations may generalize these procedures to take more than
-two arguments, as with the corresponding numerical predicates.
-
 \begin{scheme}
 (char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}\ss) \ev \schtrue
 (char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schfalse
 \end{scheme}
 
-\begin{note}
-These procedures could be defined as follows:
-%
-\begin{scheme}
-; char-comparator is not itself part of the
-; specification; it is used only to define 
-; other procedures
-(define (char-comparator num-comp)
-  (lambda (a-char b-char)
-    (num-comp (char->integer a-char)
-              (char->integer b-char))))
-
-(define char=? (char-comparator =))
-(define char<? (char-comparator <))
-(define char>? (char-comparator >))
-(define char<=? (char-comparator <=))
-(define char>=? (char-comparator >=))
-\end{scheme}
-\end{note}
 \end{entry}
 
 \begin{entry}{%
@@ -3326,44 +3304,21 @@ Otherwise, the character returned is the same as the argument.
 
 
 \begin{entry}{%
-\proto{char-ci=?}{ \vari{char} \varii{char}}{library procedure}
-\proto{char-ci<?}{ \vari{char} \varii{char}}{library procedure}
-\proto{char-ci>?}{ \vari{char} \varii{char}}{library procedure}
-\proto{char-ci<=?}{ \vari{char} \varii{char}}{library procedure}
-\proto{char-ci>=?}{ \vari{char} \varii{char}}{library procedure}}
+\proto{char-ci=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}
+\proto{char-ci<?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}
+\proto{char-ci>?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}
+\proto{char-ci<=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}
+\proto{char-ci>=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}}
 
 \nodomain{Both \vari{char} and \varii{char} must be characters.}
 These procedures are similar to {\cf char=?}\ et cetera, but operate
-on the fold-cased versions of the characters.
-
-Some implementations may generalize these procedures to take more than
-two arguments, as with the corresponding numerical predicates.
+on the case-folded versions of the characters.
 
 \begin{scheme}
 (char-ci<? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schfalse
 (char-ci=? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schtrue
 (char-ci=? \sharpsign\backwhack{}$\varsigma$ \sharpsign\backwhack{}$\sigma$) \ev \schtrue
 \end{scheme}
-
-\begin{note}
-These procedures could be defined as follows:
-%
-\begin{scheme}
-; char-ci-comparator is not itself part of the
-; specification; it is used only to define 
-; other procedures
-(define (char-ci-comparator cs-comp)
-  (lambda (a-char b-char)
-    (cs-comp (char-foldcase a-char)
-             (char-foldcase b-char))))
-
-(define char-ci=? (char-ci-comparator char=?))
-(define char-ci<? (char-ci-comparator char<?))
-(define char-ci>? (char-ci-comparator char>?))
-(define char-ci<=? (char-ci-comparator char<=?))
-(define char-ci>=? (char-ci-comparator char>=?))
-\end{scheme}
-\end{note}
 \end{entry}
 
 
@@ -3522,10 +3477,10 @@ characters in the same positions, otherwise returns \schfalse.
 
 
 \begin{entry}{%
-\proto{string<?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string>?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string<=?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string>=?}{ \vari{string} \varii{string}}{library procedure}}
+\proto{string<?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
+\proto{string>?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
+\proto{string<=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
+\proto{string>=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}}
 
 These procedures are the lexicographic extensions to strings of the
 corresponding orderings on characters.  For example, {\cf string<?}\ is
@@ -3533,10 +3488,6 @@ the lexicographic ordering on strings induced by the ordering
 {\cf char<?}\ on characters.  If two strings differ in length but
 are the same up to the length of the shorter string, the shorter string
 is considered to be lexicographically less than the longer string.
-
-Implementations may generalize these and the {\cf string=?}\ and
-{\cf string-ci=?} procedures to take more than two arguments, as with
-the corresponding numerical predicates.
 
 \begin{scheme}
 (string<? "z" "\ss") \ev \schtrue
@@ -3609,18 +3560,15 @@ cased-character sequences, case-ignorable characters are ignored
 \end{entry}
 
 \begin{entry}{%
-\proto{string-ci=?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string-ci<?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string-ci>?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string-ci<=?}{ \vari{string} \varii{string}}{library procedure}
-\proto{string-ci>=?}{ \vari{string} \varii{string}}{library procedure}}
+\proto{string-ci=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
+\proto{string-ci<?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
+\proto{string-ci>?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
+\proto{string-ci<=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
+\proto{string-ci>=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}}
 
 \nodomain{Both \vari{string} and \varii{string} must be strings.}
 These procedures are similar to {\cf string=?}\ et cetera, but operate
 on the fold-cased versions of the strings.
-
-Some implementations may generalize these procedures to take more than
-two arguments, as with the corresponding numerical predicates.
 
 \begin{scheme}
 (string-ci<? "z" "Z") \ev \schfalse
