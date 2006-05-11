@@ -1,4 +1,4 @@
-; Examples for octet-addressed binary objects
+; Examples for bytes objects
 
 ; Copyright (C) Michael Sperber (2005). All Rights Reserved. 
 ; 
@@ -49,122 +49,122 @@
                (set! *failed-count* (+ *failed-count* 1)) ))
          (newline) )))))
 
-(define b1 (make-blob 16))
+(define b1 (make-bytes 16))
 
-(check (blob-length b1) => 16)
+(check (bytes-length b1) => 16)
 
-(blob-u8-set! b1 0 223)
-(blob-s8-set! b1 1 123)
-(blob-s8-set! b1 2 -123)
-(blob-u8-set! b1 3 15)
+(bytes-u8-set! b1 0 223)
+(bytes-s8-set! b1 1 123)
+(bytes-s8-set! b1 2 -123)
+(bytes-u8-set! b1 3 15)
 
-(check (list (blob-u8-ref b1 0)
-	     (blob-s8-ref b1 1)
-	     (blob-u8-ref b1 1)
-	     (blob-s8-ref b1 2)
-	     (blob-u8-ref b1 2)
-	     (blob-u8-ref b1 3))
+(check (list (bytes-u8-ref b1 0)
+	     (bytes-s8-ref b1 1)
+	     (bytes-u8-ref b1 1)
+	     (bytes-s8-ref b1 2)
+	     (bytes-u8-ref b1 2)
+	     (bytes-u8-ref b1 3))
        => '(223 123 123 -123 133 15))
 
-(blob-uint-set! 16 (endianness little)
+(bytes-uint-set! 16 (endianness little)
 		b1 0 (- (expt 2 128) 3))
 
-(check (blob-uint-ref 16 (endianness little) b1 0)
+(check (bytes-uint-ref 16 (endianness little) b1 0)
        =>  (- (expt 2 128) 3))
 
-(check (blob-sint-ref 16 (endianness little) b1 0)
+(check (bytes-sint-ref 16 (endianness little) b1 0)
        =>  -3)
 		
-(check (blob->u8-list b1)
+(check (bytes->u8-list b1)
        => '(253 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255))
 
-(blob-uint-set! 16 (endianness big)
+(bytes-uint-set! 16 (endianness big)
 		b1 0 (- (expt 2 128) 3))
 
-(check (blob-uint-ref 16 (endianness big) b1 0)
+(check (bytes-uint-ref 16 (endianness big) b1 0)
        =>  (- (expt 2 128) 3))
 
-(check (blob-sint-ref 16 (endianness big) b1 0)
+(check (bytes-sint-ref 16 (endianness big) b1 0)
        =>  -3)
 
-(check (blob->u8-list b1)
+(check (bytes->u8-list b1)
        => '(255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 253))
 
-(check (blob-u16-ref (endianness little) b1 14)
+(check (bytes-u16-ref (endianness little) b1 14)
        => 65023)
-(check (blob-s16-ref (endianness little) b1 14)
+(check (bytes-s16-ref (endianness little) b1 14)
        => -513)
-(check (blob-u16-ref (endianness big) b1 14)
+(check (bytes-u16-ref (endianness big) b1 14)
        => 65533)
-(check (blob-s16-ref (endianness big) b1 14)
+(check (bytes-s16-ref (endianness big) b1 14)
        => -3)
 
-(blob-u16-set! (endianness little) b1 0 12345)
+(bytes-u16-set! (endianness little) b1 0 12345)
 
-(blob-u16-native-set! (endianness little) b1 0 12345)
+(bytes-u16-native-set! (endianness little) b1 0 12345)
 
-(check (blob-u16-native-ref (endianness little) b1 0)
+(check (bytes-u16-native-ref (endianness little) b1 0)
        => 12345)
 
-(check (blob-u32-ref (endianness little) b1 12)
+(check (bytes-u32-ref (endianness little) b1 12)
        => 4261412863)
-(check (blob-s32-ref (endianness little) b1 12)
+(check (bytes-s32-ref (endianness little) b1 12)
        => -33554433)
-(check (blob-u32-ref (endianness big) b1 12)
+(check (bytes-u32-ref (endianness big) b1 12)
        => 4294967293)
-(check (blob-s32-ref (endianness big) b1 12)
+(check (bytes-s32-ref (endianness big) b1 12)
        => -3)
 
-(blob-u32-set! (endianness little) b1 0 12345)
+(bytes-u32-set! (endianness little) b1 0 12345)
 
-(blob-u32-native-set! (endianness little) b1 0 12345)
+(bytes-u32-native-set! (endianness little) b1 0 12345)
 
-(check (blob-u32-native-ref (endianness little) b1 0)
+(check (bytes-u32-native-ref (endianness little) b1 0)
        => 12345)
 
-(check (blob-u64-ref (endianness little) b1 8)
+(check (bytes-u64-ref (endianness little) b1 8)
        => 18302628885633695743)
-(check (blob-s64-ref (endianness little) b1 8)
+(check (bytes-s64-ref (endianness little) b1 8)
        => -144115188075855873)
-(check (blob-u64-ref (endianness big) b1 8)
+(check (bytes-u64-ref (endianness big) b1 8)
        => 18446744073709551613)
-(check (blob-s64-ref (endianness big) b1 8)
+(check (bytes-s64-ref (endianness big) b1 8)
        => -3)
 
-(blob-u64-set! (endianness little) b1 0 12345)
+(bytes-u64-set! (endianness little) b1 0 12345)
 
-(blob-u64-native-set! (endianness little) b1 0 12345)
+(bytes-u64-native-set! (endianness little) b1 0 12345)
 
-(check (blob-u64-native-ref (endianness little) b1 0)
+(check (bytes-u64-native-ref (endianness little) b1 0)
        => 12345)
 
-(define b2 (u8-list->blob '(1 2 3 4 5 6 7 8)))
-(define b3 (blob-copy b2))
+(define b2 (u8-list->bytes '(1 2 3 4 5 6 7 8)))
+(define b3 (bytes-copy b2))
 
-(check (blob=? b2 b3) => #t)
-(check (blob=? b1 b2) => #f)
+(check (bytes=? b2 b3) => #t)
+(check (bytes=? b1 b2) => #f)
 
-(blob-copy! b3 0 b3 4 4)
+(bytes-copy! b3 0 b3 4 4)
 
-(check (blob->u8-list b3) => '(1 2 3 4 1 2 3 4))
+(check (bytes->u8-list b3) => '(1 2 3 4 1 2 3 4))
 
-(blob-copy! b3 0 b3 2 6)
+(bytes-copy! b3 0 b3 2 6)
 
-(check (blob->u8-list b3) => '(1 2 1 2 3 4 1 2))
+(check (bytes->u8-list b3) => '(1 2 1 2 3 4 1 2))
 
-(blob-copy! b3 2 b3 0 6)
+(bytes-copy! b3 2 b3 0 6)
 
-(check (blob->u8-list b3) => '(1 2 3 4 1 2 1 2))
+(check (bytes->u8-list b3) => '(1 2 3 4 1 2 1 2))
 
-(check (blob->uint-list 1 (endianness little) b3)
+(check (bytes->uint-list 1 (endianness little) b3)
        => '(1 2 3 4 1 2 1 2))
 
-(check (blob->uint-list 2 (endianness little) b3)
+(check (bytes->uint-list 2 (endianness little) b3)
        => '(513 1027 513 513))
 
-(define b4 (u8-list->blob '(0 0 0 0 0 0 48 57 255 255 255 255 255 255 255 253)))
+(define b4 (u8-list->bytes '(0 0 0 0 0 0 48 57 255 255 255 255 255 255 255 253)))
 
-(check (blob->sint-list 2 (endianness little) b4)
+(check (bytes->sint-list 2 (endianness little) b4)
        => '(0 0 0 14640 -1 -1 -1 -513))
 
 
