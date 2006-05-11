@@ -1,0 +1,248 @@
+\chapter{Miscellaneous libraries}
+\label{misclibchapter}
+
+\subsection{Delayed evaluation}\unsection
+
+\begin{entry}{%
+\proto{delay}{ \hyper{expression}}{library \exprtype}}
+
+\todo{Fix.}
+
+The {\cf delay} construct is used together with the procedure \ide{force} to
+implement \defining{lazy evaluation} or \defining{call by need}.
+{\tt(delay~\hyper{expression})} returns an object called a
+\defining{promise} which at some point in the future may be asked (by
+the {\cf force} procedure) \todo{Bartley's white lie; OK?} to evaluate
+\hyper{expression}, and deliver the resulting value.
+The effect of \hyper{expression} returning multiple values
+is unspecified.
+
+See the description of {\cf force} (section~\ref{force}) for a
+more complete description of {\cf delay}.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{force}{ promise}{library procedure}}
+
+Forces the value of \var{promise} (see \ide{delay},
+section~\ref{delay}).\index{promise}  If no value has been computed for
+the promise, then a value is computed and returned.  The value of the
+promise is cached (or ``memoized'') so that if it is forced a second
+time, the previously computed value is returned.
+% without any recomputation.
+% [As pointed out by Marc Feeley, the "without any recomputation"
+% isn't necessarily true. --Will]
+
+\begin{scheme}
+(force (delay (+ 1 2)))   \ev  3
+(let ((p (delay (+ 1 2))))
+  (list (force p) (force p)))  
+                               \ev  (3 3)
+
+(define a-stream
+  (letrec ((next
+            (lambda (n)
+              (cons n (delay (next (+ n 1)))))))
+    (next 0)))
+(define head car)
+(define tail
+  (lambda (stream) (force (cdr stream))))
+
+(head (tail (tail a-stream)))  
+                               \ev  2%
+\end{scheme}
+
+{\cf Force} and {\cf delay} are mainly intended for programs written in
+functional style.  The following examples should not be considered to
+illustrate good programming style, but they illustrate the property that
+only one value is computed for a promise, no matter how many times it is
+forced.
+% the value of a promise is computed at most once.
+% [As pointed out by Marc Feeley, it may be computed more than once,
+% but as I observed we can at least insist that only one value be
+% used! -- Will]
+
+\begin{scheme}
+(define count 0)
+(define p
+  (delay (begin (set! count (+ count 1))
+                (if (> count x)
+                    count
+                    (force p)))))
+(define x 5)
+p                     \ev  {\it{}a promise}
+(force p)             \ev  6
+p                     \ev  {\it{}a promise, still}
+(begin (set! x 10)
+       (force p))     \ev  6%
+\end{scheme}
+
+Here is a possible implementation of {\cf delay} and {\cf force}.
+Promises are implemented here as procedures of no arguments,
+and {\cf force} simply calls its argument:
+
+\begin{scheme}
+(define force
+  (lambda (object)
+    (object)))%
+\end{scheme}
+
+We define the expression
+
+\begin{scheme}
+(delay \hyper{expression})%
+\end{scheme}
+
+to have the same meaning as the procedure call
+
+\begin{scheme}
+(make-promise (lambda () \hyper{expression}))\rm
+\end{scheme}
+
+as follows
+
+\begin{scheme}
+(define-syntax delay
+  (syntax-rules ()
+    ((delay expression)
+     (make-promise (lambda () expression))))),%
+\end{scheme}
+
+where {\cf make-promise} is defined as follows:
+
+% \begin{scheme}
+% (define make-promise
+%   (lambda (proc)
+%     (let ((already-run? \schfalse) (result \schfalse))
+%       (lambda ()
+%         (cond ((not already-run?)
+%                (set! result (proc))
+%                (set! already-run? \schtrue)))
+%         result))))%
+% \end{scheme}
+
+\begin{scheme}
+(define make-promise
+  (lambda (proc)
+    (let ((result-ready? \schfalse)
+          (result \schfalse))
+      (lambda ()
+        (if result-ready?
+            result
+            (let ((x (proc)))
+              (if result-ready?
+                  result
+                  (begin (set! result-ready? \schtrue)
+                         (set! result x)
+                         result))))))))%
+\end{scheme}
+
+\begin{rationale}
+A promise may refer to its own value, as in the last example above.
+Forcing such a promise may cause the promise to be forced a second time
+before the value of the first force has been computed.
+This complicates the definition of {\cf make-promise}.
+\end{rationale}
+
+Various extensions to this semantics of {\cf delay} and {\cf force}
+are supported in some implementations:
+
+\begin{itemize}
+\item Calling {\cf force} on an object that is not a promise may simply
+return the object.
+
+\item It may be the case that there is no means by which a promise can be
+operationally distinguished from its forced value.  That is, expressions
+like the following may evaluate to either \schtrue{} or to \schfalse{},
+depending on the implementation:
+
+\begin{scheme}
+(eqv? (delay 1) 1)          \ev  \unspecified
+(pair? (delay (cons 1 2)))  \ev  \unspecified%
+\end{scheme}
+
+\item Some implementations may implement ``implicit forcing,'' where
+the value of a promise is forced by primitive procedures like \cf{cdr}
+and \cf{+}:
+
+\begin{scheme}
+(+ (delay (* 3 7)) 13)  \ev  34%
+\end{scheme}
+\end{itemize}
+\end{entry}
+
+\section{\tt{Eval}}
+
+\begin{entry}{%
+\proto{eval}{ expression environment-specifier}{procedure}}
+
+Evaluates \var{expression} in the specified environment and returns its value.
+\var{Expression} must be a valid Scheme expression represented as data,
+and \var{environment-specifier} must be a value returned by one of the
+three procedures described below.
+Implementations may extend {\cf eval} to allow non-expression programs
+(definitions) as the first argument and to allow other
+values as environments, with the restriction that {\cf eval} is not
+allowed to create new bindings in the environments associated with
+{\cf null-environment} or {\cf scheme-report-environment}.
+
+\begin{scheme}
+(eval '(* 7 3) (scheme-report-environment 5))
+                                                   \ev  21
+
+(let ((f (eval '(lambda (f x) (f x x))
+               (null-environment 5))))
+  (f + 10))
+                                                   \ev  20
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{scheme-report-environment}{ version}{procedure}
+\proto{null-environment}{ version}{procedure}}
+
+\var{Version} must be the exact integer {\cf \integerversion},
+corresponding to this revision of the Scheme report (the
+Revised$^\integerversion$ Report on Scheme).
+{\cf Scheme-report-environment} returns a specifier for an
+environment that is empty except for all bindings defined in
+this report that are either required or both optional and
+supported by the implementation. {\cf Null-environment} returns
+a specifier for an environment that is empty except for the
+(syntactic) bindings for all syntactic keywords defined in
+this report that are either required or both optional and
+supported by the implementation.
+
+Other values of \var{version} can be used to specify environments
+matching past revisions of this report, but their support is not
+required.  An implementation will signal an error if \var{version}
+is neither {\cf \integerversion} nor another value supported by
+the implementation.
+
+The effect of assigning (through the use of {\cf eval}) a variable
+bound in a {\cf scheme-report-environment}
+(for example {\cf car}) is unspecified.  Thus the environments specified
+by {\cf scheme-report-environment} may be immutable.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{interaction-environment}{}{optional procedure}}
+
+This procedure returns a specifier for the environment that
+contains imple\-men\-ta\-tion-defined bindings, typically a superset of
+those listed in the report.  The intent is that this procedure
+will return the environment in which the implementation would evaluate
+expressions dynamically typed by the user.
+
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
+
+
+

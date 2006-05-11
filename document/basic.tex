@@ -53,7 +53,7 @@ refers to the binding of the identifier that established the
 innermost of the regions containing the use.  If there is no binding of
 the identifier whose region contains the use, then the use refers to the
 binding for the variable in the top level environment, if any
-(chapters~\ref{expressionchapter} and \ref{initialenv}); if there is no
+(FIXME chapters~\ref{modulelibraries}); if there is no
 binding for the identifier,
 it is said to be \defining{unbound}.\mainindex{bound}\index{top level
 environment}
@@ -145,6 +145,87 @@ compilers that treat programs as data (or vice versa).
 The syntax of external representations of various kinds of objects
 accompanies the description of the primitives for manipulating the
 objects in the appropriate sections of chapter~\ref{initialenv}.
+
+\section{Primitive syntax}
+
+FIXME: write intro
+
+\subsection{Variable references}\unsection
+
+\begin{entry}{%
+\pproto{\hyper{variable}}{\exprtype}}
+
+An expression consisting of a variable\index{variable}
+(section~\ref{variablesection}) is a variable reference.  The value of
+the variable reference is the value stored in the location to which the
+variable is bound.  It is an error to reference an
+unbound\index{unbound} variable.
+
+\begin{scheme}
+(define x 28)
+x   \ev  28%
+\end{scheme}
+\end{entry}
+
+\subsection{Procedure calls}\unsection
+
+\begin{entry}{%
+\pproto{(\hyper{operator} \hyperi{operand} \dotsfoo)}{\exprtype}}
+
+A procedure call is written by simply enclosing in parentheses
+expressions for the procedure to be called and the arguments to be
+passed to it.  The operator and operand expressions are evaluated (in an
+unspecified order) and the resulting procedure is passed the resulting
+arguments.\mainindex{call}\mainindex{procedure call}
+\begin{scheme}%
+(+ 3 4)                          \ev  7
+((if \schfalse + *) 3 4)         \ev  12%
+\end{scheme}
+
+A number of procedures are available as the values of variables in the
+initial environment; for example, the addition and multiplication
+procedures in the above examples are the values of the variables {\cf +}
+and {\cf *}.  New procedures are created by evaluating \lambdaexp{}s
+(see section~\ref{lambda}).
+\todo{At Friedman's request, flushed mention of other ways.}
+% or definitions (see section~\ref{define}).
+
+Procedure calls may return any number of values (see \ide{values} in
+section~\ref{proceduresection}).  With the exception of {\cf values}
+the procedures available in the initial environment return one
+value or, for procedures such as {\cf apply}, pass on the values returned
+by a call to one of their arguments.
+
+Procedure calls are also called {\em combinations}.
+\mainindex{combination}
+
+\begin{note} In contrast to other dialects of Lisp, the order of
+evaluation is unspecified, and the operator expression and the operand
+expressions are always evaluated with the same evaluation rules.
+\end{note}
+
+\begin{note}
+Although the order of evaluation is otherwise unspecified, the effect of
+any concurrent evaluation of the operator and operand expressions is
+constrained to be consistent with some sequential order of evaluation.
+The order of evaluation may be chosen differently for each procedure call.
+\end{note}
+
+\begin{note} In many dialects of Lisp, the empty combination, {\tt
+()}, is a legitimate expression.  In Scheme, combinations must have at
+least one subexpression, so {\tt ()} is not a syntactically valid
+expression.  \todo{Dybvig: ``it should be obvious from the syntax.''}
+\end{note}
+
+\todo{Freeman:
+I think an explanation as to why evaluation order is not specified
+should be included.  It should not include any reference to parallel
+evaluation.  Does any existing compiler generate better code because
+the evaluation order is unspecified?  Clinger: yes: T3, MacScheme v2,
+probably MIT Scheme and Chez Scheme.  But that's not the main reason
+for leaving the order unspecified.}
+
+\end{entry}
 
 \section{Storage model}
 \label{storagemodel}

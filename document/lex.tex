@@ -1,7 +1,7 @@
 % Lexical structure
 
 %%\vfill\eject
-\chapter{Lexical conventions}
+\chapter{Lexical conventions and read syntax}
 
 This section gives an informal account of some of the lexical
 conventions used in writing Scheme programs.  For a formal syntax of
@@ -73,6 +73,9 @@ See section~\ref{extendedalphas} for a formal syntax of identifiers.
 %restriction is relaxed, and the ways in which these ambiguities are
 %resolved vary between implementations.
 
+\vest The rules for writing a symbol are exactly the same as the rules for
+writing an identifier; see sections~\ref{syntaxsection}
+and~\ref{identifiersyntax}.
 
 \section{Whitespace and comments}
 
@@ -181,6 +184,276 @@ are terminated by~{\tt)}~.
 These are used in the notation for numbers (section~\ref{numbernotations}).
 
 \end{description}
+
+\section{Read syntax}
+
+\subsection{Quote}\unsection
+\label{quotesection}
+
+\begin{entry}{%
+\pproto{\singlequote\hyper{datum}}{\exprtype}}
+
+\mainschindex{'} singlequote\hyper{datum} is an syntactic abbreviation
+for {\cf (quote \hyper{datum})}.  The two notations are equivalent in
+all respects.
+
+As noted in section~\ref{storagemodel}, it is an error to alter a
+constant using a mutation procedure like {\cf set-car!}\ or {\cf
+  string-set!}.
+\end{entry}
+
+\subsection{Constant literals}
+
+\begin{entry}{%
+\pproto{\hyper{constant}}{\exprtype}}
+
+Numerical constants, string constants, character constants, and
+boolean constants evaluate ``to themselves''; they need not be quoted.
+\end{entry}
+
+\subsection{Boolean literals}
+
+The standard boolean objects for true and false are written as
+\schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f}  
+
+\subsubsection{Character literals}
+
+Character literals are written using the notation
+\sharpsign\backwhack\hyper{character} or
+\sharpsign\backwhack\hyper{character name} or
+\sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}, where the latter
+specifies the scalar value of a character with a hexadecimal number of
+no more than eight digits.
+
+For example:
+
+\begin{scheme}
+\#\backwhack{}a          ; lower case letter
+\#\backwhack{}A          ; upper case letter
+\#\backwhack{}(          ; left parenthesis
+\#\backwhack{}           ; the space character
+\#\backwhack{}nul        ; Unicode 0
+\#\backwhack{}alarm      ; Unicode 7
+\#\backwhack{}backspace  ; Unicode 8
+\#\backwhack{}tab        ; Unicode 9
+\#\backwhack{}linefeed   ; Unicode 10
+\#\backwhack{}vtab       ; Unicode 11
+\#\backwhack{}page       ; Unicode 12
+\#\backwhack{}return     ; Unicode 13
+\#\backwhack{}esc        ; Unicode 27
+\#\backwhack{}space      ; Unicode 32;
+             ; the preferred way to write a space
+\#\backwhack{}delete     ; Unicode 127
+
+\#\backwhack{}xFF        ; Unicode 255
+\#\backwhack{}x03BB      ; Unicode 955
+\#\backwhack{}x00006587  ; Unicode 25991
+\#\backwhack{}\(\lambda\)          ; Unicode 955
+
+\#\backwhack{}x0001z     ; parse error
+\#\backwhack{}\(\lambda\)x         ; parse error
+\#\backwhack{}alarmx     ; parse error
+\#\backwhack{}alarm x    ; Unicode 7 followed by x
+\#\backwhack{}Alarm      ; parse error
+\#\backwhack{}alert      ; parse error
+\#\backwhack{}xA         ; Unicode 10
+\#\backwhack{}xFF        ; Unicode 255
+\#\backwhack{}xff        ; Unicode 255
+\#\backwhack{}x ff       ; Unicode 120
+             ; followed by another datum, ff
+\#\backwhack{}x(ff)      ; Unicode 120 
+             ; followed by another datum,
+             ; a parenthesized ff
+\#\backwhack{}(x)        ; parse error
+\#\backwhack{}(x         ; parse error
+\#\backwhack{}((x)       ; Unicode 40
+             ; followed by another datum,
+             ; parenthesized x
+\#\backwhack{}x00110000  ; parse error (out of range)
+\#\backwhack{}x000000001 ; parse error (too many digits)
+\#\backwhack{}xD800      ; parse error (in excluded range)
+\end{scheme}
+
+Case is significant in \sharpsign\backwhack\hyper{character}, and in in
+\sharpsign\backwhack{\rm$\langle$character name$\rangle$}, % \hyper doesn't allow a linebreak
+but not in \sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}.  
+The character after a character literal
+must be a delimiter character such as a
+space or parenthesis.  This rule resolves various ambiguous cases, for
+example, the sequence of characters ``{\tt\sharpsign\backwhack space}''
+could be taken to be either a representation of the space character or a
+representation of the character ``{\tt\sharpsign\backwhack s}'' followed
+by a representation of the symbol ``{\tt pace}.''
+
+\subsubsection{String literals}
+
+\vest String literals are written as sequences of characters enclosed within doublequotes
+({\cf "}).  Within a string literal, various escape
+sequences\mainindex{escape sequence} denote characters other than
+themselves.  Escape sequences always start with a backslash (\backwhack{}):
+
+\begin{itemize}
+\item{\tt \backwhack{}a} : alarm, Unicode 7
+\item{\tt \backwhack{}b} : backspace, Unicode 8 
+\item{\tt \backwhack{}t} : tab, Unicode 9 
+\item{\tt \backwhack{}n} : linefeed, Unicode 10 
+\item{\tt \backwhack{}v} : vertical tab, Unicode 11 
+\item{\tt \backwhack{}f} : formfeed, Unicode 12 
+\item{\tt \backwhack{}r} : return, Unicode 13 
+\item{\tt \backwhack{}}\verb|"| : doublequote, Unicode 34 
+\item{\tt \backwhack{}\backwhack{}} : backslash, Unicode 92 
+\item{\tt \backwhack{}\hyper{linefeed}\hyper{intraline whitespace}} : nothing
+\item{\tt \backwhack{}\ } : space, Unicode 32(useful for terminating the
+  previous escape sequence before continuing with whitespace)
+\item{\tt \backwhack{}x\atleastone{\hyper{digit 16}}} : (note the
+  terminating semi-colon) where no more than eight \hyper{digit 16}s
+  are provided, and the sequence of \hyper{digit 16}s forms a
+  hexadecimal number between 0 and \sharpsign{}xFFFF excluding the
+  range $\left[\sharpsign{}x\textrm{D800},
+    \sharpsign{}x\textrm{DFFF}\right]$.
+\end{itemize}
+
+These escape sequences are case-sensitive, except that \hyper{digit
+  16} can be an uppercase or lowercase hexadecimal digit.
+
+Any other character in a string after a backslash is an error. Any
+character outside of an escape sequence and not a doublequote stands
+for itself in the string literal. For example the single-character
+string {\tt "$\lambda$"} (double quote, a lower case lambda, double
+quote) denotes the same string literal as {\tt "\backwhack{}x03bb;"}.
+
+Examples:
+
+\begin{center}
+  \begin{tabular}{ll}
+    {\tt "abc"}    & ; Unicode sequence 97, 98, 99\\
+    {\tt "\backwhack{}x41;bc"} & ; ``Abc'', Unicode sequence 65, 98, 99\\
+    {\tt "\backwhack{}x41; bc"} & ; ``A bc'', Unicode sequence 65, 32, 98, 99\\
+    {\tt "\backwhack{}x41bc;"} & ; Unicode sequence 16828\\
+    {\tt "\backwhack{}x41"} & ; parse error\\
+    {\tt "\backwhack{}x;"} & ; parse error\\
+    {\tt "\backwhack{}x41bx;"} & ; parse error\\
+    {\tt "\backwhack{}x00000041;"} & ; ``A'', Unicode sequence 65\\
+    {\tt "\backwhack{}x0010FFFF;"} &  ; Unicode sequence \#x10FFFF\\
+    {\tt "\backwhack{}x00110000;"}&  ; parse error (out of range)\\
+    {\tt "\backwhack{}x000000001;"}& ; parse error (too many digits)\\
+    {\tt "\backwhack{}xD800;"}&      ; parse error (in excluded range)
+  \end{tabular}
+\end{center}
+
+\subsection{Number literals}
+\label{numbernotations}
+
+%@@@@LOSE@@@@
+
+%%R4%%  I removed the following paragraph in an attempt to tighten up
+% this subsection.  Except for its first sentence, which I moved to
+% the subsection on implementation restrictions, I think its content
+% is implied by the rest of the section.
+%
+%Although Scheme allows a variety of written representations of numbers,
+%any particular implementation may support only some of them.
+%These syntaxes are intended to be purely notational; any kind of number
+%may be written in any form that the user deems convenient.  Of course,
+%writing 1/7 as a limited-precision decimal fraction will not express the
+%number exactly, but this approximate form of expression may be just what
+%the user wants to see.
+
+The syntax of the written representations for numbers is described formally in
+section~\ref{numbersyntax}.  Note that case is not significant in numerical
+constants.
+
+%%R4%%  See section~\ref{numberformats} for many examples.
+
+A number may be written in binary, octal, decimal, or
+hexadecimal by the use of a radix prefix.  The radix prefixes are {\cf
+\#b}\sharpindex{b} (binary), {\cf \#o}\sharpindex{o} (octal), {\cf
+\#d}\sharpindex{d} (decimal), and {\cf \#x}\sharpindex{x} (hexadecimal).  With
+no radix prefix, a number is assumed to be expressed in decimal.
+
+A
+%%R4%%
+% simple
+numerical constant may be specified to be either \tupe{exact} or
+\tupe{inexact} by a prefix.  The prefixes are {\cf \#e}\sharpindex{e}
+for \tupe{exact}, and {\cf \#i}\sharpindex{i} for \tupe{inexact}.  An exactness
+prefix may appear before or after any radix prefix that is used.  If
+the written representation of a number has no exactness prefix, the
+constant may be either \tupe{inexact} or \tupe{exact}.  It is
+\tupe{inexact} if it contains a decimal point, an
+exponent, or a ``\sharpsign'' character in the place of a digit,
+otherwise it is \tupe{exact}.
+%%R4%%  With our new syntax, the following sentence is redundant:
+%
+%The written representation of a
+%compound number, such as a ratio or a complex, is exact if and only if
+%all of its constituents are exact.
+
+In systems with \tupe{inexact} numbers
+of varying precisions it may be useful to specify
+the precision of a constant.  For this purpose, numerical constants
+may be written with an exponent marker that indicates the
+desired precision of the \tupe{inexact}
+representation.  The letters {\cf s}, {\cf f},
+{\cf d}, and {\cf l} specify the use of \var{short}, \var{single},
+\var{double}, and \var{long} precision, respectively.  (When fewer
+than four internal
+%%R4%%\tupe{flonum}
+\tupe{inexact}
+representations exist, the four size
+specifications are mapped onto those available.  For example, an
+implementation with two internal representations may map short and
+single together and long and double together.)  In addition, the
+exponent marker {\cf e} specifies the default precision for the
+implementation.  The default precision has at least as much precision
+as \var{double}, but
+implementations may wish to allow this default to be set by the user.
+
+\begin{scheme}
+3.14159265358979F0
+       {\rm Round to single ---} 3.141593
+0.6L0
+       {\rm Extend to long ---} .600000000000000%
+\end{scheme}
+
+\subsection{Vectors}
+
+Vectors are written using the notation {\tt\#(\var{obj} \dotsfoo)}.
+For example, a vector of length 3 containing the number zero in element
+0, the list {\cf(2 2 2 2)} in element 1, and the string {\cf "Anna"} in
+element 2 can be written as following:
+
+\begin{scheme}
+\#(0 (2 2 2 2) "Anna")%
+\end{scheme}
+
+Note that this is the external representation of a vector, not an
+expression evaluating to a vector.
+
+\subsection{Pairs and lists}
+
+The most general notation (external representation) for Scheme pairs is
+the ``dotted'' notation \hbox{\cf (\vari{c} .\ \varii{c})} where
+\vari{c} is the value of the car field and \varii{c} is the value of the
+cdr field.  For example {\cf (4 .\ 5)} is a pair whose car is 4 and whose
+cdr is 5.  Note that {\cf (4 .\ 5)} is the external representation of a
+pair, not an expression that evaluates to a pair.
+
+A more streamlined notation can be used for lists: the elements of the
+list are simply enclosed in parentheses and separated by spaces.  The
+empty list\index{empty list} is written {\tt()} .  For example,
+
+\begin{scheme}
+(a b c d e)%
+\end{scheme}
+
+and
+
+\begin{scheme}
+(a . (b . (c . (d . (e . ())))))%
+\end{scheme}
+
+are equivalent notations for a list of symbols.
 
 %%% Local Variables: 
 %%% mode: latex

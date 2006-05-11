@@ -1,22 +1,1668 @@
-\chapter{Standard types}
-\label{standardtypes}
+%\vfill\eject
+\chapter{Core language}
+\label{corelanguagecchapter}
 
-This chapter describes Scheme's built-in types and operations on them,
-as well as Scheme's record mechanism for defining new types.
+\newcommand{\syntax}{{\em Syntax: }}
+\newcommand{\semantics}{{\em Semantics: }}
+
+This chapter describes Scheme's core language.  FIXME  The initial (or
+``top level'') Scheme environment starts out with a number of variables
+bound to locations containing useful values, most of which are primitive
+procedures that manipulate data.  For example, the variable {\cf abs} is
+bound to (a location initially containing) a procedure of one argument
+that computes the absolute value of a number, and the variable {\cf +}
+is bound to a procedure that computes sums.  Built-in procedures that
+can easily be written in terms of other built-in procedures are identified as
+``library procedures''.
+
+A program may use a top-level definition to bind any variable.  It may
+subsequently alter any such binding by an assignment (see \ref{assignment}).
+These operations do not modify the behavior of Scheme's built-in
+procedures.  Altering any top-level binding that has not been introduced by a
+definition has an unspecified effect on the behavior of the built-in procedures.
+
+%[Deleted for R5RS because of multiple-value returns. -RK]
+%A Scheme expression is a construct that returns a value, such as a
+%variable reference, literal, procedure call, or conditional.
+
+Expression types are categorized as {\em primitive} or {\em derived}.
+Primitive expression types include variables and procedure calls.
+Derived expression types are not semantically primitive, but can instead
+be defined as macros.
+With the exception of {\cf quasiquote}, whose macro definition is complex,
+the derived expressions are classified as library features.
+Suitable definitions are given in section~\ref{derivedsection}.
+
+\section{Primitive expression types}
+\label{primitivexps}
+
+\subsection{Literal expressions}\unsection
+\label{literalsection}
+
+\begin{entry}{%
+\proto{quote}{ \hyper{datum}}{\exprtype}}
+
+{\cf (quote \hyper{datum})} evaluates to \hyper{datum}.
+\hyper{Datum}
+may be any external representation of a Scheme object (see
+section~\ref{externalreps}).  This notation is used to include literal
+constants in Scheme code.
+
+\begin{scheme}%
+(quote a)                     \ev  a
+(quote \sharpsign(a b c))     \ev  \#(a b c)
+(quote (+ 1 2))               \ev  (+ 1 2)%
+\end{scheme}
+
+As noted in section~\ref{quotesection}, {\cf (quote \hyper{datum})}
+may be abbreviated as \singlequote\hyper{datum}:
+
+\begin{scheme}
+'"abc"               \ev  "abc"
+'145932              \ev  145932
+'a                   \ev  a
+'\#(a b c)           \ev  \#(a b c)
+'()                  \ev  ()
+'(+ 1 2)             \ev  (+ 1 2)
+'(quote a)           \ev  (quote a)
+''a                  \ev  (quote a)%
+\end{scheme}
+
+Numerical constants, string constants, character constants, and boolean
+constants evaluate ``to themselves''; they need not be quoted.
+
+\begin{scheme}
+'"abc"     \ev  "abc"
+"abc"      \ev  "abc"
+'145932    \ev  145932
+145932     \ev  145932
+'\schtrue  \ev  \schtrue
+\schtrue   \ev  \schtrue%
+\end{scheme}
+
+As noted in section~\ref{storagemodel}, it is an error to alter 
+the value of a literal expression using a mutation procedure like
+{\cf set-car!}\ or {\cf string-set!}.
+
+\end{entry}
+
+
+\subsection{Procedures}\unsection
+\label{lamba}
+
+\begin{entry}{%
+\proto{lambda}{ \hyper{formals} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Formals} should be a formal arguments list as described below,
+and \hyper{body} should be a sequence of one or more expressions.
+
+\semantics
+\vest A \lambdaexp{} evaluates to a procedure.  The environment in
+effect when the \lambdaexp{} was evaluated is remembered as part of the
+procedure.  When the procedure is later called with some actual
+arguments, the environment in which the \lambdaexp{} was evaluated will
+be extended by binding the variables in the formal argument list to
+fresh locations, the corresponding actual argument values will be stored
+in those locations, and the expressions in the body of the \lambdaexp{}
+will be evaluated sequentially in the extended environment.
+The result(s) of the last expression in the body will be returned as
+the result(s) of the procedure call.
+
+\begin{scheme}
+(lambda (x) (+ x x))      \ev  {\em{}a procedure}
+((lambda (x) (+ x x)) 4)  \ev  8
+
+(define reverse-subtract
+  (lambda (x y) (- y x)))
+(reverse-subtract 7 10)         \ev  3
+
+(define add4
+  (let ((x 4))
+    (lambda (y) (+ x y))))
+(add4 6)                        \ev  10%
+\end{scheme}
+
+\hyper{Formals} should have one of the following forms:
+
+\begin{itemize}
+\item {\tt(\hyperi{variable} \dotsfoo)}:
+The procedure takes a fixed number of arguments; when the procedure is
+called, the arguments will be stored in the bindings of the
+corresponding variables.
+
+\item \hyper{variable}:
+The procedure takes any number of arguments; when the procedure is
+called, the sequence of actual arguments is converted into a newly
+allocated list, and the list is stored in the binding of the
+\hyper{variable}.
+
+\item {\tt(\hyperi{variable} \dotsfoo{} \hyper{variable$_{n}$}\ {\bf.}\
+\hyper{variable$_{n+1}$})}:
+If a space-delimited period precedes the last variable, then
+the procedure takes $n$ or more arguments, where $n$ is the
+number of formal arguments before the period (there must
+be at least one).
+The value stored in the binding of the last variable will be a
+newly allocated
+list of the actual arguments left over after all the other actual
+arguments have been matched up against the other formal arguments.
+\end{itemize}
+
+It is an error for a \hyper{variable} to appear more than once in
+\hyper{formals}.
+
+\begin{scheme}
+((lambda x x) 3 4 5 6)          \ev  (3 4 5 6)
+((lambda (x y . z) z)
+ 3 4 5 6)                       \ev  (5 6)%
+\end{scheme}
+
+Each procedure created as the result of evaluating a \lambdaexp{} is
+(conceptually) tagged
+with a storage location, in order to make \ide{eqv?} and
+\ide{eq?} work on procedures (see section~\ref{equivalencesection}).
+
+\end{entry}
+
+
+\subsection{Conditionals}\unsection
+
+\begin{entry}{%
+\proto{if}{ \hyper{test} \hyper{consequent} \hyper{alternate}}{\exprtype}
+\rproto{if}{ \hyper{test} \hyper{consequent}}{\exprtype}}  %\/ if hyper = italic
+
+\syntax
+\hyper{Test}, \hyper{consequent}, and \hyper{alternate} may be arbitrary
+expressions.
+
+\semantics
+An {\cf if} expression is evaluated as follows: first,
+\hyper{test} is evaluated.  If it yields a true value\index{true} (see
+section~\ref{booleansection}), then \hyper{consequent} is evaluated and
+its value(s) is(are) returned.  Otherwise \hyper{alternate} is evaluated and its
+value(s) is(are) returned.  If \hyper{test} yields a false value and no
+\hyper{alternate} is specified, then the result of the expression is
+unspecified.
+
+\begin{scheme}
+(if (> 3 2) 'yes 'no)           \ev  yes
+(if (> 2 3) 'yes 'no)           \ev  no
+(if (> 3 2)
+    (- 3 2)
+    (+ 3 2))                    \ev  1%
+\end{scheme}
+
+\end{entry}
+
+
+\subsection{Assignments}\unsection
+\label{assignment}
+
+\begin{entry}{%
+\proto{set!}{ \hyper{variable} \hyper{expression}}{\exprtype}}
+
+\hyper{Expression} is evaluated, and the resulting value is stored in
+the location to which \hyper{variable} is bound.  \hyper{Variable} must
+be bound either in some region\index{region} enclosing the {\cf set!}\ expression
+or at top level.  The result of the {\cf set!} expression is
+unspecified.
+
+\begin{scheme}
+(define x 2)
+(+ x 1)                 \ev  3
+(set! x 4)              \ev  \unspecified
+(+ x 1)                 \ev  5%
+\end{scheme}
+
+\end{entry}
+
+\section{Programs}
+
+A Scheme program consists of a sequence of expressions, definitions,
+and syntax definitions.
+Expressions are described in chapter~\ref{expressionchapter};
+definitions and syntax definitions are the subject of the rest of the
+present chapter.
+
+Programs are typically stored in files or entered interactively to a
+running Scheme system, although other paradigms are possible;
+questions of user interface lie outside the scope of this report.
+(Indeed, Scheme would still be useful as a notation for expressing
+computational methods even in the absence of a mechanical
+implementation.)
+
+Definitions and syntax definitions occurring at the top level of a program
+can be interpreted
+declaratively.
+They cause bindings to be created in the top level
+environment or modify the value of existing top-level bindings.
+Expressions occurring at the top level of a program are
+interpreted imperatively; they are executed in order when the program is
+invoked or loaded, and typically perform some kind of initialization.
+
+At the top level of a program {\tt(begin \hyperi{form} \dotsfoo)} is
+equivalent to the sequence of expressions, definitions, and syntax definitions
+that form the body of the \ide{begin}.
+
+\todo{Cromarty, etc.: disclaimer about top level?}
+
+\section{Definitions}
+\label{defines}
+
+Definitions are valid in some, but not all, contexts where expressions
+are allowed.  They are valid only at the top level of a \hyper{program}
+and at the beginning of a \hyper{body}.
+\mainindex{definition}
+
+A definition should have one of the following forms:\mainschindex{define}
+
+\begin{itemize}
+
+\item{\tt(define \hyper{variable} \hyper{expression})}
+
+\item{\tt(define (\hyper{variable} \hyper{formals}) \hyper{body})}
+
+\hyper{Formals} should be either a
+sequence of zero or more variables, or a sequence of one or more
+variables followed by a space-delimited period and another variable (as
+in a lambda expression).  This form is equivalent to
+\begin{scheme}
+(define \hyper{variable}
+  (lambda (\hyper{formals}) \hyper{body}))\rm.%
+\end{scheme}
+
+\item{\tt(define (\hyper{variable} .\ \hyper{formal}) \hyper{body})}
+
+\hyper{Formal} should be a single
+variable.  This form is equivalent to
+\begin{scheme}
+(define \hyper{variable}
+  (lambda \hyper{formal} \hyper{body}))\rm.%
+\end{scheme}
+
+\end{itemize}
+
+\subsection{Top level definitions}
+
+At the top level of a program, a definition
+\begin{scheme}
+(define \hyper{variable} \hyper{expression})%
+\end{scheme}
+has essentially the same effect as the assignment expression
+\begin{scheme}
+(\ide{set!}\ \hyper{variable} \hyper{expression})%
+\end{scheme}
+if \hyper{variable} is bound.  If \hyper{variable} is not bound,
+however, then the definition will bind \hyper{variable} to a new
+location before performing the assignment, whereas it would be an error
+to perform a {\cf set!}\ on an unbound\index{unbound} variable.
+
+\begin{scheme}
+(define add3
+  (lambda (x) (+ x 3)))
+(add3 3)                            \ev  6
+(define first car)
+(first '(1 2))                      \ev  1%
+\end{scheme}
+
+Some implementations of Scheme use an initial environment in
+which all possible variables are bound to locations, most of
+which contain undefined values.  Top level definitions in
+such an implementation are truly equivalent to assignments.
+
+\todo{Rozas: equal time for opposition semantics?}
+
+
+\subsection{Internal definitions}
+\label{internaldefines}
+
+Definitions may occur at the
+beginning of a \hyper{body} (that is, the body of a \ide{lambda},
+\ide{let}, \ide{let*}, \ide{letrec*}, \ide{letrec}, \ide{let-syntax},
+or \ide{letrec-syntax}
+expression or that of a definition of an appropriate form).
+Such definitions are known as {\em internal definitions} \mainindex{internal
+definition} as opposed to the top level definitions described above.
+The variable defined by an internal definition is local to the
+\hyper{body}.  That is, \hyper{variable} is bound rather than assigned,
+and the region of the binding is the entire \hyper{body}.  For example,
+
+\begin{scheme}
+(let ((x 5))
+  (define foo (lambda (y) (bar x y)))
+  (define bar (lambda (a b) (+ (* a b) a)))
+  (foo (+ x 3)))                \ev  45%
+\end{scheme}
+
+A \hyper{body} containing internal definitions can always be converted
+into a completely equivalent {\cf letrec*} expression.  For example, the
+{\cf let} expression in the above example is equivalent to
+
+\begin{scheme}
+(let ((x 5))
+  (letrec* ((foo (lambda (y) (bar x y)))
+            (bar (lambda (a b) (+ (* a b) a))))
+    (foo (+ x 3))))%
+\end{scheme}
+
+Wherever an internal definition may occur
+{\tt(begin \hyperi{definition} \dotsfoo)}
+is equivalent to the sequence of definitions
+that form the body of the \ide{begin}.
+
+\section{Syntax definitions}
+
+Syntax definitions are valid only at the top level of a \hyper{program}.
+\mainindex{syntax definition}
+They have the following form:\mainschindex{define-syntax}
+
+{\tt(define-syntax \hyper{keyword} \hyper{transformer spec})}
+
+\hyper{Keyword} is an identifier, and
+the \hyper{transformer spec} should be an instance of \ide{syntax-rules}.
+The top-level syntactic environment is extended by binding the
+\hyper{keyword} to the specified transformer.
+
+There is no {\cf define-syntax} analogue of internal definitions.
+
+%[Rationale flushed because it may or may not be true and isn't the
+% real rationale anyway. -RK]
+%\begin{rationale}
+%As discussed below, the syntax and scope rules for syntax definitions
+%can give rise to syntactic ambiguities when syntactic keywords are
+%shadowed.
+%Further ambiguities would arise if {\cf define-syntax}
+%were permitted at the beginning of a \meta{body}, with scope
+%rules analogous to those for internal definitions.
+%\end{rationale}
+
+% It is an error for a program to contain more than one top-level
+% \meta{definition} or \meta{syntax definition} of any identifier.
+%
+% [I flushed this because it isn't an error for a program to
+% contain more than one top-level definition of an identifier,
+% and I didn't want to introduce any gratuitous incompatibilities
+% with the existing Scheme language. -- Will]
+
+Although macros may expand into definitions and syntax definitions in
+any context that permits them, it is an error for a definition or syntax
+definition to shadow a syntactic keyword whose meaning is needed to
+determine whether some form in the group of forms that contains the
+shadowing definition is in fact a definition, or, for internal definitions,
+is needed to determine the boundary between the group and the expressions
+that follow the group.  For example, the following are errors:
+
+\begin{scheme}
+(define define 3)
+
+(begin (define begin list))
+
+(let-syntax
+  ((foo (syntax-rules ()
+          ((foo (proc args ...) body ...)
+           (define proc
+             (lambda (args ...)
+               body ...))))))
+  (let ((x 3))
+    (foo (plus x y) (+ x y))
+    (define foo x)
+    (plus foo x)))
+\end{scheme}
+
+
+
+\section{Derived expression types}
+\label{derivedexps}
+
+The constructs in this section are hygienic, as discussed in
+section~\ref{macrosection}.
+For reference purposes, section~\ref{derivedsection} gives macro definitions
+that will convert most of the constructs described in this section 
+into the primitive constructs described in the previous section.
+
+\todo{Mention that no definition of backquote is provided?}
+
+\subsection{Conditionals}\unsection
+
+\begin{entry}{%
+\proto{cond}{ \hyperi{clause} \hyperii{clause} \dotsfoo}{library \exprtype}}
+
+\syntax
+Each \hyper{clause} should be of the form
+\begin{scheme}
+(\hyper{test} \hyperi{expression} \dotsfoo)%
+\end{scheme}
+where \hyper{test} is any expression.  Alternatively, a \hyper{clause} may be
+of the form
+\begin{scheme}
+(\hyper{test} => \hyper{expression})%
+\end{scheme}
+The last \hyper{clause} may be
+an ``else clause,'' which has the form
+\begin{scheme}
+(else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
+\end{scheme}
+\mainschindex{else}
+\mainschindex{=>}
+
+\semantics
+A {\cf cond} expression is evaluated by evaluating the \hyper{test}
+expressions of successive \hyper{clause}s in order until one of them
+evaluates to a true value\index{true} (see
+section~\ref{booleansection}).  When a \hyper{test} evaluates to a true
+value, then the remaining \hyper{expression}s in its \hyper{clause} are
+evaluated in order, and the result(s) of the last \hyper{expression} in the
+\hyper{clause} is(are) returned as the result(s) of the entire {\cf cond}
+expression.  If the selected \hyper{clause} contains only the
+\hyper{test} and no \hyper{expression}s, then the value of the
+\hyper{test} is returned as the result.  If the selected \hyper{clause} uses the
+\ide{=>} alternate form, then the \hyper{expression} is evaluated.
+Its value must be a procedure that accepts one argument; this procedure is then
+called on the value of the \hyper{test} and the value(s) returned by this
+procedure is(are) returned by the {\cf cond} expression.
+If all \hyper{test}s evaluate
+to false values, and there is no else clause, then the result of
+the conditional expression is unspecified; if there is an else
+clause, then its \hyper{expression}s are evaluated, and the value(s) of
+the last one is(are) returned.
+
+\begin{scheme}
+(cond ((> 3 2) 'greater)
+      ((< 3 2) 'less))         \ev  greater%
+
+(cond ((> 3 3) 'greater)
+      ((< 3 3) 'less)
+      (else 'equal))            \ev  equal%
+
+(cond ((assv 'b '((a 1) (b 2))) => cadr)
+      (else \schfalse{}))         \ev  2%
+\end{scheme}
+
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{case}{ \hyper{key} \hyperi{clause} \hyperii{clause} \dotsfoo}{library \exprtype}}
+
+\syntax
+\hyper{Key} may be any expression.  Each \hyper{clause} should have
+the form
+\begin{scheme}
+((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)\rm,%
+\end{scheme}
+where each \hyper{datum} is an external representation of some object.
+All the \hyper{datum}s must be distinct.
+The last \hyper{clause} may be an ``else clause,'' which has the form
+\begin{scheme}
+(else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
+\end{scheme}
+\schindex{else}
+
+\semantics
+A {\cf case} expression is evaluated as follows.  \hyper{Key} is
+evaluated and its result is compared against each \hyper{datum}.  If the
+result of evaluating \hyper{key} is equivalent (in the sense of
+{\cf eqv?}; see section~\ref{eqv?}) to a \hyper{datum}, then the
+expressions in the corresponding \hyper{clause} are evaluated from left
+to right and the result(s) of the last expression in the \hyper{clause} is(are)
+returned as the result(s) of the {\cf case} expression.  If the result of
+evaluating \hyper{key} is different from every \hyper{datum}, then if
+there is an else clause its expressions are evaluated and the
+result(s) of the last is(are) the result(s) of the {\cf case} expression;
+otherwise the result of the {\cf case} expression is unspecified.
+
+\begin{scheme}
+(case (* 2 3)
+  ((2 3 5 7) 'prime)
+  ((1 4 6 8 9) 'composite))     \ev  composite
+(case (car '(c d))
+  ((a) 'a)
+  ((b) 'b))                     \ev  \unspecified
+(case (car '(c d))
+  ((a e i o u) 'vowel)
+  ((w y) 'semivowel)
+  (else 'consonant))            \ev  consonant%
+\end{scheme}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{and}{ \hyperi{test} \dotsfoo}{library \exprtype}}
+
+The \hyper{test} expressions are evaluated from left to right, and the
+value of the first expression that evaluates to a false value (see
+section~\ref{booleansection}) is returned.  Any remaining expressions
+are not evaluated.  If all the expressions evaluate to true values, the
+value of the last expression is returned.  If there are no expressions
+then \schtrue{} is returned.
+
+\begin{scheme}
+(and (= 2 2) (> 2 1))           \ev  \schtrue
+(and (= 2 2) (< 2 1))           \ev  \schfalse
+(and 1 2 'c '(f g))             \ev  (f g)
+(and)                           \ev  \schtrue%
+\end{scheme}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{or}{ \hyperi{test} \dotsfoo}{library \exprtype}}
+
+The \hyper{test} expressions are evaluated from left to right, and the value of the
+first expression that evaluates to a true value (see
+section~\ref{booleansection}) is returned.  Any remaining expressions
+are not evaluated.  If all expressions evaluate to false values, the
+value of the last expression is returned.  If there are no
+expressions then \schfalse{} is returned.
+
+\begin{scheme}
+(or (= 2 2) (> 2 1))            \ev  \schtrue
+(or (= 2 2) (< 2 1))            \ev  \schtrue
+(or \schfalse \schfalse \schfalse) \ev  \schfalse
+(or (memq 'b '(a b c)) 
+    (/ 3 0))                    \ev  (b c)%
+\end{scheme}
+
+\end{entry}
+
+
+\subsection{Binding constructs}
+
+The four binding constructs {\cf let}, {\cf let*}, {\cf letrec*}, and {\cf letrec}
+give Scheme a block structure, like Algol 60.  The syntax of the four
+constructs is identical, but they differ in the regions\index{region} they establish
+for their variable bindings.  In a {\cf let} expression, the initial
+values are computed before any of the variables become bound; in a
+{\cf let*} expression, the bindings and evaluations are performed
+sequentially; while in a {\cf letrec*} and in a {\cf letrec}
+expression, all the bindings are in
+effect while their initial values are being computed, thus allowing
+mutually recursive definitions.
+
+\begin{entry}{%
+\proto{let}{ \hyper{bindings} \hyper{body}}{library \exprtype}}
+
+\syntax
+\hyper{Bindings} should have the form
+\begin{scheme}
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+where each \hyper{init} is an expression, and \hyper{body} should be a
+sequence of one or more expressions.  It is
+an error for a \hyper{variable} to appear more than once in the list of variables
+being bound.
+
+\semantics
+The \hyper{init}s are evaluated in the current environment (in some
+unspecified order), the \hyper{variable}s are bound to fresh locations
+holding the results, the \hyper{body} is evaluated in the extended
+environment, and the value(s) of the last expression of \hyper{body}
+is(are) returned.  Each binding of a \hyper{variable} has \hyper{body} as its
+region.\index{region}
+
+\begin{scheme}
+(let ((x 2) (y 3))
+  (* x y))                      \ev  6
+
+(let ((x 2) (y 3))
+  (let ((x 7)
+        (z (+ x y)))
+    (* z x)))                   \ev  35%
+\end{scheme}
+
+See also named {\cf let}, section \ref{namedlet}.
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{let*}{ \hyper{bindings} \hyper{body}}{library \exprtype}}\nobreak
+
+\nobreak
+\syntax
+\hyper{Bindings} should have the form
+\begin{scheme}
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+and \hyper{body} should be a sequence of
+one or more expressions.
+
+\semantics
+{\cf Let*} is similar to {\cf let}, but the bindings are performed
+sequentially from left to right, and the region\index{region} of a binding indicated
+by {\cf(\hyper{variable} \hyper{init})} is that part of the {\cf let*}
+expression to the right of the binding.  Thus the second binding is done
+in an environment in which the first binding is visible, and so on.
+
+\begin{scheme}
+(let ((x 2) (y 3))
+  (let* ((x 7)
+         (z (+ x y)))
+    (* z x)))             \ev  70%
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{letrec*}{ \hyper{bindings} \hyper{body}}{library \exprtype}}
+
+\syntax
+\hyper{Bindings} should have the form
+\begin{scheme}
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+and \hyper{body} should be a sequence of
+one or more expressions. It is an error for a \hyper{variable} to appear more
+than once in the list of variables being bound.
+
+\semantics
+The \hyper{variable}s are bound to fresh locations holding undefined
+values, the \hyper{init}s are evaluated from left to right in the
+resulting environment, after the evaluation of each \hyper{init}, the
+corresponding \hyper{variable} is assigned to the result,
+the \hyper{body} is evaluated in the
+resulting environment, and the value(s) of the last expression in
+\hyper{body} is(are) returned.  Each binding of a \hyper{variable} has the
+entire {\cf letrec*} expression as its region\index{region}, making it possible to
+define mutually recursive procedures.
+
+\begin{scheme}
+(letrec* ((p
+           (lambda (x)
+             (+ 1 (q (- x 1)))))
+          (q
+           (lambda (y)
+             (if (zero? y)
+                 0
+                 (+ 1 (p (- y 1))))))
+          (x (p 5))
+          (y x))
+  y)
+		\ev  5%
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{letrec}{ \hyper{bindings} \hyper{body}}{library \exprtype}}
+
+\syntax
+\hyper{Bindings} should have the form
+\begin{scheme}
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+and \hyper{body} should be a sequence of
+one or more expressions. It is an error for a \hyper{variable} to appear more
+than once in the list of variables being bound.
+
+\semantics
+The \hyper{variable}s are bound to fresh locations holding undefined
+values, the \hyper{init}s are evaluated in the resulting environment (in
+some unspecified order), each \hyper{variable} is assigned to the result
+of the corresponding \hyper{init}, the \hyper{body} is evaluated in the
+resulting environment, and the value(s) of the last expression in
+\hyper{body} is(are) returned.  Each binding of a \hyper{variable} has the
+entire {\cf letrec} expression as its region\index{region}, making it possible to
+define mutually recursive procedures.
+
+\begin{scheme}
+%(letrec ((x 2) (y 3))
+%  (letrec ((foo (lambda (z) (+ x y z))) (x 7))
+%    (foo 4)))                   \ev  14
+%
+(letrec ((even?
+          (lambda (n)
+            (if (zero? n)
+                \schtrue
+                (odd? (- n 1)))))
+         (odd?
+          (lambda (n)
+            (if (zero? n)
+                \schfalse
+                (even? (- n 1))))))
+  (even? 88))   
+		\ev  \schtrue%
+\end{scheme}
+
+One restriction on {\cf letrec} is very important: it must be possible
+to evaluate each \hyper{init} without assigning or referring to the value of any
+\hyper{variable}.  If this restriction is violated, then it is an error.  The
+restriction is necessary because Scheme passes arguments by value rather than by
+name.  In the most common uses of {\cf letrec}, all the \hyper{init}s are
+\lambdaexp{}s and the restriction is satisfied automatically.
+
+% \todo{use or uses?  --- Jinx.}
+
+\end{entry}
+
+
+\subsection{Sequencing}\unsection
+
+\begin{entry}{%
+\proto{begin}{ \hyperi{expression} \hyperii{expression} \dotsfoo}{library \exprtype}}
+
+The \hyper{expression}s are evaluated sequentially from left to right,
+and the value(s) of the last \hyper{expression} is(are) returned.  This
+expression type is used to sequence side effects such as input and
+output.
+
+\begin{scheme}
+(define x 0)
+
+(begin (set! x 5)
+       (+ x 1))                  \ev  6
+
+(begin (display "4 plus 1 equals ")
+       (display (+ 4 1)))      \ev  \unspecified
+ \>{\em and prints}  4 plus 1 equals 5%
+\end{scheme}
+
+\end{entry}
+
+
+\subsection{Iteration}%\unsection
+
+\noindent%
+\pproto{(do ((\hyperi{variable} \hyperi{init} \hyperi{step})}{library \exprtype}
+\mainschindex{do}{\tt\obeyspaces%
+     \dotsfoo)\\
+    (\hyper{test} \hyper{expression} \dotsfoo)\\
+  \hyper{command} \dotsfoo)}
+
+{\cf Do} is an iteration construct.  It specifies a set of variables to
+be bound, how they are to be initialized at the start, and how they are
+to be updated on each iteration.  When a termination condition is met,
+the loop exits after evaluating the \hyper{expression}s.
+
+{\cf Do} expressions are evaluated as follows:
+The \hyper{init} expressions are evaluated (in some unspecified order),
+the \hyper{variable}s are bound to fresh locations, the results of the
+\hyper{init} expressions are stored in the bindings of the
+\hyper{variable}s, and then the iteration phase begins.
+
+\vest Each iteration begins by evaluating \hyper{test}; if the result is
+false (see section~\ref{booleansection}), then the \hyper{command}
+expressions are evaluated in order for effect, the \hyper{step}
+expressions are evaluated in some unspecified order, the
+\hyper{variable}s are bound to fresh locations, the results of the
+\hyper{step}s are stored in the bindings of the
+\hyper{variable}s, and the next iteration begins.
+
+\vest If \hyper{test} evaluates to a true value, then the
+\hyper{expression}s are evaluated from left to right and the value(s) of
+the last \hyper{expression} is(are) returned.  If no \hyper{expression}s
+are present, then the value of the {\cf do} expression is unspecified.
+
+\vest The region\index{region} of the binding of a \hyper{variable}
+consists of the entire {\cf do} expression except for the \hyper{init}s.
+It is an error for a \hyper{variable} to appear more than once in the
+list of {\cf do} variables.
+
+\vest A \hyper{step} may be omitted, in which case the effect is the
+same as if {\cf(\hyper{variable} \hyper{init} \hyper{variable})} had
+been written instead of {\cf(\hyper{variable} \hyper{init})}.
+
+\begin{scheme}
+(do ((vec (make-vector 5))
+     (i 0 (+ i 1)))
+    ((= i 5) vec)
+  (vector-set! vec i i))          \ev  \#(0 1 2 3 4)
+
+(let ((x '(1 3 5 7 9)))
+  (do ((x x (cdr x))
+       (sum 0 (+ sum (car x))))
+      ((null? x) sum)))             \ev  25%
+\end{scheme}
+
+%\end{entry}
+
+
+\begin{entry}{%
+\rproto{let}{ \hyper{variable} \hyper{bindings} \hyper{body}}{library \exprtype}}
+
+\label{namedlet}
+``Named {\cf let}'' is a variant on the syntax of \ide{let} which provides
+a more general looping construct than {\cf do} and may also be used to express
+recursions.
+It has the same syntax and semantics as ordinary {\cf let}
+except that \hyper{variable} is bound within \hyper{body} to a procedure
+whose formal arguments are the bound variables and whose body is
+\hyper{body}.  Thus the execution of \hyper{body} may be repeated by
+invoking the procedure named by \hyper{variable}.
+
+%                                              |  <-- right margin
+\begin{scheme}
+(let loop ((numbers '(3 -2 1 6 -5))
+           (nonneg '())
+           (neg '()))
+  (cond ((null? numbers) (list nonneg neg))
+        ((>= (car numbers) 0)
+         (loop (cdr numbers)
+               (cons (car numbers) nonneg)
+               neg))
+        ((< (car numbers) 0)
+         (loop (cdr numbers)
+               nonneg
+               (cons (car numbers) neg))))) %
+  \lev  ((6 1 3) (-5 -2))%
+\end{scheme}
+
+\end{entry}
+
+\subsection{Quasiquotation}\unsection
+\label{quasiquotesection}
+
+\begin{entry}{%
+\proto{quasiquote}{ \hyper{qq template}}{\exprtype} \nopagebreak
+\pproto{\backquote\hyper{qq template}}{\exprtype}}
+
+``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
+for constructing a list or vector structure when most but not all of the
+desired structure is known in advance.  If no
+commas\index{comma} appear within the \hyper{qq template}, the result of
+evaluating
+\backquote\hyper{qq template} is equivalent to the result of evaluating
+\singlequote\hyper{qq template}.  If a comma\mainschindex{,} appears within the
+\hyper{qq template}, however, the expression following the comma is
+evaluated (``unquoted'') and its result is inserted into the structure
+instead of the comma and the expression.  If a comma appears followed
+immediately by an at-sign (\atsign),\mainschindex{,@} then the following
+expression must evaluate to a list; the opening and closing parentheses
+of the list are then ``stripped away'' and the elements of the list are
+inserted in place of the comma at-sign expression sequence.  A comma
+at-sign should only appear within a list or vector \hyper{qq template}.
+
+% struck: "(in the sense of {\cf equal?})" after "equivalent"
+
+\begin{scheme}
+`(list ,(+ 1 2) 4)  \ev  (list 3 4)
+(let ((name 'a)) `(list ,name ',name)) %
+          \lev  (list a (quote a))
+`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) %
+          \lev  (a 3 4 5 6 b)
+`(({\cf foo} ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) %
+          \lev  ((foo 7) . cons)
+`\#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8) %
+          \lev  \#(10 5 2 4 3 8)%
+\end{scheme}
+
+Quasiquote forms may be nested.  Substitutions are made only for
+unquoted components appearing at the same nesting level
+as the outermost backquote.  The nesting level increases by one inside
+each successive quasiquotation, and decreases by one inside each
+unquotation.
+
+\begin{scheme}
+`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f) %
+          \lev  (a `(b ,(+ 1 2) ,(foo 4 d) e) f)
+(let ((name1 'x)
+      (name2 'y))
+  `(a `(b ,,name1 ,',name2 d) e)) %
+          \lev  (a `(b ,x ,'y d) e)%
+\end{scheme}
+
+The two notations
+ \backquote\hyper{qq template} and {\tt (quasiquote \hyper{qq template})}
+ are identical in all respects.
+ {\cf,\hyper{expression}} is identical to {\cf (unquote \hyper{expression})},
+ and
+ {\cf,@\hyper{expression}} is identical to {\cf (unquote-splicing \hyper{expression})}.
+The external syntax generated by \ide{write} for two-element lists whose
+car is one of these symbols may vary between implementations.
+\mainschindex{`}
+
+\begin{scheme}
+(quasiquote (list (unquote (+ 1 2)) 4)) %
+          \lev  (list 3 4)
+'(quasiquote (list (unquote (+ 1 2)) 4)) %
+          \lev  `(list ,(+ 1 2) 4)
+     {\em{}i.e.,} (quasiquote (list (unquote (+ 1 2)) 4))%
+\end{scheme}
+
+Unpredictable behavior can result if any of the symbols
+\ide{quasiquote}, \ide{unquote}, or \ide{unquote-splicing} appear in
+positions within a \hyper{qq template} otherwise than as described above.
+
+\end{entry}
+
+\section{Macros}
+\label{macrosection}
+
+Scheme programs can define and use new derived expression types,
+ called {\em macros}.\mainindex{macro}
+Program-defined expression types have the syntax
+\begin{scheme}
+(\hyper{keyword} {\hyper{datum}} ...)%
+\end{scheme}%
+where \hyper{keyword} is an identifier that uniquely determines the
+expression type.  This identifier is called the {\em syntactic
+keyword}\index{syntactic keyword}, or simply {\em
+keyword}\index{keyword}, of the macro\index{macro keyword}.  The
+number of the \hyper{datum}s, and their syntax, depends on the
+expression type.
+
+Each instance of a macro is called a {\em use}\index{macro use}
+of the macro.
+The set of rules that specifies
+how a use of a macro is transcribed into a more primitive expression
+is called the {\em transformer}\index{macro transformer}
+of the macro.
+
+The macro definition facility consists of two parts:
+
+\begin{itemize}
+\item A set of expressions used to establish that certain identifiers
+are macro keywords, associate them with macro transformers, and control
+the scope within which a macro is defined, and
+
+\item a pattern language for specifying macro transformers.
+\end{itemize}
+
+The syntactic keyword of a macro may shadow variable bindings, and local
+variable bindings may shadow keyword bindings.  \index{keyword}  All macros
+defined using the pattern language  are ``hygienic'' and ``referentially
+transparent'' and thus preserve Scheme's lexical scoping~\cite{Kohlbecker86,
+hygienic,Bawden88,macrosthatwork,syntacticabstraction}:
+\mainindex{hygienic}
+\mainindex{referentially transparent}
+
+
+\begin{itemize}
+
+\item If a macro transformer inserts a binding for an identifier
+(variable or keyword), the identifier will in effect be renamed
+throughout its scope to avoid conflicts with other identifiers.
+Note that a \ide{define} at top level may or may not introduce a binding;
+see section~\ref{defines}.
+
+\item If a macro transformer inserts a free reference to an
+identifier, the reference refers to the binding that was visible
+where the transformer was specified, regardless of any local
+bindings that may surround the use of the macro.
+
+\end{itemize}
+
+%The low-level facility permits non-hygienic macros to be written,
+%and may be used to implement the high-level pattern language.
+
+% The fourth section describes some features that would make the
+% low-level macro facility easier to use directly.
+
+\subsection{Binding constructs for syntactic keywords}
+\label{bindsyntax}
+
+{\cf Let-syntax} and {\cf letrec-syntax} are
+analogous to {\cf let} and {\cf letrec}, but they bind
+syntactic keywords to macro transformers instead of binding variables
+to locations that contain values.  Syntactic keywords may also be
+bound at top level; see section~\ref{define-syntax}.
+
+\begin{entry}{%
+\proto{let-syntax}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Bindings} should have the form
+\begin{scheme}
+((\hyper{keyword} \hyper{transformer spec}) \dotsfoo)%
+\end{scheme}
+Each \hyper{keyword} is an identifier,
+each \hyper{transformer spec} is an instance of {\cf syntax-rules}, and
+\hyper{body} should be a sequence of one or more expressions.  It is an error
+for a \hyper{keyword} to appear more than once in the list of keywords
+being bound.
+
+\semantics
+The \hyper{body} is expanded in the syntactic environment
+obtained by extending the syntactic environment of the
+{\cf let-syntax} expression with macros whose keywords are
+the \hyper{keyword}s, bound to the specified transformers.
+Each binding of a \hyper{keyword} has \hyper{body} as its region.
+
+\begin{scheme}
+(let-syntax ((when (syntax-rules ()
+                     ((when test stmt1 stmt2 ...)
+                      (if test
+                          (begin stmt1
+                                 stmt2 ...))))))
+  (let ((if \schtrue))
+    (when if (set! if 'now))
+    if))                           \ev  now
+
+(let ((x 'outer))
+  (let-syntax ((m (syntax-rules () ((m) x))))
+    (let ((x 'inner))
+      (m))))                       \ev  outer%
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{letrec-syntax}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+Same as for {\cf let-syntax}.
+
+\semantics
+ The \hyper{body} is expanded in the syntactic environment obtained by
+extending the syntactic environment of the {\cf letrec-syntax}
+expression with macros whose keywords are the
+\hyper{keyword}s, bound to the specified transformers.
+Each binding of a \hyper{keyword} has the \hyper{bindings}
+as well as the \hyper{body} within its region,
+so the transformers can
+transcribe expressions into uses of the macros
+introduced by the {\cf letrec-syntax} expression.
+
+\begin{scheme}
+(letrec-syntax
+  ((my-or (syntax-rules ()
+            ((my-or) \schfalse)
+            ((my-or e) e)
+            ((my-or e1 e2 ...)
+             (let ((temp e1))
+               (if temp
+                   temp
+                   (my-or e2 ...)))))))
+  (let ((x \schfalse)
+        (y 7)
+        (temp 8)
+        (let odd?)
+        (if even?))
+    (my-or x
+           (let temp)
+           (if y)
+           y)))        \ev  7%
+\end{scheme}
+
+\end{entry}
+
+\section{Equivalence predicates}
+\label{equivalencesection}
+
+A \defining{predicate} is a procedure that always returns a boolean
+value (\schtrue{} or \schfalse).  An \defining{equivalence predicate} is
+the computational analogue of a mathematical equivalence relation (it is
+symmetric, reflexive, and transitive).  Of the equivalence predicates
+described in this section, {\cf eq?}\ is the finest or most
+discriminating, and {\cf equal?}\ is the coarsest.  {\cf Eqv?}\ is
+slightly less discriminating than {\cf eq?}.  \todo{Pitman doesn't like
+this paragraph.  Lift the discussion from the Maclisp manual.  Explain
+why there's more than one predicate.}
+
+
+\begin{entry}{%
+\proto{eqv?}{ \vari{obj} \varii{obj}}{procedure}}
+
+The {\cf eqv?} procedure defines a useful equivalence relation on objects.
+Briefly, it returns \schtrue{} if \vari{obj} and \varii{obj} should
+normally be regarded as the same object.  This relation is left slightly
+open to interpretation, but the following partial specification of
+{\cf eqv?} holds for all implementations of Scheme.
+
+The {\cf eqv?} procedure returns \schtrue{} if:
+
+\begin{itemize}
+\item \vari{obj} and \varii{obj} are both \schtrue{} or both \schfalse.
+
+\item \vari{obj} and \varii{obj} are both symbols and
+
+\begin{scheme}
+(string=? (symbol->string obj1)
+          (symbol->string obj2))
+    \ev  \schtrue%
+\end{scheme}
+
+\begin{note} 
+This assumes that neither \vari{obj} nor \varii{obj} is an ``uninterned
+symbol'' as alluded to in section~\ref{symbolsection}.  This report does
+not presume to specify the behavior of {\cf eqv?} on implementation-dependent
+extensions.
+\end{note}
+
+\item \vari{obj} and \varii{obj} are both numbers, are numerically
+equal (see {\cf =}, section~\ref{numbersection}), and are either both
+exact\index{exact} or both inexact\index{inexact}.
+
+\item \vari{obj} and \varii{obj} are both characters and are the same
+character according to the {\cf char=?} procedure
+(section~\ref{charactersection}).
+
+\item both \vari{obj} and \varii{obj} are the empty list.
+
+\item \vari{obj} and \varii{obj} are pairs, vectors, or strings that denote the
+same locations in the store (section~\ref{storagemodel}).
+
+\item \vari{obj} and \varii{obj} are procedures whose location tags are
+equal (section~\ref{lambda}).
+\end{itemize}
+
+The {\cf eqv?} procedure returns \schfalse{} if:
+
+\begin{itemize}
+\item \vari{obj} and \varii{obj} are of different types
+(section~\ref{disjointness}).
+
+\item one of \vari{obj} and \varii{obj} is \schtrue{} but the other is
+\schfalse{}.
+
+\item \vari{obj} and \varii{obj} are symbols but
+
+\begin{scheme}
+(string=? (symbol->string \vari{obj})
+          (symbol->string \varii{obj}))
+    \ev  \schfalse%
+\end{scheme}
+
+\item one of \vari{obj} and \varii{obj} is an exact number but the other
+is an inexact number.
+
+\item \vari{obj} and \varii{obj} are numbers for which the {\cf =}
+procedure returns \schfalse{}.
+
+\item \vari{obj} and \varii{obj} are characters for which the {\cf char=?}
+procedure returns \schfalse{}.
+
+\item one of \vari{obj} and \varii{obj} is the empty list but the other
+is not.
+
+\item \vari{obj} and \varii{obj} are pairs, vectors, or strings that denote
+distinct locations.
+
+\item \vari{obj} and \varii{obj} are procedures that would behave differently
+(return different value(s) or have different side effects) for some arguments.
+
+\end{itemize}
+
+\begin{scheme}
+(eqv? 'a 'a)                     \ev  \schtrue
+(eqv? 'a 'b)                     \ev  \schfalse
+(eqv? 2 2)                       \ev  \schtrue
+(eqv? '() '())                   \ev  \schtrue
+(eqv? 100000000 100000000)       \ev  \schtrue
+(eqv? (cons 1 2) (cons 1 2))     \ev  \schfalse
+(eqv? (lambda () 1)
+      (lambda () 2))             \ev  \schfalse
+(eqv? \#f 'nil)                  \ev  \schfalse
+(let ((p (lambda (x) x)))
+  (eqv? p p))		         \ev  \schtrue%
+\end{scheme}
+
+The following examples illustrate cases in which the above rules do
+not fully specify the behavior of {\cf eqv?}.  All that can be said
+about such cases is that the value returned by {\cf eqv?} must be a
+boolean.
+
+\begin{scheme}
+(eqv? "" "")             \ev  \unspecified
+(eqv? '\#() '\#())         \ev  \unspecified
+(eqv? (lambda (x) x)
+      (lambda (x) x))    \ev  \unspecified
+(eqv? (lambda (x) x)
+      (lambda (y) y))    \ev  \unspecified%
+\end{scheme}
+
+The next set of examples shows the use of {\cf eqv?}\ with procedures
+that have local state.  {\cf Gen-counter} must return a distinct
+procedure every time, since each procedure has its own internal counter.
+{\cf Gen-loser}, however, returns equivalent procedures each time, since
+the local state does not affect the value or side effects of the
+procedures.
+
+\begin{scheme}
+(define gen-counter
+  (lambda ()
+    (let ((n 0))
+      (lambda () (set! n (+ n 1)) n))))
+(let ((g (gen-counter)))
+  (eqv? g g))           \ev  \schtrue
+(eqv? (gen-counter) (gen-counter))
+                        \ev  \schfalse
+(define gen-loser
+  (lambda ()
+    (let ((n 0))
+      (lambda () (set! n (+ n 1)) 27))))
+(let ((g (gen-loser)))
+  (eqv? g g))           \ev  \schtrue
+(eqv? (gen-loser) (gen-loser))
+                        \ev  \unspecified
+
+(letrec ((f (lambda () (if (eqv? f g) 'both 'f)))
+         (g (lambda () (if (eqv? f g) 'both 'g))))
+  (eqv? f g))
+                        \ev  \unspecified
+
+(letrec ((f (lambda () (if (eqv? f g) 'f 'both)))
+         (g (lambda () (if (eqv? f g) 'g 'both))))
+  (eqv? f g))
+                        \ev  \schfalse%
+\end{scheme}
+
+% Objects of distinct types must never be regarded as the same object,
+% except that \schfalse{} and the empty list\index{empty list} are permitted to
+% be identical.
+%
+% \begin{scheme}
+% (eqv? '() \schfalse)    \ev  \unspecified%
+% \end{scheme}
+
+Since it is an error to modify constant objects (those returned by
+literal expressions), implementations are permitted, though not
+required, to share structure between constants where appropriate.  Thus
+the value of {\cf eqv?} on constants is sometimes
+implementation-dependent.
+
+\begin{scheme}
+(eqv? '(a) '(a))                 \ev  \unspecified
+(eqv? "a" "a")                   \ev  \unspecified
+(eqv? '(b) (cdr '(a b)))	 \ev  \unspecified
+(let ((x '(a)))
+  (eqv? x x))                    \ev  \schtrue%
+\end{scheme}
+
+\begin{rationale} 
+The above definition of {\cf eqv?} allows implementations latitude in
+their treatment of procedures and literals:  implementations are free
+either to detect or to fail to detect that two procedures or two literals
+are equivalent to each other, and can decide whether or not to
+merge representations of equivalent objects by using the same pointer or
+bit pattern to represent both.
+\end{rationale}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{eq?}{ \vari{obj} \varii{obj}}{procedure}}
+
+{\cf Eq?}\ is similar to {\cf eqv?}\ except that in some cases it is
+capable of discerning distinctions finer than those detectable by
+{\cf eqv?}.
+
+\vest {\cf Eq?}\ and {\cf eqv?}\ are guaranteed to have the same
+behavior on symbols, booleans, the empty list, pairs, procedures,
+and non-empty
+strings and vectors.  {\cf Eq?}'s behavior on numbers and characters is
+implementation-dependent, but it will always return either true or
+false, and will return true only when {\cf eqv?}\ would also return
+true.  {\cf Eq?} may also behave differently from {\cf eqv?} on empty
+vectors and empty strings.
+
+\begin{scheme}
+(eq? 'a 'a)                     \ev  \schtrue
+(eq? '(a) '(a))                 \ev  \unspecified
+(eq? (list 'a) (list 'a))       \ev  \schfalse
+(eq? "a" "a")                   \ev  \unspecified
+(eq? "" "")                     \ev  \unspecified
+(eq? '() '())                   \ev  \schtrue
+(eq? 2 2)                       \ev  \unspecified
+(eq? \#\backwhack{}A \#\backwhack{}A) \ev  \unspecified
+(eq? car car)                   \ev  \schtrue
+(let ((n (+ 2 3)))
+  (eq? n n))      \ev  \unspecified
+(let ((x '(a)))
+  (eq? x x))      \ev  \schtrue
+(let ((x '\#()))
+  (eq? x x))      \ev  \schtrue
+(let ((p (lambda (x) x)))
+  (eq? p p))      \ev  \schtrue%
+\end{scheme}
+
+\todo{Needs to be explained better above.  How can this be made to be
+not confusing?  A table maybe?}
+
+\begin{rationale} It will usually be possible to implement {\cf eq?}\ much
+more efficiently than {\cf eqv?}, for example, as a simple pointer
+comparison instead of as some more complicated operation.  One reason is
+that it may not be possible to compute {\cf eqv?}\ of two numbers in
+constant time, whereas {\cf eq?}\ implemented as pointer comparison will
+always finish in constant time.  {\cf Eq?}\ may be used like {\cf eqv?}\
+in applications using procedures to implement objects with state since
+it obeys the same constraints as {\cf eqv?}.
+\end{rationale}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{equal?}{ \vari{obj} \varii{obj}}{library procedure}}
+
+{\cf Equal?} recursively compares the contents of pairs, vectors, and
+strings, applying {\cf eqv?} on other objects such as numbers and symbols.
+A rule of thumb is that objects are generally {\cf equal?} if they print
+the same.  {\cf Equal?}\ may fail to terminate if its arguments are
+circular data structures.
+
+\begin{scheme}
+(equal? 'a 'a)                  \ev  \schtrue
+(equal? '(a) '(a))              \ev  \schtrue
+(equal? '(a (b) c)
+        '(a (b) c))             \ev  \schtrue
+(equal? "abc" "abc")            \ev  \schtrue
+(equal? 2 2)                    \ev  \schtrue
+(equal? (make-vector 5 'a)
+        (make-vector 5 'a))     \ev  \schtrue
+(equal? (lambda (x) x)
+        (lambda (y) y))  \ev  \unspecified%
+\end{scheme}
+
+\end{entry}
+
+
+\section{Control features}
+\label{proceduresection}
+ 
+% Intro flushed; not very a propos any more.
+% Procedures should be discussed somewhere, however.
+
+This chapter describes various primitive procedures which control the
+flow of program execution in special ways.
+The {\cf procedure?}\ predicate is also described here.
+
+\todo{{\tt Procedure?} doesn't belong in a section with the name
+``control features.''  What to do?}
+
+\begin{entry}{%
+\proto{procedure?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
+
+\begin{scheme}
+(procedure? car)            \ev  \schtrue
+(procedure? 'car)           \ev  \schfalse
+(procedure? (lambda (x) (* x x)))   
+                            \ev  \schtrue
+(procedure? '(lambda (x) (* x x)))  
+                            \ev  \schfalse
+(call-with-current-continuation procedure?)
+                            \ev  \schtrue%
+\end{scheme}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{apply}{ proc \vari{arg} $\ldots$ args}{procedure}}
+
+\domain{\var{Proc} must be a procedure and \var{args} must be a list.}
+Calls \var{proc} with the elements of the list
+{\cf(append (list \vari{arg} \dotsfoo) \var{args})} as the actual
+arguments.
+
+\begin{scheme}
+(apply + (list 3 4))              \ev  7
+
+(define compose
+  (lambda (f g)
+    (lambda args
+      (f (apply g args)))))
+
+((compose sqrt *) 12 75)              \ev  30%
+\end{scheme}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{library procedure}}
+
+\domain{The \var{list}s must be lists, and \var{proc} must be a
+procedure taking as many arguments as there are {\it list}s
+and returning a single value.  If more
+than one \var{list} is given, then they must all be the same length.}
+{\cf Map} applies \var{proc} element-wise to the elements of the
+\var{list}s and returns a list of the results, in order.
+The dynamic order in which \var{proc} is applied to the elements of the
+\var{list}s is unspecified.
+
+\begin{scheme}
+(map cadr '((a b) (d e) (g h)))   \lev  (b e h)
+
+(map (lambda (n) (expt n n))
+     '(1 2 3 4 5))                \lev  (1 4 27 256 3125)
+
+(map + '(1 2 3) '(4 5 6))         \ev  (5 7 9)
+
+(let ((count 0))
+  (map (lambda (ignored)
+         (set! count (+ count 1))
+         count)
+       '(a b)))                 \ev  (1 2) \var{or} (2 1)
+\end{scheme}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{library procedure}}
+
+The arguments to {\cf for-each} are like the arguments to {\cf map}, but
+{\cf for-each} calls \var{proc} for its side effects rather than for its
+values.  Unlike {\cf map}, {\cf for-each} is guaranteed to call \var{proc} on
+the elements of the \var{list}s in order from the first element(s) to the
+last, and the value returned by {\cf for-each} is unspecified.
+
+\begin{scheme}
+(let ((v (make-vector 5)))
+  (for-each (lambda (i)
+              (vector-set! v i (* i i)))
+            '(0 1 2 3 4))
+  v)                                \ev  \#(0 1 4 9 16)%
+\end{scheme}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{call-with-current-continuation}{ proc}{procedure}}
+
+\label{continuations} \domain{\var{Proc} must be a procedure of one
+argument.} The procedure {\cf call-with-current-continuation} packages
+up the current continuation (see the rationale below) as an ``escape
+procedure''\mainindex{escape procedure} and passes it as an argument to
+\var{proc}.  The escape procedure is a Scheme procedure that, if it is
+later called, will abandon whatever continuation is in effect at that later
+time and will instead use the continuation that was in effect
+when the escape procedure was created.  Calling the escape procedure
+may cause the invocation of \var{before} and \var{after} thunks installed using
+\ide{dynamic-wind}.
+
+The escape procedure accepts the same number of arguments as the
+continuation to the original call to \callcc.
+
+\vest The escape procedure that is passed to \var{proc} has
+unlimited extent just like any other procedure in Scheme.  It may be stored
+in variables or data structures and may be called as many times as desired.
+
+\vest The following examples show only the most common ways in which
+{\cf call-with-current-continuation} is used.  If all real uses were as
+simple as these examples, there would be no need for a procedure with
+the power of {\cf call-with-current-continuation}.
+
+\begin{scheme}
+(call-with-current-continuation
+  (lambda (exit)
+    (for-each (lambda (x)
+                (if (negative? x)
+                    (exit x)))
+              '(54 0 37 -3 245 19))
+    \schtrue))                        \ev  -3
+
+(define list-length
+  (lambda (obj)
+    (call-with-current-continuation
+      (lambda (return)
+        (letrec ((r
+                  (lambda (obj)
+                    (cond ((null? obj) 0)
+                          ((pair? obj)
+                           (+ (r (cdr obj)) 1))
+                          (else (return \schfalse))))))
+          (r obj))))))
+
+(list-length '(1 2 3 4))            \ev  4
+
+(list-length '(a b . c))            \ev  \schfalse%
+\end{scheme}
+
+\begin{rationale}
+
+\vest A common use of {\cf call-with-current-continuation} is for
+structured, non-local exits from loops or procedure bodies, but in fact
+{\cf call-with-current-continuation} is extremely useful for implementing a
+wide variety of advanced control structures.
+
+\vest Whenever a Scheme expression is evaluated there is a
+\defining{continuation} wanting the result of the expression.  The continuation
+represents an entire (default) future for the computation.  If the expression is
+evaluated at top level, for example, then the continuation might take the
+result, print it on the screen, prompt for the next input, evaluate it, and
+so on forever.  Most of the time the continuation includes actions
+specified by user code, as in a continuation that will take the result,
+multiply it by the value stored in a local variable, add seven, and give
+the answer to the top level continuation to be printed.  Normally these
+ubiquitous continuations are hidden behind the scenes and programmers do not
+think much about them.  On rare occasions, however, a programmer may
+need to deal with continuations explicitly.
+{\cf Call-with-current-continuation} allows Scheme programmers to do
+that by creating a procedure that acts just like the current
+continuation.
+
+\vest Most programming languages incorporate one or more special-purpose
+escape constructs with names like {\tt exit}, \hbox{{\cf return}}, or
+even {\tt goto}.  In 1965, however, Peter Landin~\cite{Landin65}
+invented a general purpose escape operator called the J-operator.  John
+Reynolds~\cite{Reynolds72} described a simpler but equally powerful
+construct in 1972.  The {\cf catch} special form described by Sussman
+and Steele in the 1975 report on Scheme is exactly the same as
+Reynolds's construct, though its name came from a less general construct
+in MacLisp.  Several Scheme implementors noticed that the full power of the
+\ide{catch} construct could be provided by a procedure instead of by a
+special syntactic construct, and the name
+{\cf call-with-current-continuation} was coined in 1982.  This name is
+descriptive, but opinions differ on the merits of such a long name, and
+some people use the name \ide{call/cc} instead.
+\end{rationale}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{values}{ obj $\ldots$}{procedure}}
+
+Delivers all of its arguments to its continuation.
+{\tt Values} might be defined as follows:
+\begin{scheme}
+(define (values . things)
+  (call-with-current-continuation 
+    (lambda (cont) (apply cont things))))
+\end{scheme}
+
+The continuations of all commands (represented by \meta{command} in
+the formal syntax) within a sequence of expressions (represented by
+\meta{sequence} in the formal syntax) in {\cf lambda}, {\cf
+  begin}, {\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*}, {\cf
+  case}, {\cf cond}, and {\cf do} forms take an arbitrary number of
+values.
+
+Except for these and the continuations created by the {\cf
+  call-with-values} procedure, all other continuations take exactly
+one value.  The effect of passing an inappropriate number of values to
+a continuation is unspecified.
+\end{entry}
+
+\begin{entry}{%
+\proto{call-with-values}{ producer consumer}{procedure}}
+
+Calls its \var{producer} argument with no values and
+a continuation that, when passed some values, calls the
+\var{consumer} procedure with those values as arguments.
+The continuation for the call to \var{consumer} is the
+continuation of the call to {\tt call-with-values}.
+
+\begin{scheme}
+(call-with-values (lambda () (values 4 5))
+                  (lambda (a b) b))
+                                                   \ev  5
+
+(call-with-values * -)                             \ev  -1
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{dynamic-wind}{ before thunk after}{procedure}}
+
+Calls \var{thunk} without arguments, returning the result(s) of this call.
+\var{Before} and \var{after} are called, also without arguments, as required
+by the following rules (note that in the absence of calls to continuations
+captured using \ide{call-with-current-continuation} the three arguments are
+called once each, in order).  \var{Before} is called whenever execution
+enters the dynamic extent of the call to \var{thunk} and \var{after} is called
+whenever it exits that dynamic extent.  The dynamic extent of a procedure
+call is the period between when the call is initiated and when it
+returns.  In Scheme, because of {\cf call-with-current-continuation}, the
+dynamic extent of a call may not be a single, connected time period.
+It is defined as follows:
+\begin{itemize}
+\item The dynamic extent is entered when execution of the body of the
+called procedure begins.
+
+\item The dynamic extent is also entered when execution is not within
+the dynamic extent and a continuation is invoked that was captured
+(using {\cf call-with-current-continuation}) during the dynamic extent.
+
+\item It is exited when the called procedure returns.
+
+\item It is also exited when execution is within the dynamic extent and
+a continuation is invoked that was captured while not within the
+dynamic extent.
+\end{itemize}
+
+If a second call to {\cf dynamic-wind} occurs within the dynamic extent of the
+call to \var{thunk} and then a continuation is invoked in such a way that the
+\var{after}s from these two invocations of {\cf dynamic-wind} are both to be
+called, then the \var{after} associated with the second (inner) call to
+{\cf dynamic-wind} is called first.
+
+If a second call to {\cf dynamic-wind} occurs within the dynamic extent of the
+call to \var{thunk} and then a continuation is invoked in such a way that the
+\var{before}s from these two invocations of {\cf dynamic-wind} are both to be
+called, then the \var{before} associated with the first (outer) call to
+{\cf dynamic-wind} is called first.
+
+If invoking a continuation requires calling the \var{before} from one call
+to {\cf dynamic-wind} and the \var{after} from another, then the \var{after}
+is called first.
+
+The effect of using a captured continuation to enter or exit the dynamic
+extent of a call to \var{before} or \var{after} is undefined.
+
+\begin{scheme}
+(let ((path '())
+      (c \#f))
+  (let ((add (lambda (s)
+               (set! path (cons s path)))))
+    (dynamic-wind
+      (lambda () (add 'connect))
+      (lambda ()
+        (add (call-with-current-continuation
+               (lambda (c0)
+                 (set! c c0)
+                 'talk1))))
+      (lambda () (add 'disconnect)))
+    (if (< (length path) 4)
+        (c 'talk2)
+        (reverse path))))
+    \lev (connect talk1 disconnect
+               connect talk2 disconnect)
+\end{scheme}
+\end{entry}
 
 \section{Numbers}
 \label{numbersection}
 \index{number}
-
-%%R4%% The excessive use of the code font in this section was
-% confusing, somewhat obnoxious, and inconsistent with the rest
-% of the report and with parts of the section itself.  I added
-% a \tupe no-op, and changed most old uses of \type to \tupe,
-% to make it easier to change the fonts back if people object
-% to the change.
-
-\newcommand{\type}[1]{{\it#1}}
-\newcommand{\tupe}[1]{{#1}}
 
 Numerical computation has traditionally been neglected by the Lisp
 community.  Until Common Lisp there was no carefully thought out
@@ -269,82 +1915,6 @@ numbers.  If an implementation encounters an \tupe{exact} numerical constant tha
 it cannot represent as an \tupe{exact} number, then it may either report a
 violation of an implementation restriction or it may silently represent the
 constant by an \tupe{inexact} number.
-
-
-\subsection{Syntax of numerical constants}
-\label{numbernotations}
-
-%@@@@LOSE@@@@
-
-%%R4%%  I removed the following paragraph in an attempt to tighten up
-% this subsection.  Except for its first sentence, which I moved to
-% the subsection on implementation restrictions, I think its content
-% is implied by the rest of the section.
-%
-%Although Scheme allows a variety of written representations of numbers,
-%any particular implementation may support only some of them.
-%These syntaxes are intended to be purely notational; any kind of number
-%may be written in any form that the user deems convenient.  Of course,
-%writing 1/7 as a limited-precision decimal fraction will not express the
-%number exactly, but this approximate form of expression may be just what
-%the user wants to see.
-
-The syntax of the written representations for numbers is described formally in
-section~\ref{numbersyntax}.  Note that case is not significant in numerical
-constants.
-
-%%R4%%  See section~\ref{numberformats} for many examples.
-
-A number may be written in binary, octal, decimal, or
-hexadecimal by the use of a radix prefix.  The radix prefixes are {\cf
-\#b}\sharpindex{b} (binary), {\cf \#o}\sharpindex{o} (octal), {\cf
-\#d}\sharpindex{d} (decimal), and {\cf \#x}\sharpindex{x} (hexadecimal).  With
-no radix prefix, a number is assumed to be expressed in decimal.
-
-A
-%%R4%%
-% simple
-numerical constant may be specified to be either \tupe{exact} or
-\tupe{inexact} by a prefix.  The prefixes are {\cf \#e}\sharpindex{e}
-for \tupe{exact}, and {\cf \#i}\sharpindex{i} for \tupe{inexact}.  An exactness
-prefix may appear before or after any radix prefix that is used.  If
-the written representation of a number has no exactness prefix, the
-constant may be either \tupe{inexact} or \tupe{exact}.  It is
-\tupe{inexact} if it contains a decimal point, an
-exponent, or a ``\sharpsign'' character in the place of a digit,
-otherwise it is \tupe{exact}.
-%%R4%%  With our new syntax, the following sentence is redundant:
-%
-%The written representation of a
-%compound number, such as a ratio or a complex, is exact if and only if
-%all of its constituents are exact.
-
-In systems with \tupe{inexact} numbers
-of varying precisions it may be useful to specify
-the precision of a constant.  For this purpose, numerical constants
-may be written with an exponent marker that indicates the
-desired precision of the \tupe{inexact}
-representation.  The letters {\cf s}, {\cf f},
-{\cf d}, and {\cf l} specify the use of \var{short}, \var{single},
-\var{double}, and \var{long} precision, respectively.  (When fewer
-than four internal
-%%R4%%\tupe{flonum}
-\tupe{inexact}
-representations exist, the four size
-specifications are mapped onto those available.  For example, an
-implementation with two internal representations may map short and
-single together and long and double together.)  In addition, the
-exponent marker {\cf e} specifies the default precision for the
-implementation.  The default precision has at least as much precision
-as \var{double}, but
-implementations may wish to allow this default to be set by the user.
-
-\begin{scheme}
-3.14159265358979F0
-       {\rm Round to single ---} 3.141593
-0.6L0
-       {\rm Extend to long ---} .600000000000000%
-\end{scheme}
 
 
 \subsection{Numerical operations}
@@ -969,12 +2539,7 @@ a decimal point is used.
 
 \end{entry}
 
-\section{Other data types}
-
-This section describes operations on some of Scheme's non-numeric data types:
-booleans, pairs, lists, symbols, characters, strings and vectors.
-
-\subsection{Booleans}
+\section{Booleans}
 \label{booleansection}
 
 The standard boolean objects for true and false are written as
@@ -1061,7 +2626,7 @@ in programs.
 \end{entry}
 
  
-\subsection{Pairs and lists}
+\section{Pairs and lists}
 \label{listsection}
 
 A \defining{pair} (sometimes called a \defining{dotted pair}) is a
@@ -1095,29 +2660,6 @@ The empty list\mainindex{empty list} is a special object of its own type
 The above definitions imply that all lists have finite length and are
 terminated by the empty list.
 \end{note}
-
-The most general notation (external representation) for Scheme pairs is
-the ``dotted'' notation \hbox{\cf (\vari{c} .\ \varii{c})} where
-\vari{c} is the value of the car field and \varii{c} is the value of the
-cdr field.  For example {\cf (4 .\ 5)} is a pair whose car is 4 and whose
-cdr is 5.  Note that {\cf (4 .\ 5)} is the external representation of a
-pair, not an expression that evaluates to a pair.
-
-A more streamlined notation can be used for lists: the elements of the
-list are simply enclosed in parentheses and separated by spaces.  The
-empty list\index{empty list} is written {\tt()} .  For example,
-
-\begin{scheme}
-(a b c d e)%
-\end{scheme}
-
-and
-
-\begin{scheme}
-(a . (b . (c . (d . (e . ())))))%
-\end{scheme}
-
-are equivalent notations for a list of symbols.
 
 A chain of pairs not ending in the empty list is called an
 \defining{improper list}.  Note that an improper list is not a list.
@@ -1507,7 +3049,7 @@ than just \schtrue{} or \schfalse{}.
 \end{entry}
 
 
-\subsection{Symbols}
+\section{Symbols}
 \label{symbolsection}
 
 Symbols are objects whose usefulness rests on the fact that two
@@ -1517,14 +3059,6 @@ represent identifiers\index{identifier} in programs, and so most
 implementations of Scheme use them internally for that purpose.  Symbols
 are useful for many other applications; for instance, they may be used
 the way enumerated values are used in Pascal.
-
-\vest The rules for writing a symbol are exactly the same as the rules for
-writing an identifier; see sections~\ref{syntaxsection}
-and~\ref{identifiersyntax}.
-
-\vest It is guaranteed that any symbol written out using the {\cf
-  write} procedure, will read back in as the identical symbol (in the
-sense of {\cf eqv?}).
 
 A symbol literal is formed using {\cf quote}.  Any character within a
 symbol literal may be specified by its scalar value, using the {\tt
@@ -1603,7 +3137,7 @@ Returns the symbol whose name is \var{string}.
 \end{entry}
 
 
-\subsection{Characters}
+\section{Characters}
 \label{charactersection}
 
 \mainindex{Unicode}
@@ -1644,68 +3178,6 @@ values~\cite{Unicode41}.
 %characters be disjoint from other data types; implementations are
 %encouraged to have a separate character data type, but may choose to
 %represent characters as integers, strings, or some other type.
-Character literals are written using the notation
-\sharpsign\backwhack\hyper{character} or
-\sharpsign\backwhack\hyper{character name} or
-\sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}, where the latter
-specifies the scalar value of a character with a hexadecimal number of
-no more than eight digits.
-
-For example:
-
-$$
-\begin{tabular}{ll}
-{\tt \#\backwhack{}a}&; lower case letter\\
-{\tt \#\backwhack{}A}&; upper case letter\\
-{\tt \#\backwhack{}(}&; left parenthesis\\
-{\tt \#\backwhack{} }&; the space character\\
-{\tt \#\backwhack{}nul}& ; Unicode 0\\
-{\tt \#\backwhack{}alarm}& ; Unicode 7\\
-{\tt \#\backwhack{}backspace}& ; Unicode 8\\
-{\tt \#\backwhack{}tab}& ; Unicode 9\\
-{\tt \#\backwhack{}linefeed}& ; Unicode 10\\
-{\tt \#\backwhack{}vtab}& ; Unicode 11\\
-{\tt \#\backwhack{}page}& ; Unicode 12\\
-{\tt \#\backwhack{}return}& ; Unicode 13\\
-{\tt \#\backwhack{}esc}& ; Unicode 27\\
-{\tt \#\backwhack{}space}& ; Unicode 32;\\& \quad the preferred way to write a space\\
-{\tt \#\backwhack{}delete}& : Unicode 127\\[1ex]
-
-{\tt \#\backwhack{}xFF}& ; Unicode 255\\
-{\tt \#\backwhack{}x03BB}& ; Unicode 955\\
-{\tt \#\backwhack{}x00006587}& ; Unicode 25991\\
-{\tt \#\backwhack{}$\lambda$}& ; Unicode 955\\[1ex]
-
-{\tt \#\backwhack{}x0001z}& ; parse error\\
-{\tt \#\backwhack{}$\lambda$x}& ; parse error\\
-{\tt \#\backwhack{}alarmx}& ; parse error\\
-{\tt \#\backwhack{}alarm x}& ; Unicode 7 followed by {\tt x}\\
-{\tt \#\backwhack{}Alarm}& ; parse error\\
-{\tt \#\backwhack{}alert}& ; parse error\\
-{\tt \#\backwhack{}xA}& ; Unicode 10\\
-{\tt \#\backwhack{}xFF}& ; Unicode 255\\
-{\tt \#\backwhack{}xff}& ; Unicode 255\\
-{\tt \#\backwhack{}x ff}& ; Unicode 120 followed by another datum, \\& \quad {\tt ff}\\
-{\tt \#\backwhack{}x(ff)}& ; Unicode 120 followed by another datum, \\& \quad a parenthesized {\tt ff}\\
-{\tt \#\backwhack{}(x)}& ; parse error\\
-{\tt \#\backwhack{}(x}& ; parse error\\
-{\tt \#\backwhack{}((x)}& ; Unicode 40 followed by another datum, \\& \quad parenthesized {\tt x}\\
-{\tt \#\backwhack{}x00110000}& ; parse error (out of range)\\
-{\tt \#\backwhack{}x000000001}& ; parse error (too many digits)\\
-{\tt \#\backwhack{}xD800}& ; parse error (in excluded range)
-\end{tabular}
-$$
-
-Case is significant in \sharpsign\backwhack\hyper{character}, and in in
-\sharpsign\backwhack{\rm$\langle$character name$\rangle$}, % \hyper doesn't allow a linebreak
-but not in \sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}.  
-The character after a character literal
-must be a delimiter character such as a
-space or parenthesis.  This rule resolves various ambiguous cases, for
-example, the sequence of characters ``{\tt\sharpsign\backwhack space}''
-could be taken to be either a representation of the space character or a
-representation of the character ``{\tt\sharpsign\backwhack s}'' followed
-by a representation of the symbol ``{\tt pace}.''
 
 \todo{Fix}
 Characters written in the \sharpsign\backwhack{} notation are self-evaluating.
@@ -1949,63 +3421,10 @@ Unicode general category, one of \ide{lu}, \ide{ll}, \ide{lt},
 \end{entry}
 
 
-\subsection{Strings}
+\section{Strings}
 \label{stringsection}
 
 Strings are sequences of characters.  
-\vest String literals are written as sequences of characters enclosed within doublequotes
-({\cf "}).  Within a string literal, various escape
-sequences\mainindex{escape sequence} denote characters other than
-themselves.  Escape sequences always start with a backslash (\backwhack{}):
-
-\begin{itemize}
-\item{\tt \backwhack{}a} : alarm, Unicode 7
-\item{\tt \backwhack{}b} : backspace, Unicode 8 
-\item{\tt \backwhack{}t} : tab, Unicode 9 
-\item{\tt \backwhack{}n} : linefeed, Unicode 10 
-\item{\tt \backwhack{}v} : vertical tab, Unicode 11 
-\item{\tt \backwhack{}f} : formfeed, Unicode 12 
-\item{\tt \backwhack{}r} : return, Unicode 13 
-\item{\tt \backwhack{}}\verb|"| : doublequote, Unicode 34 
-\item{\tt \backwhack{}\backwhack{}} : backslash, Unicode 92 
-\item{\tt \backwhack{}\hyper{linefeed}\hyper{intraline whitespace}} : nothing
-\item{\tt \backwhack{}\ } : space, Unicode 32(useful for terminating the
-  previous escape sequence before continuing with whitespace)
-\item{\tt \backwhack{}x\atleastone{\hyper{digit 16}}} : (note the
-  terminating semi-colon) where no more than eight \hyper{digit 16}s
-  are provided, and the sequence of \hyper{digit 16}s forms a
-  hexadecimal number between 0 and \sharpsign{}xFFFF excluding the
-  range $\left[\sharpsign{}x\textrm{D800},
-    \sharpsign{}x\textrm{DFFF}\right]$.
-\end{itemize}
-
-These escape sequences are case-sensitive, except that \hyper{digit
-  16} can be an uppercase or lowercase hexadecimal digit.
-
-Any other character in a string after a backslash is an error. Any
-character outside of an escape sequence and not a doublequote stands
-for itself in the string literal. For example the single-character
-string {\tt "$\lambda$"} (double quote, a lower case lambda, double
-quote) denotes the same string literal as {\tt "\backwhack{}x03bb;"}.
-
-Examples:
-
-\begin{center}
-  \begin{tabular}{ll}
-    {\tt "abc"}    & ; Unicode sequence 97, 98, 99\\
-    {\tt "\backwhack{}x41;bc"} & ; ``Abc'', Unicode sequence 65, 98, 99\\
-    {\tt "\backwhack{}x41; bc"} & ; ``A bc'', Unicode sequence 65, 32, 98, 99\\
-    {\tt "\backwhack{}x41bc;"} & ; Unicode sequence 16828\\
-    {\tt "\backwhack{}x41"} & ; parse error\\
-    {\tt "\backwhack{}x;"} & ; parse error\\
-    {\tt "\backwhack{}x41bx;"} & ; parse error\\
-    {\tt "\backwhack{}x00000041;"} & ; ``A'', Unicode sequence 65\\
-    {\tt "\backwhack{}x0010FFFF;"} &  ; Unicode sequence \#x10FFFF\\
-    {\tt "\backwhack{}x00110000;"}&  ; parse error (out of range)\\
-    {\tt "\backwhack{}x000000001;"}& ; parse error (too many digits)\\
-    {\tt "\backwhack{}xD800;"}&      ; parse error (in excluded range)
-  \end{tabular}
-\end{center}
 
 \vest The {\em length} of a string is the number of characters that it
 contains.  This number is an exact, non-negative integer that is fixed when the
@@ -2312,7 +3731,7 @@ to Unicode form D, KD, C, or KC, respectively.
 \end{scheme}
 \end{entry}
 
-\subsection{Vectors}
+\section{Vectors}
 \label{vectorsection}
 
 Vectors are heterogenous structures whose elements are indexed
@@ -2327,18 +3746,7 @@ vector are the exact non-negative integers less than the length of the
 vector.  The first element in a vector is indexed by zero, and the last
 element is indexed by one less than the length of the vector.
 
-Vectors are written using the notation {\tt\#(\var{obj} \dotsfoo)}.
-For example, a vector of length 3 containing the number zero in element
-0, the list {\cf(2 2 2 2)} in element 1, and the string {\cf "Anna"} in
-element 2 can be written as following:
-
-\begin{scheme}
-\#(0 (2 2 2 2) "Anna")%
-\end{scheme}
-
-Note that this is the external representation of a vector, not an
-expression evaluating to a vector.  Like list constants, vector
-constants must be quoted:
+Like list constants, vector constants must be quoted:
 
 \begin{scheme}
 '\#(0 (2 2 2 2) "Anna")  \lev  \#(0 (2 2 2 2) "Anna")%
@@ -2444,858 +3852,7 @@ The value returned by {\cf vector-fill!}\ is unspecified.  % <!>
 
 \end{entry}
 
-\section{Records}
 
-This section describes abstractions for creating new data types
-representing records---data structures with named fields. The record
-mechanism comes in four parts:
-
-\begin{itemize}
-\item a procedural layer for creating and manipulating record types and record
-  instances
-\item an explicit-naming syntactic layer for defining the various entities
-  associated with a record type---construction procedure, predicate, field
-  accessors, mutators, etc.---at once
-\item an implicit-naming syntactic layer built on top of the explicit-naming
-  syntactic layer, which chooses the names for the various products based on
-  the names of the record type and fields
-\item a set of reflection procedures
-\end{itemize}
-% 
-The procedural layer allows dynamic construction of new record types and
-associated procedures for creating and manipulating records, which is
-particularly useful when writing interpreters that construct host-compatible
-record types. It may also serve as a target for expansion of the syntactic
-layers.
-
-The procedural layer allows record types to be extended. This allows using
-record types to naturally model hierarchies that occur in applications like
-algebraic data types, and also single-inheritance class systems. This model of
-extension has a well-understood representation that is simple to implement.
-
-The explicit-naming syntactic layer provides a basic syntactic interface
-whereby a single record definition serves as a shorthand for the definition of
-several record creation and manipulation routines: a construction procedure, a
-predicate, field accessors, and field mutators. As the name suggests, the
-explicit-naming syntactic layer requires the programmer to name each of these
-products explicitly.
-and non-generative record types.
-
-The implicit-naming syntactic layer extends the explicit-naming syntactic layer
-by allowing the names for the construction procedure, predicate, accessors, and
-mutators to be determined automatically from the name of the record and names
-of the fields. This establishes a standard naming convention and allows
-record-type definitions to be more succinct, with the downside that the product
-definitions cannot easily be located via a simple search for the product name.
-The programmer may override some or all of the default names by specifying them
-explicitly as in the explicit-naming syntactic layer.
-
-The two layers are designed to be fully compatible; the implicit-naming layer
-is simply a conservative extension of the explicit-naming layer. The goal is to
-make both explicit-naming and implicit-naming definitions reasonably natural
-while allowing a seamless transition between explicit and implicit naming.
-
-The reflection procedures allow programs to obtain from a record instance a
-descriptor for the type and from there obtain access to the fields of the
-record instance. This allows the creation of portable printers and inspectors.
-A program may prevent access to a record's type and thereby protect the
-information stored in the record from the reflection mechanism by declaring the
-type opaque. Thus, opacity as presented here can be used to enforce abstraction
-barriers.
-
-\subsection{Procedural layer}
-
-\begin{entry}{%
-\pproto{(make-record-type-descriptor \var{name}}{procedure}}
-\mainschindex{make-record-type-descriptor}{\tt\obeyspaces\\
-        \var{parent} \var{uid} \var{sealed?} \var{opaque?} \var{fields})}
-   
-This returns a \defining{record-type descriptor}, or \defining{rtd}.
-The rtd represents a record type distinct from all built-in types and
-other record types. The rtd and the data type it represents are new
-except possibly if \var{uid} is provided (see below).
-
-The \var{name} argument must be a symbol naming the record type; it is
-purely for informational purposes, and may be used for printing by the
-underlying Scheme system.
-
-The \var{parent} argument is either \schfalse{} or an rtd. If it is an
-rtd, the returned record type, \var{t}, extends the record type
-\var{p} represented by parent. Each record of type \var{t} is also a
-record of type \var{p}, and all operations applicable to a record of
-type \var{p} are also applicable to a record of type \var{t}, except for
-reflection operations if \var{t} is opaque but \var{p} is not. An error is
-signalled if parent is sealed (see below).
-   
-The extension relationship is transitive in the sense that a type extends
-its parent's parent, if any, and so on.
-   
-The \var{uid} argument is either \schfalse{} or a symbol. If it is a
-symbol, the created record type is non-generative, i.e. there may be
-only one record type with that \var{uid} in the entire system (in the
-sense of {\cf eqv?}).  When {\cf make-record-type-descriptor} is
-called repeatedly with the same \var{uid} argument (in the sense of
-{\cf eq?}), the parent argument must be the same in the sense of {\cf
-  eqv?}  (more on this below), and the \var{uid}, \var{sealed?},
-\var{opaque?}, and \var{fields} arguments must be the same in the
-sense of {\cf equal?}.  In this case, the same record-type descriptor
-(in the sense of {\cf eqv?})  is returned every time. If a call with
-the same uid differs in any argument, an error is signalled. If
-\var{uid} is \schfalse, or if no record type with the given uid has
-been created before, {\cf make-record-type-descriptor} returns a fresh
-record-type descriptor representing a new type disjoint from all other
-types.
-
-\begin{note}   
-  Users are strongly strongly encouraged to use symbol names
-  constructed using the UUID namespace (for example, using the
-  record-type name as a prefix) for the uid argument.
-\end{note}
-
-If \var{parent} is not \schfalse, and \var{uid} is not \schfalse, and
-the parent is generative (i.e.  its uid is \schfalse), an error is signalled.
-In other words, the parent of a non-generative rtd must be
-non-generative itself.
-
-The \var{sealed?} flag is a boolean. If true, the returned record type
-is sealed, i.e., it cannot be extended.
-
-The \var{opaque?} flag is a boolean. If true, the returned record type
-is opaque.  This means that calls to {\cf record?} will return
-\schfalse{} and {\cf record-rtd} (see ``Reflection'' below) will signal
-an error. The record type is also opaque if an opaque parent is
-supplied.  If \var{opaque?} is false and an opaque parent is not
-supplied, the record is not opaque.
-
-The \var{fields} argument must be a list of field specifiers. Each
-field specifier must be a list of the form (mutable name), or a list
-of the form (immutable name). The specified fields are added to the
-parent fields, if any, to determine the complete set of fields of the
-returned record type.  Each name must be a symbol and names the
-corresponding field of the record type; the names need not be
-distinct. A field with tag mutable may be modified, whereas an attempt
-to obtain a mutator for a field with tag immutable will signal an
-error.
-
-Where field order is relevant, e.g., for record construction and field
-access, the fields are considered to be ordered as specified, although
-no particular order is required for the actual representation of a
-record instance.
-
-A record type whose complete set of fields are all immutable is
-considered immutable itself. Conversely, a record type is considered
-mutable if there is at least one mutable field in its complete set of
-fields.
-
-A generative record-type descriptor created by a call to {\cf
-  make-record-type-descriptor} is not {\cf eqv?} to any record-type
-descriptor (generative or non-generative) created by another call to
-{\cf make-record-type-descriptor}. A generative record-type descriptor
-is {\cf eqv?}  only to itself, i.e., {\tt (eqv?~\vri{rtd} \vrii{rtd})} iff
-{\tt (eq?~\vri{rtd} \vrii{rtd})}.  Moreover:
-
-\begin{scheme}
-(let ((rtd (make-record-type-descriptor \ldots)))
-  (eqv? rtd rtd))                \ev \schfalse
-\end{scheme}
-
-Note that this does not imply the following:
-
-\begin{scheme}
-(let ((rtd (make-record-type-descriptor \ldots)))
-  (eq? rtd rtd))                 \ev \schtrue
-\end{scheme}
-
-Also, two non-generative record-type descriptors are eqv? iff they were
-successfully created by calls to make-record-type-descriptor with the same
-uid arguments.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-type-descriptor?}{ obj}{procedure}}
-   
-This returns \schtrue if the argument is a record-type descriptor,
-\schfalse{} otherwise.
-\end{entry}
-
-\begin{entry}{%
-\proto{make-record-constructor-descriptor}{ rtd parent-constructor-descriptor protocol}{procedure}}
-   
-This returns a \defining{record-constructor descriptor} (or
-\defining{constructor descriptor} for short) that can be used to
-create record constructors (via {\cf record-constructor}; see below)
-or other constructor descriptors.  \var{Rtd} must be a record-type
-descriptor.  Protocol is a \defining{protocol}, that describes how to
-initialize the fields of \var{rtd} in the record when it is constructed. The
-protocol is a procedure of one parameter that must itself return a
-procedure, the constructor. The protocol procedure is called by
-{\cf record-constructor} with a procedure as an argument that can be used to
-construct the record object itself and seed the fields of the parent
-types of \var{rtd} with initial values.
-
-If \var{rtd} is not an extension of another record type, then
-parent-constructor-descriptor must be \schfalse. In this case, the
-protocol receives as argument a procedure \var{new} that has a
-parameter for every field of \var{rtd}; \var{new} will return a record
-object with the fields of \var{rtd} initialized to its arguments.
-
-Protocol example:
-
-\begin{scheme}
-(lambda (new) (lambda (v \ldots)  (new v \ldots)))
-\end{scheme}
-
-Here, the call to {\cf new} will return a record where the fields of
-\var{rtd} are simply initialized with the arguments {\tt v \ldots}.
-
-As the protocol can be used to construct records of an extension of
-\var{rtd}, the record returned by new may actually be of a record type
-extending \var{rtd}.  (See below.)
-
-If \var{rtd} is an extension of another record type \var{rtd'},
-parent-constructor-descriptor itself must be a constructor descriptor
-of \var{rtd'} (except for default values; see below). In this case,
-the protocol receives as argument a procedure \var{p} whose arguments
-will be passed unchanged to the constructor of
-parent-constructor-descriptor; \var{p} will return another procedure that
-accepts as argument the initial values for the fields of \var{rtd} and
-itself returns what the constructor of parent-constructor-descriptor
-returned, with the field values of \var{rtd'} (and its parent and so on)
-initialized according to parent-constructor-descriptor and with the
-field values of \var{rtd} initialized according to \var{p}.
-
-As a matter of convention, the constructor created through the
-protocol should always return the record object itself.
-
-Protocol example:
-
-\begin{scheme}
-(lambda (p)
-  (lambda (x \ldots v \ldots)
-    (let ((construct (p x \ldots)))
-      (construct v \ldots))))
-\end{scheme}
-    
-This will initialize the fields of the parent of \var{rtd} according
-to parent-constructor-descriptor, calling the associated constructor
-with {\tt x \ldots} as arguments, and initializing the fields of \var{rtd}
-itself with {\tt v \ldots}
-
-Summarizing: the constructor descriptors for a record type form a chain of
-protocols exactly parallel to the chain of record-type parents. Each
-constructor descriptor in the chain determines the field values for the
-associated record type.
-
-Protocol can be \schfalse, specifying a default. This is only
-admissible if either \var{rtd} is not an extension of another record
-type, or, if it is, if parent-constructor-descriptor itself was
-constructed with a default protocol. In the first case, protocol will
-default to a procedure equivalent to the following:
-
-\begin{scheme}
-(lambda (p)
-  (lambda field-values
-    (apply p field-values)))
-\end{scheme}
-  
-In the latter case, it will default to a protocol that returns a
-constructor that will accept as many arguments as \var{rtd} has total
-fields (i.e. as the sum of the number of fields in the entire chain of
-record types) and will return a record with fields initialized to
-those arguments, with the field values for the parent coming before
-those of the extension in the argument list.
-
-\begin{rationale}
-  The constructor-descriptor mechanism is an infrastructure for
-  creating specialized constructors, rather than just creating default
-  constructors that accept the initial values of all the fields as
-  arguments. This infrastructure achieves full generality while
-  leaving each level of an inheritance hierarchy in control over its
-  own fields and allowing child record definitions to be abstracted
-  away from the actual number and contents of parent fields.
-
-  The design allows the initial values of the fields to be specially
-  computed or default to constant values. It also allows for
-  operations to be performed on or with the resulting record, such as
-  the registration of a widget record for finalization. Moreover, the
-  constructor-descriptor mechanism allows the creation of such
-  initializers in a modular manner, separating the initialization
-  concerns of the parent types of those of the extensions.
-  
-  The mechanism described here achieves complete generality without
-  cluttering the syntactic layer, possibly sacrificing a bit of
-  notational convenience in special cases.
-\end{rationale}
-
-\end{entry}
-
-\begin{entry}{%
-\proto{record-constructor}{ constructor-descriptor}{procedure}}
-   
-Calls the protocol of record-constructor descriptor
-\var{constructor-descriptor} with an appropriate procedure \var{c} as
-an argument (see the description of {\cf
-  make-record-constructor-descriptor}) that will create a record of
-the record type associated with \var{constructor-descriptor}.
-
-If the record type associated with \var{constructor-descriptor} is
-opaque, then the values created by such a constructor are not
-considered by the reflection procedures to be records; see the
-specification of {\cf record?} below.
-
-A record from an immutable record type is called immutable;
-conversely, a record from a mutable record type is called mutable.
-
-Two records created by such a constructor are equal according to {\cf
-  equal?} iff they are {\cf eqv?}, provided their record type was not
-used to implement any of the types explicitly mentioned in the
-definition of {\cf equal?}.
-
-If construct is bound to a constructor returned by {\cf
-  record-constructor}, the following holds:
-
-\begin{scheme}
-(let ((r (construct \ldots)))
-  (eqv? r r))                \ev \schtrue
-\end{scheme}
-
-For mutable records, but not necessarily for immutable ones, the following
-holds:
-
-\begin{scheme}
-(let ((r (construct \ldots)))
-  (eq? r r))                 \ev \schtrue
-\end{scheme}
-
-For mutable records, the following holds:
-
-\begin{scheme}
-(let ((f (lambda () (construct \ldots))))
-  (eq? (f) (f))) \ev \schfalse
-\end{scheme}
-
-For immutable records, the value of the above expression is
-unspecified.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-predicate}{ rtd}{procedure}}
-   
-Returns a procedure that, given an object \var{obj}, returns
-\schtrue{} iff \var{obj} is a record of the type represented by
-\var{rtd}.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-accessor}{ rtd k}{procedure}}
-   
-Given a record-type descriptor \var{rtd} and an exact non-negative
-integer \var{k} that specifies one of the fields of \var{rtd}, {\cf
-  record-accessor} returns a one-argument procedure that, given a
-record of the type represented by \var{rtd}, returns the value of the
-selected field of that record.
-
-It is an error if the accessor procedure is given something other than
-a record of the type represented by \var{rtd}. Note that the records
-of the type represented by \var{rtd} include records of extensions of
-the type represented by \var{rtd}.
-
-The field selected is the one corresponding the the \var{k}th element
-(0-based) of the \var{fields} argument to the invocation of {\cf
-  make-record-type-descriptor} that created \var{rtd}. Note that
-\var{k} cannot be used to specify a field of any type \var{rtd} extends.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-mutator}{ rtd k}{procedure}}
-   
-Given a record-type descriptor \var{rtd} and an exact non-negative
-integer \var{k} that specifies one of the mutable fields of \var{rtd},
-{\cf record-accessor} returns a two-argument procedure that, given a
-record \var{r} of the type represented by \var{rtd} and an object
-\var{obj}, stores \var{obj} within the field of \var{r} specified by
-\var{k}. The \var{k} argument is as in {\cf record-accessor}. If
-\var{k} specifies an immutable field, an error is signalled.
-\end{entry}
-
-\begin{scheme}
-(define :point
-  (make-record-type-descriptor
-   'point \schfalse{}
-   \schfalse{} \schfalse{} \schfalse{} 
-   '((mutable x) (mutable y))))
-
-(define make-point
-  (record-constructor
-    (make-record-constructor-descriptor :point
-                                        \schfalse{} \schfalse{})))
-
-(define point? (record-predicate :point))
-(define point-x (record-accessor :point 0))
-(define point-y (record-accessor :point 1))
-(define point-x-set! (record-mutator :point 0))
-(define point-y-set! (record-mutator :point 1))
-
-(define p1 (make-point 1 2))
-(point? p1) \ev \schtrue{}
-(point-x p1) \ev 1
-(point-y p1) \ev 2
-(point-x-set! p1 5)
-(point-x p1) \ev 5
-
-(define :point2
-  (make-record-type-descriptor
-   'point2 :point 
-   \schfalse{} \schfalse{} \schfalse{} '((mutable x) (mutable y))))
-
-(define make-point2
-  (record-constructor
-    (make-record-constructor-descriptor :point2
-                                        \schfalse{} \schfalse{})))
-(define point2? (record-predicate :point2))
-(define point2-xx (record-accessor :point2 0))
-(define point2-yy (record-accessor :point2 1))
-
-(define p2 (make-point2 1 2 3 4))
-(point? p2) \ev \schtrue{}
-(point-x p2) \ev 1
-(point-y p2) \ev 2
-(point2-xx p2) \ev 3
-(point2-yy p2) \ev 4
-\end{scheme}
-
-\subsection{Explicit-Naming Syntactic Layer}
-
-The record-type-defining form {\cf define-record-type} is a definition and
-can appear anywhere any other \hyper{definition} can appear.
-
-\begin{entry}{%
-\proto{define-record-type}{ \hyper{name spec} \arbno{\hyper{record clause}}}{library \exprtype}}
-
-A {\cf define-record-type} form defines a new record type along with
-associated constructor descriptor and constructor, predicate, field
-accessors and field mutators. The {\cf define-record-type} form expands into
-a set of definitions in the environment where {\cf define-record-type}
-appears; hence, it is possible to refer to the bindings (except for
-that of the record type itself) recursively.
-
-The \hyper{name spec} specifies the names of the record type,
-construction procedure, and predicate. It must take the following
-form.
-
-\begin{scheme}
-(\hyper{record name} \hyper{constructor name} \hyper{predicate name})
-\end{scheme}
-
-\hyper{Record name}, \hyper{constructor name}, and \hyper{predicate
-  name} must all be identifiers.
-
-\hyper{Record name}, taken as a symbol, becomes the name of the record
-type.  Additionally, it is bound by this definition to an expand-time
-or run-time description of the record type for use as parent name in
-syntactic record-type definitions that extend this definition. It may
-also be used as a handle to gain access to the underlying record-type
-descriptor and constructor descriptor (see {\cf
-  record-type-descriptor} and {\cf record-constructor-descriptor}
-below).
-
-\hyper{Constructor name} is defined by this definition to a
-constructor for the defined record type, with a protocol specified by
-the protocol clause, or, in its absence, using a default value. For
-details, see the description of the protocol clause below.
-
-\hyper{Predicate name} is defined by this definition to a predicate
-for the defined record type.
-
-Each \hyper{record clause} must take one of the following forms; it is
-an error if multiple \hyper{record clause}s of the same kind appear in a
-{\cf define-record-type} form.
-
-\begin{itemize}
-\item {\tt (fields \arbno{\hyper{field-spec}})}
-   
-  where each \hyper{field-spec} has one of the following forms
-  
-\begin{scheme}
-(immutable \hyper{field name} \hyper{accessor name})
-(mutable \hyper{field name} \hyper{accessor name} \hyper{mutator name})
-\end{scheme}
-
-  \hyper{Field name}, \hyper{accessor name}, and \hyper{mutator name}
-  must all be identifiers. The first form declares an immutable field
-  called \hyper{field name}, with the corresponding accessor named \hyper{acccessor
-  name}. The second form declares a mutable field called \hyper{field name},
-  with the corresponding accessor named \hyper{acccessor name}, and with the
-  corresponding mutator named \hyper{mutator name}.
-   
-  The \hyper{field name}s become, as symbols, the names of the fields of the
-  record type being created, in the same order. They are not used in any
-  other way.
-   
-\item {\tt (parent \hyper{parent name})}
-   
-  This specifies that the record type is to have parent type
-  \hyper{parent name}, where \hyper{parent name} is the \hyper{record
-      name} of a record type previously defined using {\cf
-      define-record-type}. The absence of a parent clause implies a
-    record type with no parent type.
-   
-\item {\tt (protocol \hyper{exp})}
-   
-  \hyper{Exp} is evaluated in the same environment as the
-  define-record-type form, and must evaluate to a protocol appropriate
-  for the record type being defined (see above in the description of
-  {\cf make-record-constructor-descriptor}). The protocol is used to
-  create a record-constructor descriptor where, if the record type
-  being defined has a parent, the parent-type constructor descriptor
-  is that associated with the parent type specified in the {\cf
-    parent} clause.
-   
-  If no {\cf protocol} clause is specified, a constructor descriptor
-  is still created using a default protocol. The rules for this are
-  the same as for {\cf make-record-constructor-descriptor}: the clause
-  can be absent only if the record type defined has no parent type, or
-  if the parent definition does not specify a protocol.
-   
-\item {\tt (sealed \schtrue)}\\
-  {\tt (sealed \schfalse)}
-   
-  If this option is specified, it means that the opacity of the type
-  is the value specified as the operand. If no {\cf sealed} option is
-  present, the defined record type is not sealed.
-   
-\item {\tt (opaque \schtrue)}\\
-  {\tt (opaque \schfalse)}
-   
-  If this option is specified, it means that the opacity of the type
-  is the value specified as the operand. It is also opaque if an
-  opaque parent is specified. If the opaque {\cf option} is not
-  present, the record type is not opaque.
-   
-\item {\tt (nongenerative \hyper{uid})}
-   
-  This specifies that the record type be nongenerative with uid
-  \hyper{uid}, which must be an \hyper{identifier}. The absence of a
-  {\cf nongenerative} clause implies that the defined type is
-  generative. In the latter case, a new type may be generated once for
-  each evaluation of the record definition or once for all evaluations
-  of the record definition, but the type is guaranteed to be distinct
-  even for verbatim copies of the same record definition appearing in
-  different parts of a program.
-   
-  Note that all bindings created by this form (for the record type, the
-  construction procedure, the predicate, the accessors, and the mutators)
-  must have names that are pairwise distinct.
-
-  For two non-generative record-type definitions with the same uid, if
-  the implied arguments to {\cf make-record-type-descriptor} would
-  create an equivalent record-type descriptor, the created type is the
-  same as the previous one.  Otherwise, an error is signalled.
-
-  Note again that, in the absence of a {\cf nongenerative} clause, the
-  question of expand-time or run-time generativity is unspecified.
-  Specifically, the return value of the following expression in
-  unspecified:
-
-\begin{scheme}
-(let ((f (lambda (x)
-           (define-record-type r \ldots)
-           (if x r? (make-r \ldots)))))
-  ((f \schtrue) (f \schfalse)))
-\end{scheme}
-\end{itemize}
-\end{entry}
-
-\begin{entry}{%
-\proto{record-type-descriptor}{ \hyper{record name}}{library \exprtype}}
-   
-This evaluates to the record-type descriptor associated with the type
-specified by \hyper{record-name}.
-   
-Note that, in the absense, of a {\cf nongenerative} clause, the return value of
-the following expression is unspecified:
-  
-\begin{scheme} 
-(let ((f (lambda ()
-           (define-record-type r \ldots)
-           (record-type-descriptor r))))
-  (eqv? (f) (f)))
-\end{scheme}
-
-Note that {\cf record-type-descriptor} works on both opaque and non-opaque record
-types.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-constructor-descriptor}{ \hyper{record name}}{library \exprtype}}
-   
-This evaluates to the record-constructor descriptor associated with
-\hyper{record-name}.
-\end{entry}
-
-\begin{scheme}
-(define-record-type (point3 make-point3 point3?)
-  (fields (immutable x point3-x)
-          (mutable y point3-y set-point3-y!))
-  (nongenerative
-    point3-4893d957-e00b-11d9-817f-00111175eb9e))
-
-(define-record-type (cpoint make-cpoint cpoint?)
-  (parent point3)
-  (protocol
-   (lambda (p)
-     (lambda (x y c) 
-       ((p x y) (color->rgb c)))))
-  (fields
-    (mutable rgb cpoint-rgb cpoint-rgb-set!)))
-
-(define (color->rgb c)
-  (cons 'rgb c))
-
-(define p3-1 (make-point3 1 2))
-(define p3-2 (make-cpoint 3 4 'red))
-
-(point3? p3-1) \ev \schtrue{}
-(point3? p3-2) \ev \schtrue{}
-(point3? (vector)) \ev \schfalse{}
-(point3? (cons 'a 'b)) \ev \schfalse{}
-(cpoint? p3-1) \ev \schfalse{}
-(cpoint? p3-2) \ev \schtrue{}
-(point3-x p3-1) \ev 1
-(point3-y p3-1) \ev 2
-(point3-x p3-2) \ev 3
-(point3-y p3-2) \ev 4
-(cpoint-rgb p3-2) \ev '(rgb . red)
-
-(set-point3-y! p3-1 17)
-(point3-y p3-1) \ev 17)
-
-(record-rtd p3-1) \lev (record-type-descriptor point3)
-
-(define-record-type (ex1 make-ex1 ex1?)
-  (protocol (lambda (new) (lambda a (new a))))
-  (fields (immutable f ex1-f)))
-
-(define ex1-i1 (make-ex1 1 2 3))
-(ex1-f ex1-i1) \ev '(1 2 3)
-
-(define-record-type (ex2 make-ex2 ex2?)
-  (protocol
-    (lambda (new) (lambda (a . b) (new a b))))
-  (fields (immutable a ex2-a)
-          (immutable b ex2-b)))
-
-(define ex2-i1 (make-ex2 1 2 3))
-(ex2-a ex2-i1) \ev 1
-(ex2-b ex2-i1) \ev '(2 3)
-
-(define-record-type (unit-vector
-                     make-unit-vector
-                     unit-vector?)
-  (protocol
-   (lambda (new)
-     (lambda (x y z)
-       (let ((length (+ (* x x) (* y y) (* z z))))
-         (new  (/ x length)
-               (/ y length)
-               (/ z length))))))
-  (fields (immutable x unit-vector-x)
-          (immutable y unit-vector-y)
-          (immutable z unit-vector-z)))
-\end{scheme}
-
-\subsection{Implicit-Naming Syntactic Layer}
-
-The {\cf define-record-type} form of the implicit-naming syntactic
-layer is a conservative extension of the {\cf define-record-type} form
-of the explicit-naming layer: a {\cf define-record-type} form that
-conforms to the syntax of the explicit-naming layer also conforms to
-the syntax of the implicit-naming layer, and any definition in the
-implicit-naming layer can be understood by its translation into the
-explicit-naming layer.
-
-This means that a record type defined by the {\cf define-record-type}
-form of either layer can be used by the other.
-
-The implicit-naming syntactic layer extends the explicit-naming layer
-in two ways. First, \hyper{name-spec} may be a single identifier
-representing just the record name. In this case, the name of the
-construction procedure is generated by prefixing the record name with
-{\tt make-}, and the predicate name is generated by adding a question
-mark ({\tt ?}) to the end of the record name. For example, if the
-record name is {\tt frob} then the name of the construction procedure is
-{\tt make-frob} and the predicate name is {\tt frob?}.
-
-Second, the syntax of \hyper{field-spec} is extended to allow the
-accessor and mutator names to be omitted. That is, \hyper{field-spec}
-can take one of the following forms as well as the forms described in
-the preceding section.
-
-\begin{scheme}
-(immutable \hyper{field name})
-(mutable \hyper{field name})
-\end{scheme}
-
-If \hyper{field-spec} takes one of these forms, then the accessor name
-is generated by appending the record name and field name with a hyphen
-separator, and the mutator name (for a mutable field) is generated by
-adding a {\tt -set!} suffix to the accessor name. For example, if the
-record name is {\tt frob} and the field name is {\tt widget}, the
-accessor name is {\tt frob-widget} and the mutator name is
-{\tt frob-widget-set!}.
-
-Note that the field names with implicitly-named accessors must be
-distinct to avoid a conflict between the accessors.
-
-Any definition that takes advantage of implicit naming can be
-rewritten trivially to a definition that conforms to the syntax of the
-explicit-naming layer merely by specifing the names explicitly. For
-example, the implicit-naming layer record definition:
-
-\begin{scheme}
-(define-record-type frob
-  (fields (mutable widget))
-  (protocol
-    (lambda (c) (c (make-widget n)))))
-\end{scheme}
-
-is equivalent to the following explicit-naming layer record definition.
-
-\begin{scheme}
-(define-record-type (frob make-frob frob?)
-  (fields (mutable widget
-                   frob-widget frob-widget-set!))
-  (protocol
-    (lambda (c) (c (make-widget n)))))
-\end{scheme}
-
-With the explicit-naming layer, one can choose to specify just some of
-the names explicitly; for example, the following overrides the choice
-of accessor and mutator names for the widget field.
-
-\begin{scheme}
-(define-record-type (frob make-frob frob?)
-  (fields (mutable widget getwid setwid!))
-  (protocol
-    (lambda (c) (c (make-widget n)))))
-\end{scheme}
-
-\begin{scheme}
-(define *ex3-instance* \schfalse{})
-
-(define-record-type ex3
-  (parent cpoint)
-  (protocol
-   (lambda (p)
-     (lambda (x y t)
-       (let ((r ((p x y 'red) t)))
-         (set! *ex3-instance* r)
-         r))))
-  (fields 
-   (mutable thickness))
-  (sealed \schtrue{}) (opaque \schtrue{}))
-
-(define ex3-i1 (make-ex3 1 2 17))
-(ex3? ex3-i1) \ev \schtrue{}
-(cpoint-rgb ex3-i1) \ev '(rgb . red)
-(ex3-thickness ex3-i1) \ev 17
-(ex3-thickness-set! ex3-i1 18)
-(ex3-thickness ex3-i1) \ev 18
-*ex3-instance* \ev ex3-i1
-
-(record? ex3-i1) \ev \schfalse{}
-\end{scheme}
-
-
-\subsection{Reflection}
-
-A set of procedures are provided for reflecting on records and their
-record-type descriptors. These procedures are designed to allow the
-writing of portable printers and inspectors.
-
-Note that {\cf record?} and {\cf record-rtd} treat records of opaque
-record types as if they were not records. On the other hand, the
-reflection procedures that operate on record-type descriptors
-themselves are not affected by opacity. In other words, opacity
-controls whether a program can obtain an rtd from an instance. If the
-program has access to the original rtd via {\cf
-  make-record-type-descriptor} or {\cf record-type-descriptor} it can
-reflect upon it.
-
-\begin{entry}{%
-\proto{record?}{ obj}{procedure}}
-   
-Returns \schtrue{} if \var{obj} is a record, and its record type is
-not opaque. Returns \schfalse{} otherwise.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-rtd}{ rec}{procedure}}
-   
-Returns the rtd representing the type of \var{rec} if the type is not
-opaque. The rtd of the most precise type is returned; that is, the
-type \var{t} such that \var{rec} is of type \var{t} but not of any
-type that extends \var{t}.  If the type is opaque, {\cf record-rtd} signals
-an error.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-type-name}{ rtd}{procedure}}
-   
-Returns the name of the record-type descriptor \var{rtd}.
-\end{entry}   
-
-\begin{entry}{%
-\proto{record-type-parent}{ rtd}{procedure}}
-   
-Returns the parent of the record-type descriptor \var{rtd}, or
-\schfalse{} if it has none.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-type-uid}{ rtd}{procedure}}
-   
-Returns the uid of the record-type descriptor rtd, or \schfalse{} if it has none.
-(An implementation may assign a generated uid to a record type even if the
-type is generative, so the return of a uid does not necessarily imply that
-the type is nongenerative.)
-\end{entry}
-
-\begin{entry}{%
-\proto{record-type-generative?}{ rtd}{procedure}}
-   
-Returns \schtrue{} if \var{rtd} is generative, and \schfalse{} if not.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-type-sealed?}{ rtd}{procedure}}
-
-Returns a boolean value indicating whether the record-type descriptor is
-sealed.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-type-opaque?}{ rtd}{procedure}}
-   
-Returns a boolean value indicating whether the record-type descriptor is
-opaque.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-type-field-names}{ rtd}{procedure}}
-   
-Returns a list of symbols naming the fields of the type represented by rtd
-(not including the fields of parent types) where the fields are ordered as
-described under {\cf make-record-type-descriptor}.
-\end{entry}
-
-\begin{entry}{%
-\proto{record-field-mutable?}{ rtd k}{procedure}}
-   
-Returns a boolean value indicating whether the field specified by
-\var{k} of the type represented by \var{rtd} is mutable, where \var{k}
-is as in {\cf record-accessor}.
-\end{entry}
 
 %%% Local Variables: 
 %%% mode: latex
