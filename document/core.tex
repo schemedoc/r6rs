@@ -183,14 +183,15 @@ section~\ref{booleansection}), then \hyper{consequent} is evaluated and
 its value(s) is(are) returned.  Otherwise \hyper{alternate} is evaluated and its
 value(s) is(are) returned.  If \hyper{test} yields a false value and no
 \hyper{alternate} is specified, then the result of the expression is
-unspecified.
+the unspecified value.
 
 \begin{scheme}
 (if (> 3 2) 'yes 'no)           \ev  yes
 (if (> 2 3) 'yes 'no)           \ev  no
 (if (> 3 2)
     (- 3 2)
-    (+ 3 2))                    \ev  1%
+    (+ 3 2))                    \ev  1
+(if \#f \#f)                    \ev \theunspecified%
 \end{scheme}
 
 \end{entry}
@@ -463,7 +464,7 @@ called on the value of the \hyper{test} and the value(s) returned by this
 procedure is(are) returned by the {\cf cond} expression.
 If all \hyper{test}s evaluate
 to false values, and there is no else clause, then the result of
-the conditional expression is unspecified; if there is an else
+the conditional expression is the unspecified value; if there is an else
 clause, then its \hyper{expression}s are evaluated, and the value(s) of
 the last one is(are) returned.
 
@@ -511,7 +512,7 @@ returned as the result(s) of the {\cf case} expression.  If the result of
 evaluating \hyper{key} is different from every \hyper{datum}, then if
 there is an else clause its expressions are evaluated and the
 result(s) of the last is(are) the result(s) of the {\cf case} expression;
-otherwise the result of the {\cf case} expression is unspecified.
+otherwise the result of the {\cf case} expression is the unspecified value.
 
 \begin{scheme}
 (case (* 2 3)
@@ -519,7 +520,7 @@ otherwise the result of the {\cf case} expression is unspecified.
   ((1 4 6 8 9) 'composite))     \ev  composite
 (case (car '(c d))
   ((a) 'a)
-  ((b) 'b))                     \ev  \unspecified
+  ((b) 'b))                     \ev  \theunspecified
 (case (car '(c d))
   ((a e i o u) 'vowel)
   ((w y) 'semivowel)
@@ -795,7 +796,8 @@ expressions are evaluated in some unspecified order, the
 \vest If \hyper{test} evaluates to a true value, then the
 \hyper{expression}s are evaluated from left to right and the value(s) of
 the last \hyper{expression} is(are) returned.  If no \hyper{expression}s
-are present, then the value of the {\cf do} expression is unspecified.
+are present, then the value of the {\cf do} expression is the
+unspecified value.
 
 \vest The region\index{region} of the binding of a \hyper{variable}
 consists of the entire {\cf do} expression except for the \hyper{init}s.
@@ -2380,12 +2382,12 @@ list one moment and not the next:
 (define y x)
 y                       \ev  (a b c)
 (list? y)               \ev  \schtrue
-(set-cdr! x 4)          \ev  \unspecified
+(set-cdr! x 4)          \ev  \theunspecified
 x                       \ev  (a . 4)
 (eqv? x y)              \ev  \schtrue
 y                       \ev  (a . 4)
 (list? y)               \ev  \schfalse
-(set-cdr! x x)          \ev  \unspecified
+(set-cdr! x x)          \ev  \theunspecified
 (list? x)               \ev  \schfalse%
 \end{scheme}
 
@@ -3586,7 +3588,7 @@ The arguments to {\cf for-each} are like the arguments to {\cf map}, but
 {\cf for-each} calls \var{proc} for its side effects rather than for its
 values.  Unlike {\cf map}, {\cf for-each} is guaranteed to call \var{proc} on
 the elements of the \var{list}s in order from the first element(s) to the
-last, and the value returned by {\cf for-each} is unspecified.
+last, and the value returned by {\cf for-each} is the unspecified value.
 
 \begin{scheme}
 (let ((v (make-vector 5)))
@@ -3984,8 +3986,6 @@ of the {\cf begin} contains no definitions.
 The following definition
 of {\cf do} uses a trick to expand the variable clauses.
 As with {\cf letrec} above, an auxiliary macro would also work.
-The expression {\cf (if \#f \#f)} is used to obtain an unspecific
-value.
 
 \begin{scheme}
 (define-syntax \ide{do}
@@ -3998,7 +3998,7 @@ value.
          (lambda (var ...)
            (if test
                (begin
-                 (if \#f \#f)
+                 (unspecified)
                  expr ...)
                (begin
                  command
