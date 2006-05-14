@@ -104,7 +104,8 @@ language: {\tt \verb"{" \verb"}" \verb"|"}
  \>  \| unquote \| unquote-splicing
 \meta{expression keyword} \: quote \| lambda \| if
  \>  \| set! \| begin \| cond \| and \| or \| case
- \>  \| let \| let* \| letrec* \| letrec \| do \| delay
+ \>  \| let \| let* \| letrec* \| letrec \| let-values \| let*-values
+ \>  \| do \| delay
  \>  \| quasiquote
 
 \copy0\rm any \meta{identifier} that isn't\index{variable}
@@ -263,6 +264,8 @@ successfully parses.  Note that any string that parses as an
 \>  \| (let* (\arbno{\meta{binding spec}}) \meta{body})
 \>  \| (letrec* (\arbno{\meta{binding spec}}) \meta{body})
 \>  \| (letrec (\arbno{\meta{binding spec}}) \meta{body})
+\>  \| (let-values (\arbno{\meta{mv binding spec}}) \meta{body})
+\>  \| (let*-values (\arbno{\meta{mv binding spec}}) \meta{body})
 \>  \| (begin \meta{sequence})
 \>  \| (d\=o \=(\arbno{\meta{iteration spec}})
 \>       \>  \>(\meta{test} \meta{do result})
@@ -276,6 +279,7 @@ successfully parses.  Note that any string that parses as an
 \meta{recipient} \: \meta{expression}
 \meta{case clause} \: ((\arbno{\meta{datum}}) \meta{sequence})
 \meta{binding spec} \: (\meta{variable} \meta{expression})
+\meta{mv binding spec} \: (\meta{formals} \meta{expression})
 \meta{iteration spec} \: (\meta{variable} \meta{init} \meta{step})
 \> \| (\meta{variable} \meta{init})
 \meta{init} \: \meta{expression}
