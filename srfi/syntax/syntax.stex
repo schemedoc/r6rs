@@ -3,6 +3,7 @@
 %TODO:
 %  - algebra for marks and subsitutions
 %    see Waddell's dissertation or POPL '99 module paper
+%  - spell out the connection between syntax and lists somewhere
 
 \usepackage{scheme}
 % \usepackage{grammar}
@@ -91,11 +92,12 @@ The syntactic abstraction system described here extends the {\r5rs} macro
 system with support for writing low-level macros in a high-level style,
 with automatic syntax checking, input destructuring, output restructuring,
 maintenance of lexical scoping and referential transparency (hygiene), and
-support for bending or breaking hygiene, with constant expansion overhead.
+support for controlled identifier capture, with constant expansion
+overhead.
 Because it does not require literals, including quoted lists or vectors,
 to be copied or even traversed, it preserves sharing and cycles within and
 among the constants of a program.
-It also supports source-object correlation, the maintenance of ties
+It also supports source-object correlation, i.e., the maintenance of ties
 between the original source code and expanded output, allowing
 implementations to provide source-level support for debuggers and other
 tools.
@@ -104,13 +106,16 @@ tools.
 
 While many syntactic abstractions are succinctly expressed using the
 high-level \scheme{syntax-rules} form, others are difficult or impossible
-to write, including some that bend or break lexical scoping and others
-that construct new identifiers.
+to write, including some that introduce visible bindings for or references
+to identifiers that do not appear explicitly in the input form, ones that
+maintain state or read from the file system, and ones that construct new
+identifiers.
 The \scheme{syntax-case} system described here allows the programmer to
-write arbitrary macros that respect lexical scoping and arbitrary macros
-that bend or break lexical scoping, without giving up the advantages of
-the high-level pattern-based syntax matching and template-based output
-construction provided by {\r6rs} \scheme{syntax-rules}.
+write transformers that perform these sorts of transformations, and
+arbitrary additional transformations, without sacrificing the default
+enforcement of hygiene or the high-level pattern-based syntax matching and
+template-based output construction provided by {\r6rs}
+\scheme{syntax-rules}.
 
 \section{Specification\label{sec:specification}}
 
@@ -178,8 +183,8 @@ processing, arranging for the keywords bound by the \scheme{let-syntax}
 and \scheme{letrec-syntax} to be visible only in the inner body forms.
 
 \item[expression, i.e., nondefinition:]
-The expander completes the expansion of the deferred forms and the current and
-remaining expressions in the body.
+The expander completes the expansion of the deferred right-hand-side forms
+and the current and remaining expressions in the body.
 \end{description}
 
 Expansion of each variable definition right-hand side is deferred until
@@ -219,7 +224,7 @@ A use of \scheme{odd?} appears next and is expanded; the resulting
 call to \scheme{not} is recognized as an expression
 because \scheme{not} is bound as a variable.
 At this point, the expander completes the expansion of the current
-expresion (the \scheme{not} call) and the defered right-hand side of the
+expresion (the \scheme{not} call) and the deferred right-hand side of the
 \scheme{even?} definition;
 the uses of \scheme{odd?} appearing in these expressions are expanded
 using the transformer associated with the keyword \scheme{odd?}.
@@ -264,7 +269,7 @@ identifier to a representation of the formal parameter in the output of
 the expander.
 For a \scheme{let-syntax} form, the expander might map each bound
 identifier to the associated transformer.)
-These subtitutions are applied to the portions of the input form in
+These substitutions are applied to the portions of the input form in
 which the binding is supposed to be visible.
 
 Marks and substitutions together form a \emph{wrap} that is layered on the
@@ -493,7 +498,8 @@ Wrapped syntax objects are distinct from other types of values.
 % distinct from other types of values
 
 An unwrapped syntax object is one that is unwrapped, fully or partially,
-i.e., consists at least partly of list, vector, and non-symbol values.
+i.e., whose outer layers consist of lists and vectors and whose leaves are
+either wrapped syntax objects or nonsymbol values.
 
 The term \emph{syntax object} is used in this document to refer to
 a syntax object that is either wrapped or unwrapped.
@@ -711,7 +717,7 @@ than in the associated pattern, the input form is replicated as
 necessary.
 
 A template of the form
-\scheme{(... \var{template})} is identical to \var{template}, except that
+\scheme{(\var{ellipsis} \var{template})} is identical to \var{template}, except that
 ellipses within the template have no special meaning.
 That is, any ellipses contained within \var{template} are
 treated as ordinary identifiers.
@@ -721,13 +727,13 @@ This allows syntactic abstractions to expand into forms containing
 ellipses.
 
 \label{wrappingrules}
-The output produced by \var{syntax} is wrapped or unwrapped according to
+The output produced by \scheme{syntax} is wrapped or unwrapped according to
 the following rules.
 
 \begin{itemize}
 \item the copy of \scheme{(\var{t_1} .  \var{t_2})} is a pair if \var{t_1}
       or \var{t_2} contain any pattern variables,
-\item the copy of \scheme{(\var{t} \var{ellipses})} is a list if \var{t}
+\item the copy of \scheme{(\var{t} \var{ellipsis})} is a list if \var{t}
       contains any pattern variables,
 \item the copy of \scheme{#(\var{t_1} ... \var{t_n})} is a vector if any of
       \var{t_1},~\dots,~\var{t_n} contain any pattern variables, and
@@ -883,8 +889,8 @@ The procedure \scheme{free-identifier=?} returns \scheme{#t} if and
 only if the two identifiers would resolve to the same binding if both were
 to appear in the output of a transformer outside of any bindings inserted
 by the transformer.
-Two like-named identifiers are considered to resolve to the same binding
-if both are unbound.
+(If neither of two like-named identifiers resolves to a binding, i.e., both
+are unbound, they are considered to resolve to the same binding.)
 Operationally, two identifiers are considered equivalent by
 \scheme{free-identifier=?} if and only the topmost matching
 substitution for each maps to the same binding (Section~\ref{sec:hygiene})
@@ -1029,7 +1035,8 @@ thus permitting the definition of syntactic
 abstractions that introduce visible bindings for or references to
 identifiers that do not appear explicitly in the input form.
 For example, the following defines a \scheme{loop} expression that
-binds the variable \scheme{break} to an escape procedure
+uses this controlled form of identifier capture to
+bind the variable \scheme{break} to an escape procedure
 within the loop body.
 (The derived \scheme{with-syntax} form is like \scheme{let} but binds
 pattern variables---see Section~\ref{sec:derived}.)
@@ -1526,7 +1533,7 @@ to which syntax objects are wrapped.
 At one extreme, syntax objects are always fully wrapped.
 That is, the expander passes transformers fully wrapped input,
 transformers must return fully wrapped output to the expander,
-\scheme{syntax-case} must be receive a fully wrapped input
+\scheme{syntax-case} must receive a fully wrapped input
 value, and \scheme{syntax} forms always produce fully wrapped
 output values.
 Transformers and their helpers must use \scheme{syntax-case}
