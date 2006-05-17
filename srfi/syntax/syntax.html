@@ -64,8 +64,6 @@ consistency with other features that are not under discussion as SRFIs.
 <p>
 <h1>Table of Contents</h1>
 
-<p>
-
 <table cellpadding=0 cellspacing=0>
 
 
@@ -174,7 +172,7 @@ consistency with other features that are not under discussion as SRFIs.
 
 
 
-<tr><td align="right"><b>8.&nbsp;</b><td><b><a class=plain href="./syntax.html#g26">Copyright</a></b></td></tr>
+<tr><td align="right"><b>8.&nbsp;</b><td><b><a class=plain href="./syntax.html#g32">Copyright</a></b></td></tr>
 
   
   
@@ -220,12 +218,12 @@ to write, including some that introduce visible bindings for or references
 to identifiers that do not appear explicitly in the input form, ones that
 maintain state or read from the file system, and ones that construct new
 identifiers.
-The <tt>syntax-case</tt> system described here allows the programmer to
-write transformers that perform these sorts of transformations, and
-arbitrary additional transformations, without sacrificing the default
-enforcement of hygiene or the high-level pattern-based syntax matching and
-template-based output construction provided by R6RS
-<tt>syntax-rules</tt>.
+The <tt>syntax-case</tt> system&nbsp;[<a class=citation href="./syntax.html#g28">3</a>] described here
+allows the programmer to write transformers that perform these sorts of
+transformations, and arbitrary additional transformations, without
+sacrificing the default enforcement of hygiene or the high-level
+pattern-based syntax matching and template-based output construction
+provided by R6RS <tt>syntax-rules</tt>.
 
 <p>
 
@@ -448,6 +446,10 @@ substitution are the same as those that appear <i>below</i>, i.e.,
 were applied <i>before</i> the subsitution in the wrap.
 Marks applied after a substitution, i.e., appear over the substitution in
 the wrap, are not relevant and are ignored.
+
+<p>
+An algebra that defines how marks and substitutions work more precisely is
+given in Section&nbsp;2.4 of Oscar Waddell's PhD thesis&nbsp;[<a class=citation href="./syntax.html#g31">6</a>].
 
 <p>
 
@@ -1910,11 +1912,11 @@ which the transformer is evaluated.
 
 
 <p>
-We have chosen the SRFI&nbsp;72 names <tt>syntax-&gt;datum</tt> and
-<tt>datum-&gt;syntax</tt> for the procedures that
-Chez Scheme, MzScheme, and most other systems call
-<tt>syntax-object-&gt;datum</tt> and <tt>datum-&gt;syntax-object</tt>,
-because the SRFI&nbsp;72 names are shorter.
+We have chosen the SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g30">5</a>] names
+<tt>syntax-&gt;datum</tt> and <tt>datum-&gt;syntax</tt> for the procedures that
+Chez Scheme&nbsp;[<a class=citation href="./syntax.html#g27">2</a>], MzScheme&nbsp;[<a class=citation href="./syntax.html#g29">4</a>], and most
+other systems call <tt>syntax-object-&gt;datum</tt> and
+<tt>datum-&gt;syntax-object</tt>, because the SRFI&nbsp;72 names are shorter.
 While this change is incompatible with a large amount of existing code, it
 is easy to identify and fix the incompatible code.
 
@@ -1961,10 +1963,11 @@ functionality.
 
 
 <p>
-Chez Scheme, MzScheme, and various other systems support a
-<tt>fluid-let-syntax</tt> construct that dynamically (at expansion time)
-rebinds an existing syntactic binding.
-SRFI&nbsp;72 supports a more general concept of fluid identifiers.
+Chez Scheme&nbsp;[<a class=citation href="./syntax.html#g27">2</a>], MzScheme&nbsp;[<a class=citation href="./syntax.html#g29">4</a>], and
+various other systems support a <tt>fluid-let-syntax</tt> construct that
+dynamically (at expansion time) rebinds an existing syntactic binding.
+SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g30">5</a>] supports a more general concept of fluid
+identifiers.
 Should we include either feature in R6RS?
 
 <p>
@@ -1976,7 +1979,7 @@ Should we include either feature in R6RS?
 
 
 <p>
-Chez Scheme and various other systems allow arbitrary bindings to be added
+Chez Scheme&nbsp;[<a class=citation href="./syntax.html#g27">2</a>] and various other systems allow arbitrary bindings to be added
 to the expand-time environment and provide a mechanism for retrieving
 those bindings.
 Chez Scheme uses this feature, for example, to record information about
@@ -1992,13 +1995,13 @@ Should we include such a feature in R6RS?
 
 
 <p>
-MzScheme provides <tt>quasisyntax</tt>, <tt>unsyntax</tt>, and
-<tt>unsyntax-splicing</tt> forms,
-analogous to <tt>quasiquote</tt>, <tt>unquote</tt>, and <tt>unquote-splicing</tt>,
-with the reader syntax <tt>#`</tt>, <tt>#,</tt>, and <tt>#,@</tt>.
-SRFI&nbsp;72 also includes <tt>quasisyntax</tt> but overloads <tt>unquote</tt>
-and <tt>unquote-splicing</tt>, which reduces the number of additional
-constructs but complicates the use of
+MzScheme&nbsp;[<a class=citation href="./syntax.html#g29">4</a>] provides <tt>quasisyntax</tt>,
+<tt>unsyntax</tt>, and <tt>unsyntax-splicing</tt> forms, analogous to
+<tt>quasiquote</tt>, <tt>unquote</tt>, and <tt>unquote-splicing</tt>, with
+the reader syntax <tt>#`</tt>, <tt>#,</tt>, and <tt>#,@</tt>.
+SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g30">5</a>] also includes <tt>quasisyntax</tt> but
+overloads <tt>unquote</tt> and <tt>unquote-splicing</tt>, which reduces
+the number of additional constructs but complicates the use of
 <tt>quasisyntax</tt> for generating <tt>quasiquote</tt> expressions.
 Should we include either variant in R6RS?
 
@@ -2011,9 +2014,9 @@ Should we include either variant in R6RS?
 
 
 <p>
-SRFI&nbsp;72 proposes that <tt>syntax</tt> apply a fresh mark, so that
-identifiers contained within two different <tt>syntax</tt> forms are not
-<tt>bound-identifier=?</tt>.
+SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g30">5</a>] proposes that <tt>syntax</tt> apply a
+fresh mark, so that identifiers contained within two different
+<tt>syntax</tt> forms are not <tt>bound-identifier=?</tt>.
 (It makes an exception, however, for identifiers that appear nested within
 the same <tt>quasisyntax</tt> form.)
 We have opted to keep the traditional semantics in which a fresh mark is
@@ -2042,8 +2045,9 @@ to introduce their own unique bindings if necessary.
 Should we consider instead a variant of <tt>syntax</tt>, say
 <tt>fresh-syntax</tt>, that applies a unique mark to its output?
 Should we consider something more general, like MzScheme's
-<tt>make-syntax-introducer</tt>, which creates a procedure that applies
-the same mark to a syntax object each time it is applied?
+<tt>make-syntax-introducer</tt>&nbsp;[<a class=citation href="./syntax.html#g29">4</a>], which creates a
+procedure that applies the same mark to a syntax object each time it is
+applied?
 Either can be used to define <tt>generate-temporaries</tt>, which can
 then be considered a derived procedure.
 
@@ -2113,8 +2117,9 @@ to be incomplete.
 <p>
 Ironically, the fully wrapped representation can lead to similar problems.
 With the fully wrapped representation, programmers are compelled to use
-a procedure like MzScheme's <tt>syntax-&gt;list</tt> to convert wrapped syntax
-objects into lists in order to map helpers over portions of the input.
+a procedure like MzScheme's <tt>syntax-&gt;list</tt>&nbsp;[<a class=citation href="./syntax.html#g29">4</a>] to
+convert wrapped syntax objects into lists in order to map helpers over
+portions of the input.
 When <tt>syntax-&gt;list</tt> is applied to properly matched input, there
 is no problem, but <tt>syntax-&gt;list</tt> can also be applied to arbitrary
 subforms for which no matching has been done.
@@ -2224,10 +2229,12 @@ van&nbsp;Straaten.
 
 <p>
 Much of this document has been copied from or adapted from Chapter&nbsp;10 of the
-<i>Chez Scheme Version&nbsp;7 User's Guide</i>, some of which also appears in
-Chapter&nbsp;8 of <i>The Scheme Programming Language, 3rd edition</i>.
+<i>Chez Scheme Version&nbsp;7 User's Guide</i>&nbsp;[<a class=citation href="./syntax.html#g27">2</a>], some
+of which also appears in Chapter&nbsp;8 of<i>The Scheme Programming
+Language, 3rd edition</i>&nbsp;[<a class=citation href="./syntax.html#g26">1</a>].
 
 <p>
+
 
 <a name="g25"></a>
 
@@ -2235,31 +2242,50 @@ Chapter&nbsp;8 of <i>The Scheme Programming Language, 3rd edition</i>.
 
 
 
-<p>
-R.&nbsp;Kent Dybvig, Robert Hieb, and Carl Bruggeman,
-"<a class=ref href="http://www.cs.indiana.edu/~dyb/pubs/LaSC-5-4-pp295-326.pdf">Syntactic
-Abstraction in Scheme</a>"
-Lisp and Symbolic Computation 5, 4, 1993.
+
 
 <p>
-R.&nbsp;Kent Dybvig, <i>Chez Scheme Version 7 User's Guide</i>, Chapter 10:
-"<a class=ref href="http://www.scheme.com/csug7/syntax.html">Syntactic Extension</a>,"
+<p>[<a name="g26">1</a>] 
+R.&nbsp;Kent Dybvig.
+<i>The Scheme Programming Language</i>, third edition.
+MIT Press, 2003.
+ <br>
+<a class=ref href="http://www.scheme.com/tspl3/">http://www.scheme.com/tspl3/</a>.
+<p>[<a name="g27">2</a>] 
+R.&nbsp;Kent Dybvig.
+<i>Chez Scheme User's Guide: Version 7</i>.
 Cadence Research Systems, 2005.
+ <br>
+<a class=ref href="http://www.scheme.com/csug7/">http://www.scheme.com/csug7/</a>.
+<p>[<a name="g28">3</a>] 
+R.&nbsp;Kent Dybvig, Robert Hieb, and Carl Bruggeman.
+Syntactic abstraction in Scheme.
+<i>Lisp and Symbolic Computation</i>, 5(4):295-326, 1993.
+ <br>
+<a class=ref href="http://www.cs.indiana.edu/~dyb/pubs/LaSC-5-4-pp295-326.pdf">http://www.cs.indiana.edu/&nbsp;dyb/pubs/LaSC-5-4-pp295-326.pdf</a>.
+<p>[<a name="g29">4</a>] 
+Matthew Flatt.
+PLT MzScheme: Language manual, No. 301, 2006.
+ <br>
+<a class=ref href="http://download.plt-scheme.org/doc/301/html/mzscheme/">http://download.plt-scheme.org/doc/301/html/mzscheme/</a>.
+<p>[<a name="g30">5</a>] 
+Andr&eacute; van Tonder.
+Srfi 72: Hygienic macros.
+ <br>
+<a class=ref href="http://srfi.schemers.org/srfi-72/srfi-72.html">http://srfi.schemers.org/srfi-72/srfi-72.html</a>.
+<p>[<a name="g31">6</a>] 
+Oscar Waddell.
+<i>Extending the Scope of Syntactic Extension</i>.
+PhD thesis, Indiana University, Bloomington, Aug 1999.
+ <br>
+<a class=ref href="http://www.cs.indiana.edu/~owaddell/papers/thesis.ps.gz">http://www.cs.indiana.edu/&nbsp;owaddell/papers/thesis.ps.gz</a>.
+
+
+
 
 <p>
-Matthew Flatt, <i>PLT MzScheme: Language Manual</i>, No.&nbsp;301,
-Chapter 12:
-"<a class=ref href="http://download.plt-scheme.org/doc/301/html/mzscheme/mzscheme-Z-H-12.html#node_chap_12">Syntax
-and Macros</a>,"
-2006.
 
-<p>
-Andr&eacute; van&nbsp;Tonder, <a class=ref href="http://srfi.schemers.org/srfi-72/srfi-72.html">SRFI&nbsp;72: Hygienic macros</a>,
-2005.
-
-<p>
-
-<a name="g26"></a>
+<a name="g32"></a>
 
 <h1><a name="./syntax:h26"></a>8. Copyright</h1>
 

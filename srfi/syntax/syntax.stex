@@ -80,9 +80,8 @@ departures from the SRFI specification by the Scheme Language Editor's
 Committee may occur due to other design constraints, such as design
 consistency with other features that are not under discussion as SRFIs.
 
-\sectionstar{Table of Contents}
-
 \ifhtml
+\sectionstar{Table of Contents}
 \tableofcontents
 \fi
 
@@ -110,12 +109,12 @@ to write, including some that introduce visible bindings for or references
 to identifiers that do not appear explicitly in the input form, ones that
 maintain state or read from the file system, and ones that construct new
 identifiers.
-The \scheme{syntax-case} system described here allows the programmer to
-write transformers that perform these sorts of transformations, and
-arbitrary additional transformations, without sacrificing the default
-enforcement of hygiene or the high-level pattern-based syntax matching and
-template-based output construction provided by {\r6rs}
-\scheme{syntax-rules}.
+The \scheme{syntax-case} system~\cite{Dybvig:syntactic} described here
+allows the programmer to write transformers that perform these sorts of
+transformations, and arbitrary additional transformations, without
+sacrificing the default enforcement of hygiene or the high-level
+pattern-based syntax matching and template-based output construction
+provided by {\r6rs} \scheme{syntax-rules}.
 
 \section{Specification\label{sec:specification}}
 
@@ -296,6 +295,9 @@ substitution are the same as those that appear \emph{below}, i.e.,
 were applied \emph{before} the subsitution in the wrap.
 Marks applied after a substitution, i.e., appear over the substitution in
 the wrap, are not relevant and are ignored.
+
+An algebra that defines how marks and substitutions work more precisely is
+given in Section~2.4 of Oscar Waddell's PhD thesis~\cite{Waddell:phd}.
 
 \subsection{Keyword Bindings\label{sec:bindings}}
 
@@ -1432,11 +1434,11 @@ which the transformer is evaluated.
 
 \subsection{Name changes}
 
-We have chosen the SRFI~72 names \scheme{syntax->datum} and
-\scheme{datum->syntax} for the procedures that
-Chez Scheme, MzScheme, and most other systems call
-\scheme{syntax-object->datum} and \scheme{datum->syntax-object},
-because the SRFI~72 names are shorter.
+We have chosen the SRFI~72~\cite{vantonder:srfi72} names
+\scheme{syntax->datum} and \scheme{datum->syntax} for the procedures that
+Chez Scheme~\cite{Dybvig:csug7}, MzScheme~\cite{flatt:mzscheme}, and most
+other systems call \scheme{syntax-object->datum} and
+\scheme{datum->syntax-object}, because the SRFI~72 names are shorter.
 While this change is incompatible with a large amount of existing code, it
 is easy to identify and fix the incompatible code.
 
@@ -1462,15 +1464,16 @@ functionality.
 
 \subsection{Fluid identifiers or bindings}
 
-Chez Scheme, MzScheme, and various other systems support a
-\scheme{fluid-let-syntax} construct that dynamically (at expansion time)
-rebinds an existing syntactic binding.
-SRFI~72 supports a more general concept of fluid identifiers.
+Chez Scheme~\cite{Dybvig:csug7}, MzScheme~\cite{flatt:mzscheme}, and
+various other systems support a \scheme{fluid-let-syntax} construct that
+dynamically (at expansion time) rebinds an existing syntactic binding.
+SRFI~72~\cite{vantonder:srfi72} supports a more general concept of fluid
+identifiers.
 Should we include either feature in {\r6rs}?
 
 \subsection{Expand-time environment}
 
-Chez Scheme and various other systems allow arbitrary bindings to be added
+Chez Scheme~\cite{Dybvig:csug7} and various other systems allow arbitrary bindings to be added
 to the expand-time environment and provide a mechanism for retrieving
 those bindings.
 Chez Scheme uses this feature, for example, to record information about
@@ -1479,21 +1482,21 @@ Should we include such a feature in {\r6rs}?
 
 \subsection{Quasisyntax}
 
-MzScheme provides \scheme{quasisyntax}, \scheme{unsyntax}, and
-\scheme{unsyntax-splicing} forms,
-analogous to \scheme{quasiquote}, \scheme{unquote}, and \scheme{unquote-splicing},
-with the reader syntax \scheme{#`}, \scheme{#,}, and \scheme{#,@}.
-SRFI~72 also includes \scheme{quasisyntax} but overloads \scheme{unquote}
-and \scheme{unquote-splicing}, which reduces the number of additional
-constructs but complicates the use of
+MzScheme~\cite{flatt:mzscheme} provides \scheme{quasisyntax},
+\scheme{unsyntax}, and \scheme{unsyntax-splicing} forms, analogous to
+\scheme{quasiquote}, \scheme{unquote}, and \scheme{unquote-splicing}, with
+the reader syntax \scheme{#`}, \scheme{#,}, and \scheme{#,@}.
+SRFI~72~\cite{vantonder:srfi72} also includes \scheme{quasisyntax} but
+overloads \scheme{unquote} and \scheme{unquote-splicing}, which reduces
+the number of additional constructs but complicates the use of
 \scheme{quasisyntax} for generating \scheme{quasiquote} expressions.
 Should we include either variant in {\r6rs}?
 
 \subsection{Fresh syntax}
 
-SRFI~72 proposes that \scheme{syntax} apply a fresh mark, so that
-identifiers contained within two different \scheme{syntax} forms are not
-\scheme{bound-identifier=?}.
+SRFI~72~\cite{vantonder:srfi72} proposes that \scheme{syntax} apply a
+fresh mark, so that identifiers contained within two different
+\scheme{syntax} forms are not \scheme{bound-identifier=?}.
 (It makes an exception, however, for identifiers that appear nested within
 the same \scheme{quasisyntax} form.)
 We have opted to keep the traditional semantics in which a fresh mark is
@@ -1521,8 +1524,9 @@ to introduce their own unique bindings if necessary.
 Should we consider instead a variant of \scheme{syntax}, say
 \scheme{fresh-syntax}, that applies a unique mark to its output?
 Should we consider something more general, like MzScheme's
-\scheme{make-syntax-introducer}, which creates a procedure that applies
-the same mark to a syntax object each time it is applied?
+\scheme{make-syntax-introducer}~\cite{flatt:mzscheme}, which creates a
+procedure that applies the same mark to a syntax object each time it is
+applied?
 Either can be used to define \scheme{generate-temporaries}, which can
 then be considered a derived procedure.
 
@@ -1581,8 +1585,9 @@ to be incomplete.
 
 Ironically, the fully wrapped representation can lead to similar problems.
 With the fully wrapped representation, programmers are compelled to use
-a procedure like MzScheme's \scheme{syntax->list} to convert wrapped syntax
-objects into lists in order to map helpers over portions of the input.
+a procedure like MzScheme's \scheme{syntax->list}~\cite{flatt:mzscheme} to
+convert wrapped syntax objects into lists in order to map helpers over
+portions of the input.
 When \scheme{syntax->list} is applied to properly matched input, there
 is no problem, but \scheme{syntax->list} can also be applied to arbitrary
 subforms for which no matching has been done.
@@ -1663,28 +1668,21 @@ Will Clinger, Kent Dybvig, Matthew Flatt, Michael Sperber, and Anton
 van~Straaten.
 
 Much of this document has been copied from or adapted from Chapter~10 of the
-\emph{Chez Scheme Version~7 User's Guide}, some of which also appears in
-Chapter~8 of \emph{The Scheme Programming Language, 3rd edition}.
+\emph{Chez Scheme Version~7 User's Guide}~\cite{Dybvig:csug7}, some
+of which also appears in Chapter~8 of\emph{The Scheme Programming
+Language, 3rd edition}~\cite{Dybvig:tspl3}.
 
+\iflatex
+\def\url#1{\\\emph{#1}}
+\renewcommand{\bibname}{References}
+\bibliographystyle{srfi}
+\bibliography{syntax}
+\fi
+\ifhtml
 \section{References}
-
-R.~Kent Dybvig, Robert Hieb, and Carl Bruggeman,
-``\hyperlink{http://www.cs.indiana.edu/~dyb/pubs/LaSC-5-4-pp295-326.pdf}{Syntactic
-Abstraction in Scheme}''
-Lisp and Symbolic Computation 5, 4, 1993.
-
-R.~Kent Dybvig, \emph{Chez Scheme Version 7 User's Guide}, Chapter 10:
-``\hyperlink{http://www.scheme.com/csug7/syntax.html}{Syntactic Extension},''
-Cadence Research Systems, 2005.
-
-Matthew Flatt, \emph{PLT MzScheme: Language Manual}, No.~301,
-Chapter 12:
-``\hyperlink{http://download.plt-scheme.org/doc/301/html/mzscheme/mzscheme-Z-H-12.html#node_chap_12}{Syntax
-and Macros},''
-2006.
-
-Andr\'e van~Tonder, \hyperlink{http://srfi.schemers.org/srfi-72/srfi-72.html}{SRFI~72: Hygienic macros},
-2005.
+\def\url#1{\\\hyperlink{#1}{#1}}
+\input{syntax.bbl}
+\fi
 
 \section{Copyright}
 
