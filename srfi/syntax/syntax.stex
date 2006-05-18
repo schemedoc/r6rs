@@ -160,7 +160,7 @@ upon the kind of form.
 
 \begin{description}
 \item[syntactic abstraction:]
-The expander invokes the associated transformer to expand the syntactic abstraction,
+The expander invokes the associated transformer to transform the syntactic abstraction,
 then recursively performs whichever of these actions are appropriate
 for the resulting form.
 
@@ -195,9 +195,6 @@ Note that this algorithm does not directly reprocess any form.
 It requires a single left-to-right pass over the definitions followed by a
 single pass (in any order) over the body expressions and deferred
 right-hand sides.
-Thus, except where reprocessing occurs independently by the recursive
-expansion of transformer output, each input form is processed exactly
-once.
 
 For example, in
 
@@ -450,9 +447,9 @@ a keyword with which it has been associated is found.
 If the keyword appears in the first position of a list-structured
 input form, the transformer receives the entire list-structured
 form, and its output replaces the entire form.
-If the keyword is found in any other definition or expression
-context, the transformer receives just the keyword reference,
-and its output replaces just the reference.
+If the keyword is found in any other definition or expression context, the
+transformer receives a wrapped syntax object representing just the keyword
+reference, and its output replaces just the reference.
 A \scheme{&syntax} exception is raised if the keyword appears on the
 left-hand side of a \scheme{set!} expression.
 
