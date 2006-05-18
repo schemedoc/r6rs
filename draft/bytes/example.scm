@@ -101,9 +101,9 @@
 
 (bytes-u16-set! (endianness little) b1 0 12345)
 
-(bytes-u16-native-set! (endianness little) b1 0 12345)
+(bytes-u16-native-set! b1 0 12345)
 
-(check (bytes-u16-native-ref (endianness little) b1 0)
+(check (bytes-u16-native-ref b1 0)
        => 12345)
 
 (check (bytes-u32-ref (endianness little) b1 12)
@@ -117,9 +117,9 @@
 
 (bytes-u32-set! (endianness little) b1 0 12345)
 
-(bytes-u32-native-set! (endianness little) b1 0 12345)
+(bytes-u32-native-set! b1 0 12345)
 
-(check (bytes-u32-native-ref (endianness little) b1 0)
+(check (bytes-u32-native-ref b1 0)
        => 12345)
 
 (check (bytes-u64-ref (endianness little) b1 8)
@@ -133,9 +133,9 @@
 
 (bytes-u64-set! (endianness little) b1 0 12345)
 
-(bytes-u64-native-set! (endianness little) b1 0 12345)
+(bytes-u64-native-set! b1 0 12345)
 
-(check (bytes-u64-native-ref (endianness little) b1 0)
+(check (bytes-u64-native-ref b1 0)
        => 12345)
 
 (define b2 (u8-list->bytes '(1 2 3 4 5 6 7 8)))

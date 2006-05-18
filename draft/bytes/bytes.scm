@@ -142,12 +142,12 @@
   (cut bytes-sint-set! size <> <> <> <>))
 
 (define (make-ref/native base base-ref)
-  (lambda (endness bytes index)
+  (lambda (bytes index)
     (ensure-aligned index base)
     (base-ref (native-endianness) bytes index)))
 
 (define (make-set!/native base base-set!)
-  (lambda (endness bytes index val)
+  (lambda (bytes index val)
     (ensure-aligned index base)
     (base-set! (native-endianness) bytes index val)))
 
