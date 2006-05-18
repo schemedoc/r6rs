@@ -1445,19 +1445,98 @@ This SRFI has nothing to say about top-level keyword bindings.
 Implementations that allow variable definitions at top level, however, are
 encouraged to allow syntax definitions at top level as well.
 
-\subsection{Internal keyword definitions}
+\subsection{Expansion of internal definitions}
 
-Internal syntax definitions can appear anywhere that other internal
-definitions can appear, i.e., at the top level of a library or within a
-\scheme{lambda} (or \scheme{lambda}-derived) body.
-To accommodate internal syntax definitions as well as to address
-weaknesses in the specification of {\r5rs} internal variable definitions,
-the operational semantics of \scheme{library} and \scheme{lambda} body
-expansion has been specified more precisely.
-While this complicates the treatment of \scheme{lambda} bodies somewhat
-relative to {\r5rs}, it makes the semantics of \scheme{library} and
-\scheme{lambda} bodies more consistent and, of course, provides added
-functionality.
+The operational semantics of \scheme{library} and \scheme{lambda} body
+expansion has been specified more precisely than in {\r5rs}.
+This operational description obviates the restriction below from
+Section~5.3 of {\r5rs}:
+
+\begin{quotation}
+Although macros may expand into definitions and syntax definitions in
+any context that permits them, it is an error for a definition or syntax
+definition to shadow a syntactic keyword whose meaning is needed to
+determine whether some form in the group of forms that contains the
+shadowing definition is in fact a definition, or, for internal definitions,
+is needed to determine the boundary between the group and the expressions
+that follow the group.
+\end{quotation}
+
+With the expansion algorithm described in this document, the expression
+
+\schemedisplay
+(let ([y 55] [z 73])
+  (define foo (lambda (x) (set! y z)))
+  (foo z)
+  y)
+\endschemedisplay
+
+evaluates to \scheme{73}.
+With the {\r5rs} restriction, however, it is an error, hence the
+expression's behavior is unspecified, if it appears within the scope of a
+keyword binding for \scheme{foo} that expands \scheme{(foo z)} into a
+definition, e.g.:
+
+\schemedisplay
+(define-syntax foo
+  (syntax-rules ()
+    [(foo x) (define x 88)]))
+\endschemedisplay
+
+The left-to-right processing order also gives a possibly surprising
+meaning to the following strange variant of the expression above, in which
+\scheme{(foo z)} has been moved above the internal definition of
+\scheme{foo}.
+
+\schemedisplay
+(let ([y 55] [z 73])
+  (foo z)
+  (define foo (lambda (x) (set! y z)))
+  y)
+\endschemedisplay
+
+Assuming the expression is within the scope of the outer syntactic
+definition of foo, the occurrence of \scheme{foo} in
+\scheme{(foo z)} is a reference to the outer binding.
+Thus, \scheme{(foo z)} expands to \scheme{(define z 88)}, and the
+expression as a whole evaluates to \scheme{55}.
+
+With internal syntax definitions, the left-to-right processing order can
+again produce both useful and possibly surprising results. 
+For example, in
+
+\schemedisplay
+(let ()
+  (define-syntax foo
+    (syntax-rules ()
+      ((foo x) (define x 37))))
+  (foo a)
+  a)
+\endschemedisplay
+
+the occurrence of \scheme{foo} in \scheme{(foo a)} is a reference to the
+local binding of \scheme{foo}, as expected, and the expression evaluates
+to \scheme{37},
+whereas in
+
+\schemedisplay
+(let ()
+  (foo a)
+  (define-syntax foo
+    (syntax-rules ()
+      ((foo x) (define x 37))))
+  a)
+\endschemedisplay
+
+the occurrence of \scheme{foo} in \scheme{(foo a)} is a reference to
+the outer binding of \scheme{foo}, and, again assuming the outer syntactic
+definition of \scheme{foo} given earlier, the expression evaluates to
+\scheme{88}.
+
+Giving any meaning to the second of each pair of expressions above is
+somewhat questionable, but we believe it is preferable to specify the
+expansion semantics precisely and, in so doing, to give the expected
+meaning to expressions like the first of each pair above.
 
 \subsection{Fluid identifiers or bindings}
 

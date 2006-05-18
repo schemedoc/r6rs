@@ -140,7 +140,7 @@ consistency with other features that are not under discussion as SRFIs.
 
 
 
-<tr><td><b>5.4.&nbsp;</b></td><td><b><a class=plain href="./syntax.html#g18">Internal keyword definitions</a></b></td></tr>
+<tr><td><b>5.4.&nbsp;</b></td><td><b><a class=plain href="./syntax.html#g18">Expansion of internal definitions</a></b></td></tr>
 
 
 
@@ -1934,22 +1934,118 @@ encouraged to allow syntax definitions at top level as well.
 
 <a name="g18"></a>
 
-<h2><a name="./syntax:h18"></a>5.4. Internal keyword definitions</h2>
+<h2><a name="./syntax:h18"></a>5.4. Expansion of internal definitions</h2>
 
 
 
 <p>
-Internal syntax definitions can appear anywhere that other internal
-definitions can appear, i.e., at the top level of a library or within a
-<tt>lambda</tt> (or <tt>lambda</tt>-derived) body.
-To accommodate internal syntax definitions as well as to address
-weaknesses in the specification of R5RS internal variable definitions,
-the operational semantics of <tt>library</tt> and <tt>lambda</tt> body
-expansion has been specified more precisely.
-While this complicates the treatment of <tt>lambda</tt> bodies somewhat
-relative to R5RS, it makes the semantics of <tt>library</tt> and
-<tt>lambda</tt> bodies more consistent and, of course, provides added
-functionality.
+The operational semantics of <tt>library</tt> and <tt>lambda</tt> body
+expansion has been specified more precisely than in R5RS.
+This operational description obviates the restriction below from
+Section&nbsp;5.3 of R5RS:
+
+<p>
+<blockquote>
+Although macros may expand into definitions and syntax definitions in
+any context that permits them, it is an error for a definition or syntax
+definition to shadow a syntactic keyword whose meaning is needed to
+determine whether some form in the group of forms that contains the
+shadowing definition is in fact a definition, or, for internal definitions,
+is needed to determine the boundary between the group and the expressions
+that follow the group.
+</blockquote>
+
+<p>
+With the expansion algorithm described in this document, the expression
+
+<p>
+
+<p><tt>(let&nbsp;([y&nbsp;55]&nbsp;[z&nbsp;73])<br>
+
+&nbsp;&nbsp;(define&nbsp;foo&nbsp;(lambda&nbsp;(x)&nbsp;(set!&nbsp;y&nbsp;z)))<br>
+
+&nbsp;&nbsp;(foo&nbsp;z)<br>
+
+&nbsp;&nbsp;y)</tt>
+<p>evaluates to <tt>73</tt>.
+With the R5RS restriction, however, it is an error, hence the
+expression's behavior is unspecified, if it appears within the scope of a
+keyword binding for <tt>foo</tt> that expands <tt>(foo&nbsp;z)</tt> into a
+definition, e.g.:
+
+<p>
+
+<p><tt>(define-syntax&nbsp;foo<br>
+
+&nbsp;&nbsp;(syntax-rules&nbsp;()<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;[(foo&nbsp;x)&nbsp;(define&nbsp;x&nbsp;88)]))</tt>
+<p>The left-to-right processing order also gives a possibly surprising
+meaning to the following strange variant of the expression above, in which
+<tt>(foo&nbsp;z)</tt> has been moved above the internal definition of
+<tt>foo</tt>.
+
+<p>
+
+<p><tt>(let&nbsp;([y&nbsp;55]&nbsp;[z&nbsp;73])<br>
+
+&nbsp;&nbsp;(foo&nbsp;z)<br>
+
+&nbsp;&nbsp;(define&nbsp;foo&nbsp;(lambda&nbsp;(x)&nbsp;(set!&nbsp;y&nbsp;z)))<br>
+
+&nbsp;&nbsp;y)</tt>
+<p>Assuming the expression is within the scope of the outer syntactic
+definition of foo, the occurrence of <tt>foo</tt> in
+<tt>(foo&nbsp;z)</tt> is a reference to the outer binding.
+Thus, <tt>(foo&nbsp;z)</tt> expands to <tt>(define&nbsp;z&nbsp;88)</tt>, and the
+expression as a whole evaluates to <tt>55</tt>.
+
+<p>
+With internal syntax definitions, the left-to-right processing order can
+again produce both useful and possibly surprising results. 
+For example, in
+
+<p>
+
+<p><tt>(let&nbsp;()<br>
+
+&nbsp;&nbsp;(define-syntax&nbsp;foo<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;(syntax-rules&nbsp;()<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((foo&nbsp;x)&nbsp;(define&nbsp;x&nbsp;37))))<br>
+
+&nbsp;&nbsp;(foo&nbsp;a)<br>
+
+&nbsp;&nbsp;a)</tt>
+<p>the occurrence of <tt>foo</tt> in <tt>(foo&nbsp;a)</tt> is a reference to the
+local binding of <tt>foo</tt>, as expected, and the expression evaluates
+to <tt>37</tt>,
+whereas in
+
+<p>
+
+<p><tt>(let&nbsp;()<br>
+
+&nbsp;&nbsp;(foo&nbsp;a)<br>
+
+&nbsp;&nbsp;(define-syntax&nbsp;foo<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;(syntax-rules&nbsp;()<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((foo&nbsp;x)&nbsp;(define&nbsp;x&nbsp;37))))<br>
+
+&nbsp;&nbsp;a)</tt>
+<p>the occurrence of <tt>foo</tt> in <tt>(foo&nbsp;a)</tt> is a reference to
+the outer binding of <tt>foo</tt>, and, again assuming the outer syntactic
+definition of <tt>foo</tt> given earlier, the expression evaluates to
+<tt>88</tt>.
+
+<p>
+Giving any meaning to the second of each pair of expressions above is
+somewhat questionable, but we believe it is preferable to specify the
+expansion semantics precisely and, in so doing, to give the expected
+meaning to expressions like the first of each pair above.
 
 <p>
 
