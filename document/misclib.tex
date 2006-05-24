@@ -45,6 +45,134 @@ could be defined in terms of core language by the following macros:
 \end{scheme}
 
 \end{entry}
+
+\section{{\tt case-lambda}}
+
+\begin{entry}{%
+\proto{case-lambda}{ \hyperi{clause} \hyperii{clause} \dotsfoo}{library \exprtype}}
+    
+\syntax
+Each \hyper{clause} should be of the form
+%
+\begin{scheme}
+(\hyper{formals} \hyperi{expression} \dotsfoo)%
+\end{scheme}
+%
+If a \hyper{clause} has a \hyper{formals} that consists of a single
+\hyper{variable}, then that clause must be last.
+
+\semantics A {\cf case-lambda} expression evaluates to a procedure.
+This procedure, when applied, tries to match its arguments to the
+\hyper{clause}s in order.  The arguments match a clause, if one the
+following conditions is fulfilled:
+%
+\begin{itemize}
+\item \hyper{Formals} has the form {\tt (\hyper{variable} \dotsfoo)}
+and the number of arguments is the same as the number of formal
+parameters in \hyper{formals}.
+\item \hyper{Formals} has the form\\ {\tt
+(\hyperi{variable} \dotsfoo \hypern{variable} . \hyper{variable$_{n+1}$)}
+}\\
+and the number of arguments is at least $n$.
+\item \hyper{Formals} has the form {\tt \hyper{variable}}.
+\end{itemize}
+%
+For the first clause matched by the arguments, the variables of the
+\hyper{formals} will be bound to fresh locations containing the
+argument values in the same arrangement as with {\cf lambda}.
+
+If the arguments match none of the clauses, a violation is raised.
+FIXME
+
+\begin{scheme}
+(define foo
+  (case-lambda 
+   (() 'zero)
+   ((x) (list 'one x))
+   ((x y) (list 'two x y))
+   ((a b c d . e) (list 'four a b c d e))
+   (rest (list 'rest rest))))
+
+(foo) \ev zero
+(foo 1) \ev (one 1)
+(foo 1 2) \ev (two 1 2)
+(foo 1 2 3) \ev (rest (1 2 3))
+(foo 1 2 3 4) \ev (four 1 2 3 4 ())
+\end{scheme}
+
+The {\cf case-lambda} expression is a derived form.  It
+could be defined in terms of core language by the following macros:
+%
+\begin{scheme}
+(define-syntax \ide{case-lambda}
+  (syntax-rules ()
+    ((case-lambda
+      (formals-0 body0-0 body1-0 ...)
+      (formals-1 body0-1 body1-1 ...)
+      ...)
+     (lambda args
+       (let ((l (length args)))
+         (case-lambda-helper
+          l args
+          (formals-0 body0-0 body1-0 ...)
+          (formals-1 body0-1 body1-1 ...) ...))))))
+
+(define-syntax \ide{case-lambda-helper}
+  (syntax-rules ()
+    ((case-lambda-helper
+      l args)
+     (violation 'case-lambda
+                "wrong number of arguments" l args))
+    ((case-lambda-helper
+      l args
+      ((formal ...) body ...)
+      clause ...)
+     (if (= l (length '(formal ...)))
+         (apply (lambda (formal ...) body ...)
+                args)
+         (case-lambda-helper l args clause ...)))
+    ((case-lambda-helper
+      l args
+      ((formal . formals-rest) body ...)
+      clause ...)
+     (case-lambda-helper-dotted l args
+                                (body ...)
+                                (formal . formals-rest)
+                                formals-rest 1
+                                clause ...))
+    ((case-lambda-helper
+      l args
+      (formal body ...))
+     (let ((formal args))
+       body ...))))
+
+(define-syntax \ide{case-lambda-helper-dotted}
+  (syntax-rules ()
+    ((case-lambda-helper-dotted
+      l args
+      (body ...)
+      formals
+      (formal . formals-rest) k
+      clause ...)
+     (case-lambda-helper-dotted
+      l args
+      (body ...)
+      formals
+      formals-rest (+ 1 k)
+      clause ...))
+    ((case-lambda-helper-dotted
+      l args
+      (body ...)
+      formals
+      rest-formal k
+      clause ...)
+     (if (>= l k)
+         (apply (lambda formals body ...) args)
+         (case-lambda-helper
+          l args clause ...)))))
+\end{scheme}
+\end{entry}
+
 \section{Delayed evaluation}
 
 \begin{entry}{%
