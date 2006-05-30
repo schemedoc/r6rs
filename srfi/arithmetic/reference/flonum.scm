@@ -16,7 +16,7 @@
     (list 'flonum (flonum-inexact r))))
 
 (define (make-flonum n)
-  (really-make-flonum (exact->inexact n)))
+  (really-make-flonum (r5rs:exact->inexact n)))
 
 (define r5rs->flonum make-flonum)
 
@@ -32,11 +32,11 @@
 	flnan
 	(make-flonum (r5rs-op (flonum-inexact a) (flonum-inexact b))))))
 
-(define fl+/2 (make-fl*fl->fl +))
+(define fl+/2 (make-fl*fl->fl r5rs:+))
 (define (fl+ . args)
   (reduce (make-flonum 0.0) fl+/2 args))
 
-(define fl-/2 (make-fl*fl->fl -))
+(define fl-/2 (make-fl*fl->fl r5rs:-))
 (define (fl- arg0 . args)
   (reduce (make-flonum 0.0) fl-/2 (cons arg0 args)))
 
@@ -46,31 +46,31 @@
 	flnan
 	(make-flonum (r5rs-op (flonum-inexact a))))))
 
-(define fl*/2 (make-fl*fl->fl *))
+(define fl*/2 (make-fl*fl->fl r5rs:*))
 (define (fl* . args)
   (reduce (make-flonum 1.0) fl*/2 args))
 
 (define (/* a b)
   (cond
-   ((= b r5rs-inf+)
+   ((r5rs:= b r5rs-inf+)
     (cond
-     ((or (= a r5rs-inf+) (= a r5rs-inf-))
+     ((or (r5rs:= a r5rs-inf+) (r5rs:= a r5rs-inf-))
       r5rs-nan)
-     ((< a 0.0)
+     ((r5rs:< a 0.0)
       -0.0)
      (else
       0.0)))
-   ((= b r5rs-inf-)
+   ((r5rs:= b r5rs-inf-)
     (cond
-     ((or (= a r5rs-inf+) (= a r5rs-inf-))
+     ((or (r5rs:= a r5rs-inf+) (r5rs:= a r5rs-inf-))
       r5rs-nan)
-     ((< a 0.0)
+     ((r5rs:< a 0.0)
       0.0)
      (else
       -0.0)))
-   ((not (= b 0.0)) (/ a b))
-   ((= a 0.0) r5rs-nan)
-   ((> a 0.0) r5rs-inf+)
+   ((not (r5rs:= b 0.0)) (r5rs:/ a b))
+   ((r5rs:= a 0.0) r5rs-nan)
+   ((r5rs:> a 0.0) r5rs-inf+)
    (else r5rs-inf-)))
 
 (define fl//2 (make-fl*fl->fl /*))
@@ -81,11 +81,11 @@
   (lambda (a b)
     (r5rs-op (flonum-inexact a) (flonum-inexact b))))
 
-(define fl= (make-transitive-pred (make-fl*fl->val =)))
-(define fl>= (make-transitive-pred (make-fl*fl->val >=)))
-(define fl<= (make-transitive-pred (make-fl*fl->val <=)))
-(define fl> (make-transitive-pred (make-fl*fl->val >)))
-(define fl< (make-transitive-pred (make-fl*fl->val <)))
+(define fl= (make-transitive-pred (make-fl*fl->val r5rs:=)))
+(define fl>= (make-transitive-pred (make-fl*fl->val r5rs:>=)))
+(define fl<= (make-transitive-pred (make-fl*fl->val r5rs:<=)))
+(define fl> (make-transitive-pred (make-fl*fl->val r5rs:>)))
+(define fl< (make-transitive-pred (make-fl*fl->val r5rs:<)))
 
 (define (make-fl->val r5rs-op)
   (lambda (a)
@@ -106,27 +106,27 @@
       (fl- x)
       x))
 
-(define flexp (make-fl->fl exp))
+(define flexp (make-fl->fl r5rs:exp))
 
 (define (log* z)
   (cond
-   ((= r5rs-inf+ z)
+   ((r5rs:= r5rs-inf+ z)
     r5rs-inf+)
-   ((= r5rs-inf- z)
+   ((r5rs:= r5rs-inf- z)
     r5rs-nan)
-   ((not (= z z))
+   ((not (r5rs:= z z))
     r5rs-nan)
    (else
-    (log z))))
+    (r5rs:log z))))
 
 (define fllog (make-fl->fl log*))
-(define flsin (make-fl->fl sin))
-(define flcos (make-fl->fl cos))
-(define fltan (make-fl->fl tan))
-(define flasin (make-fl->fl asin))
-(define flacos (make-fl->fl acos))
-(define flatan1 (make-fl->fl atan))
-(define flatan2 (make-fl*fl->fl atan))
+(define flsin (make-fl->fl r5rs:sin))
+(define flcos (make-fl->fl r5rs:cos))
+(define fltan (make-fl->fl r5rs:tan))
+(define flasin (make-fl->fl r5rs:asin))
+(define flacos (make-fl->fl r5rs:acos))
+(define flatan1 (make-fl->fl r5rs:atan))
+(define flatan2 (make-fl*fl->fl r5rs:atan))
 
 (define (flatan x . extra)
   (if (null? extra)
@@ -135,22 +135,22 @@
 
 (define (sqrt* z)
   (cond
-   ((= r5rs-inf+ z)
+   ((r5rs:= r5rs-inf+ z)
     r5rs-inf+)
-   ((= r5rs-inf- z)
+   ((r5rs:= r5rs-inf- z)
     r5rs-nan)
-   ((not (= z z))
+   ((not (r5rs:= z z))
     r5rs-nan)
    (else
-    (sqrt z))))
+    (r5rs:sqrt z))))
 
 (define flsqrt (make-fl->fl sqrt*))
-(define flexpt (make-fl*fl->fl expt))
+(define flexpt (make-fl*fl->fl r5rs:expt))
 
-(define flfloor (make-fl->fl floor))
-(define flceiling (make-fl->fl ceiling))
-(define fltruncate (make-fl->fl truncate))
-(define flround (make-fl->fl round))
+(define flfloor (make-fl->fl r5rs:floor))
+(define flceiling (make-fl->fl r5rs:ceiling))
+(define fltruncate (make-fl->fl r5rs:truncate))
+(define flround (make-fl->fl r5rs:round))
 
 (define (fixnum->flonum fx)
   (make-flonum (fixnum->r5rs fx)))
@@ -162,14 +162,14 @@
    ((fl> f (fixnum->flonum (greatest-fixnum)))
     (greatest-fixnum))
    (else
-    (r5rs->fixnum (inexact->exact (round (flonum-inexact f)))))))
+    (r5rs->fixnum (r5rs:inexact->exact (r5rs:round (flonum-inexact f)))))))
 
-(define flquotient (make-fl*fl->fl quotient))
-(define flremainder (make-fl*fl->fl remainder))
+(define flquotient (make-fl*fl->fl r5rs:quotient))
+(define flremainder (make-fl*fl->fl r5rs:remainder))
 (define (flquotient+remainder a b)
   (values (flquotient a b)
 	  (flremainder a b)))
-(define flmodulo (make-fl*fl->fl modulo))
+(define flmodulo (make-fl*fl->fl r5rs:modulo))
 
 (define (fldiv+mod x y)
   (let* ((div
@@ -195,40 +195,40 @@
 
 (define (fldiv x y)
   (call-with-values
-      (lambda () (fldiv+mod x y))
-    (lambda (d m)
-      d)))
+   (lambda () (fldiv+mod x y))
+   (lambda (d m)
+     d)))
 
 (define (flmod x y)
   (call-with-values
-      (lambda () (fldiv+mod x y))
-    (lambda (d m)
-      m)))
+   (lambda () (fldiv+mod x y))
+   (lambda (d m)
+     m)))
 
-(define flodd? (make-fl->val odd?))
-(define fleven? (make-fl->val even?))
+(define flodd? (make-fl->val r5rs:odd?))
+(define fleven? (make-fl->val r5rs:even?))
 
-(define flinteger? (make-fl->val integer?))
+(define flinteger? (make-fl->val r5rs:integer?))
 
 (define r5rs-inf+ 1e1025)
 (define r5rs-inf- -1e1025)
-(define r5rs-nan (- r5rs-inf+ r5rs-inf+))
+(define r5rs-nan (r5rs:- r5rs-inf+ r5rs-inf+))
 
 (define flinf+ (make-flonum r5rs-inf+))
 (define flinf- (make-flonum r5rs-inf-))
 
 (define flnan (make-flonum r5rs-nan))
 
-(define flnan? (make-fl->val (lambda (x) (not (= x x)))))
+(define flnan? (make-fl->val (lambda (x) (not (r5rs:= x x)))))
 
 (define (infinite?* x)
-  (or (= x r5rs-inf+)
-      (= x r5rs-inf-)))
+  (or (r5rs:= x r5rs-inf+)
+      (r5rs:= x r5rs-inf-)))
 
 (define flinfinite? (make-fl->val infinite?*))
 
 (define (finite?* x)
-  (and (= x x)
+  (and (r5rs:= x x)
        (not (infinite?* x))))
 
 (define flfinite? (make-fl->val finite?*))

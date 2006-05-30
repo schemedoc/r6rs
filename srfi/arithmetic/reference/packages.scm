@@ -5,7 +5,8 @@
 
 (define scheme-sans-arithmetic
   (modify scheme
-	  (hide number? complex? real? rational? integer?
+	  (hide eqv?
+                number? complex? real? rational? integer?
 		exact? inexact?
 		zero? positive? negative? odd? even?
 		max min
@@ -24,6 +25,33 @@
 		magnitude angle
 		exact->inexact inexact->exact
 		number->string string->number)))
+
+(define-interface r5rs-arithmetic-interface
+  (export r5rs:eqv?
+          r5rs:number? r5rs:complex? r5rs:real? r5rs:rational? r5rs:integer?
+	  r5rs:exact? r5rs:inexact?
+	  r5rs:zero? r5rs:positive? r5rs:negative? r5rs:odd? r5rs:even?
+	  r5rs:max r5rs:min
+	  r5rs:+ r5rs:* r5rs:- r5rs:/
+	  r5rs:= r5rs:< r5rs:<= r5rs:>= r5rs:>
+	  r5rs:abs
+	  r5rs:quotient r5rs:remainder r5rs:modulo
+	  r5rs:gcd r5rs:lcm
+	  r5rs:numerator r5rs:denominator
+	  r5rs:floor r5rs:ceiling r5rs:truncate r5rs:round
+	  r5rs:rationalize
+	  r5rs:exp r5rs:log r5rs:sin r5rs:cos r5rs:tan
+          r5rs:asin r5rs:acos r5rs:atan
+	  r5rs:sqrt r5rs:expt
+	  r5rs:make-rectangular r5rs:make-polar
+	  r5rs:real-part r5rs:imag-part
+	  r5rs:magnitude r5rs:angle
+	  r5rs:exact->inexact r5rs:inexact->exact
+	  r5rs:number->string r5rs:string->number))
+
+(define-structure r5rs-arithmetic r5rs-arithmetic-interface
+  (open scheme)
+  (files r5rs-arithmetic))
 
 (define-interface nary-interface
   (export make-transitive-pred
@@ -53,8 +81,9 @@
 
 (define-structures ((fixnums fixnums-interface)
 		    (fixnums-r5rs (export r5rs->fixnum
-					      fixnum->r5rs)))
-  (open scheme
+					  fixnum->r5rs)))
+  (open scheme-sans-arithmetic
+        r5rs-arithmetic
 	bitwise
 	srfi-9 ; define-record-type
 	srfi-23 ; error
@@ -81,7 +110,8 @@
 
 (define-structures ((flonums flonums-interface)
 		    (flonums-r5rs (export r5rs->flonum flonum->r5rs)))
-  (open scheme
+  (open scheme-sans-arithmetic
+        r5rs-arithmetic
 	srfi-9 ; define-record-type
 	(subset define-record-types (define-record-discloser))
 	fixnums fixnums-r5rs
@@ -159,7 +189,8 @@
 	  fl-ieee-mantissa-width))
 
 (define-structure flonums-ieee flonums-ieee-interface
-  (open scheme
+  (open scheme-sans-arithmetic
+        r5rs-arithmetic
 	flonums-r5rs
 	integers-r5rs)
   (files flonum-ieee))
@@ -305,7 +336,8 @@
   (files number2string))
 
 (define-structure r5rs-to-numbers (export r5rs->number)
-  (open scheme
+  (open scheme-sans-arithmetic
+        r5rs-arithmetic
 	integers-r5rs
 	flonums-r5rs
 	recnums-r5rs

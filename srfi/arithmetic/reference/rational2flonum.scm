@@ -3,9 +3,8 @@
 
 ; from Scheme 48
 
-(define *modulus* (fx- (greatest-fixnum) (fx 1)))
-
 (define (integer->flonum k)
+  (define *modulus* (fx- (greatest-fixnum) (fx 1)))
   (or (maybe-fixnum->flonum k)
       (fl+ (fl* (fixnum->flonum *modulus*)
 		(integer->flonum (integer-quotient k *modulus*)))

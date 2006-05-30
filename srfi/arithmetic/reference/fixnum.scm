@@ -7,8 +7,8 @@
 
 (define *width* 24)
 
-(define *low* (- (expt 2 (- *width* 1))))
-(define *high* (- (expt 2 (- *width* 1)) 1))
+(define *low* (r5rs:- (r5rs:expt 2 (r5rs:- *width* 1))))
+(define *high* (r5rs:- (r5rs:expt 2 (r5rs:- *width* 1)) 1))
 
 ; SRFI 9
 (define-record-type :fixnum
@@ -27,35 +27,35 @@
 
 (define (r5rs-div x y)
   (cond
-   ((positive? y)
-    (let ((n (* (numerator x)
-                (denominator y)))
-          (d (* (denominator x)
-                (numerator y))))
-      (if (negative? n)
-          (- (quotient (- (- d n) 1) d))
-          (quotient n d))))
-   ((zero? y)
+   ((r5rs:positive? y)
+    (let ((n (r5rs:* (r5rs:numerator x)
+                     (r5rs:denominator y)))
+          (d (r5rs:* (r5rs:denominator x)
+                     (r5rs:numerator y))))
+      (if (r5rs:negative? n)
+          (r5rs:- (r5rs:quotient (r5rs:- (r5rs:- d n) 1) d))
+          (r5rs:quotient n d))))
+   ((r5rs:zero? y)
     0)
-   ((negative? y)
-    (let ((n (* -2 
-                (numerator x)
-                (denominator y)))
-          (d (* (denominator x)
-                (- (numerator y)))))
-      (if (< n d)
-          (- (quotient (- d n) (* 2 d)))
-          (quotient (+ n d -1) (* 2 d)))))))
+   ((r5rs:negative? y)
+    (let ((n (r5rs:* -2 
+                     (r5rs:numerator x)
+                     (r5rs:denominator y)))
+          (d (r5rs:* (r5rs:denominator x)
+                     (r5rs:- (r5rs:numerator y)))))
+      (if (r5rs:< n d)
+          (r5rs:- (r5rs:quotient (r5rs:- d n) (r5rs:* 2 d)))
+          (r5rs:quotient (r5rs:+ n d -1) (r5rs:* 2 d)))))))
 
 (define (r5rs-mod x y)
-  (- x (* (r5rs-div x y) y)))
+  (r5rs:- x (r5rs:* (r5rs-div x y) y)))
 
-(define *modulus* (+ (- *high* *low*) 1))
+(define *modulus* (r5rs:+ (r5rs:- *high* *low*) 1))
 
 ; Sebastian Egner provided this.
 (define (rep x)
-  (+ *low*
-     (r5rs-mod (- x *low*) *modulus*)))
+  (r5rs:+ *low*
+          (r5rs-mod (r5rs:- x *low*) *modulus*)))
 
 (define (make-fixnum n)
   (really-make-fixnum (rep n)))
@@ -69,11 +69,11 @@
   (lambda (a b)
     (make-fixnum (fixnum-op (fixnum-rep a) (fixnum-rep b)))))
 
-(define fx+/2 (make-fx*fx->fx +))
+(define fx+/2 (make-fx*fx->fx r5rs:+))
 (define (fx+ . args)
   (reduce (make-fixnum 0) fx+/2 args))
 
-(define fx-/2 (make-fx*fx->fx -))
+(define fx-/2 (make-fx*fx->fx r5rs:-))
 (define (fx- arg0 . args)
   (reduce (make-fixnum 0) fx-/2 (cons arg0 args)))
 
@@ -81,13 +81,13 @@
   (lambda (a)
     (make-fixnum (fixnum-op (fixnum-rep a)))))
 
-(define fx*/2 (make-fx*fx->fx *))
+(define fx*/2 (make-fx*fx->fx r5rs:*))
 (define (fx* . args)
   (reduce (make-fixnum 1) fx*/2 args))
 
-(define fxquotient (make-fx*fx->fx quotient))
-(define fxremainder (make-fx*fx->fx remainder))
-(define fxmodulo (make-fx*fx->fx modulo))
+(define fxquotient (make-fx*fx->fx r5rs:quotient))
+(define fxremainder (make-fx*fx->fx r5rs:remainder))
+(define fxmodulo (make-fx*fx->fx r5rs:modulo))
 
 (define (fxquotient+remainder a b)
   (values (fxquotient a b)
@@ -117,35 +117,35 @@
 
 (define (fxdiv x y)
   (call-with-values
-      (lambda () (fxdiv+mod x y))
-    (lambda (d m)
-      d)))
+   (lambda () (fxdiv+mod x y))
+   (lambda (d m)
+     d)))
 
 (define (fxmod x y)
   (call-with-values
-      (lambda () (fxdiv+mod x y))
-    (lambda (d m)
-      m)))
+   (lambda () (fxdiv+mod x y))
+   (lambda (d m)
+     m)))
 
 (define (make-fx*fx->val fixnum-op)
   (lambda (a b)
     (fixnum-op (fixnum-rep a) (fixnum-rep b))))
 
-(define fx= (make-transitive-pred (make-fx*fx->val =)))
-(define fx>= (make-transitive-pred (make-fx*fx->val >=)))
-(define fx<= (make-transitive-pred (make-fx*fx->val <=)))
-(define fx> (make-transitive-pred (make-fx*fx->val >)))
-(define fx< (make-transitive-pred (make-fx*fx->val <)))
+(define fx= (make-transitive-pred (make-fx*fx->val r5rs:=)))
+(define fx>= (make-transitive-pred (make-fx*fx->val r5rs:>=)))
+(define fx<= (make-transitive-pred (make-fx*fx->val r5rs:<=)))
+(define fx> (make-transitive-pred (make-fx*fx->val r5rs:>)))
+(define fx< (make-transitive-pred (make-fx*fx->val r5rs:<)))
 
 (define (make-fx->val fixnum-op)
   (lambda (a)
     (fixnum-op (fixnum-rep a))))
 
-(define fxzero? (make-fx->val zero?))
-(define fxpositive? (make-fx->val positive?))
-(define fxnegative? (make-fx->val negative?))
-(define fxeven? (make-fx->val even?))
-(define fxodd? (make-fx->val odd?))
+(define fxzero? (make-fx->val r5rs:zero?))
+(define fxpositive? (make-fx->val r5rs:positive?))
+(define fxnegative? (make-fx->val r5rs:negative?))
+(define fxeven? (make-fx->val r5rs:even?))
+(define fxodd? (make-fx->val r5rs:odd?))
 
 (define fxmin (make-min/max fx<))
 (define fxmax (make-min/max fx>))
@@ -213,48 +213,49 @@
 
 ; Operations with carry
 
-(define *carry-modulus* (+ *high* 1))
+(define *carry-modulus* (r5rs:+ *high* 1))
 
 (define (make-nnfx*nnfx*carry->fx fixnum-op)
   (lambda (x y c)
     (let ((xr (fixnum-rep x))
 	  (yr (fixnum-rep y))
 	  (cr (fixnum-rep c)))
-      (if (or (negative? xr) (negative? yr))
+      (if (or (r5rs:negative? xr) (r5rs:negative? yr))
 	  (error "negative argument to fx+-with-carry" xr yr))
-      (if (or (< cr 0)
-	      (> cr 1))
+      (if (or (r5rs:< cr 0)
+	      (r5rs:> cr 1))
 	  (error "invalid carry" cr))
       (fixnum-op xr yr cr))))
 
 (define fx+/carry
   (make-nnfx*nnfx*carry->fx
    (lambda (xr yr cr)
-     (let ((sum (+ xr yr cr)))
+     (let ((sum (r5rs:+ xr yr cr)))
        (values (make-fixnum (r5rs-mod sum *carry-modulus*))
 	       (make-fixnum (r5rs-div sum *carry-modulus*)))))))
 
 (define fx-/carry
   (make-nnfx*nnfx*carry->fx
    (lambda (xr yr br)
-     (let ((difference (- (- xr yr) br)))
+     (let ((difference (r5rs:- (r5rs:- xr yr) br)))
        (values (make-fixnum (r5rs-mod difference *carry-modulus*))
-	       (make-fixnum (- (r5rs-div difference *carry-modulus*))))))))
+	       (make-fixnum (r5rs:-
+                             (r5rs-div difference *carry-modulus*))))))))
 
 (define (fx*/carry x y z c)
   (let ((xr (fixnum-rep x))
 	(yr (fixnum-rep y))
 	(zr (fixnum-rep z))
 	(cr (fixnum-rep c)))
-    (if (or (negative? xr) (negative? yr))
+    (if (or (r5rs:negative? xr) (r5rs:negative? yr))
 	(error "negative argument to fx+-with-carry" xr yr))
-    (if (or (< zr 0)
-	    (> zr 1))
+    (if (or (r5rs:< zr 0)
+	    (r5rs:> zr 1))
 	(error "invalid carry" zr))
-    (if (or (< cr 0)
-	    (> cr 1))
+    (if (or (r5rs:< cr 0)
+	    (r5rs:> cr 1))
 	(error "invalid carry" cr))
-    (let ((result (+ (* xr yr) zr cr)))
+    (let ((result (r5rs:+ (r5rs:* xr yr) zr cr)))
       (values (make-fixnum (r5rs-mod result *carry-modulus*))
 	      (make-fixnum (r5rs-div result *carry-modulus*))))))
 
