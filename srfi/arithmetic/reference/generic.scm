@@ -64,7 +64,8 @@
 
 (define-syntax define-binary
   (syntax-rules ()
-    ((define-binary ?name ?contagion ?bignum-op ?ratnum-op ?recnum-op ?flonum-op ?compnum-op)
+    ((define-binary ?name ?contagion
+       ?bignum-op ?ratnum-op ?recnum-op ?flonum-op ?compnum-op)
      (define (?name a b)
        (cond
 	((bignum? a)
@@ -89,7 +90,8 @@
 	     (?contagion a b ?name)))
 	(else
 	 (?contagion a b ?name)))))
-    ((define-binary ?name ?contagion ?fixnum-op ?bignum-op ?ratnum-op ?recnum-op ?flonum-op ?compnum-op)
+    ((define-binary ?name ?contagion
+       ?fixnum-op ?bignum-op ?ratnum-op ?recnum-op ?flonum-op ?compnum-op)
      (define (?name a b)
        (cond
 	((fixnum? a)
@@ -140,7 +142,7 @@
 (define < (make-transitive-pred </2))
 (define <= (make-transitive-pred <=/2))
 (define >= (make-transitive-pred >=/2))
-(define > (make-transitive-pred >=/2))
+(define > (make-transitive-pred >/2))
 
 (define-syntax define-unary
   (syntax-rules ()
