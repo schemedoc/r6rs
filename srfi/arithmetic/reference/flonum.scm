@@ -116,6 +116,8 @@
     r5rs-nan)
    ((not (r5rs:= z z))
     r5rs-nan)
+   ((r5rs:= 0.0 z)
+    r5rs-inf-)
    (else
     (r5rs:log z))))
 
@@ -139,12 +141,37 @@
     r5rs-inf+)
    ((r5rs:= r5rs-inf- z)
     r5rs-nan)
+   ((r5rs:< z 0.0)
+    r5rs-nan)
    ((not (r5rs:= z z))
     r5rs-nan)
    (else
     (r5rs:sqrt z))))
 
 (define flsqrt (make-fl->fl sqrt*))
+
+(define (expt* a b)
+  (cond
+   ((r5rs:> a 0.0)
+    (cond ((r5rs:> b 0.0)
+           (r5rs:expt a b))
+          ((r5rs:= b 0.0)
+           a)
+          (else
+           (r5rs:/ 1.0 (expt* a (r5rs:- b))))))
+   ((r5rs:= a 0.0)
+    (cond ((r5rs:> b 0.0)
+           0.0)
+          ((r5rs:= b 0.0)
+           1.0)
+          (else
+           r5rs-nan)))
+   (else
+    (cond ((r5rs:= b 0.0)
+           1.0)
+          (else
+           r5rs-nan)))))
+
 (define flexpt (make-fl*fl->fl r5rs:expt))
 
 (define flfloor (make-fl->fl r5rs:floor))
@@ -164,6 +191,8 @@
    (else
     (r5rs->fixnum (r5rs:inexact->exact (r5rs:round (flonum-inexact f)))))))
 
+; FIXME: Are these still used?
+
 (define flquotient (make-fl*fl->fl r5rs:quotient))
 (define flremainder (make-fl*fl->fl r5rs:remainder))
 (define (flquotient+remainder a b)
@@ -172,26 +201,11 @@
 (define flmodulo (make-fl*fl->fl r5rs:modulo))
 
 (define (fldiv+mod x y)
-  (let* ((div
-	  (cond
-	   ((flpositive? y)
-	    (let ((n x)
-		  (d y))
-	      (if (flnegative? n)
-		  (fl- (flquotient (fl- (fl- d n) (r5rs->fixnum 1.0)) d))
-		  (flquotient n d))))
-	   ((flzero? y)
-	    (r5rs->flonum 0.0))
-	   ((flnegative? y)
-	    (let ((n (fl* (r5rs->fixnum -2) x))
-		  (d (fl- y)))
-	      (if (fl< n d)
-		  (fl- (flquotient (fl- d n) (fl* (r5rs->flonum 2.0) d)))
-		  (flquotient (fl+ n (fl+ d (r5rs->flonum -1.0)))
-			      (fl* (r5rs->flonum 2.0) d)))))))
-	 (mod
-	  (fl- x (fl* div y))))
-    (values div mod)))
+  (if (flzero? y)
+      (values flnan flnan)
+      (let* ((div (flfloor (fl/ x y)))
+             (mod (fl- x (fl* div y))))
+        (values div mod))))
 
 (define (fldiv x y)
   (call-with-values
@@ -205,10 +219,32 @@
    (lambda (d m)
      m)))
 
-(define flodd? (make-fl->val r5rs:odd?))
-(define fleven? (make-fl->val r5rs:even?))
+(define flodd?
+  (make-fl->val
+   (lambda (x)
+     (if (or (r5rs:= x r5rs-inf+)
+             (r5rs:= x r5rs-inf-)
+             (not (r5rs:= x x)))
+         #f
+         (r5rs:odd? x)))))
 
-(define flinteger? (make-fl->val r5rs:integer?))
+(define fleven?
+  (make-fl->val
+   (lambda (x)
+     (if (or (r5rs:= x r5rs-inf+)
+             (r5rs:= x r5rs-inf-)
+             (not (r5rs:= x x)))
+         #f
+         (r5rs:even? x)))))
+
+(define flinteger?
+  (make-fl->val
+   (lambda (x)
+     (if (or (r5rs:= x r5rs-inf+)
+             (r5rs:= x r5rs-inf-)
+             (not (r5rs:= x x)))
+         #f
+         (r5rs:integer? x)))))
 
 (define r5rs-inf+ 1e1025)
 (define r5rs-inf- -1e1025)

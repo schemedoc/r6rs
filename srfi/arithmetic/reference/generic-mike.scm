@@ -368,28 +368,31 @@
    (else
     (error "imag-part: invalid argument" x))))
     
-(define-unary bitwise-not fxbitwise-not bignum-bitwise-not
-  (make-typo-op/1 bitwise-not 'integer)
-  (make-typo-op/1 bitwise-not 'integer))
+; The revised SRFI 77 does not specify these, and their names
+; are in conflict with procedures defined in r5rs.sch.
 
-(define-binary bitwise-ior/2 fxbitwise-ior bignum-bitwise-ior
-  (make-typo-op/2 bitwise-ior/2 'integer)
-  (make-typo-op/2 bitwise-ior/2 'integer))
+;(define-unary bitwise-not fxbitwise-not bignum-bitwise-not
+;  (make-typo-op/1 bitwise-not 'integer)
+;  (make-typo-op/1 bitwise-not 'integer))
 
-(define-binary bitwise-xor/2 fxbitwise-xor bignum-bitwise-xor
-  (make-typo-op/2 bitwise-xor/2 'integer)
-  (make-typo-op/2 bitwise-xor/2 'integer))
+;(define-binary bitwise-ior/2 fxbitwise-ior bignum-bitwise-ior
+;  (make-typo-op/2 bitwise-ior/2 'integer)
+;  (make-typo-op/2 bitwise-ior/2 'integer))
 
-(define-binary bitwise-and/2 fxbitwise-and bignum-bitwise-and
-  (make-typo-op/2 bitwise-and/2 'integer)
-  (make-typo-op/2 bitwise-and/2 'integer))
+;(define-binary bitwise-xor/2 fxbitwise-xor bignum-bitwise-xor
+;  (make-typo-op/2 bitwise-xor/2 'integer)
+;  (make-typo-op/2 bitwise-xor/2 'integer))
 
-(define (bitwise-ior . args)
-  (reduce (r5rs->integer 0) bitwise-ior/2 args))
-(define (bitwise-and . args)
-  (reduce (r5rs->integer 1) bitwise-and/2 args))
-(define (bitwise-xor . args)
-  (reduce (r5rs->integer 1) bitwise-xor/2 args))
+;(define-binary bitwise-and/2 fxbitwise-and bignum-bitwise-and
+;  (make-typo-op/2 bitwise-and/2 'integer)
+;  (make-typo-op/2 bitwise-and/2 'integer))
+
+;(define (bitwise-ior . args)
+;  (reduce (r5rs->integer 0) bitwise-ior/2 args))
+;(define (bitwise-and . args)
+;  (reduce (r5rs->integer 1) bitwise-and/2 args))
+;(define (bitwise-xor . args)
+;  (reduce (r5rs->integer 1) bitwise-xor/2 args))
 
 (define (arithmetic-shift-left a b)
 

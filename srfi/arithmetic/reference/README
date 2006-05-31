@@ -37,11 +37,22 @@ The code assumes a certain minimal fixnum range:
 
 To load the code into an R5RS-conforming system:
 
-1.  Disable any inlining of R5RS arithmetic procedures.
-2.  Enable SRFI 9 and SRFI 23.
+1.  Enable SRFI 9 and SRFI 23.
+2.  Disable any inlining of R5RS arithmetic procedures.
 3.  (load "r5rs.sch")
 
 This will run a series of tests after the code is loaded.
+
+                                * * *
+
+To load the code into Larceny, for example, just fire up larceny
+in this directory, and do:
+
+> (load "larceny.sch")
+> (load "r5rs.sch")
+
+After the tests have finished, you will have a read/eval/print
+loop that uses this reference implementation for all arithmetic.
 
                                 * * *
 
@@ -63,10 +74,6 @@ something like this:
 r6rs> (+ (r5rs->number 4) (r5rs->number 7))
 #{Fx 11}
 
-Enjoy!
-
-                                * * *
-
 To run the tests in Scheme48, do:
 
 ,config ,load packages.scm
@@ -78,3 +85,7 @@ Then do:
 ,in test-generic-arithmetic/mike
 ,in test-generic-arithmetic/exact
 ,in test-generic-arithmetic/inexact
+
+                                * * *
+
+Enjoy!

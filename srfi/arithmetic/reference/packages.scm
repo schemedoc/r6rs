@@ -541,8 +541,8 @@
 	  expt
 	  make-rectangular real-part imag-part
 	  exact->inexact inexact->exact number->flonum
-	  bitwise-not
-	  bitwise-ior bitwise-and bitwise-xor
+	 ;bitwise-not
+	 ;bitwise-ior bitwise-and bitwise-xor
 	  arithmetic-shift-left
 	  rationalize))
 

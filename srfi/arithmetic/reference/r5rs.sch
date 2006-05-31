@@ -23,9 +23,19 @@
   (if (and (r5rs:exact? n)
            (r5rs:integer? n)
            (r5rs:exact? k)
-           (r5rs:integer? k)
-           (r5rs:>= k 0))
-      (r5rs:* n (r5rs:expt 2 k))
+           (r5rs:integer? k))
+      (cond ((r5rs:> k 0)
+             (r5rs:* n (r5rs:expt 2 k)))
+            ((r5rs:= k 0)
+             n)
+            ((r5rs:>= n 0)
+             (r5rs:quotient n (r5rs:expt 2 (r5rs:- k))))
+            (else
+             (let* ((q (r5rs:expt 2 (r5rs:- k)))
+                    (p (r5rs:quotient (r5rs:- n) q)))
+               (if (r5rs:= n (r5rs:* p k))
+                   (r5rs:- p)
+                   (r5rs:- -1 p)))))
       (error "illegal argument to arithmetic-shift" n k)))
 
 ; Bitwise operations on exact integers.
@@ -72,7 +82,7 @@
                     (i/2 (r5rs:quotient i1 2))
                     (j/2 (r5rs:quotient j1 2))
                     (hi (r5rs:* 2 (bitwise-ior i/2 j/2)))
-                    (lo (if (r5rs:= 0 (+ i0 j0)) 0 1)))
+                    (lo (if (r5rs:= 0 (r5rs:+ i0 j0)) 0 1)))
                (r5rs:+ hi lo))))
       (error "illegal argument to bitwise-ior" i j)))
 
@@ -158,10 +168,10 @@
 (load "contagion.scm")
 (load "string2number.scm")
 (load "arithmetic-util.scm")
-;(load "contagion-ex.scm")
-;(load "generic-ex.scm")     ; redefines define-binary, define-unary
-;(load "contagion-in.scm")
-;(load "generic-in.scm")     ; redefines define-binary, define-unary
+(load "contagion-ex.scm")
+(load "generic-ex.scm")     ; redefines define-binary, define-unary
+(load "contagion-in.scm")
+(load "generic-in.scm")     ; redefines define-binary, define-unary
 (load "contagion-generic.scm")
 (load "generic.scm")         ; redefines define-binary, define-unary
 
@@ -172,6 +182,16 @@
 (load "test-prelude.scm")
 (load "test-generic-arithmetic.scm")
 (load "test-postlude.scm")
+
+(load "test-prelude.scm")
+(load "test-generic-arithmetic-ex.scm")
+(load "test-postlude.scm")
+
+(load "test-prelude.scm")
+(load "test-generic-arithmetic-in.scm")
+(load "test-postlude.scm")
+
+
 )
 
 ; [End of file]
