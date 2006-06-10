@@ -1,0 +1,103 @@
+Conference call April 26 2006 12:45pm
+All present by about 12:46pm:
+Kent, Matthew, Will, Anton, Mike
+
+0. finalize agenda (1 minute)
+    new agenda items:
+        fold as possible addition
+        exception issue
+
+1. action items from 4/19/2006 (5 minutes)
+   - withdraw Unicode SRFI (Matthew)
+        not done yet
+   - submit and (after comments) publish new Arithmetic SRFI (Will)
+        committed but no comments yet
+   - post note on syntax-case opacity issues (Kent)
+        not done yet
+   - update syntax-case SRFI, with reference implementation (Kent)
+        not done yet
+   - continue refining core/language split proposal (Anton)
+        not done yet, in process
+   - annoy people into commenting on proposed condition hierarchy (Will)
+        done, but note was insufficiently annoying
+   - send email proposing library modifications to allow subsetting
+     supersetting, defining new libraries, and to allow for lexical syntax
+     extensions or future changes (Anton)
+        sent, no comments yet
+   - post omnibus list of votes on outstanding issues (Kent)
+        done
+   - post symbol-based enumeration proposal (Will)
+        done
+
+2. reminder: omnibus vote list (2 minutes)
+    votes due early next week
+    goal is to get noncontroversial things out of way
+    post votes to public list
+
+3. arithmetic srfi changes (10 minutes)
+    fixnum-specific and flonum-specific operations
+    fixnum+ performs arithmetic on two's complement integers mod 2^N
+    fx+ raises an exception rather than return an answer that might
+        depend on the fixnum precision
+    bitwise and shift operations
+        not entirely consistent with SRFI 60,
+            but the names are different so no outright conflict
+    some shift operations accept both positive and negative shifts,
+        but left-shifting and right-shifting versions that require
+        non-negative shift arguments are also provided
+
+4. procedures that accept finite set of values (10 minutes)
+    issue started out as symbols vs enumerated values,
+        e.g. when specifying endian-ness
+    Will and Anton prefer using symbols
+    but we still need sets for opening files
+    so we still need the set part of Mike's proposal
+
+5. formatted output (10 minutes)
+    embarrassing not have formatted output
+    no existing proposal that can be taken as is
+    would be a little work to do it
+    could be a SRFI, and considered for R7RS
+
+6. void versus unspecific (5 minutes)
+    purpose: allows portable code to recognize values that don't
+        need to be printed
+    related to whether we want set!, set-car!, etc to return:
+        any unspecified value, as in R5RS
+        some specific unspecified value, e.g. #!unspecific
+        0 values
+    returning 0 values might seem awkward for A-normal form,
+        but A-normal form already has this problem with calls
+        to unknown procedures; so long as implementations are
+        allowed to coerce 0 or more than 1 return value into
+        a single return value, A-normal form will still work
+
+exception issue
+    We have agreed to require exceptions in certain situations,
+        such as illegal lexical syntax, but we shouldn't go so
+        far in that direction as to disallow all extensions.
+    In particular, we could allow implementations to read
+        specific kinds of illegal external representations
+        without raising an exception.  For example, we could
+        say that #!<symbol>, where <symbol> is the external
+        representation of a symbol, should raise a &lexical
+        exception but is not required to do so.
+    We could even suggest that implementations define some
+        #! syntax that identifies the implementation, e.g.
+        #!larceny or #!scheme48.  Programmers could place
+        that syntax at the beginning of a file to indicate
+        that the file uses implementation-specific extensions
+        to the lexical syntax of Scheme.  The implementation
+        named by the syntax could then read the file with all
+        of its lexical extensions enabled, but other systems
+        should raise a &lexical exception when reading the file.
+    General agreement on the above.
+    Should procedures be allowed to take non-standard args
+        or extra args?  In other words, must (< 4 3 'a) and
+        (memq 'a '(a b . d)) raise exceptions?
+    We have to decide this for every procedure.  Right now,
+        the proposal says (< 4 3 'a) *must* raise a &type
+        exception, but (memq 'a '(a b . d)) *should* raise
+        a &list exception.
+
+7. adjourned about 1:45pm

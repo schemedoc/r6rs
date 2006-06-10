@@ -1,0 +1,63 @@
+Conference call 12:48pm 1 March 2006.
+Kent, Anton, Matthew, Mike, Will
+
+0. finalize agenda (1 minute)
+
+1. action items from 1/22/2006 (5 minutes)
+   - update draft status report; send to steering committee (Kent)
+        done
+   - position paper on safe/unsafe mode (Will)
+        done
+   - volunteering as 'additional editors' (All)
+        done
+   - contact Robby Findler and Jacob Matthews re: semantics (Mike)
+        done; they've agreed
+
+   - carried over:
+     - post note re: van Tonder syntax-case differences (Matthew)
+     - read exception, byte-vector, and I/O SRFIs (Anton, Kent, Matthew, Will)
+     - draft hash-table proposal (Anton, Will)
+     - draft syntax-case SRFI (Kent)
+
+2. record types and UIDS (5-7 minutes)
+   - clarify notion of "UID prefix"
+        programmer wouldn't be able to write UID at all,
+            just a UID prefix
+        controversy re error reporting
+            Matthew says error reporting is orthogonal to this
+        purpose of UID prefix, as opposed to UID:
+            removes some global state
+        purposes of original UID, as in SRFI 76:
+            makes record types non-generative
+            provides consistency check for redefinition
+        Kent says a UID prefix serves only the first purpose
+        Matthew questions whether SRFI 76 serves the second
+        Kent says a IUD prefix *can* serve the second purpose
+            if enforced at compile time
+
+3. records, opacity, and equal? (5-7 minutes)
+   - pros and cons of equal? on non-opaque records
+        meaning of opacity defined by SRFI 76,
+        but different editors have different rationales
+            in mind, and readers of SRFI 76 have jumped
+            to different conclusions about its purposes
+
+4. hash tables: what to include (5 minutes)
+        Anton asked for guidance on what should be standard
+
+5. safe vs. unsafe mode (30-40 minutes)
+    Where can declarations appear?
+        restriction to head of <body> must be relaxed
+    Are these the right things for declarations to declare?
+        type declarations should be flushed
+        inline declarations are of marginal utility, so flush
+    Are these the right words?
+        change to: safe, fast, small, debug (the odd one)
+        keep unsafe as the shorthand for (safe 0)
+    When can errors be raised, in safe mode?
+        Can implementations reject (car '()) at compile time?
+        In R6RS, the intent of (car '()) might be to invoke
+            some particular exception handler, a la (else ???).
+        Try to nail down these details in writing.
+
+6. adjourned about 1:42pm

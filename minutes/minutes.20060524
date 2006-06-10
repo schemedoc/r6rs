@@ -1,0 +1,309 @@
+May 24 2006 12:45pm  812-856-3600, PIN 001386#
+Present by about 12:44pm:
+Kent, Mike, Will, Anton, Matthew
+
+
+0. finalize agenda (1 minute)
+
+issues to add:
+    semantic model
+    - definitions: top-level, library-level, internal
+    - top-level, library-level, form-level
+    - what is a program?
+    - what things will have an R6RS semantics?
+
+1. action items from 5/17/2006 (5 minutes)
+   - complete and commit updated status report (Kent)
+        nothing new
+   - comment on syntax srfi (All but Kent)
+        Mike's comments
+   - carried over:
+     - withdraw Unicode SRFI (Matthew)
+        should happen today
+     - mail refined core/language split proposal (Anton)
+        in progress
+     - refine library modifications to allow subsetting, etc. (Matthew & Kent)
+        many issues, not just subsetting
+     - update reference implementation for arithmetic SRFI (Will)
+        in progress
+     - discuss SRFI 1 candidates (All)
+       including:  every, any, fold, fold-right, iota, filter, filter-map,
+       partition, find, concatenate, and generalized member, remove, assoc
+        no discussion yet
+     - respond to Mike's proposal for extending symbol syntax (Matthew & Anton)
+        all but Matthew have responded; Matthew okay with consensus
+     - respond to Mike's proposal for eval (All but Mike)
+        no responses yet
+
+2. upcoming meetings (5 minutes)
+   - mike cannot meet on wednesday 5/31, 6/7, or 6/14
+   - tuesdays are okay those weeks---can we switch?
+        yes; change "permanently" to Tuesday
+
+3. semantic model
+   - definitions: top-level, library-level, internal
+   - top-level, library-level, form-level
+   - what is a program?
+   - what things will have an R6RS semantics?
+        Matthew has proposed that libraries have R6RS semantics,
+        that programs do not have R6RS semantics
+        no semantics for top-level forms
+   - what about scripts?
+        consensus: we should try to define a notion of script,
+            with well-defined portable semantics
+        Mike will post something to start the discussion
+   evaluation model (10 minutes)
+   - require expansion before evaluation?
+        yes: unanimous
+   - require syntax checking before evaluation?
+        yes: unanimous
+   - allow interleaved macro expansion, syntax checking, and evaluation?
+        no: see above
+   - exception votes: 4, 5, 7, 8
+
+4. eval (10 minutes)
+   - exception votes: 44, 46, 47, 48
+
+5. I/O (10 minutes)
+   - exception votes: 51, 52, 59, 60, 61
+
+6. dynamic-wind before and after thunks (5 minutes)
+   - exception vote: 43
+
+7. adjourned about 1:45pm
+
+
+****************************************************************
+
+Outcome of detailed discussions:
+
+We need a macro-expansion-time model of exception processing.
+
+If a script or library form is not syntactically correct, then
+execution of the script or library is not allowed to begin.
+
+Then the following four questions can go away, along with their
+associated conditions.
+
+4.  If a definition or expression is not syntactically
+    correct (e.g. (if x y z w) or (lambda (x x) x)),
+    then it (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, discuss, must, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &syntax
+
+5.  If a definition or expression refers to a variable
+    that is not bound within the library in which the
+    definition or expression appears, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, discuss, must, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &undefined-variable
+
+7.  If an assignment (set!) is executed, and the left
+    hand side of the assignment is not defined in the
+    library that contains the assignment, or in some
+    other context has not yet been defined, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, discuss, discuss, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &undefined-variable
+
+8.  If an assignment (set!) is executed, and the left
+    hand side of the assignment is immutable because
+    it was imported, or is defined in some environment
+    whose exported variables are immutable, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, discuss, must, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &immutable-variable
+
+****************************************************************
+
+44.  If the first argument to eval is not syntactically
+    correct, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &syntax
+
+    Issue:  "must raise" eliminates the possibility of
+    a purely interpretive eval.
+
+46.  If the first argument to eval is a definition, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, must, must, discuss
+  Revote: should, must, must, must, should
+
+    Outcome: discuss
+  Reoutcome: must
+
+    raise an exception with
+    condition type: &eval-definition
+    revised condition type: &syntax (accepted unanimously)
+
+    Issue:  What would it mean to eval a definition?
+    (We no longer have a top-level environment.)
+    Issue:  Kent prefers &syntax to &eval-definition
+
+47.  If the argument to null-environment or scheme-report-environment
+    (which will be in an R5RS compatibility library)
+    is not the exact integer 5, then it
+    [was: is not one of the exact integers 5 or 6, then it]
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, must, must, discuss
+  Revote: must, must, must, must, must
+
+    Outcome: discuss
+  Reoutcome: must
+
+    raise an exception with
+    condition type: &domain
+
+    Issue:  If null-environment and scheme-report-environment
+    are present only in the R5RS compatibility library, then
+    it's probably better to restrict to 5, not allowing 6.
+
+    Unanimous: move to R5RS compatibility library.
+
+48.  If interaction-environment is called, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, abstain, must, may
+
+    Outcome: discuss
+  Reoutcome: irrelevant
+
+    raise an exception with
+    condition type: &nonstandard
+
+    Issue:  The interaction-environment procedure is optional
+    even in R5RS, so we could flush it entirely.
+
+    Unanimous: we flush interaction-environment entirely.
+
+****************************************************************
+
+Moved by Will: that Mike reword the following questions as
+appropriate for the expected R6RS i/o system.
+Seconded by Anton.  Motion passed by unanimous consent.
+
+51.  If call-with-output-file or open-output-file is asked
+    to open a file that seems already to exist, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, discuss, must, discuss, must
+
+    Outcome: discuss
+             table
+
+    raise an exception with
+    condition type: &file-exists
+
+    Issue:  SRFI 79 gives options
+
+52.  If the string argument to call-with-input-file,
+    call-with-output-file, open-input-file, or
+    open-output-file is not a string of the form
+    that is used to name files on the executing
+    systems, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, should, must, may, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &domain
+
+    Issue:  OS-dependent weirdness might make this
+    undecidable, especially as systems evolve.
+
+59.  If read encounters an external representation of the
+    form #{<datum>*}, where <datum>* is a sequence of
+    valid external representations, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, must, discuss, discuss
+          should, must, must, may, abstain
+
+    Outcome: discuss
+             no majority
+
+    raise an exception with
+    condition type: &lexical
+
+    Issue:  Are implementations allowed any extensions to
+    the lexical syntax, or must programs explicitly import
+    from nonstandard libraries in order to use nonstandard
+    extensions?
+
+60.  If read encounters any other nonstandard external
+    representation, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &lexical
+
+61.  If the first argument to write, display, or write-char
+    cannot be output to its second argument (e.g. the first
+    argument to write-char is some weird Unicode character,
+    and the output port accepts only ASCII characters), then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, abstain, discuss, must
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &incompatible
+
+
+****************************************************************
+
+Voted to table the following question pending further research
+on what has been published:
+
+43.  If an escape procedure is used to escape from the
+    dynamic context of the before or after thunks passed
+    to a dynamic-wind, then it
+    (must/should/may/might/returns/abstain/discuss/escapes)
+
+    where "escapes" might mean you're not in until you've
+    finished all of the before thunk, and you're out as soon
+    as you call the after thunk
+
+    Vote: discuss, discuss, escapes, returns, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &violation
+
+****************************************************************

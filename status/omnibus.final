@@ -1,0 +1,319 @@
+Vote order: Clinger, Dybvig, Flatt, Sperber, van Straaten
+
+1.  unspecified value, three options:
+    A. leave as in r5rs: set!, set-car!, etc., return unspecified value
+    B. require return of some specific value
+    C. require return of zero values
+
+    Vote: A, B, B, C, B
+
+    Outcome: B
+
+2.  add (unspecified) constructor if we choose option B on Vote 1
+
+    Vote: no, yes, yes, yes, yes
+
+    Outcome: yes
+
+3.  add #!unspecified syntax if we choose option B on Vote 1
+
+    Vote: no, no, no, no, no
+
+    Outcome; no
+
+4.  add (begin) expression
+
+    (begin) => unspecified value [or Vote 1 replacement]
+
+    Vote: no, no, no, yes, no
+
+    Outcome: no
+
+5.  add (define x) syntax
+
+    (define x) => (define x <void>)           if we choose option B on Vote 1
+    (define x) => (define x <unspecified>)    otherwise
+
+    Vote: yes, yes, no, no, yes
+
+    Outcome: yes
+
+6.  extend case to use member in place of memv
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+7.  add graph printing: #n= marks datum, #n# references
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+8.  write uses graph printing when cycles are detected if we choose yes on
+    Vote 7.
+
+    Vote: no, yes, yes, no, no
+
+    Outcome: no
+
+9.  add mechanism for causing write to use graph printing if we choose yes
+    on Vote 7.
+
+    Vote: no, yes, yes, no, no
+
+    Outcome: no
+
+10. add when and unless forms (in some library, not in core):
+
+    (when e0 e1 e2 ...) => (if e0 (begin e1 e2 ...) <unspecified value>)
+    (unless e0 e1 e2 ...) => (if e0 <unspecified value> (begin e1 e2 ...))
+
+    Vote: no, yes, yes, no, yes
+
+    Outcome: yes
+
+11. relegate one-armed if to r5rs-compatibility library
+
+    Vote: no, yes, yes, no, no
+
+    Outcome: no
+
+12. add call/cc as an "official" abbreviation for call-with-current-continuation
+
+    Vote: no, yes, yes, no, yes
+
+    Outcome: yes
+
+13. add rec form:
+
+    (rec id e) => (letrec ([id e]) id)
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+14. add #n( vector prefix:
+
+    Examples: #5(0 1 2 3 4) equiv. #(0 1 2 3 4)
+              #8(0 1 2 3 4) equiv. #(0 1 2 3 4 5 6 7)
+              #1000(#f) equiv. #(#f #f ... #f)  [ 1000 #f's ]
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+15. require write to use #n( prefix
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+16. allow write to use #n( prefix
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+17. add gensyms
+
+    (gensym) => gensym
+    (gensym? x) => #t iff x is a gensym
+
+    gensyms have both a pretty name and a globally unique name.
+
+    (symbol->string (gensym)) => pretty name
+    (symbol->unique-string (gensym)) => unique name
+
+    syntax for gensyms to be decided.
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+18. add case-lambda (to some library, not in core)
+
+    (case-lambda [<formals> body1 body2 ...] ...)
+
+    where <formals> is just like a lambda <formals>, and the first clause
+    for which the actuals correctly map to <formals> is chosen.
+
+    Vote: yes, yes, yes, yes, yes
+
+    Outcome: yes
+
+19. add andmap
+
+    (define andmap
+      (lambda (f ls . more)
+        (let andmap ([ls ls] [more more] [a #t])
+          (if (null? ls)
+              a
+              (let ([a (apply f (car ls) (map car more))])
+                (and a (andmap (cdr ls) (map cdr more) a)))))))
+
+    Vote: tabled: discuss as part of general SRFI 1 discussion
+
+    Outcome: tabled
+
+20. add ormap
+
+    (define ormap
+      (lambda (f ls . more)
+        (let ormap ([f f] [ls ls] [more more])
+          (and (not (null? ls))
+               (or (apply f (car ls) (map car more))
+                   (ormap f (cdr ls) (map cdr more)))))))
+
+    Vote: tabled: discuss as part of general SRFI 1 discussion
+
+    Outcome: tabled
+
+21. specify that append does not copy first argument when second is '()
+
+    Vote: no, yes, yes, no, no
+
+    Outcome: no
+
+22. modify quasiquote to support Alan Bawden's PEPM '99 nested quasiquote
+    extensions
+
+    Vote: yes, yes, yes, yes, yes
+
+    Outcome: yes
+
+23. mvbinding construct names, three options:
+    A. let-values and let*-values
+    B. let-values and let-values*
+    C. mvlet and mvlet*
+
+    Vote: A, C, A, A, A
+
+    Outcome: A
+
+24. add #!eof as external representation for eof-object
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+25. add support for formatted output
+
+    Vote: no, no, no, yes, no
+
+    Outcome: no
+
+26. add cond-expand (SRFI 0)
+
+    Vote: no, no, no, no, no
+
+    Outcome: no
+
+27. add homogeneous numeric vectors
+
+    Vote: yes, no, no, no, yes
+
+    Outcome: no
+
+28. make () self-evaluating
+    A. () evaluates to empty list
+    B. () raises a &syntax exception
+
+    Vote: B, abstain, B, A, B
+
+    Outcome: B
+
+29. add support for weak pointers
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+30. #t and #f must be followed by a delimiter
+
+    Vote: yes, yes, yes, yes, yes
+
+    Outcome: yes
+
+31. characters must be followed by a delimiter
+
+    Vote: yes, yes, yes, yes, yes
+
+    Outcome: yes
+
+32. add support for regular expressions
+
+    Vote: no, no, no, no, no
+
+    Outcome: no
+
+33. call the new void value, if we choose option B on Vote 1:
+    A. "unspecific value"
+    B. "void value"
+    B. "unspecified"
+ 
+    Vote: C (by acclamation)
+
+    Outcome: C
+
+34. Should the character comparison predicates be required to be:
+    A. n-ary
+    B. binary
+ 
+    Vote: A, A, A, A, A
+
+    Outcome: A
+
+35. flush sealed clause in records
+
+    Vote: no (consensus 2006/05/10)
+
+    Outcome: no
+
+36. As with quoted constants, an implementation is allowed to create a
+    new type each time the same define-record-type form is evaluated or to
+    treat the type as a constant value, so that, for example:
+
+      (let ((f (lambda (x) (define-record-type r ---) (if x r? (make-r ---)))))
+        ((f #t) (f #f)))
+
+    may return either #t or #f.
+
+    Should we:
+    A. leave it like it is
+    B. require the descriptor to be recreated each time
+    C. require the descriptor to treated as a constant
+
+    Vote: B, C, B, B, B
+
+    Outcome: B
+
+37. allow record? to be true of built-in types
+
+    Vote: no, yes, no, yes, yes
+
+    Outcome: yes
+
+38. The specification of make-record-type-descriptor has this:
+
+    If parent is not #f, and uid is not #f, and the parent is generative
+    (i.e.  its uid is #f), an error is signalled.
+
+    Should this restriction be lifted?
+
+    Vote: yes, yes, yes, yes, yes
+
+    Outcome: yes
+
+39. pin down the dynamic environment in the before and after thunks of
+    dynamic-wind
+
+    Vote: yes, yes, yes, yes, yes
+
+    Outcome: yes
+
+40. flush named let if we choose "yes" on Vote 13
+
+    Vote: no, no, no, yes, no
+
+    Outcome: no

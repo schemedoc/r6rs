@@ -1,0 +1,75 @@
+Conference call April 11 2006 12:30pm
+All present by about 12:30pm:
+Kent, Anton, Mike, Will, Matthew
+
+0. finalize agenda (1 minute)
+
+1. action items from 4/05/2006 (5 minutes)
+   - carried over:
+     - look over proposed condition hierarchy and details; comment
+       via mailing list (All)
+        still pending
+     - complete proposed list of libraries (Anton)
+        done
+     - propose library modifications to allow subsetting, supersetting,
+       defining new libraries, and to allow for lexical syntax extensions
+       or future changes (Anton, Matthew, Kent)
+        still pending
+
+2. plan for completing r6rs document draft (15 minutes)
+    Mike sent out a note yesterday
+    Would like to pick 2 or 3 new things, already in SRFI form,
+        finish them, and get started on integrating them into the
+        document.  Main candidates are:
+            Unicode
+            arithmetic
+            records
+        Try to get this done by end of month.
+    Unicode going out in final form.
+    Arithmetic:
+        requiring infinities, NaNs
+        changing fx+ to throw exception on overflow,
+            adding fixnum+ that wraps
+        choosing names for div/mod etc
+    Exceptions and conditions
+    Records
+        post message to mailing list asking people to say whatever
+            they're still going to say
+    Syntax-case: is there still time to put it out as a SRFI?
+        could have a syntax-case section in R6RS by mid-June
+    Mike wants to postpone semantics until after mid-June
+
+3. core/library split (15 minutes)
+    general happiness with Anton's proposal and Mike's comments
+
+4. eval and load (10 minutes)
+    environment could become library
+    What about load?
+    Let's keep eval and drop load.
+        Implementations can still support whatever version of
+        load they like.
+    Are we going to have a top level?
+    Anton uncomfortable with dropping top level and load.
+    "Let's let Mike chew on that."
+
+5. local define-syntax (10 minutes)
+    Mike questions whether the added complexity (of both
+        implementation and specification) is worth the
+        added convenience.  Suggests we hold off on this.
+    Interleaving local define-syntax with define is problem.
+    Kent points out that expansion order already matters,
+        both locally and at library level.  If we don't
+        allow local define-syntax, then macros that expand
+        into macros will have to come in two versions: one
+        for top level (of a library) and another for bodies
+        of expressions.  Restricting to top level (e.g. import)
+        is a bad idea; not very Schemely.
+    Not allowing local define-syntax in lambda bodies creates
+        artificial difference between library bodies and
+        lambda bodies.
+
+Next week:
+Redo SRFI on bytes?  No.
+Withdraw i/o SRFIs?  None of our business; they aren't R6RS SRFIs.
+  
+6. adjourned about 1:38pm

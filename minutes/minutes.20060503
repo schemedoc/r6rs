@@ -1,0 +1,229 @@
+Conference call May 3 2006 12:45pm
+All present by about 12:47pm:
+Kent, Anton, Will, Mike, Matthew
+
+No electronic agenda
+
+Agenda is the omnibus vote list.
+
+Action items from last week:
+
+email omnibus vote list
+    done
+comment on arithmetic SRFI
+    lack of comment will be taken as assent
+conditions
+    should schedule another big vote on them
+email final enumerations proposal
+    not done yet
+withdraw Unicode SRFI
+    not completely done, but begun
+macros note
+    sent
+macros reference implementation
+    not done
+continue refining core language
+    ongoing
+refine library spec to allow subsetting
+    not done yet
+
+****************************************************************
+
+Will asked to change his votes on issues 22, 26, 34 to
+
+22. modify quasiquote to support Alan Bawden's PEPM '99 nested quasiquote
+    extensions
+
+    Vote: yes
+
+
+26. add cond-expand (SRFI 0)
+
+    Vote: no
+
+
+34. Should the character comparison predicates be required to be:
+    A. n-ary
+    B. binary
+ 
+    Vote: A
+
+If accepted, these changes would make for a unanimous
+vote on those three issues.
+
+These changes were accepted.
+
+****************************************************************
+
+Will made a motion to consider issue 33 before issue 1.
+The motion failed for lack of a second.
+
+Kent asked for a motion to combine issues 1, 2, 3, and 33.
+
+Matthew moved that option D be added to issue 1:
+    D. require return of new unspecified value
+Anton seconded.
+Will, Kent, and Mike voted no.
+
+Matthew moved that option B of issue 1 be changed to:
+    B. require return of some specific value
+Will seconded.
+Kent, Matthew, Will, Anton voted yes.
+Mike abstains.
+Motion passes.
+
+****************************************************************
+
+Revotes on issues that were not settled by electronic vote.
+
+vote order: Clinger, Dybvig, Flatt, Sperber, van Straaten
+
+1.  unspecified value, three options:
+    A. leave as in r5rs: set!, set-car!, etc., return unspecified value
+    B. require return of some specific value
+    C. require return of zero values
+
+    Vote: A, B, B, C, B
+
+    Outcome: B
+
+33. call the new void value, if we choose option B on Vote 1:
+    A. "unspecific value"
+    B. "void value"
+    C. "unspecified"
+
+    Vote: C (by acclamation)
+
+    Outcome: C
+
+2.  add (unspecified) constructor if we choose option B on Vote 1
+
+    Vote: no, yes, yes, yes, yes
+
+    Outcome: yes
+
+3.  add #!unspecified syntax if we choose option B on Vote 1
+
+    Vote: no, no, no, no, no
+
+    Outcome; no
+
+7.  add graph printing: #n= marks datum, #n# references
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+10. add when and unless forms:
+
+    (when e0 e1 e2 ...) => (if e0 (begin e1 e2 ...) <unspecified value>)
+    (unless e0 e1 e2 ...) => (if e0 <unspecified value> (begin e1 e2 ...))
+
+    Vote: no, yes, yes, no, yes
+
+    Outcome: yes (but put them in some library, not in core)
+
+12. add call/cc as an "official" abbreviation for call-with-current-continuation
+
+    Vote: no, yes, yes, no, yes
+
+    Outcome: yes
+
+13. add rec form:
+
+    (rec id e) => (letrec ([id e]) id)
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+14. add #n( vector prefix:
+
+    Examples: #5(0 1 2 3 4) equiv. #(0 1 2 3 4)
+              #8(0 1 2 3 4) equiv. #(0 1 2 3 4 5 6 7)
+              #1000(#f) equiv. #(#f #f ... #f)  [ 1000 #f's ]
+
+    Vote: no, yes, no, no, no
+
+    Outcome: no
+
+16. allow write to use #n( prefix
+
+    Vote: no, yes, abstain, no, abstain
+
+    Outcome: no longer relevant
+
+[Re issue 18, case-lambda should go in a library.]
+
+Mike moved that we table issues 19 and 20 pending more systematic
+consideration of SRFI-1.
+Will seconded.
+Passed by acclamation.
+
+23. mvbinding construct names, three options:
+    A. let-values and let*-values
+    B. let-values and let-values*
+    C. mvlet and mvlet*
+
+    Vote: A, C, A, A, A
+
+    Outcome: A
+
+25. add support for formatted output
+
+    Vote: no, no, no, yes, no
+
+    Outcome: no (decided in conference call last week)
+
+28. make () self-evaluating
+    A. () evaluates to empty list
+    B. () raises a &syntax exception
+
+    Vote: B, abstain, B, A, B
+
+    Outcome: B
+
+Will moves that Will writes rationale for sealed records,
+and issue 35 be tabled.
+Matthew seconded.
+Motion passed by acclamation.
+
+36. As with quoted constants, an implementation is allowed to create a
+    new type each time the same define-record-type form is evaluated or to
+    treat the type as a constant value, so that, for example:
+
+      (let ((f (lambda (x) (define-record-type r ---) (if x r? (make-r ---)))))
+        ((f #t) (f #f)))
+
+    may return either #t or #f.
+
+    Should we:
+    A. leave it like it is
+    B. require the descriptor to be recreated each time
+    C. require the descriptor to treated as a constant
+
+    Vote: B, C, B, B, B
+
+    Outcome: B
+
+38. The specification of make-record-type-descriptor has this:
+
+    If parent is not #f, and uid is not #f, and the parent is generative
+    (i.e.  its uid is #f), an error is signalled.
+
+    Should this restriction be lifted?
+
+    Vote: yes, yes, yes, yes, yes
+
+    Outcome: yes
+
+****************************************************************
+
+For next week, Will will write up the conditions list as a list
+of numbered issues.
+
+Also SRFI-1, if anyone has time.
+
+Adjourned around 1:43pm.
+
+Will

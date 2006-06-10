@@ -1,0 +1,418 @@
+Conference call May 30 2006
+All present by about 12:46pm:
+Kent, Anton, Matthew, Mike, Will
+
+Note: our weekly meeting time is now Tuesday 12:45-1:45.
+
+0. finalize agenda (1 minute)
+
+1. action items from 5/24/2006 (5 minutes)
+   - email note re: unicode and filenames (Matthew)
+        done
+   - start discussion of script support (Mike)
+        started
+   - reword I/O-related exception questions (Mike)
+        done
+   - consider commitment for reference implementations (All)
+        ongoing
+   - carried over:
+     - complete and commit updated status report (Kent)
+        in progress
+     - comment on syntax srfi (All but Kent)
+        Mike's comments are still the only ones
+     - withdraw Unicode SRFI (Matthew)
+        done
+     - mail refined core/language split proposal (Anton)
+        ongoing
+     - update library srfi (Matthew and Kent)
+        in progress
+     - update reference implementation for arithmetic SRFI (Will)
+        in progress
+     - discuss SRFI 1 candidates (All)
+       including:  every, any, fold, fold-right, iota, filter, filter-map,
+       partition, find, concatenate, and generalized member, remove, assoc
+        scheduled for today's conference call
+     - respond to Mike's proposal for eval (All but Mike)
+        open
+    More stuff:
+     - i/o
+        SRFI 79 and 81 give a good idea of what is proposed
+
+2. dynamic-wind (10 minutes)
+    published papers specify different semantics for the
+        dynamic environment of the in and out thunks
+    proposed: not in until in thunk completes; out as soon as
+        out thunk is called
+    Will will generate examples for which it matters
+
+3. SRFI 1 procedures (15 minutes)
+    see below for details
+
+For next week's agenda:
+    dynamic-wind
+    finish discussion of SRFI 1
+    eval
+
+4. adjourned about 1:46pm
+
+                                * * *
+
+These notes are based on Kent's message earlier today:
+
+To help focus our discussion of SRFI-1 procedures, I've created brief
+summaries of the possible candidates.
+
+The first section covers the SRFI-1 procedures that one or more of
+us have proposed to include.  The second section covers generalized
+versions of member, remove, and assoc.  The third section covers specific
+removal procedures:  remq, remv, and remove, i.e., counterparts to
+memq/memv/member and assq/assv/assoc.
+
+The Scheme definitions shown are for illustration only; most lack adequate
+error checking, and some are not as efficient as they could be.
+
+Kent
+
+-------- SRFI-1 procedures
+
+(any pred list1 list2 ...)
+
+   - as in SRFI 1 except same constraints on argument lists as we've
+     agreed upon for map
+
+   (define any
+     (lambda (pred ls . ls*)
+       (and (not (null? ls))
+            (let loop ([ls ls] [ls* ls*])
+              (if (null? (cdr ls))
+                  (apply pred (car ls) (map car ls*))
+                  (or (apply pred (car ls) (map car ls*))
+                      (loop (cdr ls) (map cdr ls*))))))))
+
+   (any < '(1 2 3) '(1 2 3)) ;=> #f
+   (any < '(1 2 3) '(3 2 1)) ;=> #t
+   (any car '((#f) (b) (#f))) ;=> b
+   (any car '((a) (b) (c))) ;=> a
+
+Shall we put something like this in?
+    yes, unanimous
+Potential problem with name:
+    if (any pred ls) is true, then it sounds like the predicate
+        is true of any element of ls
+Suggested names:
+    any
+    some
+    exists   Will, Matthew, Mike, Kent
+    fold-or-all
+    or-fold
+    ormap
+    first
+Rename to exists
+
+--------
+
+(every pred list1 list2 ...)
+
+Suggested names:
+    every   Mike                (acceptable to all)
+    forall  Will, Kent, Anton   (acceptable to all)
+Final vote:
+    every   
+    forall  Will, Kent, Anton
+Rename to forall
+
+
+   - as in SRFI 1 except same constraints on argument lists as we've
+     agreed upon for map
+
+   (define every
+     (lambda (pred ls . ls*)
+       (or (null? ls)
+           (let loop ([ls ls] [ls* ls*])
+             (if (null? (cdr ls))
+                 (apply pred (car ls) (map car ls*))
+                 (and (apply pred (car ls) (map car ls*))
+                      (loop (cdr ls) (map cdr ls*))))))))
+
+   (every <= '(1 2 3) '(1 2 3)) ;=> #t
+   (every <= '(1 2 3) '(3 2 1)) ;=> #f
+   (every car '((#f) (b) (#f))) ;=> #f
+   (every car '((a) (b) (c))) ;=> c
+
+--------
+
+(concatenate list-of-lists)
+
+   - as in SRFI 1
+
+   - can last element of list-of-lists be a non-list?
+
+   - is (concatenate x) actually clearer than (apply append x)?
+     ("concatenate" is one character shorter than "apply append")
+
+    - may be present because some implementations don't allow
+        as many arguments with apply as with concatenate
+
+   (define concatenate
+     (lambda (list-of-lists)
+       (apply append list-of-lists)))
+
+   (concatenate '((1 2) (3 4 5))) ;=> (1 2 3 4 5)
+
+Do we want this in R6RS?
+    no, 4-1
+
+--------
+
+(filter pred list)
+
+   - as in SRFI 1
+
+   - more useful if generalized to accept more than one list
+        and return multiple lists as values
+
+   (define filter
+     (lambda (pred ls)
+       (let f ([ls ls])
+         (if (null? ls)
+             '()
+             (if (pred (car ls))
+                 (cons (car ls) (f (cdr ls)))
+                 (f (cdr ls)))))))
+
+   (filter even? '(1 2 3 4 5)) ;=> (2 4)
+
+Include filter: yes
+Shall we generalize to accept more than one list and return multiple values?
+    Will, Kent, Matthew: yes
+    others abstain
+
+--------
+
+(filter-map proc list1 list2 ...)
+
+   - as in SRFI 1 except same constraints on argument lists as we've
+     agreed upon for map
+
+   (define filter-map
+     (lambda (proc ls . ls*)
+       (filter values
+         (apply map proc ls ls*))))
+
+   (filter-map (lambda (x) (memq 'b x)) '((a b) (b c) (c d))) ;=> ((b) (b c))
+
+Do we want this?
+    No:  Will, Kent, Matthew, Anton
+    Yes: Mike
+
+--------
+
+(find pred ls)
+
+   - as in SRFI 1 except same constraints on argument list as we've
+     agreed upon for memq/memv/member
+
+   (define find
+     (lambda (pred ls)
+       (cond
+         [(generalized-member pred ls) => car]
+         [else #f])))
+
+   (find even? '(1 2 3 4 5)) ;=> 2
+   (find even? '(1 3 5 7 9)) ;=> #f
+
+Tabled until after discussion of generalized-member
+
+--------
+
+(fold cons nil list1 list2 ...)
+
+   - as in SRFI 1 except same constraints on argument lists as we've
+     agreed upon for map
+
+   (define fold
+     (lambda (cons nil ls . ls*)
+        (let f ([nil nil] [ls ls] [ls* ls*])
+          (if (null? ls)
+              nil
+              (f (apply cons (car ls) (append (map car ls*) (list nil)))
+                 (cdr ls)
+                 (map cdr ls*))))))
+
+   (fold cons '(q) '(a b c)) ;=> (c b a q)
+   (fold + 0 '(1 2 3) '(4 5 6)) ;=> 21
+
+Should rename to fold-left (unanimous).
+But it isn't symmetric with fold-right; shouldn't it be?
+Tabled to next week so we can think about it.
+
+--------
+
+(fold-right kons knil list1 list2 ...)
+
+   - as in SRFI 1 except same constraints on argument lists as we've
+     agreed upon for map
+
+   (define fold-right
+     (lambda (cons nil ls . ls*)
+       (let f ([ls ls] [ls* ls*])
+         (if (null? ls)
+             nil
+             (apply cons (car ls)
+               (append (map car ls*) (list (f (cdr ls) (map cdr ls*)))))))))
+
+   (fold-right cons '(q) '(a b c)) ;=> (a b c q)
+   (fold-right + 0 '(1 2 3) '(4 5 6)) ;=> 21
+
+Tabled for symmetry with the tabling of fold.
+
+--------
+
+(iota count [start [step]])
+
+   - as in SRFI 1 except that start can be specified even if step cannot.
+
+   (define iota
+     (rec iota
+       (case-lambda
+         [(count) (iota count 0 1)]
+         [(count start) (iota count start 1)]
+         [(count start step)
+          (if (= count 0)
+              '()
+              (cons start (iota (- count 1) (+ start step) step)))])))
+
+   (iota 5) ;=> (0 1 2 3 4)
+   (iota 5 1) ;=> (1 2 3 4 5)
+   (iota 5 1 -.25) ;=> (1 0.75 0.5 0.25 0.0)
+
+Will proposes restricting start and step to exact numbers.
+The first has to be an exact integer.
+Restrictions accepted unanimously.
+
+Do we want iota?
+    Will, Kent, Matthew
+    Anton abstains
+    Mike is against
+Shall we include the step argument?
+    Kent: yes (switched from no after example given of use)
+    Matthew: no
+    Mike: abstain (switched from no)
+    Will: yes
+    Anton: yes
+
+--------
+
+(partition pred list)
+
+   - as in SRFI 1
+
+   (define partition
+     (lambda (pred ls)
+       (let f ([ls ls])
+         (if (null? ls)
+             (values '() '())
+             (let-values ([(ls1 ls2) (f (cdr ls))])
+               (if (pred (car ls))
+                   (values (cons (car ls) ls1) ls2)
+                   (values ls1 (cons (car ls) ls2))))))))
+
+   (partition even? '(1 2 3 4 5)) ;=> (2 4)
+                                  ;   (1 3 5)
+
+Tabled for lack of time.
+The remaining procedures are also tabled for lack of time,
+and will be considered next week.
+
+
+-------- generalized member, remove, assoc
+
+(generalized-member pred list)
+
+   - returns first pair of list whose car satisfies pred, if any,
+     otherwise #f
+
+   - same constraints on argument list as we've agreed upon for
+     memq/memv/member
+
+   - can we come up with a better name?
+
+   - SRFI 1 calls this find-tail.
+
+   - SRFI 1 also generalizes member with = argument
+
+   (define generalized-member
+     (lambda (pred ls)
+       (let f ([ls ls])
+         (and (not (null? ls))
+              (if (pred (car ls))
+                  ls
+                  (f (cdr ls)))))))
+
+   (generalized-member even? '(1 2 3 4 5)) ;=> (2 3 4 5)
+   (generalized-member even? '(1 3 5 7 9)) ;=> #f
+
+(generalized-remove pred list)
+
+   - returns new list with elements satisfying pred removed
+
+   - raises exception if list is not a list
+
+   - can we come up with a better name?
+
+   - SRFI 1 calls this remove, but remove has a different meaning
+     in some Scheme systems and in Common Lisp
+
+   (define generalized-remove
+     (lambda (pred ls)
+       (filter (lambda (x) (not (pred x))) ls)))
+
+   (generalized-remove even? '(1 2 3 4 5)) ;=> (1 3 5)
+
+(generalized-assoc pred alist)
+
+   - returns first pair of alist whose car satisfies pred, if any,
+     otherwise #f
+
+   - same constraints on argument list as we've agreed upon for
+     assq/assv/assoc
+
+   - can we come up with a better name?
+
+   - SRFI 1 generalizes assoc with = argument
+
+   (define generalized-assoc
+     (lambda (pred alist)
+       (find (lambda (x) (pred (car x))) alist)))
+
+   (generalized-assoc
+     (lambda (x) (not (= x x)))
+     '((0 . zero) (+nan.0 . #f) (+inf.0 . big))) ;=> (+inf.0 . big)
+
+-------- specific removal procedures
+
+(remq x list)
+
+   (define remq
+     (lambda (x list)
+       (generalized-remove (lambda (y) (eq? y x)) list)))
+
+   (remq 'b '(a b c b a)) ;=> (a c a)
+
+(remv x list)
+
+   (define remv
+     (lambda (x list)
+       (generalized-remove (lambda (y) (eqv? y x)) list)))
+
+   (remv 3.14 '(pi 3.14 3.1416 #\x03C0)) ;=> (pi 3.1416 #\x03C0)
+
+(remove x list)
+
+   (define remove
+     (lambda (x list)
+       (generalized-remove (lambda (y) (equal? y x)) list)))
+
+   (remove "a" '(a "a" #\a (a))) ;=> (a #\a (a))
+
+[End of notes]

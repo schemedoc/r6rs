@@ -1,0 +1,289 @@
+Conference call June 6 2006
+All present by 12:45pm
+Kent, Mike, Matthew, Will, Anton
+
+0. finalize agenda (1 minute)
+
+1. action items from 5/30/2006 (5 minutes)
+   - post dynamic-wind example(s) highlighting semantic options (Will)
+        done
+   - carried over:
+     - consider commitment for reference implementations (All)
+        ongoing; placeholder in status report
+     - complete and commit updated status report (Kent)
+        not yet committed, but draft is fairly complete
+     - submit syntax srfi (Kent)
+        not done yet
+     - mail refined core/language split proposal (Anton)
+        done; needs to be discussed
+     - update library srfi (Matthew and Kent)
+        not done yet
+     - update reference implementation for arithmetic SRFI (Will)
+        not done yet;
+        old implementation running in R5RS Scheme + SRFI 9
+     - discuss SRFI 1 candidates (All)
+       including:  every, any, fold, fold-right, iota, filter, filter-map,
+       partition, find, concatenate, and generalized member, remove, assoc
+        to be discussed today
+     - respond to Mike's proposal for eval (All but Mike)
+        to be discussed today
+
+2. dynamic-wind (10 minutes)
+   - vote on in/out escape semantics
+        proposed: not in until in thunk completes; out as soon as
+            out thunk is called
+        unanimous    
+
+3. SRFI 1 procedures (15 minutes)
+   - find
+   - fold (fold-left)
+   - fold-right
+   - partition
+   - generalized member, remove, assoc
+   - remq, remv, remove
+
+4. eval (20 minutes)
+   - discuss Mike's proposal
+
+For next week:
+    hard questions
+    SRFI 1 review
+    equal?/equiv?
+    eval proposal
+    hash tables
+    enumerations
+
+5. adjourn
+
+-------- SRFI-1 procedures
+
+(find pred ls)
+
+   - as in SRFI 1 except same constraints on argument list as we've
+     agreed upon for memq/memv/member
+
+   (define find
+     (lambda (pred ls)
+       (cond
+         [(generalized-member pred ls) => car]
+         [else #f])))
+
+   (find even? '(1 2 3 4 5)) ;=> 2
+   (find even? '(1 3 5 7 9)) ;=> #f
+
+Main issue: returning #f creates ambiguity.
+No objections really, but is it worth it?
+And is the generalization to take an optional argument worth it?
+
+Vote:  Should this be in R6RS?
+Yes
+Not enough perceived support to vote on an optional argument.
+
+--------
+
+(fold cons nil list1 list2 ...)
+
+   - as in SRFI 1 except same constraints on argument lists as we've
+     agreed upon for map
+
+   (define fold
+     (lambda (cons nil ls . ls*)
+        (let f ([nil nil] [ls ls] [ls* ls*])
+          (if (null? ls)
+              nil
+              (f (apply cons (car ls) (append (map car ls*) (list nil)))
+                 (cdr ls)
+                 (map cdr ls*))))))
+
+   (fold cons '(q) '(a b c)) ;=> (c b a q)
+   (fold + 0 '(1 2 3) '(4 5 6)) ;=> 21
+
+The fold procedure of SRFI 1 seems pretty random,
+and no one argued for putting it into R6RS.  We
+considered fold-left instead (below).
+
+--------
+
+(fold-right kons knil list1 list2 ...)
+
+   - as in SRFI 1 except same constraints on argument lists as we've
+     agreed upon for map
+
+   (define fold-right
+     (lambda (cons nil ls . ls*)
+       (let f ([ls ls] [ls* ls*])
+         (if (null? ls)
+             nil
+             (apply cons (car ls)
+               (append (map car ls*) (list (f (cdr ls) (map cdr ls*)))))))))
+
+   (fold-right cons '(q) '(a b c)) ;=> (a b c q)
+   (fold-right + 0 '(1 2 3) '(4 5 6)) ;=> 21
+
+
+;(fold-left kons knil list1 list2 ...)
+;
+;   - same constraints on argument lists as we've
+;     agreed upon for map
+
+(define fold-left
+  (lambda (cons nil ls . ls*)
+    (if (not (list? ls))
+        (domain-error "fold-left")
+        (let f ((nil nil) (ls ls) (ls* ls*))
+          (if (null? ls)
+              (if (not (null? (apply append ls*)))
+                  (domain-error "fold-left")
+                  nil)
+              (f (apply cons nil (car ls) (map car ls*))
+                 (cdr ls)
+                 (map cdr ls*)))))))
+
+
+; Basic pattern:
+;
+;  (fl g nil (a b c d))
+;= (fl g (g nil a) (b c d))
+;= (fl g (g (g nil a) b) (c d))
+;= (fl g (g (g (g nil a) b) c) (d))
+;= (fl g (g (g (g (g nil a) b) c) d) ())
+;= (g (g (g (g nil a) b) c) d)
+
+;   (fold-left cons '(q) '(a b c)) ;=> ((((q) . a) . b) . c)
+;   (fold-left + 0 '(1 2 3) '(4 5 6)) ;=> 21
+
+
+Vote: Should fold-left and fold-right be in R6RS?
+Yes, 3-2 (Will, Anton, Matthew: yes; Mike, Kent: no)
+
+--------
+
+(partition pred list)
+
+   - as in SRFI 1
+
+   (define partition
+     (lambda (pred ls)
+       (let f ([ls ls])
+         (if (null? ls)
+             (values '() '())
+             (let-values ([(ls1 ls2) (f (cdr ls))])
+               (if (pred (car ls))
+                   (values (cons (car ls) ls1) ls2)
+                   (values ls1 (cons (car ls) ls2))))))))
+
+   (partition even? '(1 2 3 4 5)) ;=> (2 4)
+                                  ;   (1 3 5)
+
+Vote: Should this be in R6RS?
+Will, Kent, Mike: yes
+Matthew: no (doesn't seem useful enough)
+Anton: abstain
+
+-------- generalized member, remove, assoc
+
+(generalized-member pred list)
+
+   - returns first pair of list whose car satisfies pred, if any,
+     otherwise #f
+
+   - same constraints on argument list as we've agreed upon for
+     memq/memv/member
+
+   - can we come up with a better name?
+
+   - SRFI 1 calls this find-tail.
+
+   - SRFI 1 also generalizes member with = argument
+
+   (define generalized-member
+     (lambda (pred ls)
+       (let f ([ls ls])
+         (and (not (null? ls))
+              (if (pred (car ls))
+                  ls
+                  (f (cdr ls)))))))
+
+   (generalized-member even? '(1 2 3 4 5)) ;=> (2 3 4 5)
+   (generalized-member even? '(1 3 5 7 9)) ;=> #f
+
+(generalized-remove pred list)
+
+   - returns new list with elements satisfying pred removed
+
+   - raises exception if list is not a list
+
+   - can we come up with a better name?
+
+   - SRFI 1 calls this remove, but remove has a different meaning
+     in some Scheme systems and in Common Lisp
+
+   (define generalized-remove
+     (lambda (pred ls)
+       (filter (lambda (x) (not (pred x))) ls)))
+
+   (generalized-remove even? '(1 2 3 4 5)) ;=> (1 3 5)
+
+(generalized-assoc pred alist)
+
+   - returns first pair of alist whose car satisfies pred, if any,
+     otherwise #f
+
+   - same constraints on argument list as we've agreed upon for
+     assq/assv/assoc
+
+   - can we come up with a better name?
+
+   - SRFI 1 generalizes assoc with = argument
+
+   (define generalized-assoc
+     (lambda (pred alist)
+       (find (lambda (x) (pred (car x))) alist)))
+
+   (generalized-assoc
+     (lambda (x) (not (= x x)))
+     '((0 . zero) (+nan.0 . #f) (+inf.0 . big))) ;=> (+inf.0 . big)
+
+Vote:  Should we have these (with better names) in R6RS:
+Yes, unanimous
+Please come up with better names.
+(e.g. pred-mem, pred-rem, pred-ass
+or pred-member, pred-remove, pred-assoc)
+
+-------- specific removal procedures
+
+(remq x list)
+
+   (define remq
+     (lambda (x list)
+       (generalized-remove (lambda (y) (eq? y x)) list)))
+
+   (remq 'b '(a b c b a)) ;=> (a c a)
+
+(remv x list)
+
+   (define remv
+     (lambda (x list)
+       (generalized-remove (lambda (y) (eqv? y x)) list)))
+
+   (remv 3.14 '(pi 3.14 3.1416 #\x03C0)) ;=> (pi 3.1416 #\x03C0)
+
+(remove x list)
+
+   (define remove
+     (lambda (x list)
+       (generalized-remove (lambda (y) (equal? y x)) list)))
+
+   (remove "a" '(a "a" #\a (a))) ;=> (a #\a (a))
+
+Vote:  Should we have these?
+Yes, unanimous.
+
+--------
+
+For further discussion:
+Now that map, memq, etc are required to detect
+circularities...
+Should equal? be required to have terminating semantics?
+
+[End of notes]

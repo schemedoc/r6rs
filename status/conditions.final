@@ -1,0 +1,1098 @@
+Revised Vote List for Classification of Exceptions
+==================================================
+
+The exception hierarchy itself does not lend itself to
+a set of independent votes, so I will just list it for
+reference and (yet again) solicit any issues that need
+to be discussed.
+
+When you consider the list of situations and vote on
+whether an exception must/should/may/might or must not
+be raised, you will have an opportunity to suggest the
+specific exception.
+
+For each situation, please specify one of the following
+votes:
+
+    must:    raise an exception
+    should:  raise an exception
+    may:     raise an exception
+    might:   raise an exception
+    returns: a value without raising an exception
+    abstain: because you don't care
+    discuss: to force further discussion
+
+For voting, the classification above will be abbreviated
+as must/should/may/might/returns/abstain/discuss.
+
+
+Tentative Condition Hierarchy
+=============================
+
+For this vote, please assume the following condition hierarchy.
+It is likely to be more detailed than the one we eventually
+adopt, but the projection from this detailed hierarchy to the
+simplified hierarchy that Matthew proposed is well-defined
+except for the &undefined-variable/&immutable-variable/&syntax
+case, where there are two obvious ways in which the projection
+could be defined.  We'll sort that out later.
+
+Also, Mike has suggested we add an &eval condition for all
+conditions raised by eval, which would contain a subfield
+that contains "the real condition".  I haven't done that
+here, because we would apply Mike's suggestion uniformly
+if at all, and we would need to vote on the real condition
+in any case.
+
+Hierarchy is implied by indentation.  For the most part,
+conditions will acquire their meanings from the circumstances
+in which they are raised, on which we are about to vote.
+For a few conditions, I have added comments to suggest a
+meaning.
+
+&condition
+  &message
+    &warning
+  &serious
+    &error
+      &non-continuable   ; handler wasn't expected to return
+      &implementation-restriction
+        &no-infinities   ; cannot represent +inf.0, -inf.0
+        &no-nans         ; cannot represent +nan.0, -nan.0, nan.0
+        &string-size     ; with the obvious meaning, which I don't know
+        &vector-size     ; with the obvious meaning, which I don't know
+      &io
+        &file-does-not-exist
+        &file-exists
+      ...
+    &violation
+      &nonstandard
+      &defect
+        &values          ; wrong number of values passed to continuation
+        &lexical
+        &syntax
+          &undefined-variable ; reference or assignment to undefined variable
+          &immutable-variable ; attempt to assign immutable variable
+        &letrec          ; violation of letrec or letrec* restriction
+        &domain
+          &type
+            &boolean
+            &symbol
+            &char
+            &vector
+            &procedure
+            &pair
+            &number
+              &complex
+              &real
+              &rational
+              &integer
+              &exact                            ; not an exact complex number
+                &exact-rational
+                  &exact-integer
+                    &scalar-value               ; not a Unicode scalar value
+                    &non-negative-exact-integer ; not one of 'em
+                    &fixnum                     ; not one of 'em
+              &inexact                          ; not an inexact complex number
+                &inexact-real
+                  &flonum                       ; not a flonum
+                  &inexact-rational
+                    &inexact-integer
+            &string
+            &port
+              &input-port
+              &output-port
+            &promise     ; not a promise
+            &llobj       ; not a list-like object (null or pair)
+          &list          ; not a proper list
+          &alist         ; some element is not a pair
+          &immutable
+          &eval-environment
+          &eval-definition
+        &incompatible    ; arguments okay singly but not together
+          &range         ; index out of range
+        &result          ; result not well-defined
+        ...
+
+
+Review of Terminology
+=====================
+
+For the purposes of this vote, please assume that:
+
+*  "must raise an exception" means that, in safe mode,
+implementations must detect the situation and raise an
+exception.
+
+*  "should raise an exception" means that implementations
+are encouraged, but not required, to detect the situation
+and to raise an exception.  (Implementations are presumably
+encouraged to be more encouraged about this in safe mode
+than in unsafe mode.)
+
+*  "may raise an exception" means that implementations
+are allowed, but not required or encouraged, to detect
+the situation and to raise an exception.  (Implementations
+are presumably more allowed to detect and to raise an
+exception in safe mode than in unsafe mode.)
+
+*  "might raise an exception" means that implementations
+are allowed, but discouraged, to detect the situation
+and to raise an exception.  (Implementations are
+presumably mightier in safe mode than in unsafe mode.)
+
+*  "returns a value" means that implementations are not
+allowed to raise an exception even if they detect the
+situation.  (Implementations are presumably more
+valuable in safe mode than in unsafe mode.)
+
+
+Immutability of Constants
+=========================
+
+R5RS 4.1.2 says "it is an error to alter a constant (i.e.
+the value of a literal expression) using a mutation
+procedure".  As I read this, it means that, even if an
+implementation were to allocate copies of the literal
+constant and return a fresh copy each time the literal
+expression is evaluated, contrary to the formal semantics
+in R5RS 7.2, it would still be an error to alter one of
+the copies, because any copy would still be the value of
+a literal expression.  This semantics, like everything
+else, could of course be changed in the R6RS.
+
+
+Plausible Lists, Alists, and Prefixes
+=====================================
+
+Lists are mutable in Scheme, so a pair that is the head
+of a list at one moment may not always be the head of a
+list.  In the presence of concurrent threads, whether a
+pair is the head of a list is not computable in general.
+
+For the purposes of this vote, a plausible list up to n
+between times t0 and tn is a Scheme value x such that
+
+    (0) x is a pair, and n is 0; or
+    (1) x is the empty list, and n is 0; or
+    (2) x is a pair p, n > 0, and there exists some time
+        t1 in (t0,tn] such that taking the cdr of p at
+        time t1 yields a plausible list up to n-1 between
+        times t1 and tn.
+
+A plausible list of length n between times t0 and tn is
+a Scheme value x such that
+
+    (1) x is the empty list, and n is 0; or
+    (2) x is a pair p, n > 0, and there exists some time
+        t1 in (t0,tn] such that taking the cdr of p at
+        time t1 yields a plausible list of length n-1
+        between times t1 and tn.
+
+A plausible prefix of length n between times t0 and tn
+is a sequence of Scheme values x0,...,xn and strictly
+increasing times t1,...,tn such that x0 through x{n-1}
+are pairs, xn is either the empty list or a pair, and
+taking the cdr of a pair x{i-1} at time ti yields xi.
+
+A plausible alist up to n between times t0 and tn is a
+plausible list up to n between t0 and tn such that, for
+all possible choices of the times t1 and pairs p
+mentioned in part (2) above, there exists a time t2 such
+that t1 < t2 < tn and the car of p at time t2 is a pair.
+
+A plausible alist of length n is defined similarly.
+
+A plausible alist prefix of length n could be defined
+analogously.  Please pretend it has been.
+
+A plausible list (alist) between times t0 and tn is a
+plausible list (alist) of some length n between those
+times.
+
+For the purposes of this vote, a plausible list or
+alist is a plausible list or alist between the time
+it is passed to the procedure under discussion and the
+first return of a value to that procedure's continuation.
+
+For the purposes of this vote, you may interpret the
+times with respect to any global time that satisfies
+the axioms proposed in chapter 2 of MIT AI TR-633.
+(In most implementations, the definitions above are
+believed to be invariant under transformations of
+global time that are allowed by those axioms.)
+
+
+Votes
+=====
+
+Each vote consists of a choice between the seven possible
+votes shown below, followed by a choice of the specific
+condition that is to be passed to the exception handler
+if an exception is raised.  For each of those conditions,
+a specific condition is suggested; if you would prefer a
+different condition (that is not just the projection of
+the suggested condition to a simplified hierarchy), then
+you should erase the suggested condition and write in
+your own.
+
+The seven possible choices for the main vote are:
+
+    must
+    should
+    may
+    might
+    returns
+    abstain
+    discuss
+
+                                * * *
+
+1.  If an implementation is unable to perform an action or
+    return a value in a way compatible with the R6RS, then
+    it (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, abstain, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &implementation-restriction
+
+2.  If a procedure is passed an argument that is not of the
+    type specified by the R6RS (noting that, for the purpose
+    of this vote, list and alist are not considered types
+    because their definitions are complicated by concurrent
+    or interleaved side effects), then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &type
+
+3.  If a side-effecting procedure (e.g. set-car!, set-cdr!,
+    vector-set!, string-set!) is passed an immutable object,
+    such as the value of a literal constant or the string
+    returned by symbol->string, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, may, must, should, should
+
+    Outcome: should
+
+    raise an exception with
+    condition type: &immutable
+
+    Issue:  "must raise" presents a problem for headerless pairs
+    Issue:  "must raise" would also require eval to make immutable
+    copies of quoted mutable values
+
+4.  If a definition or expression is not syntactically
+    correct (e.g. (if x y z w) or (lambda (x x) x)),
+    then it (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, discuss, must, discuss
+
+    raise an exception with
+    condition type: &syntax
+
+    Outcome:
+      If a script or library form is not syntactically correct, then
+      execution of the script or library is not allowed to begin.
+
+      This renders #4, #5, #7, and #8 moot.
+
+5.  If a definition or expression refers to a variable
+    that is not bound within the library in which the
+    definition or expression appears, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, discuss, must, discuss
+
+    raise an exception with
+    condition type: &undefined-variable
+
+    Outcome: See #4.
+
+6.  If evaluation of a letrec or letrec* or an equivalent
+    sequence of internal definitions results violates the
+    letrec or letrec* condition, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &letrec
+
+7.  If an assignment (set!) is executed, and the left
+    hand side of the assignment is not defined in the
+    library that contains the assignment, or in some
+    other context has not yet been defined, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, discuss, discuss, discuss
+
+    raise an exception with
+    condition type: &undefined-variable
+
+    Outcome: See #4.
+
+8.  If an assignment (set!) is executed, and the left
+    hand side of the assignment is immutable because
+    it was imported, or is defined in some environment
+    whose exported variables are immutable, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, discuss, must, discuss
+
+    raise an exception with
+    condition type: &immutable-variable
+
+    Outcome: See #4.
+
+9.  If no possible result of the number->string procedure
+    would satisfy its specification, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &result
+
+10.  If the result of some arithmetic procedure is specified
+    to be an infinity that the implementation is unable to
+    represent, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, abstain, must, abstain
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &no-infinities
+
+11.  If the result of some arithmetic procedure is specified
+    to be a NaN that the implementation is unable to
+    represent, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, abstain, must, abstain
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &no-nans
+
+12.  If the empty list is passed to the car procedure,
+    then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &pair
+
+13.  If the empty list is passed to the cdr procedure,
+    then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &pair
+
+14.  If the appropriate composition of car and cdr operations
+    is not defined for the argument of one of the caar through
+    cddddr procedures, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &domain
+
+15.  If the argument to the length procedure is not a plausible
+    list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, should, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+    Note:  might give reference implementation
+    Note:  checking is not necessary in unsafe mode
+
+16.  If an argument to the append procedure [not the last]
+    is not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+17.  If the last argument to the append procedure is not a
+    plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: returns, returns, returns, returns, returns
+
+    Outcome: returns
+
+    raise an exception with
+    condition type: &list
+
+    Issue: "some" is incompatible with R5RS and would break usual
+           implementation of ,@
+
+18.  If the argument to the reverse procedure is not a
+    plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue: "must raise" requires tortoise and hare
+
+19.  If some index argument to a procedure that requires
+    an index (e.g. list-ref, list-tail, vector-ref) is
+    not a non-negative exact integer, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &non-negative-exact-integer
+
+20.  If the second argument to list-ref or list-tail is
+    n, and the first argument is not a plausible list
+    up to n [for list-ref, case (1) of the definition
+    of plausible list up to n is excluded], then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+    revise condition type to:
+                    &range (if plausible list but not up to n)
+                    &list (if not plausible list up to n)
+
+    Issue:  might be n+1 for list-ref
+            [actually, it's more complicated; see above]
+    Issue:  should be &range
+
+21.  If the first argument to list-ref or list-tail is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, might(*), might(*), may, might(*)
+
+    Note:  might(*) means can raise an exception only
+           under the conditions of question 20.
+
+    Outcome: might(*), which means neither list-ref nor list-tail is even
+      allowed to raise an exception based on the part of the structure it
+      doesn't need to traverse.
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  don't want to say anything
+
+22.  If (1) there does not exist a natural number n such
+    that the second argument to memq, memv, or member
+    is the first Scheme value of a plausible prefix of
+    length n such that the last value xn of that prefix
+    has the first argument as its car at some time after
+    tn and before the procedure returns, and (2) the
+    second argument is not a plausible list, and (3)
+    there exists some natural number n such that the
+    second argument is not the first Scheme value of
+    any plausible prefix of length n, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must (implied by 23)
+
+    Outcome: must (implied by 23)
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  What does it mean?
+    Answer: If the object being sought is not found,
+    so the procedure has to traverse the entire alleged
+    list, and it finds that the alleged list is not a
+    list because it is terminated improperly (as opposed
+    to not being terminated at all, i.e. circular), then...
+    
+23.  If (1) there does not exist a natural number n such
+    that the second argument to memq, memv, or member
+    is the first Scheme value of a plausible prefix of
+    length n such that the last value xn of that prefix
+    has the first argument as its car at some time after
+    tn and before the procedure returns, and (2) the
+    second argument is not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+24.  If the second argument to memq, memv, or member is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, might(*), might(*), might(*), might(*)
+
+    Outcome: might(*), which means memq, memv, and member
+      are not even allowed to raise an exception based on
+      the part of the structure they don't need to traverse.
+
+    raise an exception with
+    condition type: &list
+
+25.  If (1) there does not exist a natural number n such
+    that the second argument to assq, assv, or assoc
+    is the first Scheme value of a plausible prefix of
+    length n such that every Scheme value x1 through xn
+    of that prefix is a pair, and xn has a pair as its
+    car at some time after tn, and at some time after
+    that the car of that pair is the first argument,
+    all before the procedure returns, and (2) the
+    second argument is not a plausible alist, and (3)
+    there exists some natural number n such that the
+    second argument is not the first Scheme value of
+    any plausible alist prefix of length n, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must (implied by 26)
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &alist
+
+26.  If (1) there does not exist a natural number n such
+    that the second argument to assq, assv, or assoc
+    is the first Scheme value of a plausible prefix of
+    length n such that every Scheme value x1 through xn
+    of that prefix is a pair, and xn has a pair as its
+    car at some time after tn, and at some time after
+    that the car of that pair is the first argument,
+    all before the procedure returns, and (2) the
+    second argument is a plausible list but not a
+    plausible alist, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must (for consistency with 23)
+
+    Outcome: must (for consistency with 23)
+
+    raise an exception with
+    condition type: &alist
+
+27.  If the second argument to assq, assv, or assoc is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: might(*) (for consistency with 24)
+
+    Outcome: might(*), which means assq, assv, and assoc
+      are not even allowed to raise an exception based on
+      the part of the structure they don't need to traverse.
+
+    raise an exception with
+    condition type: &list
+
+28.  If the argument to integer->char is not a Unicode
+    scalar value (i.e. is outside the range of Unicode
+    scalar values, or within the range of surrogates),
+    then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &scalar-value
+
+29.  If the first argument to make-string or make-vector
+    is not a non-negative exact integer, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &non-negative-exact-integer
+
+30.  If the first argument to make-string or make-vector
+    is a non-negative exact integer that is larger than
+    some implementation-specific limit on the size of a
+    string or vector, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, might, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &implementation-restriction
+
+31.  If the second argument to string-ref, vector-ref,
+    string-set!, or vector-set! is not a non-negative
+    exact integer, or the second or third argument to
+    substring is not a non-negative exact integer, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &non-negative-exact-integer
+
+32.  If the second argument to string-ref or vector-ref
+    is a non-negative exact integer that is larger than
+    the string-length or vector-length of the first
+    argument, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &range
+
+33.  If the second or third argument to substring is
+    a non-negative exact integer that is larger than
+    the string-length of the first argument, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &range
+
+34.  If the second argument to substring is larger than
+    the third, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &incompatible
+
+35.  If the argument to list->string or list->vector is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+36.  If the argument to list->string is a plausible list,
+    but for every natural number n and for every plausible
+    prefix of that argument of length n there exists an i
+    such that for all times t such that ti < t < the time
+    of first return from list->string the car of xi is not
+    a character, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &domain
+
+37.  If the last argument to apply is not a plausible list,
+    then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+38.  If any but the first argument to map or for-each is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+39.  If two of the list arguments x and y to map or for-each
+    are plausible lists, but there does not exist a
+    natural number n such that x and y are both plausible
+    lists of length n, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &incompatible
+
+40.  If the argument to force is not a promise created by
+    delay, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &domain
+
+41.  If the escape procedure that is created by
+    call-with-current-continuation is called with zero
+    arguments or with more than one argument, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: discuss, discuss, might, discuss, discuss
+
+    raise an exception with
+    condition type: &violation
+
+    Outcome: flush (bad question; Will was wrong about R5RS)
+
+42.  If zero values or more than one value are returned
+    to a continuation that requires one value, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, should, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &values
+
+43.  If an escape procedure is used to escape from the
+    dynamic context of the before or after thunks passed
+    to a dynamic-wind, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: discuss, discuss, escapes, returns, discuss
+
+    raise an exception with
+    condition type: &violation
+
+    Outcome: considered in just after finishing the "in" thunk,
+      considered out just before starting the "out" thunk.
+
+44.  If the first argument to eval is not syntactically
+    correct, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &syntax
+
+    Issue:  "must raise" eliminates the possibility of
+    a purely interpretive eval.
+
+45.  If the second argument to eval is omitted or is not
+    one of the environments or things that R6RS explicitly
+    allows as the second argument to eval, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, should, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &eval-environment
+
+46.  If the first argument to eval is a definition, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, should
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &eval-definition
+    revised condition type: &syntax (accepted unanimously)
+
+    Issue:  What would it mean to eval a definition?
+    (We no longer have a top-level environment.)
+    Issue:  Kent prefers &syntax to &eval-definition
+
+47.  If the argument to null-environment or scheme-report-environment
+    (which will be in an R5RS compatibility library)
+    is not the exact integer 5, then it
+    [was: is not one of the exact integers 5 or 6, then it]
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &domain
+
+    Issue:  If null-environment and scheme-report-environment
+    are present only in the R5RS compatibility library, then
+    it's probably better to restrict to 5, not allowing 6.
+
+    Unanimous: move to R5RS compatibility library.
+
+48.  If interaction-environment is called, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, abstain, must, may
+
+    Outcome: irrelevant
+
+    raise an exception with
+    condition type: &nonstandard
+
+    Issue:  The interaction-environment procedure is optional
+    even in R5RS, so we could flush it entirely.
+
+    Unanimous: we flush interaction-environment entirely.
+
+49.  If any i/o procedure detects what would (in most other
+    languages/libraries) be considered an i/o error, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &io
+
+50.  If call-with-input-file or open-input-file is asked
+    to open a file that doesn't seem to exist, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &file-does-not-exist
+
+51.  If call-with-output-file or open-output-file is asked
+    to open a file that seems already to exist, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, discuss, must, discuss, must
+
+    raise an exception with
+    condition type: &file-exists
+
+    Issue:  SRFI 79 gives options
+
+    Outcome: Mike will reword as appropriate for the expected R6RS i/o system.
+
+52.  If the string argument to call-with-input-file,
+    call-with-output-file, open-input-file, or
+    open-output-file is not a string of the form
+    that is used to name files on the executing
+    systems, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, should, must, may, discuss
+
+    raise an exception with
+    condition type: &domain
+
+    Issue:  OS-dependent weirdness might make this
+    undecidable, especially as systems evolve.
+
+    Outcome: Mike will reword as appropriate for the expected R6RS i/o system.
+
+53.  If call-with-input-file, call-with-output-file,
+    open-input-file, or open-output-file is unable
+    to open a file for any other reason, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &io
+
+54.  If read encounters an end-of-file in the middle of
+    parsing some external representation that is not yet
+    complete, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &lexical
+
+55.  If read encounters the external representation of an
+    infinity (e.g. -inf.0 or +inf.0), and the implementation
+    is unable to represent the infinity, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, abstain, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &no-infinities
+
+56.  If read encounters the external representation of an
+    NaN (e.g. +nan.0), and the implementation is unable to
+    represent the NaN, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, abstain, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &no-nans
+
+57.  If read encounters the external representation of any
+    other number that the implementation is unable to
+    represent (e.g. a one followed by one million zeros
+    in a system that is unable to represent such large
+    numbers), then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, abstain, should, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &implementation-restriction
+
+58.  If read encounters an external representation of the
+    form #!<symbol>, where <symbol> is a valid external
+    representation of a symbol, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, may, may, may, may
+
+    Outcome: may
+
+    raise an exception with
+    condition type: &lexical
+
+    Issue:  Should the R6RS even try to make the moralistic
+    judgement that distinguishes should/may/might?
+
+59.  If read encounters an external representation of the
+    form #{<datum>*}, where <datum>* is a sequence of
+    valid external representations, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, may, abstain
+
+    Outcome: no majority
+
+    raise an exception with
+    condition type: &lexical
+
+    Issue:  Are implementations allowed any extensions to
+    the lexical syntax, or must programs explicitly import
+    from nonstandard libraries in order to use nonstandard
+    extensions?
+
+    Issue:  Isn't the #!symbol syntax intended to open the door for all
+    extensions, so that we don't need to grant permission for any
+    particular extension?
+
+60.  If read encounters any other nonstandard external
+    representation, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &lexical
+
+61.  If the first argument to write, display, or write-char
+    cannot be output to its second argument (e.g. the first
+    argument to write-char is some weird Unicode character,
+    and the output port accepts only ASCII characters), then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, abstain, discuss, must
+
+    raise an exception with
+    condition type: &incompatible
+
+    Outcome: Mike will reword as appropriate for the expected R6RS i/o system.
+
+
+[end of vote list]
+
+_______________________________________________
+R6RS mailing list
+R6RS@scheming.org
+http://scheming.org/cgi-bin/mailman/listinfo/r6rs
+

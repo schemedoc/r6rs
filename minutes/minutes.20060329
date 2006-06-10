@@ -1,0 +1,152 @@
+Conference call March 22 2006 starting about 12:45pm
+all present by 12:49pm:
+Kent, Anton, Matthew, Mike, Will
+
+0. finalize agenda (1 minute)
+
+1. action items from 3/15/2006 (5 minutes)
+   - create and commit consolidated SRFI 34 + modifications (Mike)
+        done
+   - look over proposed condition hierarchy and details (All)
+   - propose core/base/non-base-library split of r5rs and r6rs features (Anton)
+        done
+   - read SRFI-83 R6RS library syntax (All)
+        done
+   - carried over:
+     - read byte-vector, I/O SRFIs (Anton, Kent, Matthew, Will)
+        done
+     - post note re: van Tonder syntax-case differences (Matthew)
+        covered via email discussions
+     - draft syntax-case SRFI (Kent) [by 3/29]
+
+2. character escape syntax within strings (5 minutes)
+    keep \n, \t, etc
+    rename newline character to linefeed (its Unicode name)
+        but keep \n as its syntax within strings
+    #x<...> vs #x...;
+        vote: go with #x...;
+
+3. what subset of the symbols are allowed as identifiers (10 minutes)
+    what is motivation?
+        to discourage mischief and accidents:
+            variables and expressions that look the same but aren't
+    could restrict string->symbol instead
+        would break 1-1 correspondence between strings and symbols
+        is that really important?
+    could revise symbol syntax to eliminate whitespace, parens, etc
+        use hex escapes for all whitespace, punctuation, weirdness
+        seems like a good compromise
+        doesn't break correspondence between strings and symbols
+        may allow us to flush vertical bar notation for symbols
+
+4. libraries (10-20 minutes)
+    Will's questions and example
+        error in Will's library "B", can be fixed however
+        (1 2 3 1 2 3) is the intended output
+        when a library is invoked twice, a second copy of its
+            variables is created
+    two phases or infinitely many?
+    affects syntax-rules as well as syntax-case
+        SRFI 83: depends on how template is used
+        "Does that make sense?"
+        "Not much of this makes sense."
+        SRFI 72's notion of phases is what Matthew had in mind
+        SRFI 72 is stronger than 83 because it gives access to
+            multiple phases within a single library (using
+            nested begin-for-syntax around an import)
+        Matthew recommended against arbitrary begin-for-syntax
+            but sees no problem with begin-for-syntax just for
+            imports, as part of the library syntax
+        Chez Scheme has meta-syntax, meta-define-syntax, but
+            it doesn't mean what you think it means (?!)
+    what about a procedural macro that depends on a procedure?
+        the procedure would have to be in another library
+            and be imported for expand
+    could flush language string and say library6 instead
+
+5. I/O (10-20 minutes)
+    what does this include?
+    SRFI 81 (ports) and 79 (primitive io), not SRFI 80 or 82
+    opening for both reading and writing
+        buffering (and flushing the output buffer)
+        closing (you can close one without closing the other)
+    Using #f vs an eof object to indicate end of file
+        read needs eof object
+        read-char is an overlap
+        convenience vs confusion and backward compatibility
+
+6. core/library split (10 minutes, time permitting)
+    no time left for this
+
+for next week:
+    core/library split
+    syntax
+    i/o
+
+7. adjourned at 1:45pm
+
+_______________________________________________
+R6RS mailing list
+R6RS@scheming.org
+http://scheming.org/cgi-bin/mailman/listinfo/r6rs
+Conference call March 29 2006 starting at 12:45pm
+Kent, Mike, Anton, Will (Matthew arrived about 12:59pm)
+
+0. finalize agenda (1 minute)
+    consider i/o before macros so Matthew will be here for macros
+
+1. action items from 3/22/2006 (5 minutes)
+   - look over proposed condition hierarchy and details (All)
+        carried over
+   - draft syntax-case SRFI (Kent) [by 3/29]
+        drafted and emailed, but not yet checked into Subversion
+   - propose a set of symbol characters that must be hex-encoded (Flatt)
+        see revised Unicode SRFI
+
+2. Daylight-Savings/Summer-Time meeting time (2 minutes)
+    go with 12:45pm EDT on Wednesdays
+
+3. core/base/non-base-library split (10 minutes)
+    Anton posted a proposal
+        SRFI 83 "scheme://r6rs" doesn't allow smaller or larger languages
+            Anton proposed S-expression-based syntax
+            what matters is not syntax, but what the language can be
+    Anton, Kent, and Matthew will propose a syntax
+        that implies the lexical syntax of the library form,
+        and uses imported libraries for everything else
+    Anton will create strawman list of proposed libraries
+
+4. continue I/O discussion (15 minutes)
+    Mike: major issue is with text encoding
+        text encoding is binary data to binary data
+        general agreement on that, with some uneasiness
+    what are descriptors?
+        completely implementation-dependent
+    file-options, buffer modes, eol styles, etc
+        some allowed to be inexact reals
+        some required to be disjoint types
+        why not use symbols?
+        let's choose some mechanism and use it consistently:
+            symbols, lists of symbols, or some new enumeration mechanism
+    u8vector and blobs
+        allowing them to be the same, but not requiring them to be,
+            invites portability problems
+        make them the same, but eliminate the u8vector name
+            u8vector is misleading because it promotes one view
+                (as unsigned 8-bit bytes) at expense of other views
+        blobs has database precedent (binary large object)
+            but ugly, undignified, and unsuggestive
+        possible alternative names for u8vector-ref:
+            bytes-ref
+            binary-vector-ref
+            bvector-ref
+            bv-ref
+    if cond's => hack is the main argument for returning #f at eof,
+        then why not add an eof=> hack?
+
+5. syntax-case macros (20 minutes)
+    deferred to next week
+
+6. adjourned about 1:43pm
+
+Will

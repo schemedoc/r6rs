@@ -1,0 +1,69 @@
+Conference call April 5 2006 12:45pm
+All present by about 12:47pm:
+Kent, Anton, Matthew, Will, Mike
+
+Matthew will not be available next Wednesday
+Tuesday at 12:30pm might work
+
+0. finalize agenda (1 minute)
+    no changes
+
+1. action items from 3/29/2006 (5 minutes)
+   - read syntax-case SRFI for 4/5 meeting (All)
+   - propose library modifications to allow subsetting, supersetting,
+     defining new libraries, and to allow for lexical syntax extensions
+     or future changes (Anton, Matthew, Kent)
+        not done yet
+   - propose enumeration mechanism to replace ad-hoc enumerations in
+     the I/O, binary SRFIs (Mike)
+        proposed
+   - propose a better name than ``blob'' for byte-addressible octet vectors
+     (Anton)
+        bytes
+   - complete proposed list of libraries (Anton)
+        not done yet
+   - carried over:
+     - look over proposed condition hierarchy and details (All)
+        to be discussed electronically
+
+2. syntax-case macros (20 minutes)
+    no reference implementation yet
+    opacity of syntax objects
+        three reasonable positions:
+            opaque, no exceptions, as in PLT Scheme
+            list structure except for identifiers, as in SRFI 72
+            allow both of the above extremes and everything between
+                would probably create portability problems
+                but we might have those problems anyway if something
+                    like SRFI 72 becomes a popular alternative
+    specification needs to be more precise from user's perspective
+        matching described using list structure, not syntax objects
+        marks mentioned only at end of section 3.1:
+            "Hygiene is enforced by attaching a fresh mark to the
+                output of the introduced portions of each transformer
+                result...."
+            one mark per introduced portion?  or same mark to all?
+            when syntax is used, or when transformer returns?
+            what about recursive transformers, with multiple returns?
+            marks never used to describe semantics of anything:
+                matching of identifiers (but see literal-identifier=?)
+                literal-identifier=?
+        bound-identifier=? and free-identifier=? described in terms
+            of bound and free identifiers, but bound and free with
+            respect to what?
+    probably need both:
+        a formal semantics for language lawyers and implementors
+        an informal description for programmers, who can refer to
+            the formal semantics in hard cases or ask a lawyer
+            or ask an implementation
+    potential interactions with help procedures
+        make precise semantics even more important
+
+3. eval: flush from or adapt for r6rs?
+
+for next week:
+process and schedule
+library split
+eval and load
+
+4. adjourned about 1:43pm
