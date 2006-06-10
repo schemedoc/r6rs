@@ -1,4 +1,15 @@
 ((library:r6rs-core
+   |#\alarm|
+   |#\backspace|
+   |#\delete|
+   |#\esc|
+   |#\linefeed|
+   |#\nul|
+   |#\page|
+   |#\return|
+   |#\space|
+   |#\tab|
+   |#\vtab|
    &condition
    &error
    &message
@@ -50,22 +61,43 @@
    ceiling
    char->integer
    char-alphabetic?
+   char-alphabetic?
+   char-ci<=?
    char-ci<=?
    char-ci<?
+   char-ci<?
+   char-ci=?
    char-ci=?
    char-ci>=?
+   char-ci>=?
+   char-ci>?
    char-ci>?
    char-downcase
+   char-downcase
+   char-foldcase
+   char-general-category
+   char-lower-case?
    char-lower-case?
    char-numeric?
+   char-numeric?
    char-ready?
+   char-title-case?
+   char-titlecase
+   char-upcase
    char-upcase
    char-upper-case?
+   char-upper-case?
+   char-whitespace?
    char-whitespace?
    char<=?
+   char<=?
+   char<?
    char<?
    char=?
+   char=?
    char>=?
+   char>=?
+   char>?
    char>?
    char?
    complex?
@@ -112,6 +144,7 @@
    letrec*
    letrec-syntax
    letrec-values
+   library
    list
    list->string
    list->vector
@@ -166,19 +199,37 @@
    string->symbol
    string-append
    string-ci<=?
+   string-ci<=?
+   string-ci<?
    string-ci<?
    string-ci=?
+   string-ci=?
+   string-ci>=?
    string-ci>=?
    string-ci>?
+   string-ci>?
    string-copy
+   string-downcase
    string-fill!
+   string-foldcase
    string-length
+   string-normalize-nfc
+   string-normalize-nfd
+   string-normalize-nfkc
+   string-normalize-nfkd
    string-ref
    string-set!
+   string-titlecase
+   string-upcase
+   string<=?
    string<=?
    string<?
+   string<?
+   string=?
    string=?
    string>=?
+   string>=?
+   string>?
    string>?
    string?
    substring
@@ -585,6 +636,104 @@
    inexact=?
    inexact>=?
    inexact>?)
+ (library:primitive-i/o
+   file-options
+   file-options-include?
+   file-options-union
+   file-options?
+   make-i/o-buffer
+   make-simple-reader
+   make-simple-writer
+   open-bytes-reader
+   open-bytes-writer
+   open-file-reader
+   open-file-reader+writer
+   open-file-writer
+   reader-available
+   reader-chunk-size
+   reader-close
+   reader-descriptor
+   reader-end-position
+   reader-get-position
+   reader-has-end-position?
+   reader-has-get-position?
+   reader-has-set-position!?
+   reader-id
+   reader-read!
+   reader-set-position!
+   reader?
+   standard-error-writer
+   standard-input-reader
+   standard-output-writer
+   writer-bytes
+   writer-chunk-size
+   writer-close
+   writer-descriptor
+   writer-end-position
+   writer-get-position
+   writer-has-end-position?
+   writer-has-get-position?
+   writer-has-set-position!?
+   writer-id
+   writer-set-position!
+   writer-write!
+   writer?)
+ (library:port-i/o
+   buffer-mode
+   buffer-mode?
+   call-with-bytes-output-port
+   call-with-input-port
+   call-with-output-port
+   call-with-string-output-port
+   close-input-port
+   close-output-port
+   eol-style
+   flush-output-port
+   input-port-position
+   input-port?
+   latin-1-codec
+   newline
+   open-bytes-input-port
+   open-file-input+output-ports
+   open-file-input-port
+   open-file-output-port
+   open-reader-input-port
+   open-string-input-port
+   open-writer-output-port
+   output-port-buffer-mode
+   output-port-position
+   output-port?
+   peek-char
+   peek-u8
+   port-eof?
+   read-bytes-all
+   read-bytes-n
+   read-bytes-n!
+   read-bytes-some
+   read-char
+   read-string
+   read-string-all
+   read-string-n
+   read-string-n!
+   read-u8
+   set-input-port-position!
+   set-output-port-buffer-mode!
+   set-output-port-position!
+   standard-error-port
+   standard-input-port
+   standard-output-port
+   transcode-input-port!
+   transcode-output-port!
+   transcoder
+   update-transcoder
+   utf-16be-codec
+   utf-16le-codec
+   utf-32be-codec
+   utf-32le-codec
+   write-bytes
+   write-char
+   write-string-n
+   write-u8)
  (library:records-procedural
    make-record-constructor-descriptor
    make-record-type-descriptor
@@ -613,6 +762,35 @@
    record-type-uid
    record?)
  (library:promises delay force)
+ (library:hash
+   equal-hash
+   hash-table-clear!
+   hash-table-contains?
+   hash-table-copy
+   hash-table-delete!
+   hash-table-equivalence-predicate
+   hash-table-fold
+   hash-table-for-each
+   hash-table-get
+   hash-table-hash-function
+   hash-table-mutable?
+   hash-table-ref
+   hash-table-ref/call
+   hash-table-ref/default
+   hash-table-ref/thunk
+   hash-table-set!
+   hash-table-size
+   hash-table-update!
+   hash-table-update!/call
+   hash-table-update!/default
+   hash-table-update!/thunk
+   hash-table?
+   make-eq-hash-table
+   make-eqv-hash-table
+   make-hash-table
+   string-ci-hash
+   string-hash
+   symbol-hash)
  (library:eval eval eval-library library-environment load)
  (library:r5rs-compatibility
    exact->inexact
