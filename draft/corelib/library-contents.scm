@@ -18,34 +18,17 @@
    &violation
    &warning
    |'|
-   *
-   +
    |,|
    |,@|
-   -
-   ->exact
-   ->inexact
-   /
    |;|
-   <
-   <=
-   =
    =>
-   >
-   >=
    |`|
-   abs
-   acos
    and
-   and
-   angle
    append
    apply
-   asin
    assoc
    assq
    assv
-   atan
    begin
    boolean?
    caar
@@ -58,49 +41,29 @@
    cdddar
    cddddr
    cdr
-   ceiling
    char->integer
    char-alphabetic?
-   char-alphabetic?
-   char-ci<=?
    char-ci<=?
    char-ci<?
-   char-ci<?
-   char-ci=?
    char-ci=?
    char-ci>=?
-   char-ci>=?
    char-ci>?
-   char-ci>?
-   char-downcase
    char-downcase
    char-foldcase
    char-general-category
    char-lower-case?
-   char-lower-case?
    char-numeric?
-   char-numeric?
-   char-ready?
    char-title-case?
    char-titlecase
    char-upcase
-   char-upcase
-   char-upper-case?
    char-upper-case?
    char-whitespace?
-   char-whitespace?
-   char<=?
    char<=?
    char<?
-   char<?
-   char=?
    char=?
    char>=?
-   char>=?
-   char>?
    char>?
    char?
-   complex?
    cond
    condition
    condition-has-type?
@@ -108,33 +71,21 @@
    condition-type?
    condition?
    cons
-   cos
    define
    define-condition-type
    define-syntax
-   denominator
    do
    dynamic-wind
    else
    eq?
    equal?
    eqv?
-   even?
-   exact?
-   exp
-   expt
    extract-condition
-   floor
    for-each
-   gcd
    guard
    if
-   imag-part
-   inexact?
    integer->char
-   integer?
    lambda
-   lcm
    length
    let
    let*
@@ -151,62 +102,36 @@
    list-ref
    list-tail
    list?
-   log
-   magnitude
    make-compound-condition
    make-condition
    make-condition-type
-   make-polar
-   make-rectangular
    make-string
    make-vector
    map
-   max
    member
    memq
    memv
-   min
-   negative?
    not
    null?
-   number->string
-   number?
-   numerator
-   odd?
-   or
    or
    pair?
-   positive?
    procedure?
    quasiquote
    quote
    raise
    raise-continuable
-   rational?
-   rationalize
-   real-part
-   real?
    reverse
-   round
    set!
    set-car!
    set-cdr!
-   sin
-   sqrt
    string
    string->list
-   string->number
    string->symbol
    string-append
    string-ci<=?
-   string-ci<=?
-   string-ci<?
    string-ci<?
    string-ci=?
-   string-ci=?
    string-ci>=?
-   string-ci>=?
-   string-ci>?
    string-ci>?
    string-copy
    string-downcase
@@ -222,21 +147,14 @@
    string-titlecase
    string-upcase
    string<=?
-   string<=?
-   string<?
    string<?
    string=?
-   string=?
    string>=?
-   string>=?
-   string>?
    string>?
    string?
    substring
    symbol->string
    symbol?
-   tan
-   truncate
    unquote
    unquote-splicing
    values
@@ -247,8 +165,7 @@
    vector-ref
    vector-set!
    vector?
-   with-exception-handler
-   zero?)
+   with-exception-handler)
  (library:syntax-rules ... syntax-rules)
  (library:syntax-case
    bound-identifier=?
@@ -313,8 +230,8 @@
    *
    +
    -
-   -
-   /
+   ->exact
+   ->inexact
    /
    <
    <=
@@ -326,7 +243,6 @@
    angle
    asin
    atan
-   atan
    ceiling
    complex?
    cos
@@ -336,7 +252,6 @@
    div0
    div0+mod0
    even?
-   exact->inexact
    exact?
    exp
    expt
@@ -344,7 +259,6 @@
    floor
    gcd
    imag-part
-   inexact->exact
    inexact?
    infinite?
    integer-valued?
@@ -361,8 +275,6 @@
    nan?
    negative?
    number->string
-   number->string
-   number->string
    number?
    numerator
    odd?
@@ -378,7 +290,6 @@
    sin
    sqrt
    string->number
-   string->number
    tan
    truncate
    zero?)
@@ -387,7 +298,6 @@
    fixnum*/carry
    fixnum+
    fixnum+/carry
-   fixnum-
    fixnum-
    fixnum-/carry
    fixnum-and
@@ -436,8 +346,6 @@
    fl*
    fl+
    fl-
-   fl-
-   fl/
    fl/
    fl<
    fl<=
@@ -482,7 +390,6 @@
    fx*
    fx+
    fx-
-   fx-
    fx<
    fx<=
    fx=
@@ -521,7 +428,6 @@
  (library:arithmetic-exact
    exact*
    exact+
-   exact-
    exact-
    exact-abs
    exact-and
@@ -572,7 +478,6 @@
    exact-xor
    exact-zero?
    exact/
-   exact/
    exact<=?
    exact<?
    exact=
@@ -582,11 +487,9 @@
    inexact*
    inexact+
    inexact-
-   inexact-
    inexact-abs
    inexact-angle
    inexact-asin
-   inexact-atan
    inexact-atan
    inexact-ceiling
    inexact-complex?
@@ -629,7 +532,6 @@
    inexact-tan
    inexact-truncate
    inexact-zero?
-   inexact/
    inexact/
    inexact<=?
    inexact<?
@@ -800,4 +702,8 @@
    quotient
    remainder
    scheme-report-environment)
- (library:obsolete interaction-environment transcript-off transcript-on))
+ (library:obsolete
+   char-ready?
+   interaction-environment
+   transcript-off
+   transcript-on))
