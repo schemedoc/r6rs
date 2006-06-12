@@ -1,709 +1,721 @@
-((library:r6rs-core
-   |#\alarm|
-   |#\backspace|
-   |#\delete|
-   |#\esc|
-   |#\linefeed|
-   |#\nul|
-   |#\page|
-   |#\return|
-   |#\space|
-   |#\tab|
-   |#\vtab|
-   &condition
-   &error
-   &message
-   &non-continuable
-   &serious
-   &violation
-   &warning
-   |'|
-   |,|
-   |,@|
-   |;|
-   =>
-   |`|
-   and
-   append
-   apply
-   assoc
-   assq
-   assv
-   begin
-   boolean?
-   caar
-   cadr
-   call-with-current-continuation
-   call-with-values
-   call/cc
-   car
-   case
-   cdddar
-   cddddr
-   cdr
-   char->integer
-   char-alphabetic?
-   char-ci<=?
-   char-ci<?
-   char-ci=?
-   char-ci>=?
-   char-ci>?
-   char-downcase
-   char-foldcase
-   char-general-category
-   char-lower-case?
-   char-numeric?
-   char-title-case?
-   char-titlecase
-   char-upcase
-   char-upper-case?
-   char-whitespace?
-   char<=?
-   char<?
-   char=?
-   char>=?
-   char>?
-   char?
-   cond
-   condition
-   condition-has-type?
-   condition-ref
-   condition-type?
-   condition?
-   cons
-   define
-   define-condition-type
-   define-syntax
-   do
-   dynamic-wind
-   else
-   eq?
-   equal?
-   eqv?
-   extract-condition
-   for-each
-   guard
-   if
-   integer->char
-   lambda
-   length
-   let
-   let*
-   let-syntax
-   let-values
-   letrec
-   letrec*
-   letrec-syntax
-   letrec-values
-   library
-   list
-   list->string
-   list->vector
-   list-ref
-   list-tail
-   list?
-   make-compound-condition
-   make-condition
-   make-condition-type
-   make-string
-   make-vector
-   map
-   member
-   memq
-   memv
-   not
-   null?
-   or
-   pair?
-   procedure?
-   quasiquote
-   quote
-   raise
-   raise-continuable
-   reverse
-   set!
-   set-car!
-   set-cdr!
-   string
-   string->list
-   string->symbol
-   string-append
-   string-ci<=?
-   string-ci<?
-   string-ci=?
-   string-ci>=?
-   string-ci>?
-   string-copy
-   string-downcase
-   string-fill!
-   string-foldcase
-   string-length
-   string-normalize-nfc
-   string-normalize-nfd
-   string-normalize-nfkc
-   string-normalize-nfkd
-   string-ref
-   string-set!
-   string-titlecase
-   string-upcase
-   string<=?
-   string<?
-   string=?
-   string>=?
-   string>?
-   string?
-   substring
-   symbol->string
-   symbol?
-   unquote
-   unquote-splicing
-   values
-   vector
-   vector->list
-   vector-fill!
-   vector-length
-   vector-ref
-   vector-set!
-   vector?
-   with-exception-handler)
- (library:syntax-rules ... syntax-rules)
- (library:syntax-case
-   bound-identifier=?
-   datum->syntax
-   free-identifier=?
-   generate-temporaries
-   identifier-syntax
-   identifier?
-   make-variable-transformer
-   syntax
-   syntax->datum
-   syntax-case
-   with-syntax)
- (library:bytes
-   bytes->sint-list
-   bytes->u8-list
-   bytes->uint-list
-   bytes-copy
-   bytes-copy!
-   bytes-length
-   bytes-s16-native-ref
-   bytes-s16-native-set!
-   bytes-s16-ref
-   bytes-s16-set!
-   bytes-s32-native-ref
-   bytes-s32-native-set!
-   bytes-s32-ref
-   bytes-s32-set!
-   bytes-s64-native-ref
-   bytes-s64-native-set!
-   bytes-s64-ref
-   bytes-s64-set!
-   bytes-s8-ref
-   bytes-s8-set!
-   bytes-sint-ref
-   bytes-sint-set!
-   bytes-u16-native-ref
-   bytes-u16-native-set!
-   bytes-u16-ref
-   bytes-u16-set!
-   bytes-u32-native-ref
-   bytes-u32-native-set!
-   bytes-u32-ref
-   bytes-u32-set!
-   bytes-u64-native-ref
-   bytes-u64-native-set!
-   bytes-u64-ref
-   bytes-u64-set!
-   bytes-u8-ref
-   bytes-u8-set!
-   bytes-uint-ref
-   bytes-uint-set!
-   bytes=?
-   bytes?
-   endianness
-   make-bytes
-   native-endianness
-   sint-list->bytes
-   u8-list->bytes
-   uint-list->bytes)
- (library:arithmetic-generic
-   *
-   +
-   -
-   ->exact
-   ->inexact
-   /
-   <
-   <=
-   =
-   >
-   >=
-   abs
-   acos
-   angle
-   asin
-   atan
-   ceiling
-   complex?
-   cos
-   denominator
-   div
-   div+mod
-   div0
-   div0+mod0
-   even?
-   exact?
-   exp
-   expt
-   finite?
-   floor
-   gcd
-   imag-part
-   inexact?
-   infinite?
-   integer-valued?
-   integer?
-   lcm
-   log
-   magnitude
-   make-polar
-   make-rectangular
-   max
-   min
-   mod
-   mod0
-   nan?
-   negative?
-   number->string
-   number?
-   numerator
-   odd?
-   positive?
-   rational-valued?
-   rational?
-   rationalize
-   real->flonum
-   real-part
-   real-valued?
-   real?
-   round
-   sin
-   sqrt
-   string->number
-   tan
-   truncate
-   zero?)
- (library:arithmetic-fixnum
-   fixnum*
-   fixnum*/carry
-   fixnum+
-   fixnum+/carry
-   fixnum-
-   fixnum-/carry
-   fixnum-and
-   fixnum-arithmetic-shift
-   fixnum-arithmetic-shift-left
-   fixnum-arithmetic-shift-right
-   fixnum-bit-count
-   fixnum-bit-field
-   fixnum-bit-set?
-   fixnum-copy-bit
-   fixnum-copy-bit-field
-   fixnum-div
-   fixnum-div+mod
-   fixnum-div0
-   fixnum-div0+mod0
-   fixnum-even?
-   fixnum-first-bit-set
-   fixnum-if
-   fixnum-ior
-   fixnum-length
-   fixnum-logical-shift-left
-   fixnum-logical-shift-right
-   fixnum-max
-   fixnum-min
-   fixnum-mod
-   fixnum-mod0
-   fixnum-negative?
-   fixnum-not
-   fixnum-odd?
-   fixnum-positive?
-   fixnum-reverse-bit-field
-   fixnum-rotate-bit-field
-   fixnum-width
-   fixnum-xor
-   fixnum-zero?
-   fixnum<
-   fixnum<=
-   fixnum=
-   fixnum>
-   fixnum>=
-   fixnum?
-   greatest-fixnum
-   least-fixnum)
- (library:arithmetic-flonum
-   fixnum->flonum
-   fl*
-   fl+
-   fl-
-   fl/
-   fl<
-   fl<=
-   fl=
-   fl>
-   fl>=
-   flabs
-   flasin
-   flatan
-   flceiling
-   flcos
-   fldenominator
-   fldiv
-   fldiv+mod
-   fldiv0
-   fldiv0+mod0
-   fleven?
-   flexp
-   flexpt
-   flfinite?
-   flfloor
-   flinfinite?
-   flinteger?
-   fllog
-   flmax
-   flmin
-   flmod
-   flmod0
-   flnan?
-   flnegative?
-   flnumerator
-   flodd?
-   flonum?
-   flpositive?
-   flround
-   flsin
-   flsqrt
-   fltan
-   fltruncate
-   flzero?)
- (library:arithmetic-fx
-   fx*
-   fx+
-   fx-
-   fx<
-   fx<=
-   fx=
-   fx>
-   fx>=
-   fxand
-   fxarithmetic-shift
-   fxarithmetic-shift-left
-   fxarithmetic-shift-right
-   fxbit-count
-   fxbit-field
-   fxbit-set?
-   fxcopy-bit
-   fxcopy-bit-field
-   fxdiv
-   fxdiv+mod
-   fxdiv0
-   fxdiv0+mod0
-   fxeven?
-   fxfirst-bit-set
-   fxif
-   fxior
-   fxlength
-   fxmax
-   fxmin
-   fxmod
-   fxmod0
-   fxnegative?
-   fxnot
-   fxodd?
-   fxpositive?
-   fxreverse-bit-field
-   fxrotate-bit-field
-   fxxor
-   fxzero?)
- (library:arithmetic-exact
-   exact*
-   exact+
-   exact-
-   exact-abs
-   exact-and
-   exact-arithmetic-shift
-   exact-arithmetic-shift-left
-   exact-arithmetic-shift-right
-   exact-bit-count
-   exact-bit-field
-   exact-bit-set?
-   exact-ceiling
-   exact-complex?
-   exact-copy-bit
-   exact-copy-bit-field
-   exact-denominator
-   exact-div
-   exact-div+mod
-   exact-div0
-   exact-div0+mod0
-   exact-even?
-   exact-expt
-   exact-first-bit-set
-   exact-floor
-   exact-gcd
-   exact-if
-   exact-imag-part
-   exact-integer-sqrt
-   exact-integer?
-   exact-ior
-   exact-lcm
-   exact-length
-   exact-make-rectangular
-   exact-max
-   exact-min
-   exact-mod
-   exact-mod0
-   exact-negative?
-   exact-not
-   exact-number?
-   exact-numerator
-   exact-odd?
-   exact-positive?
-   exact-rational?
-   exact-real-part
-   exact-reverse-bit-field
-   exact-rotate-bit-field
-   exact-round
-   exact-truncate
-   exact-xor
-   exact-zero?
-   exact/
-   exact<=?
-   exact<?
-   exact=
-   exact>=?
-   exact>?)
- (library:arithmetic-inexact
-   inexact*
-   inexact+
-   inexact-
-   inexact-abs
-   inexact-angle
-   inexact-asin
-   inexact-atan
-   inexact-ceiling
-   inexact-complex?
-   inexact-cos
-   inexact-denominator
-   inexact-div
-   inexact-div+mod
-   inexact-div0
-   inexact-div0+mod0
-   inexact-even?
-   inexact-exp
-   inexact-expt
-   inexact-finite?
-   inexact-floor
-   inexact-gcd
-   inexact-imag-part
-   inexact-infinite?
-   inexact-integer?
-   inexact-lcm
-   inexact-log
-   inexact-magnitude
-   inexact-make-polar
-   inexact-make-rectangular
-   inexact-max
-   inexact-min
-   inexact-mod
-   inexact-mod0
-   inexact-nan?
-   inexact-negative?
-   inexact-number?
-   inexact-numerator
-   inexact-odd?
-   inexact-positive?
-   inexact-rational?
-   inexact-real-part
-   inexact-real?
-   inexact-round
-   inexact-sin
-   inexact-sqrt
-   inexact-tan
-   inexact-truncate
-   inexact-zero?
-   inexact/
-   inexact<=?
-   inexact<?
-   inexact=?
-   inexact>=?
-   inexact>?)
- (library:primitive-i/o
-   file-options
-   file-options-include?
-   file-options-union
-   file-options?
-   make-i/o-buffer
-   make-simple-reader
-   make-simple-writer
-   open-bytes-reader
-   open-bytes-writer
-   open-file-reader
-   open-file-reader+writer
-   open-file-writer
-   reader-available
-   reader-chunk-size
-   reader-close
-   reader-descriptor
-   reader-end-position
-   reader-get-position
-   reader-has-end-position?
-   reader-has-get-position?
-   reader-has-set-position!?
-   reader-id
-   reader-read!
-   reader-set-position!
-   reader?
-   standard-error-writer
-   standard-input-reader
-   standard-output-writer
-   writer-bytes
-   writer-chunk-size
-   writer-close
-   writer-descriptor
-   writer-end-position
-   writer-get-position
-   writer-has-end-position?
-   writer-has-get-position?
-   writer-has-set-position!?
-   writer-id
-   writer-set-position!
-   writer-write!
-   writer?)
- (library:port-i/o
-   buffer-mode
-   buffer-mode?
-   call-with-bytes-output-port
-   call-with-input-port
-   call-with-output-port
-   call-with-string-output-port
-   close-input-port
-   close-output-port
-   eol-style
-   flush-output-port
-   input-port-position
-   input-port?
-   latin-1-codec
-   newline
-   open-bytes-input-port
-   open-file-input+output-ports
-   open-file-input-port
-   open-file-output-port
-   open-reader-input-port
-   open-string-input-port
-   open-writer-output-port
-   output-port-buffer-mode
-   output-port-position
-   output-port?
-   peek-char
-   peek-u8
-   port-eof?
-   read-bytes-all
-   read-bytes-n
-   read-bytes-n!
-   read-bytes-some
-   read-char
-   read-string
-   read-string-all
-   read-string-n
-   read-string-n!
-   read-u8
-   set-input-port-position!
-   set-output-port-buffer-mode!
-   set-output-port-position!
-   standard-error-port
-   standard-input-port
-   standard-output-port
-   transcode-input-port!
-   transcode-output-port!
-   transcoder
-   update-transcoder
-   utf-16be-codec
-   utf-16le-codec
-   utf-32be-codec
-   utf-32le-codec
-   write-bytes
-   write-char
-   write-string-n
-   write-u8)
- (library:records-procedural
-   make-record-constructor-descriptor
-   make-record-type-descriptor
-   record-accessor
-   record-constructor
-   record-mutator
-   record-predicate
-   record-type-descriptor?)
- (library:records-explicit
-   define-record-type
-   record-constructor-descriptor
-   record-type-descriptor)
- (library:records-implicit
-   define-record-type
-   record-constructor-descriptor
-   record-type-descriptor)
- (library:records-reflection
-   record-field-mutable?
-   record-rtd
-   record-type-field-names
-   record-type-generative?
-   record-type-name
-   record-type-opaque?
-   record-type-parent
-   record-type-sealed?
-   record-type-uid
-   record?)
- (library:promises delay force)
- (library:hash
-   equal-hash
-   hash-table-clear!
-   hash-table-contains?
-   hash-table-copy
-   hash-table-delete!
-   hash-table-equivalence-predicate
-   hash-table-fold
-   hash-table-for-each
-   hash-table-get
-   hash-table-hash-function
-   hash-table-mutable?
-   hash-table-ref
-   hash-table-ref/call
-   hash-table-ref/default
-   hash-table-ref/thunk
-   hash-table-set!
-   hash-table-size
-   hash-table-update!
-   hash-table-update!/call
-   hash-table-update!/default
-   hash-table-update!/thunk
-   hash-table?
-   make-eq-hash-table
-   make-eqv-hash-table
-   make-hash-table
-   string-ci-hash
-   string-hash
-   symbol-hash)
- (library:eval eval eval-library library-environment load)
- (library:r5rs-compatibility
-   exact->inexact
-   inexact->exact
-   modulo
-   null-environment
-   quotient
-   remainder
-   scheme-report-environment)
- (library:obsolete
-   char-ready?
-   interaction-environment
-   transcript-off
-   transcript-on))
+(("r6rs-core"
+  (|#\alarm| character primitive)
+  (|#\backspace| character primitive)
+  (|#\delete| character primitive)
+  (|#\esc| character primitive)
+  (|#\linefeed| character primitive)
+  (|#\nul| character primitive)
+  (|#\page| character primitive)
+  (|#\return| character primitive)
+  (|#\space| character primitive)
+  (|#\tab| character primitive)
+  (|#\vtab| character primitive)
+  (&condition condition derived)
+  (&error condition derived)
+  (&message condition derived)
+  (&non-continuable condition derived)
+  (&serious condition derived)
+  (&violation condition derived)
+  (&warning condition derived)
+  (|'| syntax primitive)
+  (|;| lexical-syntax derived)
+  (|`| lexical-syntax primitive (alias quasiquote))
+  (and syntax derived)
+  (append procedure derived)
+  (apply procedure derived)
+  (assoc procedure derived)
+  (assq procedure derived)
+  (assv procedure derived)
+  (begin syntax derived)
+  (boolean? procedure derived)
+  (caar procedure derived)
+  (cadr procedure derived)
+  (call-with-current-continuation procedure derived)
+  (call-with-values procedure primitive)
+  (call/cc procedure (alias call-with-current-continuation))
+  (car procedure primitive)
+  (case syntax derived)
+  (cdddar procedure derived)
+  (cddddr procedure derived)
+  (cdr procedure primitive)
+  (char->integer procedure derived)
+  (char-alphabetic? procedure derived)
+  (char-ci<=? procedure derived)
+  (char-ci<? procedure derived)
+  (char-ci=? procedure derived)
+  (char-ci>=? procedure derived)
+  (char-ci>? procedure derived)
+  (char-downcase procedure derived)
+  (char-foldcase procedure derived)
+  (char-general-category procedure derived)
+  (char-lower-case? procedure derived)
+  (char-numeric? procedure derived)
+  (char-title-case? procedure derived)
+  (char-titlecase procedure derived)
+  (char-upcase procedure derived)
+  (char-upper-case? procedure derived)
+  (char-whitespace? procedure derived)
+  (char<=? procedure derived)
+  (char<? procedure derived)
+  (char=? procedure derived)
+  (char>=? procedure derived)
+  (char>? procedure derived)
+  (char? procedure primitive)
+  (cond syntax derived)
+  (condition procedure derived)
+  (condition-has-type? procedure derived)
+  (condition-ref procedure derived)
+  (condition-type? procedure derived)
+  (condition? procedure derived)
+  (cons procedure primitive)
+  (define syntax primitive)
+  (define-condition-type procedure derived)
+  (define-syntax syntax primitive)
+  (do syntax derived)
+  (dynamic-wind procedure derived)
+  (eq? procedure primitive)
+  (equal? procedure derived)
+  (eqv? procedure primitive)
+  (extract-condition procedure derived)
+  (for-each procedure derived)
+  (guard procedure derived)
+  (if syntax primitive)
+  (integer->char procedure derived)
+  (lambda syntax primitive)
+  (length procedure derived)
+  (let syntax derived)
+  (let* syntax derived)
+  (let-syntax syntax primitive)
+  (let-values syntax derived)
+  (letrec syntax derived)
+  (letrec* syntax derived)
+  (letrec-syntax syntax primitive)
+  (letrec-values syntax derived)
+  (library syntax primitive)
+  (list procedure derived)
+  (list->string procedure derived)
+  (list->vector procedure derived)
+  (list-ref procedure derived)
+  (list-tail procedure derived)
+  (list? procedure derived)
+  (make-compound-condition procedure derived)
+  (make-condition procedure derived)
+  (make-condition-type procedure derived)
+  (make-string procedure derived)
+  (make-vector procedure derived)
+  (map procedure derived)
+  (member procedure derived)
+  (memq procedure derived)
+  (memv procedure derived)
+  (not procedure derived)
+  (null? procedure derived)
+  (or syntax derived)
+  (pair? procedure primitive)
+  (procedure? procedure primitive)
+  (quasiquote syntax primitive)
+  (quote syntax primitive)
+  (raise procedure derived)
+  (raise-continuable procedure derived)
+  (reverse procedure derived)
+  (set! syntax primitive)
+  (set-car! procedure primitive)
+  (set-cdr! procedure primitive)
+  (string procedure derived)
+  (string->list procedure derived)
+  (string->symbol procedure derived)
+  (string-append procedure derived)
+  (string-ci<=? procedure derived)
+  (string-ci<? procedure derived)
+  (string-ci=? procedure derived)
+  (string-ci>=? procedure derived)
+  (string-ci>? procedure derived)
+  (string-copy procedure derived)
+  (string-downcase procedure derived)
+  (string-fill! procedure derived)
+  (string-foldcase procedure derived)
+  (string-length procedure derived)
+  (string-normalize-nfc procedure derived)
+  (string-normalize-nfd procedure derived)
+  (string-normalize-nfkc procedure derived)
+  (string-normalize-nfkd procedure derived)
+  (string-ref procedure derived)
+  (string-set! procedure derived)
+  (string-titlecase procedure derived)
+  (string-upcase procedure derived)
+  (string<=? procedure derived)
+  (string<? procedure derived)
+  (string=? procedure derived)
+  (string>=? procedure derived)
+  (string>? procedure derived)
+  (string? procedure primitive)
+  (substring procedure derived)
+  (symbol->string procedure derived)
+  (symbol? procedure primitive)
+  (values procedure primitive)
+  (vector procedure derived)
+  (vector->list procedure derived)
+  (vector-fill! procedure derived)
+  (vector-length procedure derived)
+  (vector-ref procedure derived)
+  (vector-set! procedure derived)
+  (vector? procedure primitive)
+  (with-exception-handler procedure derived))
+ ("syntax-rules" (syntax-rules syntax primitive))
+ ("syntax-case"
+  (bound-identifier=? procedure derived)
+  (datum->syntax procedure derived)
+  (free-identifier=? procedure derived)
+  (generate-temporaries procedure derived)
+  (identifier-syntax procedure derived)
+  (identifier? procedure derived)
+  (make-variable-transformer procedure derived)
+  (syntax procedure derived)
+  (syntax->datum procedure derived)
+  (syntax-case procedure derived)
+  (with-syntax procedure derived))
+ ("bytes"
+  (bytes->sint-list procedure derived)
+  (bytes->u8-list procedure derived)
+  (bytes->uint-list procedure derived)
+  (bytes-copy procedure derived)
+  (bytes-copy! procedure derived)
+  (bytes-length procedure derived)
+  (bytes-s16-native-ref procedure derived)
+  (bytes-s16-native-set! procedure derived)
+  (bytes-s16-ref procedure derived)
+  (bytes-s16-set! procedure derived)
+  (bytes-s32-native-ref procedure derived)
+  (bytes-s32-native-set! procedure derived)
+  (bytes-s32-ref procedure derived)
+  (bytes-s32-set! procedure derived)
+  (bytes-s64-native-ref procedure derived)
+  (bytes-s64-native-set! procedure derived)
+  (bytes-s64-ref procedure derived)
+  (bytes-s64-set! procedure derived)
+  (bytes-s8-ref procedure derived)
+  (bytes-s8-set! procedure derived)
+  (bytes-sint-ref procedure derived)
+  (bytes-sint-set! procedure derived)
+  (bytes-u16-native-ref procedure derived)
+  (bytes-u16-native-set! procedure derived)
+  (bytes-u16-ref procedure derived)
+  (bytes-u16-set! procedure derived)
+  (bytes-u32-native-ref procedure derived)
+  (bytes-u32-native-set! procedure derived)
+  (bytes-u32-ref procedure derived)
+  (bytes-u32-set! procedure derived)
+  (bytes-u64-native-ref procedure derived)
+  (bytes-u64-native-set! procedure derived)
+  (bytes-u64-ref procedure derived)
+  (bytes-u64-set! procedure derived)
+  (bytes-u8-ref procedure derived)
+  (bytes-u8-set! procedure derived)
+  (bytes-uint-ref procedure derived)
+  (bytes-uint-set! procedure derived)
+  (bytes=? procedure derived)
+  (bytes? procedure derived)
+  (endianness procedure derived)
+  (make-bytes procedure derived)
+  (native-endianness procedure derived)
+  (sint-list->bytes procedure derived)
+  (u8-list->bytes procedure derived)
+  (uint-list->bytes procedure derived))
+ ("arithmetic-generic"
+  (* procedure derived)
+  (+ procedure derived)
+  (- procedure derived)
+  (->exact procedure derived)
+  (->inexact procedure derived)
+  (/ procedure derived)
+  (< procedure derived)
+  (<= procedure derived)
+  (= procedure derived)
+  (> procedure derived)
+  (>= procedure derived)
+  (abs procedure derived)
+  (acos procedure derived)
+  (angle procedure derived)
+  (asin procedure derived)
+  (atan procedure derived)
+  (ceiling procedure derived)
+  (complex? procedure derived)
+  (cos procedure derived)
+  (denominator procedure derived)
+  (div procedure derived)
+  (div+mod procedure derived)
+  (div0 procedure derived)
+  (div0+mod0 procedure derived)
+  (even? procedure derived)
+  (exact? procedure derived)
+  (exp procedure derived)
+  (expt procedure derived)
+  (finite? procedure derived)
+  (floor procedure derived)
+  (gcd procedure derived)
+  (imag-part procedure derived)
+  (inexact? procedure derived)
+  (infinite? procedure derived)
+  (integer-valued? procedure derived)
+  (integer? procedure derived)
+  (lcm procedure derived)
+  (log procedure derived)
+  (magnitude procedure derived)
+  (make-polar procedure derived)
+  (make-rectangular procedure derived)
+  (max procedure derived)
+  (min procedure derived)
+  (mod procedure derived)
+  (mod0 procedure derived)
+  (nan? procedure derived)
+  (negative? procedure derived)
+  (number->string procedure derived)
+  (number? procedure derived)
+  (numerator procedure derived)
+  (odd? procedure derived)
+  (positive? procedure derived)
+  (rational-valued? procedure derived)
+  (rational? procedure derived)
+  (rationalize procedure derived)
+  (real->flonum procedure derived)
+  (real-part procedure derived)
+  (real-valued? procedure derived)
+  (real? procedure derived)
+  (round procedure derived)
+  (sin procedure derived)
+  (sqrt procedure derived)
+  (string->number procedure derived)
+  (tan procedure derived)
+  (truncate procedure derived)
+  (zero? procedure derived))
+ ("arithmetic-fixnum"
+  (fixnum* procedure derived)
+  (fixnum*/carry procedure derived)
+  (fixnum+ procedure derived)
+  (fixnum+/carry procedure derived)
+  (fixnum- procedure derived)
+  (fixnum-/carry procedure derived)
+  (fixnum-and procedure derived)
+  (fixnum-arithmetic-shift procedure derived)
+  (fixnum-arithmetic-shift-left procedure derived)
+  (fixnum-arithmetic-shift-right procedure derived)
+  (fixnum-bit-count procedure derived)
+  (fixnum-bit-field procedure derived)
+  (fixnum-bit-set? procedure derived)
+  (fixnum-copy-bit procedure derived)
+  (fixnum-copy-bit-field procedure derived)
+  (fixnum-div procedure derived)
+  (fixnum-div+mod procedure derived)
+  (fixnum-div0 procedure derived)
+  (fixnum-div0+mod0 procedure derived)
+  (fixnum-even? procedure derived)
+  (fixnum-first-bit-set procedure derived)
+  (fixnum-if procedure derived)
+  (fixnum-ior procedure derived)
+  (fixnum-length procedure derived)
+  (fixnum-logical-shift-left procedure derived)
+  (fixnum-logical-shift-right procedure derived)
+  (fixnum-max procedure derived)
+  (fixnum-min procedure derived)
+  (fixnum-mod procedure derived)
+  (fixnum-mod0 procedure derived)
+  (fixnum-negative? procedure derived)
+  (fixnum-not procedure derived)
+  (fixnum-odd? procedure derived)
+  (fixnum-positive? procedure derived)
+  (fixnum-reverse-bit-field procedure derived)
+  (fixnum-rotate-bit-field procedure derived)
+  (fixnum-width procedure derived)
+  (fixnum-xor procedure derived)
+  (fixnum-zero? procedure derived)
+  (fixnum< procedure derived)
+  (fixnum<= procedure derived)
+  (fixnum= procedure derived)
+  (fixnum> procedure derived)
+  (fixnum>= procedure derived)
+  (fixnum? procedure derived)
+  (greatest-fixnum procedure derived)
+  (least-fixnum procedure derived))
+ ("arithmetic-flonum"
+  (fixnum->flonum procedure derived)
+  (fl* procedure derived)
+  (fl+ procedure derived)
+  (fl- procedure derived)
+  (fl/ procedure derived)
+  (fl< procedure derived)
+  (fl<= procedure derived)
+  (fl= procedure derived)
+  (fl> procedure derived)
+  (fl>= procedure derived)
+  (flabs procedure derived)
+  (flasin procedure derived)
+  (flatan procedure derived)
+  (flceiling procedure derived)
+  (flcos procedure derived)
+  (fldenominator procedure derived)
+  (fldiv procedure derived)
+  (fldiv+mod procedure derived)
+  (fldiv0 procedure derived)
+  (fldiv0+mod0 procedure derived)
+  (fleven? procedure derived)
+  (flexp procedure derived)
+  (flexpt procedure derived)
+  (flfinite? procedure derived)
+  (flfloor procedure derived)
+  (flinfinite? procedure derived)
+  (flinteger? procedure derived)
+  (fllog procedure derived)
+  (flmax procedure derived)
+  (flmin procedure derived)
+  (flmod procedure derived)
+  (flmod0 procedure derived)
+  (flnan? procedure derived)
+  (flnegative? procedure derived)
+  (flnumerator procedure derived)
+  (flodd? procedure derived)
+  (flonum? procedure derived)
+  (flpositive? procedure derived)
+  (flround procedure derived)
+  (flsin procedure derived)
+  (flsqrt procedure derived)
+  (fltan procedure derived)
+  (fltruncate procedure derived)
+  (flzero? procedure derived))
+ ("arithmetic-fx"
+  (fx* procedure derived)
+  (fx+ procedure derived)
+  (fx- procedure derived)
+  (fx< procedure derived)
+  (fx<= procedure derived)
+  (fx= procedure derived)
+  (fx> procedure derived)
+  (fx>= procedure derived)
+  (fxand procedure derived)
+  (fxarithmetic-shift procedure derived)
+  (fxarithmetic-shift-left procedure derived)
+  (fxarithmetic-shift-right procedure derived)
+  (fxbit-count procedure derived)
+  (fxbit-field procedure derived)
+  (fxbit-set? procedure derived)
+  (fxcopy-bit procedure derived)
+  (fxcopy-bit-field procedure derived)
+  (fxdiv procedure derived)
+  (fxdiv+mod procedure derived)
+  (fxdiv0 procedure derived)
+  (fxdiv0+mod0 procedure derived)
+  (fxeven? procedure derived)
+  (fxfirst-bit-set procedure derived)
+  (fxif procedure derived)
+  (fxior procedure derived)
+  (fxlength procedure derived)
+  (fxmax procedure derived)
+  (fxmin procedure derived)
+  (fxmod procedure derived)
+  (fxmod0 procedure derived)
+  (fxnegative? procedure derived)
+  (fxnot procedure derived)
+  (fxodd? procedure derived)
+  (fxpositive? procedure derived)
+  (fxreverse-bit-field procedure derived)
+  (fxrotate-bit-field procedure derived)
+  (fxxor procedure derived)
+  (fxzero? procedure derived))
+ ("arithmetic-exact"
+  (exact* procedure derived)
+  (exact+ procedure derived)
+  (exact- procedure derived)
+  (exact-abs procedure derived)
+  (exact-and procedure derived)
+  (exact-arithmetic-shift procedure derived)
+  (exact-arithmetic-shift-left procedure derived)
+  (exact-arithmetic-shift-right procedure derived)
+  (exact-bit-count procedure derived)
+  (exact-bit-field procedure derived)
+  (exact-bit-set? procedure derived)
+  (exact-ceiling procedure derived)
+  (exact-complex? procedure derived)
+  (exact-copy-bit procedure derived)
+  (exact-copy-bit-field procedure derived)
+  (exact-denominator procedure derived)
+  (exact-div procedure derived)
+  (exact-div+mod procedure derived)
+  (exact-div0 procedure derived)
+  (exact-div0+mod0 procedure derived)
+  (exact-even? procedure derived)
+  (exact-expt procedure derived)
+  (exact-first-bit-set procedure derived)
+  (exact-floor procedure derived)
+  (exact-gcd procedure derived)
+  (exact-if procedure derived)
+  (exact-imag-part procedure derived)
+  (exact-integer-sqrt procedure derived)
+  (exact-integer? procedure derived)
+  (exact-ior procedure derived)
+  (exact-lcm procedure derived)
+  (exact-length procedure derived)
+  (exact-make-rectangular procedure derived)
+  (exact-max procedure derived)
+  (exact-min procedure derived)
+  (exact-mod procedure derived)
+  (exact-mod0 procedure derived)
+  (exact-negative? procedure derived)
+  (exact-not procedure derived)
+  (exact-number? procedure derived)
+  (exact-numerator procedure derived)
+  (exact-odd? procedure derived)
+  (exact-positive? procedure derived)
+  (exact-rational? procedure derived)
+  (exact-real-part procedure derived)
+  (exact-reverse-bit-field procedure derived)
+  (exact-rotate-bit-field procedure derived)
+  (exact-round procedure derived)
+  (exact-truncate procedure derived)
+  (exact-xor procedure derived)
+  (exact-zero? procedure derived)
+  (exact/ procedure derived)
+  (exact<=? procedure derived)
+  (exact<? procedure derived)
+  (exact= procedure derived)
+  (exact>=? procedure derived)
+  (exact>? procedure derived))
+ ("arithmetic-inexact"
+  (inexact* procedure derived)
+  (inexact+ procedure derived)
+  (inexact- procedure derived)
+  (inexact-abs procedure derived)
+  (inexact-angle procedure derived)
+  (inexact-asin procedure derived)
+  (inexact-atan procedure derived)
+  (inexact-ceiling procedure derived)
+  (inexact-complex? procedure derived)
+  (inexact-cos procedure derived)
+  (inexact-denominator procedure derived)
+  (inexact-div procedure derived)
+  (inexact-div+mod procedure derived)
+  (inexact-div0 procedure derived)
+  (inexact-div0+mod0 procedure derived)
+  (inexact-even? procedure derived)
+  (inexact-exp procedure derived)
+  (inexact-expt procedure derived)
+  (inexact-finite? procedure derived)
+  (inexact-floor procedure derived)
+  (inexact-gcd procedure derived)
+  (inexact-imag-part procedure derived)
+  (inexact-infinite? procedure derived)
+  (inexact-integer? procedure derived)
+  (inexact-lcm procedure derived)
+  (inexact-log procedure derived)
+  (inexact-magnitude procedure derived)
+  (inexact-make-polar procedure derived)
+  (inexact-make-rectangular procedure derived)
+  (inexact-max procedure derived)
+  (inexact-min procedure derived)
+  (inexact-mod procedure derived)
+  (inexact-mod0 procedure derived)
+  (inexact-nan? procedure derived)
+  (inexact-negative? procedure derived)
+  (inexact-number? procedure derived)
+  (inexact-numerator procedure derived)
+  (inexact-odd? procedure derived)
+  (inexact-positive? procedure derived)
+  (inexact-rational? procedure derived)
+  (inexact-real-part procedure derived)
+  (inexact-real? procedure derived)
+  (inexact-round procedure derived)
+  (inexact-sin procedure derived)
+  (inexact-sqrt procedure derived)
+  (inexact-tan procedure derived)
+  (inexact-truncate procedure derived)
+  (inexact-zero? procedure derived)
+  (inexact/ procedure derived)
+  (inexact<=? procedure derived)
+  (inexact<? procedure derived)
+  (inexact=? procedure derived)
+  (inexact>=? procedure derived)
+  (inexact>? procedure derived))
+ ("primitive-i/o"
+  (file-options procedure derived)
+  (file-options-include? procedure derived)
+  (file-options-union procedure derived)
+  (file-options? procedure derived)
+  (make-i/o-buffer procedure derived)
+  (make-simple-reader procedure derived)
+  (make-simple-writer procedure derived)
+  (open-bytes-reader procedure derived)
+  (open-bytes-writer procedure derived)
+  (open-file-reader procedure derived)
+  (open-file-reader+writer procedure derived)
+  (open-file-writer procedure derived)
+  (reader-available procedure derived)
+  (reader-chunk-size procedure derived)
+  (reader-close procedure derived)
+  (reader-descriptor procedure derived)
+  (reader-end-position procedure derived)
+  (reader-get-position procedure derived)
+  (reader-has-end-position? procedure derived)
+  (reader-has-get-position? procedure derived)
+  (reader-has-set-position!? procedure derived)
+  (reader-id procedure derived)
+  (reader-read! procedure derived)
+  (reader-set-position! procedure derived)
+  (reader? procedure derived)
+  (standard-error-writer procedure derived)
+  (standard-input-reader procedure derived)
+  (standard-output-writer procedure derived)
+  (writer-bytes procedure derived)
+  (writer-chunk-size procedure derived)
+  (writer-close procedure derived)
+  (writer-descriptor procedure derived)
+  (writer-end-position procedure derived)
+  (writer-get-position procedure derived)
+  (writer-has-end-position? procedure derived)
+  (writer-has-get-position? procedure derived)
+  (writer-has-set-position!? procedure derived)
+  (writer-id procedure derived)
+  (writer-set-position! procedure derived)
+  (writer-write! procedure derived)
+  (writer? procedure derived))
+ ("port-i/o"
+  (buffer-mode procedure derived)
+  (buffer-mode? procedure derived)
+  (call-with-bytes-output-port procedure derived)
+  (call-with-input-port procedure derived)
+  (call-with-output-port procedure derived)
+  (call-with-string-output-port procedure derived)
+  (close-input-port procedure derived)
+  (close-output-port procedure derived)
+  (eol-style procedure derived)
+  (flush-output-port procedure derived)
+  (input-port-position procedure derived)
+  (input-port? procedure derived)
+  (latin-1-codec procedure derived)
+  (newline procedure derived)
+  (open-bytes-input-port procedure derived)
+  (open-file-input+output-ports procedure derived)
+  (open-file-input-port procedure derived)
+  (open-file-output-port procedure derived)
+  (open-reader-input-port procedure derived)
+  (open-string-input-port procedure derived)
+  (open-writer-output-port procedure derived)
+  (output-port-buffer-mode procedure derived)
+  (output-port-position procedure derived)
+  (output-port? procedure derived)
+  (peek-char procedure derived)
+  (peek-u8 procedure derived)
+  (port-eof? procedure derived)
+  (read-bytes-all procedure derived)
+  (read-bytes-n procedure derived)
+  (read-bytes-n! procedure derived)
+  (read-bytes-some procedure derived)
+  (read-char procedure derived)
+  (read-string procedure derived)
+  (read-string-all procedure derived)
+  (read-string-n procedure derived)
+  (read-string-n! procedure derived)
+  (read-u8 procedure derived)
+  (set-input-port-position! procedure derived)
+  (set-output-port-buffer-mode! procedure derived)
+  (set-output-port-position! procedure derived)
+  (standard-error-port procedure derived)
+  (standard-input-port procedure derived)
+  (standard-output-port procedure derived)
+  (transcode-input-port! procedure derived)
+  (transcode-output-port! procedure derived)
+  (transcoder procedure derived)
+  (update-transcoder procedure derived)
+  (utf-16be-codec procedure derived)
+  (utf-16le-codec procedure derived)
+  (utf-32be-codec procedure derived)
+  (utf-32le-codec procedure derived)
+  (write-bytes procedure derived)
+  (write-char procedure derived)
+  (write-string-n procedure derived)
+  (write-u8 procedure derived))
+ ("records-procedural"
+  (make-record-constructor-descriptor procedure derived)
+  (make-record-type-descriptor procedure derived)
+  (record-accessor procedure derived)
+  (record-constructor procedure derived)
+  (record-mutator procedure derived)
+  (record-predicate procedure derived)
+  (record-type-descriptor? procedure derived))
+ ("records-explicit"
+  (define-record-type procedure derived)
+  (record-constructor-descriptor procedure derived)
+  (record-type-descriptor procedure derived))
+ ("records-implicit"
+  (define-record-type procedure derived)
+  (record-constructor-descriptor procedure derived)
+  (record-type-descriptor procedure derived))
+ ("records-reflection"
+  (record-field-mutable? procedure derived)
+  (record-rtd procedure derived)
+  (record-type-field-names procedure derived)
+  (record-type-generative? procedure derived)
+  (record-type-name procedure derived)
+  (record-type-opaque? procedure derived)
+  (record-type-parent procedure derived)
+  (record-type-sealed? procedure derived)
+  (record-type-uid procedure derived)
+  (record? procedure derived))
+ ("promises" (delay procedure derived) (force procedure derived))
+ ("hash"
+  (equal-hash procedure derived)
+  (hash-table-clear! procedure derived)
+  (hash-table-contains? procedure derived)
+  (hash-table-copy procedure derived)
+  (hash-table-delete! procedure derived)
+  (hash-table-equivalence-predicate procedure derived)
+  (hash-table-fold procedure derived)
+  (hash-table-for-each procedure derived)
+  (hash-table-get procedure derived)
+  (hash-table-hash-function procedure derived)
+  (hash-table-mutable? procedure derived)
+  (hash-table-ref procedure derived)
+  (hash-table-ref/call procedure derived)
+  (hash-table-ref/default procedure derived)
+  (hash-table-ref/thunk procedure derived)
+  (hash-table-set! procedure derived)
+  (hash-table-size procedure derived)
+  (hash-table-update! procedure derived)
+  (hash-table-update!/call procedure derived)
+  (hash-table-update!/default procedure derived)
+  (hash-table-update!/thunk procedure derived)
+  (hash-table? procedure derived)
+  (make-eq-hash-table procedure derived)
+  (make-eqv-hash-table procedure derived)
+  (make-hash-table procedure derived)
+  (string-ci-hash procedure derived)
+  (string-hash procedure derived)
+  (symbol-hash procedure derived))
+ ("eval"
+  (eval procedure derived)
+  (eval-library procedure derived)
+  (library-environment procedure derived)
+  (load procedure derived))
+ ("r5rs-compatibility"
+  (call-with-input-file procedure derived)
+  (call-with-output-file procedure derived)
+  (exact->inexact procedure derived)
+  (inexact->exact procedure derived)
+  (modulo procedure derived)
+  (null-environment procedure derived)
+  (open-input-file procedure derived)
+  (open-output-file procedure derived)
+  (port? procedure derived)
+  (quotient procedure derived)
+  (remainder procedure derived)
+  (scheme-report-environment procedure derived))
+ ("unallocated"
+  (display procedure derived)
+  (eof-object? procedure derived)
+  (read procedure derived)
+  (write procedure derived))
+ ("obsolete"
+  (char-ready? procedure derived)
+  (current-input-port procedure derived)
+  (current-output-port procedure derived)
+  (interaction-environment procedure derived)
+  (transcript-off procedure derived)
+  (transcript-on procedure derived)
+  (with-input-from-file procedure derived)
+  (with-output-to-file procedure derived)))
