@@ -432,3 +432,216 @@ but we could require that eqv? return #t in situations such as this.
 In practice, this would likely cause most implementations to use the
 same (default) version of the standard procedure whenever the value
 might escape.
+
+
+Will's Objections to Kent's Proposed Semantics
+==============================================
+
+Kent's semantics appears to presuppose a fairly static model of
+safe and unsafe code in which every named procedure exists in a
+safe version and may also exist in an unsafe version.
+
+Several existing implementations of unsafe code do not conform
+to this model.  Furthermore existing implementations of unsafe
+code use techniques that appear to be inexpressible and perhaps
+even illegal in Kent's model.  In Will's view, this is a
+shortcoming of Kent's model, not a shortcoming of existing
+implementations.
+
+Consider, for example, the following properties of some
+existing implementations of unsafe code:
+
+*  Procedure calls do not check to ensure that the value
+being called is a procedure.
+
+*  Procedure calls do not check to ensure that the procedure
+being called accepts the number of arguments that are passed.
+
+*  Procedure calls may be unsafe for space complexity in the
+sense that they preserve so much more state across the call
+than is necessary that they may change the asymptotic space
+complexity of the program.  (This is often allowed by R5RS
+anyway, and will probably be allowed by the R6RS, but let's
+assume an implementation that guarantees the safe-for-space
+property in safe code but not in unsafe.)
+
+*  Procedure calls may create infinite loops that cannot be
+interrupted and then resumed by the user in the same ways
+that the user is accustomed to using in safe code.
+
+Let us suppose that a Scheme programmer wishes to use an
+unsafe declaration to allow the four techniques listed above
+in the following bit of code, which imports from a library
+that the same programmer has written without declarations:
+
+----------------
+
+; my-library exports my-name, my-memq, and my-memq-macro.
+; my-name is a string.
+; my-memq is like memq except it doesn't detect cyclic lists.
+; my-memq-macro is a macro that expands into a call to my-memq.
+
+(import "my-library")
+
+; Must the call to my-name raise an exception?
+
+(define (bug1 x y z)
+  (declare unsafe)
+  (my-name x y z))
+
+; Must the call to my-memq raise an exception?
+
+(define (bug2 x y z)
+  (declare unsafe)
+  (my-memq x y z))
+
+; Must the call to my-memq in the macro-expanded code
+; raise an exception?
+
+(define (bug3 x y z)
+  (declare unsafe)
+  (my-memq-macro x y z))
+
+; Should this code execute in constant space?
+
+(define (bug4 x y)
+  (declare unsafe)
+  (define (loop x y n)
+    (if (> n 0)
+        (let* ((y2 (vector->list (list->vector y)))
+               (y3 (my-memq x y2)))
+          (if (not y3)
+              (loop x y2 (- n 1)))
+          y3)))
+  (loop x y (length y)))
+
+; Should this code execute in constant space?
+
+(define (bug5 x y)
+  (declare unsafe)
+  (define (loop x y n)
+    (if (> n 0)
+        (let* ((y2 (vector->list (list->vector y)))
+               (y3 (my-memq-macro x y2)))
+          (if (not y3)
+              (loop x y2 (- n 1)))
+          y3)))
+  (loop x y (length y)))
+
+; Should this code be nicely interruptible?
+
+(define (bug6 x y)
+  (declare unsafe)
+  (define (loop x y n)
+    (if (> n 0)
+        (if (not (my-memq x y))
+            (loop x y n))
+        y))
+  (loop x y (length y)))
+
+; Should this code be nicely interruptible?
+
+(define (bug7 x y)
+  (declare unsafe)
+  (define (loop x y n)
+    (if (> n 0)
+        (if (not (my-memq-macro x y))
+            (loop x y n))
+        y))
+  (loop x y (length y)))
+
+; Should this code be nicely interruptible?
+
+(define (bug8 x y)
+  (declare unsafe)
+  (define (loop x y n)
+    (if (> n 0)
+        (if (not (my-memq x y))
+            (loop x y (- n 1)))
+        y))
+  (set-cdr! y y)
+  (loop x y (length y)))
+
+; Should this code be nicely interruptible?
+
+(define (bug9 x y)
+  (declare unsafe)
+  (define (loop x y n)
+    (if (> n 0)
+        (if (not (my-memq-macro x y))
+            (loop x y (- n 1)))
+        y))
+  (set-cdr! y y)
+  (loop x y (length y)))
+
+----------------
+
+With Will's preferred semantics for the unsafe declaration,
+the answer to all nine questions above is "not necessarily".
+
+Let's try to answer those questions using Kent's semantics:
+
+bug1:  The unsafe declaration applies to my-name, but Kent's
+semantics does not say anything about the meaning of an
+unsafe reference to a string.
+
+bug2:  The unsafe declaration applies to my-memq, but Kent's
+semantics does not say anything about unsafe versions of
+user-written procedures.
+
+bug3:  The unsafe declaration applies to my-memq-macro, but
+does not apply to the reference to my-memq that appears
+within the macro-expanded code, so the called procedure is
+the safe version of my-memq.  Kent's semantics does not say
+whether number-of-argument checking is performed by the
+caller or by the callee, however, so it does not say whether
+an error must be raised.
+
+bug4:  The unsafe declaration applies to my-memq, but Kent's
+semantics does not say whether space complexity is affected
+by the safety of the callee as opposed to the caller.
+
+bug5:  The unsafe declaration applies to my-memq-macro, but
+does not apply to the reference to my-memq that appears
+within the macro-expanded code, so the called procedure is
+the safe version of my-memq.  Kent's semantics does not say
+whether space complexity is affected by the safety of the
+callee as opposed to the caller.
+
+bug6:  The unsafe declaration applies to my-memq, but the
+call to my-memq always terminates.  Presumably this code is
+not required to be nicely interruptible.
+
+bug7:  The unsafe declaration applies to my-memq-macro, but
+does not apply to the reference to my-memq that appears
+within the macro-expanded code, so the called procedure is
+the safe version of my-memq.  That call always terminates.
+Presumably this code is not required to be nicely
+interruptible.
+
+bug8:  The unsafe declaration applies to my-memq, and that
+procedure goes into an infinite loop on its cyclic argument.
+Kent's semantics does not say anything about unsafe versions
+of user-written procedures, so it does not say whether the
+infinite loop inside my-memq is required to be nicely
+interruptible.
+
+bug9:  The unsafe declaration applies to my-memq-macro, but
+does not apply to the reference to my-memq that appears
+within the macro-expanded code, so the called procedure is
+the safe version of my-memq.  Presumably the safe version
+of my-memq is required to be nicely interruptible.
+
+The point of these examples is that safety properties are
+not always so intuitively associated with identifiers and
+with the procedures they name as Kent's semantics appears
+to assume.  In Will's view, the additional precision of
+Kent's semantics is mostly illusory.  To the extent that
+Kent's semantics is more precise on examples such as the
+above, it is as likely to be counter-intuitive as to be
+intuitive.
+
+Kent's semantics is even less precise and less intuitive
+with respect to the fast, small, and debug qualities,
+which are mostly heuristic, with no universally agreed
+upon meanings in any case.
