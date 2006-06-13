@@ -1,13 +1,11 @@
 \documentclass{monograph}
 
 % TODO:
-%  - document I/O decisions we have made
 %  - publish syntax-case SRFI and mention its publication in
 %    Section~\ref{progress:macros}
-%  - document decisions to include SRFI-1 and related procedures
 %  - document core/library split decisions we've made
-%  - fix up description of reference implementation commitment
-%  - decision to support only libraries and scripts
+%  - fix up eval commentary
+%  - remove set-car! and set-cdr! reaffirmation if we make pairs immutable
 
 % Things to vote upon:
 %  - make string comparisons n-ary
@@ -49,7 +47,7 @@
 \begin{document}
 \title{R6RS Status Report}
 \author{Kent~Dybvig, Will~Clinger, Matthew~Flatt, Mike~Sperber, and Anton~van~Straaten}
-\date{June 9, 2006}
+\date{June 13, 2006}
 \maketitle
 \def\copyrightnotice{}
 
@@ -64,15 +62,114 @@
 \tableofcontents
 \fi
 
-\section{Overview\label{sect:overview}}
+\section{Overview\label{sec:overview}}
 
 This status report describes the current state of the {\r6rs}
 standardization effort.
 It covers principles we have outlined to guide the effort,
 decisions we have made to date, our work in progress, and the process
-by which we intend to complete the {\r6rs}.
+by which we intend to complete the Revised$^6$ Report on Scheme.
 
-\section{Guiding Principles\label{sect:principles}}
+\section{Change Log}
+
+Here is a brief overview of the important changes to this document since
+the February~2006 version.
+
+Section~\ref{sec:programs} (new): describes the forms which portable
+code can take.
+
+Section~\ref{sec:eliminated}: now lists \scheme{interaction-environment}
+and top-level definitions and expressions among the eliminated features
+and \scheme{scheme-report-environment} and \scheme{null-environment}
+among those that have been relegated to an {\r5rs} compatibility
+library.
+
+Section~\ref{sec:changes} lists several additional changes.
+(All but the first four listed are new.)
+
+Section~\ref{sec:featuresadded} lists several added features.
+(All but the first six listed are new.)
+
+Section~\ref{sec:featurestobeadded} lists two new features to be
+added: scripts and a byte-vector datatype.
+Read/write invariance is now covered in Section~\ref{sec:changes}.
+
+Section~\ref{sec:reaffirmations} lists several newly reaffirmed features.
+(All but the first three listed are new.)
+
+Section~\ref{sec:beyond} lists several features that are officially
+not under consideration for {\r6rs}.
+(All but the first four listed are new.)
+
+Section~\ref{sec:refimpl} (new) describes the editors' commitment to provide
+reference implementations for the major subsystems included in {\r6rs}.
+
+Section~\ref{progress:records} documents that we have now withdrawn the
+record SRFI as planned, after receiving valuable community input, and that
+support for records will be based on this SRFI.
+It also describes decisions we have made regarding some issues left
+open by the SRFI.
+
+Section~\ref{progress:unicode} documents that we have now withdrawn the
+Unicode SRFI as planned, after receiving valuable community input, and
+that support for Unicode will be based on this SRFI.
+
+Section~\ref{progress:arithmetic} documents that the arithmetic SRFI
+has undergone revisions.
+
+Section~\ref{progress:exceptions} documents that we have decided to base the
+{\r6rs} I/O system on SRFI's 34 and 35.
+
+Section~\ref{progress:io} documents that we have decided to base the
+{\r6rs} I/O system on SRFI's 79 and 81.
+
+Section~\ref{progress:bytes} (new) documents that we have decided to
+base {\r6rs} byte vectors on SRFI~74.
+
+Section~\ref{progress:miscellaneous} now lists enumerations and
+\scheme{eval} among possible features and changes.
+Some of the previously listed items are no longer under consideration
+and are now listed as ``beyond {\r6rs}'' in Section~\ref{sec:beyond}:
+
+\begin{itemize}
+ \item external representation for (possibly cyclic) graph structures
+ \item syntax for the eof-object, if any
+ \item \scheme{cond-expand}
+ \item homogeneous numeric vectors
+ \item support for regular expressions
+ \item formatted output
+ \item adding support for weak pointers
+ \item support for gensyms and uids
+\end{itemize}
+
+Some are now mentioned in Section~\ref{sec:reaffirmations}:
+
+\begin{itemize}
+ \item making quotation of empty list optional (reaffirmed that
+       \scheme{()} is not a valid expression)
+\end{itemize}
+
+Some are listed as changes to be made or features added or to be added:
+
+\begin{itemize}
+ \item \scheme{#t}, \scheme{#f}, and characters must be followed by a delimiter
+       (Section~\ref{sec:changes})
+ \item \scheme{case-lambda}
+       (Section~\ref{sec:featuresadded})
+ \item bitwise operations on exact integers
+       (Section~\ref{progress:arithmetic})
+ \item adding a void object to replace the ``unspecified value''
+       (as ``unspecified'' rather than ``void'';
+       Sections~\ref{sec:changes} and~\ref{sec:featuresadded})
+ \item \scheme{let-values} or other multiple-value binding construct(s)
+       (both \scheme{let-values} and \scheme{let*-values};
+       Section~\ref{sec:featuresadded})
+\end{itemize}
+
+Section~\ref{sec:process} now lists Sperber and Clinger as the editors
+in charge of byte vectors.
+
+\section{Guiding Principles\label{sec:principles}}
 
 To help guide the standardization effort, the editors have adopted a
 set of principles, presented below.
@@ -146,11 +243,11 @@ many more Scheme programs will be written in the future than exist in
 the present, so the future programs are those with which we must be
 most concerned.
 
-\section{Decisions\label{sect:decisions}}
+\section{Decisions\label{sec:decisions}}
 
 This section outlines the decisions made to date.
 
-\subsection{Language structure}
+\subsection{Language structure\label{sec:languagestructure}}
 
 The {\r6rs} language consists of a core language and set of additional
 libraries.
@@ -167,9 +264,9 @@ The following features are definitely not in the core language:
 
 \begin{itemize}
  \item \scheme{delay} and \scheme{force}
- \item hash tables (see Section~\ref{featurestobeadded})
- \item \scheme{case-lambda} (see Section~\ref{featuresadded})
- \item \scheme{when} and \scheme{unless} (see Section~\ref{featuresadded})
+ \item hash tables (see Section~\ref{sec:featurestobeadded})
+ \item \scheme{case-lambda} (see Section~\ref{sec:featuresadded})
+ \item \scheme{when} and \scheme{unless} (see Section~\ref{sec:featuresadded})
 \end{itemize}
 
 \subsection{Programs\label{sec:programs}}
@@ -183,8 +280,11 @@ A portable script consists of a standard script header and a single
 top-level library.
 All definitions and expressions must appear within a library form;
 {\r6rs} has no notion of a top-level definition or expression.
+The \scheme{eval} procedure may, however, will likely allow the
+evaluation of an expression (but not a definition) within the scope of a
+specified set of library bindings.
 
-\subsection{Features eliminated}
+\subsection{Features eliminated\label{sec:eliminated}}
 
 The following features of {\r5rs} have been eliminated.
 
@@ -202,20 +302,23 @@ an {\r5rs} compatibility library:
  \item \scheme{null-environment}
 \end{itemize}
 
-\subsection{Changes}
+\subsection{Changes\label{sec:changes}}
 
 The following syntactic and semantic changes have been made to existing
 features.
 
 \begin{itemize}
  \item Syntax is case sensitive.
- \item Any character or boolean must be followed by a delimiter.
  \item Internal defines now follow \scheme{letrec*} semantics.
+ \item There is now a single unique end-of-file object.
+ \item Continuations created by \scheme{begin} must accept any number
+       of values.  (This was optional in {\r5rs}.)
+ \item Any character or boolean must be followed by a delimiter.
  \item The new syntax \scheme{#!r6rs} is treated as a declaration that
        a source library or script contains only r6rs-compatible
        lexical constructs.
        It is otherwise treated as a comment by the reader.
- \item An implemenation may or may not signal an error when
+ \item An implementation may or may not signal an error when
        it sees \scheme{#!\var{symbol}}, for any symbol \var{symbol}
        that is not \scheme{r6rs}.
        Implementations are encouraged to use specific
@@ -224,23 +327,20 @@ features.
  \item All other lexical errors must be signaled, effectively
        ruling out any implementation-dependent extensions unless
        identified by a \scheme{#!}-prefixed symbol.
- \item There is now a single unique end-of-file object.
  \item Expressions that would have evaluated to some ``unspecified value''
        in {\r5rs} evaluate to a new unique (in the sense of \scheme{eq?})
        ``unspecified'' value.
  \item Character comparison routines are now n-ary.  (This was optional
        in {\r5rs}.)
- \item Continuations created by \scheme{begin} must accept any number
-       of values.  (This was optional in {\r5rs}.)
  \item The \var{in} and \var{out} thunks of a \scheme{dynamic-wind} are
        considered ``outside'' of the \scheme{dynamic-wind}; that is,
        escaping from either does not cause the \var{out} thunk to be invoked,
        and jumping back in does not cause the \var{in} thunk to be invoked.
- \item Most standard procedures are required to signal errors (in the default
-       ``safe'' mode) when given invalid inputs, except in certain
-       specific cases where the answer can be determined in spite of the
-       invalid input and the additional work involved may be
-       extraordinary.
+ \item Most standard procedures are required to raise a specific
+       condition (in the default ``safe'' mode) when given invalid inputs,
+       except in certain specific cases where the answer can be determined
+       in spite of the invalid input and the additional work involved may
+       be extraordinary.
        For example, \scheme{map} must raise an exception if its first argument
        is not a procedure or if its other arguments are not (proper) lists
        of the same length.
@@ -255,7 +355,7 @@ features.
        standard operators has at least one standard datum representation.
 \end{itemize}
 
-\subsection{Features added\label{featuresadded}}
+\subsection{Features added\label{sec:featuresadded}}
 
 The following features have been added:
 
@@ -275,7 +375,8 @@ The following features have been added:
  \item \scheme{case-lambda} library syntax
  \item \scheme{call/cc} as a second name for \scheme{call-with-current-continuation}
  \item Alan Bawden's PEPM~'99 nested \scheme{quasiquote} extensions
- \item new list-processing procedures: \scheme{exists}, \scheme{forall},
+ \item new list-processing procedures (inspired by SRFI~1):
+       \scheme{exists}, \scheme{forall},
        \scheme{fold-left}, \scheme{fold-right},
        \scheme{filter}, \scheme{partition},
        \scheme{iota},
@@ -285,26 +386,26 @@ The following features have been added:
        \scheme{generalized-assoc}
 \end{itemize}
 
-\subsection{Features to be added\label{featurestobeadded}}
+\subsection{Features to be added\label{sec:featurestobeadded}}
 
 The following features will be added, but the details have yet to be fully
 worked out.
 
 \begin{itemize}
  \item top-level libraries
- \item scripts
  \item record types and record definitions
  \item exception handling
  \item safe (default) and unsafe modes
  \item \scheme{syntax-case} macros
  \item hash tables (as a library)
  \item Unicode support
- \item byte-vector datatype and operations
  \item new string escape characters, including \scheme{\n} for newline
        (part of Unicode support)
+ \item byte-vector datatype and operations
+ \item scripts
 \end{itemize}
 
-\subsection{Reaffirmations}
+\subsection{Reaffirmations\label{sec:reaffirmations}}
 
 The following features of {\r5rs} are reaffirmed for {\r6rs}.
 
@@ -318,10 +419,10 @@ The following features of {\r5rs} are reaffirmed for {\r6rs}.
  \item one-armed \scheme{if} remains in the language
  \item \scheme{append} copies all but last argument, even if last argument is \scheme{()}
  \item as an expression, \scheme{()} is invalid syntax
- \item support for regular expressions
+ \item \scheme{()} is still an invalid expression
 \end{itemize}
 
-\subsection{Beyond {\r6rs}}
+\subsection{Beyond {\r6rs}\label{sec:beyond}}
 
 The following features are definitely not under consideration for {\r6rs}.
 We encourage anyone interested in seeing any of these features in {\r7rs}
@@ -342,9 +443,10 @@ to make concrete proposals via the SRFI process.
  \item SRFI~0 \scheme{cond-expand}
  \item homogeneous numeric vectors
  \item weak pointers
+ \item support for regular expressions
 \end{itemize}
 
-\section{Reference implementations}
+\section{Reference implementations~\label{sec:refimpl}}
 
 The editors will publish, along with the revised report proper,
 nonnormative, portable (with implementation-dependent hooks as necessary),
@@ -354,7 +456,7 @@ exceptions, I/O, and macro subsystems.
 The editors may publish reference implementations of selected
 additional features as well.
 
-\section{Work in Progress\label{sect:workinprogres}}
+\section{Work in Progress\label{sec:workinprogres}}
 
 Most of the standardization effort is currently focused on several
 subsystems.
@@ -406,10 +508,17 @@ Informal requirements:
 Support for records will be based on SRFI~76 (R6RS Records), which
 has now been withdrawn as planned after revisions based in part on community
 input.
+While the SRFI did not fully specify the generativity of ordinary record
+definitions, we have decided that they should be ``run-time'' generative
+unless declared nongenerative.
+We have also eliminated the restriction
+that the parent of a nongenerative record be a nongenerative record,
+and we decided to keep the ``sealed'' feature.
 
 Additionally, we have decided to allow an implementation to treat any or
 all of its built-in types as records, i.e., \scheme{record?} may or may
 not return true for an object of a built-in type.
+
 
 \subsection{Unicode\label{progress:unicode}}
 
@@ -445,7 +554,7 @@ Informal requirements:
   view exception handling as a means of communication between
   parts of the program.
 
-The editors have decided to adopt the SRFI~34 (Exception Handling for
+The editors have decided to adopt SRFI~34 (Exception Handling for
 Programs) as the basis for the {\r6rs} exception-handling system and
 SRFI~35 (Conditions) as the basis for the {\r6rs} condition system.
 
@@ -457,9 +566,8 @@ Informal requirements:
   byte-vector datatype,
   block read/write operations.
 
-Proposals for I/O changes are currently under discussion.
-No {\r6rs}-specific SRFIs have been published, and no decisions have
-been made.
+The editors have decided to adopt SRFI~79 (Primitive I/O) and
+SRFI~81 (Port I/O) as the basis for the {\r6rs} I/O system.
 
 The byte-vector datatype requirement is addressed by the binary block
 datatype (Section~\ref{progress:bytes}).
@@ -501,7 +609,7 @@ resolution.
        other {\r6rs} changes
 \end{itemize}
 
-\section{Completion Process\label{sect:process}}
+\section{Completion Process\label{sec:process}}
 
 We intend to deliver a draft {\r6rs} to the Steering Committee by
 September~1,~2006.

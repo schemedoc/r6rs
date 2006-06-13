@@ -1,0 +1,427 @@
+\documentclass{monograph}
+
+% TODO:
+%  - exceptions: concensus on adopting SRFI's 34 and 35, with modifications
+%    (3/15/06)
+%  - eof-object retained as read-char return value
+%  - added let-values, let-values* (names TDB)
+%  - no error signaled for #!<symbol-like-thing> for lexical extensions,
+%    e.g., #!larceny, #!mzscheme, #!chezscheme, #!caseinsensitive, etc.
+%  - explicitly left for SRFIs, R6RS: formatted output
+
+\usepackage{scheme}
+
+\def\r#1rs{R$^#1$RS}
+
+\iflatex
+\input{fullpage.sty}
+\fi
+
+\ifhtml
+\documenttitle[status.css]{R6RS Status Report}
+\fi
+
+\iflatex
+\pagestyle{plain}
+\fi
+
+\begin{document}
+\title{R6RS Status Report}
+\author{Kent~Dybvig, Will~Clinger, Matthew~Flatt, Mike~Sperber, and Anton~van~Straaten}
+\date{February 24, 2006}
+\maketitle
+\def\copyrightnotice{}
+
+\iflatex
+% block paragraphs
+\schemeindent=0pt
+\parskip=4pt
+\parindent=0pt
+\fi
+
+\ifhtml
+\tableofcontents
+\fi
+
+\section{Overview\label{sect:overview}}
+
+This status report describes the current state of the {\r6rs}
+standardization effort.
+It covers principles we have outlined to guide the effort,
+decisions we have made to date, our work in progress, and the process
+by which we intend to complete the {\r6rs}.
+
+\section{Guiding Principles\label{sect:principles}}
+
+To help guide the standardization effort, the editors have adopted a
+set of principles, presented below.
+They are, like {\r6rs} itself, a work in progress and still subject
+to change.
+
+Like {\r5rs} Scheme, {\r6rs} Scheme should:
+
+\begin{itemize}
+\item derive its power from simplicity, a small number of generally
+      useful core syntactic forms and procedures, and no unnecessary
+      restrictions on how they are composed;
+
+\item allow programs to define new procedures and new hygienic
+      syntactic forms;
+
+\item support the traditional s-expression representation of program
+      source code as data;
+
+\item make procedure calls powerful enough to express any form of
+      sequential control, and allow programs to perform non-local control
+      operations without the use of global program transformations;
+
+\item allow interesting, purely functional programs to run indefinitely
+      without terminating or running out of memory on finite-memory
+      machines;
+
+\item allow educators to use the language to teach programming
+      effectively, at various levels and with a variety of pedagogical
+      approaches;
+and
+
+\item allow researchers to use the language to explore the design,
+      implementation, and semantics of programming languages.
+\end{itemize}
+
+In addition, {\r6rs} Scheme should:
+
+\begin{itemize}
+\item allow programmers to create and distribute substantial
+      programs and libraries, e.g., SRFI implementations, that run
+      without modification in a variety of Scheme implementations;
+
+\item support procedural, syntactic, and data abstraction more fully
+      by allowing programs to define hygiene-bending and hygiene-breaking
+      syntactic abstractions and new unique datatypes along with
+      procedures and hygienic macros in any scope;
+
+\item allow programmers to rely on a level of automatic run-time type
+      and bounds checking sufficient to ensure type safety while also
+      providing a standard way to declare whether such checks are
+      desired;
+and
+
+\item allow implementations to generate efficient code, without requiring
+      programmers to use implementation-specific operators or
+      declarations.
+\end{itemize}
+
+In general, {\r6rs} should include building blocks that allow a wide
+variety of libraries to be written, include commonly used user-level
+features to enhance portability and readability of library and application
+code, and exclude features that are less commonly used and easily
+implemented in separate libraries.
+
+{\r6rs} Scheme should also be backward compatible with programs
+written in {\r5rs} Scheme to the extent possible without compromising
+the above principles and future viability of the language.
+With respect to future viability, we operate under the assumption that
+many more Scheme programs will be written in the future than exist in
+the present, so the future programs are those with which we must be
+most concerned.
+
+\section{Decisions\label{sect:decisions}}
+
+This section outlines the decisions made to date.
+
+\subsection{Structural changes}
+
+R6RS will consist of a core language and set of separate libraries.
+
+% should list guidelines for what goes where
+
+The following features are definitely in the core language:
+
+\begin{itemize}
+ \item \emph{none yet identified}
+\end{itemize}
+
+The following features are definitely in a separate library.
+
+\begin{itemize}
+ \item \scheme{delay} and \scheme{force}
+ \item hash tables (see Section~\ref{featurestobeadded})
+\end{itemize}
+
+\subsection{Features eliminated}
+
+The following features have been eliminated.
+
+\begin{itemize}
+ \item \scheme{transcript-on} and \scheme{transcript-off}
+\end{itemize}
+
+\subsection{Changes}
+
+The following syntactic and semantic changes have been made to existing
+features.
+
+\begin{itemize}
+ \item syntax is case sensitive
+ \item internal defines now follow \scheme{letrec*} semantics
+ \item there is now a single unique end-of-file object
+\end{itemize}
+
+\subsection{Features added}
+
+The following features have been added.
+
+\begin{itemize}
+ \item \scheme{letrec*} (\scheme{letrec} with left-to-right evaluation order)
+ \item block comments bracketed by \scheme{#|} and \scheme{|#}
+ \item expression comments prefixed by \scheme{#;}
+ \item matched square brackets (``\scheme{[}'' and ``\scheme{]}'');
+       equivalent to matched parentheses for list data and
+       list-structured forms
+ \item allow symbols to start with \scheme{->}
+ \item \scheme{eof-object} constructor to obtain the end-of-file object
+ \item require continuations created by \scheme{begin} to accept any number
+       of values
+\end{itemize}
+
+\subsection{Features to be added\label{featurestobeadded}}
+
+The following features will be added once the details have been worked out.
+
+\begin{itemize}
+ \item top-level libraries
+ \item record types and record definitions
+ \item exception handling
+ \item safe (default) and unsafe modes
+ \item \scheme{syntax-case} macros
+ \item hash tables (as a library)
+ \item Unicode support
+ \item new string escape characters, including \scheme{\n} for newline
+       (part of Unicode support)
+ \item serialization (read-write invariance) for every datum
+       (part of Unicode support)
+\end{itemize}
+
+\subsection{Reaffirmations}
+
+The following features of {\r5rs} are reaffirmed for {\r6rs}.
+
+\begin{itemize}
+ \item support for multiple values
+ \item unspecified evaluation order for applications, \scheme{let} bindings, and \scheme{letrec} bindings
+ \item \scheme{set-car!} and \scheme{set-cdr!}
+\end{itemize}
+
+\subsection{Beyond {\r6rs}}
+
+The following features are definitely not under consideration for {\r6rs}.
+
+\begin{itemize}
+ \item processes
+ \item network programming
+ \item object-oriented programming
+ \item box datatype
+\end{itemize}
+
+\section{Work in Progress\label{sect:workinprogres}}
+
+Most of the standardization effort is currently focused on several
+subsystems: libraries, records, Unicode, arithmetic, exceptions, I/O,
+modules, and hash tables.
+Sections~\ref{progress:libraries}--\ref{progress:macros} list for
+each subsystem a set of informal requirements the editors have
+identified, the current status, and open questions.
+
+In several cases, a subsystem is up for discussion as a SRFI in order to
+give the editors a chance to inform the community of the ongoing work
+and obtain valuable feedback from the community.
+The final mechanism adopted for {\r6rs} may, however, differ in minor
+or significant ways from the published SRFI.
+
+A list of other items up for consideration is given in
+Section~\ref{progress:miscellaneous}.
+These have not received as much attention to date, usually because they
+involve less complex or far-reaching changes or are considered to be of
+lower priority.
+
+\subsection{Libraries\label{progress:libraries}}
+
+Informal requirements:
+  support distribution of portable libraries,
+  support identification of library location,
+  namespace management,
+  export/import of macros,
+  permit separate but dependent analysis and compilation,
+  support generation of efficient compiled code,
+  ability to define new libraries.
+
+Support for libraries is under community discussion via SRFI~83.
+Two big issues have arisen: the need to clarify phases,
+e.g., for compile-time modules that import at
+compile-time, and how library names are written
+(coding as strings is controversial).
+Still up in the air are the extent to which the syntax of
+\scheme{import} and \scheme{export} forms is tied down,
+what built-in libraries besides \scheme{r6rs} there might
+be, and whether there is to be support for user-defined
+libraries.
+
+\subsection{Records\label{progress:records}}
+
+Informal requirements:
+  disjoint types,
+  syntactic interface,
+  mutable fields.
+
+Support for records is under community discussion via SRFI~76.
+Still to be settled is whether generativity should be specified,
+e.g., as expand-time or run-time and also whether to elide or
+provide a rationale for the ``sealed'' feature.
+
+\subsection{Unicode\label{progress:unicode}}
+
+Informal requirements:
+  provision for Unicode characters and
+  character syntax, Unicode strings and string syntax; Unicode
+  character I/O; \scheme{integer->char} and \scheme{char->integer} are inverse
+  operations and support Unicode-specific text encodings;
+  write/read invariance for every datum, including symbols. 
+
+Support for Unicode is under community discussion via SRFI~75.
+Open issues include what normalization and character representation
+to use.
+We will probably use normalization form ``C,'' and
+Scheme characters will likely correspond to Unicode scalar values
+(which can be represented by a 21-bit fixed-length encoding, but
+other representations are also possible).
+
+\subsection{Arithmetic\label{progress:arithmetic}}
+
+Informal requirements:
+  support for IEEE zeros, infinities, and NaNs,
+  clean up behavior of \scheme{eqv?} wrt numbers,
+  fix certain arithmetic operations,
+  transparency.
+
+Changes for {\r6rs} arithmetic are under community discussion via SRFI~77.
+There is general agreement to require the full tower and to
+require that real? implies an exact zero imaginary part.
+Among the open questions are whether fixnum, flonum, exact-only,
+and inexact-only operations should be in separate libraries rather
+than in the core language.
+
+\subsection{Exceptions\label{progress:exceptions}}
+
+Informal requirements:
+  clarify the meaning of ``is an error,''
+  view exception handling as a means of communication between
+  parts of the program.
+
+Proposals for this subsystem are currently under discussion.
+No {\r6rs}-specific SRFIs have been published, and no decisions have
+been made.
+There is, however, general agreement to use SRFI~34 as a basis for
+the {\r6rs} exception-handling system.
+
+\subsection{I/O\label{progress:io}}
+
+Informal requirements:
+  \scheme{read-byte} and \scheme{write-byte},
+  ports that support binary I/O,
+  byte vectors,
+  block read/write operations.
+
+This subsystem actually addresses two separable issues here: potential
+additions changes to I/O and the inclusion of a byte-vector datatype.
+The byte-vector datatype is necessary to support block read/write
+operations.
+
+Proposals for this subsystem are currently under discussion.
+No {\r6rs}-specific SRFIs have been published, and no decisions have
+been made.
+
+\subsection{Macros\label{progress:macros}}
+
+Informal requirements:
+  specify expansion semantics,
+  specify interaction with modules,
+  allow procedural transformers,
+  hygiene-breaking operations,
+  maintain support for syntax-rules.
+
+The editors have decided to adopt \scheme{syntax-case} as currently
+implemented in Chez Scheme and Dr. Scheme, with various differences
+to be worked out by Dybvig and Flatt.
+Also, the underscore identifier (``\scheme{_}'') will no longer be
+a pattern variable but instead a special identifier that matches
+any input, and underscore will be allowed in place of the keyword
+naming a macro in a \scheme{syntax-rules} pattern.
+
+
+\subsection{Other possible changes\label{progress:miscellaneous}}
+
+The following possible features and changes have been discussed without
+resolution.
+
+\begin{itemize}
+ \item external representation for (possibly cyclic) graph structures
+ \item syntax for the eof-object, if any
+ \item whether \scheme{#t}, \scheme{#f}, and characters must be followed by a delimiter
+ \item \scheme{case-lambda}
+ \item \scheme{cond-expand}
+ \item improving the semantics of \scheme{eqv?} and \scheme{equal?}
+ \item bitwise operations on exact integers
+ \item homogeneous numeric vectors
+ \item support for file operations
+ \item support for regular expressions
+ \item support system operations
+ \item formatted output
+ \item making quotation of empty list optional
+ \item adding support for weak pointers
+ \item adding a void object to replace the ``unspecified value''
+ \item support for gensyms and uids
+ \item \scheme{let-values} or other multiple-value binding construct(s)
+ \item {\r5rs} compatibility library
+\end{itemize}
+
+
+\section{Completion Process\label{sect:process}}
+
+We intend to deliver a draft {\r6rs} to the Steering Committee by
+September~1,~2006.
+In order to meet this target, we plan to wrap up work on the various
+subsystems, decide on the core language/library split, and create a
+rough internal (editors only) draft of the {\r6rs} by mid-June.
+
+For each of the subsystems, the core/library split, and the safe/unsafe
+mode mechanism and semantics, we have assigned
+a single editor to be responsible for ensuring progress.
+We have also assigned one or more additional editors to help.
+These assignments are shown below.
+
+\begin{center}
+\begin{tabular}{lll}
+\textbf{subsystem} & \textbf{primary editor} & \textbf{additional editors}\\[3pt]
+libraries          & Flatt                   & Dybvig\\
+records            & Sperber                 & Dybvig, van~Straaten\\
+arithmetic         & Clinger                 & Sperber\\
+Unicode            & Flatt                   & Clinger\\
+macros             & Dybvig                  & Flatt\\
+exceptions         & Sperber                 & Clinger\\
+I/O                & Sperber                 & van~Straaten\\
+core/library split & van~Straaten            & Dybvig\\
+hash tables        & van~Straaten            & Clinger\\
+safe/unsafe mode   & Clinger                 & Sperber\\
+\end{tabular}
+\end{center}
+
+As time permits, we will also discuss as a group the other possible
+features and changes described in Section~\ref{progress:miscellaneous},
+as well as additional ones that may arise, and decide which are to be
+incorporated into {\r6rs}.
+
+Responsibility for making sure that the editors complete their work and
+communicate effectively lies with the chair (Dybvig) and responsibility
+for creating the {\r6rs} drafts lies with the project editor (Sperber).
+
+\end{document}
