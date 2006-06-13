@@ -266,14 +266,15 @@ implementation.
               [else x])))))
 
 
- ;; syn->src returns the source, if any, associated with a syntax object
+ ;; source returns the source, if any, associated with a syntax object
 
-  (define syn->src
+  (define source
     (lambda (e)
-      (let ([x (syntax-object-expression e)])
-        (if (annotation? x)
-            (annotation-source x)
-            no-source))))
+      (if (syntax-object? e)
+          (source (syntax-object-expression e))
+          (if (annotation? e)
+              (annotation-source e)
+              no-source))))
 
  ;; unannotate removes top level of annotation, if any
 
@@ -301,27 +302,11 @@ implementation.
 
   (define gen-mark (lambda () (string #\m)))
 
-  (define the-anti-mark #f)
-
-  (define anti-mark
-    (lambda (e)
-      (make-syntax-object
-        (syntax-object-expression e)
-        (cons the-anti-mark (syntax-object-mark* e))
-        (cons 'shift (syntax-object-subst* e)))))
+  (define anti-mark #f)
 
   (define add-mark
     (lambda (m e)
-      (let ([mark* (syntax-object-mark* e)])
-        (if (and (pair? mark*) (eq? (car mark*) the-anti-mark))
-            (make-syntax-object
-              (syntax-object-expression e)
-              (cdr mark*)
-              (cdr (syntax-object-subst* e)))
-            (make-syntax-object
-              (syntax-object-expression e)
-              (cons m mark*)
-              (cons 'shift (syntax-object-subst* e)))))))
+      (syntax-object e (list m) '(shift))))
 
   (define same-marks?
     (lambda (x y)
@@ -342,11 +327,29 @@ implementation.
   (define add-subst
     (lambda (subst e)
       (if subst
-          (make-syntax-object
-            (syntax-object-expression e)
-            (syntax-object-mark* e)
-            (cons subst (syntax-object-subst* e)))
+          (syntax-object e '() (list subst))
           e)))
+
+  (define join-wraps
+    (lambda (m1* s1* e)
+      (define cancel
+        (lambda (ls1 ls2)
+          (let f ([x (car ls1)] [ls1 (cdr ls1)])
+            (if (null? ls1)
+                (cdr ls2)
+                (cons x (f (car ls1) (cdr ls1)))))))
+      (let ([m2* (syntax-object-mark* e)] [s2* (syntax-object-subst* e)])
+        (if (and (not (null? m1*)) (not (null? m2*)) (eq? (car m2*) anti-mark))
+           ; cancel mark, anti-mark, and corresponding shifts
+            (values (cancel m1* m2*) (cancel s1* s2*))
+            (values (append m1* m2*) (append s1* s2*))))))
+
+  (define syntax-object
+    (lambda (e m* s*)
+      (if (syntax-object? e)
+          (let-values ([(m* s*) (join-wraps m* s* e)])
+            (make-syntax-object (syntax-object-expression e) m* s*))
+          (make-syntax-object e m* s*))))
 
   (define-structure (rib sym* mark** label*))
 
@@ -461,18 +464,21 @@ implementation.
 
   (define id?
     (lambda (x)
-      (and (syntax-object? x)
-           (symbol? (unannotate (syntax-object-expression x))))))
+      (if (syntax-object? x)
+          (id? (syntax-object-expression x))
+          (symbol? (unannotate x)))))
 
   (define id->sym
     (lambda (x)
-      (unannotate (syntax-object-expression x))))
+      (if (syntax-object? x)
+          (id->sym (syntax-object-expression x))
+          (unannotate x))))
 
  ;; lexical variables
 
   (define gen-var
     (lambda (id)
-      (build-lexical-var (syn->src id) (id->sym id))))
+      (build-lexical-var (source id) (id->sym id))))
 
  ;; looking up local bindings
 
@@ -576,9 +582,10 @@ implementation.
                   [b (label->binding label r)]
                   [type (binding-type b)])
              (case type
-               [(macro macro! lexical global syntax displaced-lexical)
-                (values type (binding-value b))]
-               [else (values 'other #f)]))]
+               [(macro macro!) (values type (binding-value b) #'id)]
+               [(lexical global syntax displaced-lexical)
+                (values type (binding-value b) #f)]
+               [else (values 'other #f #f)]))]
           [(id . rest)
            (if (id? #'id)
                (let* ([label (id->label #'id)]
@@ -586,33 +593,33 @@ implementation.
                       [type (binding-type b)])
                  (case type
                    [(macro macro! core begin define define-syntax local-syntax)
-                    (values type (binding-value b))]
-                   [else (values 'call #f)]))
-               (values 'call #f))]
+                    (values type (binding-value b) #'id)]
+                   [else (values 'call #f #f)]))
+               (values 'call #f #f))]
           [_ (let ([d (strip e '())])
                (if (self-evaluating? d)
-                   (values 'constant d)
-                   (values 'other #f)))])))
+                   (values 'constant d #f)
+                   (values 'other #f #f)))])))
 
    ;; in the chi functions, r is the environment used for references in
-   ;; run-time code, and mr is hte environment used for references in
+   ;; run-time code, and mr is the environment used for references in
    ;; meta (transformer) code
 
     (define chi
       (lambda (e r mr)
-        (let-values ([(type value) (syntax-type e r)])
+        (let-values ([(type value kwd) (syntax-type e r)])
           (case type
-            [(lexical) (build-lexical-reference (syn->src e) value)]
-            [(global) (build-global-reference (syn->src e) value)]
+            [(lexical) (build-lexical-reference (source e) value)]
+            [(global) (build-global-reference (source e) value)]
             [(core) (value e r mr)]
-            [(constant) (build-data (syn->src e) value)]
+            [(constant) (build-data (source e) value)]
             [(call) (chi-application e r mr)]
             [(begin)
-             (build-sequence (syn->src e) (chi-exprs (parse-begin e #f) r mr))]
+             (build-sequence (source e) (chi-exprs (parse-begin e #f) r mr))]
             [(macro macro!) (chi (chi-macro value e) r mr)]
             [(local-syntax)
              (let-values ([(e* r mr) (chi-local-syntax value e r mr)])
-               (build-sequence (syn->src e) (chi-exprs e* r mr)))]
+               (build-sequence (source e) (chi-exprs e* r mr)))]
             [(define)
              (parse-define e)
              (syntax-error e "invalid context for definition")]
@@ -632,15 +639,13 @@ implementation.
       (lambda (e r mr)
         (syntax-case e ()
           [(e0 e1 ...)
-           (build-application (syn->src e)
+           (build-application (source e)
              (chi #'e0 r mr)
              (chi-exprs #'(e1 ...) r mr))])))
 
     (define chi-macro
-      (lambda (p orig-e)
-        (let ([e (p (anti-mark orig-e))])
-          (let ([e (if (syntax-object? e) e (make-syntax-object e '() '()))])
-            (add-mark (gen-mark) e)))))
+      (lambda (p e)
+        (add-mark (gen-mark) (p (add-mark anti-mark e)))))
 
    ;; when processing a lambda or letrec body, before the body forms are
    ;; processed, a new rib is created and added to the substs for each
@@ -650,50 +655,56 @@ implementation.
     (define chi-body
       (lambda (outer-e e* r mr)
         (let ([rib (make-empty-rib)])
-          (let parse ([e* (map (lambda (e) (add-subst rib e)) e*)]
-                      [r r] [mr mr] [id* '()] [var* '()] [rhs* '()])
+          (let parse ([e* (map (lambda (e) (add-subst rib e)) e*)] [r r] [mr mr]
+                      [id* '()] [var* '()] [rhs* '()] [kwd* '()])
             (if (null? e*)
                 (syntax-error outer-e "no expressions in body")
                 (let ([e (car e*)])
-                  (let-values ([(type value) (syntax-type e r)])
-                    (case type
-                      [(define)
-                       (let-values ([(id rhs) (parse-define e)])
-                         (let ([label (gen-label)] [var (gen-var id)])
-                           (extend-rib! rib id label)
-                           (parse (cdr e*)
-                            ; add only to run-time environment
-                             (extend-env label (make-binding 'lexical var) r)
-                             mr
-                             (cons id id*)
-                             (cons var var*)
-                             (cons rhs rhs*))))]
-                      [(define-syntax)
-                       (let-values ([(id rhs) (parse-define-syntax e)])
-                         (let ([label (gen-label)])
-                           (extend-rib! rib id label)
-                           (let ([b (eval-transformer (chi rhs mr mr))])
+                  (let-values ([(type value kwd) (syntax-type e r)])
+                    (let ([kwd* (cons kwd kwd*)])
+                      (case type
+                        [(define)
+                         (let-values ([(id rhs) (parse-define e)])
+                           (when (bound-id-member? id kwd*)
+                             (syntax-error id "undefined identifier"))
+                           (let ([label (gen-label)] [var (gen-var id)])
+                             (extend-rib! rib id label)
                              (parse (cdr e*)
-                              ; add to both run-time and meta environments
-                               (extend-env label b r)
-                               (extend-env label b mr)
-                               (cons id id*) var* rhs*))))]
-                      [(begin)
-                       (parse (append (parse-begin e #t) (cdr e*))
-                         r mr id* var* rhs*)]
-                      [(macro macro!)
-                       (parse (cons (add-subst rib (chi-macro value e)) (cdr e*))
-                         r mr id* var* rhs*)]
-                      [(local-syntax)
-                       (let-values ([(new-e* r mr) (chi-local-syntax value e r mr)])
-                         (parse (append new-e* (cdr e*)) r mr id* var* rhs*))]
-                      [else
-                       (unless (valid-bound-ids? id*)
-                         (invalid-ids-error id* outer-e "locally defined identifier"))
-                       (build-letrec* no-source
-                         (reverse var*) (chi-exprs (reverse rhs*) r mr)
-                         (build-sequence no-source
-                           (chi-exprs (cons e (cdr e*)) r mr)))]))))))))
+                              ; add only to run-time environment
+                               (extend-env label (make-binding 'lexical var) r)
+                               mr
+                               (cons id id*)
+                               (cons var var*)
+                               (cons rhs rhs*)
+                               kwd*)))]
+                        [(define-syntax)
+                         (let-values ([(id rhs) (parse-define-syntax e)])
+                           (when (bound-id-member? id kwd*)
+                             (syntax-error id "undefined identifier"))
+                           (let ([label (gen-label)])
+                             (extend-rib! rib id label)
+                             (let ([b (eval-transformer (chi rhs mr mr))])
+                               (parse (cdr e*)
+                                ; add to both run-time and meta environments
+                                 (extend-env label b r)
+                                 (extend-env label b mr)
+                                 (cons id id*) var* rhs* kwd*))))]
+                        [(begin)
+                         (parse (append (parse-begin e #t) (cdr e*))
+                           r mr id* var* rhs* kwd*)]
+                        [(macro macro!)
+                         (parse (cons (add-subst rib (chi-macro value e)) (cdr e*))
+                           r mr id* var* rhs* kwd*)]
+                        [(local-syntax)
+                         (let-values ([(new-e* r mr) (chi-local-syntax value e r mr)])
+                           (parse (append new-e* (cdr e*)) r mr id* var* rhs* kwd*))]
+                        [else
+                         (unless (valid-bound-ids? id*)
+                           (invalid-ids-error id* outer-e "locally defined identifier"))
+                         (build-letrec* no-source
+                           (reverse var*) (chi-exprs (reverse rhs*) r mr)
+                           (build-sequence no-source
+                             (chi-exprs (cons e (cdr e*)) r mr)))])))))))))
 
     (define parse-define
       (lambda (e)
@@ -749,7 +760,7 @@ implementation.
 
     (set! sc-expand
       (lambda (x)
-        (chi (make-syntax-object x top-mark* top-subst*) null-env null-env)))
+        (chi (syntax-object x top-mark* top-subst*) null-env null-env)))
 
    ;; core transformers
 
@@ -762,7 +773,7 @@ implementation.
     (global-extend 'core 'quote
       (lambda (e r mr)
         (syntax-case e ()
-          [(_ e) (build-data (syn->src #'e) (strip #'e '()))])))
+          [(_ e) (build-data (source #'e) (strip #'e '()))])))
 
     (global-extend 'core 'lambda
       (lambda (e r mr)
@@ -772,7 +783,7 @@ implementation.
               (invalid-ids-error var* e "parameter"))
             (let ([label* (map (lambda (x) (gen-label)) var*)]
                   [new-var* (map gen-var var*)])
-              (build-lambda (syn->src e) new-var* rest?
+              (build-lambda (source e) new-var* rest?
                 (chi-body e
                   (let ([rib (make-full-rib var* label*)])
                     (map (lambda (e) (add-subst rib e)) e*))
@@ -794,7 +805,7 @@ implementation.
                    [new-var* (map gen-var var*)])
                (let ([r (extend-var-env* label* new-var* r)]
                      [rib (make-full-rib var* label*)])
-                 (build-letrec (syn->src e)
+                 (build-letrec (source e)
                    new-var*
                    (map (lambda (e) (chi (add-subst rib e) r mr)) rhs*)
                    (chi-body e (map (lambda (e) (add-subst rib e)) e*) r mr)))))])))
@@ -810,7 +821,7 @@ implementation.
                    [new-var* (map gen-var var*)])
                (let ([r (extend-var-env* label* new-var* r)]
                      [rib (make-full-rib var* label*)])
-                 (build-letrec* (syn->src e)
+                 (build-letrec* (source e)
                    new-var*
                    (map (lambda (e) (chi (add-subst rib e) r mr)) rhs*)
                    (chi-body e (map (lambda (e) (add-subst rib e)) e*) r mr)))))])))
@@ -824,11 +835,11 @@ implementation.
              (case (binding-type b)
                [(macro!) (chi (chi-macro (binding-value b) e) r mr)]
                [(lexical)
-                (build-lexical-assignment (syn->src e)
+                (build-lexical-assignment (source e)
                   (binding-value b)
                   (chi #'rhs r mr))]
                [(global)
-                (build-global-assignment (syn->src e)
+                (build-global-assignment (source e)
                   (binding-value b)
                   (chi #'rhs r mr))]
                [(displaced-lexical) (displaced-lexical-error #'id)]
@@ -838,11 +849,11 @@ implementation.
       (lambda (e r mr)
         (syntax-case e ()
           [(_ test then)
-           (build-conditional (syn->src e)
+           (build-conditional (source e)
              (chi #'test r mr)
              (chi #'then r mr))]
           [(_ test then else)
-           (build-conditional (syn->src e)
+           (build-conditional (source e)
              (chi #'test r mr)
              (chi #'then r mr)
              (chi #'else r mr))])))
@@ -976,18 +987,13 @@ implementation.
             [(_ expr (key ...) m ...)
              (if (andmap (lambda (x) (and (id? x) (not (ellipsis? x)))) #'(key ...))
                  (let ([x (gen-var #'tmp)])
-                   (build-application (syn->src e)
+                   (build-application (source e)
                      (build-lambda no-source (list x) #f
                        (gen-syntax-case x #'(key ...) #'(m ...) r mr))
                      (list (chi #'expr r mr))))
                  (syntax-error e "invalid literals list in"))]))))
 
     (let ()
-      (define fresh-mark
-        (lambda (x fm)
-          (if fm
-              (anti-mark (add-mark m x))
-              x)))
       (define gen-syntax
         (lambda (src e r maps ellipsis? vec? fm)
           (if (id? e)
@@ -1000,7 +1006,9 @@ implementation.
                         (values `(ref ,var) maps))
                       (if (ellipsis? e)
                           (syntax-error src "misplaced ellipsis in syntax form")
-                          (values `(quote ,e) maps)))))
+                          (values
+                            `(quote ,(if fm (add-mark anti-mark (add-mark fm e)) e))
+                            maps)))))
               (syntax-case e ()
                 [(dots e)
                  (ellipsis? #'dots)
@@ -1160,25 +1168,6 @@ implementation.
 
   (set! $syntax-dispatch
     (lambda (e p)
-      (define join-wraps
-        (lambda (m1* s1* e)
-          (define cancel
-            (lambda (ls1 ls2)
-              (let f ([x (car ls1)] [ls1 (cdr ls1)])
-                (if (null? ls1)
-                    (cdr ls2)
-                    (cons x (f (car ls1) (cdr ls1)))))))
-          (let ([m2* (syntax-object-mark* e)] [s2* (syntax-object-subst* e)])
-            (if (and (not (null? m1*)) (not (null? m2*)) (eq? (car m2*) the-anti-mark))
-               ; cancel mark, anti-mark, and corresponding shifts
-                (values (cancel m1* m2*) (cancel s1* s2*))
-                (values (append m1* m2*) (append s1* s2*))))))
-      (define wrap
-        (lambda (m* s* e)
-          (if (syntax-object? e)
-              (let-values ([(m* s*) (join-wraps m* s* e)])
-                (make-syntax-object (syntax-object-expression e) m* s*))
-              (make-syntax-object e m* s*))))
       (define match-each
         (lambda (e p m* s*)
           (cond
@@ -1221,7 +1210,7 @@ implementation.
           (cond
             [(pair? e)
              (let ([l (match-each-any (cdr e) m* s*)])
-               (and l (cons (wrap m* s* (car e)) l)))]
+               (and l (cons (syntax-object (car e) m* s*) l)))]
             [(null? e) '()]
             [(syntax-object? e)
              (let-values ([(m* s*) (join-wraps m* s* e)])
@@ -1273,7 +1262,7 @@ implementation.
                       (and r* (combine r* r))))]
                [(free-id)
                 (and (symbol? e)
-                     (free-id=? (wrap m* s* e) (vector-ref p 1))
+                     (free-id=? (syntax-object e m* s*) (vector-ref p 1))
                      r)]
                [(each+)
                 (let-values ([(xr* y-pat r)
@@ -1294,10 +1283,10 @@ implementation.
           (cond
             [(not r) #f]
             [(eq? p '_) r]
-            [(eq? p 'any) (cons (wrap m* s* e) r)]
+            [(eq? p 'any) (cons (syntax-object e m* s*) r)]
             [(syntax-object? e)
              (let-values ([(m* s*) (join-wraps m* s* e)])
-               (match* (unannotate (syntax-object-expression e)) p m* s* r))]
+               (match (syntax-object-expression e) p m* s* r))]
             [else (match* (unannotate e) p m* s* r)])))
       (match e p '() '() '())))
 

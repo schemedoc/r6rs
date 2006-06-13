@@ -318,6 +318,17 @@ and the current and remaining expressions in the body.
 </dl>
 
 <p>
+An error is signaled if a keyword identifying a definition (derived or core)
+is redefined by the definition or a later definition in the same body.
+To catch this error, the expander records the identifying keyword for each
+syntactic abstraction, <tt>define-syntax</tt> form, <tt>define</tt>
+form, <tt>begin</tt> form, <tt>let-syntax</tt> form, and <tt>letrec-syntax</tt>
+form it encounters while processing the definitions and checks each
+newly defined identifier (<tt>define</tt> or <tt>define-syntax</tt>
+left-hand side) against the recorded keywords, as with
+<tt>bound-identifier=?</tt> (Section&nbsp;<a href="./syntax.html#g9">3.7</a>).
+
+<p>
 Expansion of each variable definition right-hand side is deferred until
 after all of the definitions have been seen so that each keyword and
 variable references within the right-hand side resolves to the local
@@ -1980,10 +1991,8 @@ definition, e.g.:
 &nbsp;&nbsp;(syntax-rules&nbsp;()<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;[(foo&nbsp;x)&nbsp;(define&nbsp;x&nbsp;88)]))</tt>
-<p>The left-to-right processing order also gives a possibly surprising
-meaning to the following strange variant of the expression above, in which
-<tt>(foo&nbsp;z)</tt> has been moved above the internal definition of
-<tt>foo</tt>.
+<p>The algorithm signals an error when the forms in the expression above are
+swapped, i.e.:
 
 <p>
 
@@ -1994,15 +2003,12 @@ meaning to the following strange variant of the expression above, in which
 &nbsp;&nbsp;(define&nbsp;foo&nbsp;(lambda&nbsp;(x)&nbsp;(set!&nbsp;y&nbsp;z)))<br>
 
 &nbsp;&nbsp;y)</tt>
-<p>Assuming the expression is within the scope of the outer syntactic
-definition of foo, the occurrence of <tt>foo</tt> in
-<tt>(foo&nbsp;z)</tt> is a reference to the outer binding.
-Thus, <tt>(foo&nbsp;z)</tt> expands to <tt>(define&nbsp;z&nbsp;88)</tt>, and the
-expression as a whole evaluates to <tt>55</tt>.
+<p>In this case, the keyword <tt>foo</tt> identifying the definition
+<tt>(foo&nbsp;z)</tt> is redefined by the subsequent definition of
+<tt>foo</tt>.
 
 <p>
-With internal syntax definitions, the left-to-right processing order can
-again produce both useful and possibly surprising results. 
+With internal syntax definitions, the algorithm produces similar results. 
 For example, in
 
 <p>
@@ -2036,16 +2042,15 @@ whereas in
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((foo&nbsp;x)&nbsp;(define&nbsp;x&nbsp;37))))<br>
 
 &nbsp;&nbsp;a)</tt>
-<p>the occurrence of <tt>foo</tt> in <tt>(foo&nbsp;a)</tt> is a reference to
-the outer binding of <tt>foo</tt>, and, again assuming the outer syntactic
-definition of <tt>foo</tt> given earlier, the expression evaluates to
-<tt>88</tt>.
+<p>the keyword <tt>foo</tt> identifying <tt>(foo&nbsp;a)</tt> as a definition
+is subsequently redefined, and an error is signaled.
 
 <p>
-Giving any meaning to the second of each pair of expressions above is
-somewhat questionable, but we believe it is preferable to specify the
-expansion semantics precisely and, in so doing, to give the expected
-meaning to expressions like the first of each pair above.
+Specifying the expansion algorithm operationally, as we have done, may be
+disquieting to some, yet we believe it is preferable to the more
+declarative R5RS semantics both in giving the expected meaning to
+expressions like the first of each pair above and in signaling an error
+for the second of each pair.
 
 <p>
 

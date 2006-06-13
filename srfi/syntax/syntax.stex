@@ -4,6 +4,17 @@
 %  - algebra for marks and subsitutions
 %    see Waddell's dissertation or POPL '99 module paper
 %  - spell out the connection between syntax and lists somewhere
+%  - spell out scoping rules, something like:
+%    - the body of a library imported "for run" is at meta-level 0
+%    - a transformer appearing in a meta-level n expression is at
+%      meta-level n+1
+%    - an introduced identifier (any identifier other than a pattern
+%      variable) in a meta-level n+1 syntax template is at meta-level n
+%    - meta-level n identifiers are bound only by meta-level n bindings
+%    - in (let () (define-syntax a T) (define x e) ---), occurrences
+%      of x outside of a template in T do not refer to the x
+%      bound by (define x e), while occurrences of x inside of a template
+%      in T do refer x bound by (define x e).
 
 \usepackage{scheme}
 % \usepackage{grammar}
@@ -185,6 +196,16 @@ and \scheme{letrec-syntax} to be visible only in the inner body forms.
 The expander completes the expansion of the deferred right-hand-side forms
 and the current and remaining expressions in the body.
 \end{description}
+
+An error is signaled if a keyword identifying a definition (derived or core)
+is redefined by the definition or a later definition in the same body.
+To catch this error, the expander records the identifying keyword for each
+syntactic abstraction, \scheme{define-syntax} form, \scheme{define}
+form, \scheme{begin} form, \scheme{let-syntax} form, and \scheme{letrec-syntax}
+form it encounters while processing the definitions and checks each
+newly defined identifier (\scheme{define} or \scheme{define-syntax}
+left-hand side) against the recorded keywords, as with
+\scheme{bound-identifier=?} (Section~\ref{sec:identifierpredicates}).
 
 Expansion of each variable definition right-hand side is deferred until
 after all of the definitions have been seen so that each keyword and
@@ -1483,10 +1504,8 @@ definition, e.g.:
     [(foo x) (define x 88)]))
 \endschemedisplay
 
-The left-to-right processing order also gives a possibly surprising
-meaning to the following strange variant of the expression above, in which
-\scheme{(foo z)} has been moved above the internal definition of
-\scheme{foo}.
+The algorithm signals an error when the forms in the expression above are
+swapped, i.e.:
 
 \schemedisplay
 (let ([y 55] [z 73])
@@ -1495,14 +1514,11 @@ meaning to the following strange variant of the expression above, in which
   y)
 \endschemedisplay
 
-Assuming the expression is within the scope of the outer syntactic
-definition of foo, the occurrence of \scheme{foo} in
-\scheme{(foo z)} is a reference to the outer binding.
-Thus, \scheme{(foo z)} expands to \scheme{(define z 88)}, and the
-expression as a whole evaluates to \scheme{55}.
+In this case, the keyword \scheme{foo} identifying the definition
+\scheme{(foo z)} is redefined by the subsequent definition of
+\scheme{foo}.
 
-With internal syntax definitions, the left-to-right processing order can
-again produce both useful and possibly surprising results. 
+With internal syntax definitions, the algorithm produces similar results. 
 For example, in
 
 \schemedisplay
@@ -1528,15 +1544,14 @@ whereas in
   a)
 \endschemedisplay
 
-the occurrence of \scheme{foo} in \scheme{(foo a)} is a reference to
-the outer binding of \scheme{foo}, and, again assuming the outer syntactic
-definition of \scheme{foo} given earlier, the expression evaluates to
-\scheme{88}.
+the keyword \scheme{foo} identifying \scheme{(foo a)} as a definition
+is subsequently redefined, and an error is signaled.
 
-Giving any meaning to the second of each pair of expressions above is
-somewhat questionable, but we believe it is preferable to specify the
-expansion semantics precisely and, in so doing, to give the expected
-meaning to expressions like the first of each pair above.
+Specifying the expansion algorithm operationally, as we have done, may be
+disquieting to some, yet we believe it is preferable to the more
+declarative {\r5rs} semantics both in giving the expected meaning to
+expressions like the first of each pair above and in signaling an error
+for the second of each pair.
 
 \subsection{Fluid identifiers or bindings}
 
