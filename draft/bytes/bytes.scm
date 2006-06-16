@@ -24,6 +24,9 @@
 
 ; This uses SRFIs 23, 26, 60, and 66
 
+(define (unspecified)
+  (if #f #f))
+
 (define-syntax endianness
   (syntax-rules (little big)
     ((endianness little) 'little) 
@@ -79,14 +82,14 @@
 	    (loop (- index 1)
 		  (proc index acc))))))
 
-(define (bytes-uint-ref size endness bytes index)
+(define (bytes-uint-ref bytes index endness size)
   (index-iterate index size
 		       (eq? (endianness big) endness)
 		       0
 		       (lambda (index acc)
 			 (+ (u8vector-ref bytes index) (arithmetic-shift acc 8)))))
 
-(define (bytes-sint-ref size endness bytes index)
+(define (bytes-sint-ref  bytes index endness size)
   (let ((high-byte (u8vector-ref bytes
 				 (if (eq? endness (endianness big))
 				     index
@@ -107,20 +110,20 @@
 			 (+ (u8vector-ref bytes index) (arithmetic-shift acc 8)))))))
 
 (define (make-uint-ref size)
-  (cut bytes-uint-ref size <> <> <>))
+  (cut bytes-uint-ref <> <> <> size))
 
 (define (make-sint-ref size)
-  (cut bytes-sint-ref size <> <> <>))
+  (cut bytes-sint-ref <> <> <> size))
 
-(define (bytes-uint-set! size endness bytes index val)
+(define (bytes-uint-set! bytes index val endness size)
   (index-iterate index size (eq? (endianness little) endness)
 		 val
 		 (lambda (index acc)
 		   (u8vector-set! bytes index (remainder acc 256))
 		   (quotient acc 256)))
-  (values))
+  (unspecified))
 
-(define (bytes-sint-set! size endness bytes index val)
+(define (bytes-sint-set! bytes index val endness size)
   (if (negative? val)
       (index-iterate index size (eq? (endianness little) endness)
 		     (- -1 val)
@@ -134,22 +137,22 @@
 		       (u8vector-set! bytes index (remainder acc 256))
 		       (quotient acc 256))))
   
-  (values))
+  (unspecified))
   
 (define (make-uint-set! size)
-  (cut bytes-uint-set! size <> <> <> <>))
+  (cut bytes-uint-set! <> <> <> <> size))
 (define (make-sint-set! size)
-  (cut bytes-sint-set! size <> <> <> <>))
+  (cut bytes-sint-set! <> <> <> <> size))
 
 (define (make-ref/native base base-ref)
   (lambda (bytes index)
     (ensure-aligned index base)
-    (base-ref (native-endianness) bytes index)))
+    (base-ref bytes index (native-endianness))))
 
 (define (make-set!/native base base-set!)
   (lambda (bytes index val)
     (ensure-aligned index base)
-    (base-set! (native-endianness) bytes index val)))
+    (base-set! bytes index val (native-endianness))))
 
 (define (ensure-aligned index base)
   (if (not (zero? (remainder index base)))
@@ -185,7 +188,8 @@
 ; Auxiliary stuff
 
 (define (bytes-copy! source source-start target target-start count)
-  (u8vector-copy! source source-start target target-start count))
+  (u8vector-copy! source source-start target target-start count)
+  (unspecified))
 
 (define (bytes-copy b)
   (u8vector-copy b))
@@ -204,8 +208,8 @@
   (list->u8vector (map s8->u8 l)))
 
 (define (make-bytes->int-list bytes-ref)
-  (lambda (size endness b)
-    (let ((ref (cut bytes-ref size endness b <>))
+  (lambda (b endness size)
+    (let ((ref (cut bytes-ref b <> endness size))
 	  (length (bytes-length b)))
       (let loop ((i 0) (r '()))
 	(if (>= i length)
@@ -217,9 +221,9 @@
 (define bytes->sint-list (make-bytes->int-list bytes-sint-ref))
 
 (define (make-int-list->bytes bytes-set!)
-  (lambda (size endness l)
+  (lambda (l endness size)
     (let* ((bytes (make-bytes (* size (length l))))
-	   (set! (cut bytes-set! size endness bytes <> <>)))
+	   (set! (cut bytes-set! bytes <> <> endness size)))
       (let loop ((i 0) (l l))
 	(if (null? l)
 	    bytes

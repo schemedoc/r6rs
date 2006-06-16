@@ -56,8 +56,9 @@
       (h2 "General remarks")
 
       (p
-       "Bytes objects are objects of a disjoint type.  Conceptually, a bytes object "
-       "represents a sequence of bytes.")
+       "Bytes objects are objects of a disjoint type. "
+       "Conceptually, a bytes object represents a sequence "
+       "of 8-bit bytes.")
 
       (p
        "The length of a bytes object is the number of bytes it "
@@ -74,18 +75,6 @@
        "unsigned representations.  The signed representations all use "
        (a (@ (href "http://en.wikipedia.org/wiki/Two's_complement")) "two's complement")
        ".")
-
-      (p
-       "For procedures that have no \"natural\" return value, this description often uses the sentence")
-      (p
-       (em "The return values are unspecified."))
-      (p
-       "This means that number of return values "
-       " and the return values are unspecified.  However, the number of return values "
-       " is such that it is accepted by a continuation created by " (code "begin") ".  "
-       "Specifically, on Scheme implementations where continuations created by " (code "begin")
-       " accept an arbitrary number of arguments (this includes most implementations), "
-       "it is suggested that the procedure return zero return values.")
 
       (h2 "Interface")
 
@@ -175,39 +164,42 @@
 	 (code "Bytes-u8-set!") " stores " (var "octet") " in element "
 	 (var "k") " of "(var "bytes") ".")
 	(p
+	 (var "Octet") ", must be an exact integer in the interval "
+	 "{0, ..., 255}. ")
+	(p
 	 (var "Byte") ", must be an exact integer in the interval "
 	 "{-128, ..., 127}. "
-	 (code "Bytes-u8-set!") " stores the two's complement representation "
+	 (code "Bytes-s8-set!") " stores the two's complement representation "
 	 " of " (var "byte") " in element " (var "k") " of "(var "bytes") ".")
 	(p
-	 "The return values are unspecified."))
+	 "Both procedures return the unspecified value."))
 
        (dt
 	(prototype "bytes-uint-ref"
-		   (var "size")
-		   (var "endianness")
 		   (var "bytes")
-		   (var "k")))
+		   (var "k")
+		   (var "endianness")
+		   (var "size")))
        (dt
 	(prototype "bytes-sint-ref"
-		   (var "size")
-		   (var "endianness")
 		   (var "bytes")
-		   (var "k")))
+		   (var "k")
+		   (var "endianness")
+		   (var "size")))
        (dt
 	(prototype "bytes-uint-set!"
-		   (var "size")
-		   (var "endianness")
 		   (var "bytes")
 		   (var "k")
-		   (var "n")))
+		   (var "n")
+		   (var "endianness")
+		   (var "size")))
        (dt
 	(prototype "bytes-sint-set!"
-		   (var "size")
-		   (var "endianness")
 		   (var "bytes")
 		   (var "k")
-		   (var "n")))
+		   (var "n")
+		   (var "endianness")
+		   (var "size")))
        (dd
 	(p
 	 (var "Size") " must be a positive exact integer. "
@@ -235,19 +227,22 @@
 	 (code "Bytes-sint-set!")
 	 " stores the two's complement representation of size " (var "size") " and specified "
 	 "by " (var "endianness") " into the bytes object at indices {" 
-	 (var "k") ", ..., " (var "k") " + " (var "size") " - 1}."))
+	 (var "k") ", ..., " (var "k") " + " (var "size") " - 1}.")
+	(p
+	 "The ..." (code "-set!") " procedures return the unspecified value."))
+       
        
 
        (dt
 	(prototype "bytes-u16-ref"
-		   (var "endianness")
 		   (var "bytes")
-		   (var "k")))
+		   (var "k")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-s16-ref"
-		   (var "endianness")
 		   (var "bytes")
-		   (var "k")))
+		   (var "k")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-u16-native-ref"
 		   (var "bytes")
@@ -258,16 +253,16 @@
 		   (var "k")))
        (dt
 	(prototype "bytes-u16-set!"
-		   (var "endianness")
 		   (var "bytes")
 		   (var "k")
-		   (var "n")))
+		   (var "n")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-s16-set!"
-		   (var "endianness")
 		   (var "bytes")
 		   (var "k")
-		   (var "n")))
+		   (var "n")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-u16-native-set!"
 		   (var "bytes")
@@ -295,18 +290,20 @@
 	 "The procedures with " (code "native") " in their names employ the "
 	 "native endianness, and only work at aligned indices: "
 	 (var "k") " must be a multiple of 2.  It is an error to use them at "
-	 "non-aligned indices."))
+	 "non-aligned indices.")
+	(p
+	 "The ..." (code "-set!") " procedures return the unspecified value."))
 
        (dt
 	(prototype "bytes-u32-ref"
-		   (var "endianness")
 		   (var "bytes")
-		   (var "k")))
+		   (var "k")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-s32-ref"
-		   (var "endianness")
 		   (var "bytes")
-		   (var "k")))
+		   (var "k")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-u32-native-ref"
 		   (var "bytes")
@@ -317,16 +314,16 @@
 		   (var "k")))
        (dt
 	(prototype "bytes-u32-set!"
-		   (var "endianness")
 		   (var "bytes")
 		   (var "k")
-		   (var "n")))
+		   (var "n")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-s32-set!"
-		   (var "endianness")
 		   (var "bytes")
 		   (var "k")
-		   (var "n")))
+		   (var "n")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-u32-native-set!"
 		   (var "bytes")
@@ -354,19 +351,21 @@
 	 "The procedures with " (code "native") " in their names employ the "
 	 "native endianness, and only work at aligned indices: "
 	 (var "k") " must be a multiple of 4.  It is an error to use them at "
-	 "non-aligned indices."))
+	 "non-aligned indices.")
+	(p
+	 "The ..." (code "-set!") " procedures return the unspecified value."))
 
 
        (dt
 	(prototype "bytes-u64-ref"
-		   (var "endianness")
 		   (var "bytes")
-		   (var "k")))
+		   (var "k")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-s64-ref"
-		   (var "endianness")
 		   (var "bytes")
-		   (var "k")))
+		   (var "k")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-u64-native-ref"
 		   (var "bytes")
@@ -377,16 +376,16 @@
 		   (var "k")))
        (dt
 	(prototype "bytes-u64-set!"
-		   (var "endianness")
 		   (var "bytes")
 		   (var "k")
-		   (var "n")))
+		   (var "n")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-s64-set!"
-		   (var "endianness")
 		   (var "bytes")
 		   (var "k")
-		   (var "n")))
+		   (var "n")
+		   (var "endianness")))
        (dt
 	(prototype "bytes-u64-native-set!"
 		   (var "bytes")
@@ -414,7 +413,9 @@
 	 "The procedures with " (code "native") " in their names employ the "
 	 "native endianness, and only work at aligned indices: "
 	 (var "k") " must be a multiple of 8.  It is an error to use them at "
-	 "non-aligned indices."))
+	 "non-aligned indices.")
+	(p
+	 "The ..." (code "-set!") " procedures return the unspecified value."))
 
        (dt
 	(prototype "bytes=?"
@@ -422,9 +423,9 @@
 		   (var "bytes-2")))
        (dd
 	(p
-	 "Returns " (var "#t") " if " (var "bytes-1") " and "  (var "bytes-2")
+	 "Returns " (code "#t") " if " (var "bytes-1") " and "  (var "bytes-2")
 	 " are equal---that is, if they have the same length and equal bytes "
-	 "at all valid indices."))
+	 "at all valid indices.  It returns " (code "#f") " otherwise."))
 
        (dt
 	(prototype "bytes-copy!"
@@ -461,7 +462,7 @@
 	 "at the source location before the copy.")
        
 	(p
-	 "The return values are unspecified."))
+	 "This returns the unspecified value."))
 
        (dt
 	(prototype "bytes-copy"
@@ -475,7 +476,7 @@
 		   (var "bytes")))
        (dt
 	(prototype "u8-list->bytes"
-		   (var "bytes")))
+		   (var "list")))
        (dd
 	(p
 	 (code "bytes->u8-list") 
@@ -485,29 +486,29 @@
 	(p
 	 (code "U8-list->bytes") 
 	 " returns a newly allocated bytes object whose elements are the elements "
-	 "of list " (var "bytes") ", which must all be bytes, in the same order. "
+	 "of list " (var "list") ", which must all be octets, in the same order. "
 	 "Analogous to " (code "list->vector") "."))
 
        (dt
 	(prototype "bytes->uint-list"
-		   (var "size")
+		   (var "bytes")
 		   (var "endianness")
-		   (var "bytes")))
+		   (var "size")))
        (dt
 	(prototype "bytes->sint-list"
-		   (var "size")
+		   (var "bytes")
 		   (var "endianness")
-		   (var "bytes")))
+		   (var "size")))
        (dt
 	(prototype "uint-list->bytes"
-		   (var "size")
+		   (var "list")
 		   (var "endianness")
-		   (var "list")))
+		   (var "size")))
        (dt
 	(prototype "sint-list->bytes"
-		   (var "size")
+		   (var "list")
 		   (var "endianness")
-		   (var "list")))
+		   (var "size")))
 
        (dd
 	(p
