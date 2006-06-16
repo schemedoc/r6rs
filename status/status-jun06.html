@@ -162,11 +162,13 @@ Section&nbsp;<a href="./status-jun06.html#g5">4.2</a> (new): describes the forms
 code can take.
 
 <p>
-Section&nbsp;<a href="./status-jun06.html#g6">4.3</a>: now lists <tt>interaction-environment</tt>
-and top-level definitions and expressions among the eliminated features
-and <tt>scheme-report-environment</tt> and <tt>null-environment</tt>
-among those that have been relegated to an R<sup>5</sup>RS compatibility
-library.
+Section&nbsp;<a href="./status-jun06.html#g6">4.3</a>:  now lists <tt>interaction-environment</tt>,
+top-level definitions, and top-level expressions among the eliminated
+features.
+It also lists <tt>scheme-report-environment</tt>,
+<tt>null-environment</tt> <tt>quotient</tt>, <tt>remainder</tt>, and
+<tt>modulo</tt> among those that have been relegated to an R<sup>5</sup>RS
+compatibility library.
 
 <p>
 Section&nbsp;<a href="./status-jun06.html#g7">4.4</a> lists several additional changes.
@@ -212,15 +214,20 @@ has undergone revisions.
 
 <p>
 Section&nbsp;<a href="./status-jun06.html#g18">6.5</a> documents that we have decided to base the
-R<sup>6</sup>RS I/O system on SRFI's 34 and 35.
+R<sup>6</sup>RS I/O system on
+SRFI's&nbsp;<a class=ref href="http://srfi.schemers.org/srfi-34/">34</a>
+and&nbsp;<a class=ref href="http://srfi.schemers.org/srfi-35/">35</a>.
 
 <p>
 Section&nbsp;<a href="./status-jun06.html#g19">6.6</a> documents that we have decided to base the
-R<sup>6</sup>RS I/O system on SRFI's 79 and 81.
+R<sup>6</sup>RS I/O system on
+SRFI's&nbsp;<a class=ref href="http://srfi.schemers.org/srfi-79/">79</a>
+and&nbsp;<a class=ref href="http://srfi.schemers.org/srfi-81/">81</a>.
 
 <p>
 Section&nbsp;<a href="./status-jun06.html#g21">6.8</a> (new) documents that we have decided to
-base R<sup>6</sup>RS byte vectors on SRFI&nbsp;74.
+base R<sup>6</sup>RS byte vectors on
+<a class=ref href="http://srfi.schemers.org/srfi-74/">SRFI&nbsp;74</a>.
 
 <p>
 Section&nbsp;<a href="./status-jun06.html#g22">6.9</a> now lists enumerations and
@@ -469,6 +476,9 @@ an R<sup>5</sup>RS compatibility library:
 <ul>
  <li><tt>scheme-report-environment</tt>
  <li><tt>null-environment</tt>
+ <li><tt>quotient</tt>, <tt>remainder</tt>, <tt>modulo</tt>
+       (see <a class=ref href="http://srfi.schemers.org/srfi-77/">SRFI&nbsp;77</a>
+       for replacements)
 </ul>
 
 <p>
@@ -515,23 +525,29 @@ features.
        considered "outside" of the <tt>dynamic-wind</tt>; that is,
        escaping from either does not cause the <tt><i>out</i></tt> thunk to be invoked,
        and jumping back in does not cause the <tt><i>in</i></tt> thunk to be invoked.
- <li>Most standard procedures are required to raise a specific
-       condition (in the default "safe" mode) when given invalid inputs,
-       except in certain specific cases where the answer can be determined
-       in spite of the invalid input and the additional work involved may
-       be extraordinary.
+ <li>Most standard procedures are required to raise an exception with a
+       specific condition (in the default "safe" mode) when given
+       invalid inputs, except in certain specific cases where the answer
+       can be determined in spite of the invalid input and the additional
+       work involved may be extraordinary.
        For example, <tt>map</tt> must raise an exception if its first argument
        is not a procedure or if its other arguments are not (proper) lists
        of the same length.
        On the other hand, <tt>(memq&nbsp;<i>x</i>&nbsp;<i>ls</i>)</tt> must raise an
-       exception only if, before it finds a tail of <tt><i>ls</i></tt> whose car is eq? 
-       to <tt><i>x</i></tt>, it encounters a non-list tail or cycle in <tt><i>ls</i></tt>.
+       exception if and only if, before it finds a tail of <tt><i>ls</i></tt> whose
+       car is eq? to <tt><i>x</i></tt>, it encounters a non-list tail or cycle in
+       <tt><i>ls</i></tt>.
  <li>When given a value <tt><i>x</i></tt> that can be represented as a datum,
        <tt>write</tt> must print <tt><i>x</i></tt> as a datum for which
        <tt>read</tt> would produce a value that is equivalent (in the
        sense of equal?) to <tt><i>x</i></tt> (read/write invariance).
- <li>Every symbol, string, character, and number that can be created via
-       standard operators has at least one standard datum representation.
+ <li>Every symbol, string, and character that can be created via
+       standard operators has at least one standard representation
+       as a datum.
+       In most implementations, this will also be true of numbers.
+ <li>The <tt>equal?</tt> predicate now terminates for all inputs, following
+       the semantics of <tt>equiv?</tt> in
+       <a class=ref href="http://srfi.schemers.org/srfi-85/">SRFI&nbsp;85</a>.
 </ul>
 
 <p>
@@ -564,15 +580,17 @@ The following features have been added:
  <li><tt>case-lambda</tt> library syntax
  <li><tt>call/cc</tt> as a second name for <tt>call-with-current-continuation</tt>
  <li>Alan Bawden's PEPM&nbsp;'99 nested <tt>quasiquote</tt> extensions
- <li>new list-processing procedures (inspired by SRFI&nbsp;1):
+ <li>new list-processing procedures (mostly inspired by
+       <a class=ref href="http://srfi.schemers.org/srfi-1/">SRFI&nbsp;1</a>):
        <tt>exists</tt>, <tt>forall</tt>,
        <tt>fold-left</tt>, <tt>fold-right</tt>,
        <tt>filter</tt>, <tt>partition</tt>,
        <tt>iota</tt>,
        <tt>find</tt>,
        <tt>remq</tt>, <tt>remv</tt>, <tt>remove</tt>,
-       <tt>generalized-member</tt>, <tt>generalized-remove</tt>, and
-       <tt>generalized-assoc</tt>
+       <tt>memp</tt>, <tt>remp</tt>, and <tt>assp</tt>
+       (the latter three accept a predicate and a list)
+ <li>Unicode support
 </ul>
 
 <p>
@@ -592,16 +610,14 @@ worked out.
 <p>
 <ul>
  <li>top-level libraries
- <li>record types and record definitions
  <li>exception handling
  <li>safe (default) and unsafe modes
  <li><tt>syntax-case</tt> macros
  <li>hash tables (as a library)
- <li>Unicode support
- <li>new string escape characters, including <tt>\n</tt> for newline
-       (part of Unicode support)
  <li>byte-vector datatype and operations
  <li>scripts
+ <li>fixnum- and flonum-specific arithmetic
+ <li>support for infinities and NaNs
 </ul>
 
 <p>
@@ -659,7 +675,7 @@ to make concrete proposals via the SRFI process.
  <li>gensyms / uids
  <li>external syntax for the eof object, e.g., <tt>#!eof</tt>
  <li>external syntax for the unspecified value, e.g., <tt>#!unspecified</tt>
- <li>SRFI&nbsp;0 <tt>cond-expand</tt>
+ <li><a class=ref href="http://srfi.schemers.org/srfi-0/">SRFI&nbsp;0</a> <tt>cond-expand</tt>
  <li>homogeneous numeric vectors
  <li>weak pointers
  <li>support for regular expressions
@@ -736,7 +752,8 @@ Informal requirements:
   ability to define new libraries.
 
 <p>
-Support for libraries is under community discussion via SRFI&nbsp;83 (R6RS
+Support for libraries is under community discussion via
+<a class=ref href="http://srfi.schemers.org/srfi-83/">SRFI&nbsp;83</a> (R6RS
 Library Syntax).
 Two big issues have arisen: the need to clarify phases,
 e.g., for compile-time modules that import at
@@ -764,9 +781,10 @@ Informal requirements:
   mutable fields.
 
 <p>
-Support for records will be based on SRFI&nbsp;76 (R6RS Records), which
-has now been withdrawn as planned after revisions based in part on community
-input.
+Support for records will be based on
+<a class=ref href="http://srfi.schemers.org/srfi-76/">SRFI&nbsp;76</a> (R6RS Records),
+which has now been withdrawn as planned after revisions based in part on
+community input.
 While the SRFI did not fully specify the generativity of ordinary record
 definitions, we have decided that they should be "run-time" generative
 unless declared nongenerative.
@@ -799,9 +817,13 @@ Informal requirements:
   write/read invariance for every datum, including symbols. 
 
 <p>
-Support for Unicode will be based on SRFI&nbsp;75 (R6RS Unicode data), which
-has now been withdrawn as planned after revisions based in part on community
-input.
+Support for Unicode will be based on
+<a class=ref href="http://srfi.schemers.org/srfi-75/">SRFI&nbsp;75</a> (R6RS Unicode
+data), which has now been withdrawn as planned after revisions based in
+part on community input.
+See http://srfi.schemers.org/srfi-75/mail-archive/msg00309.html
+for a discussion of probable differences between the withdrawn
+SRFI and R<sup>6</sup>RS.
 
 <p>
 
@@ -823,9 +845,10 @@ Informal requirements:
 <p>
 Changes for R<sup>6</sup>RS arithmetic, including support for fixnum-specific,
 flonum-specific, and bitwise operators and IEEE arithmetic, are under
-community discussion via SRFI&nbsp;77 (Preliminary Proposal for R6RS
-Arithmetic), which has recently been revised based in part on community
-input.
+community discussion via
+<a class=ref href="http://srfi.schemers.org/srfi-77/">SRFI&nbsp;77</a> (Preliminary
+Proposal for R6RS Arithmetic), which has recently been revised based in
+part on community input.
 
 <p>
 
@@ -844,9 +867,11 @@ Informal requirements:
   parts of the program.
 
 <p>
-The editors have decided to adopt SRFI&nbsp;34 (Exception Handling for
-Programs) as the basis for the R<sup>6</sup>RS exception-handling system and
-SRFI&nbsp;35 (Conditions) as the basis for the R<sup>6</sup>RS condition system.
+The editors have decided to adopt
+<a class=ref href="http://srfi.schemers.org/srfi-34/">SRFI&nbsp;34</a> (Exception Handling
+for Programs) as the basis for the R<sup>6</sup>RS exception-handling system and
+<a class=ref href="http://srfi.schemers.org/srfi-35/">SRFI&nbsp;35</a> (Conditions) as the
+basis for the R<sup>6</sup>RS condition system.
 
 <p>
 
@@ -866,8 +891,10 @@ Informal requirements:
   block read/write operations.
 
 <p>
-The editors have decided to adopt SRFI&nbsp;79 (Primitive I/O) and
-SRFI&nbsp;81 (Port I/O) as the basis for the R<sup>6</sup>RS I/O system.
+The editors have decided to adopt
+<a class=ref href="http://srfi.schemers.org/srfi-79/">SRFI&nbsp;79</a> (Primitive I/O) and
+<a class=ref href="http://srfi.schemers.org/srfi-81/">SRFI&nbsp;81</a> (Port I/O) as the
+basis for the R<sup>6</sup>RS I/O system.
 
 <p>
 The byte-vector datatype requirement is addressed by the binary block
@@ -911,8 +938,10 @@ naming a macro in a <tt>syntax-rules</tt> pattern.
 
 
 <p>
-The editors have decided to adopt SRFI&nbsp;74 (Octet-Addressed Binary Blocks)
-as the basis for byte-vector functionality in R<sup>6</sup>RS.
+The editors have decided to adopt
+<a class=ref href="http://srfi.schemers.org/srfi-74/">SRFI&nbsp;74</a> (Octet-Addressed
+Binary Blocks) as the basis for byte-vector functionality in R<sup>6</sup>RS,
+using the name <tt>bytes</tt> rather than <tt>blob</tt>.
 
 <p>
 
@@ -952,9 +981,10 @@ resolution.
 <p>
 We intend to deliver a draft R<sup>6</sup>RS to the Steering Committee by
 September&nbsp;1,&nbsp;2006.
-In order to meet this target, we plan to wrap up work on the various
-subsystems, decide on the core language/library split, and create a
-rough internal (editors only) draft of the R<sup>6</sup>RS by mid-June.
+An initial internal (editors only) draft of R6RS has been created and
+reflects most of the decisions the editors have made to date.
+This draft will be updated as work wraps up on the major subsystems and
+other issues.
 
 <p>
 For each of the subsystems, the core/library split, and the safe/unsafe
@@ -982,15 +1012,17 @@ safe/unsafe mode   </TD><TD nowrap align="left"> Clinger                 </TD><T
 </center>
 
 <p>
-As time permits, we will also discuss as a group the other possible
-features and changes described in Section&nbsp;<a href="./status-jun06.html#g22">6.9</a>,
-as well as additional ones that may arise, and decide which are to be
-incorporated into R<sup>6</sup>RS.
+At this point, our discussions will be limited mostly to the major
+subsystems and the other possible features and changes described in
+Section&nbsp;<a href="./status-jun06.html#g22">6.9</a>.
+New issues may also be considered if this can be done without
+jeapordizing our goal to submit a draft R<sup>6</sup>RS to the steering
+committee by the target deadline.
 
 <p>
 Responsibility for making sure that the editors complete their work and
 communicate effectively lies with the chair (Dybvig) and responsibility
-for creating the R<sup>6</sup>RS drafts lies with the project editor (Sperber).
+for completing the R<sup>6</sup>RS draft lies with the project editor (Sperber).
 
 <p>
 

@@ -7,25 +7,36 @@
 %  - fix up eval commentary
 %  - remove set-car! and set-cdr! reaffirmation if we make pairs immutable
 
-% Things to vote upon:
+% subsystem approvol
+%  - Unicode (approved 2006/6/13)
+%  - records (approved 2006/6/13)
+%  - arithmetic (approved 2006/6/13)
+%  - I/O
+%  - libraries
+%  - syntax-case
+%  - byte vectors
+%  - hash tables
+%  - enumerations
+%  - safe/unsafe mode
+%  - core/library split
+
+% things to vote upon:
 %  - make string comparisons n-ary
-%  - move exact->inexact and inexact->exact to r5rs compatibility library;
-%    use names ->inexact and ->exact in core
 %  - (make-string n) and (make-vector n) content is unspecified
 %  - (make-bytes n) content is unspecified; add (make-bytes n fill)
 %  - add (error who msg irritant ...), (violation who msg irritant ...)
-%  - eval changes
 %  - if the x in (quote x) is not a datum, "should" or "must" raise
 %    &syntax condition
-%  - final set of SRFI1 and related procedures
-%  - names for generalized-{member,remove,assoc}
-%  - restrictions on what write can print, if anything, for values that
+%  - restrictions on what write can print, if any, for values that
 %    cannot be produced via the datum syntax
 %  - eliminate \scheme{load}
 %  - add \scheme{load-library}
+%  - mike's I/O exceptions note
+
+% outstanding issues we may want to mention
+%  - pathname datatype
 
 % Undocumented decisions
-%  - sealed option remains for records
 %  - specific condition-system decisions
 
 \usepackage{scheme}
@@ -78,11 +89,13 @@ the \hyperlink{status-feb06.html}{February~2006} version.
 Section~\ref{sec:programs} (new): describes the forms which portable
 code can take.
 
-Section~\ref{sec:eliminated}: now lists \scheme{interaction-environment}
-and top-level definitions and expressions among the eliminated features
-and \scheme{scheme-report-environment} and \scheme{null-environment}
-among those that have been relegated to an {\r5rs} compatibility
-library.
+Section~\ref{sec:eliminated}:  now lists \scheme{interaction-environment},
+top-level definitions, and top-level expressions among the eliminated
+features.
+It also lists \scheme{scheme-report-environment},
+\scheme{null-environment} \scheme{quotient}, \scheme{remainder}, and
+\scheme{modulo} among those that have been relegated to an {\r5rs}
+compatibility library.
 
 Section~\ref{sec:changes} lists several additional changes.
 (All but the first four listed are new.)
@@ -118,13 +131,18 @@ Section~\ref{progress:arithmetic} documents that the arithmetic SRFI
 has undergone revisions.
 
 Section~\ref{progress:exceptions} documents that we have decided to base the
-{\r6rs} I/O system on SRFI's 34 and 35.
+{\r6rs} I/O system on
+SRFI's~\hyperlink{http://srfi.schemers.org/srfi-34/}{34}
+and~\hyperlink{http://srfi.schemers.org/srfi-35/}{35}.
 
 Section~\ref{progress:io} documents that we have decided to base the
-{\r6rs} I/O system on SRFI's 79 and 81.
+{\r6rs} I/O system on
+SRFI's~\hyperlink{http://srfi.schemers.org/srfi-79/}{79}
+and~\hyperlink{http://srfi.schemers.org/srfi-81/}{81}.
 
 Section~\ref{progress:bytes} (new) documents that we have decided to
-base {\r6rs} byte vectors on SRFI~74.
+base {\r6rs} byte vectors on
+\hyperlink{http://srfi.schemers.org/srfi-74/}{SRFI~74}.
 
 Section~\ref{progress:miscellaneous} now lists enumerations and
 \scheme{eval} among possible features and changes.
@@ -300,6 +318,9 @@ an {\r5rs} compatibility library:
 \begin{itemize}
  \item \scheme{scheme-report-environment}
  \item \scheme{null-environment}
+ \item \scheme{quotient}, \scheme{remainder}, \scheme{modulo}
+       (see \hyperlink{http://srfi.schemers.org/srfi-77/}{SRFI~77}
+       for replacements)
 \end{itemize}
 
 \subsection{Changes\label{sec:changes}}
@@ -336,23 +357,29 @@ features.
        considered ``outside'' of the \scheme{dynamic-wind}; that is,
        escaping from either does not cause the \var{out} thunk to be invoked,
        and jumping back in does not cause the \var{in} thunk to be invoked.
- \item Most standard procedures are required to raise a specific
-       condition (in the default ``safe'' mode) when given invalid inputs,
-       except in certain specific cases where the answer can be determined
-       in spite of the invalid input and the additional work involved may
-       be extraordinary.
+ \item Most standard procedures are required to raise an exception with a
+       specific condition (in the default ``safe'' mode) when given
+       invalid inputs, except in certain specific cases where the answer
+       can be determined in spite of the invalid input and the additional
+       work involved may be extraordinary.
        For example, \scheme{map} must raise an exception if its first argument
        is not a procedure or if its other arguments are not (proper) lists
        of the same length.
        On the other hand, \scheme{(memq \var{x} \var{ls})} must raise an
-       exception only if, before it finds a tail of \var{ls} whose car is eq? 
-       to \var{x}, it encounters a non-list tail or cycle in \var{ls}.
+       exception if and only if, before it finds a tail of \var{ls} whose
+       car is eq? to \var{x}, it encounters a non-list tail or cycle in
+       \var{ls}.
  \item When given a value \var{x} that can be represented as a datum,
        \scheme{write} must print \var{x} as a datum for which
        \scheme{read} would produce a value that is equivalent (in the
        sense of equal?) to \var{x} (read/write invariance).
- \item Every symbol, string, character, and number that can be created via
-       standard operators has at least one standard datum representation.
+ \item Every symbol, string, and character that can be created via
+       standard operators has at least one standard representation
+       as a datum.
+       In most implementations, this will also be true of numbers.
+ \item The \scheme{equal?} predicate now terminates for all inputs, following
+       the semantics of \scheme{equiv?} in
+       \hyperlink{http://srfi.schemers.org/srfi-85/}{SRFI~85}.
 \end{itemize}
 
 \subsection{Features added\label{sec:featuresadded}}
@@ -375,15 +402,17 @@ The following features have been added:
  \item \scheme{case-lambda} library syntax
  \item \scheme{call/cc} as a second name for \scheme{call-with-current-continuation}
  \item Alan Bawden's PEPM~'99 nested \scheme{quasiquote} extensions
- \item new list-processing procedures (inspired by SRFI~1):
+ \item new list-processing procedures (mostly inspired by
+       \hyperlink{http://srfi.schemers.org/srfi-1/}{SRFI~1}):
        \scheme{exists}, \scheme{forall},
        \scheme{fold-left}, \scheme{fold-right},
        \scheme{filter}, \scheme{partition},
        \scheme{iota},
        \scheme{find},
        \scheme{remq}, \scheme{remv}, \scheme{remove},
-       \scheme{generalized-member}, \scheme{generalized-remove}, and
-       \scheme{generalized-assoc}
+       \scheme{memp}, \scheme{remp}, and \scheme{assp}
+       (the latter three accept a predicate and a list)
+ \item Unicode support
 \end{itemize}
 
 \subsection{Features to be added\label{sec:featurestobeadded}}
@@ -393,16 +422,14 @@ worked out.
 
 \begin{itemize}
  \item top-level libraries
- \item record types and record definitions
  \item exception handling
  \item safe (default) and unsafe modes
  \item \scheme{syntax-case} macros
  \item hash tables (as a library)
- \item Unicode support
- \item new string escape characters, including \scheme{\n} for newline
-       (part of Unicode support)
  \item byte-vector datatype and operations
  \item scripts
+ \item fixnum- and flonum-specific arithmetic
+ \item support for infinities and NaNs
 \end{itemize}
 
 \subsection{Reaffirmations\label{sec:reaffirmations}}
@@ -440,7 +467,7 @@ to make concrete proposals via the SRFI process.
  \item gensyms / uids
  \item external syntax for the eof object, e.g., \scheme{#!eof}
  \item external syntax for the unspecified value, e.g., \scheme{#!unspecified}
- \item SRFI~0 \scheme{cond-expand}
+ \item \hyperlink{http://srfi.schemers.org/srfi-0/}{SRFI~0} \scheme{cond-expand}
  \item homogeneous numeric vectors
  \item weak pointers
  \item support for regular expressions
@@ -487,7 +514,8 @@ Informal requirements:
   support generation of efficient compiled code,
   ability to define new libraries.
 
-Support for libraries is under community discussion via SRFI~83 (R6RS
+Support for libraries is under community discussion via
+\hyperlink{http://srfi.schemers.org/srfi-83/}{SRFI~83} (R6RS
 Library Syntax).
 Two big issues have arisen: the need to clarify phases,
 e.g., for compile-time modules that import at
@@ -505,9 +533,10 @@ Informal requirements:
   syntactic interface,
   mutable fields.
 
-Support for records will be based on SRFI~76 (R6RS Records), which
-has now been withdrawn as planned after revisions based in part on community
-input.
+Support for records will be based on
+\hyperlink{http://srfi.schemers.org/srfi-76/}{SRFI~76} (R6RS Records),
+which has now been withdrawn as planned after revisions based in part on
+community input.
 While the SRFI did not fully specify the generativity of ordinary record
 definitions, we have decided that they should be ``run-time'' generative
 unless declared nongenerative.
@@ -529,9 +558,13 @@ Informal requirements:
   operations and support Unicode-specific text encodings;
   write/read invariance for every datum, including symbols. 
 
-Support for Unicode will be based on SRFI~75 (R6RS Unicode data), which
-has now been withdrawn as planned after revisions based in part on community
-input.
+Support for Unicode will be based on
+\hyperlink{http://srfi.schemers.org/srfi-75/}{SRFI~75} (R6RS Unicode
+data), which has now been withdrawn as planned after revisions based in
+part on community input.
+See http://srfi.schemers.org/srfi-75/mail-archive/msg00309.html
+for a discussion of probable differences between the withdrawn
+SRFI and {\r6rs}.
 
 \subsection{Arithmetic\label{progress:arithmetic}}
 
@@ -543,9 +576,10 @@ Informal requirements:
 
 Changes for {\r6rs} arithmetic, including support for fixnum-specific,
 flonum-specific, and bitwise operators and IEEE arithmetic, are under
-community discussion via SRFI~77 (Preliminary Proposal for R6RS
-Arithmetic), which has recently been revised based in part on community
-input.
+community discussion via
+\hyperlink{http://srfi.schemers.org/srfi-77/}{SRFI~77} (Preliminary
+Proposal for R6RS Arithmetic), which has recently been revised based in
+part on community input.
 
 \subsection{Exceptions\label{progress:exceptions}}
 
@@ -554,9 +588,11 @@ Informal requirements:
   view exception handling as a means of communication between
   parts of the program.
 
-The editors have decided to adopt SRFI~34 (Exception Handling for
-Programs) as the basis for the {\r6rs} exception-handling system and
-SRFI~35 (Conditions) as the basis for the {\r6rs} condition system.
+The editors have decided to adopt
+\hyperlink{http://srfi.schemers.org/srfi-34/}{SRFI~34} (Exception Handling
+for Programs) as the basis for the {\r6rs} exception-handling system and
+\hyperlink{http://srfi.schemers.org/srfi-35/}{SRFI~35} (Conditions) as the
+basis for the {\r6rs} condition system.
 
 \subsection{I/O\label{progress:io}}
 
@@ -566,8 +602,10 @@ Informal requirements:
   byte-vector datatype,
   block read/write operations.
 
-The editors have decided to adopt SRFI~79 (Primitive I/O) and
-SRFI~81 (Port I/O) as the basis for the {\r6rs} I/O system.
+The editors have decided to adopt
+\hyperlink{http://srfi.schemers.org/srfi-79/}{SRFI~79} (Primitive I/O) and
+\hyperlink{http://srfi.schemers.org/srfi-81/}{SRFI~81} (Port I/O) as the
+basis for the {\r6rs} I/O system.
 
 The byte-vector datatype requirement is addressed by the binary block
 datatype (Section~\ref{progress:bytes}).
@@ -591,8 +629,10 @@ naming a macro in a \scheme{syntax-rules} pattern.
 
 \subsection{Binary block datatype\label{progress:bytes}}
 
-The editors have decided to adopt SRFI~74 (Octet-Addressed Binary Blocks)
-as the basis for byte-vector functionality in {\r6rs}.
+The editors have decided to adopt
+\hyperlink{http://srfi.schemers.org/srfi-74/}{SRFI~74} (Octet-Addressed
+Binary Blocks) as the basis for byte-vector functionality in {\r6rs},
+using the name \scheme{bytes} rather than \scheme{blob}.
 
 \subsection{Other possible changes\label{progress:miscellaneous}}
 
@@ -613,9 +653,10 @@ resolution.
 
 We intend to deliver a draft {\r6rs} to the Steering Committee by
 September~1,~2006.
-In order to meet this target, we plan to wrap up work on the various
-subsystems, decide on the core language/library split, and create a
-rough internal (editors only) draft of the {\r6rs} by mid-June.
+An initial internal (editors only) draft of R6RS has been created and
+reflects most of the decisions the editors have made to date.
+This draft will be updated as work wraps up on the major subsystems and
+other issues.
 
 For each of the subsystems, the core/library split, and the safe/unsafe
 mode mechanism and semantics, we have assigned
@@ -640,13 +681,15 @@ safe/unsafe mode   & Clinger                 & Sperber\\
 \end{tabular}
 \end{center}
 
-As time permits, we will also discuss as a group the other possible
-features and changes described in Section~\ref{progress:miscellaneous},
-as well as additional ones that may arise, and decide which are to be
-incorporated into {\r6rs}.
+At this point, our discussions will be limited mostly to the major
+subsystems and the other possible features and changes described in
+Section~\ref{progress:miscellaneous}.
+New issues may also be considered if this can be done without
+jeapordizing our goal to submit a draft {\r6rs} to the steering
+committee by the target deadline.
 
 Responsibility for making sure that the editors complete their work and
 communicate effectively lies with the chair (Dybvig) and responsibility
-for creating the {\r6rs} drafts lies with the project editor (Sperber).
+for completing the {\r6rs} draft lies with the project editor (Sperber).
 
 \end{document}
