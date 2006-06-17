@@ -205,7 +205,7 @@
 	 (var "Size") " must be a positive exact integer. "
 	 (var "K") " must be a valid index of " (var "bytes") "; so must "
 	 "the indices {" (var "k") ", ..., " (var "k") " + " (var "size") " - 1}. "
-	 (var "Endianness") " must be an endianness object. ")
+	 (var "Endianness") " must be an endianness symbol. ")
 	(p
 	 (code "Bytes-uint-ref") " retrieves the exact integer corresponding to the "
 	 "unsigned representation of size " (var "size") " and specified by " (var "endianness")
@@ -278,7 +278,7 @@
 	(p
 	 (var "K") " must be a valid index of " (var "bytes") "; so must "
 	 "the index " (var "k") "+ 1. "
-	 (var "Endianness") " must be an endianness object. ")
+	 (var "Endianness") " must be an endianness symbol. ")
 	(p
 	 "These retrieve and set two-byte representations of numbers at "
 	 "indices " (var "k") " and " (var "k") "+1, according to "
@@ -339,7 +339,7 @@
 	(p
 	 (var "K") " must be a valid index of " (var "bytes") "; so must "
 	 "the indices {" (var "k") ", ..., " (var "k") "+ 3}. "
-	 (var "Endianness") " must be an endianness object. ")
+	 (var "Endianness") " must be an endianness symbol. ")
 	(p
 	 "These retrieve and set four-byte representations of numbers at "
 	 "indices {" (var "k") ", ..., " (var "k") "+ 3}, according to "
@@ -401,7 +401,7 @@
 	(p
 	 (var "K") " must be a valid index of " (var "bytes") "; so must "
 	 "the indices {" (var "k") ", ..., " (var "k") "+ 7}. "
-	 (var "Endianness") " must be an endianness object. ")
+	 (var "Endianness") " must be an endianness symbol. ")
 	(p
 	 "These retrieve and set eight-byte representations of numbers at "
 	 "indices {" (var "k") ", ..., " (var "k") "+ 7}, according to "
@@ -513,7 +513,7 @@
        (dd
 	(p
 	 (var "Size") " must be a positive exact integer. "
-	 (var "Endianness") " must be an endianness object.")
+	 (var "Endianness") " must be an endianness symbol.")
 	(p
 	 "These convert between lists of integers and their consecutive "
 	 "representations according to " (var "size") " and " (var "endianness")
