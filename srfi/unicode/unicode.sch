@@ -630,7 +630,7 @@
                     (do ((j (- (string-length c2) 1) (- j 1))
                          (i (- i 1) (- i 1)))
                         ((< j 0)
-                         (loop i (cdr mapped)))
+                         (loop (+ i 1) (cdr mapped)))
                       (string-set! s2 i (string-ref c2 j)))))))
         (loop n2 mapped))))
 
