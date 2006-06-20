@@ -63,21 +63,46 @@
   (files nary))
 
 (define-interface fixnums-interface
-  (export fx ; temporary
-	  fx+ fx- fx*
+  (export make-fixnum ; FIXME: should be used only by fixnum tests
+          fixnum-rep  ; FIXME: should be used only by fixnum tests
+          fx          ; temporary
 	  fixnum?
-	  fxquotient fxremainder fxmodulo
-	  fxquotient+remainder
-	  fxdiv+mod fxdiv fxmod
-	  fx= fx>= fx<= fx> fx<
-	  fxzero? fxpositive? fxnegative? fxeven? fxodd?
-	  fxmin fxmax
-	  fxbitwise-not
-	  fxbitwise-and fxbitwise-ior fxbitwise-xor
-	  fxarithmetic-shift-left
-	  fxlogical-shift-left fxlogical-shift-right
 	  fixnum-width least-fixnum greatest-fixnum
-	  fx+/carry fx-/carry fx*/carry))
+	  fixnum= fixnum>= fixnum<= fixnum> fixnum<
+	  fixnum-zero? fixnum-positive? fixnum-negative?
+          fixnum-even? fixnum-odd?
+	  fixnum-max fixnum-min
+	  fixnum+ fixnum- fixnum*
+          ; FIXME: these next two lines should go away.
+	  fixnum-quotient fixnum-remainder fixnum-modulo
+	  fixnum-quotient+remainder
+	  fixnum-div+mod fixnum-div fixnum-mod
+	  fixnum-div0+mod0 fixnum-div0 fixnum-mod0
+	  fixnum+/carry fixnum-/carry fixnum*/carry
+
+	  fixnum-not
+	  fixnum-and fixnum-ior fixnum-xor
+         ;fixnum-if fixnum-bit-count fixnum-length
+         ;fixnum-first-bit-set fixnum-bit-set?
+         ;fixnum-copy-bit fixnum-bit-field fixnum-copy-bit-field
+         ;fixnum-arithmetic-shift
+	  fixnum-arithmetic-shift-left
+         ;fixnum-arithmetic-shift-right
+	 ;fixnum-logical-shift-left fixnum-logical-shift-right
+         ;fixnum-rotate-bit-field fixnum-reverse-bit-field
+
+          fx= fx> fx< fx>= fx<=
+          fxzero? fxpositive? fxnegative? fxodd? fxeven?
+          fxmax fxmin
+          fx+ fx- fx*
+          fxdiv+mod fxdiv fxmod fxdiv0+mod0 fxdiv0 fxmod0
+         ;fxif fxbit-count fxlength
+         ;fxfirst-bit-set fxbit-set?
+         ;fxcopy-bit fxbit-field fxcopy-bit-field
+         ;fxarithmetic-shift
+	 ;fxarithmetic-shift-left fxarithmetic-shift-right
+         ;fxrotate-bit-field fxreverse-bit-field
+))
 
 (define-structures ((fixnums fixnums-interface)
 		    (fixnums-r5rs (export r5rs->fixnum
@@ -439,7 +464,8 @@
 	bignums
 	ratnums ratnums-r5rs
 	recnums
-	(subset flonums (flsqrt flonum->fixnum fixnum->flonum)) ; for EXACT-INTEGER-SQRT
+        ; for EXACT-INTEGER-SQRT
+	(subset flonums (flsqrt flonum->fixnum fixnum->flonum))
 	contagion-utils
 	arithmetic-utils
 	nary
@@ -449,7 +475,8 @@
 	 generic-ex))
 
 (define-interface generic-arithmetic/inexact-interface
-  (export inexact-number? inexact-complex? inexact-real? inexact-rational? inexact-integer?
+  (export inexact-number? inexact-complex? inexact-real?
+          inexact-rational? inexact-integer?
 	  inexact=? inexact<? inexact<=? inexact>=? inexact>?
 	  inexact-zero? inexact-positive? inexact-negative?
 	  inexact-nan? inexact-finite? inexact-infinite?
@@ -464,13 +491,15 @@
 	  inexact-numerator inexact-denominator
 	  inexact-floor inexact-ceiling inexact-truncate inexact-round
 	  inexact-exp inexact-sqrt inexact-log
-	  inexact-sin inexact-cos inexact-tan inexact-asin inexact-acos inexact-atan
+	  inexact-sin inexact-cos inexact-tan
+          inexact-asin inexact-acos inexact-atan
 	  inexact-make-rectangular inexact-make-polar
 	  inexact-real-part inexact-imag-part
 	  inexact-magnitude inexact-angle
 	  inexact-expt))
 
-(define-structure generic-arithmetic/inexact generic-arithmetic/inexact-interface
+(define-structure generic-arithmetic/inexact
+  generic-arithmetic/inexact-interface
   (open scheme-sans-arithmetic
 
 	;; all this just to implement innumerator and indenominator:
@@ -567,14 +596,15 @@
 
 ; Putting it all together
 
-(define-structure r6rs (compound-interface (interface-of scheme-sans-arithmetic)
-					   fixnums-interface flonums-interface
-					   generic-arithmetic/exact-interface
-					   generic-arithmetic/inexact-interface
-					   generic-arithmetic-interface
-					   (interface-of strings-to-numbers)
-					   (interface-of numbers-to-strings)
-					   (interface-of r5rs-to-numbers))
+(define-structure r6rs
+  (compound-interface (interface-of scheme-sans-arithmetic)
+                      fixnums-interface flonums-interface
+                      generic-arithmetic/exact-interface
+                      generic-arithmetic/inexact-interface
+                      generic-arithmetic-interface
+                      (interface-of strings-to-numbers)
+                      (interface-of numbers-to-strings)
+                      (interface-of r5rs-to-numbers))
   (open scheme-sans-arithmetic
 	fixnums flonums
 	generic-arithmetic/exact
@@ -593,6 +623,18 @@
 	strings-to-numbers numbers-to-strings)
   (files test-prelude
 	 test-string2number
+	 test-postlude))
+
+(define-structure test-fixnum-arithmetic (export)
+  (open scheme-sans-arithmetic
+        r5rs-arithmetic
+	(subset generic-arithmetic (=))
+	r5rs-to-numbers
+	;strings-to-numbers
+        ;generic-arithmetic
+        fixnums)
+  (files test-prelude
+	 test-fixnum-arithmetic
 	 test-postlude))
 
 (define-structure test-generic-arithmetic (export)

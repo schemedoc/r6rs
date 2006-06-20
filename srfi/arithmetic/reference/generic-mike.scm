@@ -89,16 +89,16 @@
 	 (?contagion a b ?name)))))))
 
 (define-binary =/2 econtagion/mike
-  fx= bignum= ratnum= recnum=)
+  fixnum= bignum= ratnum= recnum=)
 
 (define-binary </2 pcontagion/mike
-  fx< bignum< ratnum< (make-typo-op/2 < 'rational))
+  fixnum< bignum< ratnum< (make-typo-op/2 < 'rational))
 (define-binary <=/2 pcontagion/mike
-  fx< bignum<= ratnum<= (make-typo-op/2 <= 'rational))
+  fixnum< bignum<= ratnum<= (make-typo-op/2 <= 'rational))
 (define-binary >=/2 pcontagion/mike
-  fx>= bignum>= ratnum>= (make-typo-op/2 >= 'rational))
+  fixnum>= bignum>= ratnum>= (make-typo-op/2 >= 'rational))
 (define-binary >/2 pcontagion/mike
-  fx>= bignum> ratnum> (make-typo-op/2 > 'rational))
+  fixnum>= bignum> ratnum> (make-typo-op/2 > 'rational))
 
 (define = (make-transitive-pred =/2))
 (define < (make-transitive-pred </2))
@@ -122,15 +122,15 @@
 	(else
 	 (?name (inexact->exact a))))))))
 
-(define-unary zero? fxzero? bignum-zero? never never)
-(define-unary positive? fxpositive? bignum-positive? ratnum-positive?
+(define-unary zero? fixnum-zero? bignum-zero? never never)
+(define-unary positive? fixnum-positive? bignum-positive? ratnum-positive?
   (make-typo-op/1 positive? 'rational))
-(define-unary negative? fxnegative? bignum-negative? ratnum-negative?
+(define-unary negative? fixnum-negative? bignum-negative? ratnum-negative?
   (make-typo-op/1 negative? 'rational))
-(define-unary odd? fxodd? bignum-odd?
+(define-unary odd? fixnum-odd? bignum-odd?
   (make-typo-op/1 odd? 'integer)
   (make-typo-op/1 odd? 'integer))
-(define-unary even? fxeven? bignum-even?
+(define-unary even? fixnum-even? bignum-even?
   (make-typo-op/1 even? 'integer)
   (make-typo-op/1 even? 'integer))
 
@@ -158,32 +158,32 @@
 ;; ABS is evil ...
 (define *minus-least-fixnum* (bignum-negate (fixnum->bignum (least-fixnum))))
 
-(define (fx-abs x)
+(define (fixnum-abs x)
   (cond
-   ((fxnegative? x)
-    (if (fx= x (least-fixnum))
-	*minus-least-fixnum*
-	(fx- x)))
+   ((fixnum-negative? x)
+    (if (fixnum= x (least-fixnum))
+        x; FIXME: was *minus-least-fixnum*
+	(fixnum- x)))
    (else x)))
 
 (define-unary abs
-  fx-abs bignum-abs ratnum-abs
+  fixnum-abs bignum-abs ratnum-abs
   (make-typo-op/1 abs 'rational))
 
 (define-binary quotient icontagion/mike
-  fxquotient
+  fixnum-quotient
   bignum-quotient
   (make-typo-op/2 quotient 'integer)
   (make-typo-op/2 quotient 'integer))
   
 (define-binary remainder icontagion/mike
-  fxremainder
+  fixnum-remainder
   bignum-remainder
   (make-typo-op/2 remainder 'integer)
   (make-typo-op/2 remainder 'integer))
 
 (define-binary quotient+remainder icontagion/mike
-  fxquotient+remainder
+  fixnum-quotient+remainder
   bignum-quotient+remainder
   (make-typo-op/2 quotient+remainder 'integer)
   (make-typo-op/2 quotient+remainder 'integer))
@@ -371,19 +371,19 @@
 ; The revised SRFI 77 does not specify these, and their names
 ; are in conflict with procedures defined in r5rs.sch.
 
-;(define-unary bitwise-not fxbitwise-not bignum-bitwise-not
+;(define-unary bitwise-not fixnum-not bignum-bitwise-not
 ;  (make-typo-op/1 bitwise-not 'integer)
 ;  (make-typo-op/1 bitwise-not 'integer))
 
-;(define-binary bitwise-ior/2 fxbitwise-ior bignum-bitwise-ior
+;(define-binary bitwise-ior/2 fixnum-ior bignum-bitwise-ior
 ;  (make-typo-op/2 bitwise-ior/2 'integer)
 ;  (make-typo-op/2 bitwise-ior/2 'integer))
 
-;(define-binary bitwise-xor/2 fxbitwise-xor bignum-bitwise-xor
+;(define-binary bitwise-xor/2 fixnum-xor bignum-bitwise-xor
 ;  (make-typo-op/2 bitwise-xor/2 'integer)
 ;  (make-typo-op/2 bitwise-xor/2 'integer))
 
-;(define-binary bitwise-and/2 fxbitwise-and bignum-bitwise-and
+;(define-binary bitwise-and/2 fixnum-and bignum-bitwise-and
 ;  (make-typo-op/2 bitwise-and/2 'integer)
 ;  (make-typo-op/2 bitwise-and/2 'integer))
 

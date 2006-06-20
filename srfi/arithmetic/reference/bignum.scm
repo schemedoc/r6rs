@@ -17,12 +17,12 @@
 	  (bignum->r5rs r))))
 
 (define (fixnum->bignum m)
-  (cond ((fx>= m (r5rs->fixnum 0))
+  (cond ((fixnum>= m (r5rs->fixnum 0))
 	 (make-bignum (r5rs->fixnum 1) (fixnum->magnitude m)))
-	((fx= m (least-fixnum))
-	 (make-bignum (r5rs->fixnum -1) fx-min-magnitude))
+	((fixnum= m (least-fixnum))
+	 (make-bignum (r5rs->fixnum -1) fixnum-min-magnitude))
 	(else
-	 (make-bignum (r5rs->fixnum -1) (fixnum->magnitude (fx- m))))))
+	 (make-bignum (r5rs->fixnum -1) (fixnum->magnitude (fixnum- m))))))
 
 (define (r5rs->bignum m)
   (if (bignum? m)
@@ -30,7 +30,7 @@
       (cond ((r5rs:>= m 0)
 	     (make-bignum (r5rs->fixnum 1) (r5rs->magnitude m)))
 	    ((r5rs:= m (fixnum->r5rs (least-fixnum)))
-	     (make-bignum (r5rs->fixnum -1) fx-min-magnitude))
+	     (make-bignum (r5rs->fixnum -1) fixnum-min-magnitude))
 	    (else
 	     (make-bignum (r5rs->fixnum -1) (r5rs->magnitude (r5rs:- 0 m)))))))
 
@@ -52,15 +52,15 @@
 	      (r5rs:* (recur (cdr digits)) (fixnum->r5rs radix)))))))
 
 (define (make-integer sign mag)
-  (if (fxpositive? sign)
-      (if (smaller-magnitude? fx-max-magnitude mag)
+  (if (fixnum-positive? sign)
+      (if (smaller-magnitude? fixnum-max-magnitude mag)
 	  (make-bignum sign mag)
 	  (magnitude->integer mag))
-      (if (smaller-magnitude? fx-min-magnitude mag)
+      (if (smaller-magnitude? fixnum-min-magnitude mag)
 	  (make-bignum sign mag)
-	  (if (same-magnitude? mag fx-min-magnitude)
+	  (if (same-magnitude? mag fixnum-min-magnitude)
 	      (least-fixnum)
-	      (fx- (magnitude->integer mag))))))
+	      (fixnum- (magnitude->integer mag))))))
 
 (define (bignum->integer m)
   (make-integer (bignum-sign m)
@@ -71,11 +71,11 @@
   (let ((sign (bignum-sign m))
 	(mag (bignum-magnitude m)))
     (cond
-     ((fxpositive? sign)
+     ((fixnum-positive? sign)
       (magnitude->integer mag))
-     ((same-magnitude? mag fx-min-magnitude)
+     ((same-magnitude? mag fixnum-min-magnitude)
       (least-fixnum))
-     (else (fx- (magnitude->integer mag))))))
+     (else (fixnum- (magnitude->integer mag))))))
 
 ; Arithmetic
 
@@ -84,21 +84,21 @@
 	(m-mag (bignum-magnitude m))
 	(n-sign (bignum-sign n))
 	(n-mag (bignum-magnitude n)))
-    (if (fx= m-sign n-sign)
+    (if (fixnum= m-sign n-sign)
 	(make-integer m-sign (add-magnitudes m-mag n-mag))
 	(if (smaller-magnitude? m-mag n-mag)
-	    (make-integer (fx- m-sign) (subtract-magnitudes n-mag m-mag))
+	    (make-integer (fixnum- m-sign) (subtract-magnitudes n-mag m-mag))
 	    (make-integer m-sign (subtract-magnitudes m-mag n-mag))))))
 
 (define (bignum- m n)
   (bignum+ m (bignum-negate n)))
 
 (define (bignum-negate m)
-  (make-bignum (fx- (bignum-sign m))
+  (make-bignum (fixnum- (bignum-sign m))
 	       (bignum-magnitude m)))
 
 (define (bignum* m n)
-  (make-integer (fx* (bignum-sign m) (bignum-sign n))
+  (make-integer (fixnum* (bignum-sign m) (bignum-sign n))
 		(multiply-magnitudes
 		 (bignum-magnitude m)
 		 (bignum-magnitude n))))
@@ -108,7 +108,7 @@
    (bignum-magnitude m)
    (bignum-magnitude n)
    (lambda (q r)
-     (cont (make-integer (fx* (bignum-sign m) (bignum-sign n)) q)
+     (cont (make-integer (fixnum* (bignum-sign m) (bignum-sign n)) q)
 	   (make-integer (bignum-sign m) r)))))
 
 (define (bignum-quotient m n)
@@ -121,16 +121,16 @@
   (bignum-divide m n values))
 
 (define (bignum= m n)
-  (and (fx= (bignum-sign m) (bignum-sign n))
+  (and (fixnum= (bignum-sign m) (bignum-sign n))
        (same-magnitude? (bignum-magnitude m)
 			(bignum-magnitude n))))
 
 (define (bignum< m n)
   (let ((m-sign (bignum-sign m))
 	(n-sign (bignum-sign n)))
-    (or (fx< m-sign n-sign)
-	(and (fx= m-sign n-sign)
-	     (if (fxnegative? m-sign)
+    (or (fixnum< m-sign n-sign)
+	(and (fixnum= m-sign n-sign)
+	     (if (fixnum-negative? m-sign)
 		 (smaller-magnitude? (bignum-magnitude n)
 				     (bignum-magnitude m))
 		 (smaller-magnitude? (bignum-magnitude m)
@@ -150,14 +150,14 @@
   (zero-magnitude? (bignum-magnitude m)))
 
 (define (bignum-positive? m)
-  (fxpositive? (bignum-sign m)))
+  (fixnum-positive? (bignum-sign m)))
 (define (bignum-negative? m)
-  (fxnegative? (bignum-sign m)))
+  (fixnum-negative? (bignum-sign m)))
 
 (define (bignum-odd? m)
-  (fxodd? (low-digit (bignum-magnitude m))))
+  (fixnum-odd? (low-digit (bignum-magnitude m))))
 (define (bignum-even? m)
-  (fxeven? (low-digit (bignum-magnitude m))))
+  (fixnum-even? (low-digit (bignum-magnitude m))))
 
 (define (bignum-abs m)
   (if (bignum-negative? m)
@@ -179,18 +179,18 @@
 
 ; Fixnum arithmetic without overflow checking sucks
 (define log-radix
-  (let ((max (fxquotient (greatest-fixnum) (r5rs->fixnum 2)))
-	(min (fxquotient (least-fixnum) (r5rs->fixnum 2))))
+  (let ((max (fixnum-quotient (greatest-fixnum) (r5rs->fixnum 2)))
+	(min (fixnum-quotient (least-fixnum) (r5rs->fixnum 2))))
     (let loop ((l (r5rs->fixnum 1))
 	       (r (r5rs->fixnum 1))
 	       (rm (r5rs->fixnum -1)))
-      (if (or (fx>= r max)
-	      (fx<= rm min))
-	  (fxquotient l (r5rs->fixnum 2))
-	  (loop (fx+ (r5rs->fixnum 1) l)
-		(fx* r(r5rs->fixnum 2)) (fx* rm (r5rs->fixnum 2)))))))
+      (if (or (fixnum>= r max)
+	      (fixnum<= rm min))
+	  (fixnum-quotient l (r5rs->fixnum 2))
+	  (loop (fixnum+ (r5rs->fixnum 1) l)
+		(fixnum* r(r5rs->fixnum 2)) (fixnum* rm (r5rs->fixnum 2)))))))
 
-(define radix (fxarithmetic-shift-left (r5rs->fixnum 1) log-radix))
+(define radix (fixnum-arithmetic-shift-left (r5rs->fixnum 1) log-radix))
 
 (define zero-magnitude '())
 (define zero-magnitude? null?)
@@ -206,30 +206,30 @@
       (cdr m)))
 
 (define (adjoin-digit d m)
-  (if (and (fxzero? d) (zero-magnitude? m))
+  (if (and (fixnum-zero? d) (zero-magnitude? m))
       m
       (cons d m)))
 
 (define (fixnum->magnitude n)
-  (if (fxzero? n)
+  (if (fixnum-zero? n)
       zero-magnitude
-      (let ((digit (fxremainder n radix)))
+      (let ((digit (fixnum-remainder n radix)))
 	(adjoin-digit digit
-		      (fixnum->magnitude (fxquotient n radix))))))
+		      (fixnum->magnitude (fixnum-quotient n radix))))))
 
 (define (magnitude->integer m)
   (if (zero-magnitude? m)
       (r5rs->fixnum 0)
-      (fx+ (low-digit m)
-	   (fx* radix (magnitude->integer (high-digits m))))))
+      (fixnum+ (low-digit m)
+               (fixnum* radix (magnitude->integer (high-digits m))))))
 
-(define fx-max-magnitude
+(define fixnum-max-magnitude
   (fixnum->magnitude (greatest-fixnum)))
 
-(define fx-min-magnitude
-  (adjoin-digit (fx- (fxremainder (least-fixnum) radix))
+(define fixnum-min-magnitude
+  (adjoin-digit (fixnum- (fixnum-remainder (least-fixnum) radix))
 		(fixnum->magnitude
-		 (fx- (fxquotient (least-fixnum) radix)))))
+		 (fixnum- (fixnum-quotient (least-fixnum) radix)))))
 
 ; Combine two numbers digitwise using op.
 
@@ -237,25 +237,25 @@
   (let recur ((m m) (n n) (carry (r5rs->fixnum 0)))
     (if (and (zero-magnitude? m) (zero-magnitude? n))
 	(fixnum->magnitude carry)
-	(let ((result (fx+ carry (op (low-digit m) (low-digit n)))))
+	(let ((result (fixnum+ carry (op (low-digit m) (low-digit n)))))
 	  (call-with-values
-	      (lambda () (fxquotient+remainder result radix))
+            (lambda () (fixnum-quotient+remainder result radix))
 	    (lambda (q r)
-	      (if (fxnegative? r)
-		  (adjoin-digit (fx+ r radix)
+	      (if (fixnum-negative? r)
+		  (adjoin-digit (fixnum+ r radix)
 				(recur (high-digits m)
 				       (high-digits n)
-				       (fx- q (r5rs->fixnum 1))))
+				       (fixnum- q (r5rs->fixnum 1))))
 		  (adjoin-digit r
 				(recur (high-digits m)
 				       (high-digits n)
 				       q)))))))))
 
 (define (add-magnitudes m n)
-  (combine-magnitudes m n fx+))
+  (combine-magnitudes m n fixnum+))
 
 (define (subtract-magnitudes m n)
-  (combine-magnitudes m n fx-))
+  (combine-magnitudes m n fixnum-))
 
 ; Compare
 
@@ -266,15 +266,15 @@
       (null? n))
      ((null? n) #f)
      (else
-      (and (fx= (car m) (car n))
+      (and (fixnum= (car m) (car n))
 	   (loop (cdr m) (cdr n)))))))
 
 (define (smaller-magnitude? m n)
   (let ((m-len (r5rs->fixnum (length m)))
 	(n-len (r5rs->fixnum (length n))))
-    (cond ((fx< m-len n-len)
+    (cond ((fixnum< m-len n-len)
 	   #t)
-	  ((fx< n-len m-len)
+	  ((fixnum< n-len m-len)
 	   #f)
 	  (else
 	   (let loop ((m m) (n n) (a #f))
@@ -284,8 +284,9 @@
 		   (else
 		    (loop (high-digits m)
 			  (high-digits n)
-			  (or (fx< (low-digit m) (low-digit n))
-			      (and (fx= (low-digit m) (low-digit n)) a))))))))))
+			  (or (fixnum< (low-digit m) (low-digit n))
+			      (and (fixnum= (low-digit m) (low-digit n))
+                                   a))))))))))
 
 ; Multiply
 
@@ -293,8 +294,8 @@
   (let recur ((m m) (a zero-magnitude))
     (if (zero-magnitude? m)
 	a
-	(let ((a (combine-magnitudes a n (lambda (d e)
-					   (fx+ d (fx* e (low-digit m)))))))
+	(let ((a (combine-magnitudes
+                  a n (lambda (d e) (fixnum+ d (fixnum* e (low-digit m)))))))
 	  (adjoin-digit (low-digit a)
 			(recur (high-digits m) (high-digits a)))))))
 
@@ -305,8 +306,9 @@
 
 (define (divide-magnitudes m n cont)
   (if (zero-magnitude? (high-digits n))
-      (divide-by-digit m (low-digit n)
-		       (lambda (q r)
+      (divide-by-digit m
+                       (low-digit n)
+                       (lambda (q r)
 			 (cont q (adjoin-digit r zero-magnitude))))
       (let recur ((m m) (cont cont))
 	(if (smaller-magnitude? m n)
@@ -331,13 +333,13 @@
       ((zero-magnitude? (high-digits (high-digits n-high)))
        ;; Occasionally q^ is one larger than the actual first digit.
        ;; This loop will never iterate more than once.
-       (let loop ((q^ (fxmin (guess-quotient-digit m-high n-high)
-			     (fx- radix (r5rs->fixnum 1)))))
+       (let loop ((q^ (fixnum-min (guess-quotient-digit m-high n-high)
+                                  (fixnum- radix (r5rs->fixnum 1)))))
 	 (let ((r (combine-magnitudes m n (lambda (d e)
-					    (fx- d (fx* e q^))))))
+					    (fixnum- d (fixnum* e q^))))))
 	   (if (improper-magnitude? r)
 	       ;; (begin (write `(addback ,m ,n ,q^ ,r)) (newline) ...)
-	       (loop (fx- q^ (r5rs->fixnum 1)))
+	       (loop (fixnum- q^ (r5rs->fixnum 1)))
 	       (cont q^ r)))))))
 
 ; Compute q such that [m1 m2 m3] = q*[n1 n2] + r with 0 <= r < [n1 n2]
@@ -357,40 +359,42 @@
 	(m1 (low-digit (high-digits (high-digits m))))
 	(m2 (low-digit (high-digits m)))
 	(m3 (low-digit m)))
-    (let ((m12 (fx+ (fx* m1 radix) m2)))
+    (let ((m12 (fixnum+ (fixnum* m1 radix) m2)))
       (call-with-values
-	  (lambda () (fxquotient+remainder m12 n1))
+        (lambda () (fixnum-quotient+remainder m12 n1))
 	(lambda (q0 r0)
-	  (let ((r^ (fx- (fx+ (fx* radix r0) m3) (fx* q0 n2)))
-		(n12 (fx+ (fx* n1 radix) n2)))
+	  (let ((r^ (fixnum- (fixnum+ (fixnum* radix r0) m3) (fixnum* q0 n2)))
+		(n12 (fixnum+ (fixnum* n1 radix) n2)))
 	    (call-with-values
-		(lambda () (fxquotient+remainder r^ n12))
+              (lambda () (fixnum-quotient+remainder r^ n12))
 	      (lambda (q1 r1)
-		(if (fxpositive? q1)
+		(if (fixnum-positive? q1)
 		    (begin (display "This should never happen: q1 = ")
 			   (write q1) (newline)))
-		(let ((q (fx+ q0 q1)))
-		  (if (fxnegative? r1) (fx- q (r5rs->fixnum 1)) q))))))))))
+		(let ((q (fixnum+ q0 q1)))
+		  (if (fixnum-negative? r1)
+                      (fixnum- q (r5rs->fixnum 1))
+                      q))))))))))
 
 (define (improper-magnitude? m)
   (and (not (zero-magnitude? m))
-       (or (fxnegative? (low-digit m))
+       (or (fixnum-negative? (low-digit m))
 	   (improper-magnitude? (high-digits m)))))
 
 ; Special case of division algorithm for single-digit divisor.
 
 (define (divide-by-digit m d cont)
-  (if (fxzero? d)
+  (if (fixnum-zero? d)
       (error "integer division by zero" m d)
       (let recur ((m m) (cont cont))
 	(if (and (zero-magnitude? (high-digits m))
-		 (fx< (low-digit m) d))
+		 (fixnum< (low-digit m) d))
 	    (cont zero-magnitude (low-digit m))
 	    (recur (high-digits m)
 		   (lambda (q r)
-		     (let ((m1 (fx+ (low-digit m) (fx* radix r))))
+		     (let ((m1 (fixnum+ (low-digit m) (fixnum* radix r))))
 		       (call-with-values
-			   (lambda () (fxquotient+remainder m1 d))
+                         (lambda () (fixnum-quotient+remainder m1 d))
 			 (lambda (q1 r1)
 			   (cont (adjoin-digit q1 q) r1))))))))))
 
@@ -443,5 +447,5 @@
    (bignum-magnitude m)
    (bignum-magnitude n)
    (lambda (q r)
-     (cont (make-bignum (fx* (bignum-sign m) (bignum-sign n)) q)
+     (cont (make-bignum (fixnum* (bignum-sign m) (bignum-sign n)) q)
 	   (make-bignum (bignum-sign m) r)))))

@@ -39,7 +39,8 @@
 				      (fllog (r5rs->flonum 2.0)))))))
 
 (define (bellerophon f e p)
-  (cond ((integer-negative? f) (integer- (bellerophon (integer-negate f) e p)))
+  (cond ((integer-negative? f)
+         (integer-negate (bellerophon (integer-negate f) e p)))
 	((integer-zero? f) flonum:zero)
 	((not (integer= p n)) (fail0 f e (integer-min p (integer- n (r5rs->integer 1)))))
 	((integer<= bellerophon:big-f f) (fail0 f e p))

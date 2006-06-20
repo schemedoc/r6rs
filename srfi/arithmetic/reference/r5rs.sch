@@ -146,6 +146,7 @@
 (let ((load (lambda (filename)
               (display "Loading ") (display filename) (newline)
               (load filename))))
+                             
 (load "nary.scm")
 (load "r5rs-arithmetic.scm")
 (load "fixnum.scm")
@@ -175,23 +176,25 @@
 (load "contagion-generic.scm")
 (load "generic.scm")         ; redefines define-binary, define-unary
 
-(load "test-prelude.scm")
-(load "test-string2number.scm")
-(load "test-postlude.scm")
-
-(load "test-prelude.scm")
-(load "test-generic-arithmetic.scm")
-(load "test-postlude.scm")
-
-(load "test-prelude.scm")
-(load "test-generic-arithmetic-ex.scm")
-(load "test-postlude.scm")
-
-(load "test-prelude.scm")
-(load "test-generic-arithmetic-in.scm")
-(load "test-postlude.scm")
-
-
 )
+
+(define (run-tests)
+  (let ((prompt-and-load (lambda (filename)
+                           (display "Run the tests in ")
+                           (display filename)
+                           (display " ? (y or n)")
+                           (newline)
+                           (if (not (eq? (read) 'n))
+                               (begin (load "test-prelude.scm")
+                                      (load filename)
+                                      (load "test-postlude.scm"))))))
+
+    (prompt-and-load "test-fixnum-arithmetic.scm")
+    (prompt-and-load "test-string2number.scm")
+    (prompt-and-load "test-generic-arithmetic.scm")
+    (prompt-and-load "test-generic-arithmetic-ex.scm")
+    (prompt-and-load "test-generic-arithmetic-in.scm")))
+
+(run-tests)
 
 ; [End of file]

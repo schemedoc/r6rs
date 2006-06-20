@@ -37,7 +37,3 @@
 (numerical check-string->number 14/6 10)
 (numerical check-string->number 0.7 10)
 (numerical check-string->number 1e-323 10)
-
-
-
-

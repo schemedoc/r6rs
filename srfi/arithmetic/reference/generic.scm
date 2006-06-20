@@ -122,19 +122,19 @@
 	 (?contagion a b ?name)))))))
 
 (define-binary =/2 econtagion/will
-  fx= bignum= ratnum= recnum= fl= compnum=)
+  fixnum= bignum= ratnum= recnum= fl= compnum=)
 
 (define-binary </2 pcontagion/will
-  fx< bignum< ratnum< (make-typo-op/2 < 'real)
+  fixnum< bignum< ratnum< (make-typo-op/2 < 'real)
   fl< (make-typo-op/2 < 'real))
 (define-binary <=/2 pcontagion/will
-  fx< bignum<= ratnum<= (make-typo-op/2 <= 'real)
+  fixnum< bignum<= ratnum<= (make-typo-op/2 <= 'real)
   fl< (make-typo-op/2 <= 'real))
 (define-binary >=/2 pcontagion/will
-  fx>= bignum>= ratnum>= (make-typo-op/2 >= 'real)
+  fixnum>= bignum>= ratnum>= (make-typo-op/2 >= 'real)
   fl>= (make-typo-op/2 >= 'real))
 (define-binary >/2 pcontagion/will
-  fx>= bignum> ratnum> (make-typo-op/2 > 'real)
+  fixnum>= bignum> ratnum> (make-typo-op/2 > 'real)
   fl>
   (make-typo-op/2 > 'real))
 
@@ -146,7 +146,8 @@
 
 (define-syntax define-unary
   (syntax-rules ()
-    ((define-unary ?name ?fixnum-op ?bignum-op ?ratnum-op ?recnum-op ?flonum-op ?compnum-op)
+    ((define-unary ?name ?fixnum-op ?bignum-op ?ratnum-op ?recnum-op
+                         ?flonum-op ?compnum-op)
      (define (?name a)
        (cond
 	((fixnum? a)
@@ -164,33 +165,33 @@
 	(else
 	 (error "expects a numerical argument" ?name a)))))))
 
-(define-unary zero? fxzero? never never never flzero? compnum-zero?)
-(define-unary positive? fxpositive? bignum-positive? ratnum-positive?
+(define-unary zero? fixnum-zero? never never never flzero? compnum-zero?)
+(define-unary positive? fixnum-positive? bignum-positive? ratnum-positive?
   (make-typo-op/1 positive? 'real)
   flpositive?
   (make-typo-op/1 positive? 'real))  
   
-(define-unary negative? fxnegative? bignum-negative? ratnum-negative?
+(define-unary negative? fixnum-negative? bignum-negative? ratnum-negative?
   (make-typo-op/1 negative? 'real)
   flnegative?
   (make-typo-op/1 negative? 'real))
 
-(define-unary odd? fxodd? bignum-odd?
+(define-unary odd? fixnum-odd? bignum-odd?
   (make-typo-op/1 odd? 'integer)
   (make-typo-op/1 odd? 'integer)
   flodd?
   (make-typo-op/1 odd? 'integer))
 
-(define-unary even? fxeven? bignum-even?
+(define-unary even? fixnum-even? bignum-even?
   (make-typo-op/1 even? 'integer)
   (make-typo-op/1 even? 'integer)
   fleven?
   (make-typo-op/1 even? 'integer))
 
 (define-unary nan? never never never
-    (make-typo-op/1 nan? 'real)
-    flnan?
-    (make-typo-op/1 nan? 'real))
+  (make-typo-op/1 nan? 'real)
+  flnan?
+  (make-typo-op/1 nan? 'real))
 (define-unary finite?
   always always always
   (make-typo-op/1 finite? 'real)
@@ -202,10 +203,10 @@
   (make-typo-op/1 infinite? 'real))
 
 (define-binary min/2 contagion/will
-  fxmin bignum-min ratnum-min (make-typo-op/2 < 'real)
+  fixnum-min bignum-min ratnum-min (make-typo-op/2 < 'real)
   flmin (make-typo-op/2 min/2 'real))
 (define-binary max/2 contagion/will
-  fxmax bignum-max ratnum-max (make-typo-op/2 < 'real)
+  fixnum-max bignum-max ratnum-max (make-typo-op/2 < 'real)
   flmax (make-typo-op/2 max/2 'real))
 
 (define (min arg0 . args)
@@ -225,9 +226,9 @@
 ;; might be done faster with a different contagion matrix
 (define (*/2 n1 n2)
   (if (or (and (fixnum? n1)
-	       (fx= n1 (r5rs->integer 0)))
+	       (fixnum= n1 (r5rs->integer 0)))
 	  (and (fixnum? n2)
-	       (fx= n2 (r5rs->integer 0))))
+	       (fixnum= n2 (r5rs->integer 0))))
       0
       (*/2-helper n1 n2)))
 
@@ -243,22 +244,22 @@
 ;; ABS is evil ...
 (define *minus-least-fixnum* (bignum-negate (fixnum->bignum (least-fixnum))))
 
-(define (fx-abs x)
+(define (fixnum-abs x)
   (cond
-   ((fxnegative? x)
-    (if (fx= x (least-fixnum))
-	*minus-least-fixnum*
-	(fx- x)))
+   ((fixnum-negative? x)
+    (if (fixnum= x (least-fixnum))
+        x ; FIXME: was *minus-least-fixnum*
+	(fixnum- x)))
    (else x)))
 
 (define-unary abs
-  fx-abs bignum-abs ratnum-abs
+  fixnum-abs bignum-abs ratnum-abs
   (make-typo-op/1 abs 'real)
   flabs
   (make-typo-op/1 abs 'real))
 
 (define-binary quotient contagion/will
-  fxquotient
+  fixnum-quotient
   bignum-quotient
   (make-typo-op/2 quotient 'integer)
   (make-typo-op/2 quotient 'integer)
@@ -266,7 +267,7 @@
   (make-typo-op/2 quotient 'integer))
   
 (define-binary remainder contagion/will
-  fxremainder
+  fixnum-remainder
   bignum-remainder
   (make-typo-op/2 remainder 'integer)
   (make-typo-op/2 remainder 'integer)
@@ -274,7 +275,7 @@
   (make-typo-op/2 remainder 'integer))
 
 (define-binary quotient+remainder contagion/will
-  fxquotient+remainder
+  fixnum-quotient+remainder
   bignum-quotient+remainder
   (make-typo-op/2 quotient+remainder 'integer)
   (make-typo-op/2 quotient+remainder 'integer)
@@ -629,7 +630,8 @@
          (simplest-rational-internal x y))
         ((negative? y)
          (- (r5rs->integer 0)
-	    (simplest-rational-internal (- (r5rs->integer 0) y) (- (r5rs->integer 0) x))))
+	    (simplest-rational-internal (- (r5rs->integer 0) y)
+                                        (- (r5rs->integer 0) x))))
         (else
          (if (and (exact? x) (exact? y))
              (r5rs->integer 0)

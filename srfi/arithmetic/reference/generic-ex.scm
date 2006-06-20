@@ -63,16 +63,16 @@
 	 (?contagion a b ?name)))))))
 
 (define-binary exact=?/2 econtagion/ex
-  fx= bignum= ratnum= recnum=)
+  fixnum= bignum= ratnum= recnum=)
 
 (define-binary exact<?/2 pcontagion/ex
-  fx< bignum< ratnum< (make-typo-op/2 exact<? 'rational))
+  fixnum< bignum< ratnum< (make-typo-op/2 exact<? 'rational))
 (define-binary exact<=?/2 pcontagion/ex
-  fx< bignum<= ratnum<= (make-typo-op/2 exact<=? 'rational))
+  fixnum< bignum<= ratnum<= (make-typo-op/2 exact<=? 'rational))
 (define-binary exact>=?/2 pcontagion/ex
-  fx>= bignum>= ratnum>= (make-typo-op/2 exact>=? 'rational))
+  fixnum>= bignum>= ratnum>= (make-typo-op/2 exact>=? 'rational))
 (define-binary exact>?/2 pcontagion/ex
-  fx>= bignum> ratnum> (make-typo-op/2 exact>? 'rational))
+  fixnum>= bignum> ratnum> (make-typo-op/2 exact>? 'rational))
 
 (define exact=? (make-transitive-pred exact=?/2))
 (define exact<? (make-transitive-pred exact<?/2))
@@ -96,15 +96,15 @@
 	(else
 	 (error "expects an exact argument" ?name a)))))))
 
-(define-unary exact-zero? fxzero? bignum-zero? never never) 
-(define-unary exact-positive? fxpositive? bignum-positive? ratnum-positive?
+(define-unary exact-zero? fixnum-zero? bignum-zero? never never) 
+(define-unary exact-positive? fixnum-positive? bignum-positive? ratnum-positive?
   (make-typo-op/1 exact-positive? 'rational))
-(define-unary exact-negative? fxnegative? bignum-negative? ratnum-negative?
+(define-unary exact-negative? fixnum-negative? bignum-negative? ratnum-negative?
   (make-typo-op/1 exact-negative? 'rational))
-(define-unary exact-odd? fxodd? bignum-odd?
+(define-unary exact-odd? fixnum-odd? bignum-odd?
   (make-typo-op/1 exact-odd? 'integer)
   (make-typo-op/1 exact-odd? 'integer))
-(define-unary exact-even? fxeven? bignum-even?
+(define-unary exact-even? fixnum-even? bignum-even?
   (make-typo-op/1 exact-even? 'integer)
   (make-typo-op/1 exact-even? 'integer))
 
@@ -132,32 +132,32 @@
 ;; ABS is evil ...
 (define *minus-least-fixnum* (bignum-negate (fixnum->bignum (least-fixnum))))
 
-(define (fx-abs x)
+(define (fixnum-abs x)
   (cond
-   ((fxnegative? x)
-    (if (fx= x (least-fixnum))
-	*minus-least-fixnum*
-	(fx- x)))
+   ((fixnum-negative? x)
+    (if (fixnum= x (least-fixnum))
+        x ; FIXME: was *minus-least-fixnum*
+	(fixnum- x)))
    (else x)))
 
 (define-unary exact-abs
-  fx-abs bignum-abs ratnum-abs
+  fixnum-abs bignum-abs ratnum-abs
   (make-typo-op/1 exact-abs 'rational))
 
 (define-binary exact-quotient contagion/ex
-  fxquotient
+  fixnum-quotient
   bignum-quotient
   (make-typo-op/2 exact-quotient 'integer)
   (make-typo-op/2 exact-quotient 'integer))
   
 (define-binary exact-remainder contagion/ex
-  fxremainder
+  fixnum-remainder
   bignum-remainder
   (make-typo-op/2 exact-remainder 'integer)
   (make-typo-op/2 exact-remainder 'integer))
 
 (define-binary exact-quotient+remainder contagion/ex
-  fxquotient+remainder
+  fixnum-quotient+remainder
   bignum-quotient+remainder
   (make-typo-op/2 exact-quotient+remainder 'integer)
   (make-typo-op/2 exact-quotient+remainder 'integer))
@@ -329,18 +329,18 @@
 	   (exact<=? x (r5rs->integer 4503599627370496))) ; 2^52
       (let* ((s (flonum->fixnum (flsqrt (fixnum->flonum x)))) 
 
-             (r (fx- x (fx* s s))))
+             (r (fixnum- x (fixnum* s s))))
         (values s r))
       (let ((length/4
-             (fxarithmetic-shift-left
-              (fx+ (exact-integer-length x) (r5rs->integer 1))
+             (fixnum-arithmetic-shift-left
+              (fixnum+ (exact-integer-length x) (r5rs->integer 1))
               (r5rs->integer -2))))
 	(call-with-values
 	    (lambda ()
 	      (exact-integer-sqrt
 	       (exact-arithmetic-shift-left
 		x
-		(fx- (fxarithmetic-shift-left length/4 (r5rs->integer 1))))))
+		(fixnum- (fixnum-arithmetic-shift-left length/4 (r5rs->integer 1))))))
 	  (lambda (s-prime r-prime)
 	    (call-with-values
 		(lambda ()
@@ -412,7 +412,7 @@
 
 ; end from Scheme 48
 
-(define-unary exact-bitwise-not fxbitwise-not bignum-bitwise-not
+(define-unary exact-bitwise-not fixnum-not bignum-bitwise-not
   (make-typo-op/1 exact-bitwise-not 'exact-integer)
   (make-typo-op/1 exact-bitwise-not 'exact-integer))
 
@@ -442,17 +442,17 @@
 
 (define (exact-bitwise-ior . args)
   (reduce (r5rs->integer 0)
-	  (make-binary-bitwise-op fxbitwise-ior bignum-bitwise-ior)
+	  (make-binary-bitwise-op fixnum-ior bignum-bitwise-ior)
 	  args))
 
 (define (exact-bitwise-and . args)
   (reduce (r5rs->integer -1)
-	  (make-binary-bitwise-op fxbitwise-and bignum-bitwise-and)
+	  (make-binary-bitwise-op fixnum-and bignum-bitwise-and)
 	  args))
 
 (define (exact-bitwise-xor . args)
   (reduce (r5rs->integer 0)
-	  (make-binary-bitwise-op fxbitwise-xor bignum-bitwise-xor)
+	  (make-binary-bitwise-op fixnum-xor bignum-bitwise-xor)
 	  args))
 
 (define (exact-arithmetic-shift-left a b)

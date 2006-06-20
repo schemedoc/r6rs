@@ -480,17 +480,21 @@
 
 (define (create-number exactness sign numerator denominator exponent precision)
   (cond ((not (integer= denominator (r5rs->integer 1)))
-         (coerce-exactness exactness (integer/ (integer* sign numerator) denominator)))
+         (coerce-exactness exactness
+                           (integer/ (integer* sign numerator) denominator)))
         ((eq? exactness 'i)
-         (fl* (integer->flonum sign) (bellerophon numerator exponent precision)))
+         (fl* (integer->flonum sign)
+              (bellerophon numerator exponent precision)))
         ((integer-zero? exponent)
          (integer* sign numerator))
         ((integer-negative? exponent)
          (integer/ (integer* sign numerator)
-		   (integer-expt (r5rs->integer 10) (integer-negate exponent))))
+		   (integer-expt (r5rs->integer 10)
+                                 (integer-negate exponent))))
         (else (integer* sign
 			(integer* numerator
-				  (integer-expt (r5rs->integer 10) exponent))))))
+				  (integer-expt (r5rs->integer 10)
+                                                exponent))))))
 
 (define (coerce-exactness exactness x)
   (cond ((eq? exactness 'i)

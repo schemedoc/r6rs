@@ -13,12 +13,12 @@
       (fixnum->r5rs m)
       (bignum->r5rs m)))
 
-(define fx-least-r5rs (fixnum->r5rs (least-fixnum)))
-(define fx-greatest-r5rs (fixnum->r5rs (greatest-fixnum)))
+(define fixnum-least-r5rs (fixnum->r5rs (least-fixnum)))
+(define fixnum-greatest-r5rs (fixnum->r5rs (greatest-fixnum)))
 
 (define (r5rs->integer m)
-  (if (and (r5rs:>= m fx-least-r5rs)
-	   (r5rs:<= m fx-greatest-r5rs))
+  (if (and (r5rs:>= m fixnum-least-r5rs)
+	   (r5rs:<= m fixnum-greatest-r5rs))
       (r5rs->fixnum m)
       (r5rs->bignum m)))
 
@@ -39,9 +39,9 @@
 (define (integer-negate m)
   (cond ((bignum? m)
 	 (bignum-negate m))
-	((fx= m (least-fixnum))
+	((fixnum= m (least-fixnum))
 	 least-fixnum-negated)
-	(else (fx- m))))
+	(else (fixnum- m))))
 
 ; ####assumes two's complement---oops!
 (define least-fixnum-negated (bignum-negate (fixnum->bignum (least-fixnum))))
@@ -58,7 +58,7 @@
 
 (define (integer-zero? x)
   (if (fixnum? x)
-      (fxzero? x)
+      (fixnum-zero? x)
       (bignum-zero? x)))
 
 (define (integer-gcd x y)
@@ -130,7 +130,7 @@
 
 (define (integer-bitwise-not m)
   (if (fixnum? m)
-      (fxbitwise-not m)
+      (fixnum-not m)
       (bignum-bitwise-not m)))
 
 (define (make-binary-bitwise-op fix-op big-op)
@@ -144,9 +144,9 @@
 	    (big-op a b)))))
 
 (define integer-bitwise-ior
-  (make-binary-bitwise-op fxbitwise-ior bignum-bitwise-ior))
+  (make-binary-bitwise-op fixnum-ior bignum-bitwise-ior))
 (define integer-bitwise-xor
-  (make-binary-bitwise-op fxbitwise-xor bignum-bitwise-xor))
+  (make-binary-bitwise-op fixnum-xor bignum-bitwise-xor))
 (define integer-bitwise-and
-  (make-binary-bitwise-op fxbitwise-and bignum-bitwise-and))
+  (make-binary-bitwise-op fixnum-and bignum-bitwise-and))
 (define integer-arithmetic-shift-left (make-int*int->val bignum-arithmetic-shift-left))
