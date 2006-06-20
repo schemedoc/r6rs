@@ -15,6 +15,7 @@
 %      of x outside of a template in T do not refer to the x
 %      bound by (define x e), while occurrences of x inside of a template
 %      in T do refer x bound by (define x e).
+%  - work fresh-syntax into main SRFI body
 
 \usepackage{scheme}
 % \usepackage{grammar}
@@ -197,8 +198,9 @@ The expander completes the expansion of the deferred right-hand-side forms
 and the current and remaining expressions in the body.
 \end{description}
 
-An error is signaled if a keyword identifying a definition (derived or core)
-is redefined by the definition or a later definition in the same body.
+An error is signaled if the keyword that identifies one of the body forms
+as a definition (derived or core) is redefined by the same definition or a
+later definition in the same body.
 To catch this error, the expander records the identifying keyword for each
 syntactic abstraction, \scheme{define-syntax} form, \scheme{define}
 form, \scheme{begin} form, \scheme{let-syntax} form, and \scheme{letrec-syntax}
@@ -206,6 +208,20 @@ form it encounters while processing the definitions and checks each
 newly defined identifier (\scheme{define} or \scheme{define-syntax}
 left-hand side) against the recorded keywords, as with
 \scheme{bound-identifier=?} (Section~\ref{sec:identifierpredicates}).
+For example, the following forms result in an error.
+
+\schemedisplay
+(let ()
+  (define define 17)
+  define)
+
+(let-syntax ([def0 (syntax-rules ()
+                     [(_ x) (define x 0)])])
+  (let ()
+    (def0 z)
+    (define def0 '(def 0))
+    (list z def0)))
+\endschemedisplay
 
 Expansion of each variable definition right-hand side is deferred until
 after all of the definitions have been seen so that each keyword and
@@ -258,16 +274,66 @@ although the structure of the output is implementation depenedent.
 
 \subsection{Maintaining Hygiene\label{sec:hygiene}}
 
-The expander maintains lexical scoping and referential transparency
-(hygiene) with the help of \emph{marks} and \emph{substitutions}.
+% hygiene condition for macro expansion
+% (Kohlbecker, E.E., Friedman, D.P., Felleisen, M., Duba, B. 'Hygienic macro expansion' (1986))
+% "Generated identifiers that become binding instances in the completely
+% expanded program must only bind variables that are generated at the same
+% transcription step."
+
+Barendregt's \emph{hygiene condition}~\cite{Barendregt:introduction} for the
+lambda-calculus is an informal notion that requires the free variables of
+an expression $N$ that is to be substituted into another expression $M$ not to
+be captured by bindings in $M$ when such capture is not intended.
+Kohlbecker, et al~\cite{Kohlbecker:hygienic} propose a corresponding
+\emph{hygiene condition for macro expansion} that applies in all situations
+where capturing is not explicit:
+``Generated identifiers that become binding instances in
+the completely expanded program must only bind variables that
+are generated at the same transcription step.''
+In the terminology of this document, the ``generated identifiers'' are
+those introduced by a transformer rather than those present in the form
+passed to the transformer, and a ``macro transcription step'' corresponds
+to a single call by the expander to a transformer.
+Also, the hygiene condition applies to all introduced bindings rather than
+to introduced variable bindings alone.
+
+This leaves open what happens to an introduced identifier that appears
+outside the scope of a binding introduced by the same call.
+Such an identifier refers to the lexical binding in effect where it
+appears (within a \scheme{syntax} \var{template};
+see Section~\ref{sec:syntaxcase}) inside the transformer body or one of
+the helpers it calls.
+This is essentially the referential transparency property described
+by Clinger and Rees~\cite{Clinger:macros}.
+
+Thus, the hygiene condition can be restated as follows:
+
+\begin{quotation}
+\noindent
+A binding for an identifier introduced into the output of a transformer
+call from the expander must capture only references to the identifier
+introduced into the output of the same transformer call.
+A reference to an identifier introduced into the output of a transformer
+refers to the closest enclosing binding for the introduced identifier or,
+if it appears outside of any enclosing binding for the introduced
+identifier, the closest enclosing lexical binding where the identifier
+appears (within a \scheme{syntax} \var{template})
+inside the transformer body or one of the helpers it calls.
+\end{quotation}
+
+Explicit captures are handled via \scheme{datum->syntax}; see
+Section~\ref{sec:conversions}.
+
+The expander maintains hygiene with the help of \emph{marks} and
+\emph{substitutions}.
 Marks are applied selectively by the expander to the output of each
 transformer it invokes, and substitutions are applied to the portions
 of each binding form that are supposed to be within the scope of the bound
 identifiers.
 Marks are used to distinguish like-named identifiers that are
 introduced at different times (either present in the source or introduced
-into the output of a transformer), and substitutions are used to
-map identifiers to their expand-time values.
+into the output of a particular transformer call), and substitutions are
+used to map identifiers to their expand-time values.
 
 Each time the expander encounters a syntactic abstraction and invokes the
 associated transformer, it creates a fresh mark and marks the
@@ -471,7 +537,7 @@ form, and its output replaces the entire form.
 If the keyword is found in any other definition or expression context, the
 transformer receives a wrapped syntax object representing just the keyword
 reference, and its output replaces just the reference.
-A \scheme{&syntax} exception is raised if the keyword appears on the
+An error is signaled if the keyword appears on the
 left-hand side of a \scheme{set!} expression.
 
 Variable transformers are similar.
@@ -1005,7 +1071,7 @@ lexically and is
 therefore not the same \scheme{else} that appears in the definition of
 \scheme{case}.
 
-\subsection{Syntax-object and datum conversions}
+\subsection{Syntax-object and datum conversions\label{sec:conversions}}
 
 The procedure \scheme{syntax->datum}
 strips all syntactic information from a syntax
@@ -1474,6 +1540,7 @@ This operational description obviates the restriction below from
 Section~5.3 of {\r5rs}:
 
 \begin{quotation}
+\noindent
 Although macros may expand into definitions and syntax definitions in
 any context that permits them, it is an error for a definition or syntax
 definition to shadow a syntactic keyword whose meaning is needed to

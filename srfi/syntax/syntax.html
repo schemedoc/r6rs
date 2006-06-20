@@ -108,7 +108,7 @@ consistency with other features that are not under discussion as SRFIs.
 
 
 
-<tr><td><b>3.8.&nbsp;</b></td><td><b><a class=plain href="./syntax.html#g10">Syntax-object and datum conversions</a></b></td></tr>
+<tr><td><b>3.8.&nbsp;</b></td><td><b><a class=plain href="./syntax.html#g10">Syntax-object and datum conversions<a name="sec:conversions"></a></a></b></td></tr>
 
 
 
@@ -172,7 +172,7 @@ consistency with other features that are not under discussion as SRFIs.
 
 
 
-<tr><td align="right"><b>8.&nbsp;</b><td><b><a class=plain href="./syntax.html#g32">Copyright</a></b></td></tr>
+<tr><td align="right"><b>8.&nbsp;</b><td><b><a class=plain href="./syntax.html#g35">Copyright</a></b></td></tr>
 
   
   
@@ -218,7 +218,7 @@ to write, including some that introduce visible bindings for or references
 to identifiers that do not appear explicitly in the input form, ones that
 maintain state or read from the file system, and ones that construct new
 identifiers.
-The <tt>syntax-case</tt> system&nbsp;[<a class=citation href="./syntax.html#g28">3</a>] described here
+The <tt>syntax-case</tt> system&nbsp;[<a class=citation href="./syntax.html#g30">5</a>] described here
 allows the programmer to write transformers that perform these sorts of
 transformations, and arbitrary additional transformations, without
 sacrificing the default enforcement of hygiene or the high-level
@@ -318,8 +318,9 @@ and the current and remaining expressions in the body.
 </dl>
 
 <p>
-An error is signaled if a keyword identifying a definition (derived or core)
-is redefined by the definition or a later definition in the same body.
+An error is signaled if the keyword that identifies one of the body forms
+as a definition (derived or core) is redefined by the same definition or a
+later definition in the same body.
 To catch this error, the expander records the identifying keyword for each
 syntactic abstraction, <tt>define-syntax</tt> form, <tt>define</tt>
 form, <tt>begin</tt> form, <tt>let-syntax</tt> form, and <tt>letrec-syntax</tt>
@@ -327,9 +328,29 @@ form it encounters while processing the definitions and checks each
 newly defined identifier (<tt>define</tt> or <tt>define-syntax</tt>
 left-hand side) against the recorded keywords, as with
 <tt>bound-identifier=?</tt> (Section&nbsp;<a href="./syntax.html#g9">3.7</a>).
+For example, the following forms result in an error.
 
 <p>
-Expansion of each variable definition right-hand side is deferred until
+
+<p><tt>(let&nbsp;()<br>
+
+&nbsp;&nbsp;(define&nbsp;define&nbsp;17)<br>
+
+&nbsp;&nbsp;define)
+<br>
+<br>
+(let-syntax&nbsp;([def0&nbsp;(syntax-rules&nbsp;()<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[(_&nbsp;x)&nbsp;(define&nbsp;x&nbsp;0)])])<br>
+
+&nbsp;&nbsp;(let&nbsp;()<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;(def0&nbsp;z)<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;(define&nbsp;def0&nbsp;'(def&nbsp;0))<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;(list&nbsp;z&nbsp;def0)))</tt>
+<p>Expansion of each variable definition right-hand side is deferred until
 after all of the definitions have been seen so that each keyword and
 variable references within the right-hand side resolves to the local
 binding, if any.
@@ -394,17 +415,66 @@ The final output is the equivalent of
 
 
 
+
 <p>
-The expander maintains lexical scoping and referential transparency
-(hygiene) with the help of <i>marks</i> and <i>substitutions</i>.
+Barendregt's <i>hygiene condition</i>&nbsp;[<a class=citation href="./syntax.html#g26">1</a>] for the
+lambda-calculus is an informal notion that requires the free variables of
+an expression <i>N</i> that is to be substituted into another expression <i>M</i> not to
+be captured by bindings in <i>M</i> when such capture is not intended.
+Kohlbecker, et al&nbsp;[<a class=citation href="./syntax.html#g32">7</a>] propose a corresponding
+<i>hygiene condition for macro expansion</i> that applies in all situations
+where capturing is not explicit:
+"Generated identifiers that become binding instances in
+the completely expanded program must only bind variables that
+are generated at the same transcription step."
+In the terminology of this document, the "generated identifiers" are
+those introduced by a transformer rather than those present in the form
+passed to the transformer, and a "macro transcription step" corresponds
+to a single call by the expander to a transformer.
+Also, the hygiene condition applies to all introduced bindings rather than
+to introduced variable bindings alone.
+
+<p>
+This leaves open what happens to an introduced identifier that appears
+outside the scope of a binding introduced by the same call.
+Such an identifier refers to the lexical binding in effect where it
+appears (within a <tt>syntax</tt> <tt><i>template</i></tt>;
+see Section&nbsp;<a href="./syntax.html#g8">3.6</a>) inside the transformer body or one of
+the helpers it calls.
+This is essentially the referential transparency property described
+by Clinger and Rees&nbsp;[<a class=citation href="./syntax.html#g27">2</a>].
+
+<p>
+Thus, the hygiene condition can be restated as follows:
+
+<p>
+<blockquote>
+A binding for an identifier introduced into the output of a transformer
+call from the expander must capture only references to the identifier
+introduced into the output of the same transformer call.
+A reference to an identifier introduced into the output of a transformer
+refers to the closest enclosing binding for the introduced identifier or,
+if it appears outside of any enclosing binding for the introduced
+identifier, the closest enclosing lexical binding where the identifier
+appears (within a <tt>syntax</tt> <tt><i>template</i></tt>)
+inside the transformer body or one of the helpers it calls.
+</blockquote>
+
+<p>
+Explicit captures are handled via <tt>datum-&gt;syntax</tt>; see
+Section&nbsp;<a href="./syntax.html#g10">3.8</a>.
+
+<p>
+The expander maintains hygiene with the help of <i>marks</i> and
+<i>substitutions</i>.
 Marks are applied selectively by the expander to the output of each
 transformer it invokes, and substitutions are applied to the portions
 of each binding form that are supposed to be within the scope of the bound
 identifiers.
 Marks are used to distinguish like-named identifiers that are
 introduced at different times (either present in the source or introduced
-into the output of a transformer), and substitutions are used to
-map identifiers to their expand-time values.
+into the output of a particular transformer call), and substitutions are
+used to map identifiers to their expand-time values.
 
 <p>
 Each time the expander encounters a syntactic abstraction and invokes the
@@ -457,7 +527,7 @@ the wrap, are not relevant and are ignored.
 
 <p>
 An algebra that defines how marks and substitutions work more precisely is
-given in Section&nbsp;2.4 of Oscar Waddell's PhD thesis&nbsp;[<a class=citation href="./syntax.html#g31">6</a>].
+given in Section&nbsp;2.4 of Oscar Waddell's PhD thesis&nbsp;[<a class=citation href="./syntax.html#g34">9</a>].
 
 <p>
 
@@ -658,7 +728,7 @@ form, and its output replaces the entire form.
 If the keyword is found in any other definition or expression context, the
 transformer receives a wrapped syntax object representing just the keyword
 reference, and its output replaces just the reference.
-A <tt>&amp;syntax</tt> exception is raised if the keyword appears on the
+An error is signaled if the keyword appears on the
 left-hand side of a <tt>set!</tt> expression.
 
 <p>
@@ -1346,7 +1416,7 @@ therefore not the same <tt>else</tt> that appears in the definition of
 
 <a name="g10"></a>
 
-<h2><a name="./syntax:h10"></a>3.8. Syntax-object and datum conversions</h2>
+<h2><a name="./syntax:h10"></a>3.8. Syntax-object and datum conversions<a name="sec:conversions"></a></h2>
 
 
 
@@ -1920,9 +1990,9 @@ which the transformer is evaluated.
 
 
 <p>
-We have chosen the SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g30">5</a>] names
+We have chosen the SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g33">8</a>] names
 <tt>syntax-&gt;datum</tt> and <tt>datum-&gt;syntax</tt> for the procedures that
-Chez Scheme&nbsp;[<a class=citation href="./syntax.html#g27">2</a>], MzScheme&nbsp;[<a class=citation href="./syntax.html#g29">4</a>], and most
+Chez Scheme&nbsp;[<a class=citation href="./syntax.html#g29">4</a>], MzScheme&nbsp;[<a class=citation href="./syntax.html#g31">6</a>], and most
 other systems call <tt>syntax-object-&gt;datum</tt> and
 <tt>datum-&gt;syntax-object</tt>, because the SRFI&nbsp;72 names are shorter.
 While this change is incompatible with a large amount of existing code, it
@@ -2061,10 +2131,10 @@ for the second of each pair.
 
 
 <p>
-Chez Scheme&nbsp;[<a class=citation href="./syntax.html#g27">2</a>], MzScheme&nbsp;[<a class=citation href="./syntax.html#g29">4</a>], and
+Chez Scheme&nbsp;[<a class=citation href="./syntax.html#g29">4</a>], MzScheme&nbsp;[<a class=citation href="./syntax.html#g31">6</a>], and
 various other systems support a <tt>fluid-let-syntax</tt> construct that
 dynamically (at expansion time) rebinds an existing syntactic binding.
-SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g30">5</a>] supports a more general concept of fluid
+SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g33">8</a>] supports a more general concept of fluid
 identifiers.
 Should we include either feature in R6RS?
 
@@ -2077,7 +2147,7 @@ Should we include either feature in R6RS?
 
 
 <p>
-Chez Scheme&nbsp;[<a class=citation href="./syntax.html#g27">2</a>] and various other systems allow arbitrary bindings to be added
+Chez Scheme&nbsp;[<a class=citation href="./syntax.html#g29">4</a>] and various other systems allow arbitrary bindings to be added
 to the expand-time environment and provide a mechanism for retrieving
 those bindings.
 Chez Scheme uses this feature, for example, to record information about
@@ -2093,11 +2163,11 @@ Should we include such a feature in R6RS?
 
 
 <p>
-MzScheme&nbsp;[<a class=citation href="./syntax.html#g29">4</a>] provides <tt>quasisyntax</tt>,
+MzScheme&nbsp;[<a class=citation href="./syntax.html#g31">6</a>] provides <tt>quasisyntax</tt>,
 <tt>unsyntax</tt>, and <tt>unsyntax-splicing</tt> forms, analogous to
 <tt>quasiquote</tt>, <tt>unquote</tt>, and <tt>unquote-splicing</tt>, with
 the reader syntax <tt>#`</tt>, <tt>#,</tt>, and <tt>#,@</tt>.
-SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g30">5</a>] also includes <tt>quasisyntax</tt> but
+SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g33">8</a>] also includes <tt>quasisyntax</tt> but
 overloads <tt>unquote</tt> and <tt>unquote-splicing</tt>, which reduces
 the number of additional constructs but complicates the use of
 <tt>quasisyntax</tt> for generating <tt>quasiquote</tt> expressions.
@@ -2112,7 +2182,7 @@ Should we include either variant in R6RS?
 
 
 <p>
-SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g30">5</a>] proposes that <tt>syntax</tt> apply a
+SRFI&nbsp;72&nbsp;[<a class=citation href="./syntax.html#g33">8</a>] proposes that <tt>syntax</tt> apply a
 fresh mark, so that identifiers contained within two different
 <tt>syntax</tt> forms are not <tt>bound-identifier=?</tt>.
 (It makes an exception, however, for identifiers that appear nested within
@@ -2143,7 +2213,7 @@ to introduce their own unique bindings if necessary.
 Should we consider instead a variant of <tt>syntax</tt>, say
 <tt>fresh-syntax</tt>, that applies a unique mark to its output?
 Should we consider something more general, like MzScheme's
-<tt>make-syntax-introducer</tt>&nbsp;[<a class=citation href="./syntax.html#g29">4</a>], which creates a
+<tt>make-syntax-introducer</tt>&nbsp;[<a class=citation href="./syntax.html#g31">6</a>], which creates a
 procedure that applies the same mark to a syntax object each time it is
 applied?
 Either can be used to define <tt>generate-temporaries</tt>, which can
@@ -2215,7 +2285,7 @@ to be incomplete.
 <p>
 Ironically, the fully wrapped representation can lead to similar problems.
 With the fully wrapped representation, programmers are compelled to use
-a procedure like MzScheme's <tt>syntax-&gt;list</tt>&nbsp;[<a class=citation href="./syntax.html#g29">4</a>] to
+a procedure like MzScheme's <tt>syntax-&gt;list</tt>&nbsp;[<a class=citation href="./syntax.html#g31">6</a>] to
 convert wrapped syntax objects into lists in order to map helpers over
 portions of the input.
 When <tt>syntax-&gt;list</tt> is applied to properly matched input, there
@@ -2327,9 +2397,9 @@ van&nbsp;Straaten.
 
 <p>
 Much of this document has been copied from or adapted from Chapter&nbsp;10 of the
-<i>Chez Scheme Version&nbsp;7 User's Guide</i>&nbsp;[<a class=citation href="./syntax.html#g27">2</a>], some
+<i>Chez Scheme Version&nbsp;7 User's Guide</i>&nbsp;[<a class=citation href="./syntax.html#g29">4</a>], some
 of which also appears in Chapter&nbsp;8 of<i>The Scheme Programming
-Language, 3rd edition</i>&nbsp;[<a class=citation href="./syntax.html#g26">1</a>].
+Language, 3rd edition</i>&nbsp;[<a class=citation href="./syntax.html#g28">3</a>].
 
 <p>
 
@@ -2344,34 +2414,54 @@ Language, 3rd edition</i>&nbsp;[<a class=citation href="./syntax.html#g26">1</a>
 
 <p>
 <p>[<a name="g26">1</a>] 
+H.&nbsp;P. Barendregt.
+Introduction to the lambda calculus.
+<i>Nieuw Archief voor Wisenkunde</i>, 4(2):337-372, 1984.
+
+<p>
+<p>[<a name="g27">2</a>] 
+William Clinger and Jonathan Rees.
+Macros that work.
+In <i>Conference Record of the Eighteenth Annual ACM Symposium
+  on Principles of Programming Languages</i>,  155-162, January 1991.
+
+<p>
+<p>[<a name="g28">3</a>] 
 R.&nbsp;Kent Dybvig.
 <i>The Scheme Programming Language</i>, third edition.
 MIT Press, 2003.
  <br>
 <a class=ref href="http://www.scheme.com/tspl3/">http://www.scheme.com/tspl3/</a>.
-<p>[<a name="g27">2</a>] 
+<p>[<a name="g29">4</a>] 
 R.&nbsp;Kent Dybvig.
 <i>Chez Scheme User's Guide: Version 7</i>.
 Cadence Research Systems, 2005.
  <br>
 <a class=ref href="http://www.scheme.com/csug7/">http://www.scheme.com/csug7/</a>.
-<p>[<a name="g28">3</a>] 
+<p>[<a name="g30">5</a>] 
 R.&nbsp;Kent Dybvig, Robert Hieb, and Carl Bruggeman.
 Syntactic abstraction in Scheme.
 <i>Lisp and Symbolic Computation</i>, 5(4):295-326, 1993.
  <br>
 <a class=ref href="http://www.cs.indiana.edu/~dyb/pubs/LaSC-5-4-pp295-326.pdf">http://www.cs.indiana.edu/&nbsp;dyb/pubs/LaSC-5-4-pp295-326.pdf</a>.
-<p>[<a name="g29">4</a>] 
+<p>[<a name="g31">6</a>] 
 Matthew Flatt.
 PLT MzScheme: Language manual, No. 301, 2006.
  <br>
 <a class=ref href="http://download.plt-scheme.org/doc/301/html/mzscheme/">http://download.plt-scheme.org/doc/301/html/mzscheme/</a>.
-<p>[<a name="g30">5</a>] 
+<p>[<a name="g32">7</a>] 
+Eugene Kohlbecker, Daniel&nbsp;P. Friedman, Matthias Felleisen, and Bruce Duba.
+Hygienic macro expansion.
+In <i>Proceedings of the 1986 ACM Conference on Lisp and
+  Functional Programming</i>,  151-161, 1986.
+
+<p>
+<p>[<a name="g33">8</a>] 
 Andr&eacute; van Tonder.
 Srfi 72: Hygienic macros.
  <br>
 <a class=ref href="http://srfi.schemers.org/srfi-72/srfi-72.html">http://srfi.schemers.org/srfi-72/srfi-72.html</a>.
-<p>[<a name="g31">6</a>] 
+<p>[<a name="g34">9</a>] 
 Oscar Waddell.
 <i>Extending the Scope of Syntactic Extension</i>.
 PhD thesis, Indiana University, Bloomington, Aug 1999.
@@ -2383,7 +2473,7 @@ PhD thesis, Indiana University, Bloomington, Aug 1999.
 
 <p>
 
-<a name="g32"></a>
+<a name="g35"></a>
 
 <h1><a name="./syntax:h26"></a>8. Copyright</h1>
 
