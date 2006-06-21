@@ -1,13 +1,11 @@
 \documentclass{monograph}
 
 % TODO:
-%  - publish syntax-case SRFI and mention its publication in
-%    Section~\ref{progress:macros}
-%  - document core/library split decisions we've made
-%  - fix up eval commentary
-%  - remove set-car! and set-cdr! reaffirmation if we make pairs immutable
+%  - note about possible immutability of pairs
+%  - mention syntax-case SRFI number in Section~\ref{progress:macros}
+%    - list in change log as well
 
-% subsystem approvol
+% subsystem approval
 %  - Unicode (approved 2006/6/13)
 %  - records (approved 2006/6/13)
 %  - arithmetic (approved 2006/6/13)
@@ -21,14 +19,11 @@
 %  - core/library split
 
 % things to vote upon:
-%  - make string comparisons n-ary
-%  - (make-string n) and (make-vector n) content is unspecified
-%  - (make-bytes n) content is unspecified; add (make-bytes n fill)
+%  - what happens if expr argument to eval is not a dag?
+%    what if it is a dag but not a tree?
 %  - add (error who msg irritant ...), (violation who msg irritant ...)
 %  - if the x in (quote x) is not a datum, "should" or "must" raise
 %    &syntax condition
-%  - restrictions on what write can print, if any, for values that
-%    cannot be produced via the datum syntax
 %  - eliminate \scheme{load}
 %  - add \scheme{load-library}
 %  - mike's I/O exceptions note
@@ -37,7 +32,8 @@
 %  - pathname datatype
 
 % Undocumented decisions
-%  - specific condition-system decisions
+%  - specific condition-system decisions in documented in the minutes
+%  - implementations "should" raise &syntax if x in (quote x) is not a datum
 
 \usepackage{scheme}
 
@@ -58,7 +54,7 @@
 \begin{document}
 \title{R6RS Status Report}
 \author{Kent~Dybvig, Will~Clinger, Matthew~Flatt, Mike~Sperber, and Anton~van~Straaten}
-\date{June 13, 2006}
+\date{June 21, 2006}
 \maketitle
 \def\copyrightnotice{}
 
@@ -85,6 +81,9 @@ by which we intend to complete the Revised$^6$ Report on Scheme.
 
 Here is a brief overview of the important changes to this document since
 the \hyperlink{status-feb06.html}{February~2006} version.
+
+Section~\ref{sec:languagestructure} provides some examples of libraries
+we believe might be required by {\r6rs}.
 
 Section~\ref{sec:programs} (new): describes the forms which portable
 code can take.
@@ -113,6 +112,10 @@ Section~\ref{sec:reaffirmations} lists several newly reaffirmed features.
 Section~\ref{sec:beyond} lists several features that are officially
 not under consideration for {\r6rs}.
 (All but the first four listed are new.)
+
+Section~\ref{sec:pairmutability} announces that the editors have decided
+to reconsider whether to make pairs immutable and may even consider
+whether to require that the second argument of \scheme{cons} be a list.
 
 Section~\ref{sec:refimpl} (new) describes the editors' commitment to provide
 reference implementations for the major subsystems included in {\r6rs}.
@@ -160,14 +163,20 @@ and are now listed as ``beyond {\r6rs}'' in Section~\ref{sec:beyond}:
  \item support for gensyms and uids
 \end{itemize}
 
-Some are now mentioned in Section~\ref{sec:reaffirmations}:
+One is now mentioned in Section~\ref{sec:languagestructure}:
+
+\begin{itemize}
+ \item {\r5rs} compatibility library
+\end{itemize}
+
+One is now mentioned in Section~\ref{sec:reaffirmations}:
 
 \begin{itemize}
  \item making quotation of empty list optional (reaffirmed that
        \scheme{()} is not a valid expression)
 \end{itemize}
 
-Some are listed as changes to be made or features added or to be added:
+Some are listed as changes to be made, features added, or features to be added:
 
 \begin{itemize}
  \item \scheme{#t}, \scheme{#f}, and characters must be followed by a delimiter
@@ -267,25 +276,26 @@ This section outlines the decisions made to date.
 
 \subsection{Language structure\label{sec:languagestructure}}
 
-The {\r6rs} language consists of a core language and set of additional
+The {\r6rs} language consists of a core language and a set of additional
 libraries.
+The exact composition of the core language is expected to fluctuate as
+other features of R6RS are finalized.
+
+Some examples of the kind of libraries which R6RS might specify are as
+follows:
+
+\begin{itemize}
+\item arithmetic-fixnum: Procedures specific to fixnums (see Section~\ref{progress:arithmetic})
+\item arithmetic-flonum: Procedures specific to flonums (see Section~\ref{progress:arithmetic})
+\item records-procedural: The procedural API to the record mechanism (see Section~\ref{progress:records})
+\item records-reflection: The reflection procedures for the record mechanism (see Section~\ref{progress:records})
+\item hash-tables: Hash tables (see Section~\ref{sec:featurestobeadded})
+\item promises: \scheme{delay} and \scheme{force}
+\item eval: The \scheme{eval} procedure, along with necessary support procedures.
+\item r5rs: {\r5rs} compatibility
+\end{itemize}
 
 % should list guidelines for what goes where
-
-The following features are definitely in the core language:
-
-\begin{itemize}
- \item \emph{none yet identified}
-\end{itemize}
-
-The following features are definitely not in the core language:
-
-\begin{itemize}
- \item \scheme{delay} and \scheme{force}
- \item hash tables (see Section~\ref{sec:featurestobeadded})
- \item \scheme{case-lambda} (see Section~\ref{sec:featuresadded})
- \item \scheme{when} and \scheme{unless} (see Section~\ref{sec:featuresadded})
-\end{itemize}
 
 \subsection{Programs\label{sec:programs}}
 
@@ -298,7 +308,7 @@ A portable script consists of a standard script header and a single
 top-level library.
 All definitions and expressions must appear within a library form;
 {\r6rs} has no notion of a top-level definition or expression.
-The \scheme{eval} procedure may, however, will likely allow the
+The \scheme{eval} procedure will likely, however, allow the
 evaluation of an expression (but not a definition) within the scope of a
 specified set of library bindings.
 
@@ -351,8 +361,8 @@ features.
  \item Expressions that would have evaluated to some ``unspecified value''
        in {\r5rs} evaluate to a new unique (in the sense of \scheme{eq?})
        ``unspecified'' value.
- \item Character comparison routines are now n-ary.  (This was optional
-       in {\r5rs}.)
+ \item Character and string comparison routines are now n-ary.
+       (This was optional in {\r5rs}.)
  \item The \var{in} and \var{out} thunks of a \scheme{dynamic-wind} are
        considered ``outside'' of the \scheme{dynamic-wind}; that is,
        escaping from either does not cause the \var{out} thunk to be invoked,
@@ -373,6 +383,8 @@ features.
        \scheme{write} must print \var{x} as a datum for which
        \scheme{read} would produce a value that is equivalent (in the
        sense of equal?) to \var{x} (read/write invariance).
+       When given a value \var{x} that cannot be represented as a datum,
+       the behavior of \scheme{write} is unspecified.
  \item Every symbol, string, and character that can be created via
        standard operators has at least one standard representation
        as a datum.
@@ -398,8 +410,8 @@ The following features have been added:
  \item \scheme{unspecified} procedure that returns the unspecified value
  \item \scheme{let-values} and \scheme{let*-values} multiple-value binding forms
  \item \scheme{(define var)} syntax: abbreviation for \scheme{(define var (unspecified))}
- \item \scheme{when} and \scheme{unless} library syntax
- \item \scheme{case-lambda} library syntax
+ \item \scheme{when} and \scheme{unless} syntax
+ \item \scheme{case-lambda} syntax
  \item \scheme{call/cc} as a second name for \scheme{call-with-current-continuation}
  \item Alan Bawden's PEPM~'99 nested \scheme{quasiquote} extensions
  \item new list-processing procedures (mostly inspired by
@@ -439,7 +451,7 @@ The following features of {\r5rs} are reaffirmed for {\r6rs}.
 \begin{itemize}
  \item support for multiple values
  \item unspecified evaluation order for applications, \scheme{let} bindings, and \scheme{letrec} bindings
- \item \scheme{set-car!} and \scheme{set-cdr!}
+ \item \scheme{set-car!} and \scheme{set-cdr!} (but see Section~\ref{sec:pairmutability})
  \item \scheme{read-char} and \scheme{peek-char} return the eof object
  \item \scheme{(begin)} is still an invalid expression
  \item \scheme{case} still uses \scheme{memv}
@@ -447,6 +459,10 @@ The following features of {\r5rs} are reaffirmed for {\r6rs}.
  \item \scheme{append} copies all but last argument, even if last argument is \scheme{()}
  \item as an expression, \scheme{()} is invalid syntax
  \item \scheme{()} is still an invalid expression
+ \item the contents of \scheme{(make-string \var{n})} and \scheme{(make-vector \var{n})}
+       remain unspecified (in particular, the elements of
+       \scheme{(make-vector \var{n})} are not initialized to the new
+       ``unspecified'' value
 \end{itemize}
 
 \subsection{Beyond {\r6rs}\label{sec:beyond}}
@@ -472,6 +488,41 @@ to make concrete proposals via the SRFI process.
  \item weak pointers
  \item support for regular expressions
 \end{itemize}
+
+\section{Mutability of pairs\label{sec:pairmutability}}
+
+Although \scheme{set-car!} and \scheme{set-cdr!} were previously
+reaffirmed (Section~\ref{sec:reaffirmations}), the editors have decided to
+reconsider whether pairs should be immutable in {\r6rs}.
+Members of the Scheme community wishing to weigh in on the issue
+should contact one of the editors.
+
+Making pairs immutable would simplify argument error checks for some
+list-processing operations, simplify the \scheme{list?} predicate, allow
+\scheme{apply} not to copy the input list when invoking a procedure with a
+dot interface, and allow program improvers to perform deforestation, i.e.,
+to eliminate some of the intermediate lists allocated when nested mapping,
+reversing, appending and similar operations are used.
+User-defined record types can be used in place of pairs whenever a mutable
+data structure is required.
+
+On the other hand, making pairs immutable is an incompatible change that
+would break some existing programs, and mutable pairs are natural building
+blocks for various abstractions, like queues and streams.
+
+% Lisp tradition is already gone: no \scheme{reverse!}, \scheme{append!}, etc.;
+% most procedures already require noncyclic lists, including \scheme{map},
+% where \scheme{(map + ls #0=(1 . #0#))} cannot be used to increment each
+% element of a list.  Plus one can't use set-car! to change the name of a
+% symbol or set-cdr! to change its property list.
+
+A more radical change is to require that the second argument to
+\scheme{cons} be a list, i.e., the empty list or a pair.
+This would make \scheme{list?} constant time and further simplify argument
+error checks for some list-processing operations.
+Pairs would become useful only as building blocks for lists, and records
+(or vectors) would have to be used for most other purposes for which pairs
+are currently used.
 
 \section{Reference implementations~\label{sec:refimpl}}
 
@@ -627,12 +678,19 @@ a pattern variable but instead a special identifier that matches
 any input, and underscore will be allowed in place of the keyword
 naming a macro in a \scheme{syntax-rules} pattern.
 
+\hyperlink{http://srfi.schemers.org/srfi-93/}{SRFI~93} (R6RS Syntax-Case
+Macros) has recently been submitted.
+
 \subsection{Binary block datatype\label{progress:bytes}}
 
 The editors have decided to adopt
 \hyperlink{http://srfi.schemers.org/srfi-74/}{SRFI~74} (Octet-Addressed
 Binary Blocks) as the basis for byte-vector functionality in {\r6rs},
-using the name \scheme{bytes} rather than \scheme{blob}.
+with the name \scheme{bytes} replaces the name \scheme{blob}.
+In contrast with the SRFI, the contents of
+\scheme{(make-bytes \var{n})} is unspecified and an
+optional \var{fill} argument has been added, as
+with \scheme{make-string} and \scheme{make-vector}.
 
 \subsection{Other possible changes\label{progress:miscellaneous}}
 
@@ -643,7 +701,6 @@ resolution.
  \item improving the semantics of \scheme{eqv?} and \scheme{equal?}
  \item support for file operations
  \item support system operations
- \item {\r5rs} compatibility library
  \item support for enumerations
  \item changes to \scheme{eval} to reflect the existence of libraries and
        other {\r6rs} changes
@@ -685,7 +742,7 @@ At this point, our discussions will be limited mostly to the major
 subsystems and the other possible features and changes described in
 Section~\ref{progress:miscellaneous}.
 New issues may also be considered if this can be done without
-jeapordizing our goal to submit a draft {\r6rs} to the steering
+jeopardizing our goal to submit a draft {\r6rs} to the steering
 committee by the target deadline.
 
 Responsibility for making sure that the editors complete their work and
