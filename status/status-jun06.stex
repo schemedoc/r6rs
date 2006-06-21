@@ -27,6 +27,7 @@
 %  - eliminate \scheme{load}
 %  - add \scheme{load-library}
 %  - mike's I/O exceptions note
+%  - revote: Alan Bawden's PEPM~'99 nested \scheme{quasiquote} extensions
 
 % outstanding issues we may want to mention
 %  - pathname datatype
@@ -134,7 +135,7 @@ Section~\ref{progress:arithmetic} documents that the arithmetic SRFI
 has undergone revisions.
 
 Section~\ref{progress:exceptions} documents that we have decided to base the
-{\r6rs} I/O system on
+{\r6rs} exception system on
 SRFI's~\hyperlink{http://srfi.schemers.org/srfi-34/}{34}
 and~\hyperlink{http://srfi.schemers.org/srfi-35/}{35}.
 
@@ -299,12 +300,12 @@ follows:
 
 \subsection{Programs\label{sec:programs}}
 
-{\r6rs} programs exist only in the form of portable libraries and scripts. 
+{\r6rs} programs exist only in the form of libraries and scripts. 
 A library consists of a single top-level library form.
-Portable libraries may import variable and keyword bindings from other
+Libraries may import variable and keyword bindings from other
 libraries (standard or user-defined) and may export variable and keyword
 bindings.
-A portable script consists of a standard script header and a single
+A script consists of a standard script header and a single
 top-level library.
 All definitions and expressions must appear within a library form;
 {\r6rs} has no notion of a top-level definition or expression.
@@ -413,7 +414,6 @@ The following features have been added:
  \item \scheme{when} and \scheme{unless} syntax
  \item \scheme{case-lambda} syntax
  \item \scheme{call/cc} as a second name for \scheme{call-with-current-continuation}
- \item Alan Bawden's PEPM~'99 nested \scheme{quasiquote} extensions
  \item new list-processing procedures (mostly inspired by
        \hyperlink{http://srfi.schemers.org/srfi-1/}{SRFI~1}):
        \scheme{exists}, \scheme{forall},
@@ -457,7 +457,6 @@ The following features of {\r5rs} are reaffirmed for {\r6rs}.
  \item \scheme{case} still uses \scheme{memv}
  \item one-armed \scheme{if} remains in the language
  \item \scheme{append} copies all but last argument, even if last argument is \scheme{()}
- \item as an expression, \scheme{()} is invalid syntax
  \item \scheme{()} is still an invalid expression
  \item the contents of \scheme{(make-string \var{n})} and \scheme{(make-vector \var{n})}
        remain unspecified (in particular, the elements of
@@ -613,7 +612,7 @@ Support for Unicode will be based on
 \hyperlink{http://srfi.schemers.org/srfi-75/}{SRFI~75} (R6RS Unicode
 data), which has now been withdrawn as planned after revisions based in
 part on community input.
-See http://srfi.schemers.org/srfi-75/mail-archive/msg00309.html
+See \hyperlink{http://srfi.schemers.org/srfi-75/mail-archive/msg00309.html}{http://srfi.schemers.org/srfi-75/mail-archive/msg00309.html}
 for a discussion of probable differences between the withdrawn
 SRFI and {\r6rs}.
 
