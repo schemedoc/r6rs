@@ -1,0 +1,96 @@
+Conference call June 20 2006 12:45pm
+All present by about 12:48pm:
+Kent, Will, Mike, Anton, Matthew
+
+0. finalize agenda (1 minute)
+    Mike mentioned that we approved an incompatible change
+        to quasiquote; we should discuss it to make sure
+        everyone understands the implications
+
+1. action items from 6/13/2006 (5 minutes)
+   - put final touches on status report (Kent)
+        done except for updates based on today's conference call
+        Anton will suggest wording re libraries
+   - update hash-table draft (Anton)
+        done; needs review
+   - update safe/unsafe mode draft (Will)
+        done; needs review
+   - comment on environment proposal (All)
+        Mike commented this morning
+   - comment on byte vector draft (All)
+        done; new draft needs review, maybe approval
+   - comment on core/library split (All)
+        no comments yet
+   - unicode reference implementation (Anton...now Will?)
+        done except for normalization procedures
+        Mike will offer code for the normalization procedures
+   - carried over:
+     - submit syntax srfi (Kent)
+        done; some revisions to be made in response to comments
+     - update library srfi (Matthew and Kent)
+        awaiting comments, mainly from Matthew
+        needs reference implementation, to be merged with syntax
+     - update reference implementation for arithmetic SRFI (Will)
+        in progress        
+
+2. quick votes---if not quick, we'll put off (10 minutes)
+        these issues came up during preparation of status report
+   - make string comparisons n-ary?
+     [was optional in R5RS; we've already made char comparisons n-ary]
+        yes, without objection
+   - leave (make-string n) and (make-vector n) content unspecified?
+     (make-bytes n) content is unspecified; add (make-bytes n fill)?
+     [see https://r6rs.scheming.org/node/251#comment-1374]
+        yes, with two abstentions (Matthew, Mike)
+        might recommend that initialization be more definite
+            in safe mode
+   - if the x in (quote x) is not a datum, "returns", "might", "should"
+     or "must" raise &syntax condition?
+     [see https://r6rs.scheming.org/node/243#comment-1401]
+        issue should be broadened to include all expressions
+        vote:
+            must: Matthew, Mike
+            should: Anton, Kent, Will
+        might revisit this later, but it's "should" for now
+   - should we restrict what write can print for values that
+     cannot be produced via the datum syntax?
+        Will moved we leave it unspecified what write does;
+        Mike seconded; motion passed unanimously
+
+3. hash tables (10 minutes)
+   - Anton's update to draft repository draft
+        Will moved to table until next week
+        Mike suggested we limit ourselves to eq? hash tables
+        Pros and cons were discussed
+
+4. enumerations (10 minutes)
+   - see draft checked into repository
+        tabled; wrong draft may be in repository
+
+5. mutability of pairs (10 minutes)
+        Will moved that pairs created during construction
+            of a rest argument be immutable; Kent pointed
+            out that (lambda x x) would no longer be a
+            legitimate implementation of list
+        Motion failed for lack of a second
+        Mike moved that pairs be immutable; Will seconded
+            (this includes leaving set-car! and set-cdr! out
+            of any official R5RS compatibility libraries)
+        Discussion: maybe we should announce it and see
+            what the community says
+        Motion withdrawn, with consent of Mike and Will
+        Anton moved that the status report say we are
+            considering making pairs immutable after all
+            and would like community feedback; Mike
+            seconded (or maybe the other way around)
+        Vote: approved unanimously
+
+Remaining items left to next week
+
+6. equal? generalizations (10 minutes)
+   - generalize to one or more arguments
+   - add pred-equal? (equalp?)
+
+quasiquote extension
+
+7. adjourned about 1:50pm

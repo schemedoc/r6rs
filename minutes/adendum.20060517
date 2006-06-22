@@ -1,0 +1,549 @@
+Here are my notes from today's discussion of exceptions and
+conditions.  The tabled questions and the questions we didn't
+have time to consider have all been moved to the end.
+
+These notes were obtained by editing Kent's tally.  The
+original vote and outcome are still shown; underneath the
+original vote is the revote, and underneath the original
+outcome (usually "discuss") is the revised outcome.
+
+Will
+
+                                * * *
+
+Thank you all again for voting in a timely manner.  The vote tallies are
+below, listed in the following order:
+
+  Vote: Clinger, Dybvig, Flatt, Sperber, van Straaten
+
+                                * * *
+
+3.  If a side-effecting procedure (e.g. set-car!, set-cdr!,
+    vector-set!, string-set!) is passed an immutable object,
+    such as the value of a literal constant or the string
+    returned by symbol->string, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, must, must, discuss
+  Revote: should, may, must, should, should
+
+    Outcome: discuss
+  Reoutcome: should
+
+    raise an exception with
+    condition type: &immutable
+
+    Issue:  "must raise" presents a problem for headerless pairs
+    Issue:  "must raise" would also require eval to make immutable
+    copies of quoted mutable values
+
+15.  If the argument to the length procedure is not a plausible
+    list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+  Revote: must, must, must, should, must
+
+    Outcome: must
+  Reoutcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+    Note:  might give reference implementation
+    Note:  checking is not necessary in unsafe mode
+
+16.  If an argument to the append procedure [not the last]
+    is not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, must, must, must
+  Revote: should, must, must, must, must
+
+    Outcome: discuss
+  Reoutcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+17.  If the last argument to the append procedure is not a
+    plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, returns, returns, may, returns
+  Revote: returns, returns, returns, returns, returns
+
+    Outcome: returns
+  Reoutcome: returns
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  some votes would break usual implementation of ,@
+
+18.  If the argument to the reverse procedure is not a
+    plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+  Reoutcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+20.  If the second argument to list-ref or list-tail is
+    n, and the first argument is not a plausible list
+    up to n [for list-ref, case (1) of the definition
+    of plausible list up to n is excluded], then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, discuss, must, must, must
+  Revote: must, must, must, must, must
+
+    Outcome: discuss
+  Reoutcome: must
+
+    raise an exception with
+    condition type: &list
+    revise condition type to:
+                    &range (if plausible list but not up to n)
+                    &list (if not plausible list up to n)
+
+    Issue:  might be n+1 for list-ref
+            [actually, it's more complicated; see above]
+    Issue:  should be &range
+
+21.  If the first argument to list-ref or list-tail is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, might, may, discuss
+  Revote: should, might(*), might(*), may, might(*)
+
+    Note:  might(*) means can raise an exception only
+           under the conditions of question 20.
+
+    Outcome: discuss
+  Reoutcome: might(*), which means neither list-ref nor
+    list-tail is even allowed to raise an exception based
+    on the part of the structure it doesn't need to traverse.
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  don't want to say anything
+
+22.  If (1) there does not exist a natural number n such
+    that the second argument to memq, memv, or member
+    is the first Scheme value of a plausible prefix of
+    length n such that the last value xn of that prefix
+    has the first argument as its car at some time after
+    tn and before the procedure returns, and (2) the
+    second argument is not a plausible list, and (3)
+    there exists some natural number n such that the
+    second argument is not the first Scheme value of
+    any plausible prefix of length n, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, discuss, must, must, discuss
+  Revote: must (implied by 23)
+
+    Outcome: discuss
+  Reoutcome: must (implied by 23)
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  What does it mean?
+    Answer: If the object being sought is not found,
+    so the procedure has to traverse the entire alleged
+    list, and it finds that the alleged list is not a
+    list because it is terminated improperly (as opposed
+    to not being terminated at all, i.e. circular), then...
+    
+23.  If (1) there does not exist a natural number n such
+    that the second argument to memq, memv, or member
+    is the first Scheme value of a plausible prefix of
+    length n such that the last value xn of that prefix
+    has the first argument as its car at some time after
+    tn and before the procedure returns, and (2) the
+    second argument is not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, discuss, must, must, discuss
+  Revote: must, must, must, must, must
+
+    Outcome: discuss
+  Reoutcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+24.  If the second argument to memq, memv, or member is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, discuss, might, may, discuss
+  Revote: may, might(*), might(*), might(*), might(*)
+
+    Outcome: discuss
+  Reoutcome: might(*), which means memq, memv, and member
+    are not even allowed to raise an exception based on
+    the part of the structure they don't need to traverse.
+
+    raise an exception with
+    condition type: &list
+
+25.  If (1) there does not exist a natural number n such
+    that the second argument to assq, assv, or assoc
+    is the first Scheme value of a plausible prefix of
+    length n such that every Scheme value x1 through xn
+    of that prefix is a pair, and xn has a pair as its
+    car at some time after tn, and at some time after
+    that the car of that pair is the first argument,
+    all before the procedure returns, and (2) the
+    second argument is not a plausible alist, and (3)
+    there exists some natural number n such that the
+    second argument is not the first Scheme value of
+    any plausible alist prefix of length n, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, discuss, must, must, discuss
+  Revote: must (implied by 26)
+
+    Outcome: discuss
+  Reoutcome: must
+
+    raise an exception with
+    condition type: &alist
+
+26.  If (1) there does not exist a natural number n such
+    that the second argument to assq, assv, or assoc
+    is the first Scheme value of a plausible prefix of
+    length n such that every Scheme value x1 through xn
+    of that prefix is a pair, and xn has a pair as its
+    car at some time after tn, and at some time after
+    that the car of that pair is the first argument,
+    all before the procedure returns, and (2) the
+    second argument is a plausible list but not a
+    plausible alist, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, discuss, must, must, discuss
+  Revote: must (for consistency with 23)
+
+    Outcome: discuss
+  Reoutcome: must (for consistency with 23)
+
+    raise an exception with
+    condition type: &alist
+
+27.  If the second argument to assq, assv, or assoc is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, discuss, might, may, discuss
+  Revote: might(*) (for consistency with 24)
+
+    Outcome: discuss
+  Reoutcome: might(*), which means assq, assv, and assoc
+    are not even allowed to raise an exception based on
+    the part of the structure they don't need to traverse.
+
+    raise an exception with
+    condition type: &list
+
+35.  If the argument to list->string or list->vector is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+37.  If the last argument to apply is not a plausible list,
+    then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+38.  If any but the first argument to map or for-each is
+    not a plausible list, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &list
+
+    Issue:  "must raise" requires tortoise and hare
+
+39.  If two of the list arguments x and y to map or for-each
+    are plausible lists, but there does not exist a
+    natural number n such that x and y are both plausible
+    lists of length n, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &incompatible
+
+41.  If the escape procedure that is created by
+    call-with-current-continuation is called with zero
+    arguments or with more than one argument, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: discuss, discuss, might, discuss, discuss
+
+    Outcome: discuss
+             flush (bad question; Will was wrong about R5RS)
+
+    raise an exception with
+    condition type: &violation
+
+58.  If read encounters an external representation of the
+    form #!<symbol>, where <symbol> is a valid external
+    representation of a symbol, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, may, discuss, may, discuss
+  Revote: should, may, may, may, may
+
+    Outcome: discuss
+  Reoutcome: may
+
+    raise an exception with
+    condition type: &lexical
+
+    Issue:  Should the R6RS even try to make the moralistic
+    judgement that distinguishes should/may/might?
+
+****************************************************************
+
+Tabled the following for further discusion:
+
+4.  If a definition or expression is not syntactically
+    correct (e.g. (if x y z w) or (lambda (x x) x)),
+    then it (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, discuss, must, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &syntax
+
+    Issue:  worried that implementations might defer syntax
+    checks to run time; wants to require pre-execution syntax
+    checking [Anton,Matthew]
+
+5.  If a definition or expression refers to a variable
+    that is not bound within the library in which the
+    definition or expression appears, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, discuss, must, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &undefined-variable
+
+    Issue:  worried that implementations might defer syntax
+    checks to run time; wants to require pre-execution syntax
+    checking [Anton,Matthew]
+
+7.  If an assignment (set!) is executed, and the left
+    hand side of the assignment is not defined in the
+    library that contains the assignment, or in some
+    other context has not yet been defined, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, discuss, discuss, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &undefined-variable
+
+    Issue:  worried that implementations might defer syntax
+    checks to run time; wants to require pre-execution syntax
+    checking [Anton,Matthew]
+    Issue:  does "has not yet" mean in time or space?
+
+8.  If an assignment (set!) is executed, and the left
+    hand side of the assignment is immutable because
+    it was imported, or is defined in some environment
+    whose exported variables are immutable, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, must, discuss, must, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &immutable-variable
+
+    Issue:  worried that implementations might defer syntax
+    checks to run time; wants to require pre-execution syntax
+    checking [Anton,Matthew]
+
+                                * * *
+
+Tabled for further discussion:
+
+43.  If an escape procedure is used to escape from the
+    dynamic context of the before or after thunks passed
+    to a dynamic-wind, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: discuss, discuss, escapes, returns, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &violation
+
+44.  If the first argument to eval is not syntactically
+    correct, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &syntax
+
+    Issue:  "must raise" eliminates the possibility of
+    a purely interpretive eval.
+
+46.  If the first argument to eval is a definition, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, must, must, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &eval-definition
+
+47.  If the argument to null-environment or scheme-report-environment
+    is not one of the exact integers 5 or 6, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, must, must, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &domain
+
+48.  If interaction-environment is called, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, abstain, must, may
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &nonstandard
+
+51.  If call-with-output-file or open-output-file is asked
+    to open a file that seems already to exist, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: may, discuss, must, discuss, must
+
+    Outcome: discuss
+             table
+
+    raise an exception with
+    condition type: &file-exists
+
+    Issue:  SRFI 79 gives options
+
+52.  If the string argument to call-with-input-file,
+    call-with-output-file, open-input-file, or
+    open-output-file is not a string of the form
+    that is used to name files on the executing
+    systems, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, should, must, may, discuss
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &domain
+
+59.  If read encounters an external representation of the
+    form #{<datum>*}, where <datum>* is a sequence of
+    valid external representations, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: should, discuss, must, discuss, discuss
+          should, must, must, may, abstain
+
+    Outcome: discuss
+             no majority
+
+    raise an exception with
+    condition type: &lexical
+
+    Issue:  Are implementations allowed any extensions to
+    the lexical syntax, or must programs explicitly import
+    from nonstandard libraries in order to use nonstandard
+    extensions?
+
+60.  If read encounters any other nonstandard external
+    representation, then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, must, must, must
+
+    Outcome: must
+
+    raise an exception with
+    condition type: &lexical
+
+61.  If the first argument to write, display, or write-char
+    cannot be output to its second argument (e.g. the first
+    argument to write-char is some weird Unicode character,
+    and the output port accepts only ASCII characters), then it
+    (must/should/may/might/returns/abstain/discuss)
+
+    Vote: must, must, abstain, discuss, must
+
+    Outcome: discuss
+
+    raise an exception with
+    condition type: &incompatible
+
+[end of message]
