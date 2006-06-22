@@ -1631,7 +1631,7 @@ returns the fixnum result of the following computation:
     (let* ((mask (fixnum-logical-shift-left 1 <var>fx2</var>)))
       (fixnum-if mask
                  (fixnum-logical-shift-left <var>fx3</var> <var>fx2</var>)
-                 <var>fx2</var>))
+                 <var>fx1</var>))
 </pre>
 If the second argument is negative, then an error is signalled,
 unless the implementation is running in unsafe mode, in which
@@ -1708,7 +1708,9 @@ returns the fixnum result of the following computation:
            (mask2 (fixnum-not
                    (fixnum-logical-shift-left -1 end)))
            (mask (fixnum-and mask1 mask2)))
-      (fixnum-if mask from to))
+      (fixnum-if mask
+                 (fixnum-logical-shift-left from start)
+                 to))
 </pre>
 If the second or third argument is negative,
 then an error is signalled,
@@ -1875,6 +1877,10 @@ returns the result of the following computation:
             (fixnum-copy-bit-field n field start end))
           n))
 </pre>
+If the second, third, or fourth argument is negative,
+then an error is signalled,
+unless the implementation is running in unsafe mode, in which
+case all bets are off.
 </DD>
 </DL>
 

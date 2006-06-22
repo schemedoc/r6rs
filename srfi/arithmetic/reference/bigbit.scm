@@ -138,18 +138,18 @@
 	       (bignum< n big-log-radix)))
       (let* ((n (x->fixnum n))
 	     (mask (fixnum-
-                    (fixnum-arithmetic-shift-left (r5rs->fixnum 1)
-                                                  (fixnum- log-radix n))
+                    (fixnum-arithmetic-shift (r5rs->fixnum 1)
+                                             (fixnum- log-radix n))
                     (r5rs->fixnum 1))))
 	(let recur ((mag mag)
 		    (low (r5rs->fixnum 0)))
 	  (if (zero-magnitude? mag)
 	      (adjoin-digit low zero-magnitude)
 	      ;; Split the low digit into left and right parts, and shift
-	      (let ((left (fixnum-arithmetic-shift-left
+	      (let ((left (fixnum-arithmetic-shift
                            (low-digit mag)
 			   (fixnum- n log-radix))) ;shift right
-		    (right (fixnum-arithmetic-shift-left
+		    (right (fixnum-arithmetic-shift
                             (fixnum-and (low-digit mag) mask)
 			    n)))
 		(adjoin-digit (fixnum-ior low right)
@@ -167,7 +167,7 @@
 	  (and (bignum? n)
 	       (bignum> n (bignum-negate big-log-radix))))
       (let* ((n (x->fixnum n))
-	     (mask (fixnum- (fixnum-arithmetic-shift-left
+	     (mask (fixnum- (fixnum-arithmetic-shift
                              (r5rs->fixnum 1)
                              (fixnum- (r5rs->fixnum 0) n))
                             (r5rs->fixnum 1))))
@@ -175,8 +175,8 @@
 	  (let ((low (low-digit mag))
 		(high (high-digits mag)))
 	    (adjoin-digit
-	     (fixnum-ior (fixnum-arithmetic-shift-left low n)
-                         (fixnum-arithmetic-shift-left
+	     (fixnum-ior (fixnum-arithmetic-shift low n)
+                         (fixnum-arithmetic-shift
                           (fixnum-and mask (low-digit high))
                           (fixnum+ n log-radix)))
 	     (if (zero-magnitude? high)
@@ -210,7 +210,7 @@
 	     (digit-recur (high-digits mag)
                           (bignum+ (x->bignum n) big-log-radix) carry)
 	     (let* ((n (x->fixnum n))
-		    (mask (fixnum- (fixnum-arithmetic-shift-left
+		    (mask (fixnum- (fixnum-arithmetic-shift
                                     (r5rs->fixnum 1)
                                     (fixnum- (r5rs->fixnum 0) n))
                                    (r5rs->fixnum 1))))
@@ -221,8 +221,8 @@
 			 (negate-low-digit high-digits carry))
 		     (lambda (high carry)
 		       (adjoin-digit
-			(fixnum-ior (fixnum-arithmetic-shift-left low n)
-                                    (fixnum-arithmetic-shift-left
+			(fixnum-ior (fixnum-arithmetic-shift low n)
+                                    (fixnum-arithmetic-shift
                                      (fixnum-and mask high)
                                      (fixnum+ n log-radix)))
 			(if (zero-magnitude? high-digits)

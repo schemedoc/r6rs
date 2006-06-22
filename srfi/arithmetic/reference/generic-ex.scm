@@ -332,9 +332,9 @@
              (r (fixnum- x (fixnum* s s))))
         (values s r))
       (let ((length/4
-             (fixnum-arithmetic-shift-left
+             (fixnum-arithmetic-shift-right
               (fixnum+ (exact-integer-length x) (r5rs->integer 1))
-              (r5rs->integer -2))))
+              (r5rs->integer 2))))
 	(call-with-values
 	    (lambda ()
 	      (exact-integer-sqrt

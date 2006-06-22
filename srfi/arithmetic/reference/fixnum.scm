@@ -52,7 +52,7 @@
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+'
 (begin
 
 ; SRFI 9
@@ -79,7 +79,7 @@
 
 )
 
-'
+;'
 (begin
 (define (really-make-fixnum x) x)
 (define (fixnum? x)
@@ -357,8 +357,34 @@
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define *fixnum-width* (make-fixnum *width*))
+(define *fixnum-min* (make-fixnum *low*))
+(define *fixnum-max* (make-fixnum *high*))
+
+(define (fixnum-width) *fixnum-width*)
+(define (least-fixnum) *fixnum-min*)
+(define (greatest-fixnum) *fixnum-max*)
+
+(define fixnum= (make-transitive-pred (make-fixnum*fixnum->val r5rs:=)))
+(define fixnum>= (make-transitive-pred (make-fixnum*fixnum->val r5rs:>=)))
+(define fixnum<= (make-transitive-pred (make-fixnum*fixnum->val r5rs:<=)))
+(define fixnum> (make-transitive-pred (make-fixnum*fixnum->val r5rs:>)))
+(define fixnum< (make-transitive-pred (make-fixnum*fixnum->val r5rs:<)))
+
+(define fixnum-zero? (make-fixnum->val r5rs:zero?))
+(define fixnum-positive? (make-fixnum->val r5rs:positive?))
+(define fixnum-negative? (make-fixnum->val r5rs:negative?))
+(define fixnum-even? (make-fixnum->val r5rs:even?))
+(define fixnum-odd? (make-fixnum->val r5rs:odd?))
+
+(define fixnum-min (make-min/max fixnum<))
+(define fixnum-max (make-min/max fixnum>))
+
 (define (fixnum+ . args)
   (reduce (make-fixnum 0) fixnum+/2 args))
+
+(define (fixnum* . args)
+  (reduce (make-fixnum 1) fixnum*/2 args))
 
 (define (fixnum- arg0 . args)
   (if (null? args)
@@ -367,9 +393,6 @@
       (do ((result arg0 (fixnum-/2 result (car args)))
            (args args (cdr args)))
           ((null? args) result))))
-
-(define (fixnum* . args)
-  (reduce (make-fixnum 1) fixnum*/2 args))
 
 ;FIXME: these should go away
 
@@ -380,6 +403,8 @@
 (define (fixnum-quotient+remainder a b)
   (values (fixnum-quotient a b)
 	  (fixnum-remainder a b)))
+
+;end of FIXME
 
 (define (fixnum-div x y)
   (call-with-values
@@ -402,29 +427,6 @@
   (call-with-values
    (lambda () (fixnum-div0+mod0 x y))
    (lambda (d m) m)))
-
-(define fixnum= (make-transitive-pred (make-fixnum*fixnum->val r5rs:=)))
-(define fixnum>= (make-transitive-pred (make-fixnum*fixnum->val r5rs:>=)))
-(define fixnum<= (make-transitive-pred (make-fixnum*fixnum->val r5rs:<=)))
-(define fixnum> (make-transitive-pred (make-fixnum*fixnum->val r5rs:>)))
-(define fixnum< (make-transitive-pred (make-fixnum*fixnum->val r5rs:<)))
-
-(define fixnum-zero? (make-fixnum->val r5rs:zero?))
-(define fixnum-positive? (make-fixnum->val r5rs:positive?))
-(define fixnum-negative? (make-fixnum->val r5rs:negative?))
-(define fixnum-even? (make-fixnum->val r5rs:even?))
-(define fixnum-odd? (make-fixnum->val r5rs:odd?))
-
-(define fixnum-min (make-min/max fixnum<))
-(define fixnum-max (make-min/max fixnum>))
-
-(define *fixnum-width* (make-fixnum *width*))
-(define *fixnum-min* (make-fixnum *low*))
-(define *fixnum-max* (make-fixnum *high*))
-
-(define (fixnum-width) *fixnum-width*)
-(define (least-fixnum) *fixnum-min*)
-(define (greatest-fixnum) *fixnum-max*)
 
 ; See r5rs.sch for definitions of
 ; arithmetic-shift, bitwise-and, bitwise-ior, bitwise-xor, 
@@ -452,44 +454,95 @@
 
 (define (fixnum-if x y z)
   (fixnum-ior (fixnum-and x y)
-              (fixnum-and (fixnum-not x) y)))
+              (fixnum-and (fixnum-not x) z)))
 
 (define fixnum-bit-count (make-fixnum->fixnum bit-count))
 
 (define (fixnum-length x)
-  (do ((result 0 (+ result 1))
+  (do ((result (make-fixnum 0) (fixnum+ result (make-fixnum 1)))
        (bits (if (fixnum-negative? x)
                  (fixnum- x)
                  x)
-             (fixnum-logical-shift-right bits 1)))
+             (fixnum-logical-shift-right bits (make-fixnum 1))))
       ((fixnum-zero? bits)
        result)))
 
-(define (fixnum-first-bit-set x) ...) ; FIXME
+(define (fixnum-first-bit-set x)
+  (if (fixnum-zero? (fixnum-and x (make-fixnum -1)))
+      (make-fixnum -1)
+      (let loop ((result (make-fixnum 0))
+                 (x x)
+                 (mask (make-fixnum 255))
+                 (increment (make-fixnum 8)))
+        (let ((y (fixnum-and x mask)))
+          (if (fixnum-zero? y)
+              (loop (fixnum+ result increment)
+                    (fixnum-logical-shift-right x increment)
+                    mask
+                    increment)
+              (if (fixnum= increment (make-fixnum 1))
+                  result
+                  (loop result x (make-fixnum 1) (make-fixnum 1))))))))
 
-(define (fixnum-bit-set? x y) ...) ;FIXME
+(define (fixnum-bit-set? x y)
+  (if (fixnum-negative? y)
+      (error "illegal second argument to fixnum-bit-set?" x y)
+      (not (fixnum-zero?
+            (fixnum-and x (fixnum-logical-shift-left (make-fixnum 1) y))))))
 
-(define (fixnum-copy-bit x y z) ...) ;FIXME
+(define (fixnum-copy-bit x y z)
+  (if (fixnum-negative? y)
+      (error "illegal second argument to fixnum-copy-bit" x y z)
+      (let* ((mask (fixnum-logical-shift-left (make-fixnum 1) y)))
+      (fixnum-if mask
+                 (fixnum-logical-shift-left z y)
+                 x))))
 
-(define (fixnum-bit-field x y z) ...) ;FIXME
+(define (fixnum-bit-field x y z)
+  (if (or (fixnum-negative? y) (fixnum-negative? z))
+      (error "illegal second or third argument to fixnum-bit-field" x y z)
+      (let* ((mask (fixnum-not
+                    (fixnum-logical-shift-left (make-fixnum -1) z))))
+        (fixnum-logical-shift-right (fixnum-and x mask)
+                                    y))))
 
-(define (fixnum-copy-bit-field x y z w) ...) ;FIXME
+(define (fixnum-copy-bit-field to start end from)
+  (if (or (fixnum-negative? start) (fixnum-negative? end))
+      (error "illegal second or third argument to fixnum-copy-bit-field"
+             to start end from)
+      (let* ((mask1 (fixnum-logical-shift-left (make-fixnum -1) start))
+             (mask2 (fixnum-not
+                     (fixnum-logical-shift-left (make-fixnum -1) end)))
+             (mask (fixnum-and mask1 mask2)))
+        (fixnum-if mask
+                   (fixnum-logical-shift-left from start)
+                   to))))
 
-(define fixnum-arithmetic-shift-left
-  (make-fixnum*fixnum->fixnum arithmetic-shift))
+(define (fixnum-arithmetic-shift x y)
+  (cond ((fixnum-positive? y)
+         (fixnum-arithmetic-shift-left x y))
+        ((fixnum-zero? y)
+         x)
+        (else
+         (fixnum-arithmetic-shift-right x (fixnum- y)))))
 
-(define (fixnum-logical-shift-left fixnum1 fixnum2)
-  (cond
-   ((fixnum-negative? fixnum2)
-    (error "negative shift argument to fixnum-logical-shift-left"
-           fixnum1 fixnum2))
-   ((fixnum-zero? fixnum2) fixnum1)
-   ((fixnum> fixnum2 *fixnum-width*) (make-fixnum 0))
-   (else
-    (fixnum-and/2 (fixnum-arithmetic-shift-left
-                   (fixnum-and/2 fixnum1 *fixnum-max*)
-                   fixnum2)
-                  *fixnum-max*))))
+(define (fixnum-arithmetic-shift-left x y)
+  (if (fixnum-negative? y)
+      (error "negative second argument to fixnum-arithmetic-shift-left" x y)
+      (do ((x x (fixnum+ x x))
+           (y y (fixnum- y (make-fixnum 1))))
+          ((or (fixnum-zero? x) (fixnum-zero? y))
+           x))))
+
+(define (fixnum-arithmetic-shift-right x y)
+  (if (fixnum-negative? y)
+      (error "negative second argument to fixnum-arithmetic-shift-left" x y)
+      (do ((x x (fixnum-div x (make-fixnum 2)))
+           (y y (fixnum- y (make-fixnum 1))))
+          ((or (fixnum-zero? x) (fixnum-zero? y))
+           x))))
+
+(define fixnum-logical-shift-left fixnum-arithmetic-shift-left)
 
 (define (fixnum-logical-shift-right fixnum1 fixnum2)
   (cond
@@ -498,16 +551,46 @@
            fixnum1 fixnum2))
    ((fixnum-zero? fixnum2) fixnum1)
    ((fixnum-positive? fixnum1)
-    (fixnum-arithmetic-shift-left fixnum1 (fixnum- fixnum2)))
+    (fixnum-arithmetic-shift-right fixnum1 fixnum2))
    ((fixnum> fixnum2 *fixnum-width*) (make-fixnum 0))
    (else
-    (fixnum-ior/2
-     (fixnum-arithmetic-shift-left (fixnum-and/2 fixnum1 *fixnum-max*)
-                                   (fixnum- fixnum2))
-     (fixnum-logical-shift-left (make-fixnum 1)
-                                (fixnum- *fixnum-width*
-                                         fixnum2
-                                         (make-fixnum 1)))))))
+    (fixnum-logical-shift-right
+     (fixnum-and (fixnum-arithmetic-shift-right fixnum1 (make-fixnum 1))
+                 (greatest-fixnum))
+     (fixnum- fixnum2 (make-fixnum 1))))))
+
+(define (fixnum-rotate-bit-field n start end count)
+  (if (or (fixnum-negative? start)
+          (fixnum-negative? end)
+          (fixnum-negative? count))
+      (error "illegal negative argument to fixnum-rotate-bit-field"
+             n start end count)
+      (let ((width (fixnum- end start)))
+        (if (fixnum-positive? width)
+            (let* ((count (fixnum-mod count width))
+                   (field0 (fixnum-bit-field n start end))
+                   (field1 (fixnum-logical-shift-left field0 count))
+                   (field2 (fixnum-logical-shift-right field0
+                                                       (fixnum- width count)))
+                   (field (fixnum-ior field1 field2)))
+              (fixnum-copy-bit-field n start end field))
+            n))))
+
+(define (fixnum-reverse-bit-field n start end)
+  (if (or (fixnum-negative? start)
+          (fixnum-negative? end))
+      (error "illegal negative argument to fixnum-reverse-bit-field"
+             n start end)
+      (let* ((width (fixnum- end start))
+             (field (fixnum-bit-field n start end)))
+        (do ((reversed (make-fixnum 0)
+                       (fixnum+ (fixnum+ reversed reversed)
+                                (fixnum-and field (make-fixnum 1))))
+             (field field (fixnum-logical-shift-right field (make-fixnum 1)))
+             (k width (fixnum- k (make-fixnum 1))))
+            ((fixnum-zero? k)
+             (fixnum-copy-bit-field n start end reversed))))))
+
 
 ; The fx operations signal an error instead of returning a value
 ; that might depend upon the fixnum precision.
@@ -605,6 +688,7 @@
 (define fxif fixnum-if)
 
 (define fxbit-count fixnum-bit-count)
+(define fxlength fixnum-length)
 (define fxfirst-bit-set fixnum-first-bit-set)
 
 (define (fxbit-set? x y)
@@ -655,5 +739,24 @@
       (error "negative second argument to fxarithmetic-shift-right" x y)
       (fxarithmetic-shift x (fixnum- y))))
 
+(define (fxrotate-bit-field n start end count)
+  (if (or (fixnum-negative? start)
+          (fixnum-negative? end)
+          (fixnum-negative? count)
+          (fixnum> start (fixnum-width))
+          (fixnum> end (fixnum-width))
+          (fixnum> count (fixnum- end start)))
+      (error "illegal argument to fxrotate-bit-field"
+             n start end count)
+      (fixnum-rotate-bit-field n start end count)))
 
+(define (fxreverse-bit-field n start end)
+  (if (or (fixnum-negative? start)
+          (fixnum-negative? end)
+          (fixnum> start (fixnum-width))
+          (fixnum> end (fixnum-width))
+          (fixnum> start end))
+      (error "illegal argument to fxreverse-bit-field"
+             n start end)
+      (fixnum-reverse-bit-field n start end)))
 

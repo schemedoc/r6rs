@@ -82,26 +82,26 @@
 
 	  fixnum-not
 	  fixnum-and fixnum-ior fixnum-xor
-         ;fixnum-if fixnum-bit-count fixnum-length
-         ;fixnum-first-bit-set fixnum-bit-set?
-         ;fixnum-copy-bit fixnum-bit-field fixnum-copy-bit-field
-         ;fixnum-arithmetic-shift
+          fixnum-if fixnum-bit-count fixnum-length
+          fixnum-first-bit-set fixnum-bit-set?
+          fixnum-copy-bit fixnum-bit-field fixnum-copy-bit-field
+          fixnum-arithmetic-shift
 	  fixnum-arithmetic-shift-left
-         ;fixnum-arithmetic-shift-right
-	 ;fixnum-logical-shift-left fixnum-logical-shift-right
-         ;fixnum-rotate-bit-field fixnum-reverse-bit-field
+          fixnum-arithmetic-shift-right
+	  fixnum-logical-shift-left fixnum-logical-shift-right
+          fixnum-rotate-bit-field fixnum-reverse-bit-field
 
           fx= fx> fx< fx>= fx<=
           fxzero? fxpositive? fxnegative? fxodd? fxeven?
           fxmax fxmin
           fx+ fx- fx*
           fxdiv+mod fxdiv fxmod fxdiv0+mod0 fxdiv0 fxmod0
-         ;fxif fxbit-count fxlength
-         ;fxfirst-bit-set fxbit-set?
-         ;fxcopy-bit fxbit-field fxcopy-bit-field
-         ;fxarithmetic-shift
-	 ;fxarithmetic-shift-left fxarithmetic-shift-right
-         ;fxrotate-bit-field fxreverse-bit-field
+          fxif fxbit-count fxlength
+          fxfirst-bit-set fxbit-set?
+          fxcopy-bit fxbit-field fxcopy-bit-field
+          fxarithmetic-shift
+	  fxarithmetic-shift-left fxarithmetic-shift-right
+          fxrotate-bit-field fxreverse-bit-field
 ))
 
 (define-structures ((fixnums fixnums-interface)

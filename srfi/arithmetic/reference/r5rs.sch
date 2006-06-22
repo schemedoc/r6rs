@@ -105,7 +105,7 @@
                     (i/2 (r5rs:quotient i1 2))
                     (j/2 (r5rs:quotient j1 2))
                     (hi (r5rs:* 2 (bitwise-xor i/2 j/2)))
-                    (lo (if (r5rs:= 1 (+ i0 j0)) 1 0)))
+                    (lo (if (r5rs:= 1 (r5rs:+ i0 j0)) 1 0)))
                (r5rs:+ hi lo))))
       (error "illegal argument to bitwise-xor" i j)))
 
