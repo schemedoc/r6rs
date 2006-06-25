@@ -117,8 +117,18 @@
 		   (var "k")))
        (dd
 	(p
-	 "Returns a newly allocated bytes object of " (var "k") " bytes, all of them "
-	 "0."))
+	 "Returns a newly allocated bytes object of " (var "k") " bytes.  "
+	 "The initial contents of the returned bytes object are unspecified."))
+
+       (dt
+	(prototype "make-u8-bytes"
+		   (var "k") (var "fill")))
+       (dd
+	(p
+	 "Returns a newly allocated bytes object of " (var "k") " bytes.  "
+	 (var "Fill") " must be an octet, i.e. an exact integer in the interval "
+	 "{0, ..., 255}, and is used as the initial value for the bytes of the "
+	 "bytes object."))
 
        (dt
 	(prototype "bytes-length"
@@ -141,7 +151,8 @@
 	 (var "K") " must be a valid index of " (var "bytes") ".")
 	(p
 	 (code "Bytes-u8-ref") " returns the byte at index " (var "k")
-	 " of " (var "bytes") ".")
+	 " of " (var "bytes") " as an octet, i.e. an exact integer in the interval "
+	 "{0, ..., 255}. ")
 	(p
 	 (code "Bytes-s8-ref") " returns the exact integer corresponding "
 	 "to the two's complement representation at index " (var "k")

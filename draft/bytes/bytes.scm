@@ -39,7 +39,10 @@
 (define bytes? u8vector?)
 
 (define (make-bytes k)
-  (make-u8vector k 0))
+  (make-u8vector k 0)) ; could be unspecified, but SRFI 66 won't let us express that
+
+(define (make-u8-bytes k fill)
+  (make-u8vector k fill))
 
 (define (bytes-length b)
   (u8vector-length b))
