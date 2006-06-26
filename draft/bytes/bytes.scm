@@ -38,11 +38,22 @@
 
 (define bytes? u8vector?)
 
-(define (make-bytes k)
-  (make-u8vector k 0)) ; could be unspecified, but SRFI 66 won't let us express that
-
-(define (make-u8-bytes k fill)
-  (make-u8vector k fill))
+(define (make-bytes n . rest)
+  (cond ((null? rest)
+         (make-u8vector n 0))
+        ((null? (cdr rest))
+         (let* ((fill (car rest))
+		(real-fill
+		 (cond
+		  ((or (< fill -128)
+		       (> fill 255))
+		   (error "invalid fill argument for make-bytes " fill))
+		  ((< fill 0)
+		   (s8->u8 fill))
+		  (else fill))))
+	   (make-u8vector n real-fill)))
+        (else
+	 (error "invalid number of arguments for make-bytes"))))
 
 (define (bytes-length b)
   (u8vector-length b))

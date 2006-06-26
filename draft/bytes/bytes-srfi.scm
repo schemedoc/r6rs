@@ -115,14 +115,22 @@
        (dt
 	(prototype "make-bytes"
 		   (var "k")))
+       (dt
+	(prototype "make-bytes"
+		   (var "k") (var "fill")))
        (dd
 	(p
-	 "Returns a newly allocated bytes object of " (var "k") " bytes.  "
-	 "The initial contents of the returned bytes object are unspecified."))
+	 "Returns a newly allocated bytes object of " (var "k") " bytes.")
+	(p
+	 "If the " (var "fill") " argument is missing, the initial contents "
+	 "of the returned bytes object are unspecified.")
+	(p
+	 "If the " (var "fill") " argument is present, it must be an exat integer "
+	 "in the interval {-128, 255}, which specifies the initial value for the octets "
+	 "of the bytes object: If " (var "fill") " is is positive, it is used directly, "
+	 "if it is negative, its two's complement "
+	 "representation as an octet in the interval {0, ..., 255} is used."))
 
-       (dt
-	(prototype "make-u8-bytes"
-		   (var "k") (var "fill")))
        (dd
 	(p
 	 "Returns a newly allocated bytes object of " (var "k") " bytes.  "

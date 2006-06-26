@@ -49,6 +49,13 @@
                (set! *failed-count* (+ *failed-count* 1)) ))
          (newline) )))))
 
+(let ((b0 (make-bytes 1 -128)))
+  (check (bytes-u8-ref b0 0) => 128))
+(let ((b0 (make-bytes 1 0)))
+  (check (bytes-u8-ref b0 0) => 0))
+(let ((b0 (make-bytes 1 255)))
+  (check (bytes-u8-ref b0 0) => 255))
+
 (define b1 (make-bytes 16))
 
 (check (bytes-length b1) => 16)
