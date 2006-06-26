@@ -365,7 +365,7 @@
 
   (check (fixnum-copy-bit-field n85 n3 n15 (greatest-fixnum)) ==> 32765)
   (check (fixnum-copy-bit-field n-1 n1 (greatest-fixnum) (least-fixnum)) ==> 1)
-  (check (fixnum-copy-bit-field n170 (greatest-fixnum) (greatest-fixnum) n)
+  (check (fixnum-copy-bit-field n170 (greatest-fixnum) (greatest-fixnum) n255)
          ==> 170)
   (check (numerical fixnum-copy-bit-field #b1101101010 0 4 0)
          ==> #b1101100000)

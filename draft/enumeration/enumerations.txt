@@ -1,118 +1,79 @@
-Enumeration Types
-=================
+Here is yet another draft of the enumerations proposal.
 
-Enumeration types are subtypes of Scheme's standard symbol
-types.  Each enumeration type represents a fixed set of
-symbols, which are specified when the enumeration type is
-defined.
+Highlights:
 
-The syntax for defining an enumerated type is:
+- Enumerated values are symbols.
 
-(define-enum-type <type-name>
-  <elements-name>
-  <predicate-name>
-  <index-accessor>
-  (<symbol> ...))
+- Everything can be done within the procedural interface.
 
-This defines a macro <type-name> and three procedures:
-<elements-name>, <predicate-name>, and <index-accessor>.  <elements-name>
-will be a procedure of no arguments that returns symbols that comprise
-the enumeration type, in the same order as they were specified.
-<predicate-name> will take an arbitrary object, returning true if and
-only if the object is one of the symbols returned by <type-name>.
-<index-accessor> takes an arbitrary object, returning false if the
-object is not one of the symbols returned by <type-name>; if the
-object is one of the symbols returned by <type-name>, then
-<index-accessor> returns its 0-origin index within the vector returned
-by <type-name>.
+- There is also one syntactic form, which is used to define
+  a finite ordered (enumerated) universe of symbols.
 
-<type-name> will be a macro of one operand, which must be one of the
-enumeration symbols.  It will return the corresponding symbol.  If the
-operand is not a symbol or if the symbol is not a member of the
-enumeration type, an expansion-time exception will be raised.
+- The representation of a set of symbols is not specified by
+  this proposal.
 
-The <type-name> procedure also serves as the canonical
-representation of the enumerated type.
+                                * * *
 
-Example:
+Procedural interface.
 
-Example:
+ (make-enumeration <symbol-list>) => enum-set
 
-(define-enum-type color
-  colors
-  color?
-  color-index
-  (black white purple maroon))
+`make-enumeration' takes an arbitrary list of symbols and
+returns the universe consisting of those symbols, considered
+as a subset of itself.  The canonical ordering of the symbols
+in that universe is the same as the ordering of the first
+appearance of each symbol in the list that was passed to
+make-enumeration.
 
-(colors)                           => #(black white purple maroon)
-(color? 'black)                    => #t
-(color? 'gold)                     => #f
-(color black)                      => 'black
-(color purpel)                     => <expansion-time error>
-(color-index (color purple))       => 2
+Let enum-set range over the finite sets of symbols that can
+be defined using make-enumeration.  Then we have the following
+additional procedures:
 
-Enumeration-Set Types
-=====================
+ (enum-set-universe enum-set) => enum-set
+ (enum-set-indexer enum-set) => procedure
+ (enum-set-constructor enum-set) => procedure
+ (enum-set->list enum-set) => list of symbols
+ (enum-set-member? symbol enum-set) => boolean
+ (enum-set-subset? enum-set enum-set) => boolean
+ (enum-set=? enum-set enum-set) => boolean
+ (enum-set-union enum-set enum-set) => enum-set
+ (enum-set-intersection enum-set enum-set) => enum-set
+ (enum-set-difference enum-set enum-set)
+ (enum-set-complement enum-set) => enum-set
+ (enum-set-projection enum-set enum-set) => enum-set
 
-Enumeration-set types work naturally with the enumeration types.
-The syntax for defining such a type is:
+`enum-set-universe' returns the set of all symbols that comprise
+the universe of its argument; (enum-set-universe x) is equivalent
+to (enum-set-complement (enum-set-difference x x)).
 
-(define-enum-set-type <constructor-syntax> <constructor> <predicate>
-  <enum-type> <elements> <element-index>)
+`enum-set-indexer' returns a unary predicate that, given a symbol
+that is in the universe, returns its 0-origin index within the
+canonical ordering of the symbols in the universe; given a value
+not in the universe, the unary predicate returns #f.
+enum-set-indexer could be defined as follows (untested):
 
-where <constructor-syntax> is an identifier that will be bound to a
-constructor macro, <constructor> is an identifier that will be bound
-to a constructor procedure, and <predicate> is an identifier that will
-be bound to a predicate for the enumeration-set type being defined.
+    (define (enum-set-indexer set)
+      (let* ((symbols (enum-set->list (enum-set-universe set)))
+             (cardinality (length symbols)))
+        (lambda (x)
+          (let ((probe (memq x symbols)))
+            (if probe
+                (- cardinality (length probe))
+                #f)))))
 
-<enum-type>, <elements>, and <element-index> define the enumeration
-type upon which the enumeration-set-type is based.  <enum-type> must
-be a macro corresponding to the <type-name> macro defined by
-`define-enum-type', i.e. take a symbol operand and return the
-corresponding enumeration member.  <elements> must be a thunk
-returning a vector of the elements of the enumeration, and
-<element-index> must be a procedure accepting an enumeration element
-and returning a corresponding index.
+`enum-set-constructor' returns a unary procedure that, given a
+list of symbols that belong to the universe, returns the subset
+of that universe that contains exactly the symbols in the list.
+If any value in the list is not a symbol that belongs to the
+universe, then the unary procedure must raise a &domain
+exception.
 
-The <constructor-syntax> macro takes any number of symbol operands,
-each of which must identify a member of the enumeration via the
-<enum-type> macro.  The <constructor> procedure will accept a list of
-enumeration elements and return the corresponding enumeration set.
-The <predicate> procedure will accept any object and return #t if the
-object is an enumeration set of the type being defined, #f otherwise.
+`enum-set->list' returns a list of the symbols that belong to
+its argument, in the canonical order that was specified when
+define-enumeration was used to define the enumeration type.
 
-The representation of an enumeration set is not specified
-by this proposal.
-
-Given the enumerated type `color', for example, we can define
-sets of color:
-
-(define-enum-set-type color-set make-color-set color-set?
-  color colors color-index)
-
-(color-set? (color-set black white))                             => #t
-(color-set? (make-color-set (list (color black) (color white)))) => #t
-(color-set? '(black white))                                      => #f
-
-(enum-set-universe enum-set)
-(enum-set->list enum-set)
-(enum-set-member? symbol enum-set)
-(enum-set-subset? enum-set enum-set)
-(enum-set=? enum-set enum-set) => boolean
-(enum-set-union enum-set enum-set) => enum-set
-(enum-set-intersection enum-set enum-set => enum-set
-(enum-set-difference enum-set enum-set)
-(enum-set-complement enum-set) => enum-set
-
-`enum-set-universe' returns the thunk used in the position of
-<elements> in the `define-enum-set-type' form; that thunk returns a
-vector of the members of the enumeration type, in order.
-
-`enum-set->list' returns a list of the symbols that belong to an
-enumeration set.
-
-`enum-set-member?' returns true if and only if its first argument is
-an element of its second argument.
+`enum-set-member?' returns true if and only if its first argument
+is an element of its second argument.
 
 `enum-set-subset?' returns true if and only if the universe of its
 first argument is a subset of the universe of its second argument
@@ -121,7 +82,9 @@ argument is a member of its second.
 
 `enum-set=?' returns true if and only if its first argument is a
 subset of its second and vice versa, as determined by the
-enum-set-subset? procedure.
+enum-set-subset? procedure.  This implies that the universes of
+the two sets are equal as sets of symbols, but does not imply
+that they are equal as enumeration types.
 
 `enum-set-union' takes two enumeration sets that share the same
 enumeration type as universe, and returns their union.
@@ -135,33 +98,97 @@ enumeration type as universe, and returns their difference.
 `enum-set-complement' takes an enumeration set and returns
 its complement with respect to its universe.
 
-((enum-set-universe (color-set))) => #(black white purple maroon)
+`enum-set-projection' projects its first argument into the
+universe of its second, dropping any elements of its first
+argument that do not belong to the universe of its second.
+(If its first argument is a subset of the universe of its
+second, then no elements are dropped, and the injection is
+returned.)
 
-(enum-set->list (color-set))      => ()
+Examples:
 
-(color-set purpel)                => <expansion-time error>
+(define colors
+  (make-enumeration '(black white purple maroon)))
 
-(enum-set-member? 'white (make-color-set '(white)))  =>  #t
+(define color-index (enum-set-indexer colors))
+(define make-color-set (enum-set-constructor colors))
 
-(enum-set-subset? (color-set white)
-                  (enum-set-complement (color-set black))) => #t
+(enum-set=?
+ colors
+ (enum-set-universe colors))       => #t
 
-(enum-set=? (color-set black maroon)
-            (enum-set-complement
-             (color-set white purple)))  =>  #t
+(color-index 'purple)              => 2
 
-(define-enum-type other-color
-  other-colors
-  other-color?
-  other-color-index
-  (black white green red blue purple maroon))
+(enum-set->list
+ (make-color-set
+  'black 'purple))                 => (black purple)
 
-(define-enum-set-type other-color-set make-other-color-set other-color-set?
-  other-color other-colors other-color-index)
+(enum-set-member? 'white
+ (make-color-set 'white 'maroon))  => #t
 
-(enum-set-subset? (color-set white) (other-color-set black white red green))
-  => #t
+(enum-set-subset?
+ (enum-set-complement (color))
+ (color))                          => #t
 
-(enum-set=? (color-set black white) (other-color-set black white))
-  => #t
+(enum-set=?
+ (make-color-set 'black 'maroon)
+ (enum-set-complement
+  (make-color-set 'white 'purple))) => #t
 
+(enum-set-subset?
+ (make-color-set 'white)
+ (make-enumeration
+  '(black white red green)))       => #t
+
+(enum-set=?
+  (make-color-set
+   'black 'white)
+  ((enum-set-constructor (make-enumeration '(black white red green)))
+   'black 'white))                 => #t
+
+(enum-set->list
+ (enum-set-projection (make-enumeration '(black white red green))
+                      colors))     => (black white)
+
+                                * * *
+
+Explicit-naming syntactic interface:
+
+(define-enumeration <type-name> ; Mike's symbol-checking macro
+  (<symbol> ...)                ; the symbols in this universe
+  <constructor-syntax>)         ; macro that constructs sets
+
+where <type-name> is an identifier that will be bound to an
+uninteresting macro; <symbol> ... are the symbols that form the
+universe of the enumeration (in order); <constructor-syntax> is
+an identifier that will be bound to a macro that, given any
+finite sequence of the <symbol> ..., possibly with duplicates,
+expands into an expression that evaluates to the set of those
+symbols.
+
+(<type-name> <symbol>) checks at macro-expansion time whether
+<symbol> is in the universe associated with <type-name>.  If
+it is, then (<type-name> <symbol>) is equivalent to '<symbol>.
+If it isn't, then an exception must be raised at macro expansion
+time, whatever that means.
+
+(<constructor-syntax> <symbol> ...) checks at macro-expansion
+time whether every <symbol> ... is in the universe associated
+with <type-name>.  If one or more isn't, then an exception
+must be raised at macro expansion time, whatever that means.
+Otherwise (<constructor-syntax> <symbol> ...) is equivalent to
+((enum-set-constructor (<constructor-syntax>)) (list '<symbol> ...)).
+
+Examples:
+
+(define-enumeration color
+  '(black white purple maroon)
+  color-set)
+
+(color black)                      => black
+(color purpel)                     => <expansion-time error>
+(enum-set->list (color-set))       => ()
+(enum-set->list
+ (color-set maroon white))         => (white maroon)
+
+[end of proposal]
