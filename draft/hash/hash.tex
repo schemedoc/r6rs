@@ -1,4 +1,5 @@
-\documentclass[twoside,twocolumn]{algol60}
+\documentclass[twoside]{algol60}
+%\documentclass[twoside,twocolumn]{algol60}
 
 \usepackage{verbatim}
 
@@ -19,34 +20,28 @@
 % FIXME \mainindex{hashtable}
 
 \begin{entry}{%
-\proto{make-eq-hash-table}{}{}
-\proto{make-eq-hash-table}{ \var{k}}}
+\proto{make-eq-hash-table}{}{}}
 
 Returns a newly allocated hash table that accepts arbitrary objects 
-as keys, and compares those keys with eq?  If an argument is given, 
-then the initial capacity of the hash table is set to \var{k} elements.
+as keys, and compares those keys with eq?  
 
 \end{entry}
 
 \begin{entry}{%
-\proto{make-eqv-hash-table}{}{}
-\proto{make-eqv-hash-table}{ \var{k}}}
+\proto{make-eqv-hash-table}{}{}}
 
 Returns a newly allocated hash table that accepts arbitrary objects 
-as keys, and compares those keys with eqv?  If an argument is given, 
-then the initial capacity of the hash table is set to \var{k} elements.
+as keys, and compares those keys with eqv?
 
 \end{entry}
 
 \begin{entry}{%
-\proto{make-hash-table}{ \vari{procedure} \varii{procedure}}{}
-\proto{make-hash-table}{ \vari{procedure} \varii{procedure} \var{k}}}
+\proto{make-hash-table}{ \vari{procedure} \varii{procedure}}{}}
 
 Returns a newly allocated mutable hash table using \vari{procedure} 
 as the hash function and \varii{procedure} as the procedure used to 
 compare keys.  The hash function must accept a key and return a 
-non-negative exact integer.  If a third argument is given, then the 
-initial capacity of the hash table is set to \var{k} elements.
+non-negative exact integer.
 
 \end{entry}
 
@@ -135,7 +130,8 @@ initial capacity of the hash table is set to \var{k} elements.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-fold}{ \var{hash-table} \var{procedure} \var{init}}}
-For every association in hash-table, calls procedure with three arguments: the association key, the association value, and an accumulated value. The accumulated value is init for the first invocation of procedure, and for subsequent invocations of procedure, the return value of the previous invocation of procedure. The return value of hash-table-fold is the value of the last invocation of procedure.
+For every association in hash-table, calls procedure with three arguments: the association key, the association value, and an accumulated value. The accumulated value is \var{init} for the first invocation of procedure, and for subsequent invocations of procedure, the return value of the previous invocation of procedure. The return value of hash-table-fold is the value of the last invocation of procedure. If any side effect is performed on the hash table while a hash-table-fold operation is in progress, then the behavior of hash-table-fold is unspecified.
+
 \end{entry}
 
 \begin{entry}{\proto{hash-table-copy}{ \var{hash-table}}}
@@ -147,7 +143,7 @@ Removes all associations from hash-table.  Returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-for-each}{ \var{procedure} \var{hash-table}}}
-The procedure must accept two arguments, a key and the value associated with that key. The procedure is called once for each key-value association in hash-table. The order of these calls is indeterminate.
+The procedure must accept two arguments, a key and the value associated with that key. The procedure is called once for each key-value association in hash-table. The order of these calls is indeterminate. If any side effect is performed on the hash table while a hash-table-fold operation is in progress, then the behavior of hash-table-fold is unspecified.
 Equivalent to: 
 \begin{scheme}
 (hash-table-fold hash-table 
@@ -192,8 +188,7 @@ Returns the equivalence predicate used by \var{hash-table} to compare keys.  For
 \end{entry}
 
 \begin{entry}{\proto{hash-table-hash-function}{ \var{hash-table}}}
-Returns the hash function used by hash-table.  For hash tables created by {\cf make-eq-hash-table} or {\cf make-eqv-hash-table}, the unspecified value is returned.
-%FIXME: exception instead of unspecified?
+Returns the hash function used by hash-table.  For hash tables created by {\cf make-eq-hash-table} or {\cf make-eqv-hash-table}, \tt{\#f} is returned.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-mutable?}{ \var{hash-table}}}
@@ -203,15 +198,15 @@ Returns mutability status of hash-table.
 \section{Hash functions}
 
 \begin{entry}{\proto{equal-hash}{ \var{obj}}}
-Returns an integer hash value for \var{obj}, based on its contents.
+Returns an integer hash value for \var{obj}, based on its structure and current contents.
 \end{entry}
 
 \begin{entry}{\proto{string-hash}{ \var{string}}}
-Returns an integer hash value for \var{string}, based on its contents.
+Returns an integer hash value for \var{string}, based on its current contents.
 \end{entry}
 
 \begin{entry}{\proto{string-ci-hash}{ \var{string}}}
-Returns an integer hash value for \var{string} based on its contents, ignoring case.
+Returns an integer hash value for \var{string} based on its current contents, ignoring case.
 \end{entry}
 
 \begin{entry}{\proto{symbol-hash}{ \var{string}}}
