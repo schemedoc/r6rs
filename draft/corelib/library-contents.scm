@@ -757,13 +757,13 @@
  ("r5rs-i/o"
   (current-input-port procedure derived)
   (current-output-port procedure derived)
+  (display procedure derived)
   (read procedure derived)
   (with-input-from-file procedure derived)
   (with-output-to-file procedure derived)
   (write procedure derived))
  ("unallocated"
   (case-lambda procedure derived)
-  (display procedure derived)
   (eof-object procedure derived)
   (eof-object? procedure derived)
   (unless procedure derived)
