@@ -23,7 +23,7 @@
 \proto{make-eq-hash-table}{}{}}
 
 Returns a newly allocated hash table that accepts arbitrary objects 
-as keys, and compares those keys with eq?  
+as keys, and compares those keys with eq?
 
 \end{entry}
 
@@ -47,60 +47,61 @@ non-negative exact integer.
 
 \subsection{Procedures}
 
-\begin{entry}{\proto{hash-table?}{ \var{hash-table}}}
-    Returns \schtrue{} if \var{hash-table} was created by one of the hash table constructors, otherwise returns \schfalse.
+\begin{entry}{%
+\proto{hash-table?}{ \var{hash-table}}}
+Returns \schtrue{} if \var{hash-table} was created by one of the hash table constructors, otherwise returns \schfalse.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-size}{ \var{hash-table}}}
-    Returns the number of keys contained in \var{hash-table} as an exact integer.
+Returns the number of keys contained in \var{hash-table} as an exact integer.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-ref}{ \var{hash-table} \var{key}}}
-    Returns the value in the hash-table associated with \var{key}.  If the hash table does not contain \var{key}, an exception is raised. [TODO: hash table exception types]
+Returns the value in the hash-table associated with \var{key}.  If the hash table does not contain \var{key}, an exception is raised. [TODO: hash table exception types]
 \end{entry}
 
 \begin{entry}{\proto{hash-table-ref/default}{ \var{hash-table} \var{key} \var{default}}}
-    Returns the value in the hash-table associated with the \var{key}.  If the hash table does not contain \var{key}, returns \var{default}.
+Returns the value in the hash-table associated with the \var{key}.  If the hash table does not contain \var{key}, returns \var{default}.
 \end{entry}
 
-\begin{entry}{\proto{hash-table-ref/call}{ \var{hash-table} \var{key f}}}
-    Returns the value associated with key in the hash-table if the hash table contains key; otherwise tail-calls f on key.
+\begin{entry}{\proto{hash-table-ref/call}{ \var{hash-table} \var{key} \var{f}}}
+Returns the value associated with \var{key} in \var{hash-table} if the hash table contains \var{key}; otherwise tail-calls \var{f} on key.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-ref/thunk}{ \var{hash-table} \var{key} \var{thunk}}}
-    Returns the value associated with key in the hash-table if the hash table contains key; otherwise tail-calls thunk.
+Returns the value associated with \var{key} in \var{hash-table} if the hash table contains \var{key}; otherwise tail-calls \var{thunk}.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-get}{ \var{hash-table} \var{key}}}
-    Equivalent to \begin{scheme}(hash-table-ref/default hash-table key \schfalse)\end{scheme}
+Equivalent to: \begin{scheme}(hash-table-ref/default hash-table key \schfalse)\end{scheme}
 \end{entry}
 
 \begin{entry}{\proto{hash-table-set!}{ \var{hash-table} \var{key} \var{value}}}
-    Changes the hash-table to associate key with value, replacing any existing association for key.  Returns the unspecified value.
+Changes \var{hash-table} to associate \var{key} with value, replacing any existing association for \var{key}. Returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-delete!}{ \var{hash-table} \var{key}}}
-    Removes any association for key within the hash-table.
+Removes any association for \var{key} within \var{hash-table}.  Returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-contains?}{ \var{hash-table} \var{key}}}
-    Returns true iff the hash table contains an entry for key.
+Returns \schtrue{} if \var{hash-table} contains an entry for \var{key}, otherwise returns \schfalse{}.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-update!}{ \var{hash-table} \var{procedure}}}
-    Equivalent to: 
+Equivalent to:
 \begin{scheme}
-(hash-table-set! 
+(hash-table-set!
  hash-table key
  (procedure (hash-table-ref hash-table key)))
 \end{scheme}
-    Raises an exception if the hash table does not contain an entry for key.
+Raises an exception if \var{hash-table} does not contain an entry for \var{key}.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-update!/default}{ \var{hash-table}
                                                   \var{procedure}
                                                   \var{default}}}
-    Equivalent to, but potentially more efficient than:
+Equivalent to, but potentially more efficient than:
 \begin{scheme}
 (hash-table-set!
  hash-table key
@@ -110,7 +111,7 @@ non-negative exact integer.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-update!/thunk}{ \var{hash-table} \var{procedure} \var{thunk}}}
-    Equivalent to, but potentially more efficient than:
+Equivalent to, but potentially more efficient than:
 \begin{scheme}
 (hash-table-set! 
  hash-table key
@@ -120,9 +121,9 @@ non-negative exact integer.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-update!/call}{ \var{hash-table} \var{procedure} \var{f}}}
-    Equivalent to, but potentially more efficient than:
+Equivalent to, but potentially more efficient than:
 \begin{scheme}
-(hash-table-set! 
+(hash-table-set!
  hash-table key
  (procedure (hash-table-ref/call 
              hash-table key f)))
@@ -130,21 +131,22 @@ non-negative exact integer.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-fold}{ \var{hash-table} \var{procedure} \var{init}}}
-For every association in hash-table, calls procedure with three arguments: the association key, the association value, and an accumulated value. The accumulated value is \var{init} for the first invocation of procedure, and for subsequent invocations of procedure, the return value of the previous invocation of procedure. The return value of hash-table-fold is the value of the last invocation of procedure. If any side effect is performed on the hash table while a hash-table-fold operation is in progress, then the behavior of hash-table-fold is unspecified.
+For every association in \var{hash-table}, calls \var{procedure} with three arguments: the association key, the association value, and an accumulated value. The accumulated value is \var{init} for the first invocation of \var{procedure}, and for subsequent invocations of \var{procedure}, the return value of the previous invocation of \var{procedure}. The return value of {\cf hash-table-fold} is the value of the last invocation of procedure. If any side effect is performed on the hash table while a {\cf hash-table-fold} operation is in progress, then the behavior of {\cf hash-table-fold} is unspecified.
 
 \end{entry}
 
 \begin{entry}{\proto{hash-table-copy}{ \var{hash-table}}}
-Returns a copy of hash-table.
+Returns a copy of \var{hash-table}.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-clear!}{ \var{hash-table}}}
-Removes all associations from hash-table.  Returns the unspecified value.
+Removes all associations from \var{hash-table}.  Returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-for-each}{ \var{procedure} \var{hash-table}}}
-The procedure must accept two arguments, a key and the value associated with that key. The procedure is called once for each key-value association in hash-table. The order of these calls is indeterminate. If any side effect is performed on the hash table while a hash-table-fold operation is in progress, then the behavior of hash-table-fold is unspecified.
-Equivalent to: 
+For every association in \var{hash-table}, calls \var{procedure} with two arguments: the association key and the association value. The \var{procedure} is called once for each association in hash-table. The order of these calls is indeterminate. If any side effect is performed on the hash table while a {\cf hash-table-for-each} operation is in progress, then the behavior of {\cf hash-table-for-each} is unspecified. The return value of {\cf hash-table-for-each} is the unspecified value.
+
+Equivalent to:
 \begin{scheme}
 (hash-table-fold hash-table 
                  (lambda (k v a)
@@ -188,11 +190,11 @@ Returns the equivalence predicate used by \var{hash-table} to compare keys.  For
 \end{entry}
 
 \begin{entry}{\proto{hash-table-hash-function}{ \var{hash-table}}}
-Returns the hash function used by hash-table.  For hash tables created by {\cf make-eq-hash-table} or {\cf make-eqv-hash-table}, \tt{\#f} is returned.
+Returns the hash function used by hash-table.  For hash tables created by {\cf make-eq-hash-table} or {\cf make-eqv-hash-table}, \schfalse{} is returned.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-mutable?}{ \var{hash-table}}}
-Returns mutability status of hash-table.
+Returns \schtrue{} if \var{hash-table} is mutable, \schfalse{} otherwise.
 \end{entry}
 
 \section{Hash functions}
@@ -209,8 +211,8 @@ Returns an integer hash value for \var{string}, based on its current contents.
 Returns an integer hash value for \var{string} based on its current contents, ignoring case.
 \end{entry}
 
-\begin{entry}{\proto{symbol-hash}{ \var{string}}}
-Returns an integer hash value for symbol, based on its print name.
+\begin{entry}{\proto{symbol-hash}{ \var{symbol}}}
+Returns an integer hash value for \var{symbol}.
 \end{entry}
 
 \section{Issues}
@@ -237,7 +239,7 @@ There is a potential problem with the higher-order procedures, if a procedure ar
 This has been omitted because a single appropriate specification is not obvious, and any reasonable specification can easily be implemented in terms of {\cf hash-table-fold}.
 
 \subsection{Names}
-Should the type name be {\tt hash-table}, {\tt hashtable}, or something else?
+Should the type name be {\cf hash-table}, {\cf hashtable}, or something else?
 
 
 % FIXME References: Larceny; SRFI 69; MIT Scheme; Feeley's proposal; Serrano's proposal
