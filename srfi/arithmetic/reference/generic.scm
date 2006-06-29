@@ -248,7 +248,7 @@
   (cond
    ((fixnum-negative? x)
     (if (fixnum= x (least-fixnum))
-        x ; FIXME: was *minus-least-fixnum*
+        *minus-least-fixnum*
 	(fixnum- x)))
    (else x)))
 

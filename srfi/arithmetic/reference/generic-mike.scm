@@ -162,7 +162,7 @@
   (cond
    ((fixnum-negative? x)
     (if (fixnum= x (least-fixnum))
-        x; FIXME: was *minus-least-fixnum*
+        *minus-least-fixnum*
 	(fixnum- x)))
    (else x)))
 
@@ -371,19 +371,19 @@
 ; The revised SRFI 77 does not specify these, and their names
 ; are in conflict with procedures defined in r5rs.sch.
 
-;(define-unary bitwise-not fixnum-not bignum-bitwise-not
+;(define-unary bitwise-not fixnum-not bignum-not
 ;  (make-typo-op/1 bitwise-not 'integer)
 ;  (make-typo-op/1 bitwise-not 'integer))
 
-;(define-binary bitwise-ior/2 fixnum-ior bignum-bitwise-ior
+;(define-binary bitwise-ior/2 fixnum-ior bignum-ior
 ;  (make-typo-op/2 bitwise-ior/2 'integer)
 ;  (make-typo-op/2 bitwise-ior/2 'integer))
 
-;(define-binary bitwise-xor/2 fixnum-xor bignum-bitwise-xor
+;(define-binary bitwise-xor/2 fixnum-xor bignum-xor
 ;  (make-typo-op/2 bitwise-xor/2 'integer)
 ;  (make-typo-op/2 bitwise-xor/2 'integer))
 
-;(define-binary bitwise-and/2 fixnum-and bignum-bitwise-and
+;(define-binary bitwise-and/2 fixnum-and bignum-and
 ;  (make-typo-op/2 bitwise-and/2 'integer)
 ;  (make-typo-op/2 bitwise-and/2 'integer))
 

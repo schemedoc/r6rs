@@ -20,14 +20,9 @@
 ;
 ; The fixnum range is a half-open two's complement range.
 ;
-; To use a smaller or larger range of fixnums, just change
-; the following constant to some other positive even integer.
-; It can't be too small, though, because the precision of bignums
-; is likely to be about (* 1/4 *width* (expt 2 *width*)) bits.
+; *width* is defined in custom.scm
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define *width* 24)
 
 (define *high*
   (let* ((i (r5rs:expt 2 (r5rs:- *width* 2)))
@@ -52,22 +47,17 @@
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-'
-(begin
-
 ; SRFI 9
 ;
 ; This defines :fixnum to be a record type with
-;     really-make-fixnum -- a unary constructor of instances
-;     fixnum? -- a predicate true only of instances
-;     fixnum-rep -- an accessor for the representative field
+;     really-make-fixnum-record -- a unary constructor of instances
+;     fixnum-record?            -- a predicate true only of instances
+;     fixnum-record-rep         -- an accessor for the representative field
 
 (define-record-type :fixnum
-  (really-make-fixnum representative)
-  fixnum?
-  (representative fixnum-rep))
-
-(define fixnum->r5rs fixnum-rep)
+  (really-make-fixnum-record representative)
+  fixnum-record?
+  (representative fixnum-record-rep))
 
 ; Scheme 48 extension; comment out if not available
 ; (For portability, the r5rs.sch file defines
@@ -75,22 +65,32 @@
 
 (define-record-discloser :fixnum
   (lambda (r)
-    (list 'fixnum (fixnum-rep r))))
+    (list 'fixnum (fixnum-record-rep r))))
 
-)
+; Here are the definitions that matter.
 
-;'
-(begin
-(define (really-make-fixnum x) x)
-(define (fixnum? x)
-  (and (r5rs:number? x)
-       (r5rs:exact? x)
-       (r5rs:integer? x)
-       (r5rs:<= *low* x *high*)))
-(define (fixnum-rep x)
-  (if (fixnum? x) x (error "bad argument to fixnum-rep" x)))
+(define really-make-fixnum
+  (if *fixnums-are-records*
+      really-make-fixnum-record
+      (lambda (x) x)))
+
+(define fixnum?
+  (if *fixnums-are-records*
+      fixnum-record?
+      (lambda (x)
+        (and (r5rs:number? x)
+             (r5rs:exact? x)
+             (r5rs:integer? x)
+             (r5rs:<= *low* x *high*)))))
+
+(define fixnum-rep
+  (if *fixnums-are-records*
+      fixnum-record-rep
+      (lambda (x)
+        (if (fixnum? x) x (error "bad argument to fixnum-rep" x)))))
+
 (define fixnum->r5rs fixnum-rep)
-)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -725,9 +725,11 @@
           (fixnum> y (fixnum-width)))
       (error "illegal second argument to fxarithmetic-shift" x y)
       (let ((z (fixnum-arithmetic-shift x y)))
-        (if (fixnum= x (fixnum-arithmetic-shift z (fixnum- y)))
-            z
-            (error "fixnum overflow in fxarithmetic-shift" x y)))))
+        (cond ((fixnum-negative? y) z)
+              ((fixnum= x (fixnum-arithmetic-shift z (fixnum- y)))
+               z)
+              (else
+               (error "fixnum overflow in fxarithmetic-shift" x y))))))
 
 (define (fxarithmetic-shift-left x y)
   (if (fixnum< y (make-fixnum 0))

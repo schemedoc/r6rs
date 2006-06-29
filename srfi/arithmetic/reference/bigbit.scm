@@ -5,22 +5,22 @@
 
 ; Bitwise logical operators on bignums.
 
-(define (bignum-bitwise-not m)
+(define (bignum-not m)
   ;; (integer+ (integer-negate m) -1)
   (bignum- (r5rs->bignum -1) m))
 
-(define (bignum-bitwise-and m n)
+(define (bignum-and m n)
   (if (or (bignum-zero? m) (bignum-zero? n))
       (r5rs->fixnum 0)
       (bignum-bitwise-op fixnum-and m n)))
 
-(define (bignum-bitwise-ior m n)
+(define (bignum-ior m n)
   (cond ((bignum-zero? m) n)
 	((bignum-zero? n) m)
 	(else
 	 (bignum-bitwise-op fixnum-ior m n))))
 
-(define (bignum-bitwise-xor m n)
+(define (bignum-xor m n)
   (cond ((bignum-zero? m) n)
 	((bignum-zero? n) m)
 	(else
@@ -128,6 +128,9 @@
 		       (shift-right-pos-magnitude (bignum-magnitude m) n))
 		      (else
 		       (shift-right-neg-magnitude (bignum-magnitude m) n)))))
+
+(define (bignum-arithmetic-shift-right m n)
+  (bignum-arithmetic-shift-left m (bignum-negate n)))
 
 (define big-log-radix (fixnum->bignum log-radix))
 
@@ -237,3 +240,49 @@
 ;              (- 0 n))))
 ;    (list n m m1 (= m m1))))
 ;(define random (make-random 17))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; New operations.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (bignum-bit-count big)
+  (let ((sign (bignum-sign big))
+        (bigits (bignum-magnitude big)))
+    (if (zero-magnitude? bigits)
+        (r5rs->fixnum 0)
+        (let ((ones
+               (do ((bigits (bignum-magnitude big)
+                            (cdr bigits))
+                    (count (r5rs->fixnum 0)
+                           (fixnum+ count (fixnum-bit-count (car bigits)))))
+                   ((null? (cdr bigits))
+                    (fixnum+ count (fixnum-bit-count (car bigits)))))))
+          (if (fixnum-positive? sign)
+              ones
+              (fixnum- ones (r5rs->fixnum 1)))))))
+
+(define (bignum-length big)
+  (let ((sign (bignum-sign big))
+        (bigits (bignum-magnitude big)))
+    (if (zero-magnitude? bigits)
+        (r5rs->fixnum 0)
+        (do ((bits (r5rs->fixnum 0)
+                   (fixnum+ bits log-radix))
+             (bigits bigits (cdr bigits)))
+            ((null? (cdr bigits))
+             (fixnum+ bits (fixnum-length (car bigits))))))))
+
+(define (bignum-first-bit-set big)
+  (let ((sign (bignum-sign big))
+        (bigits (bignum-magnitude big)))
+    (if (zero-magnitude? bigits)
+        (r5rs->fixnum -1)
+        (do ((bits (r5rs->fixnum 0)
+                   (fixnum+ bits log-radix))
+             (bigits bigits (cdr bigits)))
+            ((fixnum-positive? (car bigits))
+             (fixnum+ bits (fixnum-first-bit-set (car bigits))))))))
+
+

@@ -1874,7 +1874,7 @@ returns the result of the following computation:
                  (field2 (fixnum-logical-shift-right field0
                                                      (fixnum- width count)))
                  (field (fixnum-ior field1 field2)))
-            (fixnum-copy-bit-field n field start end))
+            (fixnum-copy-bit-field n start end field))
           n))
 </pre>
 If the second, third, or fourth argument is negative,
@@ -2562,7 +2562,7 @@ integer) number, then these procedures signal an error
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exact=</CODE> <var>ex1</var> <var>ex2</var> <var>ex3</var> ...
+<DT><U>procedure:</U> <CODE>exact=?</CODE> <var>ex1</var> <var>ex2</var> <var>ex3</var> ...
 <DT><U>procedure:</U> <CODE>exact&gt;?</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
 <DT><U>procedure:</U> <CODE>exact&lt;?</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
 <DT><U>procedure:</U> <CODE>exact&gt;=?</CODE> <var>ef1</var> <var>ef2</var> <var>ef3</var> ...
@@ -2913,15 +2913,17 @@ or the second argument is greater than the third,
 then an error is signalled.
 Otherwise returns the result of the following computation:
 <pre>
-    (let* ((to    <var>fx1</var>)
-           (start <var>fx2</var>)
-           (end   <var>fx3</var>)
-           (from  <var>fx4</var>)
-           (mask1 (exact-logical-shift-left -1 start))
+    (let* ((to    <var>ei1</var>)
+           (start <var>ei2</var>)
+           (end   <var>ei3</var>)
+           (from  <var>ei4</var>)
+           (mask1 (exact-arithmetic-shift-left -1 start))
            (mask2 (exact-not
                    (exact-arithmetic-shift-left -1 end)))
-           (mask (fixnum-and mask1 mask2)))
-      (exact-if mask from to))
+           (mask (exact-and mask1 mask2)))
+      (exact-if mask
+                (exact-arithmetic-shift-left from start)
+                to))
 </pre>
 </DD>
 </DL>
@@ -2975,11 +2977,11 @@ then an error is signalled.
       (if (exact-positive? width)
           (let* ((count (exact-mod count width))
                  (field0 (exact-bit-field n start end))
-                 (field1 (exact-arithmetic-shift field0 count))
-                 (field2 (exact-arithmetic-shift field0
-                                                 (exact- width count)))
+                 (field1 (exact-arithmetic-shift-left field0 count))
+                 (field2 (exact-arithmetic-shift-right field0
+                                                       (exact- width count)))
                  (field (exact-ior field1 field2)))
-            (exact-copy-bit-field n field start end))
+            (exact-copy-bit-field n start end field))
           n))
 </pre>
 </DD>

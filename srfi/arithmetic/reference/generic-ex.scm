@@ -122,12 +122,24 @@
 
 (define (exact+ . args)
   (reduce (r5rs->integer 0) exact+/2 args))
+
 (define (exact- arg0 . args)
-  (reduce (r5rs->integer 0) exact-/2 (cons arg0 args)))
+  (if (null? args)
+      (exact-/2 (r5rs->integer 0) arg0)
+      ;FIXME: the definition of reduce in nary.scm is bonkers
+      (do ((result arg0 (exact-/2 result (car args)))
+           (args args (cdr args)))
+          ((null? args) result))))
+
 (define (exact* . args)
   (reduce (r5rs->integer 1) exact*/2 args))
 (define (exact/ arg0 . args)
-  (reduce (r5rs->integer 1) exact//2 (cons arg0 args)))
+  (if (null? args)
+      (exact//2 (r5rs->integer 1) arg0)
+      ;FIXME: the definition of reduce in nary.scm is bonkers
+      (do ((result arg0 (exact//2 result (car args)))
+           (args args (cdr args)))
+          ((null? args) result))))
 
 ;; ABS is evil ...
 (define *minus-least-fixnum* (bignum-negate (fixnum->bignum (least-fixnum))))
@@ -136,7 +148,7 @@
   (cond
    ((fixnum-negative? x)
     (if (fixnum= x (least-fixnum))
-        x ; FIXME: was *minus-least-fixnum*
+        *minus-least-fixnum*
 	(fixnum- x)))
    (else x)))
 
@@ -145,7 +157,11 @@
   (make-typo-op/1 exact-abs 'rational))
 
 (define-binary exact-quotient contagion/ex
-  fixnum-quotient
+  (lambda (x y)
+    (if (and (fixnum= x (least-fixnum))
+             (fixnum= y (r5rs->integer -1)))
+        *minus-least-fixnum*
+        (fixnum-quotient x y)))
   bignum-quotient
   (make-typo-op/2 exact-quotient 'integer)
   (make-typo-op/2 exact-quotient 'integer))
@@ -179,30 +195,31 @@
       (error "exact-modulo expects integral arguments" x y)))
 
 (define (exact-div+mod x y)
-  (let* ((div
-	  (cond
-	   ((exact-positive? y)
-	    (let ((n (exact* (exact-numerator x)
-			     (exact-denominator y)))
-		  (d (exact* (exact-denominator x)
-			     (exact-numerator y))))
-	      (if (exact-negative? n)
-		  (exact- (exact-quotient (exact- (exact- d n) (r5rs->integer 1)) d))
-		  (exact-quotient n d))))
-	   ((exact-zero? y)
-	    (r5rs->integer 0))
-	   ((exact-negative? y)
-	    (let ((n (exact* (r5rs->integer -2) 
-			     (exact-numerator x)
-			     (exact-denominator y)))
-		  (d (exact* (exact-denominator x)
-			     (exact- (exact-numerator y)))))
-	      (if (exact<? n d)
-		  (exact- (exact-quotient (exact- d n) (exact* 2 d)))
-		  (exact-quotient (exact+ n d (r5rs->integer -1)) (exact* 2 d)))))))
-	 (mod
-	  (exact- x (exact* div y))))
-    (values div mod)))
+  (cond ((or (not (exact-number? x))
+             (not (exact-number? y)))
+         (error "illegal arguments to exact-div+mod" x y))
+        ((exact-zero? y)
+         (error "exact division by zero" x y))
+        (else
+         ; FIXME: this isn't very efficient
+         (let* ((n (exact* (exact-numerator x)
+                           (exact-denominator y)))
+                (d (exact* (exact-denominator x)
+                           (exact-numerator y)))
+                (q (exact-quotient n d))
+                (m (exact- x (exact* q y))))
+           ; x = xn/xd
+           ; y = yn/yd
+           ; n = xn*yd
+           ; d = xd*yn
+           ; x/y = (xn*yd)/(xd*yn) = n/d
+           (if (exact-negative? m)
+               (if (exact-positive? y)
+                   (values (exact- q (r5rs->integer 1))
+                           (exact+ m y))
+                   (values (exact+ q (r5rs->integer 1))
+                           (exact- m y)))                   
+               (values q m))))))
 
 (define (exact-div x y)
   (call-with-values
@@ -215,6 +232,33 @@
       (lambda () (exact-div+mod x y))
     (lambda (d m)
       m)))
+
+(define (exact-div0+mod0 x y)
+  (call-with-values
+   (lambda () (exact-div+mod x y))
+   (lambda (d m)
+     (let ((y/2 (exact/ y (r5rs->integer 2))))
+       (cond ((exact-positive? y/2)
+              (if (exact>=? m y/2)
+                  (values (exact+ d (r5rs->integer 1))
+                          (exact- m y))
+                  (values d m)))
+             (else
+              (let ((y/2abs (exact- y/2)))
+                (if (exact>=? m y/2abs)
+                    (values (exact- d (r5rs->integer 1))
+                            (exact+ m y))
+                    (values d m)))))))))
+
+(define (exact-div0 x y)
+  (call-with-values
+   (lambda () (exact-div0+mod0 x y))
+   (lambda (d m) d)))
+
+(define (exact-mod0 x y)
+  (call-with-values
+   (lambda () (exact-div0+mod0 x y))
+   (lambda (d m) m)))
 
 (define (exact-gcd/2 x y)
   (if (and (exact-integer? x) (exact-integer? y))
@@ -300,7 +344,11 @@
       (error "exact-make-rectangular: non-rational argument" a b)))
 
 (define-unary exact-real-part id id id recnum-real) 
-(define-unary exact-imag-part one one one recnum-imag)
+(define-unary exact-imag-part
+  (lambda (x) (r5rs->integer 0))  ; don't try to call this zero
+  (lambda (x) (r5rs->integer 0))  ; because some other file has
+  (lambda (x) (r5rs->integer 0))  ; a global variable named zero
+  recnum-imag)
 
 ; from Brad Lucier:
 
@@ -364,10 +412,11 @@
 
 ;; helper for EXACT-INTEGER-SQRT
 ;; extract bits of n3, at index n2 (from the right), n1 bits wide
+
 (define (extract-bit-field n1 n2 n3)
-  (exact-bitwise-and (exact-arithmetic-shift-left n3 (exact- n2))
-		     (exact- (exact-arithmetic-shift-left (r5rs->integer 1) n1) 
-			     (r5rs->integer 1))))
+  (exact-and (exact-arithmetic-shift-left n3 (exact- n2))
+	     (exact- (exact-arithmetic-shift-left (r5rs->integer 1) n1) 
+                     (r5rs->integer 1))))
 
 
 ; Integer-length, a la Common Lisp, written in portable Scheme.
@@ -412,9 +461,9 @@
 
 ; end from Scheme 48
 
-(define-unary exact-bitwise-not fixnum-not bignum-bitwise-not
-  (make-typo-op/1 exact-bitwise-not 'exact-integer)
-  (make-typo-op/1 exact-bitwise-not 'exact-integer))
+(define-unary exact-not fixnum-not bignum-not
+  (make-typo-op/1 exact-not 'exact-integer)
+  (make-typo-op/1 exact-not 'exact-integer))
 
 (define (make-binary-bitwise-op fix-op big-op)
 
@@ -440,20 +489,78 @@
      (else
       (fail)))))
 
-(define (exact-bitwise-ior . args)
+(define (exact-ior . args)
   (reduce (r5rs->integer 0)
-	  (make-binary-bitwise-op fixnum-ior bignum-bitwise-ior)
+	  (make-binary-bitwise-op fixnum-ior bignum-ior)
 	  args))
 
-(define (exact-bitwise-and . args)
+(define (exact-and . args)
   (reduce (r5rs->integer -1)
-	  (make-binary-bitwise-op fixnum-and bignum-bitwise-and)
+	  (make-binary-bitwise-op fixnum-and bignum-and)
 	  args))
 
-(define (exact-bitwise-xor . args)
+(define (exact-xor . args)
   (reduce (r5rs->integer 0)
-	  (make-binary-bitwise-op fixnum-xor bignum-bitwise-xor)
+	  (make-binary-bitwise-op fixnum-xor bignum-xor)
 	  args))
+
+(define (exact-if ei1 ei2 ei3)
+  (exact-ior (exact-and ei1 ei2)
+             (exact-and (exact-not ei1) ei3)))
+
+(define-unary exact-bit-count fixnum-bit-count bignum-bit-count
+  (make-typo-op/1 exact-not 'exact-integer)
+  (make-typo-op/1 exact-not 'exact-integer))
+
+(define-unary exact-length fixnum-length bignum-length
+  (make-typo-op/1 exact-not 'exact-integer)
+  (make-typo-op/1 exact-not 'exact-integer))
+
+(define-unary exact-first-bit-set
+  fixnum-first-bit-set bignum-first-bit-set
+  (make-typo-op/1 exact-not 'exact-integer)
+  (make-typo-op/1 exact-not 'exact-integer))
+
+(define (exact-bit-set? ei1 ei2)
+  (cond ((exact-negative? ei2)
+         (error "negative second argument to exact-bit-set?" ei2))
+        ((and (fixnum? ei1) (fixnum? ei2))
+         (fixnum-bit-set? ei1 ei2))
+        ((fixnum? ei1)
+         #f)
+        ((fixnum? ei2)
+         ; FIXME: correct but inefficient
+         (not (exact-zero?
+               (exact-and (exact-arithmetic-shift-left (r5rs->integer 1) ei2)
+                          ei1))))
+        (else
+         #f)))
+
+(define (exact-copy-bit ei1 ei2 ei3)
+  (let* ((mask (exact-arithmetic-shift-left (r5rs->integer 1) ei2)))
+    (exact-if mask
+              (exact-arithmetic-shift-left ei3 ei2)
+              ei1)))
+
+(define (exact-bit-field ei1 ei2 ei3)
+  (let* ((mask (exact-not
+                (exact-arithmetic-shift-left (r5rs->integer -1) ei3))))
+    (exact-arithmetic-shift-right (exact-and ei1 mask)
+                                  ei2)))
+
+(define (exact-copy-bit-field to start end from)
+  (let* ((mask1 (exact-arithmetic-shift-left (r5rs->integer -1) start))
+         (mask2 (exact-not
+                 (exact-arithmetic-shift-left (r5rs->integer -1) end)))
+         (mask (exact-and mask1 mask2)))
+    (exact-if mask
+              (exact-arithmetic-shift-left from start)
+              to)))
+
+(define (exact-arithmetic-shift ei1 ei2)
+  (if (exact>=? ei2 (r5rs->integer 0))
+      (exact-arithmetic-shift-left ei1 ei2)
+      (exact-arithmetic-shift-right ei1 (exact- ei2))))
 
 (define (exact-arithmetic-shift-left a b)
 
@@ -475,3 +582,50 @@
      ((bignum? b)
       (bignum-arithmetic-shift-left a (fixnum->bignum b)))
      (else (fail))))))
+
+(define (exact-arithmetic-shift-right a b)
+
+  (define (fail)
+    (error "exact-arithmetic-shift-right expects exact integer arguments" a b))
+
+  (cond ((fixnum? a)
+         (cond ((fixnum? b)
+                (bignum-arithmetic-shift-right (fixnum->bignum a)
+                                               (fixnum->bignum b)))
+               ((bignum? b)
+                (bignum-arithmetic-shift-right (fixnum->bignum a) b))
+               (else (fail))))
+        ((bignum? a)
+         (cond ((fixnum? b)
+                (bignum-arithmetic-shift-right a (fixnum->bignum b)))
+               ((bignum? b)
+                (bignum-arithmetic-shift-right a (fixnum->bignum b)))
+               (else (fail))))))
+
+(define (exact-rotate-bit-field n start end count)
+  (let ((width (exact- end start)))
+    (if (exact-positive? width)
+        (let* ((count (exact-mod count width))
+               (field0 (exact-bit-field n start end))
+               (field1 (exact-arithmetic-shift-left field0 count))
+               (field2 (exact-arithmetic-shift-right field0
+                                                     (exact- width count)))
+               (field (exact-ior field1 field2)))
+          (exact-copy-bit-field n start end field))
+        n)))
+
+(define (exact-reverse-bit-field n start end)
+  (if (or (exact-negative? start)
+          (exact-negative? end))
+      (error "illegal negative argument to exact-reverse-bit-field"
+             n start end)
+      (let* ((width (exact- end start))
+             (field (exact-bit-field n start end)))
+        (do ((reversed (r5rs->integer 0)
+                       (exact+ (exact+ reversed reversed)
+                               (exact-and field (r5rs->integer 1))))
+             (field field (exact-arithmetic-shift-right field
+                                                        (r5rs->integer 1)))
+             (k width (exact- k (r5rs->integer 1))))
+            ((exact-zero? k)
+             (exact-copy-bit-field n start end reversed))))))

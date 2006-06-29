@@ -10,10 +10,6 @@
 ; Types) and SRFI 23 (Error reporting mechanism) must be
 ; enabled.
 
-; Eliminate Scheme48 dependencies.
-
-(define (define-record-discloser . args) #f)
-
 ; Define a small set of bitwise operators.
 ; The r5rs: procedures will be loaded soon afterwards.
 
@@ -147,6 +143,7 @@
               (display "Loading ") (display filename) (newline)
               (load filename))))
                              
+(load "custom.scm")
 (load "nary.scm")
 (load "r5rs-arithmetic.scm")
 (load "fixnum.scm")

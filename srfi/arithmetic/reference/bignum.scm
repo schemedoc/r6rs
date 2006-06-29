@@ -3,6 +3,16 @@
 
 ; Bignum arithmetic
 
+; FIXME:  The representation of bignums is inefficient,
+; and so are the operations.
+;
+; A bignum is represented as a record containing
+;     sign      -- a fixnum, -1 for negative, 1 for non-negative
+;     magnitude -- a list of fixnum bigits, least significant first
+;
+; Each bigit is a non-negative fixnum less than the radix.
+; The radix seems to be 2^k, where k = (- (quotient (fixnum-width) 2) 1).
+
 ; from Scheme 48
 
 (define-record-type :bignum

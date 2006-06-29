@@ -131,7 +131,7 @@
 (define (integer-bitwise-not m)
   (if (fixnum? m)
       (fixnum-not m)
-      (bignum-bitwise-not m)))
+      (bignum-not m)))
 
 (define (make-binary-bitwise-op fix-op big-op)
   (lambda (a b)
@@ -144,9 +144,9 @@
 	    (big-op a b)))))
 
 (define integer-bitwise-ior
-  (make-binary-bitwise-op fixnum-ior bignum-bitwise-ior))
+  (make-binary-bitwise-op fixnum-ior bignum-ior))
 (define integer-bitwise-xor
-  (make-binary-bitwise-op fixnum-xor bignum-bitwise-xor))
+  (make-binary-bitwise-op fixnum-xor bignum-xor))
 (define integer-bitwise-and
-  (make-binary-bitwise-op fixnum-and bignum-bitwise-and))
+  (make-binary-bitwise-op fixnum-and bignum-and))
 (define integer-arithmetic-shift-left (make-int*int->val bignum-arithmetic-shift-left))

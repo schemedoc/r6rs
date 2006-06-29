@@ -3,6 +3,15 @@
 
 ; Package definitions for running the implementation in Scheme 48
 
+(define-interface customization-interface
+  (export *width*
+          *fixnums-are-records*
+          *flonums-are-records*))
+
+(define-structure customization customization-interface
+  (open scheme)
+  (files custom))
+
 (define scheme-sans-arithmetic
   (modify scheme
 	  (hide eqv?
@@ -96,6 +105,8 @@
           fxmax fxmin
           fx+ fx- fx*
           fxdiv+mod fxdiv fxmod fxdiv0+mod0 fxdiv0 fxmod0
+
+          fxnot fxand fxior fxxor
           fxif fxbit-count fxlength
           fxfirst-bit-set fxbit-set?
           fxcopy-bit fxbit-field fxcopy-bit-field
@@ -107,7 +118,8 @@
 (define-structures ((fixnums fixnums-interface)
 		    (fixnums-r5rs (export r5rs->fixnum
 					  fixnum->r5rs)))
-  (open scheme-sans-arithmetic
+  (open customization
+        scheme-sans-arithmetic
         r5rs-arithmetic
 	bitwise
 	srfi-9 ; define-record-type
@@ -160,9 +172,10 @@
 	  bignum-zero?
 	  bignum->string
 
-	  bignum-bitwise-not
-	  bignum-bitwise-ior bignum-bitwise-xor bignum-bitwise-and
-	  bignum-arithmetic-shift-left))
+	  bignum-not
+	  bignum-ior bignum-xor bignum-and
+	  bignum-arithmetic-shift-left bignum-arithmetic-shift-right
+          bignum-bit-count bignum-length bignum-first-bit-set))
 
 (define-structures ((bignums bignums-interface)
 		    (bignums-r5rs (export bignum->r5rs r5rs->bignum)))
@@ -443,19 +456,28 @@
 	  exact-min exact-max
 	  exact+ exact- exact* exact/
 	  exact-abs
+          ;FIXME: these should go away
 	  exact-quotient exact-remainder exact-quotient+remainder
 	  exact-div exact-mod exact-div+mod
+	  exact-div0 exact-mod0 exact-div0+mod0
+          ;FIXME: this should go away
 	  exact-modulo
 	  exact-gcd exact-lcm
 	  exact-numerator exact-denominator
 	  exact-floor exact-ceiling exact-truncate exact-round
 	  exact-make-rectangular
-	  exact-remainder exact-imag-part
+	  exact-remainder exact-real-part exact-imag-part
 	  exact-expt
 	  exact-integer-sqrt
-	  exact-bitwise-not
-	  exact-bitwise-ior exact-bitwise-and exact-bitwise-xor
-	  exact-arithmetic-shift-left))
+	  exact-not                                  
+	  exact-ior exact-and exact-xor
+          exact-if exact-bit-count exact-length
+          exact-first-bit-set exact-bit-set? exact-copy-bit
+          exact-bit-field exact-copy-bit-field
+          exact-arithmetic-shift
+	  exact-arithmetic-shift-left
+          exact-arithmetic-shift-right
+          exact-rotate-bit-field exact-reverse-bit-field))
 
 (define-structure generic-arithmetic/exact generic-arithmetic/exact-interface
   (open scheme-sans-arithmetic
@@ -664,6 +686,7 @@
 	(modify scheme (prefix r5rs:) (expose +))
 	r5rs-to-numbers
 	strings-to-numbers
+        (subset fixnums (least-fixnum greatest-fixnum fixnum-width))
 	generic-arithmetic/exact)
   (files test-prelude
 	 test-generic-arithmetic-ex
