@@ -1,0 +1,36 @@
+This directory contains the textual specification and reference
+implementation for sets of enumerated symbols.  Neither has been
+thoroughly tested.
+
+Files:
+
+    enumerations.txt
+
+        The textual specification.
+
+    enumerations.sch
+
+        The reference implementation.
+
+    larceny.sch
+
+        Auxiliary code for running the reference implementation
+        in Larceny.  Load larceny.sch first, then enumerations.sch.
+
+The reference implementation is written in R5RS Scheme with these
+additions:
+
+    a symbol-hash procedure (R6RS hash tables)
+    an error procedure (SRFI 23)
+    R6RS records (SRFI 76)
+    R6RS arithmetic (SRFI 77)
+
+The reference implementation includes an R5RS macro that won't
+work in internal definition contexts, and won't even work at
+top level (in some systems) if it is used more than once.  This
+macro will have to be rewritten to use the R6RS macro system
+when it becomes available.
+
+Only a few features of SRFI 76 and SRFI 77 are actually used.
+All are implemented in larceny.sch.
+

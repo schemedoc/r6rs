@@ -121,30 +121,30 @@ Examples:
 
 (enum-set->list
  (make-color-set
-  'black 'purple))                 => (black purple)
+  '(black purple)))                => (black purple)
 
 (enum-set-member? 'white
- (make-color-set 'white 'maroon))  => #t
+ (make-color-set '(white maroon))) => #t
 
 (enum-set-subset?
- (enum-set-complement (color))
- (color))                          => #t
+ (enum-set-complement colors)
+ colors)                           => #t
 
 (enum-set=?
- (make-color-set 'black 'maroon)
+ (make-color-set '(black maroon))
  (enum-set-complement
-  (make-color-set 'white 'purple))) => #t
+  (make-color-set '(white purple)))) => #t
 
 (enum-set-subset?
- (make-color-set 'white)
+ (make-color-set '(white))
  (make-enumeration
   '(black white red green)))       => #t
 
 (enum-set=?
   (make-color-set
-   'black 'white)
+   '(black 'white))
   ((enum-set-constructor (make-enumeration '(black white red green)))
-   'black 'white))                 => #t
+   '(black white)))                => #t
 
 (enum-set->list
  (enum-set-projection (make-enumeration '(black white red green))
