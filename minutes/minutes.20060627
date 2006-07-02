@@ -1,0 +1,130 @@
+Conference call June 20 2006 12:45pm
+All present by about 12:46pm:
+Kent, Mike, Will, Anton, Matthew
+
+0. finalize agenda (1 minute)
+
+Will's motions re multiple return values
+
+1. action items from 6/20/2006 (5 minutes)
+   - submit status report (Kent)
+        done
+   - submit syntax srfi (Kent)
+        done
+   - commit latest enumerations draft (Will)
+        done
+   - review byte-vector draft before 6/27 meeting (All)
+        done, presumably
+   - review hash-table draft before 6/27 meeting (All)
+        done, presumably
+   - review enumerations draft before 6/27 meeting (All)
+        done, presumably
+   - review safe/unsafe mode draft before 6/27 meeting (All)
+        done, presumably
+   - carried over:
+     - update library srfi (Matthew and Kent)
+        in progress
+     - update reference implementation for arithmetic SRFI (Will)
+        no progress since last week
+     - comment on eval/environment proposal (All)
+        done; proposal will be drafted
+     - complete unicode reference implementation (Will)
+        no progress since last week
+     - comment on core/library split (All)
+        in progress
+
+2. wrong number of values (10 minutes)
+    Will moved:
+        The second (alternative) expansion of begin, from
+        R5RS 7.3, shall be revised for consistency with the rest
+        of the R6RS, but some such alternative expansion of begin
+        shall remain in the corresponding section of R6RS.
+    Mike seconded
+    Vote:
+        yes: Will, Mike
+        no: 
+        abstain: Kent, Matthew, Anton
+        (Motion passed by a plurality)
+   - passed to a procedure
+     - should we require an exception to be raised?
+     - see https://r6rs.scheming.org/node/286#comment-1472
+        Kent moved that an exception must be raised
+        if a procedure receives a number of arguments
+        it does not expect (as determined by the formals
+        of the lambda expression from which the procedure
+        was created)
+        Will seconded
+        Vote: yes, unanimously
+   - passed to single-value continuation
+     - revisit exceptions vote #42
+     - see https://r6rs.scheming.org/node/286
+        three proposals and a related wrinkle:
+            Kent's preferred semantics
+                begin continuations accept any number
+                cwv accept any number and pass along to receiver
+                all other continuation accept exactly one
+                    must raise an exception if some other
+                    number of values is received
+            Will's preferred semantics
+                begin continuations accept any number
+                cwv accept any number and pass along to receiver
+                all other continuation accept any number
+                    of values and coerce as follows:
+                    zero values: coerce to #!unspecified
+                    more than one: ignore all but first
+            Will's alternative semantics
+                cwv accept any number and pass along to receiver
+                all other continuations accept zero or one value
+                    zero values: coerce to #!unspecified
+                    two or more values might be allowed to raise
+                        or required to raise an exception
+            related wrinkle that becomes possible with the
+                second or third semantics above:
+                set!, set-car!, set-cdr! could be required or
+                allowed to return 0 values
+        tabled for a week so people can think about it
+
+3. byte vectors (5 minutes)
+   - approve essentially as is?
+        yes, with no objections
+
+4. Bawden quasiquote extension (5 minutes)
+   - adopt despite r5rs compatibility?
+        really an extension, not an incompatibility
+        examples are present in email
+        Mike moved to adopt, Kent seconded
+        Vote:
+            yes: Kent, Matthew, Mike, Anton
+            no:
+            abstain: Will
+        adopted
+
+5. enumerations (10 minutes)
+   - approve essentially as is?
+        approved without objection
+
+6. hash tables (10 minutes)
+   - approve essentially as is?
+        not yet; some changes still need to be made, e.g. to
+            use enumeration sets
+        Kent cited customer who found use for initial capacity
+            (because hash function might be expensive)
+   - limit to eq? hash tables?
+        Kent, Anton, Will want more than just eq?, eqv? tables
+   - include equal? hash tables?
+
+Did not get to this agenda item:
+
+7. equal? generalizations (10 minutes)
+   - generalize to one or more arguments
+   - add pred-equal? (equalp?)
+
+next week:
+multiple return values
+hash tables
+equal? generalizations
+eval environment
+i/o
+Matthew's proposal to reduce condition type hierarchy
+
+8. adjourned at 1:54pm
