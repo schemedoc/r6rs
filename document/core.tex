@@ -2752,70 +2752,6 @@ It is an error if \var{list} has fewer than \vr{k} elements.
 %\end{entry}
 
 
-\begin{entry}{%
-\proto{memq}{ obj list}{library procedure}
-\proto{memv}{ obj list}{library procedure}
-\proto{member}{ obj list}{library procedure}}
-
-These procedures return the first sublist of \var{list} whose car is
-\var{obj}, where the sublists of \var{list} are the non-empty lists
-returned by {\tt (list-tail \var{list} \var{k})} for \var{k} less
-than the length of \var{list}.  If
-\var{obj} does not occur in \var{list}, then \schfalse{} (not the empty list) is
-returned.  {\cf Memq} uses {\cf eq?}\ to compare \var{obj} with the elements of
-\var{list}, while {\cf memv} uses {\cf eqv?}\ and {\cf member} uses {\cf equal?}.
-
-\begin{scheme}
-(memq 'a '(a b c))              \ev  (a b c)
-(memq 'b '(a b c))              \ev  (b c)
-(memq 'a '(b c d))              \ev  \schfalse
-(memq (list 'a) '(b (a) c))     \ev  \schfalse
-(member (list 'a)
-        '(b (a) c))             \ev  ((a) c)
-(memq 101 '(100 101 102))       \ev  \unspecified
-(memv 101 '(100 101 102))       \ev  (101 102)%
-\end{scheme} 
- 
-\end{entry}
-
-
-\begin{entry}{%
-\proto{assq}{ obj alist}{library procedure}
-\proto{assv}{ obj alist}{library procedure}
-\proto{assoc}{ obj alist}{library procedure}}
-
-\domain{\var{Alist} (for ``association list'') must be a list of
-pairs.}  These procedures find the first pair in \var{alist} whose car field is \var{obj},
-and returns that pair.  If no pair in \var{alist} has \var{obj} as its
-car, then \schfalse{} (not the empty list) is returned.  {\cf Assq} uses
-{\cf eq?}\ to compare \var{obj} with the car fields of the pairs in \var{alist},
-while {\cf assv} uses {\cf eqv?}\ and {\cf assoc} uses {\cf equal?}.
-
-\begin{scheme}
-(define e '((a 1) (b 2) (c 3)))
-(assq 'a e)     \ev  (a 1)
-(assq 'b e)     \ev  (b 2)
-(assq 'd e)     \ev  \schfalse
-(assq (list 'a) '(((a)) ((b)) ((c))))
-                \ev  \schfalse
-(assoc (list 'a) '(((a)) ((b)) ((c))))   
-                           \ev  ((a))
-(assq 5 '((2 3) (5 7) (11 13)))    
-                           \ev  \unspecified
-(assv 5 '((2 3) (5 7) (11 13)))    
-                           \ev  (5 7)%
-\end{scheme}
-
-
-\begin{rationale}
-Although they are ordinarily used as predicates,
-{\cf memq}, {\cf memv}, {\cf member}, {\cf assq}, {\cf assv}, and {\cf assoc} do not
-have question marks in their names because they return useful values rather
-than just \schtrue{} or \schfalse{}.
-\end{rationale}
-\end{entry}
-
-
 \section{Symbols}
 \label{symbolsection}
 
@@ -3356,7 +3292,7 @@ These procedures could be defined as follows:
 ; specification; it is used only to define 
 ; other procedures
 (define (string-ci-comparator cs-comp)
-  (lambda (a-string b-string)
+  (lambda (a-string b-string) FIXME: n-ary
     (cs-comp (string-foldcase a-string)
              (string-foldcase b-string))))
 
