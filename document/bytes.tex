@@ -1,0 +1,394 @@
+\section{Bytes objects}
+\label{bytesobjects}
+
+Many applications must deal with blocks of binary data by accessing
+them in various ways---extracting signed or unsigned numbers of
+various sizes.  Therefore, this library provides a single type for
+blocks of binary data with multiple ways to access that data. It deals
+only with integers in various sizes with specified endianness, because
+these are the most frequent applications.
+
+Bytes objects\mainschindex{bytes objects} are objects of a disjoint
+type. Conceptually, a bytes object represents a sequence of 8-bit
+bytes.  The description of bytes objects uses the term \defining{byte}
+for an exact integer in the interval $\{-128, \ldots, 127\}$ and the
+term \defining{octets} for a nexact integer in the interval $\{0,
+\ldots, 255\}$.  A byte corresponds to its two's complement
+representation as an octet.
+
+The length of a bytes object is the number of bytes it contains. This
+number is fixed. A valid index into a bytes object is an exact,
+non-negative integer. The first byte of a bytes object has index 0,
+the last byte has an index one less than the length of the bytes
+object.
+
+Generally, the access procedures come in different flavors according
+to the size of the represented integer, and the endianness of the
+representation.  The procedures also distinguish signed and unsigned representations.
+The signed representations all use two's complement.
+
+\begin{entry}{%
+\proto{endianness}{ {\cf big}}{\exprtype}
+\proto{endianness}{ {\cf little}}{\exprtype}}
+   
+{\cf (endianness big)} and {\cf (endianness little)} evaluate to the
+symbols {\cf big} and {\cf little}, respectively. These symbols
+represent an endianness, and whenever one of the procedures operating
+on bytes objects accepts an endianness as an argument, that argument
+must be one of these symbols. If the operarand to endianness is
+anything other than big or little, an expansion-time error is
+signalled. %% FIXME: error
+\end{entry}
+
+\begin{entry}{%
+\proto{native-endianness}{}{procedure}}
+
+This procedure returns the endianness of the underlying machine
+architecture, either {\cf big} or {\cf little}.
+\end{entry}   
+
+\begin{entry}{%
+\proto{bytes?}{ obj}{procedure}}
+   
+Returns \schtrue{} if \var{obj} is a bytes object, otherwise returns \schfalse{}.
+\end{entry}
+
+\begin{entry}{%
+\proto{make-bytes}{ k}{procedure}
+\proto{make-bytes k fill}{procedure}}
+   
+Returns a newly allocated bytes object of \var{k} bytes.
+   
+If the \var{fill} argument is missing, the initial contents of the
+returned bytes object are unspecified.
+   
+If the \var{fill} argument is present, it must be an exact integer in
+the interval $\{-128, \ldots 255\}$ that specifies the initial value
+for the bytes of the bytes object: If \var{fill} is is positive, it is
+interpreted as an octet, if it is negative, it is interpreted as a byte.
+\end{entry}   
+
+\begin{entry}{%
+\proto{bytes-length}{ bytes}{procedure}}
+   
+Returns the number of bytes in bytes as an exact integer.
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-u8-ref}{ bytes k}{procedure}
+\proto{bytes-s8-ref}{ bytes k}{procedure}}
+   
+\domain{\var{K} must be a valid index of bytes.}
+   
+{\cf Bytes-u8-ref} returns the byte at index \var{k} of \var{bytes} as an octet.
+   
+{\cf Bytes-s8-ref} returns the byte at index \var{k} of \var{bytes}.
+
+\begin{scheme}
+(let ((b1 (make-bytes 16 -127))
+      (b2 (make-bytes 16 255)))
+  (list
+    (bytes-s8-ref b1 0)
+    (bytes-u8-ref b1 0)
+    (bytes-s8-ref b2 0)
+    (bytes-u8-ref b2 0))) \ev (-127 129 -1 255)
+\end{scheme}
+\end{entry}   
+
+\begin{entry}{%
+\proto{bytes-u8-set!}{ bytes k octet}{procedure}
+\proto{bytes-s8-set!}{ bytes k byte}{procedure}}
+   
+\var{K} must be a valid index of \var{bytes}.
+   
+{\cf Bytes-u8-set!} stores \var{octet} in element \var{k} of
+\var{bytes}.
+   
+{\cf Bytes-s8-set!} stores the two's complement representation of \var{byte} in element
+\var{k} of \var{bytes}.
+   
+Both procedures return \unspecifiedreturn.
+
+\begin{scheme}
+(let ((b (make-bytes 16 -127)))
+
+  (bytes-s8-set! b 0 -126)
+  (bytes-u8-set! b 1 246)
+
+  (list
+    (bytes-s8-ref b 0)
+    (bytes-u8-ref b 0)
+    (bytes-s8-ref b 1)
+    (bytes-u8-ref b 1))) \ev (-126 130 -10 246)
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-uint-ref}{ bytes k endianness size}{procedure}
+\proto{bytes-sint-ref}{ bytes k endianness size}{procedure}
+\proto{bytes-uint-set!}{ bytes k n endianness size}{procedure}
+\proto{bytes-sint-set!}{ bytes k n endianness size}{procedure}}
+   
+\domain{\var{Size} must be a positive exact integer. \var{K} must be a
+  valid index of \var{bytes}; so must the indices $\{\var{k}, \ldots,
+  \var{k} + \var{size} - 1\}$.}
+   
+{\cf Bytes-uint-ref} retrieves the exact integer corresponding to the
+unsigned representation of size size and specified by endianness at
+indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
+   
+{\cf Bytes-sint-ref} retrieves the exact integer corresponding to the two's
+complement representation of size \var{size} and specified by \var{endianness} at
+indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
+   
+\domain{For {\cf bytes-uint-set!}, \var{n} must be an exact integer in the
+  set $\{0, \ldots, 256^{\var{size}}-1\}$.}
+
+{\cf Bytes-uint-set!} stores the unsigned representation of size \var{size}
+and specified by \var{endianness} into \var{bytes} at indices
+$\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
+   
+\domain{For {\cf bytes-uint-set!}, \var{n} must be an exact integer in
+  the interval $\{-256^{\var{size}-1}, \ldots,
+  256^{\var{size}-1}-1\}$.}
+{\cf Bytes-sint-set!} stores the two's complement
+representation of size \var{size} and specified by endianness into \var{bytes}
+object at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
+   
+The \ldots{\cf -set!} procedures return \unspecifiedreturn.
+
+\begin{scheme}
+(define b (make-bytes 16 -127))
+
+(bytes-uint-set! b 0 (- (expt 2 128) 3)
+                 (endianness little) 16)
+
+(bytes-uint-ref b 0 (endianness little) 16)\lev (- (expt 2 128) 3))
+
+(bytes-sint-ref b 0 (endianness little) 16)\lev -3
+
+(bytes->u8-list b)\lev (253 255 255 255 255 255 255 255
+               255 255 255 255 255 255 255 255)
+
+(bytes-uint-set! b 0 (- (expt 2 128) 3)
+                 (endianness big) 16)
+
+(bytes-uint-ref b 0 (endianness big) 16) \lev (- (expt 2 128) 3)
+
+(bytes-sint-ref b 0 (endianness big) 16) \lev -3
+
+(bytes->u8-list b) \lev (255 255 255 255 255 255 255 255
+               255 255 255 255 255 255 255 253))
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-u16-ref}{ bytes k endianness}{procedure}
+\proto{bytes-s16-ref}{ bytes k endianness}{procedure}
+\proto{bytes-u16-native-ref}{ bytes k}{procedure}
+\proto{bytes-s16-native-ref}{ bytes k}{procedure}
+\proto{bytes-u16-set!}{ bytes k n endianness}{procedure}
+\proto{bytes-s16-set!}{ bytes k n endianness}{procedure}
+\proto{bytes-u16-native-set!}{ bytes k n}{procedure}
+\proto{bytes-s16-native-set!}{ bytes k n}{procedure}}
+   
+\domain{\var{K} must be a valid index of \var{bytes}; so must $\var{k}
+  + 1$.}
+   
+These retrieve and set two-byte representations of numbers at indices
+\var{k} and $\var{k}+1$, according to the endianness specified by
+\var{endianness}. The procedures with {\cf u16} in their names deal with the
+unsigned representation, those with {cf s16} with the two's complement
+representation.
+
+The procedures with {\cf native} in their names employ the native endianness, and
+only work at aligned indices: \var{k} must be a multiple of 2. It is an error to
+use them at non-aligned indices.
+   
+The \ldots{\cf -set!} procedures return \unspecifiedreturn.
+
+\begin{scheme}
+(define b
+  (u8-list->bytes
+    '(255 255 255 255 255 255 255 255
+      255 255 255 255 255 255 255 253)))
+
+(bytes-u16-ref b 14 (endianness little)) \lev 65023
+(bytes-s16-ref b 14 (endianness little)) \lev -513
+(bytes-u16-ref b 14 (endianness big)) \lev 65533
+(bytes-s16-ref b 14 (endianness big)) \lev -3
+
+(bytes-u16-set! b 0 12345 (endianness little))
+(bytes-u16-ref b 0 (endianness little)) \lev 12345
+
+(bytes-u16-native-set! b 0 12345)
+(bytes-u16-native-ref b 0) \ev 12345
+
+(bytes-u16-ref b 0 (endianness little)) \lev \unspecified
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-u32-ref}{ bytes k endianness}{procedure}
+\proto{bytes-s32-ref}{ bytes k endianness}{procedure}
+\proto{bytes-u32-native-ref}{ bytes k}{procedure}
+\proto{bytes-s32-native-ref}{ bytes k}{procedure}
+\proto{bytes-u32-set!}{ bytes k n endianness}{procedure}
+\proto{bytes-s32-set!}{ bytes k n endianness}{procedure}
+\proto{bytes-u32-native-set!}{ bytes k n}{procedure}
+\proto{bytes-s32-native-set!}{ bytes k n}{procedure}}
+   
+\domain{\var{K} must be a valid index of \var{bytes}; so must the
+  indices $\{\var{k}, \ldots, \var{k}+ 3\}$.}.
+   
+These retrieve and set four-byte representations of numbers at indices $\{\var{k},
+\ldots, \var{k}+ 3\}$, according to the endianness specified by \var{endianness}. The
+procedures with {\cf u32} in their names deal with the unsigned representation,
+those with {\cf s32} with the two's complement representation.
+   
+The procedures with {\cf native} in their names employ the native endianness, and
+only work at aligned indices: \var{k} must be a multiple of 4. It is an error to
+use them at non-aligned indices.
+   
+The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
+
+\begin{scheme}
+(define b
+  (u8-list->bytes
+    '(255 255 255 255 255 255 255 255
+      255 255 255 255 255 255 255 253)))
+
+(bytes-u32-ref b 12 (endianness little)) \lev 4261412863
+(bytes-s32-ref b 12 (endianness little)) \lev -33554433
+(bytes-u32-ref b 12 (endianness big)) \lev 4294967293
+(bytes-s32-ref b 12 (endianness big)) \lev -3
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-u64-ref}{ bytes k endianness}{procedure}
+\proto{bytes-s64-ref}{ bytes k endianness}{procedure}
+\proto{bytes-u64-native-ref}{ bytes k}{procedure}
+\proto{bytes-s64-native-ref}{ bytes k}{procedure}
+\proto{bytes-u64-set!}{ bytes k n endianness}{procedure}
+\proto{bytes-s64-set!}{ bytes k n endianness}{procedure}
+\proto{bytes-u64-native-set!}{ bytes k n}{procedure}
+\proto{bytes-s64-native-set!}{ bytes k n}{procedure}}
+ 
+\domain{\var{K} must be a valid index of \var{bytes}; so must the indices
+  $\{\var{k}, \ldots, \var{k}+ 7\}$.}
+   
+These retrieve and set eight-byte representations of numbers at
+indices $\{\var{k}, \ldots, \var{k}+ 7\}$, according to the endianness
+specified by \var{endianness}. The procedures with {\cf u64} in their names deal
+with the unsigned representation, those with {\cf s64} with the two's
+complement representation.
+   
+The procedures with {\cf native} in their names employ the native endianness, and
+only work at aligned indices: \var{k} must be a multiple of 8. It is an error to
+use them at non-aligned indices.
+   
+The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
+
+\begin{scheme}
+(define b
+  (u8-list->bytes
+    '(255 255 255 255 255 255 255 255
+      255 255 255 255 255 255 255 253)))
+
+(bytes-u64-ref b 8 (endianness little)) \lev 18302628885633695743
+(bytes-s64-ref b 8 (endianness little)) \lev -144115188075855873
+(bytes-u64-ref b 8 (endianness big)) \lev 18446744073709551613
+(bytes-s64-ref b 8 (endianness big)) \lev -3
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes=?}{ bytes-1 bytes-2}{procedure}}
+   
+Returns \schtrue{} if \var{bytes-1} and \var{bytes-2} are equal---that
+is, if they have the same length and equal bytes at all valid indices.
+It returns \schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-copy!}{ source source-start target target-start n}{procedure}}
+
+\domain{\var{Source-start}, \var{target-start},
+  and \var{n} must be non-negative exact integers that satisfy
+  
+  \begin{displaymath}
+    \begin{array}{rcccccl}
+      0 & \leq & \var{source-start} & \leq & \var{source-start} + \var{n} & \leq & l_{\var{source}}
+      \\
+      0 & \leq & \var{target-start} & \leq & \var{target-start} + \var{n} & \leq & l_{\var{target}}
+    \end{array}
+  \end{displaymath}
+  %
+  where $l_{\var{source}}$ is the length of \var{source} and
+  $l_{\var{target}}$ is the length of \var{target}.}
+   
+   
+  This copies the bytes from \var{source} at indices 
+  \begin{displaymath}
+     \{ \var{source-start}, \ldots \var{source-start} + \var{n} - 1 \}
+  \end{displaymath}
+  to consecutive indices in \var{target} starting at \var{target-index}.
+   
+  This must work even if the memory regions for the source and the target
+  overlap, i.e., the bytes at the target location after the copy must be
+  equal to the bytes at the source location before the copy.
+   
+  This returns \unspecifiedreturn.
+\begin{scheme}
+(let ((b (u8-list->bytes '(1 2 3 4 5 6 7 8))))
+  (bytes-copy! b 0 b 3 4)
+  (bytes->u8-list b)) \ev (1 2 3 1 2 3 4 8)
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-copy}{ bytes}{procedure}}
+   
+This returns a newly allocated copy of \var{bytes}.
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes->u8-list}{ bytes}{procedure}
+\proto{u8-list->bytes}{ list}{procedure}}
+   
+\ide{Bytes->u8-list} returns a newly allocated list of the bytes of
+\var{bytes} in the same order.
+
+{\cf U8-list->bytes} returns a newly allocated bytes object whose
+elements are the elements of list \var{list}, which must all be octets, in
+the same order.  Analogous to {\cf list->vector}.
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes->uint-list}{ bytes endianness size}{procedure}
+\proto{bytes->sint-list}{ bytes endianness size}{procedure}
+\proto{uint-list->bytes}{ list endianness size}{procedure}
+\proto{sint-list->bytes}{ list endianness size}{procedure}}
+   
+\domain{\var{Size} must be a positive exact integer.}
+   
+These convert between lists of integers and their consecutive
+representations according to \var{size} and \var{endianness} in the
+\var{bytes} objects in the same way as {\cf bytes->u8-list} and {\cf
+  u8-list->bytes} do for one-byte representations.
+
+\begin{scheme}
+(let ((b (u8-list->bytes '(1 2 3 255 1 2 1 2))))
+  (bytes->sint-list b (endianness little) 2)) \lev (513 -253 513 513)
+
+(let ((b (u8-list->bytes '(1 2 3 255 1 2 1 2))))
+  (bytes->uint-list b (endianness little) 2)) \lev (513 65283 513 513)
+\end{scheme}
+\end{entry}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
