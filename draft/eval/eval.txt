@@ -1,0 +1,49 @@
+Eval/environment proposal
+
+1. The eval proceedure remains essentially as it is in R5RS:
+
+   (eval x env)
+
+   evaluates x (which must be an s-expression representing a valid
+   expression) in env and returns its values.
+
+2. Add a new "eval" library <import-phase>
+
+   <import-phase> -> expand | run | eval
+
+   In the terminology of SRFI 83, importing a library "for eval" is like
+   importing it "for run" in that the library is invoked at run time.  It
+   differs in that the library is not visited when the library is expanded
+   but rather when the expression passed to eval is expanded.  If a library
+   is imported both "for run" and "for eval" it is invoked only once at
+   run time, and both ordinary code and eval'd code share the same set of
+   library bindings.
+
+3. Add a new syntactic form, "the-library-environment":
+
+   (the-library-environment)
+
+   If (the-library-environment) appears within a library form, it
+   evaluates to an environment containing the set of bindings imported
+   "for eval" into the library.
+
+   If (the-library-environment) appears within an expression passed to
+   eval, it evaluates to the same library that was passed to eval.
+
+   Both the environment and its bindings are immutable.
+
+--------
+
+Examples (making assumptions about library syntax):
+
+  (library foo
+    (import (for r6rs run eval))
+    (write (eval '(let ((x 3)) x))))
+
+writes 3.
+
+  (import (for r6rs expand run)
+          (for (add-prefix (only r6rs car cdr cons null?) "eval:") eval))
+
+imports r6rs for expand and run and only car, cdr, cons, and null? for
+eval, as eval:car, eval:cdr, eval:cons, and eval:null?.
