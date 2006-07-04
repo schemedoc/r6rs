@@ -24,7 +24,7 @@
 \proto{make-eq-hash-table}{ \var{k}}}
 
 Returns a newly allocated hash table that accepts arbitrary objects as keys, 
-and compares those keys with eq? If an argument is given, then the initial 
+and compares those keys with {\cf eq?}. If an argument is given, then the initial 
 capacity of the hash table is set to \var{k} elements.
 
 \end{entry}
@@ -34,7 +34,7 @@ capacity of the hash table is set to \var{k} elements.
 \proto{make-eqv-hash-table}{ \var{k}}}
 
 Returns a newly allocated hash table that accepts arbitrary objects as keys, 
-and compares those keys with eqv? If an argument is given, then the initial 
+and compares those keys with {\cf eqv?}. If an argument is given, then the initial 
 capacity of the hash table is set to \var{k} elements.
 
 \end{entry}
@@ -63,23 +63,8 @@ Returns the number of keys contained in \var{hash-table} as an exact integer.
 \end{entry}
 
 \begin{entry}{%
-\proto{hash-table-ref}{ \var{hash-table} \var{key}}{}
 \proto{hash-table-ref}{ \var{hash-table} \var{key} \var{default}}}
-
-Returns the value in \var{hash-table} associated with \var{key}.  If \var{hash-table} does not contain an association for \var{key}, then either an exception [TODO] is raised, or if the \var{default} argument is provided, its value is returned.
-
-\end{entry}
-
-\begin{entry}{\proto{hash-table-ref/call}{ \var{hash-table} \var{key} \var{f}}}
-Returns the value associated with \var{key} in \var{hash-table} if the hash table contains \var{key}; otherwise tail-calls \var{f} on key.
-\end{entry}
-
-\begin{entry}{\proto{hash-table-ref/thunk}{ \var{hash-table} \var{key} \var{thunk}}}
-Returns the value associated with \var{key} in \var{hash-table} if the hash table contains \var{key}; otherwise tail-calls \var{thunk}.
-\end{entry}
-
-\begin{entry}{\proto{hash-table-get}{ \var{hash-table} \var{key}}}
-Equivalent to: \begin{scheme}(hash-table-ref hash-table key \schfalse)\end{scheme}
+Returns the value in \var{hash-table} associated with \var{key}.  If \var{hash-table} does not contain an association for \var{key}, then \var{default} is returned.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-set!}{ \var{hash-table} \var{key} \var{value}}}
@@ -95,27 +80,16 @@ Returns \schtrue{} if \var{hash-table} contains an association for \var{key}, ot
 \end{entry}
 
 \begin{entry}{%
-\proto{hash-table-update!}{ \var{hash-table} \var{procedure}}{}
 \proto{hash-table-update!}{ \var{hash-table} \var{procedure} \var{default}}}
 Equivalent to:
 \begin{scheme}
 (hash-table-set!
  hash-table key
  (procedure (hash-table-ref
-             hash-table key [default])))
+             hash-table key default)))
 \end{scheme}
 
-If \var{hash-table} does not contain an association for \var{key}, then either an exception [TODO] is raised, or if the \var{default} argument is provided, its value is passed to \var{procedure}.
-\end{entry}
-
-\begin{entry}{\proto{hash-table-update!/thunk}{ \var{hash-table} \var{procedure} \var{thunk}}}
-Equivalent to, but potentially more efficient than:
-\begin{scheme}
-(hash-table-set! 
- hash-table key
- (procedure (hash-table-ref/thunk 
-             hash-table key thunk)))
-\end{scheme}
+If \var{hash-table} does not contain an association for \var{key}, then \var{default} is passed to \var{procedure}.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-update!/call}{ \var{hash-table} \var{procedure} \var{f}}}
@@ -123,7 +97,7 @@ Equivalent to, but potentially more efficient than:
 \begin{scheme}
 (hash-table-set!
  hash-table key
- (procedure (hash-table-ref/call 
+ (procedure (hash-table-ref/call [TODO: non-existent procedure]
              hash-table key f)))
 \end{scheme}
 \end{entry}
@@ -228,8 +202,9 @@ It may be appropriate to specify constraints on complexity, such as constant tim
 \subsection{Concurrency}
 R6RS does not deal with concurrency.  Even if this proposal does not say anything about that, the issue should be considered.  Any implementation that supports concurrency will have to implement some kind of mutual exclusion for operations that have side effects, and some will need mutual exclusion even for {\cf hash-table-ref}.  As specified, the updating operations are not atomic, so they create no new problems.  The {\cf hash-table-fold} and {\cf hash-table-for-each} procedures already have a problem, even without concurrency.
 
-\subsection{Omission of procedures}
-Some procedures could perhaps be omitted, e.g. there are four retrieval procedures: -ref, -ref/call, -ref/thunk, -get.  Which one(s) should be omitted, if any?  Procedures which take failure thunks are candidates for omission.
+\subsection{Omit hash-table-update!}
+Are the functional update procedures {\cf hash-table-update!} and 
+{\cf hash-table-update!/call} justified?
 
 \subsection{Side-effects}
 There is a potential problem with the higher-order procedures, if a procedure argument mutates the hash table being operated on.  This should be addressed somehow, if only by a statement that the behavior caused by such procedures is unspecified.
