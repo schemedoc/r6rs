@@ -34,7 +34,8 @@ capacity of the hash table is set to \var{k} elements.
 \proto{make-eqv-hash-table}{ \var{k}}}
 
 Returns a newly allocated hash table that accepts arbitrary objects as keys, 
-and compares those keys with {\cf eqv?}. If an argument is given, then the initial 
+and compares those keys with {\cf eqv?}.
+If an argument is given, then the initial 
 capacity of the hash table is set to \var{k} elements.
 
 \end{entry}
@@ -48,6 +49,32 @@ as the hash function and \varii{procedure} as the procedure used to
 compare keys.  The hash function must accept a key and return a 
 non-negative exact integer. If a third argument is given, then the 
 initial capacity of the hash table is set to \var{k} elements.
+
+Both the hash function \vari{procedure} and the comparison
+predicate \varii{procedure} must behave like pure functions
+on the domain of keys.  For example, the {\cf string-hash}
+and {\cf string=?} procedures are permissible only if all
+keys are strings and the contents of those strings are never
+changed so long as any of them continue to serve as a key in
+the hash table.  Furthermore any pair of values for which
+the comparison predicate \varii{procedure} returns true must
+be hashed to the same exact integers by the hash function
+\vari{procedure}.
+
+\begin{note}
+Hash tables are allowed to cache the results of calling the
+hash function and comparison predicate, so programs cannot
+rely on the hash function being called for every lookup or
+update.  Furthermore any hash table operation may call the
+hash function more than once.
+\end{note}
+
+\begin{rationale}
+Hash table lookups are often followed by updates, so caching
+may improve performance.  Hash tables are free to change
+their internal representation at any time, which may result
+in many calls to the hash function.
+\end{rationale}
 
 \end{entry}
 
@@ -64,19 +91,25 @@ Returns the number of keys contained in \var{hash-table} as an exact integer.
 
 \begin{entry}{%
 \proto{hash-table-ref}{ \var{hash-table} \var{key} \var{default}}}
-Returns the value in \var{hash-table} associated with \var{key}.  If \var{hash-table} does not contain an association for \var{key}, then \var{default} is returned.
+Returns the value in \var{hash-table} associated with \var{key}.
+If \var{hash-table} does not contain an association for \var{key},
+then \var{default} is returned.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-set!}{ \var{hash-table} \var{key} \var{value}}}
-Changes \var{hash-table} to associate \var{key} with value, replacing any existing association for \var{key}. Returns the unspecified value.
+Changes \var{hash-table} to associate \var{key} with value,
+replacing any existing association for \var{key}.
+Returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-delete!}{ \var{hash-table} \var{key}}}
-Removes any association for \var{key} within \var{hash-table}.  Returns the unspecified value.
+Removes any association for \var{key} within \var{hash-table}.
+Returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-contains?}{ \var{hash-table} \var{key}}}
-Returns \schtrue{} if \var{hash-table} contains an association for \var{key}, otherwise returns \schfalse{}.
+Returns \schtrue{} if \var{hash-table} contains an association
+for \var{key}, otherwise returns \schfalse{}.
 \end{entry}
 
 \begin{entry}{%
@@ -88,19 +121,18 @@ Equivalent to, but potentially more efficient than:
  (procedure (hash-table-ref
              hash-table key default)))
 \end{scheme}
-
 If \var{hash-table} does not contain an association for \var{key}, then \var{default} is passed to \var{procedure}.
 \end{entry}
 
-\begin{entry}{\proto{hash-table-update!/call}{ \var{hash-table} \var{key} \var{procedure} \var{f}}}
-Equivalent to, but potentially more efficient than:
-\begin{scheme}
-(hash-table-set!
- hash-table key
- (procedure (hash-table-ref/call [TODO: non-existent procedure]
-             hash-table key f)))
-\end{scheme}
-\end{entry}
+%\begin{entry}{\proto{hash-table-update!/call}{ \var{hash-table} \var{key} \var{procedure} \var{f}}}
+%Equivalent to, but potentially more efficient than:
+%\begin{scheme}
+%(hash-table-set!
+% hash-table key
+% (procedure (hash-table-ref/call [TODO: non-existent procedure]
+%             hash-table key f)))
+%\end{scheme}
+%\end{entry}
 
 \begin{entry}{\proto{hash-table-fold}{ \var{hash-table} \var{procedure} \var{init}}}
 For every association in \var{hash-table}, calls \var{procedure} with three arguments: the association key, the association value, and an accumulated value. The accumulated value is \var{init} for the first invocation of \var{procedure}, and for subsequent invocations of \var{procedure}, it is the return value of the previous invocation of \var{procedure}. The order of the calls to \var{procedure} is indeterminate. The return value of {\cf hash-table-fold} is the value of the last invocation of \var{procedure}. If any side effect is performed on the hash table while a {\cf hash-table-fold} operation is in progress, then the behavior of {\cf hash-table-fold} is unspecified.
@@ -126,7 +158,8 @@ Equivalent to:
 \begin{scheme}
 (hash-table-fold hash-table 
                  (lambda (k v a)
-                   (procedure k v))
+                   (procedure k v)
+                   (unspecified))
                  (unspecified))
 \end{scheme}
 \end{entry}
@@ -167,6 +200,14 @@ Returns the equivalence predicate used by \var{hash-table} to compare keys.  For
 
 \begin{entry}{\proto{hash-table-hash-function}{ \var{hash-table}}}
 Returns the hash function used by hash-table.  For hash tables created by {\cf make-eq-hash-table} or {\cf make-eqv-hash-table}, \schfalse{} is returned.
+
+\begin{rationale}
+The {\cf make-eq-hash-table} and {\cf make-eqv-hash-table} constructors
+are designed to hide their hash function.  This allows implementations
+to use the machine address of an object as its hash value, rehashing
+parts of the table as necessary whenever the garbage collector moves
+objects to a different address.
+\end{rationale}
 \end{entry}
 
 \begin{entry}{\proto{hash-table-mutable?}{ \var{hash-table}}}
@@ -174,6 +215,11 @@ Returns \schtrue{} if \var{hash-table} is mutable, \schfalse{} otherwise.
 \end{entry}
 
 \section{Hash functions}
+
+The {\cf equal-hash}, {\cf string-hash}, and {\cf string-ci-hash}
+procedures of this section are acceptable as hash functions only
+if the keys on which they are called do not suffer side effects
+while the hash table remains in use.
 
 \begin{entry}{\proto{equal-hash}{ \var{obj}}}
 Returns an integer hash value for \var{obj}, based on its structure and current contents.
@@ -197,14 +243,22 @@ Returns an integer hash value for \var{symbol}.
 Should the specification be limited to eq and eqv hash tables, since those are the only kind which may not be implementable as a portable library? (Editors straw-poll: no)
 
 \subsection{Complexity}
-It may be appropriate to specify constraints on complexity, such as constant time for hash-table-size, or an appropriate constraint on accessor procedures.
+It may be appropriate to specify constraints on complexity,
+such as constant time for hash-table-size, or an appropriate
+constraint on accessor procedures.  (Will: more trouble than
+it's worth in my opinion, because any bound on amortized
+complexity would have to take into account the cost of
+rehashing after garbage collections.)
 
 \subsection{Concurrency}
 R6RS does not deal with concurrency.  Even if this proposal does not say anything about that, the issue should be considered.  Any implementation that supports concurrency will have to implement some kind of mutual exclusion for operations that have side effects, and some will need mutual exclusion even for {\cf hash-table-ref}.  As specified, the updating operations are not atomic, so they create no new problems.  The {\cf hash-table-fold} and {\cf hash-table-for-each} procedures already have a problem, even without concurrency.
 
 \subsection{hash-table-update!}
 Are the functional update procedures {\cf hash-table-update!} and 
-{\cf hash-table-update!/call} justified?
+{\cf hash-table-update!/call} justified?  (Will: These may be
+procedural updates, but they aren't functional.  I have flushed
+{\cf hash-table-update!/call} for the time being, and would happily
+flush {\cf hash-table-update!} as well.)
 
 \subsection{Side-effects}
 There is a potential problem with the higher-order procedures, if a procedure argument mutates the hash table being operated on.  This should be addressed somehow, if only by a statement that the behavior caused by such procedures is unspecified.
