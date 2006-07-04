@@ -80,8 +80,8 @@ Returns \schtrue{} if \var{hash-table} contains an association for \var{key}, ot
 \end{entry}
 
 \begin{entry}{%
-\proto{hash-table-update!}{ \var{hash-table} \var{procedure} \var{default}}}
-Equivalent to:
+\proto{hash-table-update!}{ \var{hash-table} \var{key} \var{procedure} \var{default}}}
+Equivalent to, but potentially more efficient than:
 \begin{scheme}
 (hash-table-set!
  hash-table key
@@ -92,7 +92,7 @@ Equivalent to:
 If \var{hash-table} does not contain an association for \var{key}, then \var{default} is passed to \var{procedure}.
 \end{entry}
 
-\begin{entry}{\proto{hash-table-update!/call}{ \var{hash-table} \var{procedure} \var{f}}}
+\begin{entry}{\proto{hash-table-update!/call}{ \var{hash-table} \var{key} \var{procedure} \var{f}}}
 Equivalent to, but potentially more efficient than:
 \begin{scheme}
 (hash-table-set!
@@ -202,7 +202,7 @@ It may be appropriate to specify constraints on complexity, such as constant tim
 \subsection{Concurrency}
 R6RS does not deal with concurrency.  Even if this proposal does not say anything about that, the issue should be considered.  Any implementation that supports concurrency will have to implement some kind of mutual exclusion for operations that have side effects, and some will need mutual exclusion even for {\cf hash-table-ref}.  As specified, the updating operations are not atomic, so they create no new problems.  The {\cf hash-table-fold} and {\cf hash-table-for-each} procedures already have a problem, even without concurrency.
 
-\subsection{Omit hash-table-update!}
+\subsection{hash-table-update!}
 Are the functional update procedures {\cf hash-table-update!} and 
 {\cf hash-table-update!/call} justified?
 
