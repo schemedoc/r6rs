@@ -20,28 +20,34 @@
 % FIXME \mainindex{hashtable}
 
 \begin{entry}{%
-\proto{make-eq-hash-table}{}{}}
+\proto{make-eq-hash-table}{}{}
+\proto{make-eq-hash-table}{ \var{k}}}
 
-Returns a newly allocated hash table that accepts arbitrary objects 
-as keys, and compares those keys with eq?
-
-\end{entry}
-
-\begin{entry}{%
-\proto{make-eqv-hash-table}{}{}}
-
-Returns a newly allocated hash table that accepts arbitrary objects 
-as keys, and compares those keys with eqv?
+Returns a newly allocated hash table that accepts arbitrary objects as keys, 
+and compares those keys with eq? If an argument is given, then the initial 
+capacity of the hash table is set to \var{k} elements.
 
 \end{entry}
 
 \begin{entry}{%
-\proto{make-hash-table}{ \vari{procedure} \varii{procedure}}{}}
+\proto{make-eqv-hash-table}{}{}
+\proto{make-eqv-hash-table}{ \var{k}}}
+
+Returns a newly allocated hash table that accepts arbitrary objects as keys, 
+and compares those keys with eqv? If an argument is given, then the initial 
+capacity of the hash table is set to \var{k} elements.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{make-hash-table}{ \vari{procedure} \varii{procedure}}{}
+\proto{make-hash-table}{ \vari{procedure} \varii{procedure} \var{k}}}
 
 Returns a newly allocated mutable hash table using \vari{procedure} 
 as the hash function and \varii{procedure} as the procedure used to 
 compare keys.  The hash function must accept a key and return a 
-non-negative exact integer.
+non-negative exact integer. If a third argument is given, then the 
+initial capacity of the hash table is set to \var{k} elements.
 
 \end{entry}
 
@@ -56,12 +62,12 @@ Returns \schtrue{} if \var{hash-table} was created by one of the hash table cons
 Returns the number of keys contained in \var{hash-table} as an exact integer.
 \end{entry}
 
-\begin{entry}{\proto{hash-table-ref}{ \var{hash-table} \var{key}}}
-Returns the value in the hash-table associated with \var{key}.  If the hash table does not contain \var{key}, an exception is raised. [TODO: hash table exception types]
-\end{entry}
+\begin{entry}{%
+\proto{hash-table-ref}{ \var{hash-table} \var{key}}{}
+\proto{hash-table-ref}{ \var{hash-table} \var{key} \var{default}}}
 
-\begin{entry}{\proto{hash-table-ref/default}{ \var{hash-table} \var{key} \var{default}}}
-Returns the value in the hash-table associated with the \var{key}.  If the hash table does not contain \var{key}, returns \var{default}.
+Returns the value in \var{hash-table} associated with \var{key}.  If \var{hash-table} does not contain an association for \var{key}, then either an exception [TODO] is raised, or if the \var{default} argument is provided, its value is returned.
+
 \end{entry}
 
 \begin{entry}{\proto{hash-table-ref/call}{ \var{hash-table} \var{key} \var{f}}}
@@ -73,7 +79,7 @@ Returns the value associated with \var{key} in \var{hash-table} if the hash tabl
 \end{entry}
 
 \begin{entry}{\proto{hash-table-get}{ \var{hash-table} \var{key}}}
-Equivalent to: \begin{scheme}(hash-table-ref/default hash-table key \schfalse)\end{scheme}
+Equivalent to: \begin{scheme}(hash-table-ref hash-table key \schfalse)\end{scheme}
 \end{entry}
 
 \begin{entry}{\proto{hash-table-set!}{ \var{hash-table} \var{key} \var{value}}}
@@ -85,29 +91,21 @@ Removes any association for \var{key} within \var{hash-table}.  Returns the unsp
 \end{entry}
 
 \begin{entry}{\proto{hash-table-contains?}{ \var{hash-table} \var{key}}}
-Returns \schtrue{} if \var{hash-table} contains an entry for \var{key}, otherwise returns \schfalse{}.
+Returns \schtrue{} if \var{hash-table} contains an association for \var{key}, otherwise returns \schfalse{}.
 \end{entry}
 
-\begin{entry}{\proto{hash-table-update!}{ \var{hash-table} \var{procedure}}}
+\begin{entry}{%
+\proto{hash-table-update!}{ \var{hash-table} \var{procedure}}{}
+\proto{hash-table-update!}{ \var{hash-table} \var{procedure} \var{default}}}
 Equivalent to:
 \begin{scheme}
 (hash-table-set!
  hash-table key
- (procedure (hash-table-ref hash-table key)))
+ (procedure (hash-table-ref
+             hash-table key [default])))
 \end{scheme}
-Raises an exception if \var{hash-table} does not contain an entry for \var{key}.
-\end{entry}
 
-\begin{entry}{\proto{hash-table-update!/default}{ \var{hash-table}
-                                                  \var{procedure}
-                                                  \var{default}}}
-Equivalent to, but potentially more efficient than:
-\begin{scheme}
-(hash-table-set!
- hash-table key
- (procedure (hash-table-ref/default
-             hash-table key default)))
-\end{scheme}
+If \var{hash-table} does not contain an association for \var{key}, then either an exception [TODO] is raised, or if the \var{default} argument is provided, its value is passed to \var{procedure}.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-update!/thunk}{ \var{hash-table} \var{procedure} \var{thunk}}}
@@ -131,12 +129,16 @@ Equivalent to, but potentially more efficient than:
 \end{entry}
 
 \begin{entry}{\proto{hash-table-fold}{ \var{hash-table} \var{procedure} \var{init}}}
-For every association in \var{hash-table}, calls \var{procedure} with three arguments: the association key, the association value, and an accumulated value. The accumulated value is \var{init} for the first invocation of \var{procedure}, and for subsequent invocations of \var{procedure}, the return value of the previous invocation of \var{procedure}. The return value of {\cf hash-table-fold} is the value of the last invocation of procedure. If any side effect is performed on the hash table while a {\cf hash-table-fold} operation is in progress, then the behavior of {\cf hash-table-fold} is unspecified.
+For every association in \var{hash-table}, calls \var{procedure} with three arguments: the association key, the association value, and an accumulated value. The accumulated value is \var{init} for the first invocation of \var{procedure}, and for subsequent invocations of \var{procedure}, it is the return value of the previous invocation of \var{procedure}. The order of the calls to \var{procedure} is indeterminate. The return value of {\cf hash-table-fold} is the value of the last invocation of \var{procedure}. If any side effect is performed on the hash table while a {\cf hash-table-fold} operation is in progress, then the behavior of {\cf hash-table-fold} is unspecified.
 
 \end{entry}
 
-\begin{entry}{\proto{hash-table-copy}{ \var{hash-table}}}
-Returns a copy of \var{hash-table}.
+\begin{entry}{%
+\proto{hash-table-copy}{ \var{hash-table}}{}
+\proto{hash-table-copy}{ \var{hash-table} \var{immutable}}}
+
+Returns a copy of \var{hash-table}.  If the \var{immutable} argument is provided and is a true value, the returned hash table will be immutable, otherwise it will be mutable.
+
 \end{entry}
 
 \begin{entry}{\proto{hash-table-clear!}{ \var{hash-table}}}
@@ -218,10 +220,7 @@ Returns an integer hash value for \var{symbol}.
 \section{Issues}
 
 \subsection{Limit proposal scope}
-Should the specification be limited to eq and eqv hash tables, since those are the only kind which may not be implementable as a portable library?
-
-\subsection{Immutability}
-The proposal should probably support immutable hash tables, which can be constructed from a provided assoc list.  The appropriate constructor(s) need to be defined, supporting the various hash table options, preferably without doubling the number of constructors.
+Should the specification be limited to eq and eqv hash tables, since those are the only kind which may not be implementable as a portable library? (Editors straw-poll: no)
 
 \subsection{Complexity}
 It may be appropriate to specify constraints on complexity, such as constant time for hash-table-size, or an appropriate constraint on accessor procedures.
@@ -230,7 +229,7 @@ It may be appropriate to specify constraints on complexity, such as constant tim
 R6RS does not deal with concurrency.  Even if this proposal does not say anything about that, the issue should be considered.  Any implementation that supports concurrency will have to implement some kind of mutual exclusion for operations that have side effects, and some will need mutual exclusion even for {\cf hash-table-ref}.  As specified, the updating operations are not atomic, so they create no new problems.  The {\cf hash-table-fold} and {\cf hash-table-for-each} procedures already have a problem, even without concurrency.
 
 \subsection{Omission of procedures}
-Some procedures could perhaps be omitted, e.g. there are four retrieval procedures.  Which one(s) should be omitted, if any?  Procedures which take failure thunks are candidates for omission.
+Some procedures could perhaps be omitted, e.g. there are four retrieval procedures: -ref, -ref/call, -ref/thunk, -get.  Which one(s) should be omitted, if any?  Procedures which take failure thunks are candidates for omission.
 
 \subsection{Side-effects}
 There is a potential problem with the higher-order procedures, if a procedure argument mutates the hash table being operated on.  This should be addressed somehow, if only by a statement that the behavior caused by such procedures is unspecified.
