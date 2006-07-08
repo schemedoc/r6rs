@@ -63,16 +63,16 @@
 	 (?contagion a b ?name)))))))
 
 (define-binary exact=?/2 econtagion/ex
-  fixnum= bignum= ratnum= recnum=)
+  fixnum=? bignum=? ratnum=? recnum=?)
 
 (define-binary exact<?/2 pcontagion/ex
-  fixnum< bignum< ratnum< (make-typo-op/2 exact<? 'rational))
+  fixnum<? bignum<? ratnum<? (make-typo-op/2 exact<? 'rational))
 (define-binary exact<=?/2 pcontagion/ex
-  fixnum< bignum<= ratnum<= (make-typo-op/2 exact<=? 'rational))
+  fixnum<? bignum<=? ratnum<=? (make-typo-op/2 exact<=? 'rational))
 (define-binary exact>=?/2 pcontagion/ex
-  fixnum>= bignum>= ratnum>= (make-typo-op/2 exact>=? 'rational))
+  fixnum>=? bignum>=? ratnum>=? (make-typo-op/2 exact>=? 'rational))
 (define-binary exact>?/2 pcontagion/ex
-  fixnum>= bignum> ratnum> (make-typo-op/2 exact>? 'rational))
+  fixnum>=? bignum>? ratnum>? (make-typo-op/2 exact>? 'rational))
 
 (define exact=? (make-transitive-pred exact=?/2))
 (define exact<? (make-transitive-pred exact<?/2))
@@ -147,7 +147,7 @@
 (define (fixnum-abs x)
   (cond
    ((fixnum-negative? x)
-    (if (fixnum= x (least-fixnum))
+    (if (fixnum=? x (least-fixnum))
         *minus-least-fixnum*
 	(fixnum- x)))
    (else x)))
@@ -158,8 +158,8 @@
 
 (define-binary exact-quotient contagion/ex
   (lambda (x y)
-    (if (and (fixnum= x (least-fixnum))
-             (fixnum= y (r5rs->integer -1)))
+    (if (and (fixnum=? x (least-fixnum))
+             (fixnum=? y (r5rs->integer -1)))
         *minus-least-fixnum*
         (fixnum-quotient x y)))
   bignum-quotient

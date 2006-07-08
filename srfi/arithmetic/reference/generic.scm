@@ -122,20 +122,20 @@
 	 (?contagion a b ?name)))))))
 
 (define-binary =/2 econtagion/will
-  fixnum= bignum= ratnum= recnum= fl= compnum=)
+  fixnum=? bignum=? ratnum=? recnum=? fl=? compnum=?)
 
 (define-binary </2 pcontagion/will
-  fixnum< bignum< ratnum< (make-typo-op/2 < 'real)
-  fl< (make-typo-op/2 < 'real))
+  fixnum<? bignum<? ratnum<? (make-typo-op/2 < 'real)
+  fl<? (make-typo-op/2 < 'real))
 (define-binary <=/2 pcontagion/will
-  fixnum< bignum<= ratnum<= (make-typo-op/2 <= 'real)
-  fl< (make-typo-op/2 <= 'real))
+  fixnum<? bignum<=? ratnum<=? (make-typo-op/2 <= 'real)
+  fl<? (make-typo-op/2 <= 'real))
 (define-binary >=/2 pcontagion/will
-  fixnum>= bignum>= ratnum>= (make-typo-op/2 >= 'real)
-  fl>= (make-typo-op/2 >= 'real))
+  fixnum>=? bignum>=? ratnum>=? (make-typo-op/2 >= 'real)
+  fl>=? (make-typo-op/2 >= 'real))
 (define-binary >/2 pcontagion/will
-  fixnum>= bignum> ratnum> (make-typo-op/2 > 'real)
-  fl>
+  fixnum>=? bignum>? ratnum>? (make-typo-op/2 > 'real)
+  fl>?
   (make-typo-op/2 > 'real))
 
 (define = (make-transitive-pred =/2))
@@ -226,9 +226,9 @@
 ;; might be done faster with a different contagion matrix
 (define (*/2 n1 n2)
   (if (or (and (fixnum? n1)
-	       (fixnum= n1 (r5rs->integer 0)))
+	       (fixnum=? n1 (r5rs->integer 0)))
 	  (and (fixnum? n2)
-	       (fixnum= n2 (r5rs->integer 0))))
+	       (fixnum=? n2 (r5rs->integer 0))))
       0
       (*/2-helper n1 n2)))
 
@@ -247,7 +247,7 @@
 (define (fixnum-abs x)
   (cond
    ((fixnum-negative? x)
-    (if (fixnum= x (least-fixnum))
+    (if (fixnum=? x (least-fixnum))
         *minus-least-fixnum*
 	(fixnum- x)))
    (else x)))

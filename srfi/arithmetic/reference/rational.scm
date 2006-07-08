@@ -33,8 +33,8 @@
 (define rational+ (make-r*r->v ratnum+))
 (define rational- (make-r*r->v ratnum-))
 
-(define rational< (make-r*r->v ratnum<))
-(define rational= (make-r*r->v ratnum=))
+(define rational<? (make-r*r->v ratnum<?))
+(define rational=? (make-r*r->v ratnum=?))
 
 (define (make-r->v op)
   (lambda (p)

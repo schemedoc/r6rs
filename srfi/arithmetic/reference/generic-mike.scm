@@ -89,16 +89,16 @@
 	 (?contagion a b ?name)))))))
 
 (define-binary =/2 econtagion/mike
-  fixnum= bignum= ratnum= recnum=)
+  fixnum=? bignum=? ratnum=? recnum=?)
 
 (define-binary </2 pcontagion/mike
-  fixnum< bignum< ratnum< (make-typo-op/2 < 'rational))
+  fixnum<? bignum<? ratnum< (make-typo-op/2 < 'rational))
 (define-binary <=/2 pcontagion/mike
-  fixnum< bignum<= ratnum<= (make-typo-op/2 <= 'rational))
+  fixnum<? bignum<=? ratnum<=? (make-typo-op/2 <= 'rational))
 (define-binary >=/2 pcontagion/mike
-  fixnum>= bignum>= ratnum>= (make-typo-op/2 >= 'rational))
+  fixnum>=? bignum>=? ratnum>=? (make-typo-op/2 >= 'rational))
 (define-binary >/2 pcontagion/mike
-  fixnum>= bignum> ratnum> (make-typo-op/2 > 'rational))
+  fixnum>=? bignum>? ratnum>? (make-typo-op/2 > 'rational))
 
 (define = (make-transitive-pred =/2))
 (define < (make-transitive-pred </2))
@@ -161,7 +161,7 @@
 (define (fixnum-abs x)
   (cond
    ((fixnum-negative? x)
-    (if (fixnum= x (least-fixnum))
+    (if (fixnum=? x (least-fixnum))
         *minus-least-fixnum*
 	(fixnum- x)))
    (else x)))

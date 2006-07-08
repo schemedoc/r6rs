@@ -40,18 +40,18 @@
   (letrec ((loop
 	    (lambda (u v k)
 	      (let ((x (integer-quotient u v)))
-		(cond ((and (integer<= two^n-1 x) (integer< x two^n))
+		(cond ((and (integer<=? two^n-1 x) (integer<? x two^n))
 		       (ratio->float u v k))
-		      ((integer< x two^n-1)
+		      ((integer<? x two^n-1)
 		       (loop (integer* (r5rs->integer 2) u) v (integer- k (r5rs->integer 1))))
-		      ((integer<= two^n x)
+		      ((integer<=? two^n x)
 		       (loop u (integer* 2 v) (integer+ k (r5rs->integer 1)))))))))
 
     (lambda (r)
       (let ((p (ratnum-numerator r))
 	    (q (ratnum-denominator r)))
 	(let ((k (integer- (ratnum-log2 r) n)))
-	  (if (integer> k (r5rs->integer 0))
+	  (if (integer>? k (r5rs->integer 0))
 	      (loop p (integer* q (integer-expt (r5rs->integer 2) k)) k)
 	      (loop (integer* p (integer-expt (r5rs->integer 2) (integer-negate k))) q k)))))))
 
@@ -64,8 +64,8 @@
   (let* ((q (integer-quotient u v))
          (r (integer- u (integer* q v)))
          (v-r (integer- v r)))
-    (cond ((rational< r v-r) (make-float q k))
-          ((rational< v-r r) (make-float (integer+ q (r5rs->integer 1)) k))
+    (cond ((rational<? r v-r) (make-float q k))
+          ((rational<? v-r r) (make-float (integer+ q (r5rs->integer 1)) k))
           ((integer-zero? (integer-remainder q (r5rs->integer 2))) (make-float q k))
           (else (make-float (integer+ q (r5rs->integer 1)) k)))))
 
@@ -73,7 +73,7 @@
 
 (define (make-float m q)
   (let ((m (if (flonum? m) m (integer->flonum m))))
-    (if (integer< q flonum:minexponent)
+    (if (integer<? q flonum:minexponent)
 	(make-float (fl* (r5rs->flonum .5) m)
 		    (integer+ q (r5rs->integer 1)))
 	(fl* m
@@ -83,13 +83,13 @@
   (cond
    ((exact-integer? r)
     (integer->flonum r))
-   ((rational< r (r5rs->integer 0))
+   ((rational<? r (r5rs->integer 0))
     (fl- (r5rs->flonum 0.0) (rational->flonum (ratnum-abs r))))
    (else
     (let ((p (ratnum-numerator r))
 	  (q (ratnum-denominator r)))
-      (cond ((and (integer<= p two^n)
-		  (integer<= q two^n))
+      (cond ((and (integer<=? p two^n)
+		  (integer<=? q two^n))
 	     (fl/ (integer->flonum p)
 		  (integer->flonum q)))
 	    (else
@@ -120,15 +120,15 @@
 	      (fx 4) (fx 4) (fx 4) (fx 4) (fx 4) (fx 4) (fx 4) (fx 4)))
     
     (define (recur n)
-      (if (integer< n (fx 16))
+      (if (integer<? n (fx 16))
 	  (vector-ref upto-16 (integer->r5rs n))
 	  (let loop ((s useful) (prev (fx 16)))
 	    (let ((z (head s)))
-	      (if (integer< n (car z))
+	      (if (integer<? n (car z))
 		  (integer+ (cdr z) (recur (integer-quotient n prev)))
 		  (loop (tail s) (car z)))))))
     (define (integer-length n)
-      (if (integer< n (r5rs->integer 0))
+      (if (integer<? n (r5rs->integer 0))
 	  (recur (integer- (r5rs->integer -1) n))
 	  (recur n)))
 
@@ -147,8 +147,8 @@
 	   (power-1 (integer* (r5rs->integer 2) power-0))
 	   (power-2 (integer* (r5rs->integer 2) power-1)))
       (cond
-       ((rational< r power-0) (integer- approx (r5rs->integer 1)))
-       ((rational< r power-1) approx)
+       ((rational<? r power-0) (integer- approx (r5rs->integer 1)))
+       ((rational<? r power-1) approx)
        (else (integer+ approx (r5rs->integer 1)))))))
 
 (define (flinteger-expt x y)
@@ -160,6 +160,6 @@
 	  (else 
 	   (let ((v (recur (integer-quotient y (r5rs->integer 2)))))
 	     (fl* v v)))))
-  (if (integer>= y (r5rs->integer 0))
+  (if (integer>=? y (r5rs->integer 0))
       (recur y)
       (fl/ (r5rs->flonum 1.0) (recur (integer-negate y)))))

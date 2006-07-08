@@ -39,7 +39,7 @@
 (define (integer-negate m)
   (cond ((bignum? m)
 	 (bignum-negate m))
-	((fixnum= m (least-fixnum))
+	((fixnum=? m (least-fixnum))
 	 least-fixnum-negated)
 	(else (fixnum- m))))
 
@@ -51,8 +51,8 @@
 (define integer-remainder (make-int*int->val bignum-remainder))
 (define integer-quotient+remainder (make-int*int->val bignum-quotient+remainder))
 
-(define integer= (make-int*int->val bignum=))
-(define integer< (make-int*int->val bignum<))
+(define integer=? (make-int*int->val bignum=?))
+(define integer<? (make-int*int->val bignum<?))
 
 ; GCD
 
@@ -62,9 +62,9 @@
       (bignum-zero? x)))
 
 (define (integer-gcd x y)
-  (cond ((integer< x (r5rs->integer 0)) (integer-gcd (integer-negate x) y))
-	((integer< y (r5rs->integer 0)) (integer-gcd x (integer-negate y)))
-	((integer< x y) (euclid y x))
+  (cond ((integer<? x (r5rs->integer 0)) (integer-gcd (integer-negate x) y))
+	((integer<? y (r5rs->integer 0)) (integer-gcd x (integer-negate y)))
+	((integer<? x y) (euclid y x))
 	(else (euclid x y))))
 
 (define (euclid x y)
@@ -82,7 +82,7 @@
 		  (integer-abs y)))))
 
 (define (integer-abs x)
-  (if (integer< x (r5rs->integer 0))
+  (if (integer<? x (r5rs->integer 0))
       (integer-negate x)
       x))
 
@@ -101,24 +101,24 @@
 (define (integer-odd? n)
   (not (integer-even? n)))
 
-(define (integer> m n)
-  (integer< n m))
+(define (integer>? m n)
+  (integer<? n m))
 
-(define (integer>= m n)
-  (not (integer< m n)))
+(define (integer>=? m n)
+  (not (integer<? m n)))
 
-(define (integer<= m n)
-  (integer>= n m))
+(define (integer<=? m n)
+  (integer>=? n m))
 
 (define (integer-negative? m)
-  (integer< m (r5rs->integer 0)))
+  (integer<? m (r5rs->integer 0)))
 (define (integer-positive? m)
-  (integer> m (r5rs->integer 0)))
+  (integer>? m (r5rs->integer 0)))
 
 (define (integer-min m n)
-  (if (integer< m n) m n))
+  (if (integer<? m n) m n))
 (define (integer-max m n)
-  (if (integer> m n) m n))
+  (if (integer>? m n) m n))
 
 (define (integer-abs m)
   (if (integer-negative? m)

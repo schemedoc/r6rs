@@ -23,15 +23,15 @@
 	    (r5rs->integer (r5rs:denominator r))))
 
 (define (integer/ m n)
-  (cond ((integer< n (r5rs->integer 0))
+  (cond ((integer<? n (r5rs->integer 0))
 	 (integer/ (integer-negate m) (integer-negate n)))
-	((integer= n (r5rs->integer 0))
+	((integer=? n (r5rs->integer 0))
 	 (error "rational division by zero" m))
 	(else
 	 (let ((g (integer-gcd m n)))
 	   (let ((m (integer-quotient m g))
 		 (n (integer-quotient n g)))
-	     (if (integer= n (r5rs->integer 1))
+	     (if (integer=? n (r5rs->integer 1))
 		 m
 		 (make-unreduced-ratnum m n)))))))
 
@@ -74,18 +74,18 @@
 
 ; a/b < c/d  when  a*d < b*c
 
-(define (ratnum< p q)
-  (integer< (integer* (ratnum-numerator p) (ratnum-denominator q))
-	    (integer* (ratnum-denominator p) (ratnum-numerator q))))
+(define (ratnum<? p q)
+  (integer<? (integer* (ratnum-numerator p) (ratnum-denominator q))
+	     (integer* (ratnum-denominator p) (ratnum-numerator q))))
 
-(define (ratnum<= p q)
-  (not (ratnum< q p)))
+(define (ratnum<=? p q)
+  (not (ratnum<? q p)))
 
-(define (ratnum>= p q)
-  (not (ratnum< p q)))
+(define (ratnum>=? p q)
+  (not (ratnum<? p q)))
 
-(define (ratnum> p q)
-  (ratnum< q p))
+(define (ratnum>? p q)
+  (ratnum<? q p))
 
 (define (ratnum-positive? r)
   (integer-positive? (ratnum-numerator r)))
@@ -97,20 +97,20 @@
 	    (ratnum-denominator r)))
 
 (define (ratnum-min m n)
-  (if (ratnum<= m n)
+  (if (ratnum<=? m n)
       (ratnum->rational m)
       (ratnum->rational n)))
 
 (define (ratnum-max m n)
-  (if (ratnum>= m n)
+  (if (ratnum>=? m n)
       (ratnum->rational m)
       (ratnum->rational n)))
 
 ; a/b = c/d  when a = b and c = d  (always lowest terms)
 
-(define (ratnum= p q)
-  (and (integer= (ratnum-numerator p) (ratnum-numerator q))
-       (integer= (ratnum-denominator p) (ratnum-denominator q))))
+(define (ratnum=? p q)
+  (and (integer=? (ratnum-numerator p) (ratnum-numerator q))
+       (integer=? (ratnum-denominator p) (ratnum-denominator q))))
 
 ; (rational-truncate p) = integer of largest magnitude <= (abs p)
 
@@ -122,7 +122,7 @@
 (define (ratnum-floor p)
   (let* ((n (ratnum-numerator p))
 	 (q (integer-quotient n (ratnum-denominator p))))
-    (if (integer< (r5rs->integer 0) n)
+    (if (integer<? (r5rs->integer 0) n)
 	q
 	(integer- q (r5rs->integer 1)))))
 

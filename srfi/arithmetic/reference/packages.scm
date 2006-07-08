@@ -77,7 +77,7 @@
           fx          ; temporary
 	  fixnum?
 	  fixnum-width least-fixnum greatest-fixnum
-	  fixnum= fixnum>= fixnum<= fixnum> fixnum<
+	  fixnum=? fixnum>=? fixnum<=? fixnum>? fixnum<?
 	  fixnum-zero? fixnum-positive? fixnum-negative?
           fixnum-even? fixnum-odd?
 	  fixnum-max fixnum-min
@@ -100,7 +100,7 @@
 	  fixnum-logical-shift-left fixnum-logical-shift-right
           fixnum-rotate-bit-field fixnum-reverse-bit-field
 
-          fx= fx> fx< fx>= fx<=
+          fx=? fx>? fx<? fx>=? fx<=?
           fxzero? fxpositive? fxnegative? fxodd? fxeven?
           fxmax fxmin
           fx+ fx- fx*
@@ -130,7 +130,7 @@
 
 (define-interface flonums-interface
   (export flonum?
-	  fl+ fl- fl* fl/ fl= fl>= fl<= fl> fl<
+	  fl+ fl- fl* fl/ fl=? fl>=? fl<=? fl>? fl<?
 	  flzero? flpositive? flnegative?
 	  flmin flmax flabs
 	  flexp fllog
@@ -163,8 +163,8 @@
 	  bignum-divide
 	  bignum-quotient bignum-remainder bignum-quotient+remainder
 	  bignum-negate
-	  bignum=
-	  bignum< bignum<= bignum>= bignum>
+	  bignum=?
+	  bignum<? bignum<=? bignum>=? bignum>?
 	  bignum-positive? bignum-negative?
 	  bignum-abs
 	  bignum-min bignum-max
@@ -196,12 +196,12 @@
 	  integer*
 	  integer-quotient integer-remainder integer-quotient+remainder
 	  integer-negate
-	  integer=
-	  integer<
+	  integer=?
+	  integer<?
 
 	  integer-gcd integer-lcm
 	  integer-zero? integer-expt integer-even? integer-odd?
-	  integer> integer>= integer<=
+	  integer>? integer>=? integer<=?
 	  integer-positive? integer-negative?
 	  integer-min integer-abs integer-max
 	  integer->string
@@ -239,8 +239,8 @@
 	  ratnum?
 	  ratnum-numerator ratnum-denominator
 	  ratnum* ratnum/ ratnum+ ratnum-
-	  ratnum< ratnum<= ratnum>= ratnum>
-	  ratnum=
+	  ratnum<? ratnum<=? ratnum>=? ratnum>?
+	  ratnum=?
 	  ratnum-positive? ratnum-negative?
 	  ratnum-abs
 	  ratnum-min ratnum-max
@@ -262,7 +262,7 @@
   (export exact-rational?
 	  rational-numerator rational-denominator
 	  rational* rational/ rational+ rational-
-	  rational< rational=
+	  rational<? rational=?
 	  rational-positive? rational-negative?
 	  rational-truncate rational-floor
 	  rational->string))
@@ -282,7 +282,7 @@
 	  make-compnum-polar
 	  compnum-real compnum-imag
 	  compnum+ compnum- compnum* compnum/
-	  compnum= compnum-zero?
+	  compnum=? compnum-zero?
 	  compnum-angle compnum-magnitude
 	  compnum-exp compnum-log compnum-sqrt
 	  compnum-sin compnum-cos compnum-tan
@@ -305,7 +305,7 @@
 	  rectangulate ; temporary
 	  recnum-real recnum-imag
 	  recnum+ recnum- recnum* recnum/
-	  recnum=
+	  recnum=?
 	  recnum->string))
 
 (define-structures ((recnums recnums-interface)

@@ -58,12 +58,12 @@
       (make-compnum (fl/ (fl+ (fl* a1 b1) (fl* a2 b2)) d)
 		    (fl/ (fl- (fl* a2 b1) (fl* a1 b2)) d)))))
 
-(define (compnum= a b)
+(define (compnum=? a b)
   (let ((a1 (compnum-real a))
 	(a2 (compnum-imag a))
 	(b1 (compnum-real b))
 	(b2 (compnum-imag b)))
-    (and (fl= a1 b1) (fl= a2 b2))))
+    (and (fl=? a1 b1) (fl=? a2 b2))))
 
 (define (compnum-zero? a)
   (and (flzero? (compnum-real a))
@@ -129,8 +129,8 @@
 							 (compnum* c c))))))))
 
 (define (compnum-atan1 c)
-  (if (or (compnum= c plus-i)
-	  (compnum= c minus-i))
+  (if (or (compnum=? c plus-i)
+	  (compnum=? c minus-i))
       compnum-inf+
       (compnum* plus-i
 		(compnum/ (compnum-log (compnum/ (compnum+ plus-i c)

@@ -185,8 +185,8 @@
    (lambda (d m)
      (let ((y/2 (fixnum-div y (make-fixnum 2))))
        (cond ((fixnum-positive? y/2)
-              (if (fixnum>= m y/2)
-                  (if (and (fixnum= m y/2)
+              (if (fixnum>=? m y/2)
+                  (if (and (fixnum=? m y/2)
                            (fixnum-odd? y))
                       (values d m)
                       (values (fixnum+ d (make-fixnum 1))
@@ -194,8 +194,8 @@
                   (values d m)))
              (else
               (let ((y/2abs (fixnum- y/2)))
-                (if (fixnum>= m y/2abs)
-                    (if (and (fixnum= m y/2abs)
+                (if (fixnum>=? m y/2abs)
+                    (if (and (fixnum=? m y/2abs)
                              (fixnum-odd? y))
                         (values d m)
                         (values (fixnum- d (make-fixnum 1))
@@ -264,8 +264,8 @@
                        (fixnum-carry x+y c x+y+c)))))
 
 (define (fixnum-/carry x y c)
-  (if (fixnum> y (least-fixnum))
-      (if (fixnum> c (least-fixnum))
+  (if (fixnum>? y (least-fixnum))
+      (if (fixnum>? c (least-fixnum))
           ; This tail call is the usual case.
           (fixnum+/carry x (fixnum- y) (fixnum- c))
           ; c is the least fixnum
@@ -273,7 +273,7 @@
            (lambda () (fixnum+/carry x (fixnum- y) c))
            (lambda (x+y+c carry)
              (values x+y+c (fixnum+/2 carry (make-fixnum 1))))))
-      (if (fixnum> c (least-fixnum))
+      (if (fixnum>? c (least-fixnum))
           ; y is the least fixnum
           (call-with-values
            (lambda () (fixnum+/carry x y (fixnum- c)))
@@ -365,11 +365,11 @@
 (define (least-fixnum) *fixnum-min*)
 (define (greatest-fixnum) *fixnum-max*)
 
-(define fixnum= (make-transitive-pred (make-fixnum*fixnum->val r5rs:=)))
-(define fixnum>= (make-transitive-pred (make-fixnum*fixnum->val r5rs:>=)))
-(define fixnum<= (make-transitive-pred (make-fixnum*fixnum->val r5rs:<=)))
-(define fixnum> (make-transitive-pred (make-fixnum*fixnum->val r5rs:>)))
-(define fixnum< (make-transitive-pred (make-fixnum*fixnum->val r5rs:<)))
+(define fixnum=? (make-transitive-pred (make-fixnum*fixnum->val r5rs:=)))
+(define fixnum>=? (make-transitive-pred (make-fixnum*fixnum->val r5rs:>=)))
+(define fixnum<=? (make-transitive-pred (make-fixnum*fixnum->val r5rs:<=)))
+(define fixnum>? (make-transitive-pred (make-fixnum*fixnum->val r5rs:>)))
+(define fixnum<? (make-transitive-pred (make-fixnum*fixnum->val r5rs:<)))
 
 (define fixnum-zero? (make-fixnum->val r5rs:zero?))
 (define fixnum-positive? (make-fixnum->val r5rs:positive?))
@@ -377,8 +377,8 @@
 (define fixnum-even? (make-fixnum->val r5rs:even?))
 (define fixnum-odd? (make-fixnum->val r5rs:odd?))
 
-(define fixnum-min (make-min/max fixnum<))
-(define fixnum-max (make-min/max fixnum>))
+(define fixnum-min (make-min/max fixnum<?))
+(define fixnum-max (make-min/max fixnum>?))
 
 (define (fixnum+ . args)
   (reduce (make-fixnum 0) fixnum+/2 args))
@@ -480,7 +480,7 @@
                     (fixnum-logical-shift-right x increment)
                     mask
                     increment)
-              (if (fixnum= increment (make-fixnum 1))
+              (if (fixnum=? increment (make-fixnum 1))
                   result
                   (loop result x (make-fixnum 1) (make-fixnum 1))))))))
 
@@ -552,7 +552,7 @@
    ((fixnum-zero? fixnum2) fixnum1)
    ((fixnum-positive? fixnum1)
     (fixnum-arithmetic-shift-right fixnum1 fixnum2))
-   ((fixnum> fixnum2 *fixnum-width*) (make-fixnum 0))
+   ((fixnum>? fixnum2 *fixnum-width*) (make-fixnum 0))
    (else
     (fixnum-logical-shift-right
      (fixnum-and (fixnum-arithmetic-shift-right fixnum1 (make-fixnum 1))
@@ -597,11 +597,11 @@
 
 ; Some of the fx operations are the same as the fixnum operations.
 
-(define fx= fixnum=)
-(define fx> fixnum>)
-(define fx< fixnum<)
-(define fx>= fixnum>=)
-(define fx<= fixnum<=)
+(define fx=? fixnum=?)
+(define fx>? fixnum>?)
+(define fx<? fixnum<?)
+(define fx>=? fixnum>=?)
+(define fx<=? fixnum<=?)
 
 (define fxzero? fixnum-zero?)
 (define fxpositive? fixnum-positive?)
@@ -653,28 +653,28 @@
          (error "fixnum overflow in fx*" x y)))))
 
 (define (fxdiv+mod x y)
-  (if (and (fixnum= x (least-fixnum))
-           (fixnum= y (make-fixnum -1)))
+  (if (and (fixnum=? x (least-fixnum))
+           (fixnum=? y (make-fixnum -1)))
       (error "fixnum overflow in fxdiv+mod" x y)
       (fixnum-div+mod x y)))
 
 (define (fxdiv x y)
-  (if (and (fixnum= x (least-fixnum))
-           (fixnum= y (make-fixnum -1)))
+  (if (and (fixnum=? x (least-fixnum))
+           (fixnum=? y (make-fixnum -1)))
       (error "fixnum overflow in fxdiv" x y)
       (fixnum-div x y)))
 
 (define fxmod fixnum-mod)
 
 (define (fxdiv0+mod0 x y)
-  (if (and (fixnum= x (least-fixnum))
-           (fixnum= y (make-fixnum -1)))
+  (if (and (fixnum=? x (least-fixnum))
+           (fixnum=? y (make-fixnum -1)))
       (error "fixnum overflow in fxdiv0+mod0" x y)
       (fixnum-div0+mod0 x y)))
 
 (define (fxdiv0 x y)
-  (if (and (fixnum= x (least-fixnum))
-           (fixnum= y (make-fixnum -1)))
+  (if (and (fixnum=? x (least-fixnum))
+           (fixnum=? y (make-fixnum -1)))
       (error "fixnum overflow in fxdiv0" x y)
       (fixnum-div0 x y)))
 
@@ -692,52 +692,52 @@
 (define fxfirst-bit-set fixnum-first-bit-set)
 
 (define (fxbit-set? x y)
-  (if (or (fixnum< y (make-fixnum 0))
-          (fixnum>= y (fixnum-width)))
+  (if (or (fixnum<? y (make-fixnum 0))
+          (fixnum>=? y (fixnum-width)))
       (error "second argument to fxbit-set! is out of range" x y)
       (fixnum-bit-set? x y)))
 
 (define (fxcopy-bit x y z)
-  (if (or (fixnum< y (make-fixnum 0))
-          (fixnum>= y (fixnum-width))
-          (fixnum< z (make-fixnum 0))
-          (fixnum> z (make-fixnum 1)))
+  (if (or (fixnum<? y (make-fixnum 0))
+          (fixnum>=? y (fixnum-width))
+          (fixnum<? z (make-fixnum 0))
+          (fixnum>? z (make-fixnum 1)))
       (error "illegal argument(s) to fxcopy-bit" x y z)
       (fixnum-copy-bit x y z)))
 
 (define (fxbit-field x y z)
-  (if (or (fixnum< y (make-fixnum 0))
-          (fixnum< z (make-fixnum 0))
-          (fixnum> y z))
+  (if (or (fixnum<? y (make-fixnum 0))
+          (fixnum<? z (make-fixnum 0))
+          (fixnum>? y z))
       (error "illegal argument(s) to fxbit-field" x y z)
       (fixnum-bit-field x y z)))
 
 (define (fxcopy-bit-field x y z w)
-  (if (or (fixnum< y (make-fixnum 0))
-          (fixnum< z (make-fixnum 0))
-          (fixnum> y (fixnum-width))
-          (fixnum> z (fixnum-width)))
+  (if (or (fixnum<? y (make-fixnum 0))
+          (fixnum<? z (make-fixnum 0))
+          (fixnum>? y (fixnum-width))
+          (fixnum>? z (fixnum-width)))
       (error "illegal argument(s) to fxcopy-bit-field" x y z w)
       (fixnum-copy-bit-field x y z w)))
 
 (define (fxarithmetic-shift x y)
-  (if (or (fixnum< y (fixnum- (fixnum-width)))
-          (fixnum> y (fixnum-width)))
+  (if (or (fixnum<? y (fixnum- (fixnum-width)))
+          (fixnum>? y (fixnum-width)))
       (error "illegal second argument to fxarithmetic-shift" x y)
       (let ((z (fixnum-arithmetic-shift x y)))
         (cond ((fixnum-negative? y) z)
-              ((fixnum= x (fixnum-arithmetic-shift z (fixnum- y)))
+              ((fixnum=? x (fixnum-arithmetic-shift z (fixnum- y)))
                z)
               (else
                (error "fixnum overflow in fxarithmetic-shift" x y))))))
 
 (define (fxarithmetic-shift-left x y)
-  (if (fixnum< y (make-fixnum 0))
+  (if (fixnum<? y (make-fixnum 0))
       (error "negative second argument to fxarithmetic-shift-left" x y)
       (fxarithmetic-shift x y)))
 
 (define (fxarithmetic-shift-right x y)
-  (if (fixnum< y (make-fixnum 0))
+  (if (fixnum<? y (make-fixnum 0))
       (error "negative second argument to fxarithmetic-shift-right" x y)
       (fxarithmetic-shift x (fixnum- y))))
 
@@ -745,9 +745,9 @@
   (if (or (fixnum-negative? start)
           (fixnum-negative? end)
           (fixnum-negative? count)
-          (fixnum> start (fixnum-width))
-          (fixnum> end (fixnum-width))
-          (fixnum> count (fixnum- end start)))
+          (fixnum>? start (fixnum-width))
+          (fixnum>? end (fixnum-width))
+          (fixnum>? count (fixnum- end start)))
       (error "illegal argument to fxrotate-bit-field"
              n start end count)
       (fixnum-rotate-bit-field n start end count)))
@@ -755,9 +755,9 @@
 (define (fxreverse-bit-field n start end)
   (if (or (fixnum-negative? start)
           (fixnum-negative? end)
-          (fixnum> start (fixnum-width))
-          (fixnum> end (fixnum-width))
-          (fixnum> start end))
+          (fixnum>? start (fixnum-width))
+          (fixnum>? end (fixnum-width))
+          (fixnum>? start end))
       (error "illegal argument to fxreverse-bit-field"
              n start end)
       (fixnum-reverse-bit-field n start end)))

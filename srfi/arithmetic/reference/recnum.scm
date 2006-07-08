@@ -31,7 +31,7 @@
 	       (r5rs->integer (r5rs:imag-part n))))
 
 (define (rectangulate x y)
-  (if (rational= y (r5rs->integer 0))
+  (if (rational=? y (r5rs->integer 0))
       x
       (make-recnum x y)))
 
@@ -60,12 +60,12 @@
       (rectangulate (rational/ (rational+ (rational* a1 b1) (rational* a2 b2)) d)
 		    (rational/ (rational- (rational* a2 b1) (rational* a1 b2)) d)))))
 
-(define (recnum= a b)
+(define (recnum=? a b)
   (let ((a1 (recnum-real a))
 	(a2 (recnum-imag a))
 	(b1 (recnum-real b))
 	(b2 (recnum-imag b)))
-    (and (rational= a1 b1) (rational= a2 b2))))
+    (and (rational=? a1 b1) (rational=? a2 b2))))
 
 (define (recnum->string r radix)
   (if (rational-negative? (recnum-imag r))

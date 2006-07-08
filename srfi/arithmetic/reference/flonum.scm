@@ -81,25 +81,25 @@
   (lambda (a b)
     (r5rs-op (flonum-inexact a) (flonum-inexact b))))
 
-(define fl= (make-transitive-pred (make-fl*fl->val r5rs:=)))
-(define fl>= (make-transitive-pred (make-fl*fl->val r5rs:>=)))
-(define fl<= (make-transitive-pred (make-fl*fl->val r5rs:<=)))
-(define fl> (make-transitive-pred (make-fl*fl->val r5rs:>)))
-(define fl< (make-transitive-pred (make-fl*fl->val r5rs:<)))
+(define fl=? (make-transitive-pred (make-fl*fl->val r5rs:=)))
+(define fl>=? (make-transitive-pred (make-fl*fl->val r5rs:>=)))
+(define fl<=? (make-transitive-pred (make-fl*fl->val r5rs:<=)))
+(define fl>? (make-transitive-pred (make-fl*fl->val r5rs:>)))
+(define fl<? (make-transitive-pred (make-fl*fl->val r5rs:<)))
 
 (define (make-fl->val r5rs-op)
   (lambda (a)
     (r5rs-op (flonum-inexact a))))
 
 (define (flzero? x)
-  (fl= x (r5rs->flonum 0.0)))
+  (fl=? x (r5rs->flonum 0.0)))
 (define (flpositive? x)
-  (fl> x (r5rs->flonum 0.0)))
+  (fl>? x (r5rs->flonum 0.0)))
 (define (flnegative? x)
-  (fl< x (r5rs->flonum 0.0)))
+  (fl<? x (r5rs->flonum 0.0)))
 
-(define flmin (make-min/max fl<))
-(define flmax (make-min/max fl>))
+(define flmin (make-min/max fl<?))
+(define flmax (make-min/max fl>?))
 
 (define (flabs x)
   (if (flnegative? x)
@@ -184,9 +184,9 @@
 
 (define (flonum->fixnum f)
   (cond
-   ((fl< f (fixnum->flonum (least-fixnum)))
+   ((fl<? f (fixnum->flonum (least-fixnum)))
     (least-fixnum))
-   ((fl> f (fixnum->flonum (greatest-fixnum)))
+   ((fl>? f (fixnum->flonum (greatest-fixnum)))
     (greatest-fixnum))
    (else
     (r5rs->fixnum (r5rs:inexact->exact (r5rs:round (flonum-inexact f)))))))

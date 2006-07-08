@@ -222,7 +222,7 @@
 
 (define (parse-ureal input exactness radix sign)
   (cond ((null? input) #f)
-        ((and (integer= radix (r5rs->integer 10))
+        ((and (integer=? radix (r5rs->integer 10))
               (radix-digit? (car input) (r5rs->integer 10)) (not exactness))
          (parse-decimal (cdr input)
                         (decimal-value (car input))
@@ -233,7 +233,7 @@
              radix
              sign
              (radix-digit-value (car input) radix)))
-        ((and (integer= radix (r5rs->integer 10))
+        ((and (integer=? radix (r5rs->integer 10))
               (char=? (car input) #\.)
               (not (null? (cdr input)))
               (radix-digit? (cadr input) (r5rs->integer 10)))
@@ -281,7 +281,7 @@
                (q1 (cdr input) (or e 'i) r s (integer* r m)))
               ((char=? c #\/)
                (q7 (cdr input) e r s m))
-              ((not (integer= r (r5rs->integer 10))) #f)
+              ((not (integer=? r (r5rs->integer 10))) #f)
               ((char=? c #\.)
                (q3 (cdr input) (or e 'i) s m (r5rs->integer 0)))
               ((exponent-marker? c)
@@ -448,7 +448,7 @@
   (memq c '(#\e #\s #\f #\d #\l)))
 
 (define (radix-digit? c r)
-  (if (integer= r (r5rs->integer 16))
+  (if (integer=? r (r5rs->integer 16))
       (or (decimal-digit? c)
           (let ((c (char-downcase c)))
             (and (char<=? #\a c) (char<=? c #\f))))
@@ -458,7 +458,7 @@
 			(integer+ (r5rs->integer (char->integer #\0)) r)))))))
 
 (define (radix-digit-value c r)
-  (cond ((not (integer= r (r5rs->integer 16)))
+  (cond ((not (integer=? r (r5rs->integer 16)))
          (integer- (r5rs->integer (char->integer c)) (r5rs->integer (char->integer #\0))))
         ((char<=? c #\9)
          (radix-digit-value c (r5rs->integer 10)))
@@ -479,7 +479,7 @@
 ;   precision   = an exact integer
 
 (define (create-number exactness sign numerator denominator exponent precision)
-  (cond ((not (integer= denominator (r5rs->integer 1)))
+  (cond ((not (integer=? denominator (r5rs->integer 1)))
          (coerce-exactness exactness
                            (integer/ (integer* sign numerator) denominator)))
         ((eq? exactness 'i)
@@ -523,10 +523,10 @@
 	   (parse-number input))
 	  ((null? (cdr rest))
 	   (let ((radix (car rest)))
-	     (if (or (integer= (r5rs->integer 2) radix)
-		     (integer= (r5rs->integer 8) radix)
-		     (integer= (r5rs->integer 10) radix)
-		     (integer= (r5rs->integer 16) radix))
+	     (if (or (integer=? (r5rs->integer 2) radix)
+		     (integer=? (r5rs->integer 8) radix)
+		     (integer=? (r5rs->integer 10) radix)
+		     (integer=? (r5rs->integer 16) radix))
 		 (parse-prefix input #f (car rest))
 		 (begin (error "string->number: Invalid radix: "
 			       (car rest))
