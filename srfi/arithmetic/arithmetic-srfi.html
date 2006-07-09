@@ -2231,6 +2231,7 @@ and a NaN when given a NaN:
 <DL>
 <DT><U>procedure:</U> <CODE>flexp</CODE> <var>fl</var>
 <DT><U>procedure:</U> <CODE>fllog</CODE> <var>fl</var>
+<DT><U>procedure:</U> <CODE>fllog</CODE> <var>fl1</var> <var>fl2</var>
 <DT><U>procedure:</U> <CODE>flsin</CODE> <var>fl</var>
 <DT><U>procedure:</U> <CODE>flcos</CODE> <var>fl</var>
 <DT><U>procedure:</U> <CODE>fltan</CODE> <var>fl</var>
@@ -2241,7 +2242,9 @@ and a NaN when given a NaN:
 
 <P>
 These procedures compute the usual transcendental functions.  <CODE>Fllog</CODE>
-computes the natural logarithm of <VAR>fl</VAR> (not the base ten logarithm).
+with a single argument computes the natural logarithm of <VAR>fl</VAR>
+(not the base ten logarithm); <CODE>`(fllog <var>fl1</var>
+<var>fl2</var>)'</CODE> computes the base-<var>fl2</var> logarithm of <var>fl1</var>.
 <CODE>Flasin</CODE>, <CODE>flacos</CODE>, and <CODE>flatan</CODE> compute arcsine (sin<SUP>-1</SUP>),
 arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
 <CODE>`(flatan <var>fl1</var> <var>fl2</var>)'</CODE> computes the
@@ -2253,10 +2256,15 @@ pi/2, both inclusive if -0.0 is distinguished, both exclusive otherwise.
 In general, the mathematical functions log, arcsine, arccosine, and
 arctangent are multiply defined.
 The value of log <VAR>z</VAR> is defined to be the one whose imaginary
-part lies in the range from -pi (exclusive) to pi (inclusive).
-With log defined this way, the values of sin<SUP>-1</SUP> <VAR>fl</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
-and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
+part lies in the range from -pi (inclusive if -0.0 is distinguished,
+exclusive otherwise) to pi (inclusive).
+With the one-argument version of log defined this way, the values of
+the two-argument version of log, sin<SUP>-1</SUP> <VAR>z</VAR>,
+cos<SUP>-1</SUP> <VAR>z</VAR>, and tan<SUP>-1</SUP> <VAR>z</VAR> are
+according to the following formulae:
 
+<P>
+log <VAR>z</VAR> <VAR>b</VAR> = log <VAR>z</VAR> / log <VAR>b</VAR>
 
 <P>
 sin<SUP>-1</SUP> <VAR>z</VAR> = -i log (i <VAR>z</VAR> + sqrt(1 - <VAR>z</VAR><SUP>2</SUP>))
@@ -3239,6 +3247,7 @@ a NaN when given a NaN.
 <DL>
 <DT><U>procedure:</U> <CODE>inexact-exp</CODE> <var>in</var>
 <DT><U>procedure:</U> <CODE>inexact-log</CODE> <var>in</var>
+<DT><U>procedure:</U> <CODE>inexact-log</CODE> <var>in1</var> <var>in2</var>
 <DT><U>procedure:</U> <CODE>inexact-sin</CODE> <var>in</var>
 <DT><U>procedure:</U> <CODE>inexact-cos</CODE> <var>in</var>
 <DT><U>procedure:</U> <CODE>inexact-tan</CODE> <var>in</var>
@@ -3249,8 +3258,11 @@ a NaN when given a NaN.
 
 <P>
 These procedures compute the usual transcendental functions.  <CODE>Inexact-log</CODE>
-computes the natural logarithm of <VAR>in</VAR> (not the base ten logarithm).
-<CODE>Inexact-asin</CODE>, <CODE>Inexact-acos</CODE>, and <CODE>Inexact-atan</CODE> compute arcsine (sin<SUP>-1</SUP>),
+with a single argument computes the natural logarithm of <VAR>in</VAR>
+(not the base ten logarithm); <CODE>`(inexact-log <var>in1</var>
+<var>in2</var>)'</CODE> computes the base-<var>in2</var> logarithm of <var>in1</var>.
+<CODE>Inexact-asin</CODE>, <CODE>Inexact-acos</CODE>, and
+<CODE>Inexact-atan</CODE> compute arcsine (sin<SUP>-1</SUP>),
 arccosine (cos<SUP>-1</SUP>), and arctangent (tan<SUP>-1</SUP>), respectively.
 The two-argument variant of <CODE>Inexact-atan</CODE> computes <SAMP>`(inexact-angle
 (inexact-make-rectangular <VAR>ir1</VAR> <VAR>ir2</VAR>))'</SAMP> (see below).
@@ -3261,9 +3273,13 @@ arctangent are multiply defined.
 The value of log <VAR>z</VAR> is defined to be the one whose imaginary
 part lies in the range from -pi (inclusive if -0.0 is distinguished,
 exclusive otherwise) to pi (inclusive).
-With log defined this way, the values of sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>,
-and tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
+With the one-argument version of log defined this way, the values of
+the two-argument version of log, sin<SUP>-1</SUP> <VAR>z</VAR>,
+cos<SUP>-1</SUP> <VAR>z</VAR>, and tan<SUP>-1</SUP> <VAR>z</VAR> are
+according to the following formulae:
 
+<P>
+log <VAR>z</VAR> <VAR>b</VAR> = log <VAR>z</VAR> / log <VAR>b</VAR>
 
 <P>
 sin<SUP>-1</SUP> <VAR>z</VAR> = -i log (i <VAR>z</VAR> + sqrt(1 - <VAR>z</VAR><SUP>2</SUP>))
@@ -4050,6 +4066,7 @@ all.
 <DL>
 <DT><U>procedure:</U> <CODE>exp</CODE> <VAR>z</VAR>
 <DT><U>procedure:</U> <CODE>log</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <CODE>log</CODE> <VAR>z1</VAR> <VAR>z2</VAR>
 <DT><U>procedure:</U> <CODE>sin</CODE> <VAR>z</VAR>
 <DT><U>procedure:</U> <CODE>cos</CODE> <VAR>z</VAR>
 <DT><U>procedure:</U> <CODE>tan</CODE> <VAR>z</VAR>
@@ -4092,10 +4109,13 @@ where <VAR>x<span class=sub>angle</span></VAR> is the angle of <VAR>z</VAR> as
 specified below.
 
 <P>
-<FONT color="red">With log defined this way,</FONT> the values of
-sin<SUP>-1</SUP> <VAR>z</VAR>, cos<SUP>-1</SUP> <VAR>z</VAR>, and
-tan<SUP>-1</SUP> <VAR>z</VAR> are according to the following formulae:
+<FONT color="red">With the one-argument version of log defined this way,</FONT> the values of
+<FONT color="red">the two-argument version of log,</FONT> sin<SUP>-1</SUP> <VAR>z</VAR>,
+cos<SUP>-1</SUP> <VAR>z</VAR>, and tan<SUP>-1</SUP> <VAR>z</VAR> are
+according to the following formulae:
 
+<P>
+<FONT color="red">log <VAR>z</VAR> <VAR>b</VAR> = log <VAR>z</VAR> / log <VAR>b</VAR></FONT>
 
 <P>
 sin<SUP>-1</SUP> <VAR>z</VAR> = -i log (i <VAR>z</VAR> + sqrt(1 - <VAR>z</VAR><SUP>2</SUP>))

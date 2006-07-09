@@ -244,7 +244,7 @@
 
 ; from Larceny
 
-(define (inexact-log z)
+(define (inexact-log1 z)
   (cond ((and (flonum? z) (flpositive? z))
 	 (fllog z))
 	((or (compnum? z) (inexact-negative? z))
@@ -252,6 +252,12 @@
 		   (inexact* (r5rs->compnum +1.0i) (inexact-angle z))))
 	(else
 	 (fllog z))))
+
+(define (inexact-log z . extra)
+  (if (null? extra)
+      (inexact-log1 z)
+      (inexact/ (inexact-log1 z)
+		(inexact-log1 (car extra)))))
 
 ; Square root
 ; Formula for complex square root from CLtL2, p310.

@@ -108,7 +108,7 @@
 
 (define flexp (make-fl->fl r5rs:exp))
 
-(define (log* z)
+(define (log1* z)
   (cond
    ((r5rs:= r5rs-inf+ z)
     r5rs-inf+)
@@ -121,7 +121,7 @@
    (else
     (r5rs:log z))))
 
-(define fllog (make-fl->fl log*))
+(define fllog1 (make-fl->fl log1*))
 (define flsin (make-fl->fl r5rs:sin))
 (define flcos (make-fl->fl r5rs:cos))
 (define fltan (make-fl->fl r5rs:tan))
@@ -129,6 +129,12 @@
 (define flacos (make-fl->fl r5rs:acos))
 (define flatan1 (make-fl->fl r5rs:atan))
 (define flatan2 (make-fl*fl->fl r5rs:atan))
+
+(define (fllog z . extra)
+  (if (null? extra)
+      (fllog1 z)
+      (fl/ (fllog1 z)
+	   (fllog1 (car extra)))))
 
 (define (flatan x . extra)
   (if (null? extra)
