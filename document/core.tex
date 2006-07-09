@@ -937,17 +937,20 @@ desired structure is known in advance.  If no
 commas\index{comma} appear within the \hyper{qq template}, the result of
 evaluating
 {\tt (quasiquote \hyper{qq template})} is equivalent to the result of evaluating
-\singlequote\hyper{qq template}.  If an
-{\cf (unquote \hyper{expression})} form appears inside a
-\hyper{qq template}, however, the \hyper{expression} is
-evaluated (``unquoted'') and its result is inserted into the structure
-instead of the comma and the expression.  If an
-{\cf (unquote-splicing \hyper{expression})} form
-appears inside a \hyper{qq template}, then the 
-expression must evaluate to a list; the opening and closing parentheses
-of the list are then ``stripped away'' and the elements of the list are
-inserted in place of the {\cf unquote-splicing} expression sequence.  An
-{\cf unquote-splicig} form should only appear within a list or vector \hyper{qq template}.
+\singlequote\hyper{qq template}.
+
+If an {\cf (unquote \hyper{expression} \dotsfoo)} form appears inside a
+\hyper{qq template}, however, the \hyper{expression}s are evaluated
+(``unquoted'') and their results are inserted into the structure instead
+of the comma and the expressions.
+
+If an {\cf (unquote-splicing \hyper{expression} \dotsfoo)} form
+appears inside a \hyper{qq template}, then the \hyper{expression}s must
+evaluate to lists; the opening and closing parentheses of the list are
+then ``stripped away'' and the elements of the lists are inserted in
+place of the {\cf unquote-splicing} expression sequence.  {\cf
+  Unquote-splicing} and multi-operand {\cf unquote} forms should only
+appear within a list or vector \hyper{qq template}.
 
 % struck: "(in the sense of {\cf equal?})" after "equivalent"
 
@@ -960,7 +963,13 @@ inserted in place of the {\cf unquote-splicing} expression sequence.  An
 `(({\cf foo} ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) %
           \lev  ((foo 7) . cons)
 `\#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8) %
-          \lev  \#(10 5 2 4 3 8)%
+          \lev  \#(10 5 2 4 3 8)
+(let ((name 'foo))
+  `((unquote name name name)))%
+          \lev (foo foo foo)
+(let ((name '(foo)))
+  `((unquote-splicing name name name)))%
+          \lev (foo foo foo)
 \end{scheme}
 
 Quasiquote forms may be nested.  Substitutions are made only for
