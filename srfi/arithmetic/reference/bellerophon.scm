@@ -139,7 +139,7 @@
 (define slop324  (r5rs->integer 21))
 
 ; Precomputed so we don't have to rely on LOG in initialization phase.
-;    (define log5-of-two^n (inexact->exact (ceiling (/ (log two^n) (log 5)))))
+;    (define log5-of-two^n (->exact (ceiling (/ (log two^n) (log 5)))))
 (define log5-of-two^n (r5rs->integer 23))
     
 ; Extended precision floating point, implemented entirely

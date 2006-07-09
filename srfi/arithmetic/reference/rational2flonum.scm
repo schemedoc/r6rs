@@ -19,13 +19,13 @@
 
 ; from Larceny
 
-; What EXACT->INEXACT should do when given an exact rational.
+; What ->INEXACT should do when given an exact rational.
 ;
 ; Assumes inexact reals are represented using IEEE double precision
 ; floating point.  IEEE single and extended precision can be handled
 ; by changing n and flonum:minexponent.
 ;
-; Test case: (exact->inexact 14285714285714285714285) should be
+; Test case: (->inexact 14285714285714285714285) should be
 ; 1.4285714285714286e22, not 1.4285714285714284e22.
 
 ; #### (SEE WILL'S NOTES)
@@ -137,7 +137,7 @@
 ; end from Scheme 48
 
 ; assumes r is positive
-; we want (inexact->exact (ceiling (log2 r)))
+; we want (->exact (ceiling (log2 r)))
 (define (ratnum-log2 r)
   (let ((n (ratnum-numerator r))
 	(d (ratnum-denominator r)))

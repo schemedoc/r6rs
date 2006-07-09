@@ -556,7 +556,7 @@
 	  exp log sin cos tan asin acos atan
 	  sqrt expt
 	  make-rectangular make-polar real-part imag-part magnitude angle
-	  exact->inexact inexact->exact number->flonum
+	  x->inexact x->exact number->flonum
 	  rationalize))
 
 (define-structure generic-arithmetic generic-arithmetic-interface
@@ -591,7 +591,7 @@
 	  floor ceiling truncate round
 	  expt
 	  make-rectangular real-part imag-part
-	  exact->inexact inexact->exact number->flonum
+	  x->inexact x->exact number->flonum
 	 ;bitwise-not
 	 ;bitwise-ior bitwise-and bitwise-xor
 	  arithmetic-shift-left

@@ -22,7 +22,7 @@
   (r5rs->integer (r5rs-sign (flonum->r5rs x))))
 
 ; This is a kludge to work around a bug in the Scheme 48
-; implementation of inexact->exact on denormalized numbers.
+; implementation of ->exact on denormalized numbers.
 
 (define (r5rs-abs x)
   (if (r5rs:< x 0.0)

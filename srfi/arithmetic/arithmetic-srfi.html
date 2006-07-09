@@ -862,11 +862,11 @@ is true.
 
 <P>
 <DL>
-<DT><U>procedure:</U> <CODE>exact-&gt;inexact</CODE> <VAR>z</VAR>
-<DT><U>procedure:</U> <CODE>inexact-&gt;exact</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <span class=del>exact</span><CODE>-&gt;inexact</CODE> <VAR>z</VAR>
+<DT><U>procedure:</U> <span class=del>exact</span><CODE>-&gt;exact</CODE> <VAR>z</VAR>
 <DD>
 <P>
-<CODE>Exact-&gt;inexact</CODE> returns an inexact representation of <VAR>z</VAR>.
+<CODE>-&gt;inexact</CODE> returns an inexact representation of <VAR>z</VAR>.
 If inexact numbers of the appropriate type have bounded precision,
 then the value returned is an inexact number that is nearest to
 the argument.
@@ -875,7 +875,7 @@ then a violation of an implementation restriction may be reported.
 
 
 <P>
-<CODE>Inexact-&gt;exact</CODE> returns an exact representation of
+<CODE>-&gt;exact</CODE> returns an exact representation of
 <VAR>z</VAR>.
 The value returned is the exact number that is numerically
 closest to the argument; in most cases, the result of this
@@ -888,8 +888,8 @@ These procedures implement the natural one-to-one correspondence between
 exact and inexact integers throughout an
 implementation-dependent range.
 <P>
-<CODE>Exact-&gt;inexact</CODE> and
-<CODE>inexact-&gt;exact</CODE> are idempotent.
+<CODE>-&gt;inexact</CODE> and
+<CODE>-&gt;exact</CODE> are idempotent.
 
 </DD>
 </DL>
@@ -3960,7 +3960,7 @@ denominator of 0 is defined to be 1.
 (numerator (/ 6 4))                    ==&gt;  3
 (denominator (/ 6 4))                  ==&gt;  2
 (denominator
-  (exact-&gt;inexact (/ 6 4)))            ==&gt;  2.0
+  (-&gt;inexact (/ 6 4)))                 ==&gt;  2.0
 </PRE>
 
 </DL>
@@ -3998,7 +3998,7 @@ mode specified by the IEEE floating point standard.
 <EM>Note:</EM>
 If the argument to one of these procedures is inexact, then the result
 will also be inexact.  If an exact value is needed, the
-result should be passed to the <CODE>inexact-&gt;exact</CODE> procedure.
+result should be passed to the <CODE>-&gt;exact</CODE> procedure.
 </BLOCKQUOTE>
 
 <p>
@@ -4052,7 +4052,7 @@ all.
 
 <PRE>
 (rationalize
-  (inexact-&gt;exact .3) 1/10)            ==&gt; 1/3    ; exact
+  (-&gt;exact .3) 1/10)                   ==&gt; 1/3    ; exact
 (rationalize .3 1/10)                  ==&gt; #i1/3  ; inexact
 
 (rationalize +inf.0 3)                 ==&gt;  +inf.0

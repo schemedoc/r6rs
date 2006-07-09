@@ -447,7 +447,7 @@
 	 (error "log: Domain error: " z)
 	 #t)
 	(else
-	 (fllog (exact->inexact z)))))
+	 (fllog (x->inexact z)))))
 
 (define (log z . extra)
   (if (null? extra)
@@ -466,7 +466,7 @@
 	((negative? z)
 	 (make-rectangular (r5rs->integer 0) (sqrt (- z))))
 	(else
-	 (flsqrt (exact->inexact z)))))
+	 (flsqrt (x->inexact z)))))
 
 (define (atan z . rest)
   (if (null? rest)
@@ -479,7 +479,7 @@
 	       (error "ATAN: domain error" x y)
 	       #t)
 	      (else
-	       (flatan (exact->inexact x) (exact->inexact y)))))))
+	       (flatan (x->inexact x) (x->inexact y)))))))
 
 (define (expt x y)
 
@@ -534,13 +534,13 @@
 	   (zero? b))
       a)
      (else
-      (make-rectangular a (exact->inexact b)))))
+      (make-rectangular a (x->inexact b)))))
    ((exact-rational? a)
     (cond
      ((exact-rational? b)
       (rectangulate a b))
      ((flonum? b)
-      (make-rectangular (exact->inexact a) b))
+      (make-rectangular (x->inexact a) b))
      (else
       (fail))))
    (else
@@ -586,13 +586,13 @@
 
 ; end from Larceny
 
-(define-unary exact->inexact
+(define-unary x->inexact
   fixnum->flonum bignum->flonum ratnum->flonum recnum->compnum id id)
 
 (define (compnum->exact a)
-  (make-rectangular (inexact->exact (real-part a))
-		    (inexact->exact (imag-part a))))
-(define-unary inexact->exact
+  (make-rectangular (x->exact (real-part a))
+		    (x->exact (imag-part a))))
+(define-unary x->exact
   id id id id flonum->rational compnum->exact)
 
 (define-unary number->flonum
@@ -641,4 +641,4 @@
         (else
          (if (and (exact? x) (exact? y))
              (r5rs->integer 0)
-             (exact->inexact (r5rs->integer 0))))))
+             (x->inexact (r5rs->integer 0))))))

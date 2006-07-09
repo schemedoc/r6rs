@@ -158,7 +158,7 @@
 (check (numerator (numerical / 3 -4)) ==> -3)
 (check (numerical denominator 0) ==> 1)
 
-(check (rationalize (numerical inexact->exact 0.3) (r5rs->number 1/10)) ==> 1/3)
+(check (rationalize (numerical x->exact 0.3) (r5rs->number 1/10)) ==> 1/3)
 (check (numerical rationalize 0.3 1/10) ==> #i1/3)
 (check (rationalize flinf+ (r5rs->number 3)) => (=) flinf+)
 (check (flnan? (rationalize flinf+ flinf+)) => #t)
@@ -180,5 +180,5 @@
 
 (check (numerical expt 0 0) ==> 1)
 
-(check (numerical exact->inexact 14285714285714285714285) ==> 1.4285714285714286e22)
+(check (numerical x->inexact 14285714285714285714285) ==> 1.4285714285714286e22)
 
