@@ -1405,11 +1405,13 @@ it obeys the same constraints as {\cf eqv?}.
 \begin{entry}{%
 \proto{equal?}{ \vari{obj} \varii{obj}}{library procedure}}
 
-{\cf Equal?} recursively compares the contents of pairs, vectors, and
-strings, applying {\cf eqv?} on other objects such as numbers and symbols.
-A rule of thumb is that objects are generally {\cf equal?} if they print
-the same.  {\cf Equal?}\ may fail to terminate if its arguments are
-circular data structures.
+The {\cf equal?}  predicate returns \schtrue{} if and only if the
+(possibly infinite) unfoldings of its arguments into regular trees are
+equal as ordered trees.
+
+{\cf Equal?} treats pairs and vectors as nodes with outgoing edges,
+uses {\cf string=?} to compare strings, and uses {\cf eqv?} to compare
+other leaf nodes.
 
 \begin{scheme}
 (equal? 'a 'a)                  \ev  \schtrue
@@ -1422,6 +1424,22 @@ circular data structures.
         (make-vector 5 'a))     \ev  \schtrue
 (equal? (lambda (x) x)
         (lambda (y) y))  \ev  \unspecified%
+
+
+(let* ((x (list 'a))
+       (y (list 'a))
+       (z (list x y)))
+  (list (equal? z (list y x))
+        (equal? z (list x x))))             \lev  (\schtrue{} \schtrue{})
+
+(let ((x (list 'a 'b 'c 'a))
+      (y (list 'a 'b 'c 'a 'b 'c 'a)))
+  (set-cdr! (list-tail x 2) x)
+  (set-cdr! (list-tail y 5) y)
+  (list
+   (equal? x x)
+   (equal? x y)
+   (equal? (list x y 'a) (list y x 'b)))) \lev  (\schtrue{} \schtrue{} \schfalse{})
 \end{scheme}
 
 \end{entry}
