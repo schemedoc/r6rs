@@ -548,16 +548,15 @@ an error if multiple \hyper{record clause}s of the same kind appear in a
   create an equivalent record-type descriptor, the created type is the
   same as the previous one.  Otherwise, an error is signalled.
 
-  Note again that, in the absence of a {\cf nongenerative} clause, the
-  question of expand-time or run-time generativity is unspecified.
-  Specifically, the return value of the following expression in
-  unspecified:
+  In the absence of a {\cf nongenerative} clause, a new record type
+  type descriptor is created every time a {\cf define-record-type}
+  form is encountered:
 
 \begin{scheme}
 (let ((f (lambda (x)
            (define-record-type r \ldots)
            (if x r? (make-r \ldots)))))
-  ((f \schtrue) (f \schfalse)))
+  ((f \schtrue) (f \schfalse))) \ev \schfalse{}
 \end{scheme}
 \end{itemize}
 \end{entry}
