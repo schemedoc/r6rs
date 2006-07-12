@@ -3,38 +3,46 @@
 
 This section describes the library for dealing with enumerated values
 \mainschindex{enumeration}and sets of enumerated values.  Enumerated
-values are represented by regular symbols, while finite sets of
-enumerated values form a separate type.  In the context of the library
-here, enumerated values are seen as belonging to a \defining{universe}
-of such values, which facilitates efficient implementation of sets of
-enumerated values, as well as enable the complement operation.
+values are represented by ordinary symbols, while finite sets of
+enumerated values form a separate type, known as the
+\defining{enumeration sets}.
+The enumeration sets are further partitioned into sets that
+share the same \defining{universe} and \defining{enumeration type}.
+These universes and enumeration types are created by the
+{\cf make-enumeration} procedure.  Each call to that procedure
+creates a new enumeration type.
+
+This library interprets each enumeration set with respect to
+its specific universe of symbols and enumeration type.
+This facilitates efficient implementation of enumeration sets
+and enables the complement operation.
+
+In the definition of the following procedures, let \var{enum-set}
+range over the enumeration sets, which are defined as the subsets
+of the universes that can be defined using {\cf make-enumeration}.
 
 \begin{entry}{%
 \proto{make-enumeration}{ list}{procedure}}
 
-{\cf Make-enumeration} takes an arbitrary list of symbols and
-returns the universe consisting of those symbols, considered
-as a subset of itself.  The canonical ordering of the symbols
-in that universe is the same as the ordering of the first
-appearance of each symbol in the list that was passed to
-{\cf  make-enumeration}.
+{\cf make-enumeration} takes an arbitrary list of symbols,
+creates a new enumeration type whose universe consists of
+those symbols (in canonical order of their first appearance
+in the list) and returns that universe as an enumeration
+set whose universe is itself and whose enumeration type is
+the newly created enumeration type.
 \end{entry}
-
-In the definition of the following procedures, let \var{enum-set}
-range over the finite sets of symbols that can be defined using {\cf
-  make-enumeration}:
 
 \begin{entry}{%
 \proto{enum-set-universe}{ enum-set}{procedure}}
 
-{\cf Enum-set-universe} returns the set of all symbols that comprise
+{\cf enum-set-universe} returns the set of all symbols that comprise
 the universe of its argument.
 \end{entry}
 
 \begin{entry}{%
 \proto{enum-set-indexer}{ enum-set}{procedure}}
 
-{\cf Enum-set-indexer} returns a unary procedure that, given a symbol
+{\cf enum-set-indexer} returns a unary procedure that, given a symbol
 that is in the universe of \var{enum-set}, returns its 0-origin index
 within the canonical ordering of the symbols in the universe; given a
 value not in the universe, the unary procedure returns \schfalse.
@@ -45,8 +53,8 @@ value not in the universe, the unary procedure returns \schfalse.
   (list (i 'red) (i 'green) (i 'blue) (i 'yellow))) \lev (0 1 2 \schfalse)
 \end{scheme}
 
-{\cf Enum-set-indexer} could be defined as follows (using the {\cf
-  memq} procedure from the FIXME list library:
+{\cf enum-set-indexer} could be defined as follows (using the
+{\cf memq} procedure from the FIXME list library):
 
 \begin{scheme}
 (define (enum-set-indexer set)
@@ -64,7 +72,7 @@ value not in the universe, the unary procedure returns \schfalse.
 \begin{entry}{%
 \proto{enum-set-constructor}{ enum-set}{procedure}}
 
-{\cf Enum-set-constructor} returns a unary procedure that, given a
+{\cf enum-set-constructor} returns a unary procedure that, given a
 list of symbols that belong to the universe of \var{enum-set}, returns
 a subset of that universe that contains exactly the symbols in the
 list.  If any value in the list is not a symbol that belongs to the
@@ -74,13 +82,13 @@ universe, then the unary procedure must raise a {\cf \&domain} exception.
 \begin{entry}{%
 \proto{enum-set->list}{ enum-set}{procedure}}
 
-{\cf Enum-set->list} returns a list of the symbols that belong to its
+{\cf enum-set->list} returns a list of the symbols that belong to its
 argument, in the canonical order of the universe of \var{enum-set}.
 
 \begin{scheme}
 (let* ((e (make-enumeration '(red green blue)))
        (c (enum-set-constructor e)))
-  (enum-set->list (c '(red blue)))) \lev (red blue)
+  (enum-set->list (c '(blue red)))) \lev (red blue)
 \end{scheme}
 \end{entry}
 
@@ -89,15 +97,15 @@ argument, in the canonical order of the universe of \var{enum-set}.
 \proto{enum-set-subset?}{ \vari{enum-set} \varii{enum-set}}{procedure}
 \proto{enum-set=?}{ \vari{enum-set} \varii{enum-set}}{procedure}}
 
-{\cf Enum-set-member?} returns \schtrue{} if its first argument is an
+{\cf enum-set-member?} returns \schtrue{} if its first argument is an
 element of its second argument, \schfalse{} otherwise.
 
-{\cf Enum-set-subset?} returns \schtrue{} if the universe of
+{\cf enum-set-subset?} returns \schtrue{} if the universe of
 \vari{enum-set} is a subset of the universe of \varii{enum-set}
 (considered as sets of symbols) and every element of \vari{enum-set}
 is a member of its second.  It returns \schfalse{} otherwise.
 
-{\cf Enum-set=?} returns \schtrue{} if \vari{enum-set}  is a
+{\cf enum-set=?} returns \schtrue{} if \vari{enum-set}  is a
 subset of \varii{enum-set} and vice versa, as determined by the
 {\cf enum-set-subset?} procedure.  This implies that the universes of
 the two sets are equal as sets of symbols, but does not imply
@@ -107,12 +115,13 @@ returned.
 \begin{scheme}
 (let* ((e (make-enumeration '(red green blue)))
        (c (enum-set-constructor e)))
-  (list (enum-set-member? 'blue (c '(red blue)))
-        (enum-set-member? 'green (c '(red blue)))
-        (enum-set-subset? (c '(red blue)) e)
-        (enum-set-subset? (c '(red blue) '(red blue)))
-        (enum-set-subset? (c '(red blue) '(red)))
-        (enum-set=? (c '(red blue) '(red blue)))))
+  (list
+   (enum-set-member? 'blue (c '(red blue)))
+   (enum-set-member? 'green (c '(red blue)))
+   (enum-set-subset? (c '(red blue)) e)
+   (enum-set-subset? (c '(red blue)) (c '(blue red)))
+   (enum-set-subset? (c '(red blue)) (c '(red)))
+   (enum-set=? (c '(red blue)) (c '(blue red)))))
 \ev (\schtrue{} \schfalse{} \schtrue{} \schtrue{} \schfalse{} \schtrue{})
 \end{scheme}
 \end{entry}
@@ -123,26 +132,26 @@ returned.
 \proto{enum-set-difference}{ \vari{enum-set} \varii{enum-set}}{procedure}}
 
 
-\domain{\vari{Enum-set} and \varii{enum-set} must be enumeration sets 
-  that share the same enumeration type as universe.  If the universes
+\domain{\vari{enum-set} and \varii{enum-set} must be enumeration sets 
+  that have the same enumeration type.  If their enumeration types
   differ, a FIXME violation is raised.}
 
-{\cf Enum-set-union} returns the union of \vari{enum-set} and \varii{enum-set}.
-{\cf Enum-set-intersection} returns the intersection of \vari{enum-set} and \varii{enum-set}.
-{\cf Enum-set-difference} returns the difference of \vari{enum-set}
+{\cf enum-set-union} returns the union of \vari{enum-set} and \varii{enum-set}.
+{\cf enum-set-intersection} returns the intersection of \vari{enum-set} and \varii{enum-set}.
+{\cf enum-set-difference} returns the difference of \vari{enum-set}
 and \varii{enum-set}.
 
 \begin{scheme}
 (let* ((e (make-enumeration '(red green blue)))
        (c (enum-set-constructor e)))
   (list (enum-set->list
-          (enum-set-union (c '(red)) (c '(blue))))
+         (enum-set-union (c '(blue)) (c '(red))))
         (enum-set->list
-          (enum-set-intersection (c '(red green))
-                                 (c '(red blue))))
+         (enum-set-intersection (c '(red green))
+                                (c '(red blue))))
         (enum-set->list
-          (enum-set-difference (c '(red green))
-                               (c '(red blue))))))
+         (enum-set-difference (c '(red green))
+                              (c '(red blue))))))
 \lev ((red blue) (red) (green))
 \end{scheme}
 \end{entry}
@@ -150,14 +159,15 @@ and \varii{enum-set}.
 \begin{entry}{%
 \proto{enum-set-complement}{ enum-set}{procedure}}
 
-{\cf Enum-set-complement} takes an enumeration set and returns its
+{\cf enum-set-complement} takes an enumeration set and returns its
 complement with respect to its universe.
 
 
 \begin{scheme}
 (let* ((e (make-enumeration '(red green blue)))
        (c (enum-set-constructor e)))
-  (enum-set->list (enum-set-complement (c '(red)))))
+  (enum-set->list
+   (enum-set-complement (c '(red)))))
 \ev (green blue)
 \end{scheme}
 \end{entry}
@@ -165,15 +175,17 @@ complement with respect to its universe.
 \begin{entry}{%
 \proto{enum-set-projection}{ \vari{enum-set} \varii{enum-set}}{procedure}}
 
-{\cf Enum-set-projection} projects \vari{enum-set} into the universe
+{\cf enum-set-projection} projects \vari{enum-set} into the universe
 of \varii{enum-set}, dropping any elements of \vari{enum-set} that do
 not belong to the universe of \varii{enum-set}.  (If \vari{enum-set}
 is a subset of the universe of its second, then no elements are
 dropped, and the injection is returned.)
 
 \begin{scheme}
-(let ((e1 (make-enumeration '(red green blue black)))
-      (e2 (make-enumeration '(red black white))))
+(let ((e1 (make-enumeration
+           '(red green blue black)))
+      (e2 (make-enumeration
+           '(red black white))))
   (enum-set->list
    (enum-set-projection e1 e2))))
 \ev (red black)
@@ -186,16 +198,16 @@ dropped, and the injection is returned.)
   (\hyper{symbol} \dotsfoo)\\
   \hyper{constructor-syntax})}
 
-The {\cf define-enumeration} form defines an enumeration universe and
+The {\cf define-enumeration} form defines an enumeration type and
 provides two macros for constructing its members and sets of its
 members.
 
 A {\cf define-enumeration} form is a definition and can appear
 anywhere any other \hyper{definition} can appear.
 
-\hyper{Type-name} is an identifier that will be bound to a macro;
-\hyper{symbol}~\dotsfoo{} are the symbols that form the universe of the
-enumeration (in order).
+\hyper{type-name} is an identifier that will be bound to a macro;
+\hyper{symbol}~\dotsfoo{} are the symbols that will comprise the
+universe of the enumeration (in order).
 
 {\cf (\hyper{type-name} \hyper{symbol})} checks at macro-expansion
 time whether \hyper{symbol} is in the universe associated with
@@ -204,10 +216,10 @@ time whether \hyper{symbol} is in the universe associated with
 not, then an exception must be raised at macro expansion
 time. FIXME: clarify
 
-\hyper{Constructor-syntax} is an identifier that will be bound to a
-macro that, given any finite sequence of the \arbno{symbol}, possibly
-with duplicates, expands into an expression that evaluates to the set
-of those symbols.
+\hyper{constructor-syntax} is an identifier that will be bound to a
+macro that, given any finite sequence of the symbols in the universe,
+possibly with duplicates, expands into an expression that evaluates
+to the enumeration set of those symbols.
 
 {\cf (\hyper{constructor-syntax} \hyper{symbol}~\dotsfoo{})} checks at
 macro-expansion time whether every \hyper{symbol}~\dotsfoo{} is in the
