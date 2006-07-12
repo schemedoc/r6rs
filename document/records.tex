@@ -80,7 +80,7 @@ rtd, the returned record type, \var{t}, extends the record type
 record of type \var{p}, and all operations applicable to a record of
 type \var{p} are also applicable to a record of type \var{t}, except for
 reflection operations if \var{t} is opaque but \var{p} is not. An error is
-signalled if parent is sealed (see below).
+signalled if \var{parent} is sealed (see below).
    
 The extension relationship is transitive in the sense that a type extends
 its parent's parent, if any, and so on.
@@ -106,11 +106,6 @@ types.
   constructed using the UUID namespace (for example, using the
   record-type name as a prefix) for the uid argument.
 \end{note}
-
-If \var{parent} is not \schfalse, and \var{uid} is not \schfalse, and
-the parent is generative (i.e.  its uid is \schfalse), an error is signalled.
-In other words, the parent of a non-generative rtd must be
-non-generative itself.
 
 The \var{sealed?} flag is a boolean. If true, the returned record type
 is sealed, i.e., it cannot be extended.

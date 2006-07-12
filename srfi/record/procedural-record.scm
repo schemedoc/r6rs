@@ -80,10 +80,6 @@
   (if (and parent
 	   (record-type-sealed? parent))
       (error "can't extend a sealed parent class" parent))
-  (if (and parent
-	   (not (record-type-uid parent)) ; parent generative
-	   uid)			  ; ... but this one is non-generative
-      (error "a generative type can only be extended to give a generative type" parent))
   (let ((opaque? (if parent
 		     (or (record-type-opaque? parent)
 			 opaque?)
