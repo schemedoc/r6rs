@@ -1,5 +1,5 @@
-Current Proposal(s) for Safe/Unsafe Mode and Declarations
-=========================================================
+Current Proposals for Safe/Unsafe Mode and Declarations
+=======================================================
 
 
 Goals
@@ -136,22 +136,23 @@ be able to override the default handlers using some
 mechanism that resembles that of SRFI 34.
 
 The R6RS should also allow implementations to provide ways
-for programmers to declare that certain kinds of exceptions
-should be handled in implementation-dependent ways.
+for programmers to escape from the semantics of R6RS Scheme
+into implementation-dependent and possibly unsafe modes that
+may not perform all of run-time checks that are required in
+R6RS Scheme.
 
-For example, a programmer might use one of these
-implementation-specific declarations to declare that
-#3(a b c) should be treated as #(a b c) when read by
-the READ procedure.
+For example, a programmer might use a syntax such as
+#!chez to declare that #3(a b c) should be treated as
+#(a b c) when read by the READ procedure.
 
 For another example, a programmer might use one of these
 implementation-specific declarations to declare that the
 operations exported from a standard fixnum library may
-use an exception handler that does not report &domain
-conditions.  These nonstandard exception handlers would
-be free to handle exceptions in ways that cannot even
-be expressed in R6RS Scheme, for example by returning
-an incorrect answer or incurring a segmentation fault.
+not detect, let alone report, &domain conditions.  Even
+if they do detect the condition, they might handle it in
+ways that cannot even be expressed in R6RS Scheme, for
+example by returning an incorrect answer or incurring a
+segmentation fault.
 
 Many of these implementation-specific declarations are
 likely to have static rather than dynamic scope.  There
@@ -159,7 +160,7 @@ are several ways to explain this, and several proposals
 are currently under consideration.  See "Declaration
 Semantics" below.
 
-One of the guiding principles of the most recent draft
+One of the guiding principles of the most recent drafts
 of the R6RS status report says we will provide some
 standard way to declare whether run-time safety checks
 are desired.  This can be done by extending the library
@@ -175,11 +176,11 @@ head of any body that permits internal definitions.
 Declaration Syntax
 ==================
 
-This section is extremely tentative because of interactions
+This section is still tentative because of interactions
 with library syntax.  For now, let us suppose that the
-<body> syntax of SRFI 83 will be changed to
+<library-body> syntax will be
 
-<body> = <impexp-form>* <declaration>* <comdef-form>*
+<library-body> = <declaration>* <command-or-definition>*
 
 and that the <body> and <definition> syntax of R5RS will
 be changed to
@@ -304,344 +305,425 @@ usable.
 Declaration Semantics
 =====================
 
-As for the semantics of declarations, at least three
-different stories have been proposed.
+The semantics of the fast, small, and debug qualities is
+entirely implementation-dependent, but there have been
+several proposals to mandate some semantics for the safe
+quality, which would remain largely implementation-dependent
+in any of those proposals.
 
-Will originally proposed that unsafe declarations be
-explained as allowing implementations to establish
-nonstandard exception handlers that do arbitrarily
-perverse things.
-
-Mike found that confusing, and proposed that unsafe
-declarations be explained as a relaxation of the R6RS
-requirements for raising an exception.
-
-Kent proposed a semantics that explains unsafe mode
-(and other declarations) as a property that attaches
-to identifiers and is preserved by hygienic macros.
+The following sections describe the informal semantics of
+four proposals.  Those sections are followed by sections
+that sketch what a more formal semantics of those proposals
+might look like.  Finally, a section considers several
+examples on which the proposals might differ.
 
 
-Kent's Proposed Semantics
-=========================
+Proposal 0: Informal Semantics
+==============================
 
-To bring the scoping rules for declarations in line with lexical scoping
-and referential transparency, and also to limit unnecessary freedom to
-ignore safe declarations in some cases where unsafe and safe declarations
-are mixed, I would like propose the following treatement of declarations.
+The semantics of unsafe code is unspecified, as it is
+beyond the scope of R6RS.
 
- * A declaration appearing in a <body> associates the specified safe,
-   fast, small, and debug priorities with each free identifier within the
-   <body>, except where the declaration is shadowed by a conflicting
-   declaration.
+Rationale:  The purpose of unsafe code is to provide
+an escape from the R6RS semantics.  The R6RS does not
+have to, and literally cannot, describe the semantics
+of code that is not subject to the R6RS semantics.
 
- * If the declare keyword of a declaration is introduced into the output
-   of a macro, the declaration affects only the identifiers introduced by
-   the macro.  Similarly, an identifier introduced by the macro is
-   affected only by such declarations and declarations whose scope
-   includes the macro definition.
+Note:  With Proposal 0, we could honestly say that
+R6RS Scheme is a safe language, because we will have
+defined unsafe code to lie outside the language that
+is described by the R6RS.
 
- * A standard syntactic form (recognized as such because its identifying
-   keyword is an identifier reference resolving to a keyword imported from
-   the r6rs core language or standard library) whose identifying keyword
-   has safe priority 0 has unspecified behavior if a situation for which
-   the implementation is allowed or required to raise an exception arises
-   directly from the use of the syntactic form.
 
- * A standard procedure reference (recognized as such because it is an
-   identifier reference resolving to a variable binding imported from the
-   r6rs core language or standard library) may evaluate to different
-   versions of the standard procedure depending on the priorities
-   associated with the reference.  In particular, if the standard
-   procedure reference is associated with safe priority 0, the standard
-   procedure reference may evaluate to an unsafe version of the standard
-   procedure.  An unsafe version has unspecified behavior if a situation
-   for which the implementation is allowed or required to raise an
-   exception arises directly from the use of that standard procedure.
+Proposal 1: Informal Semantics
+==============================
 
- * Assuming unbound variables are possible in the standard, the behavior
-   of an unbound reference to a variable associated with safe priority 0
-   is unspecified.
+Every implementation is required to provide a second,
+unsafe version of every standard library, named by a
+second name that indicates the library is potentially
+unsafe, e.g. r6rs/unsafe.  These unsafe versions of the
+standard libraries are allowed to be the same as the
+safe ones, but are also allowed to be unsafe in various
+ways that might be expressed by implementation-specific
+means and/or unsafe (safe 0) declarations.
 
-This proposal differs from Will's proposal, as I understand it, in the
-following ways:
+Scripts and libraries that wish to use unsafe versions
+of the standard libraries will name the unsafe versions.
 
-1. The scope of a declaration is more precisely specified (and possibly
-   different from what Will had in mind).
+Within a script or library, an unsafe (safe 0) declaration
+means that, within the scope of the declaration, any
+situation that, in the words of the R6RS, must raise
+an exception is allowed not to raise an exception.
 
-2. It requires that safe code embedded within or run from unsafe code
-   must raise all required exceptions, as long as no potentially
-   exception-causing situation arises directly from the use of the unsafe
-   code.
+Note:  This is Orwellian doublespeak.  Proposals 2 and 3
+feature the same doublespeak.
 
-Also, the notion that exceptions are always raised but are handled in an
-unspecified manner in unsafe mode, which Mike, at least, found confusing,
-is gone, but I believe that's an expository detail only.
+For example, if unsafe code defines a procedure of two
+arguments and then calls that procedure with only one
+argument, then an exception might not be raised.
 
-The following illustrates difference 2.  Let's assume that all of the free
-identifiers in the code below resolve to the corresponding standard
-keyword or procedure bindings.  Let's also assume that the standard
-procedure to which + is bound is required to raise a &nonnumeric exception
-if any of its arguments are not numbers and that it returns normally
-without raising an exception in all other cases.  Then the expression:
 
-  (begin
-    (declare unsafe)
-    (let ([x (+ 3)])
+Proposal 2: Informal Semantics
+==============================
+
+Every procedure provides a second, unsafe entry point
+that may be used when the procedure is called from
+unsafe code.  These unsafe entry points may be the
+same as or equivalent to the safe entry points, but
+are also allowed to be unsafe in various ways that
+might be expressed by implementation-specific means
+and/or unsafe (safe 0) declarations.
+
+Within a script or library, an unsafe (safe 0) declaration
+means that, within the scope of the declaration, any
+situation that, in the words of the R6RS, must raise
+an exception is allowed not to raise an exception.
+
+In addition, procedure calls that occur within the
+scope of an unsafe (safe 0) declaration may use the
+unsafe entry point of the callee.
+
+
+Proposal 3: Informal Semantics
+==============================
+
+Implementations are allowed to provide a second,
+unsafe version of any subset of the procedures defined
+by any standard library.  The names of unsafe library
+procedures are distinguished from those of safe library
+procedures by the use of some implementation-dependent
+technique for attaching invisible marks to the names of
+procedures to indicate whether they are safe or unsafe.
+
+Within a script or library, an unsafe (safe 0) declaration
+means that, within the scope of the declaration, the
+R6RS names for the standard procedures that are in scope
+are rebound to the unsafe versions of those procedures.
+A safe declaration (safe 1, 2, or 3) means that, within
+the scope of the declaration, the R6RS names for the
+standard procedures that are in scope are rebound to
+the safe versions of those procedures.
+
+This idea is extended to apply also to syntactic forms.
+For example, the unsafe version of lambda would not be
+required to raise an exception if one of the closures
+obtained by evaluating the lambda expression is passed
+an incorrect number of arguments.
+
+
+Proposal 0: Sketch of Formal Semantics
+======================================
+
+For Proposal 0, no formal semantics is necessary or
+desired.
+
+
+Proposal 1: Sketch of Formal Semantics
+======================================
+
+The formal semantics of R6RS will be adequate for the
+explicitly named unsafe versions of standard libraries.
+
+In addition, the formal semantics of R6RS Scheme would
+be extended as follows.
+
+If the formal semantics of R6RS were denotational,
+along the lines of the R5RS formal semantics, then
+the domain equation for environments can be extended
+by adding a boolean (or one of the integers 0, 1, 2, 3)
+to indicate whether an expression appears within the
+scope of an unsafe declaration (or safe 0, 1, 2, 3),
+and the operations on the environment ADT would be
+changed accordingly.  Wherever the formal semantics
+would indicate the mandatory raising of an exception,
+the semantics would be changed to something like
+
+    if safe \rho
+       then raise <condition> \sigma
+       else wrong <condition> \sigma
+
+where raise encapsulates the semantics of raising an
+exception with the specified condition, and wrong is
+the command continuation of the R5RS semantics that
+indicates unspecified behavior.
+
+The semantics of a safe (or unsafe) declaration would
+be to produce a new environment \rho' from \rho for
+which safe \rho' would return the boolean indicating
+whether this is safe code.
+
+It is equally straightforward to do this for the kind
+of small-step operational semantics we envision for the
+R6RS.
+
+
+Proposal 2: Sketch of Formal Semantics
+======================================
+
+Proposal 2 entails the semantic changes (but not the
+library changes) that were sketched for Proposal 1,
+together with the following changes.
+
+The R5RS domain equation for procedures would be extended
+by adding a second entry point:
+
+    F = L x (E* -> K -> C) x (E* -> K -> C)
+
+The applicate operation of the semantics would be given
+an extra argument, safe \rho, which it would use to select
+between the two entry points.
+
+The semantics of lambda expressions would be changed to
+construct both entry points.  The semantics for both
+entry points would be the same, but the nondeterminism
+that readers of the semantics are asked to perceive in
+the wrong continuation would allow the behavior of the
+two entry points to differ.  (This nondeterminism could
+be made explicit via power domains, but that level of
+formality was not considered necessary when a formal
+semantics was first added to the Scheme report.)
+
+It is even more straightforward (because of nondeterminism)
+to do this for the kind of small-step operational semantics
+we envision for the R6RS.
+
+
+Proposal 3: Sketch of Formal Semantics
+======================================
+
+Proposal 3 entails the semantics of core syntactic forms
+that was sketched for Proposal 1, but it might be simpler
+to explain the semantics of core forms by doubling the
+number of core forms (e.g. by adding #u:call as an unsafe
+version of the core form for procedure calls) than by
+using the environment to keep track of the safe quality.
+
+In addition, Proposal 3 entails the following changes
+to macro processing.
+
+Every safe or unsafe declaration would entail implicit,
+non-hygienic rebinding of an implementation-specific
+subset of the standard identifiers, for both procedures
+and for derived syntactic forms, that are in scope at
+the declaration.  For example,
+
+    (lambda (x) 
+      (declare (safe 0))
+      (car x))
+
+would have the semantics of
+
+    (lambda (x)
+      (let ((car #u:car) ...)
+        (#u:call car x)))
+
+where #u:call is the unsafe form for a procedure call,
+and #u:car is the unsafe version of the standard car
+procedure.
+
+Aside from these non-hygienic bindings at declaration
+points, the formal semantics of Proposal 3 would be the
+same as the formal semantics of Proposal 1.
+
+
+Comparison of the Four Proposals
+================================
+
+With Proposal 0, the semantics of programs that execute
+unsafe code would not be specified.  Instead of repeating
+that for every example, this section will ignore Proposal 0.
+
+Within this section, the phrase "will raise an exception"
+means that the semantics of a proposal requires that an
+exception be raised.  (The more intuitive phrase, "must
+raise an exception", has already been given the
+counter-intuitive meaning that an exception is required
+in safe mode, but not in unsafe.)
+
+We now consider illustrative examples.
+
+The following example will raise an exception with any of
+Proposals 1, 2, and 3:
+
+    (begin
+      (declare unsafe)
+      (let ((x (+ 3)))
+        (declare safe)
+        (+ 'b)))
+
+Similarly, the following example will raise an exception
+with any of Proposals 1, 2, and 3:
+
+    (let ()
+      (declare unsafe)
+      (+ 'a (begin (declare safe) (+ 'b))))
+
+The following example will raise an exception with Proposal
+1, but might not raise an exception with Proposals 2 or 3
+because those proposals do not require an exception to be
+raised for the commented line, and failure to detect the
+problem with the commented line causes unspecified behavior
+for subsequent calls:
+
+    (let ()
+      (declare unsafe)
+      (let ((x (+ 'a)))    ; might not raise an exception
+        (declare safe)
+        (+ 'b)))
+
+With Proposals 1 and 2, the following expression returns
+#t, but with Proposal 3 it might return #f:
+
+    (eqv? (let () (declare safe) +)
+          (let () (declare unsafe) +))
+
+The following example is not required to raise an exception
+with any of Proposals 1, 2, or 3:
+
+    (let ((my-name "abc"))
+      (declare unsafe)
+      (my-name 1 2 3))
+
+With Proposals 1, 2, and 3, it is not entirely clear
+whether the following example is required to raise an
+exception.  With the formal semantics sketched above,
+Proposals 1, 2, and 3 would require an exception to be
+raised when the safe my-memq procedure is called with
+an incorrect number of arguments.
+
+Will, however, considers the R5RS semantics' placement
+of that check within the procedure value to have been
+a matter of convenience for the author of that semantics
+(namely Will), as it did not matter where the check was
+placed when the R5RS and earlier reports did not actually
+require the check.  Will believes that implementations
+should be given freedom to perform that check at the
+call site, which in this example lies within unsafe
+code.
+
+Furthermore Kent has written that an equivalent of this
+example (bug2) is not required to raise an exception
+under his interpretation of Proposal 3.  [FIXME: He may
+wish to reconsider that.]
+
+    (let ()
+      (define (my-memq x things)
+        (cond ((null? things) #f)
+              ((eq? x (car things)) things)
+              (else (my-memq x (cdr things)))))
+      (let ()
+        (declare unsafe)
+        (my-memq 1 2 3)))
+
+The following example is a variation of the preceding,
+and all of the remarks that applied to the preceding
+example apply to this one, substituting bug3 for bug2.
+
+    (let ()
+      (define (my-memq x things)
+        (cond ((null? things) #f)
+              ((eq? x (car things)) things)
+              (else (my-memq x (cdr things)))))
+      (define-syntax my-memq-macro
+        (syntax-rules ()
+         ((_ . args)
+          (my-memq . args))))
+      (let ()
+        (declare unsafe)
+        (my-memq-macro 1 2 3)))
+
+The following example will raise an exception with any of
+Proposals 1, 2, and 3:
+
+    (let ()
+      (declare unsafe)
+      (let ((g (lambda (x)
+                 (declare safe)
+                 (car x))))
+        (g 'a)))
+
+The following example will raise an exception with any of
+Proposals 1, 2, and 3:
+
+    (let ()
+      (define (f)
+        (declare unsafe)
+        (let ((g (lambda (x)
+                   (declare safe)
+                   (car x))))
+          g))
+      (let ((g (f)))
+        (g 'a)))
+
+The following example will raise an exception with Proposals
+1 or 3 (assuming for Proposal 1 that the safe version of -
+was imported), but might not with Proposal 2:
+
+    (let ()
       (declare safe)
-      (+ 'b)))
+      (let ((f -))
+        (declare unsafe)
+        (f 'a)))
 
-has unspecified behavior with Will's proposal, even though the outer call
-to (possibly unsafe) + returns normally, because the inner safe
-declaration can be ignored.  It must raise a &nonnumeric exception with
-mine.  Similarly,
+The following example will raise an exception with Proposal 1,
+but might not with Proposals 2 and 3.  When compared with the
+example above, this illustrates the failure of copy propagation
+caused by non-hygienic binding in Proposal 3.  (The failure of
+eqv? semantics for procedures is another consequence of this.)
 
-  (begin
-    (declare unsafe)
-    (+ 'a (begin (declare safe) (+ 'b))))
-
-has unspecified behavior with Will's proposal but must raise a &nonnumeric
-exception with mine.  The first argument to the outer (possibly unsafe) +
-is not a number, but the exception is raised by the inner call to + before
-the outer call is made, due to applicative-order evaluation.
-
-In both systems,
-
-  (begin
-    (declare unsafe)
-    (let ([x (+ 'a)])
+    (let ()
       (declare safe)
-      (+ 'b)))
+      (let ((f -))
+        (declare unsafe)
+        (- 'a)))
 
-has unspecified behavior, because the first (possibly unsafe) + receives a
-non-numeric argument, at which point all bets are off.
+The following example will raise an exception with any of
+Proposals 1, 2, and 3 (assuming for Proposal 1 that the safe
+version of - was imported):
 
-Note that an implementation is free to ignore all declarations with either
-proposal, but with mine it is effectively required not to ignore a safe
-declaration that appears within the scope of an unsafe declaration if it
-does not also ignore the unsafe declaration.
+    (let ()
+      (declare safe)
+      (define (f x) (- x))
+      (let ()
+        (declare unsafe)
+        (f 'a)))
 
-A likely side implication of my proposal is that eqv? might return either
-#t or #f when applied to two versions of a primitive that might differ due
-to differing declarations.  For example,
+The following example will raise an exception with Proposal 1
+(assuming the safe version of - was imported), but might not
+raise an exception with Proposals 2 or 3:
 
-  (eqv? (begin (declare safe) +)
-        (begin (declare unsafe) +))
+    (let ()
+      (declare unsafe)
+      (define (f x) (- x))
+      (f 'a))
 
-can return either #t or #f.  This doesn't bother me in the slightest,
-but we could require that eqv? return #t in situations such as this.
-In practice, this would likely cause most implementations to use the
-same (default) version of the standard procedure whenever the value
-might escape.
+The following example is a variation of the previous example.
+Like the previous example, it will raise an exception with
+Proposal 1 (assuming the safe version of - was imported), but
+might not raise an exception with Proposals 2 or 3.  The main
+interest of this example is that, under Proposal 2, it may be
+more likely to raise an exception than the previous example.
+(In Will's opinion, this level of detail (e.g. the likelihood
+of raising an exception) should certainly be left for
+implementors to work out on their own, and should not be
+micro-managed by the R6RS editors.)
 
+    (let ()
+      (declare unsafe)
+      (define (f x) (- x))
+      (let ()
+        (declare safe)
+        (f 'a)))
 
-Will's Objections to Kent's Proposed Semantics
-==============================================
+The following example will raise an exception with Proposal 1
+(assuming the safe version of - was imported), but might not
+raise an exception with Proposals 2 or 3:
 
-Kent's semantics appears to presuppose a fairly static model of
-safe and unsafe code in which every named procedure exists in a
-safe version and may also exist in an unsafe version.
+    (let ()
+      (declare safe)
+      (define (f x) (car x))
+      (let ()
+        (declare unsafe)
+        (- (f (- '(a))))))
 
-Several existing implementations of unsafe code do not conform
-to this model.  Furthermore existing implementations of unsafe
-code use techniques that appear to be inexpressible and perhaps
-even illegal in Kent's model.  In Will's view, this is a
-shortcoming of Kent's model, not a shortcoming of existing
-implementations.
-
-Consider, for example, the following properties of some
-existing implementations of unsafe code:
-
-*  Procedure calls do not check to ensure that the value
-being called is a procedure.
-
-*  Procedure calls do not check to ensure that the procedure
-being called accepts the number of arguments that are passed.
-
-*  Procedure calls may be unsafe for space complexity in the
-sense that they preserve so much more state across the call
-than is necessary that they may change the asymptotic space
-complexity of the program.  (This is often allowed by R5RS
-anyway, and will probably be allowed by the R6RS, but let's
-assume an implementation that guarantees the safe-for-space
-property in safe code but not in unsafe.)
-
-*  Procedure calls may create infinite loops that cannot be
-interrupted and then resumed by the user in the same ways
-that the user is accustomed to using in safe code.
-
-Let us suppose that a Scheme programmer wishes to use an
-unsafe declaration to allow the four techniques listed above
-in the following bit of code, which imports from a library
-that the same programmer has written without declarations:
-
-----------------
-
-; my-library exports my-name, my-memq, and my-memq-macro.
-; my-name is a string.
-; my-memq is like memq except it doesn't detect cyclic lists.
-; my-memq-macro is a macro that expands into a call to my-memq.
-
-(import "my-library")
-
-; Must the call to my-name raise an exception?
-
-(define (bug1 x y z)
-  (declare unsafe)
-  (my-name x y z))
-
-; Must the call to my-memq raise an exception?
-
-(define (bug2 x y z)
-  (declare unsafe)
-  (my-memq x y z))
-
-; Must the call to my-memq in the macro-expanded code
-; raise an exception?
-
-(define (bug3 x y z)
-  (declare unsafe)
-  (my-memq-macro x y z))
-
-; Should this code execute in constant space?
-
-(define (bug4 x y)
-  (declare unsafe)
-  (define (loop x y n)
-    (if (> n 0)
-        (let* ((y2 (vector->list (list->vector y)))
-               (y3 (my-memq x y2)))
-          (if (not y3)
-              (loop x y2 (- n 1)))
-          y3)))
-  (loop x y (length y)))
-
-; Should this code execute in constant space?
-
-(define (bug5 x y)
-  (declare unsafe)
-  (define (loop x y n)
-    (if (> n 0)
-        (let* ((y2 (vector->list (list->vector y)))
-               (y3 (my-memq-macro x y2)))
-          (if (not y3)
-              (loop x y2 (- n 1)))
-          y3)))
-  (loop x y (length y)))
-
-; Should this code be nicely interruptible?
-
-(define (bug6 x y)
-  (declare unsafe)
-  (define (loop x y n)
-    (if (> n 0)
-        (if (not (my-memq x y))
-            (loop x y n))
-        y))
-  (loop x y (length y)))
-
-; Should this code be nicely interruptible?
-
-(define (bug7 x y)
-  (declare unsafe)
-  (define (loop x y n)
-    (if (> n 0)
-        (if (not (my-memq-macro x y))
-            (loop x y n))
-        y))
-  (loop x y (length y)))
-
-; Should this code be nicely interruptible?
-
-(define (bug8 x y)
-  (declare unsafe)
-  (define (loop x y n)
-    (if (> n 0)
-        (if (not (my-memq x y))
-            (loop x y (- n 1)))
-        y))
-  (set-cdr! y y)
-  (loop x y (length y)))
-
-; Should this code be nicely interruptible?
-
-(define (bug9 x y)
-  (declare unsafe)
-  (define (loop x y n)
-    (if (> n 0)
-        (if (not (my-memq-macro x y))
-            (loop x y (- n 1)))
-        y))
-  (set-cdr! y y)
-  (loop x y (length y)))
-
-----------------
-
-With Will's preferred semantics for the unsafe declaration,
-the answer to all nine questions above is "not necessarily".
-
-Let's try to answer those questions using Kent's semantics:
-
-bug1:  The unsafe declaration applies to my-name, but Kent's
-semantics does not say anything about the meaning of an
-unsafe reference to a string.
-
-bug2:  The unsafe declaration applies to my-memq, but Kent's
-semantics does not say anything about unsafe versions of
-user-written procedures.
-
-bug3:  The unsafe declaration applies to my-memq-macro, but
-does not apply to the reference to my-memq that appears
-within the macro-expanded code, so the called procedure is
-the safe version of my-memq.  Kent's semantics does not say
-whether number-of-argument checking is performed by the
-caller or by the callee, however, so it does not say whether
-an error must be raised.
-
-bug4:  The unsafe declaration applies to my-memq, but Kent's
-semantics does not say whether space complexity is affected
-by the safety of the callee as opposed to the caller.
-
-bug5:  The unsafe declaration applies to my-memq-macro, but
-does not apply to the reference to my-memq that appears
-within the macro-expanded code, so the called procedure is
-the safe version of my-memq.  Kent's semantics does not say
-whether space complexity is affected by the safety of the
-callee as opposed to the caller.
-
-bug6:  The unsafe declaration applies to my-memq, but the
-call to my-memq always terminates.  Presumably this code is
-not required to be nicely interruptible.
-
-bug7:  The unsafe declaration applies to my-memq-macro, but
-does not apply to the reference to my-memq that appears
-within the macro-expanded code, so the called procedure is
-the safe version of my-memq.  That call always terminates.
-Presumably this code is not required to be nicely
-interruptible.
-
-bug8:  The unsafe declaration applies to my-memq, and that
-procedure goes into an infinite loop on its cyclic argument.
-Kent's semantics does not say anything about unsafe versions
-of user-written procedures, so it does not say whether the
-infinite loop inside my-memq is required to be nicely
-interruptible.
-
-bug9:  The unsafe declaration applies to my-memq-macro, but
-does not apply to the reference to my-memq that appears
-within the macro-expanded code, so the called procedure is
-the safe version of my-memq.  Presumably the safe version
-of my-memq is required to be nicely interruptible.
-
-The point of these examples is that safety properties are
-not always so intuitively associated with identifiers and
-with the procedures they name as Kent's semantics appears
-to assume.  In Will's view, the additional precision of
-Kent's semantics is mostly illusory.  To the extent that
-Kent's semantics is more precise on examples such as the
-above, it is as likely to be counter-intuitive as to be
-intuitive.
-
-Kent's semantics is even less precise and less intuitive
-with respect to the fast, small, and debug qualities,
-which are mostly heuristic, with no universally agreed
-upon meanings in any case.
+[end of draft of current proposals]
