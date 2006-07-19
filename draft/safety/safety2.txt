@@ -1,0 +1,754 @@
+Current Proposals for Safe/Unsafe Mode and Declarations
+=======================================================
+
+
+Goals
+=====
+
+We want to make it easier for people to write Scheme
+programs and to debug them.
+
+We want to make it easier for people to write portable
+programs in Scheme.
+
+We want to tell people that Scheme is buzzword-compatible.
+
+
+How Safe Mode Contributes to Goals
+==================================
+
+Reliable detection of programmed errors ("bugs") makes it
+easier to debug and to write programs.
+
+Reliable detection of violations of the language standard
+makes it harder for people to write non-portable programs,
+whether by accident or on purpose.
+
+Reliable detection of bugs and violations makes it easier
+for people to maintain a straight face when claiming that
+Scheme is strongly typed.
+
+
+How Unsafe Mode Contributes to Goals
+====================================
+
+Not checking for bugs makes it easier to write Scheme
+programs that run fast or interact with unsafe legacy
+code.  In some cases, not checking for bugs may be the
+best way to accomplish some task using Scheme instead
+of using some language that would be much less safe.
+
+Not checking for violations makes it easier for systems
+to provide features that are absent from the language
+standard, and to experiment with extensions that may
+become standard in the future.
+
+Not checking for bugs and violations makes it easier
+to claim that Scheme has feature X "in practice", or
+that Scheme programs run as fast as programs written
+in language Y.
+
+
+Tentative Design
+================
+
+Design of the so-called safe and unsafe modes interacts
+strongly with the exception and condition systems, and
+to some extent with the library and macro systems.
+
+In what follows, I will assume a hierarchy of condition
+types, as in SRFI 35.  For this note, I will assume the
+following specific hierarchy of conditions (with tree
+structure implied by indentation):
+
+&condition
+  &message
+    &warning
+  &serious
+    &error
+      &implementation-restriction
+      ...
+    &violation
+      &nonstandard
+      &defect
+        &lexical
+        &syntax
+        &domain
+        &result
+        ...
+
+The R6RS will refer to many condition types not shown above,
+but the examples above should give you some idea.
+
+We should extend or revise the R5RS classification of
+situations that are relevant to safety or portability.
+The word "error" evidently carries some baggage, so we
+might want to avoid it.  Here is one possible rephrasing
+of the R5RS classification:
+
+*  "must raise a ZYX exception" means that, in safe mode,
+implementations must detect the situation and raise an
+exception with a condition of type ZYX.
+
+*  "should raise a ZYX exception" means that implementations
+are encouraged, but not required, to detect the situation
+and to raise an exception with a condition of type ZYX.
+
+*  "may raise a ZYX exception" means that implementations
+are allowed, but not required or encouraged, to detect
+the situation and to raise an exception with a condition
+of type ZYX.
+
+*  "might raise a ZYX exception" means that implementations
+are allowed, but discouraged, to detect the situation
+and to raise an exception with a condition of type ZYX.
+
+*  "returns an unspecified value" means that the value
+to be returned is not specified for the situation, but
+implementations are not allowed to raise an exception.
+
+If an implementation is unable to perform an action or
+return a value in a way compatible with the R6RS, then
+it must raise an &implementation-restriction exception.
+
+We should use some such classification to re-classify
+every situation that the R5RS describes as signalling
+an error, an error, a violation of an implementation
+restriction, having unspecified or undefined effect,
+or yielding an unspecified value.  We should also
+classify some situations that the R5RS overlooked,
+such as syntax errors.
+
+We should specify every situation in which a conforming
+implementation of Scheme is required to raise an exception,
+and should also identify situations in which a conforming
+implementation is allowed to raise an exception.  We should
+also specify a condition type for the condition that is to
+be raised in each identified situation.  Assuming a design
+similar to SRFI 35, implementations would then be free to
+use any sub-condition-type of the specified condition, and
+to combine them with arbitrarily many other condition
+types.
+
+We should insist that the default exception handlers
+report certain kinds of exceptions.  Programmers will
+be able to override the default handlers using some
+mechanism that resembles that of SRFI 34.
+
+The R6RS should also allow implementations to provide ways
+for programmers to escape from the semantics of R6RS Scheme
+into implementation-dependent and possibly unsafe modes that
+may not perform all of run-time checks that are required in
+R6RS Scheme.
+
+For example, a programmer might use a syntax such as
+#!chez to declare that #3(a b c) should be treated as
+#(a b c) when read by the READ procedure.
+
+For another example, a programmer might use one of these
+implementation-specific declarations to declare that the
+operations exported from a standard fixnum library may
+not detect, let alone report, &domain conditions.  Even
+if they do detect the condition, they might handle it in
+ways that cannot even be expressed in R6RS Scheme, for
+example by returning an incorrect answer or incurring a
+segmentation fault.
+
+Many of these implementation-specific declarations are
+likely to have static rather than dynamic scope.  There
+are several ways to explain this, and several proposals
+are currently under consideration.  See "Declaration
+Semantics" below.
+
+One of the guiding principles of the most recent drafts
+of the R6RS status report says we will provide some
+standard way to declare whether run-time safety checks
+are desired.  This can be done by extending the library
+mechanism to allow such declarations, and by devising
+a syntax for such declarations that has some portable
+semantics while leaving room for implementations to
+interpret the details as they see fit.
+
+Such declarations could also be allowed to appear at the
+head of any body that permits internal definitions.
+
+
+Declaration Syntax
+==================
+
+This section is still tentative because of interactions
+with library syntax.  For now, let us suppose that the
+<library-body> syntax will be
+
+<library-body> = <declaration>* <command-or-definition>*
+
+and that the <body> and <definition> syntax of R5RS will
+be changed to
+
+<body> --> <declaration>* <definition>* <sequence>
+<definition> --> (define <variable> <expression>)
+      | (define (<variable> <def formals>) <body>)
+      | (begin <declaration>* <definition>*)
+
+The scope of a declaration is the library in which it
+appears, the expression that immediately surrounds the
+<body> at whose head it appears, or the group of
+definitions at whose head it appears.
+
+The current proposal for declaration syntax is
+
+<declaration> --> (declare <declarespec>*)
+<declarespec> --> unsafe
+                | <quality>
+                | (<quality> <priority>)
+<quality> --> safe | fast | small | debug
+<priority> --> 0 | 1 | 2 | 3
+
+Priority 3 is the highest priority.  Priority 0 means
+the quality is not a priority at all.
+
+The unsafe <declarespec> is a synonym for (safe 0).
+The safe <declarespec> is a synonym for (safe 3), and
+similarly for fast, small, and debug.
+
+
+Declaration Pragmatics
+======================
+
+For safe, the default priority must be 1 or higher.
+When the priority for safe is 1 or higher, implementations
+must raise all required exceptions and let them be handled
+by the usual R6RS exception mechanism.
+
+Beyond that, the detailed interpretation of declarations
+will vary in different implementations.  In particular,
+implementations are free to ignore declarations, and
+may observe some declarations while ignoring others.
+
+(One possible exception to the above is that we may want
+to require implementations that implement an unsafe mode
+to pay attention to any declarations that increase the
+safe priority within an unsafe section of code.)
+
+The following descriptions of each quality may provide
+some guidance for programmers and implementors.
+
+safe
+====
+
+This quality's priority influences the degree of checking
+for exceptional situations, and the raising and handling
+of exceptions in response to those situations.  The higher
+the priority, the more likely an exception will be raised.
+
+At priority 0, an implementation is allowed to ignore any
+R6RS requirements for raising an exception.  In situations
+for which the R6RS allows or requires the implementation
+to raise an exception, the implementation may ignore the
+situation and continue the computation with an incorrect
+result, may terminate the computation in an unpleasant
+fashion, or may destroy the invariants of run-time data
+structures in ways that cause unexpected and mysterious
+misbehavior even in code that comes within the scope of
+a safe declaration.  All bets are off.
+
+At priority 1 and higher, an implementation must raise all
+exceptions required by the R6RS, handle those exceptions
+using the exception mechanism described by the R6RS, and
+use the default exception handlers described by the R6RS.
+
+At higher priorities, implementations may be more likely
+to raise exceptions that are allowed but not required by
+the R6RS.
+
+Most implementations are able to recognize some violations
+when parsing, expanding macros, or compiling a definition
+or expression whose evaluation has not yet commenced in
+the usual sense.  Implementations are allowed to use
+nonstandard exception handlers at those times, and are
+encouraged to raise &lexical and &syntax exceptions for
+violations detected at those times, even if the definition
+or expression that contains the violation will never be
+executed.  Implementations are also allowed to raise a
+&warning exception at those times if they determine that
+some subexpression would inevitably raise some kind of
+&violation exception were it ever to be evaluated.
+
+fast
+====
+
+This quality's priority influences the speed of the code
+it governs.  At high priorities, the code is likely to
+run faster, but that improvement is constrained by other
+qualities and may come at the expense of the small and
+debug qualities.
+
+small
+=====
+
+This quality's priority influences the amount of computer
+memory needed to represent and to run the code.  At high
+priorities, the code is likely to occupy less memory and
+to require less memory during evaluation.
+
+debug
+=====
+
+This quality's priority influences the programmer's ability
+to debug the code.  At high priorities, the programmer is
+more likely to understand the correspondence between the
+original source code and information displayed by debugging
+tools.  At low priorities, some debugging tools may not be
+usable.
+
+
+Declaration Semantics
+=====================
+
+The semantics of the fast, small, and debug qualities is
+entirely implementation-dependent, but there have been
+several proposals to mandate some semantics for the safe
+quality, which would remain largely implementation-dependent
+in any of those proposals.
+
+The following sections describe the informal semantics of
+four proposals.  Those sections are followed by sections
+that sketch what a more formal semantics of those proposals
+might look like.  Finally, a section considers several
+examples on which the proposals might differ.
+
+
+Proposal 0: Informal Semantics
+==============================
+
+The semantics of unsafe code is unspecified, as it is
+beyond the scope of R6RS.
+
+Rationale:  The purpose of unsafe code is to provide
+an escape from the R6RS semantics.  The R6RS does not
+have to, and literally cannot, describe the semantics
+of code that is not subject to the R6RS semantics.
+
+Note:  With Proposal 0, we could honestly say that
+R6RS Scheme is a safe language, because we will have
+defined unsafe code to lie outside the language that
+is described by the R6RS.
+
+
+Proposal 1: Informal Semantics
+==============================
+
+Every implementation is required to provide a second,
+unsafe version of every standard library, named by a
+second name that indicates the library is potentially
+unsafe, e.g. r6rs/unsafe.  These unsafe versions of the
+standard libraries are allowed to be the same as the
+safe ones, but are also allowed to be unsafe in various
+ways that might be expressed by implementation-specific
+means and/or unsafe (safe 0) declarations.
+
+Scripts and libraries that wish to use unsafe versions
+of the standard libraries will name the unsafe versions.
+
+Within a script or library, an unsafe (safe 0) declaration
+means that, within the scope of the declaration (determined
+after macro expansion), any situation that, in the words
+of the R6RS, must raise an exception is allowed not to
+raise an exception.
+
+Note:  This is Orwellian doublespeak.  Proposals 2 and 3
+feature the same doublespeak.
+
+For example, if unsafe code defines a procedure of two
+arguments and then calls that procedure with only one
+argument, then an exception might not be raised.
+
+
+Proposal 2: Informal Semantics
+==============================
+
+Every procedure provides a second, unsafe entry point
+that may be used when the procedure is called from
+unsafe code.  These unsafe entry points may be the
+same as or equivalent to the safe entry points, but
+are also allowed to be unsafe in various ways that
+might be expressed by implementation-specific means
+and/or unsafe (safe 0) declarations.
+
+Within a script or library, an unsafe (safe 0) declaration
+means that, within the scope of the declaration (determined
+after macro expansion), any situation that, in the words
+of the R6RS, must raise an exception is allowed not to
+raise an exception.
+
+In addition, procedure calls that occur within the
+scope of an unsafe (safe 0) declaration may use the
+unsafe entry point of the callee.
+
+
+Proposal 3: Informal Semantics
+==============================
+
+Every imported identifier x has two bindings, a safe
+binding and an unsafe binding.  References to x in safe
+code (determined at the source level, i.e., prior to macro
+expansion) resolve to the safe binding, while references
+to x in unsafe source code resolve to the unsafe binding.
+The unsafe binding may be the same as the safe binding
+but is also allowed to differ in following ways.
+
+If x is a variable and the value of x's safe binding
+is a procedure p, the value of x's unsafe binding is a
+procedure q that might not raise exceptions in cases where
+p is required to raise exceptions.  q is not otherwise
+distinguishable from p.
+
+If x is a keyword, a syntactic form identified by a
+reference to x in unsafe mode behaves the same as an
+identical syntactic form identified by a reference to x
+in safe mode except the former might not raise exceptions
+in cases where the latter is required to raise exceptions.
+
+For example, the unsafe version of car is not required to
+raise an exception if passed a non-pair argument, and the
+unsafe version of lambda may evaluate to a procedure that
+does not raise an excpetion if passed an incorrect number
+of arguments.
+
+
+Proposal 0: Sketch of Formal Semantics
+======================================
+
+For Proposal 0, no formal semantics is necessary or
+desired.
+
+
+Proposal 1: Sketch of Formal Semantics
+======================================
+
+Proposal 2 requires the macro expander to pass declare
+forms through to the output, but otherwise to ignore
+their presence.
+
+The formal semantics of R6RS will be adequate for the
+explicitly named unsafe versions of standard libraries.
+
+In addition, the formal semantics of R6RS Scheme would
+be extended as follows.
+
+If the formal semantics of R6RS were denotational,
+along the lines of the R5RS formal semantics, then
+the domain equation for environments can be extended
+by adding a boolean (or one of the integers 0, 1, 2, 3)
+to indicate whether an expression appears within the
+scope of an unsafe declaration (or safe 0, 1, 2, 3),
+and the operations on the environment ADT would be
+changed accordingly.  Wherever the formal semantics
+would indicate the mandatory raising of an exception,
+the semantics would be changed to something like
+
+    if safe \rho
+       then raise <condition> \sigma
+       else wrong <condition> \sigma
+
+where raise encapsulates the semantics of raising an
+exception with the specified condition, and wrong is
+the command continuation of the R5RS semantics that
+indicates unspecified behavior.
+
+The semantics of a safe (or unsafe) declaration would
+be to produce a new environment \rho' from \rho for
+which safe \rho' would return the boolean indicating
+whether this is safe code.
+
+It is equally straightforward to do this for the kind
+of small-step operational semantics we envision for the
+R6RS.
+
+
+Proposal 2: Sketch of Formal Semantics
+======================================
+
+Proposal 2 requires the macro expander to pass declare
+forms through to the output, but otherwise to ignore
+their presence.
+
+Proposal 2 entails the semantic changes (but not the
+library changes) that were sketched for Proposal 1,
+together with the following changes.
+
+The R5RS domain equation for procedures would be extended
+by adding a second entry point:
+
+    F = L x (E* -> K -> C) x (E* -> K -> C)
+
+The applicate operation of the semantics would be given
+an extra argument, safe \rho, which it would use to select
+between the two entry points.
+
+The semantics of lambda expressions would be changed to
+construct both entry points.  The semantics for both
+entry points would be the same, but the nondeterminism
+that readers of the semantics are asked to perceive in
+the wrong continuation would allow the behavior of the
+two entry points to differ.  (This nondeterminism could
+be made explicit via power domains, but that level of
+formality was not considered necessary when a formal
+semantics was first added to the Scheme report.)
+
+It is even more straightforward (because of nondeterminism)
+to do this for the kind of small-step operational semantics
+we envision for the R6RS.
+
+
+Proposal 3: Sketch of Formal Semantics
+======================================
+
+Proposal 3 requires that the macro expander recognize
+library references to identifiers that appear in safe mode
+and select the safe or unsafe binding, as appropriate.
+
+For example,
+
+    (lambda (x)
+      (declare (safe 0))
+      (let ((y (cdr x)))
+        (declare (safe 1))
+        (car y)))
+
+expands to
+
+    (#u:lambda (x)
+      (#u:let ((y (#u:cdr x)))
+        (#s:car x)))
+
+where #u:lambda is a reference to the unsafe binding of
+lambda, #u:cdr is a reference to the unsafe binding of cdr,
+and #s:car is a reference to the safe binding of car.
+
+The semantics of core syntactic forms is as sketched in
+Proposal 3 except that the environment need not be used to
+keep track of the safe quality, which is recorded directly
+in the expander output.
+
+
+Comparison of the Four Proposals
+================================
+
+With Proposal 0, the semantics of programs that execute
+unsafe code would not be specified.  Instead of repeating
+that for every example, this section will ignore Proposal 0.
+
+Within this section, the phrase "will raise an exception"
+means that the semantics of a proposal requires that an
+exception be raised.  (The more intuitive phrase, "must
+raise an exception", has already been given the
+counter-intuitive meaning that an exception is required
+in safe mode, but not in unsafe.)
+
+We now consider illustrative examples.
+
+The following example will raise an exception with any of
+Proposals 1, 2, and 3:
+
+    (begin
+      (declare unsafe)
+      (let ((x (+ 3)))
+        (declare safe)
+        (+ 'b)))
+
+Similarly, the following example will raise an exception
+with any of Proposals 1, 2, and 3:
+
+    (let ()
+      (declare unsafe)
+      (+ 'a (begin (declare safe) (+ 'b))))
+
+The following example will raise an exception with Proposal
+1, but might not raise an exception with Proposals 2 or 3
+because those proposals do not require an exception to be
+raised for the commented line, and failure to detect the
+problem with the commented line causes unspecified behavior
+for subsequent calls:
+
+    (let ()
+      (declare unsafe)
+      (let ((x (+ 'a)))    ; might not raise an exception
+        (declare safe)
+        (+ 'b)))
+
+With Proposals 1 and 2, and 3, the following expression
+returns #t.
+
+    (eqv? (let () (declare safe) +)
+          (let () (declare unsafe) +))
+
+The following example is not required to raise an exception
+with any of Proposals 1, 2, or 3:
+
+    (let ((my-name "abc"))
+      (declare unsafe)
+      (my-name 1 2 3))
+
+With Proposals 1, 2, and 3, it is not entirely clear
+whether the following example is required to raise an
+exception.  With the formal semantics sketched above,
+Proposals 1, 2, and 3 would require an exception to be
+raised when the safe my-memq procedure is called with
+an incorrect number of arguments.
+
+Will, however, considers the R5RS semantics' placement
+of that check within the procedure value to have been
+a matter of convenience for the author of that semantics
+(namely Will), as it did not matter where the check was
+placed when the R5RS and earlier reports did not actually
+require the check.  Will believes that implementations
+should be given freedom to perform that check at the
+call site, which in this example lies within unsafe
+code.
+
+    (let ()
+      (define (my-memq x things)
+        (cond ((null? things) #f)
+              ((eq? x (car things)) things)
+              (else (my-memq x (cdr things)))))
+      (let ()
+        (declare unsafe)
+        (my-memq 1 2 3)))
+
+The following example is a variation of the preceding,
+and all of the remarks that applied to the preceding
+example apply to this one.
+
+    (let ()
+      (define (my-memq x things)
+        (cond ((null? things) #f)
+              ((eq? x (car things)) things)
+              (else (my-memq x (cdr things)))))
+      (define-syntax my-memq-macro
+        (syntax-rules ()
+         ((_ . args)
+          (my-memq . args))))
+      (let ()
+        (declare unsafe)
+        (my-memq-macro 1 2 3)))
+
+The following example will raise an exception with any of
+Proposals 1, 2, and 3:
+
+    (let ()
+      (declare unsafe)
+      (let ((g (lambda (x)
+                 (declare safe)
+                 (car x))))
+        (g 'a)))
+
+The following example will raise an exception with any of
+Proposals 1, 2, and 3:
+
+    (let ()
+      (define (f)
+        (declare unsafe)
+        (let ((g (lambda (x)
+                   (declare safe)
+                   (car x))))
+          g))
+      (let ((g (f)))
+        (g 'a)))
+
+The following example will raise an exception with Proposal
+1, but might not with Proposals 2 and 3 (assuming for
+Proposal 1 that the safe version of - was imported):
+
+    (let ()
+      (declare safe)
+      (let ((f -))
+        (declare unsafe)
+        (- 'a)))
+
+The following two examples will raise an exception with
+Proposal 3 but might not with Proposal 2, illustrating that
+the safety of an operator is determined at the reference
+site in Proposal 3 and at the call site in Proposal 2.
+They will raise an exception with Proposal 1 if the safe
+version of - was imported but might not otherwise.
+
+    (let ()
+      (declare safe)
+      (let ((f -))
+        (declare unsafe)
+        (f 'a)))
+
+    (let ()
+      (declare safe)
+      (let ((v (list + - * /)))
+        (declare unsafe)
+        ((vector-ref v 1) 'a)))
+
+The following example will raise an exception with any of
+Proposals 1, 2, and 3 (assuming for Proposal 1 that the safe
+version of - was imported):
+
+    (let ()
+      (declare safe)
+      (define (f x) (- x))
+      (let ()
+        (declare unsafe)
+        (f 'a)))
+
+The following example will raise an exception with Proposal 1
+(assuming the safe version of - was imported), but might not
+raise an exception with Proposals 2 or 3:
+
+    (let ()
+      (declare unsafe)
+      (define (f x) (- x))
+      (f 'a))
+
+The following example is a variation of the previous example.
+Like the previous example, it will raise an exception with
+Proposal 1 (assuming the safe version of - was imported), but
+might not raise an exception with Proposals 2 or 3.  The main
+interest of this example is that, under Proposal 2, it may be
+more likely to raise an exception than the previous example.
+(In Will's opinion, this level of detail (e.g. the likelihood
+of raising an exception) should certainly be left for
+implementors to work out on their own, and should not be
+micro-managed by the R6RS editors.)
+
+    (let ()
+      (declare unsafe)
+      (define (f x) (- x))
+      (let ()
+        (declare safe)
+        (f 'a)))
+
+The following example will raise an exception with Proposal 1
+(assuming the safe version of - was imported), but might not
+raise an exception with Proposals 2 or 3:
+
+    (let ()
+      (declare safe)
+      (define (f x) (car x))
+      (let ()
+        (declare unsafe)
+        (- (f (- '(a))))))
+
+The following two examples will raise an exception with
+Proposal 3 but might not with Proposal 2, illustrating that
+safety is a property of the source code in Proposal 3 and
+of the expanded code in Proposal 2.  They will raise an
+exception with Proposal 1 if the safe version of car was
+imported but might not otherwise.
+
+  (let-syntax ((k (syntax-rules ()
+                    ((_ e) (let () (declare unsafe) e)))))
+    (let ()
+      (declare safe)
+      (k (car 'a))))
+
+  (let-syntax ((k (syntax-rules ()
+                    ((_) (car 'a)))))
+    (let ()
+      (declare unsafe)
+      (k)))
