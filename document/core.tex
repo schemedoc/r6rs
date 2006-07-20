@@ -3530,6 +3530,40 @@ and returns the unspecified value.  % <!>
 
 \end{entry}
 
+\section{Errors and violations}
+\label{errorviolation}
+
+\begin{entry}{%
+\proto{error}{ who message \vari{irritant} \dotsfoo}{procedure}
+\proto{violation}{ who message \vari{irritant} \dotsfoo}{procedure}}
+
+\domain{\var{Who} must be a string or a symbol or \schfalse{}.
+  \var{Message} must be a string.
+  The \var{irritant}s are arbitrary objects.}
+
+Both of these procedures raise an exception with a condition (see
+chapter~\ref{exceptionsconditions}) of the following condition types:
+%
+\begin{itemize}
+\item If \var{who} is not \schfalse, the condition has condition type
+  {\cf \&who}, with \var{who} as the value of the {\cf who} field.  In
+  that case, \var{who} should identify the procedure or entity that
+  detected the exception.  If it is \schfalse, the condition does not
+  have condition type {\cf \&who}.
+\item The condition has condition type {\cf \&message}, with
+  \var{message} as the value of the {\cf message} field.
+\item The condition has condition type {\cf \&violation}, and the {\cf
+    irritants} field has as its value a list of the \var{irritant}s.
+\end{itemize}
+%
+Moreover, the condition created by {\cf error} has condition type 
+{\cf \&error}, and the condition created by {\cf violation} has
+condition type {\cf \&violation}.
+
+\begin{rationale}
+  The procedures encode a common pattern of raising exceptions.
+\end{rationale}
+\end{entry}
 
 \section{Control features}
 \label{proceduresection}

@@ -1,4 +1,5 @@
 \chapter{Exceptions and Conditions}
+\label{exceptionsconditions}
 
 FIXME: Intro
 
@@ -518,6 +519,36 @@ This condition denotes that an exception handler invoked via
 \texttt{raise} returned.
 \end{entry}
 
+\begin{entry}{{\tt \&irritants}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&irritants \&condition
+  irritants-condition?
+  (irritants condition-irritants))
+\end{scheme}
+%
+The {\cf irritants} field should contain a list of objects.  This
+condition provides additional information about a condition, typically
+the argument list of a procedure that detected an exception.
+Conditions of this type are created by the {\cf error} and {\cf
+  violation} procedures of section~\ref{errorviolation}.
+\end{entry}
+ 
+\begin{entry}{{\tt \&who}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&who \&condition
+  who-condition?
+  (who condition-who))
+\end{scheme}
+%
+The {\cf who} field should contain a symbol or string identifying the
+entity reporting the exception.
+\end{entry}
 
 \subsection{Examples}
 
