@@ -124,17 +124,7 @@ Equivalent to, but potentially more efficient than:
 If \var{hash-table} does not contain an association for \var{key}, then \var{default} is passed to \var{procedure}.
 \end{entry}
 
-%\begin{entry}{\proto{hash-table-update!/call}{ \var{hash-table} \var{key} \var{procedure} \var{f}}}
-%Equivalent to, but potentially more efficient than:
-%\begin{scheme}
-%(hash-table-set!
-% hash-table key
-% (procedure (hash-table-ref/call [TODO: non-existent procedure]
-%             hash-table key f)))
-%\end{scheme}
-%\end{entry}
-
-\begin{entry}{\proto{hash-table-fold}{ \var{hash-table} \var{procedure} \var{init}}}
+\begin{entry}{\proto{hash-table-fold}{ \var{procedure} \var{hash-table} \var{init}}}
 For every association in \var{hash-table}, calls \var{procedure} with three arguments: the association key, the association value, and an accumulated value. The accumulated value is \var{init} for the first invocation of \var{procedure}, and for subsequent invocations of \var{procedure}, it is the return value of the previous invocation of \var{procedure}. The order of the calls to \var{procedure} is indeterminate. The return value of {\cf hash-table-fold} is the value of the last invocation of \var{procedure}. If any side effect is performed on the hash table while a {\cf hash-table-fold} operation is in progress, then the behavior of {\cf hash-table-fold} is unspecified.
 
 \end{entry}
@@ -151,34 +141,11 @@ Returns a copy of \var{hash-table}.  If the \var{immutable} argument is provided
 Removes all associations from \var{hash-table}.  Returns the unspecified value.
 \end{entry}
 
-\begin{entry}{\proto{hash-table-for-each}{ \var{procedure} \var{hash-table}}}
-For every association in \var{hash-table}, calls \var{procedure} with two arguments: the association key and the association value. The \var{procedure} is called once for each association in hash-table. The order of these calls is indeterminate. If any side effect is performed on the hash table while a {\cf hash-table-for-each} operation is in progress, then the behavior of {\cf hash-table-for-each} is unspecified. The return value of {\cf hash-table-for-each} is the unspecified value.
-
-Equivalent to:
-\begin{scheme}
-(hash-table-fold hash-table 
-                 (lambda (k v a)
-                   (procedure k v)
-                   (unspecified))
-                 (unspecified))
-\end{scheme}
-\end{entry}
-
-\begin{entry}{\proto{hash-table->alist}{ \var{hash-table}}}
-Equivalent to:
-\begin{scheme}
-(hash-table-fold hash-table
-                 (lambda (k v a) 
-                   (cons (cons k v) a))
-                 '())
-\end{scheme}
-\end{entry}
-
 \begin{entry}{\proto{hash-table-keys}{ \var{hash-table}}}
 Equivalent to:
 \begin{scheme}
-(hash-table-fold hash-table 
-                 (lambda (k v a) (cons k a)) 
+(hash-table-fold (lambda (k v a) (cons k a)) 
+                 hash-table
                  '())
 \end{scheme}
 \end{entry}
@@ -186,8 +153,8 @@ Equivalent to:
 \begin{entry}{\proto{hash-table-values}{ \var{hash-table}}}
 Equivalent to:
 \begin{scheme}
-(hash-table-fold hash-table
-                 (lambda (k v a) (cons v a)) 
+(hash-table-fold (lambda (k v a) (cons v a)) 
+                 hash-table
                  '())
 \end{scheme}
 \end{entry}
@@ -252,13 +219,6 @@ rehashing after garbage collections.)
 
 \subsection{Concurrency}
 R6RS does not deal with concurrency.  Even if this proposal does not say anything about that, the issue should be considered.  Any implementation that supports concurrency will have to implement some kind of mutual exclusion for operations that have side effects, and some will need mutual exclusion even for {\cf hash-table-ref}.  As specified, the updating operations are not atomic, so they create no new problems.  The {\cf hash-table-fold} and {\cf hash-table-for-each} procedures already have a problem, even without concurrency.
-
-\subsection{hash-table-update!}
-Are the functional update procedures {\cf hash-table-update!} and 
-{\cf hash-table-update!/call} justified?  (Will: These may be
-procedural updates, but they aren't functional.  I have flushed
-{\cf hash-table-update!/call} for the time being, and would happily
-flush {\cf hash-table-update!} as well.)
 
 \subsection{Side-effects}
 There is a potential problem with the higher-order procedures, if a procedure argument mutates the hash table being operated on.  This should be addressed somehow, if only by a statement that the behavior caused by such procedures is unspecified.
