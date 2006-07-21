@@ -22,7 +22,8 @@ immediately returns that element.  If \var{predicate} returns
 \end{entry}
 
 \begin{entry}{%
-\proto{forall}{ predicate \vari{list} \varii{list} \dotsfoo}{library procedure}}
+\proto{forall}{ predicate \vari{list} \varii{list} \dotsfoo}{library procedure}
+\proto{exists}{ predicate \vari{list} \varii{list} \dotsfoo}{library procedure}}
 
 \domain{The \var{list}s must be lists, and \var{predicate} must be a
   predicate taking as many arguments as there are {\it list}s. If more
@@ -51,19 +52,6 @@ the \var{list}s are all empty, {\cf exists} returns \schfalse.
 (exists even? '(3 1 4 1 5 9)) \ev \schtrue{}
 (exists even? '(3 1 1 5 9)) \ev \schfalse{}
 (exists (lambda (n) (and (even? n) n)) '(2 1 4 14) \ev 2
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{find}{ predicate \vari{list} \varii{list} \dotsfoo}{library procedure}}
-\domain{The \var{list}s must be lists, and \var{predicate} must be a
-  predicate taking as many arguments as there are {\it list}s. If more
-  than one \var{list} is given, then they must all be the same
-  length.}  
-
-\begin{scheme}
-(find even? '(3 1 4 1 5 9)) \ev \schfalse{}
-(find even? '(3 1 4 1 5 9)) \ev 4
 \end{scheme}
 \end{entry}
 
