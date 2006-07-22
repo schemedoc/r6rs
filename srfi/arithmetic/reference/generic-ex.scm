@@ -352,10 +352,10 @@
 
 ; from Brad Lucier:
 
-(define (exact-integer-sqrt x)
+(define (exact-sqrt x)
 
   (if (exact-negative? x)
-      (error "exact-integer-sqrt: negative argument" x))
+      (error "exact-sqrt: negative argument" x))
 
   ;; x is non-negative.  Returns (values s r) where
   ;; x = s^2+r, x < (s+1)^2
@@ -385,7 +385,7 @@
               (r5rs->integer 2))))
 	(call-with-values
 	    (lambda ()
-	      (exact-integer-sqrt
+	      (exact-sqrt
 	       (exact-arithmetic-shift-left
 		x
 		(fixnum- (fixnum-arithmetic-shift-left length/4 (r5rs->integer 1))))))
