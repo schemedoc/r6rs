@@ -174,7 +174,7 @@
 	    (check
 	     (call-with-values
 		 (lambda ()
-		   (numerical exact-integer-sqrt n))
+		   (numerical exact-sqrt n))
 	       (lambda (s r)
 		 (and (exact=? (r5rs->number n)
 			       (exact+ (exact* s s) r))

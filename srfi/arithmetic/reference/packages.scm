@@ -468,7 +468,7 @@
 	  exact-make-rectangular
 	  exact-remainder exact-real-part exact-imag-part
 	  exact-expt
-	  exact-integer-sqrt
+	  exact-sqrt
 	  exact-not                                  
 	  exact-ior exact-and exact-xor
           exact-if exact-bit-count exact-length
