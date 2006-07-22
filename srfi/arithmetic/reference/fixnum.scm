@@ -461,7 +461,7 @@
 (define (fixnum-length x)
   (do ((result (make-fixnum 0) (fixnum+ result (make-fixnum 1)))
        (bits (if (fixnum-negative? x)
-                 (fixnum- x)
+                 (fixnum-not x)
                  x)
              (fixnum-logical-shift-right bits (make-fixnum 1))))
       ((fixnum-zero? bits)

@@ -264,8 +264,9 @@
               (fixnum- ones (r5rs->fixnum 1)))))))
 
 (define (bignum-length big)
-  (let ((sign (bignum-sign big))
-        (bigits (bignum-magnitude big)))
+  (let* ((sign (bignum-sign big))
+	 (big (if (fixnum-negative? sign) (bignum-not big) big))
+	 (bigits (bignum-magnitude big)))
     (if (zero-magnitude? bigits)
         (r5rs->fixnum 0)
         (do ((bits (r5rs->fixnum 0)
