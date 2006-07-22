@@ -509,17 +509,17 @@
              (exact-and (exact-not ei1) ei3)))
 
 (define-unary exact-bit-count fixnum-bit-count bignum-bit-count
-  (make-typo-op/1 exact-not 'exact-integer)
-  (make-typo-op/1 exact-not 'exact-integer))
+  (make-typo-op/1 exact-bit-count 'exact-integer)
+  (make-typo-op/1 exact-bit-count 'exact-integer))
 
 (define-unary exact-length fixnum-length bignum-length
-  (make-typo-op/1 exact-not 'exact-integer)
-  (make-typo-op/1 exact-not 'exact-integer))
+  (make-typo-op/1 exact-length 'exact-integer)
+  (make-typo-op/1 exact-length 'exact-integer))
 
 (define-unary exact-first-bit-set
   fixnum-first-bit-set bignum-first-bit-set
-  (make-typo-op/1 exact-not 'exact-integer)
-  (make-typo-op/1 exact-not 'exact-integer))
+  (make-typo-op/1 exact-first-bit-set 'exact-integer)
+  (make-typo-op/1 exact-first-bit-set 'exact-integer))
 
 (define (exact-bit-set? ei1 ei2)
   (cond ((exact-negative? ei2)
