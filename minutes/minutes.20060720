@@ -1,0 +1,119 @@
+Conference call July 20 2006 2:00pm
+Four present by 2:01pm:
+Kent, Mike, Will, Anton
+Matthew arrived about 3:10pm
+
+NOTE CHANGE in day to THURSDAY and time to 2:00pm Eastern Time (this week only)
+
+0. finalize agenda (1 minute)
+    (agenda was re-ordered to postpone items until Matthew arrived)
+
+1. Permanent action item (5 mintues)
+   - reduce response latency on email discussions (ALL)
+
+2. action items from 7/11/2006 (5 minutes)
+   - safe/unsafe mode:
+     - (re)post safe/unsafe proposal, address questions in draft (Kent)
+     - (re)post safe/unsafe proposal (Will)
+     - discuss (All)
+        done
+   - hash tables (ALL)
+     - discuss whether updating table during for-each/fold operators should
+       be left unspecified
+     - discuss whether to keep hash-table-update!
+        no email, will vote today
+   - library syntax and semantics
+     - add syntax for specifying default phase (Kent and Matthew)
+        to be posted
+     - shed some light on the dark corners mentioned in Kent's note (Matthew)
+        done
+     - discuss whether to separate phases (All)
+       - if separate, propose syntax for handling phasing in library
+         imports and in eval
+   - email proposal for new arithmetic procedures (Will)
+        done
+   - I/O
+     - read and discuss on current I/O SRFI (All)
+        discussed but not converged
+   - plan end game for delivering September 1 draft
+     - Mike will lay out critical path
+     - discuss implied meeting/email agenda for next 5-6 weeks
+        in process
+   - carried over:
+     - update library srfi (Matthew and Kent)
+        in progress
+     - update reference implementation for arithmetic SRFI (Will)
+        no progress since last week, but was current last week
+     - complete unicode reference implementation (Will)
+        no progress
+     - comment on core/library split (All)
+        not much going on
+
+3. hash tables (5 minutes)
+   - remove hash-table-update! ?
+        Vote: keep, 3-2
+        keep: Anton, Mike, Matthew
+        remove: Will, Kent
+   - remove hash-table-for-each and hash-table->alist ?
+        Vote re hash-table-for-each: remove, 1-3
+        keep: Mike
+        remove: Anton, Kent, Will
+        Vote re hash-table->alist:
+        keep: 
+        remove: Will, Kent, Anton, Mike
+   - any other changes?
+        hash-table-fold and list version not compatible?
+            procedure argument should come first
+            Anton, Kent, Will agree
+            (Mike temporarily offline)
+   - accept (with agreed-upon changes)?
+        yes (by the three people present)
+
+7. New arithmetic procedures (10 minutes)
+   - see Will's posting
+        no objections to including them
+
+6. I/O (10 minutes)
+    several open issues
+        how to deal with encoding errors
+            Matthew and Will have responded, but Kent and Anton haven't
+        meaning of EOF
+        changes of encoding in mid-stream
+            once-only mutation of input and output ports
+        changes of buffering in mid-stream
+        whither display?
+        requiring explicit port arguments?
+    need more discussion via email
+
+5. multiple return values (10 minutes)
+   - first vote: okay to leave unspecified?
+        Vote: yes, 4-1
+        yes: Will, Kent, Matthew, Anton
+        no:  Mike
+     if yes, leave unspecified
+     if no, proceed to second vote
+   - second vote: accept Will's proposed semantics
+     if no, proceed to third vote
+   - third vote: accept Kent's proposed semantics
+     if no, proceed to fourth vote
+   - table for email discussion on hybrid solution, e.g., accepting
+     will's suggestion to treat zero values as the unspecified value
+     in single-value contexts and treat two or more values as an
+     error in single value contexts
+        tabled because Matthew isn't here
+
+4. simplified condition type hierarchy (10 minutes)
+   - should we go with existing hierarchy?
+   - should we simplify?
+     - see https://r6rs.scheming.org/node/242#comment-1362
+        yes, we should simplify
+        the relevant sub-editor (Mike) will propose something concrete
+
+for next week:
+set-car!, set-cdr!
+safe/unsafe
+i/o
+body and library-body syntax
+library syntax and phasing
+
+8. adjourned about 3:39pm
