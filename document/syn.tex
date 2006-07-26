@@ -144,6 +144,8 @@ $8$}, and \meta{decimal $16$}, which means that numbers containing
 decimal points or exponents must be in decimal radix.
 \todo{Mark Meyer and David Bartley want to fix this.  (What? -- Will)}
 
+In the these rules, case is insignificant.
+
 \begin{grammar}%
 \meta{num $R$} \: \meta{prefix $R$} \meta{complex $R$}
 \meta{complex $R$} \: %
@@ -161,7 +163,8 @@ decimal points or exponents must be in decimal radix.
 \meta{ureal $R$} \: %
          \meta{uinteger $R$}
    \> \| \meta{uinteger $R$} / \meta{uinteger $R$}
-   \> \| \meta{decimal $R$}
+   \> \| \meta{decimal $R$} \meta{mantissa width}
+   \> \| inf.0 \| nan.0
 \meta{decimal $10$} \: %
          \meta{uinteger $10$} \meta{suffix}
    \> \| . \atleastone{\meta{digit $10$}} \arbno{\#} \meta{suffix}
@@ -177,6 +180,8 @@ decimal points or exponents must be in decimal radix.
 \meta{suffix} \: \meta{empty} 
    \> \| \meta{exponent marker} \meta{sign} \atleastone{\meta{digit $10$}}
 \meta{exponent marker} \: e \| s \| f \| d \| l
+\meta{mantissa width} \: \meta{empty}
+   \> \| | \atleastone{\meta{digit 10}}
 \meta{sign} \: \meta{empty}  \| + \|  -
 \meta{exactness} \: \meta{empty} \| \#i\sharpindex{i} \| \#e\sharpindex{e}
 \meta{radix 2} \: \#b\sharpindex{b}

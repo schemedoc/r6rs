@@ -123,7 +123,7 @@ Moreover, block comments may be indicated with properly nested {\tt
 \todo{Rewrite?}
 
 For a description of the notations used for numbers, see
-section~\ref{numbersection}.
+section~\ref{numbernotations}.
 
 \begin{description}{}{}
 
@@ -351,26 +351,9 @@ Examples:
 \subsection{Number literals}
 \label{numbernotations}
 
-%@@@@LOSE@@@@
-
-%%R4%%  I removed the following paragraph in an attempt to tighten up
-% this subsection.  Except for its first sentence, which I moved to
-% the subsection on implementation restrictions, I think its content
-% is implied by the rest of the section.
-%
-%Although Scheme allows a variety of written representations of numbers,
-%any particular implementation may support only some of them.
-%These syntaxes are intended to be purely notational; any kind of number
-%may be written in any form that the user deems convenient.  Of course,
-%writing 1/7 as a limited-precision decimal fraction will not express the
-%number exactly, but this approximate form of expression may be just what
-%the user wants to see.
-
 The syntax of the written representations for numbers is described formally in
 section~\ref{numbersyntax}.  Note that case is not significant in numerical
 constants.
-
-%%R4%%  See section~\ref{numberformats} for many examples.
 
 A number may be written in binary, octal, decimal, or
 hexadecimal by the use of a radix prefix.  The radix prefixes are {\cf
@@ -379,34 +362,26 @@ hexadecimal by the use of a radix prefix.  The radix prefixes are {\cf
 no radix prefix, a number is assumed to be expressed in decimal.
 
 A
-%%R4%%
-% simple
-numerical constant may be specified to be either \tupe{exact} or
-\tupe{inexact} by a prefix.  The prefixes are {\cf \#e}\sharpindex{e}
-for \tupe{exact}, and {\cf \#i}\sharpindex{i} for \tupe{inexact}.  An exactness
+numerical constant may be specified to be either exact or
+inexact by a prefix.  The prefixes are {\cf \#e}\sharpindex{e}
+for exact, and {\cf \#i}\sharpindex{i} for inexact.  An exactness
 prefix may appear before or after any radix prefix that is used.  If
 the written representation of a number has no exactness prefix, the
-constant may be either \tupe{inexact} or \tupe{exact}.  It is
-\tupe{inexact} if it contains a decimal point, an
+constant may be either inexact or exact.  It is
+inexact if it contains a decimal point, an
 exponent, or a ``\sharpsign'' character in the place of a digit,
-otherwise it is \tupe{exact}.
-%%R4%%  With our new syntax, the following sentence is redundant:
-%
-%The written representation of a
-%compound number, such as a ratio or a complex, is exact if and only if
-%all of its constituents are exact.
+otherwise it is exact.
 
-In systems with \tupe{inexact} numbers
+In systems with inexact numbers
 of varying precisions it may be useful to specify
 the precision of a constant.  For this purpose, numerical constants
 may be written with an exponent marker that indicates the
-desired precision of the \tupe{inexact}
+desired precision of the inexact
 representation.  The letters {\cf s}, {\cf f},
 {\cf d}, and {\cf l} specify the use of \var{short}, \var{single},
 \var{double}, and \var{long} precision, respectively.  (When fewer
 than four internal
-%%R4%%\tupe{flonum}
-\tupe{inexact}
+inexact
 representations exist, the four size
 specifications are mapped onto those available.  For example, an
 implementation with two internal representations may map short and
@@ -422,6 +397,72 @@ implementations may wish to allow this default to be set by the user.
 0.6L0
        {\rm Extend to long ---} .600000000000000%
 \end{scheme}
+
+If \var{x} is an external representation of an inexact real number
+according to R5RS, and \var{p} is a sequence of 1 or more decimal
+digits, then {\cf \var{x}|\var{p}} is an external representation that
+denotes the best binary floating point approximation to \var{x} using
+a \var{p}-bit significand.  For example, {\cf 1.1|53} is an external
+representation for the best approximation to 1.1 in IEEE double
+precision.
+
+If \var{x} is an external representation of an inexact real number
+according to R5RS, then \var{x} by itself should be regarded as
+equivalent to {\cf \var{x}|53}
+
+The literals {\cf +inf.0} and {\cf -inf.0} represent positive and
+negative infinity, respectively.  The {\cf +nan.0} and {\cf -nan.0}
+literals represent the NaN that is the result of {\cf (/ 0.0 0.0)}
+and may represent other NaNs as well.
+
+Implementations that use binary floating point representations
+of real numbers should represent {\cf \var{x}|\var{p}}
+using a \var{p}-bit significand if practical, or by a greater
+precision if a \var{p}-bit significand is not practical, or
+by the largest available precision if \var{p} or more bits
+of significand is not practical within the implementation.
+
+\begin{note}
+The precision of a significand should not be confused with the
+number of bits used to represent the significand.  In the IEEE
+floating point standards, for example, the significand's most
+significant bit is implicit in single and double precision but
+is explicit in extended precision.  Whether that bit is implicit
+or explicit does not affect the mathematical precision.
+In implementations that use binary floating point, the default
+precision can be calculated by calling the following procedure:
+
+\begin{scheme}
+(define (precision)
+  (do ((n 0 (+ n 1))
+       (x 1.0 (/ x 2.0)))
+    ((= 1.0 (+ 1.0 x)) n)))
+\end{scheme}
+\end{note}      
+
+\begin{note}
+When the underlying floating-point representation is IEEE double
+precision, the {\cf |\var{p}} suffix should not be
+omitted for all cases:
+Denormalized numbers have diminished precision, and therefore should
+carry a {\cf |\var{p}} suffix with the actual width of the
+significand.
+\end{note}
+
+If a \meta{decimal 10} does not contain a non-empty \meta{mantissa
+  width} and does not contain one of the exponent markers {\cf s},
+{\cf f}, {\cf d}, or {\cf l}, but does contain a decimal point or the
+exponent marker {\cf e}, then it is an external representation for a
+flonum.  Furthermore {\cf inf.0}, {\cf +inf.0}, {\cf -inf.0}, {\cf
+  nan.0}, {\cf +nan.0}, and {\cf -nan.0} are external representations
+for flonums.  Some or all of the other external representations for
+inexact reals may also represent flonums, but that is not required by
+this SRFI.
+
+If a \meta{decimal 10} contains a non-empty \meta{mantissa width} or
+one of the exponent markers {\cf s}, {\cf f}, {\cf d}, or {\cf l},
+then it represents an inexact number, but does not necessarily
+represent a flonum.
 
 \subsection{Vectors}
 

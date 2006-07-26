@@ -1198,9 +1198,16 @@ not presume to specify the behavior of {\cf eqv?} on implementation-dependent
 extensions.
 \end{note}
 
-\item \vari{obj} and \varii{obj} are both numbers, are numerically
-equal (see {\cf =}, section~\ref{numbersection}), and are either both
-exact\index{exact} or both inexact\index{inexact}.
+\item \var{obj1} and \var{obj2} are both exact\index{exact} numbers,
+  and are numerically equal (see {\cf =}, section see
+  section~\ref{genericarithmetic}),
+
+\item \var{obj1} and \var{obj2} are both inexact\index{inexact} numbers, are numerically
+  equal (see {\cf =}, section see section~\ref{genericarithmetic}, and
+  yield the same results (in the sense of {\cf eqv?}) when passed
+  as arguments to any other procedure that can be defined
+  as a finite composition of Scheme's standard arithmetic
+  procedures.
 
 \item \vari{obj} and \varii{obj} are both characters and are the same
 character according to the {\cf char=?} procedure
@@ -1232,14 +1239,19 @@ The {\cf eqv?} procedure returns \schfalse{} if:
     \ev  \schfalse%
 \end{scheme}
 
-\item one of \vari{obj} and \varii{obj} is an exact number but the other
-is an inexact number.
+\item one of \var{obj1} and \var{obj2} is an exact number but the other is
+	an inexact number, or 
 
-\item \vari{obj} and \varii{obj} are numbers for which the {\cf =}
-procedure returns \schfalse{}.
+\item \var{obj1} and \var{obj2} are rational numbers for which the {\cf =} procedure
+  returns \schfalse{}, or 
+
+\item \var{obj1} and \var{obj2} yield different results (in the sense of
+  {\cf eqv?}) when passed as arguments to any other procedure
+  that can be defined as a finite composition of Scheme's
+  standard arithmetic procedures.
 
 \item \vari{obj} and \varii{obj} are characters for which the {\cf char=?}
-procedure returns \schfalse{}.
+  procedure returns \schfalse{}.
 
 \item one of \vari{obj} and \varii{obj} is the empty list but the other
 is not.
@@ -1454,183 +1466,32 @@ The {\cf unspecified} procedure returns the unspecified
 value.\index{unspecified value}  (See section \ref{disjointness}.)
 \end{entry}
 
-\section{Numbers}
-\label{numbersection}
-\index{number}
+\section{Generic arithmetic}
+\label{genericarithmetic}
 
-Numerical computation has traditionally been neglected by the Lisp
-community.  Until Common Lisp there was no carefully thought out
-strategy for organizing numerical computation, and with the exception of
-the MacLisp system \cite{Pitman83} little effort was made to
-execute numerical code efficiently.  This report recognizes the excellent work
-of the Common Lisp committee and accepts many of their recommendations.
-In some ways this report simplifies and generalizes their proposals in a manner
-consistent with the purposes of Scheme.
+The procedures described here implement generic arithmetic based on
+the numerical tower described in chapter~\ref{numberchapter}.  Unlike
+the libraries in chapter~\ref{numberchapter}, the procedures generic
+arithmetic accept both exact and inexact numbers as arguments, and
+perform coercions and the appropriate operations as necessary.  Refer
+to chapter~\ref{numberchapter} for a detailed description of the
+numerical types of Scheme, a discussion of the concept of exactness,
+the definition of some of the numerical operations used here, and
+libraries defining more numerical operations.
 
-It is important to distinguish between the mathematical numbers, the
-Scheme numbers that attempt to model them, the machine representations
-used to implement the Scheme numbers, and notations used to write numbers.
-This report uses the types \type{number}, \type{complex}, \type{real},
-\type{rational}, and \type{integer} to refer to both mathematical numbers
-and Scheme numbers.  Machine representations such as fixed point and
-floating point are referred to by names such as \type{fixnum} and
-\type{flonum}.
+\subsection{Propagation of exactness}
 
-%%R4%% I did some reorganizing here to move the discussion of mathematical
-% numbers before the discussion of the Scheme numbers, hoping that this
-% would help to motivate the discussion of representation independence.
+The procedures listed below will always return an exact integer result
+provided all their arguments are exact integers and the mathematically
+expected result is representable as an exact integer within the
+implementation:
 
-\subsection{Numerical types}
-\label{numericaltypes}
-\index{numerical types}
-
-%%R4%% A Scheme system provides data of type \type{number}, which is the most
-%general numerical type supported by that system.
-%\type{Number} is
-%likely to be a complicated union type implemented in terms of
-%\type{fixnum}s, \type{bignum}s, \type{flonum}s, and so forth, but this
-%should not be apparent to a naive user.  What the user should see is
-%that the usual operations on numbers produce the mathematically
-%expected results, within the limits of the implementation.
-
-%%R4%%  I rewrote the following paragraph to make the various levels of
-% the tower into subsets of each other, instead of relating them by
-% injections.  I think the injections tended to put people in the frame
-% of mind of thinking about coercions between non-overlapping numeric
-% types in mainstream programming languages.
-
-\vest Mathematically, numbers may be arranged into a tower of subtypes
-%%R4%% with injections relating adjacent levels of the tower:
-in which each level is a subset of the level above it:
-\begin{tabbing}
-\ \ \ \ \ \ \ \ \ \=\tupe{number} \\
-\> \tupe{complex} \\
-\> \tupe{real} \\
-\> \tupe{rational} \\
-\> \tupe{integer} 
-\end{tabbing}
-
-For example, 3 is an integer.  Therefore 3 is also a rational,
-a real, and a complex.  The same is true of the Scheme numbers
-that model 3.  For Scheme numbers, these types are defined by the
-predicates \ide{number?}, \ide{complex?}, \ide{real?}, \ide{rational?},
-and \ide{integer?}.
-
-There is no simple relationship between a number's type and its
-representation inside a computer.  Although most implementations of
-Scheme will offer at least two different representations of 3, these
-different representations denote the same integer.
-
-%%R4%% I moved "Implementations of Scheme are not required to implement
-% the whole tower..." to the subsection on implementation restrictions.
-
-Scheme's numerical operations treat numbers as abstract data, as
-independent of their representation as possible.  Although an implementation
-of Scheme may use fixnum, flonum, and perhaps other representations for
-numbers, this should not be apparent to a casual programmer writing
-simple programs.
-
-It is necessary, however, to distinguish between numbers that are
-represented exactly and those that may not be.  For example, indexes
-into data structures must be known exactly, as must some polynomial
-coefficients in a symbolic algebra system.  On the other hand, the
-results of measurements are inherently inexact, and irrational numbers
-may be approximated by rational and therefore inexact approximations.
-In order to catch uses of inexact numbers where exact numbers are
-required, Scheme explicitly distinguishes exact from inexact numbers.
-This distinction is orthogonal to the dimension of type.
-
-\subsection{Exactness}
-
-%%R4%% I tried to direct the following paragraph away from philosophizing
-% about the exactness of mathematical numbers, and toward philosophizing
-% about the exactness of Scheme numbers.
-
-\mainindex{exactness} \label{exactly}
-Scheme numbers are either \type{exact} or \type{inexact}.  A number is
-\tupe{exact} if it was written as an exact constant or was derived from
-\tupe{exact} numbers using only \tupe{exact} operations.  A number is
-\tupe{inexact} if it was written as an inexact constant,
-%%R4%% models a quantity (e.g., a measurement) known only approximately,
-if it was
-derived using \tupe{inexact} ingredients, or if it was derived using
-\tupe{inexact} operations. Thus \tupe{inexact}ness is a contagious
-property of a number.
-%%R4%% The rest of this paragraph (from R3RS) has been dropped.
-
-\vest If two implementations produce \tupe{exact} results for a
-computation that did not involve \tupe{inexact} intermediate results,
-the two ultimate results will be mathematically equivalent.  This is
-generally not true of computations involving \tupe{inexact} numbers
-since approximate methods such as floating point arithmetic may be used,
-but it is the duty of each implementation to make the result as close as
-practical to the mathematically ideal result.
-
-\vest Rational operations such as {\cf +} should always produce
-\tupe{exact} results when given \tupe{exact} arguments.
-%%R4%%If an implementation is
-%unable to represent an \tupe{exact} result (for example, if it does not
-%support infinite precision integers and rationals)
-If the operation is unable to produce an \tupe{exact} result,
-then it may either report the violation of an implementation restriction
-or it may silently coerce its
-result to an \tupe{inexact} value.
-%%R4%%Such a coercion may cause an error later.
-See section~\ref{restrictions}.
-
-\vest With the exception of \ide{inexact->exact}, the operations described in
-this section must generally return inexact results when given any inexact
-arguments.  An operation may, however, return an \tupe{exact} result if it can
-prove that the value of the result is unaffected by the inexactness of its
-arguments.  For example, multiplication of any number by an \tupe{exact} zero
-may produce an \tupe{exact} zero result, even if the other argument is
-\tupe{inexact}.
-
-\subsection{Implementation restrictions}
-
-\index{implementation restriction}\label{restrictions}
-
-\vest Implementations of Scheme are not required to implement the whole
-tower of subtypes given in section~\ref{numericaltypes},
-but they must implement a coherent subset consistent with both the
-purposes of the implementation and the spirit of the Scheme language.
-For example, an implementation in which all numbers are \tupe{real}
-may still be quite useful.
-
-\vest Implementations may also support only a limited range of numbers of
-any type, subject to the requirements of this section.  The supported
-range for \tupe{exact} numbers of any type may be different from the
-supported range for \tupe{inexact} numbers of that type.  For example,
-an implementation that uses flonums to represent all its
-\tupe{inexact} \tupe{real} numbers may
-support a practically unbounded range of \tupe{exact} \tupe{integer}s
-and \tupe{rational}s
-while limiting the range of \tupe{inexact} \tupe{real}s (and therefore
-the range of \tupe{inexact} \tupe{integer}s and \tupe{rational}s)
-to the dynamic range of the flonum format.
-Furthermore
-the gaps between the representable \tupe{inexact} \tupe{integer}s and
-\tupe{rational}s are
-likely to be very large in such an implementation as the limits of this
-range are approached.
-
-\vest An implementation of Scheme must support exact integers
-throughout the range of numbers that may be used for indexes of
-lists, vectors, and strings or that may result from computing the length of a
-list, vector, or string.  The \ide{length}, \ide{vector-length},
-and \ide{string-length} procedures must return an exact
-integer, and it is an error to use anything but an exact integer as an
-index.  Furthermore any integer constant within the index range, if
-expressed by an exact integer syntax, will indeed be read as an exact
-integer, regardless of any implementation restrictions that may apply
-outside this range.  Finally, the procedures listed below will always
-return an exact integer result provided all their arguments are exact integers
-and the mathematically expected result is representable as an exact integer
-within the implementation:
+FIXME: formatting; complete?
 
 \begin{scheme}
 +            -             *
-quotient     remainder     modulo
+div          mod           div0
+mod0 
 max          min           abs
 numerator    denominator   gcd
 lcm          floor         ceiling
@@ -1638,100 +1499,44 @@ truncate     round         rationalize
 expt%
 \end{scheme}
 
-\vest Implementations are encouraged, but not required, to support
-\tupe{exact} \tupe{integer}s and \tupe{exact} \tupe{rational}s of
-practically unlimited size and precision, and to implement the
-above procedures and the {\cf /} procedure in
-such a way that they always return \tupe{exact} results when given \tupe{exact}
-arguments.  If one of these procedures is unable to deliver an \tupe{exact}
-result when given \tupe{exact} arguments, then it may either report a
-violation of an
-implementation restriction or it may silently coerce its result to an
-\tupe{inexact} number.  Such a coercion may cause an error later.
+The generic operations generally return the correct exact
+result when all of their arguments are exact and the result is
+mathematically well-defined, but return an inexact result when any
+argument is inexact.  Exceptions are {\cf sqrt}, {\cf exp}, {\cf log},
+{\cf sin}, {\cf cos}, {\cf tan}, {\cf asin}, {\cf acos}, {\cf atan},
+{\cf expt}, {\cf make-polar}, {\cf magnitude}, and {\cf angle}, which
+are allowed (but not required) to return inexact results even when
+given exact arguments, as indicated in the specification of these
+procedures.
 
-%%R4%% I moved this stuff here.
-% It seems to me that the only thing that this requires is that
-% implementations that support inexact numbers have to have both
-% exact and inexact representations for the integers 0 through 15.
-% If that's what it's saying, I'd rather say it that way.
-% On the other hand, letting the limit be as small as 15 sounds a
-% tad silly, though I think I understand how that number was arrived at.
-% (Or is 35 the number?)
-%
-%Implementations are encouraged, but not required, to support \tupe{inexact}
-%numbers.  For any implementation that supports \tupe{inexact} numbers,
-%there is a subset of the integers for which there are both \tupe{exact} and
-%\tupe{inexact} representations.  This subset must include all non-negative
-%integers up to some limit specified by the implementation.  This limit
-%must be 16 or greater.  The
-%\ide{exact\coerce{}inexact} and \ide{inexact\coerce{}exact}
-%procedures implement the natural one-to-one correspondence between
-%the \tupe{inexact} and \tupe{exact} integers within this range.
+One general exception to the rule above is that an implementation may
+return an exact result despite inexact arguments if that exact result
+would be the correct result for all possible substitutions of exact
+arguments for the inexact ones.
 
-\vest An implementation may use floating point and other approximate 
-representation strategies for \tupe{inexact} numbers.
-%%R4%% The following sentence seemed a bit condescending as well as
-% awkward.  It didn't seem to be very enforceable, so I flushed it.
-%
-%This is not to
-%say that implementors need not use the best known algorithms for
-%\tupe{inexact} computations---only that approximate methods of high
-%quality are allowed.
-%
-This report recommends, but does not require, that the IEEE 32-bit
-and 64-bit floating point standards be followed by implementations that use
-flonum representations, and that implementations using
-other representations should match or exceed the precision achievable
-using these floating point standards~\cite{IEEE}.
-
-\vest In particular, implementations that use flonum representations
-must follow these rules: A \tupe{flonum} result
-must be represented with at least as much precision as is used to express any of
-the inexact arguments to that operation.  It is desirable (but not required) for
-potentially inexact operations such as {\cf sqrt}, when applied to \tupe{exact}
-arguments, to produce \tupe{exact} answers whenever possible (for example the
-square root of an \tupe{exact} 4 ought to be an \tupe{exact} 2).
-If, however, an
-\tupe{exact} number is operated upon so as to produce an \tupe{inexact} result
-(as by {\cf sqrt}), and if the result is represented as a \tupe{flonum}, then
-the most precise \tupe{flonum} format available must be used; but if the result
-is represented in some other way then the representation must have at least as
-much precision as the most precise \tupe{flonum} format available.
-
-Although Scheme allows a variety of written
-%%R4%% representations of 
-notations for
-numbers, any particular implementation may support only some of them.
-%%R4%%
-For example, an implementation in which all numbers are \tupe{real}
-need not support the rectangular and polar notations for complex
-numbers.  If an implementation encounters an \tupe{exact} numerical constant that
-it cannot represent as an \tupe{exact} number, then it may either report a
-violation of an implementation restriction or it may silently represent the
-constant by an \tupe{inexact} number.
-
+Rational operations such as {\cf +} should always produce exact
+results when given exact arguments. 
 
 \subsection{Numerical operations}
 
-The reader is referred to section~\ref{typeconventions} for a summary
-of the naming conventions used to specify restrictions on the types of
-arguments to numerical routines.
-%%R4%% The following sentence has already been said twice, and the
-% term "exactness-preserving" is no longer defined by the Report.
-%
-%  Remember that
-%an exactness-preserving operation may coerce its result to inexact if the
-%implementation is unable to represent it exactly.
-The examples used in this section assume that any numerical constant written
-using an \tupe{exact} notation is indeed represented as an \tupe{exact}
-number.  Some examples also assume that certain numerical constants written
-using an \tupe{inexact} notation can be represented without loss of
-accuracy; the \tupe{inexact} constants were chosen so that this is
-likely to be true in implementations that use flonums to represent
-inexact numbers.
+The procedures described here behave consistently with the
+corresponding {\cf inexact-} procedure if passed inexact arguments,
+and with the corresponding {\cf exact-} procedure if passed exact
+arguments.
 
-\todo{Scheme provides the usual set of operations for manipulating
-numbers, etc.}
+We will use \var{z}, \vari{z}, \varii{z}, and \variii{z} as
+metavariables that range over the complex numbers, \var{x}, \vari{x},
+\varii{x}, and \variii{x} as metavariables that range over the real
+numbers, \var{q}, \vari{q}, \varii{q}, and \variii{q} as metavariables
+that range over the rationals. and \var{n}, \vari{n}, \varii{n}, and
+\variii{n} as metavariables that range over the inexact integers.
+
+If an argument to the following procedures that corresponds to a
+metavariable is not in the set specified for that metavariable, then
+these procedures signal an error (and should signal an error even in
+unsafe mode).
+
+\subsubsection{Numerical type predicates}
 
 \begin{entry}{%
 \proto{number?}{ obj}{procedure}
@@ -1740,75 +1545,190 @@ numbers, etc.}
 \proto{rational?}{ obj}{procedure}
 \proto{integer?}{ obj}{procedure}}
 
-These numerical type predicates can be applied to any kind of
-argument, including non-numbers.  They return \schtrue{} if the object is
+These numerical type predicates can be applied to any kind ofargument, including non-numbers.  They return \schtrue{} if the object is
 of the named type, and otherwise they return \schfalse{}.
 In general, if a type predicate is true of a number then all higher
 type predicates are also true of that number.  Consequently, if a type
 predicate is false of a number, then all lower type predicates are
 also false of that number.
-%%R4%% The new section on implementation restrictions subsumes: 
-% Not every system
-%supports all of these types; for example, it is entirely possible to have a
-%Scheme system that has only \tupe{integer}s.  Nonetheless every implementation
-%of Scheme must have all of these predicates.
 
-If \vr{z} is an inexact complex number, then {\cf (real? \vr{z})} is true if
-and only if {\cf (zero? (imag-part \vr{z}))} is true.  If \vr{x} is an inexact
-real number, then {\cf (integer? \vr{x})} is true if and only if
-{\cf (= \vr{x} (round \vr{x}))}.
+If \var{z} is a complex number, then {\cf (real? \var{z})} is true if
+and only if {\cf (zero? (imag-part \var{z}))} and {\cf (exact?
+  (imag-part \var{z}))} are both true.
+
+If \var{x} is a real number, then {\cf (rational? \var{x})} is true if
+and only if there exist exact integers \var{k1} and \var{k2} such that
+{\cf (= \var{x} (/ \var{k1} \var{k2}))} and {\cf (= (numerator
+  \var{x}) \var{k1})} and {\cf (= (denominator \var{x}) \var{k2})} are
+all true.  Thus infinities and NaNs are not rational numbers.
+
+If \var{q} is a rational number, then {\cf (integer?
+\var{q})} is true if and only if {\cf`(= (denominator
+\var{q}) 1)} is true.  If \var{q} is not a rational number,
+then {\cf (integer? \var{q})} is false.
 
 \begin{scheme}
-(complex? 3+4i)         \ev  \schtrue
-(complex? 3)            \ev  \schtrue
-(real? 3)               \ev  \schtrue
-(real? -2.5+0.0i)       \ev  \schtrue
-(real? \#e1e10)          \ev  \schtrue
-(rational? 6/10)        \ev  \schtrue
-(rational? 6/3)         \ev  \schtrue
-(integer? 3+0i)         \ev  \schtrue
-(integer? 3.0)          \ev  \schtrue
-(integer? 8/4)          \ev  \schtrue%
+(complex? 3+4i)                        \ev  \schtrue{}
+(complex? 3)                           \ev  \schtrue{}
+(real? 3)                              \ev  \schtrue{}
+(real? -2.5+0.0i)                      \ev  \schfalse{}
+(real? -2.5+0i)                        \ev  \schtrue{}
+(real? -2.5)                           \ev  \schtrue{}
+(real? \sharpsign{}e1e10)                         \ev  \schtrue{}
+(rational? 6/10)                       \ev  \schtrue{}
+(rational? 6/3)                        \ev  \schtrue{}
+(rational? 2)                          \ev  \schtrue{}
+(integer? 3+0i)                        \ev  \schtrue{}
+(integer? 3.0)                         \ev  \schtrue{}
+(integer? 8/4)                         \ev  \schtrue{}
+
+(number? +nan.0)                       \ev  \schtrue{}
+(complex? +nan.0)                      \ev  \schtrue{}
+(real? +nan.0)                         \ev  \schtrue{}
+(rational? +nan.0)                     \ev  \schfalse{}
+(complex? +inf.0)                      \ev  \schtrue{}
+(real? -inf.0)                         \ev  \schtrue{}
+(rational? -inf.0)                     \ev  \schfalse{}
+(integer? -inf.0)                      \ev  \schfalse{}
 \end{scheme}
 
 \begin{note}
-The behavior of these type predicates on \tupe{inexact} numbers
-is unreliable, since any inaccuracy may affect the result.
+The behavior of these type predicates on inexact numbers is
+unreliable, because any inaccuracy may
+affect the result.
 \end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{real-valued?}{ obj}{procedure}
+\proto{rational-valued?}{ obj}{procedure}
+\proto{integer-valued?}{ obj}{procedure}}
+
+These numerical type predicates can be applied to any kind of
+argument, including non-numbers.  They return \schtrue{} if the object
+is a number and is equal in the sense of {\cf =} to some object of the
+named type, and otherwise they return \schfalse{}.
+
+\begin{scheme}
+(real-valued? +nan.0)                  \ev  \schfalse{}
+(real-valued? -inf.0)                  \ev  \schtrue{}
+(real-valued? 3)                       \ev  \schtrue{}
+(real-valued? -2.5+0.0i)               \ev  \schtrue{}
+(real-valued? -2.5+0i)                 \ev  \schtrue{}
+(real-valued? -2.5)                    \ev  \schtrue{}
+(real-valued? \sharpsign{}e1e10)                  \ev  \schtrue{}
+
+(rational-valued? +nan.0)              \ev  \schfalse{}
+(rational-valued? -inf.0)              \ev  \schfalse{}
+(rational-valued? 6/10)                \ev  \schtrue{}
+(rational-valued? 6/10+0.0i)           \ev  \schtrue{}
+(rational-valued? 6/10+0i)             \ev  \schtrue{}
+(rational-valued? 6/3)                 \ev  \schtrue{}
+
+(integer-valued? 3+0i)                 \ev  \schtrue{}
+(integer-valued? 3+0.0i)               \ev  \schtrue{}
+(integer-valued? 3.0)                  \ev  \schtrue{}
+(integer-valued? 3.0+0.0i)             \ev  \schtrue{}
+(integer-valued? 8/4)                  \ev  \schtrue{}
+\end{scheme}
 
 \begin{note}
-In many implementations the \ide{rational?} procedure will be the same
-as \ide{real?}, and the \ide{complex?} procedure will be the same as
-\ide{number?}, but unusual implementations may be able to represent
-some irrational numbers exactly or may extend the number system to
-support some kind of non-complex numbers.
+The behavior of these type predicates on inexact numbers is
+unreliable, because any inaccuracy may
+affect the result.
 \end{note}
-
 \end{entry}
 
 \begin{entry}{%
-\proto{exact?}{ \vr{z}}{procedure}
-\proto{inexact?}{ \vr{z}}{procedure}}
+\proto{exact?}{ z}{procedure}
+\proto{inexact?}{ z}{procedure}}
 
 These numerical predicates provide tests for the exactness of a
-quantity.  For any Scheme number, precisely one of these predicates
-is true.
+quantity.  For any Scheme number, precisely one of these predicates is
+true.
 
+\begin{scheme}
+(exact? 5)                   \ev  \schtrue{}
+(inexact? +inf.0)            \ev  \schtrue{}
+\end{scheme}
 \end{entry}
 
+\subsubsection{Generic conversions}
 
 \begin{entry}{%
-\proto{=}{ \vri{z} \vrii{z} \vriii{z} \dotsfoo}{procedure}
-\proto{<}{ \vri{x} \vrii{x} \vriii{x} \dotsfoo}{procedure}
-\proto{>}{ \vri{x} \vrii{x} \vriii{x} \dotsfoo}{procedure}
-\proto{<=}{ \vri{x} \vrii{x} \vriii{x} \dotsfoo}{procedure}
-\proto{>=}{ \vri{x} \vrii{x} \vriii{x} \dotsfoo}{procedure}}
+\proto{->inexact}{ z}{procedure}
+\proto{->exact}{ z}{procedure}}
 
-%- Some implementations allow these procedures to take many arguments, to 
-%- facilitate range checks.  
-These procedures return \schtrue{} if their arguments are (respectively):
-equal, monotonically increasing, monotonically decreasing,
-monotonically nondecreasing, or monotonically nonincreasing.
+{\cf ->inexact} returns an inexact representation of \var{z}.  If
+inexact numbers of the appropriate type have bounded precision, then
+the value returned is an inexact number that is nearest to the
+argument.  If an exact argument has no reasonably close inexact
+equivalent, then a violation of an implementation restriction may be
+reported. FIXME
+
+{\cf ->exact} returns an exact representation of \var{z}.  The value
+returned is the exact number that is numerically closest to the
+argument; in most cases, the result of this procedure should be
+numerically equal to its argument.  If an inexact argument has no
+reasonably close exact equivalent, then a violation of an
+implementation restriction may be reported. FIXME
+
+These procedures implement the natural one-to-one correspondence
+between exact and inexact integers throughout an
+implementation-dependent range.
+
+{\cf ->inexact} and {\cf ->exact} are idempotent.
+\end{entry}
+
+\begin{entry}{%
+\proto{real->flonum}{ x}{procedure}}
+
+{\cf Real->flonum} returns a flonum representation of
+\var{x}, which must be a real number.
+
+The value returned is a flonum that is numerically closest to the
+argument.
+
+\begin{rationale}
+  The flonums are a subset of the inexact reals, but may be a proper
+  subset.  The {\cf real->flonum} procedure converts an arbitrary real
+  to the flonum type required by flonum-specific procedures.
+\end{rationale}
+
+\begin{note}
+  If flonums are represented in binary floating point, then
+  implementations are strongly encouraged to break ties by preferring
+  the floating point representation whose least significant bit is
+  zero.
+\end{note}
+\end{entry}
+
+\subsubsection{Arithmetic operations}
+
+\begin{entry}{%
+\proto{=}{ \vari{z} \varii{z} \variii{z} \dotsfoo}{procedure}
+\proto{<}{ \var{x1} \varii{x} \variii{x} \dotsfoo}{procedure}
+\proto{>}{ \var{x1} \varii{x} \variii{x} \dotsfoo}{procedure}
+\proto{<=}{ \var{x1} \varii{x} \variii{x} \dotsfoo}{procedure}
+\proto{>=}{ \var{x1} \varii{x} \variii{x} \dotsfoo}{procedure}}
+
+These procedures return \schtrue{} if their arguments are
+(respectively): equal, monotonically increasing, monotonically
+decreasing, monotonically nondecreasing, or monotonically
+nonincreasing \schfalse{} otherwise.
+
+\begin{scheme}
+(= +inf.0 +inf.0)           \ev  \schtrue{}
+(= -inf.0 +inf.0)           \ev  \schfalse{}
+(= -inf.0 -inf.0)           \ev  \schtrue{}
+\end{scheme}
+
+For any real number \var{x} that is neither infinite nor NaN:
+
+\begin{scheme}
+(< -inf.0 \var{x} +inf.0))        \ev  \schtrue{}
+(> +inf.0 \var{x} -inf.0))        \ev  \schtrue{}
+\end{scheme}
 
 These predicates are required to be transitive.
 
@@ -1818,35 +1738,60 @@ languages are not transitive.
 \end{note}
 
 \begin{note}
-While it is not an error to compare \tupe{inexact} numbers using these
+While it is not an error to compare inexact numbers using these
 predicates, the results may be unreliable because a small inaccuracy
-may affect the result; this is especially true of \ide{=} and \ide{zero?}.
+may affect the result; this is especially true of {\cf =} and {\cf zero?}.
+
 When in doubt, consult a numerical analyst.
 \end{note}
-
 \end{entry}
 
 \begin{entry}{%
-\proto{zero?}{ \vr{z}}{library procedure}
-\proto{positive?}{ \vr{x}}{library procedure}
-\proto{negative?}{ \vr{x}}{library procedure}
-\proto{odd?}{ \vr{n}}{library procedure}
-\proto{even?}{ \vr{n}}{library procedure}}
+\proto{zero?}{ z}{procedure}
+\proto{positive?}{ x}{procedure}
+\proto{negative?}{ x}{procedure}
+\proto{odd?}{ n}{procedure}
+\proto{even?}{ n}{procedure}
+\proto{finite?}{ x}{procedure}
+\proto{infinite?}{ x}{procedure}
+\proto{nan?}{ x}{procedure}}
 
 These numerical predicates test a number for a particular property,
-returning \schtrue{} or \schfalse.  See note above.
+returning \schtrue{} or \schfalse{}.  See note above.  {\cf Zero?}
+tests if the number is {\cf =} to zero, {\cf positive?} tests if it is
+greater than zero, {\cf negative?} tests if it is less than zero, {\cf
+  odd?} tests if it is odd, {\cf even?} tests if it is even, {\cf
+  finite?} tests if it is not an infinity and not a NaN, {\cf
+  infinite?} tests if it is an infinity, {\cf nan?} tests if it is a
+NaN.
 
+\begin{scheme}
+(positive? +inf.0)            \ev  \schtrue{}
+(negative? -inf.0)            \ev  \schtrue{}
+(finite? +inf.0)              \ev  \schfalse{}
+(finite? 5)                   \ev  \schtrue{}
+(finite? 5.0)                 \ev  \schtrue{}
+(infinite? 5.0)               \ev  \schfalse{}
+(infinite? +inf.0)            \ev  \schtrue{}
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{max}{ \vri{x} \vrii{x} \dotsfoo}{library procedure}
-\proto{min}{ \vri{x} \vrii{x} \dotsfoo}{library procedure}}
+\proto{max}{ \vari{x} \varii{x} \dotsfoo}{procedure}
+\proto{min}{ \vari{x} \varii{x} \dotsfoo}{procedure}}
 
 These procedures return the maximum or minimum of their arguments.
 
 \begin{scheme}
-(max 3 4)              \ev  4    ; exact
-(max 3.9 4)            \ev  4.0  ; inexact%
+(max 3 4)                              \ev  4    ; exact
+(max 3.9 4)                            \ev  4.0  ; inexact
+\end{scheme}
+
+For any real number \var{x}:
+
+\begin{scheme}
+(max +inf.0 \var{x})                         \ev  +inf.0
+(min -inf.0 \var{x})                         \ev  -inf.0
 \end{scheme}
 
 \begin{note}
@@ -1861,167 +1806,163 @@ restriction.
 
 \end{entry}
 
-
 \begin{entry}{%
-\proto{+}{ \vri{z} \dotsfoo}{procedure}
-\proto{*}{ \vri{z} \dotsfoo}{procedure}}
+\proto{+}{ \vari{z} \dotsfoo}{procedure}
+\proto{*}{ \vari{z} \dotsfoo}{procedure}}
 
 These procedures return the sum or product of their arguments.
-%- These procedures are exactness preserving.
 
 \begin{scheme}
-(+ 3 4)                 \ev  7
-(+ 3)                   \ev  3
-(+)                     \ev  0
-(* 4)                   \ev  4
-(*)                     \ev  1%
-\end{scheme} 
- 
+(+ 3 4)                                \ev  7
+(+ 3)                                  \ev  3
+(+)                                    \ev  0
+(+ +inf.0 +inf.0)                      \ev  +inf.0
+(+ +inf.0 -inf.0)                      \ev  +nan.0
+
+(* 4)                                  \ev  4
+(*)                                    \ev  1
+(* 5 +inf.0)                           \ev  +inf.0
+(* -5 +inf.0)                          \ev  -inf.0
+(* +inf.0 +inf.0)                      \ev  +inf.0
+(* +inf.0 -inf.0)                      \ev  -inf.0
+(* 0 +inf.0)                           \ev  0 \textit{or} +nan.0
+(* 0 +nan.0)                           \ev  0 \textit{or} +nan.0
+\end{scheme}
+
+For any real number \var{x} that is neither infinite nor NaN:
+
+\begin{scheme}
+(+ +inf.0 \var{x})                           \ev  +inf.0
+(+ -inf.0 \var{x})                           \ev  -inf.0
+(+ +nan.0 \var{x})                           \ev  +nan.0
+\end{scheme}
+
+For any real number \var{x} that is neither
+infinite nor NaN nor 0:
+
+\begin{scheme}
+(* +nan.0 \var{x})                           \ev  +nan.0
+\end{scheme}
+
+If any of these procedures are applied to mixed non-rational real and
+non-real complex arguments, they either report a violation of an
+implementation restriction or return an unspecified number.
 \end{entry}
 
-
 \begin{entry}{%
-\proto{-}{ \vri{z} \vrii{z}}{procedure}
-\rproto{-}{ \vr{z}}{procedure}
-\rproto{-}{ \vri{z} \vrii{z} \dotsfoo}{optional procedure}
-\proto{/}{ \vri{z} \vrii{z}}{procedure}
-\rproto{/}{ \vr{z}}{procedure}
-\rproto{/}{ \vri{z} \vrii{z} \dotsfoo}{optional procedure}}
+\proto{-}{ z}{procedure}
+\rproto{-}{ \vari{z} \varii{z} \dotsfoo}{procedure}
+\proto{/}{ z}{procedure}
+\rproto{/}{ \vari{z} \varii{z} \dotsfoo}{procedure}}
 
 With two or more arguments, these procedures return the difference or
-quotient of their arguments, associating to the left.  With one argument,
-however, they return the additive or multiplicative inverse of their argument.
-%- These procedures are exactness preserving, except that division may
-%- coerce its result to inexact in implementations that do not support
-%- \tupe{ratnum}s. 
+quotient of their arguments, associating to the left.  With one
+argument, however, they return the additive or multiplicative inverse
+of their argument.
 
 \begin{scheme}
-(- 3 4)                 \ev  -1
-(- 3 4 5)               \ev  -6
-(- 3)                   \ev  -3
-(/ 3 4 5)               \ev  3/20
-(/ 3)                   \ev  1/3%
+(- 3 4)                                \ev  -1
+(- 3 4 5)                              \ev  -6
+(- 3)                                  \ev  -3
+(- +inf.0 +inf.0)                      \ev  +nan.0
+
+(/ 3 4 5)                              \ev  3/20
+(/ 3)                                  \ev  1/3
+(/ 0.0)                                \ev  +inf.0
+(/ 1.0 0)                              \ev  +inf.0 or \var{error}
+(/ -1 0.0)                             \ev  -inf.0
+(/ +inf.0)                             \ev  0.0
+(/ 0 0.0)                              \ev  0 or +nan.0
+(/ 0.0 0)                              \ev  +nan.0 or \var{error}
+(/ 0.0 0.0)                            \ev  +nan.0
+\end{scheme}
+
+If any of these procedures are applied to mixed non-rational real and
+non-real complex arguments, they either report a violation of an
+implementation restriction or return an unspecified number.
+\end{entry}
+
+\begin{entry}{%
+\proto{abs}{ x}{procedure}}
+
+{\cf Abs} returns the absolute value of its argument.
+
+\begin{scheme}
+(abs -7)                               \ev  7
+(abs -inf.0)                           \ev  +inf.0
 \end{scheme}
 
 \end{entry}
 
+\begin{entry}{%
+\proto{div+mod}{ \vari{x} \varii{x}}{procedure}
+\proto{div}{ \vari{x} \varii{x}}{procedure}
+\proto{mod}{ \vari{x} \varii{x}}{procedure}
+\proto{div0+mod0}{ \vari{x} \varii{x}}{procedure}
+\proto{div0}{ \vari{x} \varii{x}}{procedure}
+\proto{mod0}{ \vari{x} \varii{x}}{procedure}}
+
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in section~\ref{integerdivision}.  In each case, \vari{x}
+must be neither infinite nor a NaN, and \varii{x} must be nonzero;
+otherwise, an exception is raised.
+
+\begin{scheme}
+(div \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{div}~\varii{x}\)
+(mod \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{mod}~\varii{x}\)
+(div+mod \vari{x} \varii{x})     \ev \(\vari{x}~\mathrm{div}~\varii{x}, \vari{x}~\mathrm{mod}~\varii{x}\)\\\>\>\>; two return values
+(div0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{div}_0~\varii{x}\)
+(mod0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{mod}_0~\varii{x}\)
+(div0+mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; two return values
+\end{scheme}
 
 \begin{entry}{%
-\proto{abs}{ x}{library procedure}}
-
-{\cf Abs} returns the absolute value of its argument.  
-%- {\cf Abs} is exactness preserving when its argument is real.
-\begin{scheme}
-(abs -7)                \ev  7
-\end{scheme}
-\end{entry}
-
-
-\begin{entry}{%
-\proto{quotient}{ \vri{n} \vrii{n}}{procedure}
-\proto{remainder}{ \vri{n} \vrii{n}}{procedure}
-\proto{modulo}{ \vri{n} \vrii{n}}{procedure}}
-
-These procedures implement number-theoretic (integer)
-division.  \vrii{n} should be non-zero.  All three procedures
-return integers.  If \vri{n}/\vrii{n} is an integer:
-\begin{scheme}
-    (quotient \vri{n} \vrii{n})   \ev \vri{n}/\vrii{n}
-    (remainder \vri{n} \vrii{n})  \ev 0
-    (modulo \vri{n} \vrii{n})     \ev 0
-\end{scheme}
-If \vri{n}/\vrii{n} is not an integer:
-\begin{scheme}
-    (quotient \vri{n} \vrii{n})   \ev \vr{n_q}
-    (remainder \vri{n} \vrii{n})  \ev \vr{n_r}
-    (modulo \vri{n} \vrii{n})     \ev \vr{n_m}
-\end{scheme}
-where \vr{n_q} is $\vri{n}/\vrii{n}$ rounded towards zero,
-$0 < |\vr{n_r}| < |\vrii{n}|$, $0 < |\vr{n_m}| < |\vrii{n}|$,
-\vr{n_r} and \vr{n_m} differ from \vri{n} by a multiple of \vrii{n},
-\vr{n_r} has the same sign as \vri{n}, and
-\vr{n_m} has the same sign as \vrii{n}.
-
-From this we can conclude that for integers \vri{n} and \vrii{n} with
-\vrii{n} not equal to 0,
-\begin{scheme}
-     (= \vri{n} (+ (* \vrii{n} (quotient \vri{n} \vrii{n}))
-           (remainder \vri{n} \vrii{n})))
-                                 \ev  \schtrue%
-\end{scheme}
-provided all numbers involved in that computation are exact.
-
-\begin{scheme}
-(modulo 13 4)           \ev  1
-(remainder 13 4)        \ev  1
-
-(modulo -13 4)          \ev  3
-(remainder -13 4)       \ev  -1
-
-(modulo 13 -4)          \ev  -3
-(remainder 13 -4)       \ev  1
-
-(modulo -13 -4)         \ev  -1
-(remainder -13 -4)      \ev  -1
-
-(remainder -13 -4.0)    \ev  -1.0  ; inexact%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{gcd}{ \vri{n} \dotsfoo}{library procedure}
-\proto{lcm}{ \vri{n} \dotsfoo}{library procedure}}
+\proto{gcd}{ \vari{n} \dotsfoo}{procedure}
+\proto{lcm}{ \vari{n} \dotsfoo}{procedure}}
 
 These procedures return the greatest common divisor or least common
 multiple of their arguments.  The result is always non-negative.
-%- These procedures are exactness preserving.
 
-%%R4%% I added the inexact example.
 \begin{scheme}
-(gcd 32 -36)            \ev  4
-(gcd)                   \ev  0
-(lcm 32 -36)            \ev  288
-(lcm 32.0 -36)          \ev  288.0  ; inexact
-(lcm)                   \ev  1%
+(gcd 32 -36)                           \ev  4
+(gcd)                                  \ev  0
+(lcm 32 -36)                           \ev  288
+(lcm 32.0 -36)                         \ev  288.0 ; inexact
+(lcm)                                  \ev  1
 \end{scheme}
-
 \end{entry}
 
-
 \begin{entry}{%
-\proto{numerator}{ \vr{q}}{procedure}
-\proto{denominator}{ \vr{q}}{procedure}}
+\proto{numerator}{ q}{procedure}
+\proto{denominator}{ q}{procedure}}
 
 These procedures return the numerator or denominator of their
 argument; the result is computed as if the argument was represented as
 a fraction in lowest terms.  The denominator is always positive.  The
-denominator of 0 is defined to be 1.
-%- The remarks about denominators are new.
-%- Clearly, they are exactness-preserving procedures.
-\todo{More description and examples needed.}
+denominator of $0$ is defined to be $1$.
+
 \begin{scheme}
-(numerator (/ 6 4))  \ev  3
-(denominator (/ 6 4))  \ev  2
-(denominator
-  (exact->inexact (/ 6 4))) \ev 2.0%
+(numerator (/ 6 4))                    \ev  3
+(denominator (/ 6 4))                  \ev  2
+(denominator (->inexact (/ 6 4)))                 \ev  2.0
 \end{scheme}
-
 \end{entry}
-
 
 \begin{entry}{%
 \proto{floor}{ x}{procedure}
 \proto{ceiling}{ x}{procedure}
 \proto{truncate}{ x}{procedure}
-\proto{round}{ x}{procedure}
-}
+\proto{round}{ x}{procedure}}
 
-These procedures return integers.
-\vest {\cf Floor} returns the largest integer not larger than \vr{x}.
-{\cf Ceiling} returns the smallest integer not smaller than~\vr{x}.
-{\cf Truncate} returns the integer closest to \vr{x} whose absolute
-value is not larger than the absolute value of \vr{x}.  {\cf Round} returns the
-closest integer to \vr{x}, rounding to even when \vr{x} is halfway between two
+These procedures return inexact integers on inexact arguments that are
+not infinities or NaNs, and exact integers on exact rational
+arguments.  For such arguments, {\cf floor} returns the largest
+integer not larger than \var{x}.  {\cf Ceiling} returns the smallest
+integer not smaller than \var{x}.  {\cf Truncate} returns the integer
+closest to \var{x} whose absolute value is not larger than the
+absolute value of \var{x}.  {\cf Round} returns the closest integer to
+\var{x}, rounding to even when \var{x} is halfway between two
 integers.
 
 \begin{rationale}
@@ -2032,33 +1973,39 @@ mode specified by the IEEE floating point standard.
 \begin{note}
 If the argument to one of these procedures is inexact, then the result
 will also be inexact.  If an exact value is needed, the
-result should be passed to the {\cf inexact->exact} procedure.
+result should be passed to the {\cf ->exact} procedure.
 \end{note}
 
+Although infinities and NaNs are not integers, these procedures return
+an infinity when given an infinity as an argument, and a NaN when
+given a NaN.
+
 \begin{scheme}
-(floor -4.3)          \ev  -5.0
-(ceiling -4.3)        \ev  -4.0
-(truncate -4.3)       \ev  -4.0
-(round -4.3)          \ev  -4.0
+(floor -4.3)                           \ev  -5.0
+(ceiling -4.3)                         \ev  -4.0
+(truncate -4.3)                        \ev  -4.0
+(round -4.3)                           \ev  -4.0
 
-(floor 3.5)           \ev  3.0
-(ceiling 3.5)         \ev  4.0
-(truncate 3.5)        \ev  3.0
-(round 3.5)           \ev  4.0  ; inexact
+(floor 3.5)                            \ev  3.0
+(ceiling 3.5)                          \ev  4.0
+(truncate 3.5)                         \ev  3.0
+(round 3.5)                            \ev  4.0  ; inexact
 
-(round 7/2)           \ev  4    ; exact
-(round 7)             \ev  7%
+(round 7/2)                            \ev  4    ; exact
+(round 7)                              \ev  7
+
+(floor +inf.0)                         \ev  +inf.0
+(ceiling -inf.0)                       \ev  -inf.0
+(round +nan.0)                         \ev  +nan.0
 \end{scheme}
 
 \end{entry}
 
 \begin{entry}{%
-\proto{rationalize}{ x y}{library procedure}
-%- \proto{rationalize}{ x}{procedure}
-}
+\proto{rationalize}{ \vari{x} \varii{x}}{procedure}}
 
 {\cf Rationalize} returns the {\em simplest} rational number
-differing from \vr{x} by no more than \vr{y}.  A rational number $r_1$ is
+differing from \vari{x} by no more than \varii{x}.    A rational number $r_1$ is
 {\em simpler} \mainindex{simplest rational} than another rational number
 $r_2$ if $r_1 = p_1/q_1$ and $r_2 = p_2/q_2$ (in lowest terms) and $|p_1|
 \leq |p_2|$ and $|q_1| \leq |q_2|$.  Thus $3/5$ is simpler than $4/7$.
@@ -2070,268 +2017,250 @@ all.
 
 \begin{scheme}
 (rationalize
-  (inexact->exact .3) 1/10)  \ev 1/3    ; exact
-(rationalize .3 1/10)        \ev \#i1/3  ; inexact%
+  (->exact .3) 1/10)                   \ev 1/3    ; exact
+(rationalize .3 1/10)                  \ev \sharpsign{}i1/3  ; inexact
+
+(rationalize +inf.0 3)                 \ev  +inf.0
+(rationalize +inf.0 +inf.0)            \ev  +nan.0
+(rationalize 3 +inf.0)                 \ev  0.0
 \end{scheme}
 
 \end{entry}
 
 \begin{entry}{%
-\proto{exp}{ \vr{z}}{procedure}
-\proto{log}{ \vr{z}}{procedure}
-\proto{sin}{ \vr{z}}{procedure}
-\proto{cos}{ \vr{z}}{procedure}
-\proto{tan}{ \vr{z}}{procedure}
-\proto{asin}{ \vr{z}}{procedure}
-\proto{acos}{ \vr{z}}{procedure}
-\proto{atan}{ \vr{z}}{procedure}
-\rproto{atan}{ \vr{y} \vr{x}}{procedure}}
+\proto{exp}{ z}{procedure}
+\proto{log}{ z}{procedure}
+\rproto{log}{ \vari{z} \varii{z}}{procedure}
+\proto{sin}{ z}{procedure}
+\proto{cos}{ z}{procedure}
+\proto{tan}{ z}{procedure}
+\proto{asin}{ z}{procedure}
+\proto{acos}{ z}{procedure}
+\proto{atan}{ z}{procedure}
+\rproto{atan}{ \vari{x} \varii{x}}{procedure}}
 
-These procedures are part of every implementation that supports
-%%R4%%
-general
-real numbers; they compute the usual transcendental functions.  {\cf Log}
-computes the natural logarithm of \vr{z} (not the base ten logarithm).
-{\cf Asin}, {\cf acos}, and {\cf atan} compute arcsine ($\sin^{-1}$),t
-arccosine ($\cos^{-1}$), and arctangent ($\tan^{-1}$), respectively.
-The two-argument variant of {\cf atan} computes {\tt (angle
-(make-rectangular \vr{x} \vr{y}))} (see below), even in implementations
-that don't support general complex numbers.
+These procedures compute the usual transcendental functions.  {\cf
+  Exp} computes the base-$e$ exponential of \var{z}.  {\cf Log}
+computes the natural logarithm of \var{z} (not the base ten
+logarithm).  {\cf Asin}, {\cf acos}, and {\cf atan} compute arcsine,
+arccosine, and arctangent, respectively.  The two-argument variant of
+{\cf atan} computes {\cf (angle (make-rectangular \varii{x}
+\vari{x}))}.
 
-In general, the mathematical functions log, arcsine, arccosine, and
-arctangent are multiply defined.
-The value of $\log z$ is defined to be the one whose imaginary
-part lies in the range from $-\pi$ (exclusive) to $\pi$ (inclusive).
-$\log 0$ is undefined.
-With $\log$ defined this way, the values of $\sin^{-1} z$, $\cos^{-1} z$,
-and $\tan^{-1} z$ are according to the following formul\ae:
-$$\sin^{-1} z = -i \log (i z + \sqrt{1 - z^2})$$
-$$\cos^{-1} z = \pi / 2 - \sin^{-1} z$$
-$$\tan^{-1} z = (\log (1 + i z) - \log (1 - i z)) / (2 i)$$
+See section~\ref{transcendentalfunctions} for the underlying
+mathematical operations. These procedures may return inexact results
+even when given exact arguments.
 
-The above specification follows~\cite{CLtL}, which in turn
-cites~\cite{Penfield81}; refer to these sources for more detailed
-discussion of branch cuts, boundary conditions, and implementation of
-these functions.  When it is possible these procedures produce a real
-result from a real argument.
-
-%%R4%%
-\todo{The cited references are likely to change their branch cuts
-soon to allow for the possibility of distinct positive and negative
-zeroes, as in IEEE floating point.  We may not want to follow those
-changes, since we may want a complex number with zero imaginary part
-(whether positive or negative zero) to be treated as a real.  I don't
-think there are any better standards for complex arithmetic than the
-ones cited, so we're really on our own here.}
-
-\end{entry}
-
-
-\begin{entry}{%
-\proto{sqrt}{ \vr{z}}{procedure}}
-
-Returns the principal square root of \vr{z}.  The result will have
-either positive real part, or zero real part and non-negative imaginary
-part.
-\end{entry}
-
-
-\begin{entry}{%
-\proto{expt}{ \vri{z} \vrii{z}}{procedure}}
-
-Returns \vri{z} raised to the power \vrii{z}.  For $z_1 \neq 0$
-$${z_1}^{z_2} = e^{z_2 \log {z_1}}$$
-$0^z$ is 1 if $z = 0$ and 0 otherwise.
-\end{entry}
-
-%- \begin{entry}{%- 
-%- \proto{approximate}{ z x}{procedure}}
-%- 
-%- Returns an approximation to \vr{z} in a representation whose precision is
-%- the same as that 
-%- of the representation of \vr{x}, which must be an inexact number.  The
-%- result is always inexact.
-%- 
-%- \begin{scheme}
-%- (approximate 3.1415926535 1F10)
-%-         \ev  3.14159F0
-%- (approximate 3.1415926535 \#I65535)
-%-         \ev \#I3
-%- (approximate 3.14F0 1L8)
-%-         \ev  3.14L0
-%- (approximate 3.1415926535F0 1L8)
-%-         \ev  3.14159L0
-%- \end{scheme}
-%- \end{entry}
-
-
-
-\begin{entry}{%
-\proto{make-rectangular}{ \vri{x} \vrii{x}}{procedure}
-\proto{make-polar}{ \vriii{x} \vriv{x}}{procedure}
-\proto{real-part}{ \vr{z}}{procedure}
-\proto{imag-part}{ \vr{z}}{procedure}
-\proto{magnitude}{ \vr{z}}{procedure}
-\proto{angle}{ \vr{z}}{procedure}}
-
-These procedures are part of every implementation that supports
-%%R4%%
-general
-complex numbers.  Suppose \vri{x}, \vrii{x}, \vriii{x}, and \vriv{x} are
-real numbers and \vr{z} is a complex number such that
- $$ \vr{z} = \vri{x} + \vrii{x}\hbox{$i$}
- = \vriii{x} \cdot e^{{\displaystyle{\hbox{$i$}} \vriv{x}}}$$
-Then
 \begin{scheme}
-(make-rectangular \vri{x} \vrii{x}) \ev \vr{z}
-(make-polar \vriii{x} \vriv{x})     \ev \vr{z}
-(real-part \vr{z})                  \ev \vri{x}
-(imag-part \vr{z})                  \ev \vrii{x}
-(magnitude \vr{z})                  \ev $|\vriii{x}|$
-(angle \vr{z})                      \ev $x_{angle}$
+(exp +inf.0)                   \ev +inf.0
+(exp -inf.0)                   \ev 0.0
+(log +inf.0)                   \ev +inf.0
+(log 0.0)                      \ev -inf.0
+(log 0)                        \scherror
+(log -inf.0)                   \ev +inf.0+\(\pi\)i
+(atan -inf.0)                  \ev -1.5707963267948965 \\\>\>\>; approximately
+(atan +inf.0)                  \ev 1.5707963267948965  \\\>\>\>; approximately
+(log -1.0+0.0i)                \ev 0.0+\(\pi\)i
+(log -1.0-0.0i)                \ev 0.0-\(\pi\)i\\\>; if -0.0 is distinguished
 \end{scheme}
-where $-\pi < x_{angle} \le \pi$ with $x_{angle} = \vriv{x} + 2\pi n$
-for some integer $n$.
-
-\begin{rationale}
-{\cf Magnitude} is the same as \ide{abs} for a real argument,
-but {\cf abs} must be present in all implementations, whereas
-{\cf magnitude} need only be present in implementations that support
-general complex numbers.
-\end{rationale}
-
 \end{entry}
-
 
 \begin{entry}{%
-\proto{exact->inexact}{ \vr{z}}{procedure}
-\proto{inexact->exact}{ \vr{z}}{procedure}}
+\proto{sqrt}{ z}{procedure}}
 
-{\cf Exact\coerce{}inexact} returns an \tupe{inexact} representation of \vr{z}.
-The value returned is the
-\tupe{inexact} number that is numerically closest to the argument.  
-%%R4%%For
-%\tupe{exact} arguments which have no reasonably close \tupe{inexact} equivalent,
-%it is permissible to signal an error.
-If an \tupe{exact} argument has no reasonably close \tupe{inexact} equivalent,
-then a violation of an implementation restriction may be reported.
+Returns the principal square root of \var{z}.  For rational \var{z},
+the result will have either positive real part, or zero real part and
+non-negative imaginary part.  With $\log$ defined as in
+section~\ref{transcendentalfunctions}, the value of {\cf (sqrt
+  \var{z})} could be expressed as
+%
+\begin{displaymath}
+e^{\frac{\log \var{z}}{2}}.
+\end{displaymath}
 
-{\cf Inexact\coerce{}exact} returns an \tupe{exact} representation of
-\vr{z}.  The value returned is the \tupe{exact} number that is numerically
-closest to the argument.
-%%R4%%  For \tupe{inexact} arguments which have no
-%reasonably close \tupe{exact} equivalent, it is permissible to signal
-%an error.
-If an \tupe{inexact} argument has no reasonably close \tupe{exact} equivalent,
-then a violation of an implementation restriction may be reported.
+{\cf Sqrt} may return an inexact result even when given an exact
+argument.
 
-%%R%% I moved this to the section on implementation restrictions.
-%For any implementation that supports \tupe{inexact} quantities,
-%there is a subset of the integers for which there are both \tupe{exact} and
-%\tupe{inexact} representations.  This subset must include the non-negative
-%integers up to a limit specified by the implementation.  The limit
-%must be big enough to represent all digits in reasonable radices, and
-%may correspond to some natural word size for the implementation.  For
-%such integers, these procedures implement the natural one-to-one
-%correspondence between the representations.
-
-These procedures implement the natural one-to-one correspondence between
-\tupe{exact} and \tupe{inexact} integers throughout an
-implementation-dependent range.  See section~\ref{restrictions}.
-
+\begin{scheme}
+(sqrt -5)                   \ev  0.0+2.23606797749979i
+(sqrt +inf.0)               \ev  +inf.0
+(sqrt -inf.0)               \ev  +inf.0i
+\end{scheme}
 \end{entry}
 
-\medskip
+\begin{entry}{%
+\proto{expt}{ \vari{z} \varii{z}}{procedure}}
 
-\subsection{Numerical input and output}
+Returns \vari{z} raised to the power \varii{z}.  For nonzero \vari{z},
+%
+\begin{displaymath}
+  \vari{z}^{\varii{z}} = e^{\varii{z} \log \vari{z}}
+\end{displaymath}
+
+$0.0^{\var{z}}$ is $1$ if $\var{z} = 0.0$, and $0.0$ if {\cf
+  (real-part \var{z})} is positive.  Otherwise, this procedure reports
+a violation of an implementation restriction or returns an unspecified
+number.
+
+For an exact \vari{z} and an exact
+integer \varii{z}, {\cf (expt \vari{z}
+\varii{z})} must return an exact result.  For all other
+values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
+\varii{z})} may return an inexact result, even when both
+\vari{z} and \var{z2} are exact.
+
+\begin{scheme}
+(expt 5 3)                  \ev  125
+(expt 5 -3)                 \ev  1/125
+(expt 5 0)                  \ev  1
+(expt 0 5)                  \ev  0
+(expt 0 5+.0000312i)        \ev  0
+(expt 0 -5)                 \ev  \unspecified
+(expt 0 -5+.0000312i)       \ev  \unspecified
+(expt 0 0)                  \ev  1
+(expt 0.0 0.0)              \ev  1.0
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{make-rectangular}{ \vari{x} \varii{x}}{procedure}
+\proto{make-polar}{ \variii{x} \variv{x}}{procedure}
+\proto{real-part}{ z}{procedure}
+\proto{imag-part}{ z}{procedure}
+\proto{magnitude}{ z}{procedure}
+\proto{angle}{ z}{procedure}}
+
+Suppose \vari{x}, \varii{x}, \variii{x}, and \variv{x} are real
+numbers and \var{z} is a complex number such that
+%
+\begin{displaymath}
+\var{z} = \vari{x} + \varii{x}i = \variii{x} e^{i\variv{x}}.
+\end{displaymath}
+
+Then:
+%
+\begin{scheme}
+(make-rectangular \vari{x} \varii{x}) \ev \var{z}
+(make-rectangular \variii{x} \variv{x}) \ev \var{z}
+(real-part \var{z})              \ev \vari{x}
+(imag-part \var{z})              \ev \varii{x}
+(magnitude \var{z})              \ev |\variii{x}|
+(angle \var{z})                  \ev \var{x}\(_{\mathrm{angle}}\)
+\end{scheme}
+%
+where $-\pi \leq \var{x}_{\mathrm{angle}} \leq \pi$ with
+$\var{x}_{\mathrm{angle}} = \variv{x} + 2\pi n$ for
+some integer $n$.
+
+\begin{scheme}
+(angle -1.0)         \ev \(\pi\)
+(angle -1.0+0.0)     \ev \(\pi\)
+(angle -1.0-0.0)     \ev -\(\pi\)\\\>; if -0.0 is distinguished
+\end{scheme}
+
+Moreover, suppose \vari{x}, \varii{x} are such that either \vari{x}
+or \varii{x} is an infinity, then
+%
+\begin{scheme}
+(make-rectangular \vari{x} \varii{x}) \lev \var{z}
+(magnitude \var{z})              \ev +inf.0
+\end{scheme}
+\end{entry}
+
+{\cf Make-polar}, {\cf magnitude}, and
+{\cf angle} may return inexact results even when given exact
+arguments.
+
+\begin{scheme}
+(angle -1)                    \ev \(\pi\)
+(angle +inf.0)                \ev 0.0
+(angle -inf.0)                \ev \(\pi\)
+(angle -1.0+0.0)              \ev \(\pi\)
+(angle -1.0-0.0)              \ev \(-\pi\)\\\>; if -0.0 is distinguished
+\end{scheme}
+\end{entry}
+
+\subsubsection{Numerical Input and Output}
 
 \begin{entry}{%
 \proto{number->string}{ z}{procedure}
-\rproto{number->string}{ z radix}{procedure}}
+\rproto{number->string}{ z radix}{procedure}
+\rproto{number->string}{ z radix precision}{procedure}}
 
-\vr{Radix} must be an exact integer, either 2, 8, 10, or 16.  If omitted,
-\vr{radix} defaults to 10.
-The procedure {\cf number\coerce{}string} takes a
-number and a radix and returns as a string an external representation of
-the given number in the given radix such that
+\var{Radix} must be an exact integer, either 2, 8, 10, or 16.  If
+omitted, \var{radix} defaults to 10.  If a \var{precision} is
+specified, then \var{z} must be an inexact complex number,
+\var{precision} must be an exact positive integer, and the \var{radix}
+must be 10.  The procedure {\cf number->string} takes a number and a
+radix and returns as a string an external representation of the given
+number in the given radix such that
+%
 \begin{scheme}
-(let ((number \vr{number})
-      (radix \vr{radix}))
+(let ((number \var{number})
+      (radix \var{radix}))
   (eqv? number
         (string->number (number->string number
                                         radix)
                         radix)))
 \end{scheme}
-is true.  It is an error if no possible result makes this expression true.
+%
+is true.  It is an error if no possible result makes this expression
+true.
 
-If \vr{z} is inexact, the radix is 10, and the above expression
-can be satisfied by a result that contains a decimal point,
+If a \var{precision} is specified, then the representations of the
+inexact real components of the result, unless they are infinite or
+NaN, specify an explicit \meta{mantissa width} \var{p}, and \var{p} is the
+least $\var{p} \geq \var{precision}$ for which the above expression is
+true.
+
+If \var{z} is inexact, the radix is 10, and the above expression and
+condition can be satisfied by a result that contains a decimal point,
 then the result contains a decimal point and is expressed using the
-minimum number of digits (exclusive of exponent and trailing
-zeroes) needed to make the above expression
-true~\cite{howtoprint,howtoread};
-otherwise the format of the result is unspecified.
+minimum number of digits (exclusive of exponent, trailing zeroes, and
+mantissa width) needed to make the above expression and condition
+true~\cite{howtoprint,howtoread}; otherwise the format of the result
+is unspecified.
 
-The result returned by {\cf number\coerce{}string}
-never contains an explicit radix prefix.
+The result returned by {\cf number->string} never contains an explicit
+radix prefix.
 
 \begin{note}
-The error case can occur only when \vr{z} is not a complex number
+The error case can occur only when \var{z} is not a complex number
 or is a complex number with a non-rational real or imaginary part.
 \end{note}
 
 \begin{rationale}
-If \vr{z} is an inexact number represented using flonums, and
-the radix is 10, then the above expression is normally satisfied by
+If \var{z} is an inexact number represented using binary floating
+point, and the radix is 10, then the above expression is normally satisfied by
 a result containing a decimal point.  The unspecified case
-allows for infinities, NaNs, and non-flonum representations.
+allows for infinities, NaNs, and representations other than binary
+floating point.
 \end{rationale}
-
 \end{entry}
-
 
 \begin{entry}{%
 \proto{string->number}{ string}{procedure}
 \rproto{string->number}{ string radix}{procedure}}
 
-%%R4%% I didn't include the (string->number string radix exactness)
-% case, since I haven't heard any resolution of the coding to be used
-% for the third argument.
-
 Returns a number of the maximally precise representation expressed by the
-given \vr{string}.  \vr{Radix} must be an exact integer, either 2, 8, 10,
-or 16.  If supplied, \vr{radix} is a default radix that may be overridden
-by an explicit radix prefix in \vr{string} (e.g. {\tt "\#o177"}).  If \vr{radix}
-is not supplied, then the default radix is 10.  If \vr{string} is not
+given \var{string}.  \var{Radix} must be an exact integer, either 2, 8, 10,
+or 16.  If supplied, \var{radix} is a default radix that may be overridden
+by an explicit radix prefix in \var{string} (e.g. {\tt "\#o177"}).  If \var{radix}
+is not supplied, then the default radix is 10.  If \var{string} is not
 a syntactically valid notation for a number, then {\cf string->number}
 returns \schfalse{}.
-
+%
 \begin{scheme}
-(string->number "100")        \ev  100
-(string->number "100" 16)     \ev  256
-(string->number "1e2")        \ev  100.0
-(string->number "15\#\#")       \ev  1500.0%
+(string->number "100")                 \ev  100
+(string->number "100" 16)              \ev  256
+(string->number "1e2")                 \ev  100.0
+(string->number "15\sharpsign\sharpsign")                \ev  1500.0
+(string->number "+inf.0")              \ev  +inf.0
+(string->number "-inf.0")              \ev  -inf.0
+(string->number "+nan.0")              \ev  +nan.0
 \end{scheme}
-
-\begin{note}
-The domain of {\cf string->number} may be restricted by implementations
-in the following ways.  {\cf String->number} is permitted to return
-\schfalse{} whenever \vr{string} contains an explicit radix prefix.
-If all numbers supported by an implementation are real, then
-{\cf string->number} is permitted to return \schfalse{} whenever
-\vr{string} uses the polar or rectangular notations for complex
-numbers.  If all numbers are integers, then
-{\cf string->number} may return \schfalse{} whenever
-the fractional notation is used.  If all numbers are exact, then
-{\cf string->number} may return \schfalse{} whenever
-an exponent marker or explicit exactness prefix is used, or if
-a {\tt \#} appears in place of a digit.  If all inexact
-numbers are integers, then
-{\cf string->number} may return \schfalse{} whenever
-a decimal point is used.
-\end{note}
-
 \end{entry}
+
 
 \section{Booleans}
 \label{booleansection}
