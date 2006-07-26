@@ -361,6 +361,8 @@ fixnum metavariable is not actually a fixnum, then these procedures
 signal an error, unless the implementation is running in unsafe mode,
 in which case all bets are off.
 
+\subsection{Signalling fixnum operations}
+
 \begin{entry}{%
 \proto{fixnum?}{ obj}{procedure}}
 
@@ -384,12 +386,7 @@ width, minimum and the maximum value of the fixnum range, respectively.
 \proto{fixnum>?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
 \proto{fixnum<?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
 \proto{fixnum>=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fixnum<=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fx=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fx>?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fx<?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fx>=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fx<=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}}
+\proto{fixnum<=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}}
 
 These procedures return \schtrue{} if their arguments are (respectively):
 equal, monotonically increasing, monotonically decreasing,
@@ -402,12 +399,7 @@ monotonically nondecreasing, or monotonically nonincreasing,
 \proto{fixnum-positive?}{ fx}{procedure}
 \proto{fixnum-negative?}{ fx}{procedure}
 \proto{fixnum-odd?}{ fx}{procedure}
-\proto{fixnum-even?}{ fx}{procedure}
-\proto{fxzero?}{ fx}{procedure}
-\proto{fxpositive?}{ fx}{procedure}
-\proto{fxnegative?}{ fx}{procedure}
-\proto{fxodd?}{ fx}{procedure}
-\proto{fxeven?}{ fx}{procedure}}
+\proto{fixnum-even?}{ fx}{procedure}}
 
 These numerical predicates test a fixnum for a particular property,
 returning \schtrue{} or \schfalse{}.  The five properties tested by
@@ -417,9 +409,7 @@ less than zero, odd, or even.
 
 \begin{entry}{%
 \proto{fixnum-max}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}
-\proto{fixnum-min}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}
-\proto{fxmax}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}
-\proto{fxmin}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}}
+\proto{fixnum-min}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}}
 
 These procedures return the maximum or minimum of their arguments.
 \end{entry}
@@ -433,22 +423,6 @@ to the sum or product of their arguments.
 \end{entry}
 
 \begin{entry}{%
-\proto{fx+}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fx*}{ \vari{fx} \varii{fx}}{procedure}}
-
-These procedures return the sum or product of their arguments,
-provided that sum or product is a fixnum.  An error is signalled if
-that sum or product is not a fixnum, unless the implementation is
-running in unsafe mode, in which case all bets are off.
-
-\begin{rationale}
-These procedures are restricted to two arguments because their
-generalizations to three or more arguments would require
-precision proportional to the number of arguments.
-\end{rationale}
-\end{entry}
-
-\begin{entry}{%
 \proto{fixnum-}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}
 \rproto{fixnum-}{ fx}{procedure}}
 
@@ -457,25 +431,6 @@ that is congruent mod $2^w$ to the difference of its arguments,
 associating to the left.  With one argument, however, it returns the
 the unique fixnum that is congruent mod $2^w$ to the additive inverse
 of its argument.
-\end{entry}
-
-\begin{entry}{%
-\proto{fx-}{ \vari{fx} \varii{fx}}{procedure}
-\rproto{fx-}{ fx}{procedure}}
-
-With two arguments, this procedure returns the difference of its
-arguments, provided that difference is a fixnum.
-
-With one argument, this procedure returns the additive
-inverse of its argument, provided that integer is a
-fixnum.
-
-An error is signalled if the mathematically correct
-result of this procedure is not a fixnum.
-
-\begin{scheme}
-(fx- (least-fixnum))  \ev  FIXME
-\end{scheme}
 \end{entry}
 
 \begin{entry}{%
@@ -500,33 +455,6 @@ off.
 (fixnum-div0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{div}\sb{0}~\varii{ex}\)
 (fixnum-mod0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)
 (fixnum-div0+mod0 \vari{ex} \varii{ex})   \lev \(\vari{ex} \vari{ex}~\mathrm{div}\sb{0}~\varii{ex}, \vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)\\\>\>\>; two return values
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fxdiv+mod}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fxdiv}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fxmod}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fxdiv0+mod0}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fxdiv0}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fxmod0}{ \vari{fx} \varii{fx}}{procedure}}
-
-These procedures implement number-theoretic integer division and
-return the results of the corresponding mathematical operations
-specified in the section~\ref{integerdivision}.  An error is signalled
-if a result specified by that section is not a fixnum, unless the
-implementation is running in unsafe mode, in which case all bets are
-off.  An error is signalled if the second argument is zero, unless the
-implementation is running in unsafe mode, in which case all bets are
-off.
-
-\begin{scheme}
-(fxdiv \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{div}~\varii{ex}\)
-(fxmod \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{mod}~\varii{ex}\)
-(fxdiv+mod \vari{ex} \varii{ex})     \lev \(\vari{ex}~\mathrm{div}~\varii{ex}, \vari{ex}~\mathrm{mod}~\varii{ex}\)\\\>\>; two return values
-(fxdiv0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{div}\sb{0}~\varii{ex}\)
-(fxmod0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)
-(fxdiv0+mod0 \vari{ex} \varii{ex})   \lev \(\vari{ex} \vari{ex}~\mathrm{div}\sb{0}~\varii{ex}, \vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)\\\>\>; two return values
 \end{scheme}
 \end{entry}
 
@@ -578,34 +506,29 @@ Returns the two fixnum results of the following computation:
 \end{entry}
 
 \begin{entry}{%
-\proto{fixnum-not}{ \var{fx}}{procedure}
-\proto{fxnot}{ \var{fx}}{procedure}}
+\proto{fixnum-not}{ \var{fx}}{procedure}}
 
-Both of these procedures return the unique fixnum that is congruent
+This procedure returns the unique fixnum that is congruent
 mod $2^w$ to the one's-complement of their argument.
 \end{entry}
 
 \begin{entry}{%
 \proto{fixnum-and}{ \vari{fx} \dotsfoo}{procedure}
 \proto{fixnum-ior}{ \vari{fx} \dotsfoo}{procedure}
-\proto{fixnum-xor}{ \vari{fx} \dotsfoo}{procedure}
-\proto{fxand}{ \vari{fx} \dotsfoo}{procedure}
-\proto{fxior}{ \vari{fx} \dotsfoo}{procedure}
-\proto{fxxor}{ \vari{fx} \dotsfoo}{procedure}}
+\proto{fixnum-xor}{ \vari{fx} \dotsfoo}{procedure}}
 
 These procedures return the fixnum that is the bit-wise ``and,''
 ``inclusive or,'' or ``exclusive or'' of the two's complement
 representations of their arguments.  If they are passed only one
 argument, they return that argument.  If they are passed no arguments,
-they return the fixnum (either -1 or 0) that acts as identity for the
+they return the fixnum (either $-1$ or $0$) that acts as identity for the
 operation.
 \end{entry}
 
 \begin{entry}{%
-\proto{fixnum-if}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}
-\proto{fxif}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+\proto{fixnum-if}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-These procedures return the fixnum result of the following
+This procedure return the fixnum result of the following
 computation:
 \begin{scheme}
 (fixnum-ior (fixnum-and \vari{fx} \varii{fx})
@@ -614,20 +537,18 @@ computation:
 \end{entry}
 
 \begin{entry}{%
-\proto{fixnum-bit-count}{ \var{fx}}{procedure}
-\proto{fxbit-count}{ \var{fx}}{procedure}}
+\proto{fixnum-bit-count}{ \var{fx}}{procedure}}
 
-If the argument \var{fx} is non-negative, these procedures return the
+If the argument \var{fx} is non-negative, this procedure return the
 number of 1 bits in the two's complement representation of \var{fx}.
 Otherwise they return the number of 0 bits in the two's complement
 representation of \var{fx}.
 \end{entry}
 
 \begin{entry}{%
-\proto{fixnum-length}{ \var{fx}}{procedure}
-\proto{fxlength}{ \var{fx}}{procedure}}
+\proto{fixnum-length}{ \var{fx}}{procedure}}
 
-These procedures return the fixnum result of the following
+This procedure returns the fixnum result of the following
 computation:
 \begin{scheme}
 (do ((result 0 (+ result 1))
@@ -641,12 +562,11 @@ computation:
 \end{entry}
 
 \begin{entry}{%
-\proto{fixnum-first-bit-set}{ \var{fx}}{procedure}
-\proto{fxfirst-bit-set}{ \var{fx}}{procedure}}
+\proto{fixnum-first-bit-set}{ \var{fx}}{procedure}}
 
-These procedures return the index of the least significant 1 bit in
+This procedure returns the index of the least significant $1$ bit in
 the two's complement representation of their argument.  If the
-argument is 0, then -1 is returned.
+argument is $0$, then $-1$ is returned.
 %
 \begin{scheme}
 (fixnum-first-bit-set 0)        \ev  -1
@@ -672,16 +592,6 @@ case all bets are off.
 \end{entry}
 
 \begin{entry}{%
-\proto{fxbit-set?}{ \var{fx} \varii{fx}}{procedure}}
-
-If the second argument is negative, or greater than or equal to {\cf
-  (fixnum-width)}, then an error is signalled, unless the
-implementation is running in unsafe mode, in which case all bets are
-off.  Otherwise this procedure returns the same result returned by
-{\cf fixnum-bit-set?}.
-\end{entry}
-
-\begin{entry}{%
 \proto{fixnum-copy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
 If the second argument is non-negative, then this procedure
@@ -695,17 +605,6 @@ returns the fixnum result of the following computation:
 If the second argument is negative, then an error is signalled,
 unless the implementation is running in unsafe mode, in which
 case all bets are off.
-\end{entry}
-
-\begin{entry}{%
-\proto{fxcopy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-If the second argument is negative, or greater than or equal
-to {\cf (fixnum-width)}, or the third argument is
-anything other than 0 or 1, then an error is signalled,
-unless the implementation is running in unsafe mode, in which
-case all bets are off.  Otherwise this procedure returns the
-same result returned by {\cf fixnum-copy-bit}.
 \end{entry}
 
 \begin{entry}{%
@@ -724,16 +623,6 @@ returns the fixnum result of the following computation:
 If the second or third argument is negative, then an error is
 signalled, unless the implementation is running in unsafe mode, in
 which case all bets are off.
-\end{entry}
-
-\begin{entry}{%
-\proto{fxbit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-If the second or third argument is negative, or greater than {\cf
-  (fixnum-width)}, or the second argument is greater than the third,
-then an error is signalled, unless the implementation is running in
-unsafe mode, in which case all bets are off.  Otherwise this procedure
-returns the same result returned by {\cf fixnum-bit-field}.
 \end{entry}
 
 \begin{entry}{%
@@ -760,16 +649,6 @@ which case all bets are off.
 \end{entry}
 
 \begin{entry}{%
-\proto{fxcopy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
-
-If the second or third argument is negative, or greater than {\cf
-  (fixnum-width)}, or the second argument is greater than the third,
-then an error is signalled, unless the implementation is running in
-unsafe mode, in which case all bets are off.  Otherwise this procedure
-returns the same result returned by {\cf fixnum-copy-bit-field}.
-\end{entry}
-
-\begin{entry}{%
 \proto{fixnum-arithmetic-shift}{ \vari{fx} \varii{fx}}{procedure}}
 
 Returns the unique fixnum that is congruent mod $2^w$ to the result of
@@ -779,24 +658,6 @@ the following computation:
 (exact-floor (* \vari{fx} (expt 2 \varii{fx})))
 \end{scheme}
 \end{entry}
-
-\begin{entry}{%
-\proto{fxarithmetic-shift}{ \vari{fx} \varii{fx}}{procedure}}
-
-If the absolute value of the second argument is greater than or equal
-to {\cf (fixnum-width)}, then an error is signalled, unless the
-implementation is running in unsafe mode, in which case all bets are
-off.  If
-%
-\begin{scheme}
-(exact-floor (* \vari{fx} (expt 2 \varii{fx})))
-\end{scheme}
-%
-is a fixnum, then that fixnum is returned.  Otherwise an error is
-signalled, unless the implementation is running in unsafe mode, in
-which case all bets are off.
-\end{entry}
-
 
 \begin{entry}{%
 \proto{fixnum-arithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
@@ -810,19 +671,6 @@ If the second argument is non-negative, then {\cf
 If the second argument is negative, then an error is signalled, unless
 the implementation is running in unsafe mode, in which case all bets
 are off.
-\end{entry}
-
-\begin{entry}{%
-\proto{fxarithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fxarithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
-
-If the second argument is non-negative, then {\cf
-  fxarithmetic-shift-left} behaves the same as {\cf
-  fxarithmetic-shift}, and {\cf (fxarithmetic-shift-right \vari{fx}
-  \varii{fx})} behaves the same as {\cf (fxarithmetic-shift \vari{fx}
-  (fixnum- \varii{fx}))}.  If the second argument is negative, then an
-error is signalled, unless the implementation is running in unsafe
-mode, in which case all bets are off.
 \end{entry}
 
 \begin{entry}{%
@@ -842,8 +690,9 @@ the result of the following computation:
        (shifted
          (fixnum-arithmetic-shift-right n shift)))
   (let* ((mask-width
-           (fixnum- (fixnum-width)
-                    (fixnum-mod shift (fixnum-width))))
+           (fixnum-
+             (fixnum-width)
+             (fixnum-mod shift (fixnum-width))))
          (mask (fixnum-not
                 (fixnum-logical-shift-left
                   -1 mask-width))))
@@ -893,6 +742,240 @@ which case all bets are off.
 \end{entry}
 
 \begin{entry}{%
+\proto{fixnum-reverse-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+Returns the fixnum obtained from the first argument by reversing the
+bit field specified by the second and third arguments.
+\begin{scheme}
+(fixnum-reverse-bit-field \sharpsign{}b1010010 1 4)    \lev  88 ; \sharpsign{}b1011000
+(fixnum-reverse-bit-field \sharpsign{}b1010010 91 -4)  \lev  82 ; \sharpsign{}b1010010
+\end{scheme}
+\end{entry}
+
+\subsection{Quotient-ring fixnum operations}
+
+\begin{entry}{%
+\rproto{fixnum?}{ obj}{procedure}}
+
+This performs the same operation as {\cf fixnum?} in the FIXME
+library.
+\end{entry}
+
+\begin{entry}{%
+\rproto{fixnum-width}{}{procedure}
+\rproto{least-fixnum}{}{procedure}
+\rproto{greatest-fixnum}{}{procedure}}
+
+These procedures perform the same operations as {\cf fixnum-width},
+{\cf least-fixnum}, and {\cf greatest-fixnum} in the FIXME library,
+respectively.
+\end{entry}
+
+\begin{entry}{%
+\proto{fx=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
+\proto{fx>?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
+\proto{fx<?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
+\proto{fx>=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
+\proto{fx<=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}}
+
+These procedures perform the same operations as {\cf fixnum=?}, {\cf
+  fixnum>?}, {\cf fixnum<?}, {\cf fixnum>=?}, and {\cf fixnum<=?},
+respectively.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxzero?}{ fx}{procedure}
+\proto{fxpositive?}{ fx}{procedure}
+\proto{fxnegative?}{ fx}{procedure}
+\proto{fxodd?}{ fx}{procedure}
+\proto{fxeven?}{ fx}{procedure}}
+
+These procedures perform the same operations as {\cf fixnum-zero?},
+{\cf fixnum-positive?}, {\cf fixnum-negative?}, {\cf fixnum-odd?}, and
+{\cf fixnum-even?}, respectively.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxmax}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}
+\proto{fxmin}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}}
+
+These procedures perform the same operations as {\cf fixnum-max},
+and {\cf fixnum-min}, respectively.
+\end{entry}
+
+\begin{entry}{%
+\proto{fx+}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fx*}{ \vari{fx} \varii{fx}}{procedure}}
+
+These procedures return the sum or product of their arguments,
+provided that sum or product is a fixnum.  An error is signalled if
+that sum or product is not a fixnum, unless the implementation is
+running in unsafe mode, in which case all bets are off.
+
+\begin{rationale}
+These procedures are restricted to two arguments because their
+generalizations to three or more arguments would require
+precision proportional to the number of arguments.
+\end{rationale}
+\end{entry}
+
+\begin{entry}{%
+\proto{fx-}{ \vari{fx} \varii{fx}}{procedure}
+\rproto{fx-}{ fx}{procedure}}
+
+With two arguments, this procedure returns the difference of its
+arguments, provided that difference is a fixnum.
+
+With one argument, this procedure returns the additive
+inverse of its argument, provided that integer is a
+fixnum.
+
+An error is signalled if the mathematically correct
+result of this procedure is not a fixnum.
+
+\begin{scheme}
+(fx- (least-fixnum))  \ev  FIXME
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fxdiv+mod}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxdiv}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxmod}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxdiv0+mod0}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxdiv0}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxmod0}{ \vari{fx} \varii{fx}}{procedure}}
+
+These procedures implement number-theoretic integer division and
+return the results of the corresponding mathematical operations
+specified in the section~\ref{integerdivision}.  An error is signalled
+if a result specified by that section is not a fixnum, unless the
+implementation is running in unsafe mode, in which case all bets are
+off.  An error is signalled if the second argument is zero, unless the
+implementation is running in unsafe mode, in which case all bets are
+off.
+
+\begin{scheme}
+(fxdiv \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{div}~\varii{ex}\)
+(fxmod \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{mod}~\varii{ex}\)
+(fxdiv+mod \vari{ex} \varii{ex})     \lev \(\vari{ex}~\mathrm{div}~\varii{ex}, \vari{ex}~\mathrm{mod}~\varii{ex}\)\\\>\>; two return values
+(fxdiv0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{div}\sb{0}~\varii{ex}\)
+(fxmod0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)
+(fxdiv0+mod0 \vari{ex} \varii{ex})   \lev \(\vari{ex} \vari{ex}~\mathrm{div}\sb{0}~\varii{ex}, \vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)\\\>\>; two return values
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fxnot}{ \var{fx}}{procedure}}
+
+This performs the same operation as {\cf fixnum-not}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxand}{ \vari{fx} \dotsfoo}{procedure}
+\proto{fxior}{ \vari{fx} \dotsfoo}{procedure}
+\proto{fxxor}{ \vari{fx} \dotsfoo}{procedure}}
+
+These procedures perform the same operations as {\cf fixnum-and},
+{\cf fixnum-ior}, and {\cf fixnum-xor}, respectively.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxif}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+This performs the same operation as {\cf fixnum-if}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxbit-count}{ \var{fx}}{procedure}}
+
+This performs the same operation as {\cf fixnum-bit-count}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxlength}{ \var{fx}}{procedure}}
+
+This performs the same operation as {\cf fixnum-length}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxfirst-bit-set}{ \var{fx}}{procedure}}
+
+This performs the same operation as {\cf fixnum-first-bit-set}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxbit-set?}{ \var{fx} \varii{fx}}{procedure}}
+
+If the second argument is negative, or greater than or equal to {\cf
+  (fixnum-width)}, then an error is signalled, unless the
+implementation is running in unsafe mode, in which case all bets are
+off.  Otherwise this procedure returns the same result returned by
+{\cf fixnum-bit-set?}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxcopy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+If the second argument is negative, or greater than or equal
+to {\cf (fixnum-width)}, or the third argument is
+anything other than 0 or 1, then an error is signalled,
+unless the implementation is running in unsafe mode, in which
+case all bets are off.  Otherwise this procedure returns the
+same result returned by {\cf fixnum-copy-bit}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxbit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+If the second or third argument is negative, or greater than {\cf
+  (fixnum-width)}, or the second argument is greater than the third,
+then an error is signalled, unless the implementation is running in
+unsafe mode, in which case all bets are off.  Otherwise this procedure
+returns the same result returned by {\cf fixnum-bit-field}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxcopy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
+
+If the second or third argument is negative, or greater than {\cf
+  (fixnum-width)}, or the second argument is greater than the third,
+then an error is signalled, unless the implementation is running in
+unsafe mode, in which case all bets are off.  Otherwise this procedure
+returns the same result returned by {\cf fixnum-copy-bit-field}.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxarithmetic-shift}{ \vari{fx} \varii{fx}}{procedure}}
+
+If the absolute value of the second argument is greater than or equal
+to {\cf (fixnum-width)}, then an error is signalled, unless the
+implementation is running in unsafe mode, in which case all bets are
+off.  If
+%
+\begin{scheme}
+(exact-floor (* \vari{fx} (expt 2 \varii{fx})))
+\end{scheme}
+%
+is a fixnum, then that fixnum is returned.  Otherwise an error is
+signalled, unless the implementation is running in unsafe mode, in
+which case all bets are off.
+\end{entry}
+
+\begin{entry}{%
+\proto{fxarithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxarithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
+
+If the second argument is non-negative, then {\cf
+  fxarithmetic-shift-left} behaves the same as {\cf
+  fxarithmetic-shift}, and {\cf (fxarithmetic-shift-right \vari{fx}
+  \varii{fx})} behaves the same as {\cf (fxarithmetic-shift \vari{fx}
+  (fixnum- \varii{fx}))}.  If the second argument is negative, then an
+error is signalled, unless the implementation is running in unsafe
+mode, in which case all bets are off.
+\end{entry}
+
+\begin{entry}{%
 \proto{fxrotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
 If the second, third, or fourth argument is negative, or greater than
@@ -902,20 +985,6 @@ error is signalled, unless the implementation is running in unsafe
 mode, in which case all bets are off.  Otherwise this procedure
 returns the same result as the {\cf fixnum-rotate-bit-field}
 procedure.
-\end{entry}
-
-
-
-
-\begin{entry}{%
-\proto{fixnum-reverse-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-Returns the fixnum obtained from the first argument by reversing the
-bit field specified by the second and third arguments.
-\begin{scheme}
-(fixnum-reverse-bit-field \sharpsign{}b1010010 1 4)    \lev  88 ; \sharpsign{}b1011000
-(fixnum-reverse-bit-field \sharpsign{}b1010010 91 -4)  \lev  82 ; \sharpsign{}b1010010
-\end{scheme}
 \end{entry}
 
 \begin{entry}{%
