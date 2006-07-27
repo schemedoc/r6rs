@@ -312,6 +312,58 @@ It returns \schfalse{} otherwise.
 \end{entry}
 
 \begin{entry}{%
+\proto{bytes-ieee-single-native-ref}{ bytes k}{procedure}
+\proto{bytes-ieee-single-ref}{ bytes k endianness}{procedure}}
+
+\domain{$\{\var{k}, \ldots, \var{k}+3\}$ must be valid indices of
+  \var{bytes}.  For {\cf bytes-ieee-single-native-ref}, \var{k} must
+  be a multiple of $4$.}
+
+Returns the inexact real that best represents the IEEE-754 single
+precision number represented by the four bytes beginning at index
+\var{k}.
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-ieee-double-native-ref}{ bytes k}{procedure}
+\proto{bytes-ieee-double-ref}{ bytes k endianness}{procedure}}
+
+\domain{$\{\var{k}, \ldots, \var{k}+7\}$ must be valid indices of
+  \var{bytes}.  For {\cf bytes-ieee-double-native-ref}, \var{k} must
+  be a multiple of $8$.}
+
+Returns the inexact real that best represents the IEEE-754 single
+precision number represented by the eight bytes beginning at index
+\var{k}.
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-ieee-single-native-set!}{ bytes k x}{procedure}
+\proto{bytes-ieee-single-set!}{ bytes k x endianness}{procedure}}
+
+\domain{$\{\var{k}, \ldots, \var{k}+3\}$ must be valid indices of
+  \var{bytes}.  For {\cf bytes-ieee-single-native-set!}, \var{k} must
+  be a multiple of $4$.  \var{X} must be a real number.}
+
+Stores an IEEE-754 single precision representation of \var{x} into
+elements \var{k} through $\var{k}+3$ of \var{bytes}, and returns
+\unspecifiedreturn.
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-ieee-double-native-set!}{ bytes k x}{procedure}
+\proto{bytes-ieee-double-set!}{ bytes k x endianness}{procedure}}
+
+\domain{$\{\var{k}, \ldots, \var{k}+7\}$ must be valid indices of
+  \var{bytes}.  For {\cf bytes-ieee-double-native-set!}, \var{k} must
+  be a multiple of $8$.}
+
+Stores an IEEE-754 single precision representation of \var{x} into
+elements \var{k} through $\var{k}+7$ of \var{bytes}, and returns
+\unspecifiedreturn.
+\end{entry}
+
+\begin{entry}{%
 \proto{bytes-copy!}{ source source-start target target-start n}{procedure}}
 
 \domain{\var{Source-start}, \var{target-start},
