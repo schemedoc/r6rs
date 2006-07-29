@@ -103,8 +103,10 @@ the current library.  The syntactic keywords imported determine which
 of the S-expressions occurring in a library body, and which of their
 sub-S-expressions are actually expressions.  While a library can
 provide new means for forming expressions, a few expression types are
-always available, independently from the imported libraries.  They are
-described in this section.
+always available, independently from the imported libraries.
+Moreover, a library might export and thus provide macros whose expand
+into other forms. The syntax of the primitive expressions as well as
+of macro uses are described in this section.
 
 \subsection{Constant literals}
 
@@ -183,6 +185,66 @@ probably MIT Scheme and Chez Scheme.  But that's not the main reason
 for leaving the order unspecified.}
 
 \end{entry}
+
+\subsection{Macros}
+\label{macrosection}
+
+Scheme programs can define and use new derived expression or
+definition types, called {\em macros}.\mainindex{macro}
+Program-defined expression or definition types have the syntax
+\begin{scheme}
+(\hyper{keyword} {\hyper{datum}} ...)%
+\end{scheme}%
+where \hyper{keyword} is an identifier that uniquely determines the
+expression type.  This identifier is called the {\em syntactic
+keyword}\index{syntactic keyword}, or simply {\em
+keyword}\index{keyword}, of the macro\index{macro keyword}.  The
+number of the \hyper{datum}s, and their syntax, depends on the
+expression type.
+
+Each instance of a macro is called a {\em use}\index{macro use}
+of the macro.
+The set of rules that specifies
+how a use of a macro is transcribed into a more primitive expression
+is called the {\em transformer}\index{macro transformer}
+of the macro.
+
+The macro definition facility consists of two parts:
+
+\begin{itemize}
+\item A set of expressions used to establish that certain identifiers
+are macro keywords, associate them with macro transformers, and control
+the scope within which a macro is defined, and
+
+\item a facility (called {\cf syntax-case}; see
+  chapter~\ref{syntaxcasechapter}) for defining macro transformers as
+  Scheme code, and a derived facility (called {\cf syntax-rules}; see
+  section~\ref{syntaxrulessection}) providing a pattern language for
+  specifying macro transformers.
+\end{itemize}
+
+The syntactic keyword of a macro may shadow variable bindings, and local
+variable bindings may shadow keyword bindings.  \index{keyword}  All macros
+defined using the pattern language  are ``hygienic'' and ``referentially
+transparent'' and thus preserve Scheme's lexical scoping~\cite{Kohlbecker86,
+hygienic,Bawden88,macrosthatwork,syntacticabstraction}:
+\mainindex{hygienic}
+\mainindex{referentially transparent}
+
+\begin{itemize}
+
+\item If a macro transformer inserts a binding for an identifier
+(variable or keyword), the identifier will in effect be renamed
+throughout its scope to avoid conflicts with other identifiers.
+Note that a \ide{define} at top level may or may not introduce a binding;
+see section~\ref{defines}.
+
+\item If a macro transformer inserts a free reference to an
+identifier, the reference refers to the binding that was visible
+where the transformer was specified, regardless of any local
+bindings that may surround the use of the macro.
+
+\end{itemize}
 
 \section{Storage model}
 \label{storagemodel}
