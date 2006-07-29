@@ -71,8 +71,8 @@ Besides the formal account of the syntax, this section also describes
 what data objects are denoted by these S-expressions.
 
 Note that the lexical syntax, in the description of comments, contains
-a forward reference to \meta{datum}, which is described as part of the
-read syntax.  However, being comments, these \meta{datum}s do not play
+a forward reference to \meta{S-expression}, which is described as part of the
+read syntax.  However, being comments, these \meta{S-expression}s do not play
 a significant role in the syntax.
 
 Generally, upper and lower case forms of a letter are distinguished,
@@ -107,7 +107,7 @@ language: {\tt \verb"{" \verb"}"}
 \meta{comment} \: ; \= $\langle$\rm all subsequent characters up to a
 		    \>\ \rm linefeed$\rangle$\index{comment}
 \qquad \= \| \meta{nested comment}
-\> \| \#; \meta{datum}
+\> \| \#; \meta{S-expression}
 \meta{nested comment} \: \#| \= \meta{comment text}
 \> \arbno{\meta{comment cont}} |\#
 \meta{comment text} \: \= $\langle$\rm character sequence not containing
@@ -252,10 +252,10 @@ to Scheme, but the end of the line is visible as whitespace.  This
 prevents a comment from appearing in the middle of an identifier or
 number.
 
-Another way to indicate a comment is to prefix a \hyper{datum} (cf.\
+Another way to indicate a comment is to prefix a \hyper{S-expression} (cf.\
 Section~\ref{datumsyntax}) with {\tt \#;}, possibly with whitespace in
 between.  The comment consists of the comment prefix {\tt \#;} and the
-\hyper{datum}.  (This notation is useful for ``commenting out''
+\hyper{S-expression}.  (This notation is useful for ``commenting out''
 sections of code.)
 
 Moreover, block comments may be indicated with properly nested {\tt
@@ -368,14 +368,14 @@ For example:
 \#\backwhack{}xFF        ; Unicode 255
 \#\backwhack{}xff        ; Unicode 255
 \#\backwhack{}x ff       ; Unicode 120
-             ; followed by another datum, ff
+             ; followed by another S-expression, ff
 \#\backwhack{}x(ff)      ; Unicode 120 
-             ; followed by another datum,
+             ; followed by another S-expression,
              ; a parenthesized ff
 \#\backwhack{}(x)        ; parse error
 \#\backwhack{}(x         ; parse error
 \#\backwhack{}((x)       ; Unicode 40
-             ; followed by another datum,
+             ; followed by another S-expression,
              ; parenthesized x
 \#\backwhack{}x00110000  ; parse error (out of range)
 \#\backwhack{}x000000001 ; parse error (too many digits)
@@ -664,20 +664,20 @@ are equivalent notations for a list of symbols.
 \label{quotesection}
 
 \begin{entry}{%
-\pproto{\singlequote\hyper{datum}}{}
-\pproto{\backquote\hyper{datum}}{}
-\pproto{,\hyper{datum}}{}
-\pproto{,@\hyper{datum}}{}
+\pproto{\singlequote\hyper{S-expression}}{}
+\pproto{\backquote\hyper{S-expression}}{}
+\pproto{,\hyper{S-expression}}{}
+\pproto{,@\hyper{S-expression}}{}
 }
 
-\mainschindex{'}\singlequote\hyper{datum} is an abbreviation
-for {\cf (quote \hyper{datum})}.
-\mainschindex{`}\backquote\hyper{datum} is an abbreviation
-for {\cf (quasiquote \hyper{datum})}.
-\mainschindex{,}{\tt ,}\hyper{datum} is an abbreviation
-for {\cf (unquote \hyper{datum})}.
-\mainschindex{,@}{\tt ,@}\hyper{datum} is an abbreviation
-for {\cf (unquote-splicing \hyper{datum})}.
+\mainschindex{'}\singlequote\hyper{S-expression} is an abbreviation
+for {\cf (quote \hyper{S-expression})}.
+\mainschindex{`}\backquote\hyper{S-expression} is an abbreviation
+for {\cf (quasiquote \hyper{S-expression})}.
+\mainschindex{,}{\tt ,}\hyper{S-expression} is an abbreviation
+for {\cf (unquote \hyper{S-expression})}.
+\mainschindex{,@}{\tt ,@}\hyper{S-expression} is an abbreviation
+for {\cf (unquote-splicing \hyper{S-expression})}.
 \end{entry}
 
 %%% Local Variables: 
