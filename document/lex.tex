@@ -108,6 +108,7 @@ language: {\tt \verb"{" \verb"}"}
 		    \>\ \rm linefeed$\rangle$\index{comment}
 \qquad \= \| \meta{nested comment}
 \> \| \#; \meta{S-expression}
+\> \| \#!r6rs \| #!/usr/bin/env
 \meta{nested comment} \: \#| \= \meta{comment text}
 \> \arbno{\meta{comment cont}} |\#
 \meta{comment text} \: \= $\langle$\rm character sequence not containing
@@ -274,6 +275,15 @@ Moreover, block comments may be indicated with properly nested {\tt
         1       ; identity of *
         (* n (fact (- n 1))))))%
 \end{scheme}
+
+The lexemes {\cf \sharpsign{}!r6rs} and {\cf \sharpsign{}!/usr/bin/env}
+are also comments.  The {\cf \sharpsign{}!r6rs} lexeme occurring in
+program text identifies that program text to be written purely in the
+language described by this report (see
+section~\ref{librarysyntaxsection}).  The {\cf
+  \sharpsign{}!/usr/bin/env} lexeme occurs at the beginning of scripts
+and enables their direct execution on Unix-like systems (see
+section~\ref{scriptsyntaxsection}).
 
 \subsection{Identifiers}
 \label{identifiersection}
