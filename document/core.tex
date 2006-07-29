@@ -29,6 +29,8 @@ Derived expression types are not semantically primitive, but can instead
 be defined as macros.
 Suitable definitions for most derived expressions are given in
 section~\ref{derivedsection}.
+Section~\ref{coretailcontextsection} defines the rules that identify
+tail calls and tail contexts in core-language programs.
 
 \section{Core types}
 \label{disjointness}
@@ -3861,6 +3863,110 @@ extent of a call to \var{before} or \var{after} is undefined.
 \end{scheme}
 \end{entry}
 
+\section{Tail calls and tail contexts}
+\label{coretailcontextsection}
+
+A {\em tail call}\mainindex{tail call} is a procedure call that occurs
+in a {\em tail context}.  Tail contexts are defined inductively.  Note
+that a tail context is always determined with respect to a particular lambda
+expression.
+
+\begin{itemize}
+\item The last expression within the body of a lambda expression,
+  shown as \hyper{tail expression} below, occurs in a tail context.
+\begin{grammar}%
+(l\=ambda \meta{formals}
+  \>\arbno{\meta{definition}} \arbno{\meta{expression}} \meta{tail expression})
+\end{grammar}%
+
+\item If one of the following expressions is in a tail context,
+then the subexpressions shown as \meta{tail expression} are in a tail context.
+These were derived from rules in the grammar given in
+chapter~\ref{formalchapter} by replacing some occurrences of \meta{expression}
+with \meta{tail expression}.  Only those rules that contain tail contexts
+are shown here.
+
+\begin{grammar}%
+(if \meta{expression} \meta{tail expression} \meta{tail expression})
+(if \meta{expression} \meta{tail expression})
+
+(cond \atleastone{\meta{cond clause}})
+(cond \arbno{\meta{cond clause}} (else \meta{tail sequence}))
+
+(c\=ase \meta{expression}
+  \>\atleastone{\meta{case clause}})
+(c\=ase \meta{expression}
+  \>\arbno{\meta{case clause}}
+  \>(else \meta{tail sequence}))
+
+(and \arbno{\meta{expression}} \meta{tail expression})
+(or \arbno{\meta{expression}} \meta{tail expression})
+
+(let (\arbno{\meta{binding spec}}) \meta{tail body})
+(let \meta{variable} (\arbno{\meta{binding spec}}) \meta{tail body})
+(let* (\arbno{\meta{binding spec}}) \meta{tail body})
+(letrec* (\arbno{\meta{binding spec}}) \meta{tail body})
+(letrec (\arbno{\meta{binding spec}}) \meta{tail body})
+(let-values (\arbno{\meta{mv binding spec}}) \meta{tail body})
+(let*-values (\arbno{\meta{mv binding spec}}) \meta{tail body})
+
+(let-syntax (\arbno{\meta{syntax spec}}) \meta{tail body})
+(letrec-syntax (\arbno{\meta{syntax spec}}) \meta{tail body})
+
+(begin \meta{tail sequence})
+
+(d\=o \=(\arbno{\meta{iteration spec}})
+  \>  \>(\meta{test} \meta{tail sequence})
+  \>\arbno{\meta{expression}})
+
+{\rm where}
+
+\meta{cond clause} \: (\meta{test} \meta{tail sequence})
+\meta{case clause} \: ((\arbno{\meta{datum}}) \meta{tail sequence})
+
+\meta{tail body} \: \arbno{\meta{definition}} \meta{tail sequence}
+\meta{tail sequence} \: \arbno{\meta{expression}} \meta{tail expression}
+\end{grammar}%
+
+\item
+If a {\cf cond} expression is in a tail context, and has a clause of
+the form {\cf (\hyperi{expression} => \hyperii{expression})}
+then the (implied) call to
+the procedure that results from the evaluation of \hyperii{expression} is in a
+tail context.  \hyperii{expression} itself is not in a tail context.
+
+\end{itemize}
+
+Certain built-in procedures are also required to perform tail calls.
+The first argument passed to \ide{apply} and to
+\ide{call-with-current-continuation}, and the second argument passed to
+\ide{call-with-values}, must be called via a tail call.
+Similarly, \ide{eval} must evaluate its argument as if it
+were in tail position within the \ide{eval} procedure.
+
+In the following example the only tail call is the call to {\cf f}.
+None of the calls to {\cf g} or {\cf h} are tail calls.  The reference to
+{\cf x} is in a tail context, but it is not a call and thus is not a
+tail call.
+\begin{scheme}%
+(lambda ()
+  (if (g)
+      (let ((x (h)))
+        x)
+      (and (g) (f))))
+\end{scheme}%
+
+\begin{note}
+Implementations are allowed, but not required, to
+recognize that some non-tail calls, such as the call to {\cf h}
+above, can be evaluated as though they were tail calls.
+In the example above, the {\cf let} expression could be compiled
+as a tail call to {\cf h}. (The possibility of {\cf h} returning
+an unexpected number of values can be ignored, because in that
+case the effect of the {\cf let} is explicitly unspecified and
+implementation-dependent.)
+\end{note}
+
 \section{Derived expression types}
 \label{derivedsection}
 
@@ -4164,6 +4270,7 @@ As with {\cf letrec} above, an auxiliary macro would also work.
 % Q*_0[`a]          =  (list 'quasiquote Q*_1[a])
 % `#(a b ...)       =  (list->vector `(a b ...))
 %  ugh.
+
 
 %%% Local Variables: 
 %%% mode: latex
