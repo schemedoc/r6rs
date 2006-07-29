@@ -11,9 +11,7 @@ bound to locations containing useful values, most of which are primitive
 procedures that manipulate data.  For example, the variable {\cf abs} is
 bound to (a location initially containing) a procedure of one argument
 that computes the absolute value of a number, and the variable {\cf +}
-is bound to a procedure that computes sums.  Built-in procedures that
-can easily be written in terms of other built-in procedures are identified as
-``library procedures''.
+is bound to a procedure that computes sums.
 
 A program may use a top-level definition to bind any variable.  It may
 subsequently alter any such binding by an assignment (see \ref{assignment}).
@@ -29,9 +27,8 @@ Expression types are categorized as {\em primitive} or {\em derived}.
 Primitive expression types include variables and procedure calls.
 Derived expression types are not semantically primitive, but can instead
 be defined as macros.
-With the exception of {\cf quasiquote}, whose macro definition is complex,
-the derived expressions are classified as library features.
-Suitable definitions are given in section~\ref{derivedsection}.
+Suitable definitions for most derived expressions are given in
+section~\ref{derivedsection}.
 
 \section{Primitive expression types}
 \label{primitivexps}
@@ -434,7 +431,7 @@ into the primitive constructs described in the previous section.
 \subsection{Conditionals}\unsection
 
 \begin{entry}{%
-\proto{cond}{ \hyperi{clause} \hyperii{clause} \dotsfoo}{library \exprtype}}
+\proto{cond}{ \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
 
 \syntax
 Each \hyper{clause} should be of the form
@@ -492,7 +489,7 @@ the last one is(are) returned.
 
 
 \begin{entry}{%
-\proto{case}{ \hyper{key} \hyperi{clause} \hyperii{clause} \dotsfoo}{library \exprtype}}
+\proto{case}{ \hyper{key} \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
 
 \syntax
 \hyper{Key} may be any expression.  Each \hyper{clause} should have
@@ -538,7 +535,7 @@ otherwise the result of the {\cf case} expression is the unspecified value.
 
 
 \begin{entry}{%
-\proto{and}{ \hyperi{test} \dotsfoo}{library \exprtype}}
+\proto{and}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
 The \hyper{test} expressions are evaluated from left to right, and the
 value of the first expression that evaluates to a false value (see
@@ -558,7 +555,7 @@ then \schtrue{} is returned.
 
 
 \begin{entry}{%
-\proto{or}{ \hyperi{test} \dotsfoo}{library \exprtype}}
+\proto{or}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
 The \hyper{test} expressions are evaluated from left to right, and the value of the
 first expression that evaluates to a true value (see
@@ -600,7 +597,7 @@ in a {\cf let*-values} expression, the bindings are performed
 sequentially.  (These forms are compatible with SRFI~11~\cite{srfi11}.)
 
 \begin{entry}{%
-\proto{let}{ \hyper{bindings} \hyper{body}}{library \exprtype}}
+\proto{let}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
 \hyper{Bindings} should have the form
@@ -636,7 +633,7 @@ See also named {\cf let}, section \ref{namedlet}.
 
 
 \begin{entry}{%
-\proto{let*}{ \hyper{bindings} \hyper{body}}{library \exprtype}}\nobreak
+\proto{let*}{ \hyper{bindings} \hyper{body}}{\exprtype}}\nobreak
 
 \nobreak
 \syntax
@@ -664,7 +661,7 @@ in an environment in which the first binding is visible, and so on.
 \end{entry}
 
 \begin{entry}{%
-\proto{letrec*}{ \hyper{bindings} \hyper{body}}{library \exprtype}}
+\proto{letrec*}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
 \hyper{Bindings} should have the form
@@ -704,7 +701,7 @@ define mutually recursive procedures.
 \end{entry}
 
 \begin{entry}{%
-\proto{letrec}{ \hyper{bindings} \hyper{body}}{library \exprtype}}
+\proto{letrec}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
 \hyper{Bindings} should have the form
@@ -755,7 +752,7 @@ name.  In the most common uses of {\cf letrec}, all the \hyper{init}s are
 % \todo{use or uses?  --- Jinx.}
 
 \begin{entry}{%
-\proto{let-values}{ \hyper{mv-bindings} \hyper{body}}{library \exprtype}}
+\proto{let-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
 \syntax
 \hyper{Mv-bindings} should have the form
@@ -793,7 +790,7 @@ region.\index{region}
 \end{entry}
 
 \begin{entry}{%
-\proto{let*-values}{ \hyper{mv-bindings} \hyper{body}}{library \exprtype}}
+\proto{let*-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
 {\cf Let*-values} is similar to {\cf let-values}, but the bindings are
 performed sequentially from left to right, and the
@@ -814,7 +811,7 @@ on.
 \subsection{Sequencing}\unsection
 
 \begin{entry}{%
-\proto{begin}{ \hyperi{expression} \hyperii{expression} \dotsfoo}{library \exprtype}}
+\proto{begin}{ \hyperi{expression} \hyperii{expression} \dotsfoo}{\exprtype}}
 
 The \hyper{expression}s are evaluated sequentially from left to right,
 and the value(s) of the last \hyper{expression} is(are) returned.  This
@@ -838,7 +835,7 @@ output.
 \subsection{Iteration}%\unsection
 
 \noindent%
-\pproto{(do ((\hyperi{variable} \hyperi{init} \hyperi{step})}{library \exprtype}
+\pproto{(do ((\hyperi{variable} \hyperi{init} \hyperi{step})}{\exprtype}
 \mainschindex{do}{\tt\obeyspaces%
      \dotsfoo)\\
     (\hyper{test} \hyper{expression} \dotsfoo)\\
@@ -894,7 +891,7 @@ been written instead of {\cf(\hyper{variable} \hyper{init})}.
 
 
 \begin{entry}{%
-\rproto{let}{ \hyper{variable} \hyper{bindings} \hyper{body}}{library \exprtype}}
+\rproto{let}{ \hyper{variable} \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \label{namedlet}
 ``Named {\cf let}'' is a variant on the syntax of \ide{let} which provides
@@ -1415,7 +1412,7 @@ it obeys the same constraints as {\cf eqv?}.
 
 
 \begin{entry}{%
-\proto{equal?}{ \vari{obj} \varii{obj}}{library procedure}}
+\proto{equal?}{ \vari{obj} \varii{obj}}{procedure}}
 
 The {\cf equal?}  predicate returns \schtrue{} if and only if the
 (possibly infinite) unfoldings of its arguments into regular trees are
@@ -2337,7 +2334,7 @@ in programs.
 
 
 \begin{entry}{%
-\proto{not}{ obj}{library procedure}}
+\proto{not}{ obj}{procedure}}
 
 {\cf Not} returns \schtrue{} if \var{obj} is false, and returns
 \schfalse{} otherwise.
@@ -2356,7 +2353,7 @@ in programs.
 
 
 \begin{entry}{%
-\proto{boolean?}{ obj}{library procedure}}
+\proto{boolean?}{ obj}{procedure}}
 
 {\cf Boolean?} returns \schtrue{} if \var{obj} is either \schtrue{} or
 \schfalse{} and returns \schfalse{} otherwise.
@@ -2560,15 +2557,15 @@ The value returned by {\cf set-cdr!}\ is the unspecified value.  % <!>
 \end{entry}
 
 \setbox0\hbox{\tt(cadr \var{pair})}
-\setbox1\hbox{library procedure}
+\setbox1\hbox{procedure}
 
 
 \begin{entry}{%
-\proto{caar}{ pair}{library procedure}
-\proto{cadr}{ pair}{library procedure}
+\proto{caar}{ pair}{procedure}
+\proto{cadr}{ pair}{procedure}
 \pproto{\hbox to 1\wd0 {\hfil$\vdots$\hfil}}{\hbox to 1\wd1 {\hfil$\vdots$\hfil}}
-\proto{cdddar}{ pair}{library procedure}
-\proto{cddddr}{ pair}{library procedure}}
+\proto{cdddar}{ pair}{procedure}
+\proto{cddddr}{ pair}{procedure}}
 
 These procedures are compositions of {\cf car} and {\cf cdr}, where
 for example {\cf caddr} could be defined by
@@ -2584,7 +2581,7 @@ twenty-eight of these procedures in all.
 
 
 \begin{entry}{%
-\proto{null?}{ obj}{library procedure}}
+\proto{null?}{ obj}{procedure}}
 
 Returns \schtrue{} if \var{obj} is the empty list\index{empty list},
 otherwise returns \schfalse.
@@ -2598,7 +2595,7 @@ otherwise returns \schfalse.
 \end{entry}
 
 \begin{entry}{%
-\proto{list?}{ obj}{library procedure}}
+\proto{list?}{ obj}{procedure}}
 
 Returns \schtrue{} if \var{obj} is a list, otherwise returns \schfalse{}.
 By definition, all lists have finite length and are terminated by
@@ -2616,7 +2613,7 @@ the empty list.
 
 
 \begin{entry}{%
-\proto{list}{ \var{obj} \dotsfoo}{library procedure}}
+\proto{list}{ \var{obj} \dotsfoo}{procedure}}
 
 Returns a newly allocated list of its arguments.
 
@@ -2628,7 +2625,7 @@ Returns a newly allocated list of its arguments.
 
 
 \begin{entry}{%
-\proto{length}{ list}{library procedure}}
+\proto{length}{ list}{procedure}}
 
 \nodomain{\var{List} must be a list.}
 Returns the length of \var{list}.
@@ -2642,7 +2639,7 @@ Returns the length of \var{list}.
 
 
 \begin{entry}{%
-\proto{append}{ list \dotsfoo}{library procedure}}
+\proto{append}{ list \dotsfoo}{procedure}}
 
 \nodomain{All \var{list}s should be lists.}
 Returns a list consisting of the elements of the first \var{list}
@@ -2667,7 +2664,7 @@ proper list.  \todo{This is pretty awkward.  I should get Bartley to fix this.}
 
 
 \begin{entry}{%
-\proto{reverse}{ list}{library procedure}}
+\proto{reverse}{ list}{procedure}}
 
 \nodomain{\var{List} must be a list.}
 Returns a newly allocated list consisting of the elements of \var{list}
@@ -2681,7 +2678,7 @@ in reverse order.
 
 
 \begin{entry}{%
-\proto{list-tail}{ list \vr{k}}{library procedure}}
+\proto{list-tail}{ list \vr{k}}{procedure}}
 
 Returns the sublist of \var{list} obtained by omitting the first \vr{k}
 elements.  It is an error if \var{list} has fewer than \vr{k} elements.
@@ -2698,7 +2695,7 @@ elements.  It is an error if \var{list} has fewer than \vr{k} elements.
 
 
 \begin{entry}{%
-\proto{list-ref}{ list \vr{k}}{library procedure}}
+\proto{list-ref}{ list \vr{k}}{procedure}}
 
 Returns the \vr{k}th element of \var{list}.  (This is the same
 as the car of {\tt(list-tail \var{list} \vr{k})}.)
@@ -2713,7 +2710,7 @@ It is an error if \var{list} has fewer than \vr{k} elements.
 
 
 %\begin{entry}{%
-%\proto{last-pair}{ list}{library procedure}}
+%\proto{last-pair}{ list}{procedure}}
 %
 %Returns the last pair in the nonempty, possibly improper, list \var{list}.
 %{\cf Last-pair} could be defined by
@@ -2919,10 +2916,10 @@ according to their scalar values.
 \end{entry}
 
 \begin{entry}{%
-\proto{char-upcase}{ char}{library procedure}
-\proto{char-downcase}{ char}{library procedure}
-\proto{char-titlecase}{ char}{library procedure}
-\proto{char-foldcase}{ char}{library procedure}}
+\proto{char-upcase}{ char}{procedure}
+\proto{char-downcase}{ char}{procedure}
+\proto{char-titlecase}{ char}{procedure}
+\proto{char-foldcase}{ char}{procedure}}
 
 \nodomain{\var{Char} must be a character.}
 These procedures take a character argument and return a character
@@ -2983,11 +2980,11 @@ Otherwise, the character returned is the same as the argument.
 
 
 \begin{entry}{%
-\proto{char-ci=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}
-\proto{char-ci<?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}
-\proto{char-ci>?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}
-\proto{char-ci<=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}
-\proto{char-ci>=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{library procedure}}
+\proto{char-ci=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char-ci<?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char-ci>?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char-ci<=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}
+\proto{char-ci>=?}{ \vari{char} \varii{char} \variii{char} \dotsfoo}{procedure}}
 
 \nodomain{Both \vari{char} and \varii{char} must be characters.}
 These procedures are similar to {\cf char=?}\ et cetera, but operate
@@ -3002,12 +2999,12 @@ on the case-folded versions of the characters.
 
 
 \begin{entry}{%
-\proto{char-alphabetic?}{ char}{library procedure}
-\proto{char-numeric?}{ char}{library procedure}
-\proto{char-whitespace?}{ char}{library procedure}
-\proto{char-upper-case?}{ letter}{library procedure}
-\proto{char-lower-case?}{ letter}{library procedure}
-\proto{char-title-case?}{ letter}{library procedure}}
+\proto{char-alphabetic?}{ char}{procedure}
+\proto{char-numeric?}{ char}{procedure}
+\proto{char-whitespace?}{ char}{procedure}
+\proto{char-upper-case?}{ letter}{procedure}
+\proto{char-lower-case?}{ letter}{procedure}
+\proto{char-title-case?}{ letter}{procedure}}
 
 These procedures return \schtrue{} if their arguments are alphabetic,
 numeric, whitespace, upper case, lower case, or title case characters,
@@ -3038,7 +3035,7 @@ respectively.
 \end{entry}
 
 \begin{entry}{%
-\proto{char-general-category}{ char}{library procedure}}
+\proto{char-general-category}{ char}{procedure}}
 
 This procedure takes a character and returns a symbol representing its
 Unicode general category, one of \ide{lu}, \ide{ll}, \ide{lt},
@@ -3100,7 +3097,7 @@ are initialized to \var{char}, otherwise the contents of the
 \end{entry}
 
 \begin{entry}{%
-\proto{string}{ char \dotsfoo}{library procedure}}
+\proto{string}{ char \dotsfoo}{procedure}}
 
 Returns a newly allocated string composed of the arguments.
 
@@ -3144,7 +3141,7 @@ and returns the unspecified value.  % <!>
 
 
 \begin{entry}{%
-\proto{string=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}}
+\proto{string=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
 
 Returns \schtrue{} if the strings are the same length and contain the same
 characters in the same positions, otherwise returns \schfalse.
@@ -3156,10 +3153,10 @@ characters in the same positions, otherwise returns \schfalse.
 
 
 \begin{entry}{%
-\proto{string<?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
-\proto{string>?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
-\proto{string<=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
-\proto{string>=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}}
+\proto{string<?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string>?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string<=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string>=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
 
 These procedures are the lexicographic extensions to strings of the
 corresponding orderings on characters.  For example, {\cf string<?}\ is
@@ -3176,10 +3173,10 @@ is considered to be lexicographically less than the longer string.
 \end{entry}
 
 \begin{entry}{%
-\proto{string-upcase}{ \var{string}}{library procedure}
-\proto{string-downcase}{ \var{string}}{library procedure}
-\proto{string-titlecase}{ \var{string}}{library procedure}
-\proto{string-foldcase}{ \var{string}}{library procedure}}
+\proto{string-upcase}{ \var{string}}{procedure}
+\proto{string-downcase}{ \var{string}}{procedure}
+\proto{string-titlecase}{ \var{string}}{procedure}
+\proto{string-foldcase}{ \var{string}}{procedure}}
 
 These procedures take a string argument argument and return a string
 result.  They are defined as in terms of Unicode's locale-independent
@@ -3239,11 +3236,11 @@ cased-character sequences, case-ignorable characters are ignored
 \end{entry}
 
 \begin{entry}{%
-\proto{string-ci=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
-\proto{string-ci<?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
-\proto{string-ci>?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
-\proto{string-ci<=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}
-\proto{string-ci>=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{library procedure}}
+\proto{string-ci=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string-ci<?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string-ci>?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string-ci<=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
+\proto{string-ci>=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
 
 \nodomain{Both \vari{string} and \varii{string} must be strings.}
 These procedures are similar to {\cf string=?}\ et cetera, but operate
@@ -3283,7 +3280,7 @@ These procedures could be defined as follows:
 \end{entry}
 
 \begin{entry}{%
-\proto{substring}{ string start end}{library procedure}}
+\proto{substring}{ string start end}{procedure}}
 
 \domain{\var{String} must be a string, and \var{start} and \var{end}
 must be exact integers satisfying
@@ -3295,7 +3292,7 @@ $$0 \leq \var{start} \leq \var{end} \leq \hbox{\tt(string-length \var{string})\r
 
 
 \begin{entry}{%
-\proto{string-append}{ \var{string} \dotsfoo}{library procedure}}
+\proto{string-append}{ \var{string} \dotsfoo}{procedure}}
 
 Returns a newly allocated string whose characters form the concatenation of the
 given strings.
@@ -3304,8 +3301,8 @@ given strings.
 
 
 \begin{entry}{%
-\proto{string->list}{ string}{library procedure}
-\proto{list->string}{ list}{library procedure}}
+\proto{string->list}{ string}{procedure}
+\proto{list->string}{ list}{procedure}}
 
 {\cf String\coerce{}list} returns a newly allocated list of the
 characters that make up the given string.  {\cf List\coerce{}string}
@@ -3321,7 +3318,7 @@ inverses so far as {\cf equal?}\ is concerned.
 
 
 \begin{entry}{%
-\proto{string-copy}{ string}{library procedure}}
+\proto{string-copy}{ string}{procedure}}
 
 Returns a newly allocated copy of the given \var{string}.
 
@@ -3329,7 +3326,7 @@ Returns a newly allocated copy of the given \var{string}.
 
 
 \begin{entry}{%
-\proto{string-fill!}{ string char}{library procedure}}
+\proto{string-fill!}{ string char}{procedure}}
 
 Stores \var{char} in every element of the given \var{string} and returns the
 unspecified value.  % <!>
@@ -3337,10 +3334,10 @@ unspecified value.  % <!>
 \end{entry}
 
 \begin{entry}{
-\proto{string-normalize-nfd}{ \var{string}}{library procedure}
-\proto{string-normalize-nfkd}{ \var{string}}{library procedure}
-\proto{string-normalize-nfc}{ \var{string}}{library procedure}
-\proto{string-normalize-nfkc}{ \var{string}}{library procedure}}
+\proto{string-normalize-nfd}{ \var{string}}{procedure}
+\proto{string-normalize-nfkd}{ \var{string}}{procedure}
+\proto{string-normalize-nfc}{ \var{string}}{procedure}
+\proto{string-normalize-nfkc}{ \var{string}}{procedure}}
   
 These procedures take a string argument argument and return a string
 result.  They each return a string that is the input string normalized
@@ -3402,7 +3399,7 @@ Otherwise the initial contents of each element is unspecified.
 
 
 \begin{entry}{%
-\proto{vector}{ obj \dotsfoo}{library procedure}}
+\proto{vector}{ obj \dotsfoo}{procedure}}
 
 Returns a newly allocated vector whose elements contain the given
 arguments.  Analogous to {\cf list}.
@@ -3457,8 +3454,8 @@ The value returned by {\cf vector-set!}\ is the unspecified value.  % <!>
 
 
 \begin{entry}{%
-\proto{vector->list}{ vector}{library procedure}
-\proto{list->vector}{ list}{library procedure}}
+\proto{vector->list}{ vector}{procedure}
+\proto{list->vector}{ list}{procedure}}
 
 {\cf Vector->list} returns a newly allocated list of the objects contained
 in the elements of \var{vector}.  {\cf List->vector} returns a newly
@@ -3472,7 +3469,7 @@ created vector initialized to the elements of the list \var{list}.
 
 
 \begin{entry}{%
-\proto{vector-fill!}{ vector fill}{library procedure}}
+\proto{vector-fill!}{ vector fill}{procedure}}
 
 Stores \var{fill} in every element of \var{vector}
 and returns the unspecified value.  % <!>
@@ -3568,7 +3565,7 @@ arguments.
 
 
 \begin{entry}{%
-\proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{library procedure}}
+\proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
 \domain{The \var{list}s must be lists, and \var{proc} must be a
 procedure taking as many arguments as there are {\it list}s
@@ -3598,7 +3595,7 @@ The dynamic order in which \var{proc} is applied to the elements of the
 
 
 \begin{entry}{%
-\proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{library procedure}}
+\proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
 The arguments to {\cf for-each} are like the arguments to {\cf map}, but
 {\cf for-each} calls \var{proc} for its side effects rather than for its
