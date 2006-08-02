@@ -73,7 +73,7 @@ Raises a non-continuable exception by invoking the current exception
 handler on \var{obj}. The handler is called with a continuation whose
 dynamic environment is that of the call to {\tt raise}, except that
 the current exception handler is the one that was in place for the
-call to {\tt`with-exception-handler} that installed the handler being
+call to {\tt with-exception-handler} that installed the handler being
 called.  The continuation of the handler will raise a non-continuable
 {\tt \&non-continuable} exception.
 \end{entry}
@@ -233,9 +233,9 @@ that did not precisely anticipate the nature of the exception that
 occurred.
 
 Scheme conditions provides two mechanisms to enable this kind of
-communication subtyping among condition types allows handling code to
+communication: subtyping among condition types allows handling code to
 determine the general nature of an exception even though it does not
-anticipate its exact nature, compound conditions allow an exceptional
+anticipate its exact nature, and compound conditions allow an exceptional
 situation to be described in multiple ways.
 
 \subsection{Condition objects}
@@ -275,7 +275,7 @@ associated with the condition type.
 \proto{condition-type?}{ \var{thing}}{procedure}}
 
 {\cf Condition-type?} is a predicate for condition types: it returns
-\schtrue{} if thing is a condition type, and \schfalse{} otherwise
+\schtrue{} if \var{thing} is a condition type, and \schfalse{} otherwise
 \end{entry}
 
 \begin{entry}{%
@@ -301,8 +301,8 @@ if \var{thing} is a condition type, and \schfalse{} otherwise
 
 {\cf Condition-has-type?} tests if condition condition belongs to
 condition type \var{condition-type}. It returns \schtrue{} if any of
-condition's types includes \var{condition-type} either directly or as
-an ancestor and \schfalse{} otherwise.
+condition's types includes \var{condition-type}, either directly or as
+an ancestor, and \schfalse{} otherwise.
 
 FIXME It is an error if \var{condition} is not a condition, or if
 \var{condition-type} is not a condition type.
