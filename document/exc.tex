@@ -274,26 +274,26 @@ associated with the condition type.
 \begin{entry}{%
 \proto{condition-type?}{ \var{thing}}{procedure}}
 
-{\cf Condition-type?} is a predicate for condition types: it returns
-\schtrue{} if \var{thing} is a condition type, and \schfalse{} otherwise
+Returns \schtrue{} if \var{thing} is a condition type, and \schfalse{}
+otherwise
 \end{entry}
 
 \begin{entry}{%
-\proto{make-condition}{ \var{type} \var{field-name} \var{value} \dotsfoo}{procedure}}
+\proto{make-condition}{ \var{type} \var{field-name} \var{obj} \dotsfoo}{procedure}}
 
-{\cf Make-condition} creates a condition value belonging condition
-type type. The following arguments must be, in turn, a field name and
-an arbitrary value. There must be such a pair for each field of
+{\cf Make-condition} creates a condition object belonging to condition
+type \var{type}. \var{Field-name} must be a field name. There must be
+a pair of a \var{field-name} and an \var{obj} for each field of
 \var{type} and its direct and indirect supertypes. {\cf
   Make-condition} returns the condition value, with the argument
-values associated with their respective fields. 
+values associated with their respective fields.
 \end{entry}
 
 \begin{entry}{%
-\proto{condition?}{ \var{thing}}{procedure}}
+\proto{condition?}{ \var{obj}}{procedure}}
 
-{\cf Condition?} is a predicate for conditions: it returns \schtrue{}
-if \var{thing} is a condition type, and \schfalse{} otherwise
+Returns \schtrue{} if \var{obj} is a condition object, and \schfalse{}
+otherwise.
 \end{entry}
 
 \begin{entry}{%
@@ -311,7 +311,7 @@ FIXME It is an error if \var{condition} is not a condition, or if
 \begin{entry}{%
 \proto{condition-ref}{ \var{condition} \var{field-name}}{procedure}}
 
-\var{Condition} must be a condition, and \var{field-name} a symbol.
+\var{Field-name} must be a symbol.
 Moreover, \var{condition} must belong to a condition type which has a
 field name called \var{field-name}, or one of its (direct or indirect)
 supertypes must have the field. {\cf Condition-ref} returns the value
@@ -352,10 +352,10 @@ returned condition may be newly created; it is possible for
   (eq? c0 (extract-condition c1 \&c)))
 \end{scheme}
 %
-to return false. 
+to return \schfalse. 
 \end{entry}
 
-\subsubsection{Macros}
+\subsubsection{Syntax}
 
 
 \begin{entry}{%
