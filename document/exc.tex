@@ -41,8 +41,6 @@ has been raised, and displaying some information about the condition
 object that was provided.  Moreover, the initial handler
 returns when passed any other (``non-serious'') condition.
 
-\subsection{Establishing Exception Handlers}
-
 \begin{entry}{%
 \proto{with-exception-handler}{ \var{handler} \var{thunk}}{procedure}}
 
@@ -71,8 +69,6 @@ environment of the original call to raise except that the current
 exception handler is that of the {\tt guard} expression.  
 \end{entry}
 
-\subsection{Raising Exceptions}
-
 \begin{entry}{%
 \proto{raise}{ \var{obj}}{procedure}}
 
@@ -100,9 +96,7 @@ returns become(s) the value(s) returned by the call to
 {\tt raise-continuable}.
 \end{entry}
 
-\subsection{Examples}
-
-% FIXME: uses of `display' and so on
+FIXME: uses of `display' and so on
 
 \begin{scheme}
 (call-with-current-continuation
@@ -263,8 +257,6 @@ type. The type used to access a field determines which of the values
 is returned. The program can extract each of these field values
 separately.  
 
-\subsubsection{Procedures}
-
 \begin{entry}{%
 \proto{make-condition-type}{ \var{id} \var{parent} \var{field-names}}{procedure}}
 
@@ -362,9 +354,6 @@ returned condition may be newly created; it is possible for
 to return \schfalse. 
 \end{entry}
 
-\subsubsection{Syntax}
-
-
 \begin{entry}{%
 \pproto{(define-condition-type \hyper{condition-type}  \hyper{supertype}}{\exprtype}}
 {\tt\obeyspaces\\
@@ -438,13 +427,86 @@ subforms, then the value defaults to that of the first such binding in
 the condition form.  
 \end{entry}
 
-\subsubsection{Standard Conditions}
-
 \begin{entry}{{\tt\&condition}}
 
 This is the root of the entire condition type hierarchy. It has a no
 fields.
 \end{entry}
+
+\begin{scheme}
+(define-condition-type \&c \&condition
+  c?
+  (x c-x))
+
+(define-condition-type \&c1 \&c
+  c1?
+  (a c1-a))
+
+(define-condition-type \&c2 \&c
+  c2?
+  (b c2-b))
+\end{scheme}
+
+\begin{scheme}
+(define v1 (make-condition \&c1 'x "V1" 'a "a1"))
+
+(c? v1)        \ev \schtrue
+(c1? v1)       \ev \schtrue
+(c2? v1)       \ev \schfalse
+(c-x v1)       \ev "V1"
+(c1-a v1)      \ev "a1"
+\end{scheme}
+
+\begin{scheme}
+(define v2 (condition (\&c2
+                        (x "V2")
+                        (b "b2"))))
+
+(c? v2)        \ev \schtrue
+(c1? v2)       \ev \schfalse
+(c2? v2)       \ev \schtrue
+(c-x v2)       \ev "V2"
+(c2-b v2)      \ev "b2"
+\end{scheme}
+
+\begin{scheme}
+(define v3 (condition (\&c1
+                       (x "V3/1")
+                       (a "a3"))
+                      (\&c2
+                       (b "b3"))))
+
+(c? v3)        \ev \schtrue
+(c1? v3)       \ev \schtrue
+(c2? v3)       \ev \schtrue
+(c-x v3)       \ev "V3/1"
+(c1-a v3)      \ev "a3"
+(c2-b v3)      \ev "b3"
+\end{scheme}
+
+\begin{scheme}
+(define v4 (make-compound-condition v1 v2))
+
+(c? v4)        \ev \schtrue
+(c1? v4)       \ev \schtrue
+(c2? v4)       \ev \schtrue
+(c-x v4)       \ev "V1"
+(c1-a v4)      \ev "a1"
+(c2-b v4)      \ev "b2"
+\end{scheme}
+
+\begin{scheme}
+(define v5 (make-compound-condition v2 v3))
+
+(c? v5)        \ev \schtrue
+(c1? v5)       \ev \schtrue
+(c2? v5)       \ev \schtrue
+(c-x v5)       \ev "V2"
+(c1-a v5)      \ev "a3"
+(c2-b v5)      \ev "b2"
+\end{scheme}
+
+\section{Standard condition types}
 
 \begin{entry}{{\tt\&message}}
 
@@ -557,80 +619,7 @@ The {\cf who} field should contain a symbol or string identifying the
 entity reporting the exception.
 \end{entry}
 
-\subsection{Examples}
 
-\begin{scheme}
-(define-condition-type \&c \&condition
-  c?
-  (x c-x))
-
-(define-condition-type \&c1 \&c
-  c1?
-  (a c1-a))
-
-(define-condition-type \&c2 \&c
-  c2?
-  (b c2-b))
-\end{scheme}
-
-\begin{scheme}
-(define v1 (make-condition \&c1 'x "V1" 'a "a1"))
-
-(c? v1)        \ev \schtrue
-(c1? v1)       \ev \schtrue
-(c2? v1)       \ev \schfalse
-(c-x v1)       \ev "V1"
-(c1-a v1)      \ev "a1"
-\end{scheme}
-
-\begin{scheme}
-(define v2 (condition (\&c2
-                        (x "V2")
-                        (b "b2"))))
-
-(c? v2)        \ev \schtrue
-(c1? v2)       \ev \schfalse
-(c2? v2)       \ev \schtrue
-(c-x v2)       \ev "V2"
-(c2-b v2)      \ev "b2"
-\end{scheme}
-
-\begin{scheme}
-(define v3 (condition (\&c1
-                       (x "V3/1")
-                       (a "a3"))
-                      (\&c2
-                       (b "b3"))))
-
-(c? v3)        \ev \schtrue
-(c1? v3)       \ev \schtrue
-(c2? v3)       \ev \schtrue
-(c-x v3)       \ev "V3/1"
-(c1-a v3)      \ev "a3"
-(c2-b v3)      \ev "b3"
-\end{scheme}
-
-\begin{scheme}
-(define v4 (make-compound-condition v1 v2))
-
-(c? v4)        \ev \schtrue
-(c1? v4)       \ev \schtrue
-(c2? v4)       \ev \schtrue
-(c-x v4)       \ev "V1"
-(c1-a v4)      \ev "a1"
-(c2-b v4)      \ev "b2"
-\end{scheme}
-
-\begin{scheme}
-(define v5 (make-compound-condition v2 v3))
-
-(c? v5)        \ev \schtrue
-(c1? v5)       \ev \schtrue
-(c2? v5)       \ev \schtrue
-(c-x v5)       \ev "V2"
-(c1-a v5)      \ev "a3"
-(c2-b v5)      \ev "b2"
-\end{scheme}
 
 %%% Local Variables: 
 %%% mode: latex
