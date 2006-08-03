@@ -142,6 +142,7 @@ much precision as the most precise \tupe{flonum} format available.
 
 
 \section{Infinities and NaNs}
+\label{infinitiesnanssection}
 
 Positive infinity is regarded as a real (but not rational) number,
 whose value is indeterminate but greater than all rational numbers.
@@ -158,13 +159,15 @@ infinities and NaNs are representable, and specifies many operations
 with respect to these numbers in ways that are consistent with the
 IEEE 754 standard for binary floating point arithmetic.  Although
 implementations of Scheme are not required to represent infinities and
-NaNs, an implementation must report a violation of an implementation
-restriction whenever it is unable to represent an infinity or NaN as
-required by the specification.  This requirement also applies to
+NaNs, an implementation must raise a continuable exception with
+condition type {\cf\&no-infinities} or {\cf\&no-nans} respectively
+(see section~\ref{flonumssection})
+whenever it is unable to represent an infinity or NaN as required by
+the specification.  In this case, the continuation of the exception
+handler will be the continuation that otherwise would have received
+the infinity or NaN value.  This requirement also applies to
 conversions between numbers and external representations, including
 the reading of program source code.
-
-FIXME: specify how the violation is reported
 
 \section{Semantics of common operations}
 
@@ -999,6 +1002,7 @@ procedure.
 \end{entry}
 
 \section{Flonums}
+\label{flonumssection}
 
 We will use \var{fl}, \vari{fl} and \varii{fl} as
 metavariables that range over flonums, and \var{ifl},
@@ -1283,6 +1287,28 @@ result is zero.  For positive \vari{fl},
 \begin{displaymath}
   \vari{fl}^{\varii{fl}} = e^{\varii{fl} \log \vari{fl}}
 \end{displaymath}
+\end{entry}
+
+\begin{entry}{%
+\rvproto{\&no-infinities}{condition type}
+\rvproto{\&no-nans}{condition type}}\index{no-infinities@{\tt\&no-infinities}}\index{no-nans@{\tt\&no-nans}}%%kludge
+
+These condition types could be defined by the following code:
+
+\begin{scheme}
+(define-condition-type \&no-infinities
+    \&implementation-restriction
+  no-infinities?)
+
+(define-condition-type \&no-nans
+    \&implementation-restriction
+  no-nans?)
+\end{scheme}
+
+These types describe that a program has executed an arithmetic
+operations that is specified to return an infinity or a NaN,
+respectively, on a Scheme implementation that is not able to represent
+the infinity or NaN.  (See section~\ref{infinitiesnanssection}.)
 \end{entry}
 
 \section{Fixnum/Flonum Conversions}

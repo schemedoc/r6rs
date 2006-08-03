@@ -427,7 +427,8 @@ subforms, then the value defaults to that of the first such binding in
 the condition form.  
 \end{entry}
 
-\begin{entry}{{\tt\&condition}}
+\begin{entry}{%
+\rvproto{\&condition}{condition type}}\index{condition@{\tt\&condition}}
 
 This is the root of the entire condition type hierarchy. It has a no
 fields.
@@ -508,7 +509,8 @@ fields.
 
 \section{Standard condition types}
 
-\begin{entry}{{\tt\&message}}
+\begin{entry}{%
+\rvproto{\&message}{condition type}}\index{message@{\tt\&message}}
 
 This condition type could be defined by
 %
@@ -522,7 +524,8 @@ It carries a message further describing the nature of the condition to
 humans.  
 \end{entry}
 
-\begin{entry}{{\tt\&warning}}
+\begin{entry}{%
+\rvproto{\&warning}{condition type}}\index{warning@{\tt\&warning}}
 
 This condition type could be defined by
 %
@@ -534,7 +537,8 @@ This condition type could be defined by
 This type describes conditions that can safely be ignored.
 \end{entry}
 
-\begin{entry}{{\tt\&serious}}
+\begin{entry}{%
+\rvproto{\&serious}{condition type}}\index{serious@{\tt\&serious}}
 
 This condition type could be defined by
 %
@@ -548,7 +552,8 @@ be ignored. This condition type is primarily intended as a supertype
 of other condition types. 
 \end{entry}
 
-\begin{entry}{{\tt\&error}}
+\begin{entry}{%
+\rvproto{\&error}{condition type}}\index{error@{\tt\&error}}
 
 This condition type could be defined by
 %
@@ -557,12 +562,13 @@ This condition type could be defined by
   error?)
 \end{scheme}
 %
-This condition describes errors, typically caused by something that
+This type describes errors, typically caused by something that
 has gone wrong in the interaction of the program with the external
 world or the user.
 \end{entry}
 
-\begin{entry}{{\tt\&violation}}
+\begin{entry}{%
+\rvproto{\&violation}{condition type}}\index{violation@{\tt\&violation}}
 
 This condition type could be defined by
 %
@@ -571,11 +577,12 @@ This condition type could be defined by
   violation?)
 \end{scheme}
 %
-This condition describes violations of the language standard or a
+This type describes violations of the language standard or a
 library standard, typically caused by a programming error.
 \end{entry}  
 
-\begin{entry}{{\tt\&non-continuable}}
+\begin{entry}{%
+\rvproto{\&non-continuable}{condition type}}\index{non-continuable@{\tt\&non-continuable}}
 
 This condition type could be defined by
 %
@@ -584,11 +591,27 @@ This condition type could be defined by
   non-continuable?)
 \end{scheme}
 %
-This condition denotes that an exception handler invoked via
+This type denotes that an exception handler invoked via
 \texttt{raise} returned.
 \end{entry}
 
-\begin{entry}{{\tt \&irritants}}
+\begin{entry}{%
+\rvproto{\&implementation-restriction}{condition type}}\index{implementation-restriction@{\tt\&implementation-restriction}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&implementation-restriction \&violation
+  implementation-restriction?)
+\end{scheme}
+%
+This type describes a violation of an implementation restriction
+allowed by the specification, such as the absence of representations
+for NaNs and infinities.  (See section~\ref{flonumssection}.)
+\end{entry}
+
+\begin{entry}{%
+\rvproto{\&irritants}{condition type}}\index{irritants@{\tt\&irritants}}
 
 This condition type could be defined by
 %
@@ -605,7 +628,8 @@ Conditions of this type are created by the {\cf error} and {\cf
   violation} procedures of section~\ref{errorviolation}.
 \end{entry}
  
-\begin{entry}{{\tt \&who}}
+\begin{entry}{%
+\rvproto{\&who}{condition type}}\index{who@{\tt\&who}}
 
 This condition type could be defined by
 %
