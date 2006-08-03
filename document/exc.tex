@@ -428,7 +428,7 @@ the condition form.
 \end{entry}
 
 \begin{entry}{%
-\rvproto{\&condition}{condition type}}\index{condition@{\tt\&condition}}
+\ctproto{condition}}
 
 This is the root of the entire condition type hierarchy. It has a no
 fields.
@@ -510,7 +510,9 @@ fields.
 \section{Standard condition types}
 
 \begin{entry}{%
-\rvproto{\&message}{condition type}}\index{message@{\tt\&message}}
+\ctproto{message}
+\proto{message-condition?}{ obj}{procedure}
+\proto{condition-message}{ condition}{procedure}}
 
 This condition type could be defined by
 %
@@ -525,7 +527,8 @@ humans.
 \end{entry}
 
 \begin{entry}{%
-\rvproto{\&warning}{condition type}}\index{warning@{\tt\&warning}}
+\ctproto{warning}
+\proto{warning?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
@@ -538,7 +541,8 @@ This type describes conditions that can safely be ignored.
 \end{entry}
 
 \begin{entry}{%
-\rvproto{\&serious}{condition type}}\index{serious@{\tt\&serious}}
+\ctproto{serious}
+\proto{serious-condition?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
@@ -553,7 +557,8 @@ of other condition types.
 \end{entry}
 
 \begin{entry}{%
-\rvproto{\&error}{condition type}}\index{error@{\tt\&error}}
+\ctproto{error}
+\proto{error?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
@@ -568,7 +573,8 @@ world or the user.
 \end{entry}
 
 \begin{entry}{%
-\rvproto{\&violation}{condition type}}\index{violation@{\tt\&violation}}
+\ctproto{violation}
+\proto{violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
@@ -582,7 +588,8 @@ library standard, typically caused by a programming error.
 \end{entry}  
 
 \begin{entry}{%
-\rvproto{\&non-continuable}{condition type}}\index{non-continuable@{\tt\&non-continuable}}
+\ctproto{non-continuable}
+\proto{non-continuable?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
@@ -596,12 +603,14 @@ This type denotes that an exception handler invoked via
 \end{entry}
 
 \begin{entry}{%
-\rvproto{\&implementation-restriction}{condition type}}\index{implementation-restriction@{\tt\&implementation-restriction}}
+\ctproto{implementation-restriction}
+\proto{implementation-restriction?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
-(define-condition-type \&implementation-restriction \&violation
+(define-condition-type \&implementation-restriction
+    \&violation
   implementation-restriction?)
 \end{scheme}
 %
@@ -611,7 +620,67 @@ for NaNs and infinities.  (See section~\ref{flonumssection}.)
 \end{entry}
 
 \begin{entry}{%
-\rvproto{\&irritants}{condition type}}\index{irritants@{\tt\&irritants}}
+\ctproto{defect}
+\proto{defect?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&defect \&violation
+  defect?)
+\end{scheme}
+%
+This type describes defects in the program.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{lexical}
+\proto{lexical-defect?}{ obj}{procedure}}
+
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&lexical \&defect
+  lexical-defect?)
+\end{scheme}
+%
+This type describes syntax errors at the level of the read syntax.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{undefined}
+\proto{undefined-defect?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&undefined \&defect
+  undefined-defect?)
+\end{scheme}
+% 
+This type describes unbound identifiers in the program.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{contract}
+\proto{contract-defect?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&contract \&defect
+  contract-defect?)
+\end{scheme}
+% 
+This type describes an invalid call to a procedure, either passing an
+invalid number of arguments, or passing an argument of the wrong type.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{irritants}
+\proto{irritants-condition?}{ obj}{procedure}
+\proto{condition-irritants}{ condition}{procedure}}
 
 This condition type could be defined by
 %
@@ -629,7 +698,9 @@ Conditions of this type are created by the {\cf error} and {\cf
 \end{entry}
  
 \begin{entry}{%
-\rvproto{\&who}{condition type}}\index{who@{\tt\&who}}
+\ctproto{who}
+\proto{who-condition?}{ obj}{procedure}
+\proto{condition-who}{ condition}{procedure}}
 
 This condition type could be defined by
 %
