@@ -1,0 +1,120 @@
+Conference call August 1 2006 2:15-3:45pm
+All present by about 2:16pm:
+Kent, Mike, Matthew, Anton, Will
+
+*** NOTE: Time changed to 2:15pm ***
+
+0. finalize agenda (1 minute)
+
+1. action items from 7/25/2006 (5 minutes)
+   - write up I/O convenience library (Anton)
+        done
+   - attempt to specify library-only safety solution (Kent and Will)
+        attempted
+   - attempt to specify library/eval phasing syntax (Mike)
+        attempted
+   - carried over:
+     - update library srfi (Matthew and Kent)
+        waiting on phasing/naming decisions
+     - complete unicode reference implementation (Will)
+        in progress
+        normalization tables down to 60 kilobytes; won't get much smaller
+     - comment on core/library split (All)
+        ongoing
+
+2. Report status (10 minutes)
+   - items ready for review
+     <item>                    <editor>   <completed by>
+     unicode                   Matthew    Aug.  3
+     exceptions & conditions   Matthew    Aug.  3
+     quasiquote                Kent       Aug.  8
+     letrec*                   Kent       Aug.  8
+     let-values & let*-values  Kent       Aug.  8
+     records                   Kent       Aug.  8
+     enumerations              Will       Jul. 12
+     bytes                     Will       Aug.  3
+     equal?                    Will       Aug.  1
+     list-library              Anton      Aug.  7
+     case-lambda               Anton      Aug.  7
+     when & unless             Anton      Aug.  7
+     core/library split        Anton      Aug.  7
+   - items not ready for review
+     syntax (read-syntax, syntactic forms)
+     eval
+     I/O
+     arithmetic
+     set-car!, set-cdr!
+     condition-type details
+     hash tables
+     safe/unsafe mode
+     syntax-case
+     library system
+     scripts
+     r5rs compatibility library
+     operational semantics
+
+3. R6RS header material (5 minutes)
+
+4. condition hierarchy (10 minutes)
+   - see https://r6rs.scheming.org/node/242#comment-1362 and
+     followup https://r6rs.scheming.org/node/242#comment-1622
+        tentative approval
+
+5. library phasing (10 minutes)
+   - two options on the table:
+     Model 1: library invoked once per run
+      - simpler, easier to implement
+      - can lead to accidental sharing of library state between
+        compilation and run time of a library
+      - works with current library syntax and eval specification
+     Model 2: library invoked once per phase
+      - more complex, harder to implement
+      - prevents accidental sharing of library state between compilation
+        and run time of a library
+      - requires a richer import-phase specification and some eval
+        exprssion syntax for specifying import phases
+   - see https://r6rs.scheming.org/node/307
+   - see https://r6rs.scheming.org/node/313#comment-1629 and followup(s)
+        issue: no agreement on how Model 2 would work with eval
+            Matthew prefers to flush eval and to use Model 2
+        Kent moved to adopt Model 2 with eval as in MzScheme.
+	Matthew seconded.
+            Model 1: Will, Kent
+            Model 2: Matthew, Mike, Anton
+        Kent will work with Andrew van Tonder to develop
+            a reference implementation by 1 September
+        Kent will revise the library and syntax SRFIs as necessary
+
+6. library naming (5 minutes)
+   - see https://r6rs.scheming.org/node/246
+        several typos noted
+        does anyone object?
+            some disquiet about version number
+        approved without objection
+
+7. safe/unsafe mode (10 minutes)
+   - vote between Proposals 0, 1, 2, and 3
+   - see draft/safety/safety.txt, draft/safety/safety2.txt
+   - see also extensive email discussion
+        Mike raised two issues:
+            wording of unsafe mode applies to all errors
+                would prefer it apply only to violations
+            no provision for reflecting safe/unsafe distinction
+        Mike moved we do not deal with unsafe code in R6RS.
+        Motion failed for lack of a second.
+        Will moved we accept proposal 0 (meaningless declare forms).
+        Mike seconded.
+            yes: Will, Mike, Kent
+            no: 
+            abstain: Matthew, Anton
+
+Will will draft a couple of paragraphs that try to describe
+some degree of safety (e.g. memory integrity) in Scheme programs.
+
+Items for next week.
+syntax-case
+i/o
+convenience library
+scripts
+
+8. adjourned around 3:55pm
