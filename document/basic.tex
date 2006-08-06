@@ -1,6 +1,158 @@
 %\vfill\eject
-\chapter{Basic concepts}
+\chapter{Basic concepts and terminology}
 \label{basicchapter}
+
+\section{Entry format}
+
+The chapters describing bindings in the core language and the standard
+libraries are organized
+into entries.  Each entry describes one language feature or a group of
+related features, where a feature is either a syntactic construct or a
+built-in procedure.  An entry begins with one or more header lines of the form
+
+\noindent\pproto{\var{template}}{\var{category}}\unpenalty
+
+If \var{category} is ``\exprtype'', the entry describes an expression
+type, and the template gives the syntax of the expression type.
+Components of expressions are designated by syntactic variables, which
+are written using angle brackets, for example, \hyper{expression},
+\hyper{variable}.  Syntactic variables should be understood to denote segments of
+program text; for example, \hyper{expression} stands for any string of
+characters which is a syntactically valid expression.  The notation
+\begin{tabbing}
+\qquad \hyperi{thing} $\ldots$
+\end{tabbing}
+indicates zero or more occurrences of a \hyper{thing}, and
+\begin{tabbing}
+\qquad \hyperi{thing} \hyperii{thing} $\ldots$
+\end{tabbing}
+indicates one or more occurrences of a \hyper{thing}.
+
+If \var{category} is ``procedure'', then the entry describes a procedure, and
+the header line gives a template for a call to the procedure.  Argument
+names in the template are \var{italicized}.  Thus the header line
+
+\noindent\pproto{(vector-ref \var{vector} \var{k})}{procedure}\unpenalty
+
+indicates that the built-in procedure {\tt vector-ref} takes
+two arguments, a vector \var{vector} and an exact non-negative integer
+\var{k} (see below).  The header lines
+
+\noindent%
+\pproto{(make-vector \var{k})}{procedure}
+\pproto{(make-vector \var{k} \var{fill})}{procedure}\unpenalty
+
+indicate that the {\tt make-vector} procedure must be defined to take
+either one or two arguments.
+
+FIXME
+
+\label{typeconventions}
+It is an error for an operation to be presented with an argument that it
+is not specified to handle.  For succinctness, we follow the convention
+that if an argument name is also the name of a type listed in
+section~\ref{disjointness}, then that argument must be of the named type.
+For example, the header line for {\tt vector-ref} given above dictates that the
+first argument to {\tt vector-ref} must be a vector.  The following naming
+conventions also imply type restrictions:
+\newcommand{\foo}[1]{\vr{#1}, \vri{#1}, $\ldots$ \vrj{#1}, $\ldots$}
+$$
+\begin{tabular}{ll}
+\var{obj}&any object\\
+\foo{list}&list (see section~\ref{listsection})\\
+\foo{z}&complex number\\
+\foo{x}&real number\\
+\foo{y}&real number\\
+\foo{q}&rational number\\
+\foo{n}&integer\\
+\foo{k}&exact non-negative integer\\
+\end{tabular}
+$$
+
+\todo{Provide an example entry??}
+
+If \var{category} is something other than ``syntax'' and
+``procedure,'' then the entry describes a non-procedural value, and
+the \var{category} describes the type of that value.  The header line
+
+\noindent\rvproto{\&who}{condition type}
+
+indicates that {\cf\&who} is a condition type.
+
+\section{Evaluation examples}
+
+The symbol ``\evalsto'' used in program examples should be read
+``evaluates to.''  For example,
+
+\begin{scheme}
+(* 5 8)      \ev  40%
+\end{scheme}
+
+means that the expression {\tt(* 5 8)} evaluates to the object {\tt 40}.
+Or, more precisely:  the expression given by the sequence of characters
+``{\tt(* 5 8)}'' evaluates, in the initial environment, to an object
+that may be represented externally by the sequence of characters ``{\tt
+40}''.  See section~\ref{externalreps} for a discussion of external
+representations of objects.
+
+\section{Error situations and unspecified behavior}
+
+\mainindex{error}
+When speaking of an error situation, this report uses the phrase ``an
+error is signalled'' to indicate that implementations must detect and
+report the error.  If such wording does not appear in the discussion of
+an error, then implementations are not required to detect or report the
+error, though they are encouraged to do so.  An error situation that
+implementations are not required to detect is usually referred to simply
+as ``an error.''
+
+\vest For example, it is an error for a procedure to be passed an argument that
+the procedure is not explicitly specified to handle, even though such
+domain errors are seldom mentioned in this report.  Implementations may
+extend a procedure's domain of definition to include such arguments.
+
+\vest This report uses the phrase ``may report a violation of an
+implementation restriction'' to indicate circumstances under which an
+implementation is permitted to report that it is unable to continue
+execution of a correct program because of some restriction imposed by the
+implementation.  Implementation restrictions are of course discouraged,
+but implementations are encouraged to report violations of implementation
+restrictions.\mainindex{implementation restriction}
+
+\vest For example, an implementation may report a violation of an
+implementation restriction if it does not have enough storage to run a
+program.
+
+\vest If the value of an expression is said to be ``unspecified,'' then
+the expression must evaluate to some object without signalling an error,
+but the value depends on the implementation; this report explicitly does
+not say what value should be returned. \mainindex{unspecified}
+
+\todo{Talk about unspecified behavior vs. unspecified values.}
+
+\todo{Look at KMP's situations paper.}
+
+\section{Naming conventions}
+
+By convention, the names of procedures that always return a boolean
+value usually end
+in ``\ide{?}''.  Such procedures are called predicates.
+
+By convention, the names of procedures that store values into previously
+allocated locations (see section~\ref{storagemodel}) usually end in
+``\ide{!}''.
+Such procedures are called mutation procedures.
+By convention, the value returned by a mutation procedure is
+\unspecifiedreturn (see section~\ref{unspecifiedvalue}).
+
+By convention, ``\ide{->}'' appears within the names of procedures that
+take an object of one type and return an analogous object of another type.
+For example, {\cf list->vector} takes a list and returns a vector whose
+elements are the same as those of the list.
+
+
+	
+\todo{Terms that need defining: thunk, command (what else?).}
 
 \section{Programs and libraries}
 
@@ -94,157 +246,6 @@ I think we're agreed on the principle that interactive use should
 approximate that behavior as closely as possible, though we don't yet
 agree on which programming environment provides the best approximation.}
 
-\section{Primitive syntax}
-
-The body of a library is always a sequence of S-expressions.  Apart
-from that, the concrete structure of the S-expressions that form a
-library body largely depends on the libraries that are imported into
-the current library.  The syntactic keywords imported determine which
-of the S-expressions occurring in a library body, and which of their
-sub-S-expressions are actually expressions.  While a library can
-provide new means for forming expressions, a few expression types are
-always available, independently from the imported libraries.
-Moreover, a library might export and thus provide macros whose expand
-into other forms. The syntax of the primitive expressions as well as
-of macro uses are described in this section.
-
-\subsection{Constant literals}
-
-\begin{entry}{%
-\pproto{\hyper{constant}}{\exprtype}}
-
-Numerical constants, string constants, character constants, and
-boolean constants evaluate ``to themselves.''
-\end{entry}
-
-\subsection{Variable references}\unsection
-
-\begin{entry}{%
-\pproto{\hyper{variable}}{\exprtype}}
-
-An expression consisting of a variable\index{variable}
-(section~\ref{variablesection}) is a variable reference.  The value of
-the variable reference is the value stored in the location to which the
-variable is bound.  It is an error to reference an
-unbound\index{unbound} variable.
-
-\begin{scheme}
-(define x 28) ; in the core language
-x   \ev  28%
-\end{scheme}
-\end{entry}
-
-\subsection{Procedure calls}\unsection
-
-\begin{entry}{%
-\pproto{(\hyper{operator} \hyperi{operand} \dotsfoo)}{\exprtype}}
-
-A procedure call is written by simply enclosing in parentheses
-expressions for the procedure to be called and the arguments to be
-passed to it.  An S-expression in an expression context is a procedure
-call if \hyper{operator} is not bound as a syntactic keyword.
-
-When an procedure call is evaluated, the operator and operand
-expressions are evaluated (in an unspecified order) and the resulting
-procedure is passed the resulting
-arguments.\mainindex{call}\mainindex{procedure call} In the core
-language:
-\begin{scheme}%
-(+ 3 4)                          \ev  7
-((if \schfalse + *) 3 4)         \ev  12%
-\end{scheme}
-
-Procedure calls may return any number of values (see \ide{values} in
-section~\ref{proceduresection}).
-
-\begin{note} In contrast to other dialects of Lisp, the order of
-evaluation is unspecified, and the operator expression and the operand
-expressions are always evaluated with the same evaluation rules.
-\end{note}
-
-\begin{note}
-Although the order of evaluation is otherwise unspecified, the effect of
-any concurrent evaluation of the operator and operand expressions is
-constrained to be consistent with some sequential order of evaluation.
-The order of evaluation may be chosen differently for each procedure call.
-\end{note}
-
-\begin{note} In many dialects of Lisp, the S-expression {\tt
-()} is a legitimate expression.  In Scheme, expressions written as
-list/pair S-expressions  must have at
-least one subexpression, so {\tt ()} is not a syntactically valid
-expression.
-\end{note}
-
-\todo{Freeman:
-I think an explanation as to why evaluation order is not specified
-should be included.  It should not include any reference to parallel
-evaluation.  Does any existing compiler generate better code because
-the evaluation order is unspecified?  Clinger: yes: T3, MacScheme v2,
-probably MIT Scheme and Chez Scheme.  But that's not the main reason
-for leaving the order unspecified.}
-
-\end{entry}
-
-\subsection{Macros}
-\label{macrosection}
-
-Scheme programs can define and use new derived expression or
-definition types, called {\em macros}.\mainindex{macro}
-Program-defined expression or definition types have the syntax
-\begin{scheme}
-(\hyper{keyword} {\hyper{datum}} ...)%
-\end{scheme}%
-where \hyper{keyword} is an identifier that uniquely determines the
-expression type.  This identifier is called the {\em syntactic
-keyword}\index{syntactic keyword}, or simply {\em
-keyword}\index{keyword}, of the macro\index{macro keyword}.  The
-number of the \hyper{datum}s, and their syntax, depends on the
-expression type.
-
-Each instance of a macro is called a {\em use}\index{macro use}
-of the macro.
-The set of rules that specifies
-how a use of a macro is transcribed into a more primitive expression
-is called the {\em transformer}\index{macro transformer}
-of the macro.
-
-The macro definition facility consists of two parts:
-
-\begin{itemize}
-\item A set of expressions used to establish that certain identifiers
-are macro keywords, associate them with macro transformers, and control
-the scope within which a macro is defined, and
-
-\item a facility (called {\cf syntax-case}; see
-  chapter~\ref{syntaxcasechapter}) for defining macro transformers as
-  Scheme code, and a derived facility (called {\cf syntax-rules}; see
-  section~\ref{syntaxrulessection}) providing a pattern language for
-  specifying macro transformers.
-\end{itemize}
-
-The syntactic keyword of a macro may shadow variable bindings, and local
-variable bindings may shadow keyword bindings.  \index{keyword}  All macros
-defined using the pattern language  are ``hygienic'' and ``referentially
-transparent'' and thus preserve Scheme's lexical scoping~\cite{Kohlbecker86,
-hygienic,Bawden88,macrosthatwork,syntacticabstraction}:
-\mainindex{hygienic}
-\mainindex{referentially transparent}
-
-\begin{itemize}
-
-\item If a macro transformer inserts a binding for an identifier
-(variable or keyword), the identifier will in effect be renamed
-throughout its scope to avoid conflicts with other identifiers.
-Note that a \ide{define} at top level may or may not introduce a binding;
-see section~\ref{defines}.
-
-\item If a macro transformer inserts a free reference to an
-identifier, the reference refers to the binding that was visible
-where the transformer was specified, regardless of any local
-bindings that may surround the use of the macro.
-
-\end{itemize}
 
 \section{Storage model}
 \label{storagemodel}
@@ -323,7 +324,3 @@ there was no need to include both in the language.
 
 \end{rationale}
 
-%%% Local Variables: 
-%%% mode: latex
-%%% TeX-master: "r6rs"
-%%% End: 
