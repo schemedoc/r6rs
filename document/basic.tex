@@ -95,40 +95,84 @@ that may be represented externally by the sequence of characters ``{\tt
 40}''.  See section~\ref{externalreps} for a discussion of external
 representations of objects.
 
-\section{Error situations and unspecified behavior}
+\section{Exceptional situations}
 
-\mainindex{error}
-When speaking of an error situation, this report uses the phrase ``an
-error is signalled'' to indicate that implementations must detect and
-report the error.  If such wording does not appear in the discussion of
-an error, then implementations are not required to detect or report the
-error, though they are encouraged to do so.  An error situation that
-implementations are not required to detect is usually referred to simply
-as ``an error.''
+\mainindex{error} When speaking of an exceptional situation, this
+report uses the phrase ``an exception must be raised'' to indicate
+that implementations must detect the situation and report it to the
+program through the exception system described in
+chapter~\ref{exceptionsconditionschapter}.
 
-\vest For example, it is an error for a procedure to be passed an argument that
-the procedure is not explicitly specified to handle, even though such
-domain errors are seldom mentioned in this report.  Implementations may
-extend a procedure's domain of definition to include such arguments.
+Several variations on ``an exception must be raised'' are possible:
 
-\vest This report uses the phrase ``may report a violation of an
-implementation restriction'' to indicate circumstances under which an
-implementation is permitted to report that it is unable to continue
-execution of a correct program because of some restriction imposed by the
-implementation.  Implementation restrictions are of course discouraged,
-but implementations are encouraged to report violations of implementation
-restrictions.\mainindex{implementation restriction}
+\begin{itemize}
+\item ``Should raise an exception" means that implementations
+  are encouraged, but not required, to detect the situation
+  and to raise an exception.
 
-\vest For example, an implementation may report a violation of an
-implementation restriction if it does not have enough storage to run a
-program.
+\item ``May raise an exception'' means that implementations
+are allowed, but not required or encouraged, to detect
+the situation and to raise an exception.
 
-\vest If the value of an expression is said to be ``unspecified,'' then
-the expression must evaluate to some object without signalling an error,
-but the value depends on the implementation; this report explicitly does
-not say what value should be returned. \mainindex{unspecified}
+\item ``Might raise an exception'' means that implementations
+are allowed, but discouraged, to detect the situation
+and to raise an exception.
+\end{itemize}
 
-\todo{Talk about unspecified behavior vs. unspecified values.}
+A variety of exceptional situations are distinguished in this report,
+among them violations of program syntax, violations of a procedure's
+specification, violations of implementation restrictions, and
+exceptional situations in the environment.  When an exception is
+raised, an object is provided that describes the nature of the
+exceptional siutation.  The report uses the condition system described
+in section~\ref{conditionssection} to describe exceptional situations,
+classifying them by condition types.  This report uses the phrase
+``an exception with condition type \meta{condition-type}'' to indicate
+that the object provided with the exception is a condition object of
+the specified type.
+
+\vest For example, an exception with condition type {\cf\&contract}
+must be raised if a procedure is passed an argument that the procedure
+is not explicitly specified to handle, even though such domain
+exceptions are not always mentioned in this report.
+
+The above requirements for violations and implementation restrictions
+only apply in \textit{safe mode}.  Implementations may not raise
+exceptions in those situations in \textit{unsafe mode}.  The
+distinction is explained in section~\ref{safeunsafemodesection}.
+
+Implementation restrictions indicate circumstances under which an
+implementation is permitted to raise an exception if it is unable to
+continue execution of a correct program because of some restriction
+imposed by the implementation.
+
+Some possible implementation restrictions
+such as the lack of representations for NaNs and infinities (see
+section~\ref{infinitiesnanssection}) are covered by this report, and
+implementations must raise an exception of the appropriate condition
+type if it encounters such a situation.
+
+Implementation restrictions not explicitly covered in this report are
+of course discouraged, but implementations are encouraged to report
+violations of implementation restrictions.\mainindex{implementation
+  restriction} For example, an implementation may raise an exception
+with condition type {\cf\&implementation-restriction} if it does not
+have enough storage to run a program.
+ 
+\section{Safe and unsafe mode}
+\label{safeunsafemodesection}
+
+FIXME
+
+\section{Unspecified behavior}
+
+FIXME
+
+\vest If the value of an expression is said to be ``unspecified,''
+then the expression must evaluate without raising an exception, but
+the values returned depends on the implementation; this report
+explicitly does not say what values should be returned.
+\mainindex{unspecified}
 
 \todo{Look at KMP's situations paper.}
 
