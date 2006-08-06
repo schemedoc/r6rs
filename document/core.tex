@@ -2623,7 +2623,7 @@ record structure with two fields called the car and cdr fields (for
 historical reasons).  Pairs are created by the procedure {\cf cons}.
 The car and cdr fields are accessed by the procedures {\cf car} and
 {\cf cdr}.  The car and cdr fields are assigned by the procedures
-{\cf set-car!}\ and {\cf set-cdr!}.
+{\cf set-car!}\ and {\cf set-cdr!} in the FIXME library (see chapter~\ref{pairmutationchapter}).
 
 Pairs are used primarily to represent lists.  A list can
 be defined recursively as either the empty list\index{empty list} or a pair whose
@@ -2776,33 +2776,6 @@ Note that it is an error to take the cdr of the empty list.
 \end{entry}
 
 
-\begin{entry}{%
-\proto{set-car!}{ pair obj}{procedure}}
-
-\nodomain{\var{Pair} must be a pair.}  
-Stores \var{obj} in the car field of \var{pair}.
-The value returned by {\cf set-car!}\ is the unspecified value.  % <!>
-%This procedure can be very confusing if used indiscriminately.
-
-\begin{scheme}
-(define (f) (list 'not-a-constant-list))
-(define (g) '(constant-list))
-(set-car! (f) 3)             \ev  \theunspecified
-(set-car! (g) 3)             \ev  \scherror%
-\end{scheme}
-
-\end{entry}
-
-
-\begin{entry}{%
-\proto{set-cdr!}{ pair obj}{procedure}}
-
-\nodomain{\var{Pair} must be a pair.}
-Stores \var{obj} in the cdr field of \var{pair}.
-The value returned by {\cf set-cdr!}\ is the unspecified value.  % <!>
-%This procedure can be very confusing if used indiscriminately.
-
-\end{entry}
 
 \setbox0\hbox{\tt(cadr \var{pair})}
 \setbox1\hbox{procedure}
