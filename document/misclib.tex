@@ -8,13 +8,13 @@
 \proto{unless}{ \hyper{test} \hyperi{expression} \hyperii{expression} \dotsfoo}{\exprtype}}
 
 \semantics A {\cf when} expression is evaluated by evaluating the
-\hyper{test} expression.  When \hyper{test} evaluates to a true value
-then the remaining \hyper{expression}s are evaluated in order, and the
+\hyper{test} expression.  If \hyper{test} evaluates to a true value,
+the remaining \hyper{expression}s are evaluated in order, and the
 result(s) of the last \hyper{expression} is(are) returned as the
 result(s) of the entire {\cf when} expression.  Otherwise, the {\cf
   when} expression evaluates to the unspecified value.  A {\cf unless}
 expression is evaluated by evaluating the \hyper{test} expression.
-When \hyper{test} evaluates to false then the remaining
+If \hyper{test} evaluates to false, the remaining
 \hyper{expression}s are evaluated in order, and the result(s) of the
 last \hyper{expression} is(are) returned as the result(s) of the
 entire {\cf unless} expression.  Otherwise, the {\cf unless} expression
@@ -55,15 +55,12 @@ could be defined in terms of core language by the following macros:
 Each \hyper{clause} should be of the form
 %
 \begin{scheme}
-(\hyper{formals} \hyperi{expression} \dotsfoo)%
+(\hyper{formals} \hyperi{body})%
 \end{scheme}
-%
-If a \hyper{clause} has a \hyper{formals} that consists of a single
-\hyper{variable}, then that clause must be last.
 
 \semantics A {\cf case-lambda} expression evaluates to a procedure.
 This procedure, when applied, tries to match its arguments to the
-\hyper{clause}s in order.  The arguments match a clause, if one the
+\hyper{clause}s in order.  The arguments match a clause if one the
 following conditions is fulfilled:
 %
 \begin{itemize}
@@ -78,7 +75,7 @@ and the number of arguments is at least $n$.
 \end{itemize}
 %
 For the first clause matched by the arguments, the variables of the
-\hyper{formals} will be bound to fresh locations containing the
+\hyper{formals} are bound to fresh locations containing the
 argument values in the same arrangement as with {\cf lambda}.
 
 If the arguments match none of the clauses, a violation is raised.

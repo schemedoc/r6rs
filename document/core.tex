@@ -1017,7 +1017,7 @@ in {\cf letrec} to generate temporary names:
 performed sequentially from left to right, and the
 region\index{region} of the bindings indicated by {\cf(\hyper{formals}
   \hyper{init})} is that part of the {\cf let*-values} expression to
-the right of the bindings.  Thus the second set of bindings is done in
+the right of the bindings.  Thus the second set of bindings is evaluated in
 an environment in which the first set of bindings is visible, and so
 on.
 
@@ -1028,14 +1028,14 @@ on.
     (list a b x y)))  \ev (x y x y)
 \end{scheme}
 
-The following macro defines {\cf let*-values} in terms of {\cf begin}
+The following macro defines {\cf let*-values} in terms of {\cf let}
 and {\cf let-values}:
 
 \begin{scheme}
 (define-syntax let*-values
   (syntax-rules ()
     ((let*-values () body1 body2 ...)
-     (begin body1 body2 ...))
+     (let () body1 body2 ...))
     ((let*-values (binding1 binding2 ...)
        body1 body2 ...)
      (let-values (binding1)
@@ -1240,25 +1240,34 @@ follows:
 \proto{quasiquote}{ \hyper{qq template}}{\exprtype}}
 
 ``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
-for constructing a list or vector structure when most but not all of the
+for constructing a list or vector structure when some but not all of the
 desired structure is known in advance.  If no
-commas\index{comma} appear within the \hyper{qq template}, the result of
+\scheme{unquote} or \scheme{unquote-splicing} forms
+appear within the \hyper{qq template}, the result of
 evaluating
-{\tt (quasiquote \hyper{qq template})} is equivalent to the result of evaluating
-\singlequote\hyper{qq template}.
+{\cf (quasiquote \hyper{qq template})} is equivalent to the result of evaluating
+{\cf (quote \hyper{qq template})}.
 
 If an {\cf (unquote \hyper{expression} \dotsfoo)} form appears inside a
 \hyper{qq template}, however, the \hyper{expression}s are evaluated
 (``unquoted'') and their results are inserted into the structure instead
-of the comma and the expressions.
+of the \scheme{unquote} form.
 
 If an {\cf (unquote-splicing \hyper{expression} \dotsfoo)} form
 appears inside a \hyper{qq template}, then the \hyper{expression}s must
 evaluate to lists; the opening and closing parentheses of the list are
 then ``stripped away'' and the elements of the lists are inserted in
-place of the {\cf unquote-splicing} expression sequence.  {\cf
-  Unquote-splicing} and multi-operand {\cf unquote} forms should only
-appear within a list or vector \hyper{qq template}.
+place of the {\cf unquote-splicing} form.  {\cf
+Unquote-splicing} and multi-operand {\cf unquote} forms should
+appear only within a list or vector \hyper{qq template}.
+
+As noted in section~\ref{quotesection},
+{\cf (quasiquote \hyper{qq template})} may be abbreviated
+\backquote\hyper{qq template},
+{\cf (unquote \hyper{expression})} may be abbreviated
+\comma\hyper{expression}, and
+{\cf (unquote-splicing \hyper{expression})} may be abbreviated
+\comma\atsign\hyper{expression}.
 
 % struck: "(in the sense of {\cf equal?})" after "equivalent"
 
@@ -1282,7 +1291,7 @@ appear within a list or vector \hyper{qq template}.
 
 Quasiquote forms may be nested.  Substitutions are made only for
 unquoted components appearing at the same nesting level
-as the outermost backquote.  The nesting level increases by one inside
+as the outermost \scheme{quasiquote}.  The nesting level increases by one inside
 each successive quasiquotation, and decreases by one inside each
 unquotation.
 
@@ -1306,7 +1315,7 @@ car is one of these symbols may vary between implementations.
      {\em{}i.e.,} (quasiquote (list (unquote (+ 1 2)) 4))%
 \end{scheme}
 
-Unpredictable behavior can result if any of the symbols
+Unpredictable behavior can result if any of the identifiers
 \ide{quasiquote}, \ide{unquote}, or \ide{unquote-splicing} appear in
 positions within a \hyper{qq template} otherwise than as described above.
 
