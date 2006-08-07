@@ -172,7 +172,11 @@ consistency with other features that are not under discussion as SRFIs.
 
 
 
-<tr><td align="right"><b>8.&nbsp;</b><td><b><a class=plain href="./syntax.html#g35">Copyright</a></b></td></tr>
+<tr><td align="right"><b>8.&nbsp;</b><td><b><a class=plain href="./syntax.html#g35">Change Log</a></b></td></tr>
+
+
+
+<tr><td align="right"><b>9.&nbsp;</b><td><b><a class=plain href="./syntax.html#g36">Copyright</a></b></td></tr>
 
   
   
@@ -240,7 +244,7 @@ identifier that names the syntactic abstraction.
 The syntax of each <tt><i>subform</i></tt> varies from one syntactic abstraction to
 another.
 Syntactic abstractions can also take the form of improper lists (or even
-singleton identifiers; see Section&nbsp;<a href="./syntax.html#g8">3.6</a>), although this is
+singleton identifiers; see Section&nbsp;<a href="./syntax.html#g6">3.4</a>), although this is
 less common.
 
 <p>
@@ -314,7 +318,9 @@ and <tt>letrec-syntax</tt> to be visible only in the inner body forms.
 <p>
 <dt>expression, i.e., nondefinition:<dd>
 The expander completes the expansion of the deferred right-hand-side forms
-and the current and remaining expressions in the body.
+and the current and remaining expressions in the body, then
+constructs a residual <tt>letrec*</tt> form from the defined variables,
+expanded right-hand-side expressions, and expanded body expressions.
 </dl>
 
 <p>
@@ -352,7 +358,7 @@ For example, the following forms result in an error.
 &nbsp;&nbsp;&nbsp;&nbsp;(list&nbsp;z&nbsp;def0)))</tt>
 <p>Expansion of each variable definition right-hand side is deferred until
 after all of the definitions have been seen so that each keyword and
-variable references within the right-hand side resolves to the local
+variable reference within the right-hand side resolves to the local
 binding, if any.
 
 <p>
@@ -404,7 +410,7 @@ The final output is the equivalent of
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(or&nbsp;(=&nbsp;n&nbsp;0)&nbsp;(not&nbsp;(even?&nbsp;(-&nbsp;n&nbsp;1)))))])<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;(even?&nbsp;x)))</tt>
+&nbsp;&nbsp;&nbsp;&nbsp;(not&nbsp;(even?&nbsp;(if&nbsp;(not&nbsp;(even?&nbsp;x))&nbsp;(*&nbsp;x&nbsp;x)&nbsp;x)))))</tt>
 <p>although the structure of the output is implementation dependent.
 
 <p>
@@ -465,8 +471,8 @@ Explicit captures are handled via <tt>datum-&gt;syntax</tt>; see
 Section&nbsp;<a href="./syntax.html#g10">3.8</a>.
 
 <p>
-The expander maintains hygiene with the help of <i>marks</i> and
-<i>substitutions</i>.
+Operationally, the expander can maintain hygiene with the help of
+<i>marks</i> and <i>substitutions</i>.
 Marks are applied selectively by the expander to the output of each
 transformer it invokes, and substitutions are applied to the portions
 of each binding form that are supposed to be within the scope of the bound
@@ -477,14 +483,12 @@ into the output of a particular transformer call), and substitutions are
 used to map identifiers to their expand-time values.
 
 <p>
-Each time the expander encounters a syntactic abstraction and invokes the
-associated transformer, it creates a fresh mark and marks the
-<i>introduced</i> portions of the transformer output with this mark,
-leaving portions of the output that came from the input unmarked.
-(This may be done by applying an <i>antimark</i> to the input, then
-applying the fresh mark to the output.
-When the mark is applied to antimarked input, the marks cancel, effectively
-leaving the portions of the output that came from the input unmarked.)
+Each time the expander encounters a syntactic abstraction, it applies an
+<i>antimark</i> to the input form, invokes the associated transformer,
+then applies a fresh mark to the output.
+Marks and antimarks cancel, so the portions of the input that appear in
+the output are effectively left unmarked, while the portions of the output
+that are introduced are marked with the fresh mark.
 
 <p>
 Each time the expander encounters a binding form it creates a set of
@@ -520,8 +524,9 @@ substitution in the wrap whose name and marks match the name and
 marks recorded in the substitution.
 The name matches if it is the same name (if using symbols, then by
 <tt>eq?</tt>), and the marks match if the marks recorded with the
-substitution are the same as those that appear <i>below</i>, i.e.,
-were applied <i>before</i> the substitution in the wrap.
+substitution are the same as those that appear <i>below</i> the
+substitution in the wrap, i.e., those that were applied <i>before</i> the
+substitution.
 Marks applied after a substitution, i.e., appear over the substitution in
 the wrap, are not relevant and are ignored.
 
@@ -793,7 +798,7 @@ More formally, a syntax object is:
 <ul>
 <li>a pair or list of syntax objects,
 <li>a vector of syntax objects,
-<li>a nonlist, novector, nonsymbol value, or
+<li>a nonlist, nonvector, nonsymbol value, or
 <li>a wrapped syntax object.
 </ul>
 
@@ -868,8 +873,8 @@ Multiple underscores may appear in a <tt><i>pattern</i></tt>.
 A literal identifier matches an input subform if and only if the input
 subform is an identifier and either both its occurrence in the input
 expression and its occurrence in the list of literals have the same
-lexical binding, or the two identifiers are equal and both have no lexical
-binding.
+lexical binding, or the two identifiers have the same name and both have
+no lexical binding.
 
 <p>
 A subpattern followed by an ellipsis can match zero or more elements of
@@ -1442,8 +1447,7 @@ Thus, a predicate <tt>symbolic-identifier=?</tt> might be defined as follows.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(syntax-&gt;datum&nbsp;y))))</tt>
 <p>The procedure <tt>datum-&gt;syntax</tt> accepts two arguments, a
-template identifier <tt><i>template-id</i></tt> and an arbitrary value
-<tt><i>datum</i></tt>.
+template identifier and a datum.
 
 <p>
 
@@ -1453,7 +1457,7 @@ contains the same contextual information as
 <tt><i>template-id</i></tt>, with the effect that the
 syntax object behaves
 as if it were introduced into the code when
-<tt><i>datum</i></tt> was introduced.
+<tt><i>template-id</i></tt> was introduced.
 
 <p>
 <tt>datum-&gt;syntax</tt> allows a transformer to "bend" lexical
@@ -2469,7 +2473,74 @@ PhD thesis, Indiana University, Bloomington, Aug 1999.
 
 <a name="g35"></a>
 
-<h1><a name="./syntax:h26"></a>8. Copyright</h1>
+<h1><a name="./syntax:h26"></a>8. Change Log</h1>
+
+
+
+<p>
+Changes since first SRFI release.
+
+<p>
+<ul>
+<li>Section&nbsp;<a href="./syntax.html#g2">3</a> "singleton identifier" sentence
+      now refers to Section&nbsp;<a href="./syntax.html#g6">3.4</a> rather than
+      Section&nbsp;<a href="./syntax.html#g8">3.6</a>.
+
+<p>
+<li>A statement about constructing residual <tt>letrec*</tt> forms has
+      been added to the expression entry under body evaluation in
+      Section&nbsp;<a href="./syntax.html#g3">3.1</a>.
+
+<p>
+<li>An errant "s" has been removed from "variable references"
+      in the Section&nbsp;<a href="./syntax.html#g3">3.1</a> that begins "Expansion of
+      each."
+
+<p>
+<li>The output of the expander for the Secton&nbsp;<a href="???">???</a>
+      <tt>even?</tt>/<tt>odd?</tt> example has been corrected.
+
+<p>
+<li>The last couple of sentences of the Section&nbsp;<a href="./syntax.html#g4">3.2</a>
+      paragraph that begins with "When a substitution" have been
+      reworded.
+
+<p>
+<li>The word "novector" has been changed to "nonvector" in
+      Section&nbsp;<a href="./syntax.html#g7">3.5</a>.
+
+<p>
+<li>The phrase "identifiers are equal" has been corrected to read
+      "identifiers have the same name" in Section&nbsp;<a href="???">???</a>.
+
+<p>
+<li>The description of <tt>datum-&gt;syntax</tt> in
+      Section&nbsp;<a href="./syntax.html#g10">3.8</a> no longer claims that the datum
+      argument is an "arbitrary value."
+      (It should be a datum.)
+
+<p>
+<li>The second occurrence of "<tt><i>datum</i></tt>" in the Section&nbsp;<a href="./syntax.html#g10">3.8</a>
+      paragraph starting with "It returns a syntax object" has been
+      corrected to read "<tt><i>template-id</i></tt>."
+
+<p>
+<li>The Section&nbsp;<a href="./syntax.html#g4">3.2</a> description description of marking
+      now describes antimarks as an integral rather than optional part
+      of the mechanism.
+
+<p>
+<li>The text now says that an implementation "can" use marks and
+      substitutions to avoid the appearance that their use is required.
+      Any implementation would already have been free to use any
+      mechanism as long as it achieves the same results.
+</ul>
+
+<p>
+
+<a name="g36"></a>
+
+<h1><a name="./syntax:h27"></a>9. Copyright</h1>
 
 
 

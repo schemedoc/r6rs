@@ -17,11 +17,33 @@
 %      in T do refer x bound by (define x e).
 %  - work fresh-syntax into main SRFI body
 
+%SRFI notes (see also Change Log section):
+% - we need a test suite
+%   (Per Bothner <per@bothner.com>)
+% - would like a shorter convenience form for syntax-case definitions
+%   (Per Bothner <per@bothner.com>)
+% - consider (syntax-lambda (stx) ---) form or similar to abstract away from
+%   single-argument procedure
+%   (Jorgen Schaefer <forcer@forcix.cx>)
+% - mixed feelings on identifier macros
+%   (various in ``Various comments'' thread)
+% - prefer that fresh-syntax be the default
+%   (Andre van Tonder <andre@now.het.brown.edu>)
+% - would like quasisyntax to be added if can't be defined as a
+%   syntax-case macro
+%   (Andre van Tonder <andre@now.het.brown.edu>)
+% - please spell out in more detail how the expander deals with ellipses
+%   in output templates.  See case example in +srfi93, message 54.
+%   (Arthur A. Gleckler <arthur@zurich.csail.mit.edu>)
+% - "Let me mention that I like the rules for unwrapping."
+%   (Andre van Tonder <andre@now.het.brown.edu>)
+% - would like Oscar's algebra updated for r6rs and included
+%   (Andre van Tonder <andre@now.het.brown.edu>)
+
 \usepackage{scheme}
 % \usepackage{grammar}
 
 \def\r#1rs{R#1RS}
-
 \iflatex
 \input{fullpage.sty}
 \fi
@@ -136,7 +158,7 @@ identifier that names the syntactic abstraction.
 The syntax of each \var{subform} varies from one syntactic abstraction to
 another.
 Syntactic abstractions can also take the form of improper lists (or even
-singleton identifiers; see Section~\ref{sec:syntaxcase}), although this is
+singleton identifiers; see Section~\ref{sec:transformers}), although this is
 less common.
 
 New syntactic abstractions are defined by associating keywords with
@@ -195,7 +217,9 @@ and \scheme{letrec-syntax} to be visible only in the inner body forms.
 
 \item[expression, i.e., nondefinition:]
 The expander completes the expansion of the deferred right-hand-side forms
-and the current and remaining expressions in the body.
+and the current and remaining expressions in the body, then
+constructs a residual \scheme{letrec*} form from the defined variables,
+expanded right-hand-side expressions, and expanded body expressions.
 \end{description}
 
 An error is signaled if the keyword that identifies one of the body forms
@@ -225,7 +249,7 @@ For example, the following forms result in an error.
 
 Expansion of each variable definition right-hand side is deferred until
 after all of the definitions have been seen so that each keyword and
-variable references within the right-hand side resolves to the local
+variable reference within the right-hand side resolves to the local
 binding, if any.
 
 Note that this algorithm does not directly reprocess any form.
@@ -267,7 +291,7 @@ The final output is the equivalent of
 (lambda (x)
   (letrec* ([even? (lambda (n)
                      (or (= n 0) (not (even? (- n 1)))))])
-    (even? x)))
+    (not (even? (if (not (even? x)) (* x x) x)))))
 \endschemedisplay
 
 although the structure of the output is implementation dependent.
@@ -324,8 +348,8 @@ inside the transformer body or one of the helpers it calls.
 Explicit captures are handled via \scheme{datum->syntax}; see
 Section~\ref{sec:conversions}.
 
-The expander maintains hygiene with the help of \emph{marks} and
-\emph{substitutions}.
+Operationally, the expander can maintain hygiene with the help of
+\emph{marks} and \emph{substitutions}.
 Marks are applied selectively by the expander to the output of each
 transformer it invokes, and substitutions are applied to the portions
 of each binding form that are supposed to be within the scope of the bound
@@ -335,14 +359,12 @@ introduced at different times (either present in the source or introduced
 into the output of a particular transformer call), and substitutions are
 used to map identifiers to their expand-time values.
 
-Each time the expander encounters a syntactic abstraction and invokes the
-associated transformer, it creates a fresh mark and marks the
-\emph{introduced} portions of the transformer output with this mark,
-leaving portions of the output that came from the input unmarked.
-(This may be done by applying an \emph{antimark} to the input, then
-applying the fresh mark to the output.
-When the mark is applied to antimarked input, the marks cancel, effectively
-leaving the portions of the output that came from the input unmarked.)
+Each time the expander encounters a syntactic abstraction, it applies an
+\emph{antimark} to the input form, invokes the associated transformer,
+then applies a fresh mark to the output.
+Marks and antimarks cancel, so the portions of the input that appear in
+the output are effectively left unmarked, while the portions of the output
+that are introduced are marked with the fresh mark.
 
 Each time the expander encounters a binding form it creates a set of
 substitutions, each mapping one of the (possibly marked) bound identifiers
@@ -375,8 +397,9 @@ substitution in the wrap whose name and marks match the name and
 marks recorded in the substitution.
 The name matches if it is the same name (if using symbols, then by
 \scheme{eq?}), and the marks match if the marks recorded with the
-substitution are the same as those that appear \emph{below}, i.e.,
-were applied \emph{before} the substitution in the wrap.
+substitution are the same as those that appear \emph{below} the
+substitution in the wrap, i.e., those that were applied \emph{before} the
+substitution.
 Marks applied after a substitution, i.e., appear over the substitution in
 the wrap, are not relevant and are ignored.
 
@@ -594,7 +617,7 @@ More formally, a syntax object is:
 \begin{itemize}
 \item a pair or list of syntax objects,
 \item a vector of syntax objects,
-\item a nonlist, novector, nonsymbol value, or
+\item a nonlist, nonvector, nonsymbol value, or
 \item a wrapped syntax object.
 \end{itemize}
 
@@ -651,8 +674,8 @@ Multiple underscores may appear in a \var{pattern}.
 A literal identifier matches an input subform if and only if the input
 subform is an identifier and either both its occurrence in the input
 expression and its occurrence in the list of literals have the same
-lexical binding, or the two identifiers are equal and both have no lexical
-binding.
+lexical binding, or the two identifiers have the same name and both have
+no lexical binding.
 
 A subpattern followed by an ellipsis can match zero or more elements of
 the input.
@@ -1100,8 +1123,7 @@ Thus, a predicate \scheme{symbolic-identifier=?} might be defined as follows.
 %the same name but different bindings.
 
 The procedure \scheme{datum->syntax} accepts two arguments, a
-template identifier \var{template-id} and an arbitrary value
-\var{datum}.
+template identifier and a datum.
 
 \schemedisplay
 (datum->syntax \var{template-id} \var{datum})
@@ -1112,7 +1134,7 @@ contains the same contextual information as
 \var{template-id}, with the effect that the
 syntax object behaves
 as if it were introduced into the code when
-\var{datum} was introduced.
+\var{template-id} was introduced.
 
 \scheme{datum->syntax} allows a transformer to ``bend'' lexical
 scoping rules by creating \emph{implicit identifiers}
@@ -1841,6 +1863,65 @@ Language, 3rd edition}~\cite{Dybvig:tspl3}.
 \def\url#1{\hyperlink{#1}{Online version}}
 \input{syntax.bbl}
 \fi
+
+\section{Change Log}
+
+Changes since first SRFI release.
+
+\begin{itemize}
+% Jorgen Schaefer <forcer@forcix.cx>
+\item Section~\ref{sec:specification} ``singleton identifier'' sentence
+      now refers to Section~\ref{sec:transformers} rather than
+      Section~\ref{sec:syntaxcase}.
+
+% Jorgen Schaefer <forcer@forcix.cx>
+\item A statement about constructing residual \scheme{letrec*} forms has
+      been added to the expression entry under body evaluation in
+      Section~\ref{sec:expansion}.
+
+% Arthur A. Gleckler <arthur@zurich.csail.mit.edu>
+\item An errant ``s'' has been removed from ``variable references''
+      in the Section~\ref{sec:expansion} that begins ``Expansion of
+      each.''
+
+% Arthur A. Gleckler <arthur@zurich.csail.mit.edu>
+\item The output of the expander for the Secton~\ref{sec:expander}
+      \scheme{even?}/\scheme{odd?} example has been corrected.
+
+% Andre van Tonder <andre@now.het.brown.edu>
+\item The last couple of sentences of the Section~\ref{sec:hygiene}
+      paragraph that begins with ``When a substitution'' have been
+      reworded.
+
+% Arthur A. Gleckler <arthur@zurich.csail.mit.edu>
+\item The word ``novector'' has been changed to ``nonvector'' in
+      Section~\ref{sec:syntaxobjects}.
+
+% Andre van Tonder <andre@now.het.brown.edu>
+\item The phrase ``identifiers are equal'' has been corrected to read
+      ``identifiers have the same name'' in Section~\ref{syntax-case}.
+
+% Andre van Tonder <andre@now.het.brown.edu>
+\item The description of \scheme{datum->syntax} in
+      Section~\ref{sec:conversions} no longer claims that the datum
+      argument is an ``arbitrary value.''
+      (It should be a datum.)
+
+% Andre van Tonder <andre@now.het.brown.edu>
+\item The second occurrence of ``\var{datum}'' in the Section~\ref{sec:conversions}
+      paragraph starting with ``It returns a syntax object'' has been
+      corrected to read ``\var{template-id}.''
+
+% Andre van Tonder <andre@now.het.brown.edu>
+\item The Section~\ref{sec:hygiene} description description of marking
+      now describes antimarks as an integral rather than optional part
+      of the mechanism.
+
+\item The text now says that an implementation ``can'' use marks and
+      substitutions to avoid the appearance that their use is required.
+      Any implementation would already have been free to use any
+      mechanism as long as it achieves the same results.
+\end{itemize}
 
 \section{Copyright}
 
