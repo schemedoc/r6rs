@@ -1,0 +1,726 @@
+\documentclass{monograph}
+
+% eval examples
+
+\usepackage{scheme}
+
+\def\r#1rs{R#1RS}
+\iflatex
+\input{fullpage.sty}
+\fi
+
+\ifhtml
+\headerstuff{\raw{
+<style type="text/css">
+<!--
+ a:link, a:active, a:visited {color:blue}
+ a:hover {color:white; background:blue}
+ a.plain:link, a.plain:active, a.plain:visited {color:blue; text-decoration:none}
+ a.plain:hover {color:white; text-decoration:none; background:blue}
+ table.indent {margin-left: 20px}
+ h1 { font-size: 1.75em }
+ h2 { font-size: 1.25em }
+ h3 { font-size: 1.12em }
+ h4 { font-size: 1em }
+-->
+</style>
+}}
+\documenttitle{R6RS Library Syntax}
+\fi
+
+\iflatex
+\pagestyle{plain}
+\fi
+
+\ifhtml
+\renewcommand{\sectionstar}[1]{\raw{\raw{<h1>}}#1\raw{\raw{</h1>}}}
+\renewcommand{\subsectionstar}[1]{\raw{\raw{<h2>}}#1\raw{\raw{</h2>}}}
+\renewcommand{\subsubsectionstar}[1]{\raw{\raw{<h3>}}#1\raw{\raw{</h3>}}}
+\fi
+
+\begin{document}
+
+\iflatex
+% block paragraphs
+\schemeindent=0pt
+\parskip=4pt
+\parindent=0pt
+\fi
+
+\sectionstar{Title}
+
+R6RS Library Syntax
+
+\sectionstar{Authors}
+
+Matthew Flatt and Kent Dybvig
+
+\sectionstar{Status}
+
+This SRFI is being submitted by a member of the Scheme Language Editor's
+Committee as part of the {\r6rs} Scheme standardization process.  The purpose
+of such ``{\r6rs} SRFIs'' is to inform the Scheme community of features and
+design ideas under consideration by the editors and to allow the community
+to give the editors some direct feedback that will be considered during
+the design process.
+
+At the end of the discussion period, this SRFI will be withdrawn.  When
+the {\r6rs} specification is finalized, the SRFI may be revised to conform to
+the {\r6rs} specification and then resubmitted with the intent to finalize
+it.  This procedure aims to avoid the situation where this SRFI is
+inconsistent with {\r6rs}.  An inconsistency between {\r6rs} and this SRFI could
+confuse some users.  Moreover it could pose implementation problems for
+{\r6rs} compliant Scheme systems that aim to support this SRFI.  Note that
+departures from the SRFI specification by the Scheme Language Editor's
+Committee may occur due to other design constraints, such as design
+consistency with other features that are not under discussion as SRFIs.
+
+\ifhtml
+\sectionstar{Table of Contents}
+\tableofcontents
+\fi
+
+\section{Abstract}
+
+The library system presented here is designed to let programmers share
+libraries, i.e., code that is intended to be incorporated into larger
+programs, and especially into programs that use library code from multiple
+sources.  The library system supports macro definitions within libraries,
+allows macro exports, and distinguishes the phases in which definitions
+and imports are needed.  This SRFI defines a standard notation for
+libraries, a semantics for library expansion and execution, and a simple
+format for sharing libraries.
+
+\section{Rationale\label{sec:rationale}}
+
+This standard addresses the following specific goals:
+
+\begin{itemize}
+\item Separate compilation and analysis; no two libraries have to be compiled at the same time (i.e., the meanings of two libraries cannot depend on each other cyclically, and compilation of two different libraries cannot rely on state shared across compilations), and significant program analysis does not require a whole program.
+\item Independent compilation/analysis of unrelated libraries, where ``unrelated'' means that neither depends on the other through a transitive closure of imports.
+\item Explicit declaration of dependencies, so that the meaning of each identifier is clear at compile time, and so that there is no ambiguity about whether a library needs to be executed for another library's compile time and/or run time.
+\item Namespace management, so that different library producers are unlikely to define the same top-level name. 
+\end{itemize}
+
+It does not address the following:
+
+\begin{itemize}
+\item Mutually dependent libraries.
+\item Separation of library interface from library implementation.
+\item Code outside of a library (e.g., 5 by itself as a program).
+\item Local modules and local imports. 
+\end{itemize}
+
+
+\section{Specification\label{sec:specification}}
+
+\subsection{Library form}
+
+A library declaration contains the following elements:
+
+\begin{itemize}
+\item a name for the library (possibly compound, with versioning),
+\item a list of import dependencies, where each dependency specifies the
+      following:
+\begin{itemize}
+\item the imported library's name,
+\item the relevant phases, e.g., expand or run time, and
+\item the subset of the library's exports to make available within the
+      importing library, and the local names to use within the importing
+      library for each of the library's exports,
+\end{itemize}
+\item a list of exports, which name a subset of the library's imports and
+      definitions, and
+\item a library body, consisting of a sequence of definitions followed
+      by a sequence of expressions.
+\end{itemize}
+
+\subsection{Syntax and Semantics}
+
+A library definition is written with the library form:
+
+\schemedisplay
+(library \raw{\ang{library~name}}
+  (import \raw{\ang{import~spec}}\raw{\kstar})
+  (export \raw{\ang{export~spec}}\raw{\kstar})
+  \raw{\ang{library~body}})
+\endschemedisplay
+
+The \ang{library~name} specifies the name of the library, the
+\scheme{import} form specifies the imported bindings, and the
+\scheme{export} form specifies the exported bindings.
+The \ang{library~body} specifies the set of definitions, both for local
+(unexported) and exported bindings, and the set of initialization
+expressions (commands) to be evaluated for their effects.
+The exported bindings may be defined within the library or imported into
+the library.
+Bindings defined with a library are not visible in code that appears
+outside of the library unless they are explicitly exported from the
+library. 
+
+No identifier can be imported multiple times, defined multiple times, or
+both defined and imported.
+
+Library names are consist of a sequence of identifiers in parentheses,
+followed optionally by a version consisting of a sequence of unsigned
+integers:
+
+\begin{grammar}
+\ang{library~name}\longis \scheme{(\raw{\ang{identifier}}\raw{\kplus})}
+                    \bar\ \scheme{(\raw{\ang{identifier}}\raw{\kplus} \raw{\ang{version}})}\\
+\\
+\ang{version}\longis \scheme{(\raw{\ang{uinteger~10}}\raw{\kplus})}
+\end{grammar}
+
+Each \scheme{import spec} specifies a set of bindings to be imported into
+the library, the phases in which they are to be available, and the local
+names by which they are to be known.
+
+\begin{grammar}
+\ang{import~spec}\longis \ang{import~set}\\
+  \orbar \scheme{(for \raw{\ang{import~set}} \raw{\ang{import~phase}}\raw{\kstar})}
+\end{grammar}
+
+Valid import phases are \scheme{run}, \scheme{expand}, \scheme{eval}, and
+\scheme{(meta \var{n})}, where \scheme{run} is an abbreviation for
+\scheme{(meta 0)} and \scheme{expand} is an abbreviation for and
+\scheme{(meta 1)}.
+
+\begin{grammar}
+\ang{import~phase}\longis \scheme{run} \bar\ \scheme{expand} \bar\ \scheme{eval} \bar\ \scheme{(meta \raw{\ang{level}})}\\
+\\
+\ang{level}\longis \ang{uinteger~10}
+\end{grammar}
+
+Phases are discussed in Section~\ref{sec:phases}.
+
+An \ang{import~set} names a set of bindings from another library, and
+possibly specifies local names for the imported bindings.
+
+\begin{grammar}
+\ang{import~set}\longis \ang{library~reference}\\
+  \orbar \scheme{(only \raw{\ang{import~set}} \raw{\ang{identifier}}\raw{\kstar})}\\
+  \orbar \scheme{(except \raw{\ang{import~set}} \raw{\ang{identifier}}\raw{\kstar})}\\
+  \orbar \scheme{(add-prefix \raw{\ang{import~set}} \raw{\ang{identifier}})}\\
+  \orbar \scheme{(rename \raw{\ang{import~set}} (\raw{\ang{identifier}} \raw{\ang{identifier}})\raw{\kstar})}
+\end{grammar}
+
+A \ang{library~reference} identifies a library by its (possibly compound)
+name and optionally by its version.
+
+\begin{grammar}
+\ang{library~reference}\longis \ang{identifier}
+                    \bar\ \scheme{(\raw{\ang{identifier}}\raw{\kplus})}
+                    \bar\ \scheme{(\raw{\ang{identifier}}\raw{\kplus} \raw{\ang{version~reference}})}\\
+\\
+\ang{version~reference}\longis \scheme{(\raw{\ang{uinteger~10}}\raw{\kplus})}
+                         \bar\ \ang{version~condition}\\
+\\
+\ang{version~condition}\longis \scheme{(\raw{\ang{uinteger~10}}\raw{\kplus})}\\
+                        \orbar \scheme{(>= \raw{\ang{uinteger~10}})}\\
+                        \orbar \scheme{(<= \raw{\ang{uinteger~10}})}\\
+                        \orbar \scheme{(and \raw{\ang{version~condition}}\raw{\kplus})}\\
+                        \orbar \scheme{(or \raw{\ang{version~condition}}\raw{\kplus})}\\
+                        \orbar \scheme{(not \raw{\ang{version~condition}})}
+\end{grammar}
+
+The sequence of identifiers in the importing library's
+\scheme{library reference} must match the sequence of identifiers in the
+imported library's \scheme{library name}.
+The importing library's \ang{version~reference} specifies a predicate on a
+prefix of the imported library's \ang{version}.
+Each integer must match exactly and each condition has the expected meaning.
+Everything beyond the prefix specified in the version reference matches
+unconditionally.
+When more than one library is identified by a library reference, the
+choice of libraries is determined in some implementation-dependent manner.
+
+To avoid problems such as incompatible types and replicated state, two
+libraries whose library names contain the same sequence of identifiers but
+whose versions do match cannot co-exist in the same program.
+
+By default, all of an imported library's exported bindings are made
+visible within an importing library using the names given to the bindings
+by the imported library.
+The preceise set of bindings to be imported and the names of those
+bindings can be adjusted with the \scheme{only}, \scheme{except},
+\scheme{add-prefix}, and \scheme{rename} forms as described below.
+
+\begin{itemize}
+\item The \scheme{only} form produces a subset of the bindings from another
+\ang{import~set}, including only the listed
+\ang{identifier}s; if any of the included \ang{identifier}s is not in
+\ang{import~set}, an exception is raised.
+\item The \scheme{except} form produces a subset of the bindings from another
+\ang{import~set}, including all but the listed
+\ang{identifier}s; if any of the excluded \ang{identifier}s is not in
+\ang{import~set}, an exception is raised.
+\item The \scheme{add-prefix} adds a prefix to each
+name from another \ang{import~set}.
+\item The \scheme{rename} form, for each pair of identifiers (\ang{identifier}
+\ang{identifier}), removes a binding from the set from \ang{import~set},
+and adds it back with a different name. 
+The first identifier is the original name, and the
+second identifier is the new name. 
+If the original name is not in \ang{import~set}, or
+if the new name is already in \ang{import~set}, an exception is raised.
+\end{itemize}
+
+An \ang{export~set} names a set of imported and locally defined bindings to
+be exported, possibly giving them different external names.
+
+\begin{grammar}
+\ang{export~spec}\longis \ang{export~set}\\
+  \orbar \scheme{(for (\raw{\ang{export~set}}\raw{\kstar}) \raw{\ang{import~phase}}\raw{\kstar})}\\
+\\
+\ang{export~set}\longis \ang{identifier}\\
+  \orbar \scheme{(rename (\raw{\ang{identifier}} \raw{\ang{identifier}})\raw{\kstar})}
+\end{grammar}
+
+In an \ang{export~set}, an \ang{identifier} names a single binding defined
+within the library or imported, where the external name for the export is
+the same as the name of the binding within the library. 
+A \scheme{rename} set exports the binding named by the first
+\ang{identifier} in each pair, using the second \ang{identifier} as the
+external name.
+
+The \ang{library~body} of a \scheme{library} form contains definitions for
+local and exported bindings and initalization expressions to be evaluated
+when the library is invoked.
+
+A \ang{library~body} is like \scheme{lambda} body (see below) except that
+the latter requires the body to contain at least one expression.
+
+\begin{grammar}
+\ang{library~body}\longis \ang{common~body}\\
+\\
+\ang{common~body}\longis \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{command}\kstar\\
+  \orbar \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{body~begin} \ang{command}\kstar\\
+\\
+\ang{body~begin}\longis \scheme{(begin \raw{\ang{common~body}})} \bar\ \ang{derived~body~begin}
+\end{grammar}
+
+The \ang{body~begin} permitted to allow macros to expand into a sequence
+including both definitions and expressions at the point where the
+sequence of definitions ends and the sequence of expressions begins.
+A \ang{derived~body~begin} is a syntactic abstraction that expands into
+a \ang{body~begin}.
+
+Declarations allow a program to specify various \emph{qualities} for the
+evaluated code.
+Their interpretation is implementation dependent.
+
+\begin{grammar}
+\ang{declaration}\longis \scheme{(declare \raw{\ang{declare~spec}})} \bar\ \ang{derived~declaration}\\
+\\
+\ang{declare~spec}\longis \scheme{unsafe} \bar\ \ang{quality} \bar\ \scheme{(\raw{\ang{quality}} \raw{\ang{priority}})}\\
+\\
+\ang{quality}\longis \scheme{safe} \bar\ \scheme{fast} \bar\ \scheme{small} \bar\ \scheme{debug}\\
+\\
+\ang{priority}\longis \scheme{0} \bar\ \scheme{1} \bar\ \scheme{2} \bar\ \scheme{3}
+\end{grammar}
+
+A \ang{derived~declaration} is a syntactic abstraction that expands into
+a \ang{declaration}.
+
+Definitions consist of syntax definitions, variable definitions,
+\scheme{indirect-export} forms, \scheme{begin} forms containing
+only definitions, and derived definitions.
+
+\begin{grammar}
+\ang{definition}\longis \ang{syntax~definition}\\
+  \orbar \ang{variable~definition}\\
+  \orbar \scheme{(indirect-export \raw{\ang{indirect~spec}}\raw{\kstar})}\\
+  \orbar \scheme{(begin \raw{\ang{declaration}}\raw{\kstar} \raw{\ang{definition}}\raw{\kstar})}\\
+  \orbar \ang{derived~definition}\\
+\\
+\ang{syntax~definition}\longis \scheme{(define-syntax \raw{\ang{keyword}} \raw{\ang{transformer~spec}})}\\
+\\
+\ang{variable~definition}\longis \scheme{(define \raw{\ang{variable}})}\\
+  \orbar \scheme{(define \raw{\ang{variable}} \raw{\ang{expression}})}\\
+  \orbar \scheme{(define (\raw{\ang{variable}} \raw{\ang{def~formals}}) \raw{\ang{body}})}\\
+\\
+\ang{body}\longis \ang{common~body} \ang{expression}
+\end{grammar}
+
+A \ang{derived~definition} is a syntactic abstraction that expands into
+a \ang{definition}.
+
+The production for \ang{body} is also relevant for \scheme{lambda}
+bodies, recalling that \ang{lambda~expression} is defined as follows.
+
+\begin{grammar}
+\ang{lambda~expression}\longis \scheme{(lambda \raw{\ang{formals}} \raw{\ang{body}})}
+\end{grammar}
+
+A \ang{body} is like a \ang{library~body} except that at least one
+expression must be present. 
+
+The definitions of a \ang{library~body} or \ang{body} are mutually
+recursive.
+The transformer expressions and transformer bindings are created
+from left to right, as described in the R6RS \scheme{syntax-case}
+SRFI~\cite{dybvig:srfi93}.
+The variable-definition right-hand-side expressions are evalated
+from left to right, as if in an implicit \scheme{letrec*},
+and the body expressions are also evaluated from left to right
+after the variable-definition right-hand-side expressions.
+
+An \ang{indirect~spec} declares a set of identifiers to be indirectly
+exported when a given keyword is exported.
+
+\begin{grammar}
+\ang{indirect~spec}\longis \scheme{(\raw{\ang{keyword}} \raw{\ang{identifier}}\raw{\kstar})}
+\end{grammar}
+
+The specifier declares that the transformer bound to the specified
+\ang{keyword} may expand into references to the \ang{identifier}s and that
+these \ang{identifier}s are to be ``indirectly exported'' for this purpose
+if the \ang{keyword} is exported.
+An exception is raised if any of the specified \ang{keyword}s is not
+defined as a macro within the library, or if any of the associated
+\ang{identifiers}s is not defined within the library.
+An exception is also raised if a macro used outside of its defining
+library expands into a reference to an identifier that is defined within
+or imported into the library but is neither directly nor indirectly
+exported from the library.
+Identifiers that are not directly exported are not otherwise visible
+outside of the defining library.
+
+An \scheme{indirect-export} may appear anywhere that other definitions may
+appear, so that syntactic abstractions that expand into syntax definitions
+can also produce any necessary \scheme{indirect-export} forms without
+concern for the context.
+They are ignored everywhere except in a \ang{library~body}.
+
+All exported bindings, explicit or implicit, are immutable both in the
+exporting and importing libraries.
+
+\subsection{Import phases\label{sec:phases}}
+
+All bindings imported via a library's \scheme{import} form are
+\emph{visible} throughout the library's \ang{library~body}.
+An exception is raised, however, if a binding is used out of its declared
+phase(s):
+
+\begin{itemize}
+\item Bindings used in run-time code must be imported ``for \scheme{run}'' or
+``for \scheme{(meta 0)}.''
+\item Bindings used in the body of a transformer (appearing on the
+right-hand-side of a transformer binding) in run-time code must be
+imported ``for \scheme{expand}'' or ``for \scheme{(meta 1)},
+\item Bindings used in the body of a transformer appearing within the body of a
+transformer in run-time code must be imported ``for \scheme{(meta 2)},''
+and so on.
+\end{itemize}
+
+The import phases of an imported binding are determined by the enclosing
+\scheme{for} form, if any, in the \scheme{import} form of the importing
+library, otherwise the enclosing \scheme{for} form, if any, in the
+\scheme{export} form of the exporting library. 
+If neither is given, then the binding is imported ``for \scheme{run}'' only.
+
+The import phases thus implicitly determine when information about a
+library must be available and also when the various forms contained within
+a library must be evaluated.
+
+Every library can be characterized by expand-time information (minimally,
+its imported libraries, a list of the exported keywords, a list of the
+exported variables, and code to evaluate the transformer expressions) and
+run-time information (minimally, code to evaluate the variable definition
+right-hand-side expressions, and code to evaluate the body expressions).
+The expand-time information must be available to expand references to
+any exported binding, and the run-time information must be available to
+evaluate references to any exported variable binding.
+
+If any of a library's bindings is imported by another library ``for
+\scheme{expand}'' (or for any meta level greater than 0) both expand-time and
+run-time information for the first library is made available when the second
+library is expanded.
+If any of a library's bindings is imported by another library ``for
+\scheme{run},'' the expand-time information for the first library is made available when
+the second library is expanded, and the run-time information for the first
+library is made available when the run-time information for the second library
+is made available.
+If any of a library's bindings is imported by another library ``for
+\scheme{eval},'' both expand-time and run-time information for the first library
+is made available when the run-time information for the second library
+is made available.
+
+We must also consider when the code to evaluate a library's transformer
+expressions is executed and when the code to evaluate the library's
+variable-definition right-hand-side expressions and body expressions is
+executed.
+We refer to executing the transformer expressions as \emph{visiting}
+the library and to executing the variable-definition right-hand-side 
+expressions and body expressions as \emph{invoking} the library.
+A library must be visited before code that uses its bindings can be
+expanded and invoked before code that uses its bindings can be executed.
+Visiting or invoking a library may also trigger the visiting or
+invoking of other libraries.
+
+More precisely, visiting a library at phase $N$ causes the system to:
+
+\begin{itemize}
+\item Visit at phase $N$ any library that is imported by this library
+      ``for \scheme{run}'' and that is not yet visited at phase $N$.
+\item Visit and invoke at phase $N+M$ any library that is imported by this
+      library ``for \scheme{(meta \var{M})} and that is not yet invoked at
+      phase $N+M$.
+\item Evaluate the library's transformer expressions.
+\end{itemize}
+
+The order in which imported libraries are visited and invoked is not
+defined, but imported libraries must be visited and invoked before the
+library's transformer expressions are evaluated.
+
+Similarly, invoking a library at meta phase $N$ causes the system to:
+
+\begin{itemize}
+\item Invoke at phase $N$ any library that is imported by this library
+      ``for \scheme{run}'' and that is not yet invoked at phase $N$.
+\item Evaluate the library's variable-definition right-hand-side and body
+      expressions.
+\end{itemize}
+
+The order in which imported libraries are invoked is not defined, but
+imported libraries must be invoked before the library's variable-definition
+right-hand-side and body expressions are evaluated.
+
+The bindings established by visiting or invoking a library at a given
+phase are entirely separate from the bindings established by visiting or
+invoking the library at any other phase, preventing information from being
+shared through these bindings across phases.
+
+\subsection{Eval\label{sec:eval}}
+
+The \scheme{eval} procedure accepts two arguments, an expression to
+evaluate, represented as an s-expression, and an environment:
+
+\schemedisplay
+(eval \var{expression} \var{environment})
+\endschemedisplay
+
+Environments can be constructed with the \scheme{environment} procedure,
+which accepts a set of import specifiers represented as s-expressions.
+
+\schemedisplay
+(environment \var{import-spec} \dots) ;=> \var{environment}
+\endschemedisplay
+
+The s-expression syntax of an \var{import-spec} mirrors the external
+syntax of an \ang{import spec}.
+For example:
+
+\schemedisplay
+(eval '(+ 3 4) (environment '(r6rs))) ;=> 7
+\endschemedisplay
+
+An exception is raised if the expand-time or run-time information for a
+library named in one of the \var{import-specs} is not \emph{available}
+when the call to \scheme{environment} occurs, in the sense of
+Section~\ref{sec:phases}.
+
+\section{Examples}
+
+Hello world:
+
+\schemedisplay
+(library (hello)
+  (import (r6rs))
+  (export)
+  (display "Hello World")
+  (newline))
+\endschemedisplay
+
+Examples for various \ang{import~spec}s and \ang{export~spec}s:
+
+\schemedisplay
+(library (stack)
+  (import (r6rs))
+  (export make push! pop! empty!)
+
+  (define (make) (list '()))
+  (define (push! s v) (set-car! s (cons v (car s))))
+  (define (pop! s) (let ([v (caar s)])
+                     (set-car! s (cdar s))
+                     v))
+  (define (empty! s) (set-car! s '())))
+
+(library (balloons)
+  (import (r6rs))
+  (export make push pop)
+
+  (define (make w h) (cons w h))
+  (define (push b amt) (cons (- (car b) amt) (+ (cdr b) amt)))
+  (define (pop b) (display "Boom! ") 
+                  (display (* (car b) (cdr b))) 
+                  (newline)))
+
+(library (party)
+  (import (r6rs)
+          (only (stack) make push! pop!) ; not empty!
+          (add-prefix (balloons) balloon:))
+  ;; Total exports: make, push, push!, make-party, pop!
+  (export (rename (balloon:make make)
+	          (balloon:push push))
+	  push!
+	  make-party
+	  (rename (party-pop! pop!)))
+
+  ;; Creates a party as a stack of balloons, starting with
+  ;;  two balloons
+  (define (make-party)
+    (let ([s (make)]) ; from stack
+      (push! s (balloon:make 10 10))
+      (push! s (balloon:make 12 9))
+      s))
+  (define (party-pop! p)
+    (balloon:pop (pop! p))))
+
+
+(library (main)
+  (import (r6rs) (party))
+
+  (define p (make-party))
+  (pop! p)        ; displays "Boom! 108"
+  (push! p (push (make 5 5) 1))
+  (pop! p))       ; displays "Boom! 24"
+\endschemedisplay
+
+Examples for macros and phases:
+
+\schemedisplay
+(library (helper)
+  (import (r6rs))
+  (export find-dup)
+
+  (define (find-dup l)
+    (and (pair? l)
+         (let loop ((rest (cdr l)))
+           (cond
+            [(null? rest) (find-dup (cdr l))]
+            [(bound-identifier=? (car l) (car rest)) (car rest)]
+            [else (loop (cdr rest))])))))
+
+(library (mvlet)
+  (improt (r6rs) (import (for (helper) expand))
+  (export mvlet)
+
+  (define-syntax mvlet
+    (lambda (stx)
+      (syntax-case stx ()
+        [(_ [(id ...) expr] body0 body ...)
+         (not (find-dup (syntax-object->list (syntax (id ...)))))
+         (syntax (call-with-values (lambda () expr) 
+                                   (lambda (id ...) body0 body ...)))]))))
+
+(library (let-div)
+  (import (r6rs) (mvlet))
+  (export let-div)
+
+  (define (quotient+remainder n d)
+    (let ([q (quotient n d)])
+      (values q (- n (* q d)))))
+  (indirect-export (let-div quotient+remainder))
+  (define-syntax let-div
+    (syntax-rules ()
+     [(_ n d (q r) body0 body ...)
+      (mvlet [(q r) (quotient+remainder n d)]
+        body0 body ...)])))
+\endschemedisplay
+
+
+\section{Reference Implementation\label{sec:implementation}}
+
+\section{Issues\label{sec:issues}}
+
+\subsection{Simpler library names}
+
+A single identifier, e.g., \scheme{r6rs}, could be allowed as an abbreviation
+for a library name sequence containing just one identifier, e.g.,
+\scheme{(r6rs)}.
+
+\subsection{Expanding \protect\scheme{import} and \protect\scheme{export} form}
+
+The import and export forms could be allowed in macro expansions.
+In that case, the exports and imports of a library can be determined only
+by macro-expanding the library.
+
+\subsection{\protect\scheme{co-export} form}
+
+Better support for records may be useful, possibly through a co-export
+form: \scheme{(co-export \raw{\ang{co~spec}}\raw{\kstar})}, where
+\ang{co~spec} contains an identifier defined or imported into a library
+followed by a list of other identifiers defined or imported into the
+library:
+
+\begin{grammar}
+\ang{co~spec}\longis (\ang{identifier} \ang{identifier}*)
+\end{grammar}
+
+The meaning of a \ang{co~spec} is that if the first identifier becomes
+exported, either through \scheme{export} or \scheme{co-export}, then the
+remaining identifiers are also exported.
+Similarly, if the first identifier is indirectly exported through
+\scheme{indirect-export} or \scheme{co-export}, then then remaining
+identifiers are indirectly exported.
+
+To be useful for managing records, \scheme{co-export} must be allowed in
+macro expansions.
+In that case, the full exports of a library can be determined only by
+macro-expanding the library.
+
+\subsection{Implicit phasing}
+
+Instead of having the programmer declare import phases explicitly, phases
+could be inferred from uses of the imported identifiers. 
+In that case, determining the phase of an import would require
+macro-expanding the library body.
+
+\section{Acknowledgments}
+
+This SRFI was written in consultation with the full set of {\r6rs} editors: 
+Will Clinger, Kent Dybvig, Marc Feeley, Matthew Flatt, Manuel Serrano,
+Michael Sperber, and Anton van~Straaten.
+
+
+\iflatex
+\nocite{waddell:modules,flatt2002,Scheme48Modules}
+\fi
+
+\iflatex
+\def\url#1{{\let~=\schtilde\\\emph{#1}}}
+\renewcommand{\bibname}{References}
+\bibliographystyle{srfi}
+\bibliography{library}
+\fi
+\ifhtml
+\section{References}
+\def\url#1{\hyperlink{#1}{Online version}}
+\input{library.bbl}
+\fi
+
+\section{Copyright}
+
+Copyright {\copyright} Matthew Flatt and Kent Dybvig (2005--2006). All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE. 
+
+\end{document}
