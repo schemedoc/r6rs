@@ -4012,6 +4012,9 @@ continuation of the call to {\tt call-with-values}.
 \begin{entry}{%
 \proto{dynamic-wind}{ before thunk after}{procedure}}
 
+\domain{\var{Before}, \var{thunk}, and \var{after} must be procedures
+taking zero arguments and returning any number of values.}
+
 Calls \var{thunk} without arguments, returning the result(s) of this call.
 \var{Before} and \var{after} are called, also without arguments, as required
 by the following rules (note that in the absence of calls to continuations
@@ -4029,13 +4032,14 @@ called procedure begins.
 
 \item The dynamic extent is also entered when execution is not within
 the dynamic extent and a continuation is invoked that was captured
-(using {\cf call-with-current-continuation}) during the dynamic extent.
+(using {\cf call-with-current-continuation}) during the dynamic
+extent.  It is only entered after all \var{before}s have been called.
 
 \item It is exited when the called procedure returns.
 
 \item It is also exited when execution is within the dynamic extent and
 a continuation is invoked that was captured while not within the
-dynamic extent.
+dynamic extent.  It is exited before the \var{after}s have been called.
 \end{itemize}
 
 If a second call to {\cf dynamic-wind} occurs within the dynamic extent of the
@@ -4053,9 +4057,6 @@ called, then the \var{before} associated with the first (outer) call to
 If invoking a continuation requires calling the \var{before} from one call
 to {\cf dynamic-wind} and the \var{after} from another, then the \var{after}
 is called first.
-
-The effect of using a captured continuation to enter or exit the dynamic
-extent of a call to \var{before} or \var{after} is undefined.
 
 \begin{scheme}
 (let ((path '())
@@ -4075,6 +4076,33 @@ extent of a call to \var{before} or \var{after} is undefined.
         (reverse path))))
     \lev (connect talk1 disconnect
                connect talk2 disconnect)
+\end{scheme}
+
+\begin{scheme}
+(let ((n 0))
+  (call-with-current-continuation
+   (lambda (k)
+     (dynamic-wind
+      (lambda ()
+        (set! n (+ n 1))
+        (k))
+      values
+      (lambda ()
+        (set! n (+ n 1))))))
+  n) \ev 1
+\end{scheme}
+
+\begin{scheme}
+(let ((n 0))
+  (call-with-current-continuation
+   (lambda (k)
+     (dynamic-wind
+      values
+      values
+      (lambda ()
+        (set! n (+ n 1))
+        (k)))))
+  n) \ev 1
 \end{scheme}
 \end{entry}
 
