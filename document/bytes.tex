@@ -12,13 +12,13 @@ Bytes objects\mainschindex{bytes objects} are objects of a disjoint
 type. Conceptually, a bytes object represents a sequence of 8-bit
 bytes.  The description of bytes objects uses the term \defining{byte}
 for an exact integer in the interval $\{-128, \ldots, 127\}$ and the
-term \defining{octets} for a nexact integer in the interval $\{0,
+term \defining{octet} for an exact integer in the interval $\{0,
 \ldots, 255\}$.  A byte corresponds to its two's complement
 representation as an octet.
 
 The length of a bytes object is the number of bytes it contains. This
 number is fixed. A valid index into a bytes object is an exact,
-non-negative integer. The first byte of a bytes object has index 0,
+non-negative integer. The first byte of a bytes object has index 0;
 the last byte has an index one less than the length of the bytes
 object.
 
@@ -55,7 +55,7 @@ Returns \schtrue{} if \var{obj} is a bytes object, otherwise returns \schfalse{}
 
 \begin{entry}{%
 \proto{make-bytes}{ k}{procedure}
-\proto{make-bytes k fill}{procedure}}
+\proto{make-bytes}{ k fill}{procedure}}
    
 Returns a newly allocated bytes object of \var{k} bytes.
    
@@ -64,7 +64,7 @@ returned bytes object are unspecified.
    
 If the \var{fill} argument is present, it must be an exact integer in
 the interval $\{-128, \ldots 255\}$ that specifies the initial value
-for the bytes of the bytes object: If \var{fill} is is positive, it is
+for the bytes of the bytes object: If \var{fill} is positive, it is
 interpreted as an octet, if it is negative, it is interpreted as a byte.
 \end{entry}   
 
@@ -78,11 +78,11 @@ Returns the number of bytes in bytes as an exact integer.
 \proto{bytes-u8-ref}{ bytes k}{procedure}
 \proto{bytes-s8-ref}{ bytes k}{procedure}}
    
-\domain{\var{K} must be a valid index of bytes.}
+\domain{\var{k} must be a valid index of bytes.}
    
-{\cf Bytes-u8-ref} returns the byte at index \var{k} of \var{bytes} as an octet.
+{\cf bytes-u8-ref} returns the byte at index \var{k} of \var{bytes} as an octet.
    
-{\cf Bytes-s8-ref} returns the byte at index \var{k} of \var{bytes}.
+{\cf bytes-s8-ref} returns the byte at index \var{k} of \var{bytes}.
 
 \begin{scheme}
 (let ((b1 (make-bytes 16 -127))
@@ -99,13 +99,13 @@ Returns the number of bytes in bytes as an exact integer.
 \proto{bytes-u8-set!}{ bytes k octet}{procedure}
 \proto{bytes-s8-set!}{ bytes k byte}{procedure}}
    
-\var{K} must be a valid index of \var{bytes}.
+\var{k} must be a valid index of \var{bytes}.
    
-{\cf Bytes-u8-set!} stores \var{octet} in element \var{k} of
+{\cf bytes-u8-set!} stores \var{octet} in element \var{k} of
 \var{bytes}.
    
-{\cf Bytes-s8-set!} stores the two's complement representation of \var{byte} in element
-\var{k} of \var{bytes}.
+{\cf bytes-s8-set!} stores the two's complement representation of
+\var{byte} in element \var{k} of \var{bytes}.
    
 Both procedures return \unspecifiedreturn.
 
@@ -129,30 +129,30 @@ Both procedures return \unspecifiedreturn.
 \proto{bytes-uint-set!}{ bytes k n endianness size}{procedure}
 \proto{bytes-sint-set!}{ bytes k n endianness size}{procedure}}
    
-\domain{\var{Size} must be a positive exact integer. $\{\var{k}, \ldots,
+\domain{\var{size} must be a positive exact integer. $\{\var{k}, \ldots,
   \var{k} + \var{size} - 1\}$ must be valid indices of \var{bytes}.}
    
-{\cf Bytes-uint-ref} retrieves the exact integer corresponding to the
-unsigned representation of size size and specified by endianness at
-indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
+{\cf bytes-uint-ref} retrieves the exact integer corresponding to the
+unsigned representation of size \var{size} and specified by \var{endianness}
+at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-{\cf Bytes-sint-ref} retrieves the exact integer corresponding to the two's
+{\cf bytes-sint-ref} retrieves the exact integer corresponding to the two's
 complement representation of size \var{size} and specified by \var{endianness} at
 indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
 \domain{For {\cf bytes-uint-set!}, \var{n} must be an exact integer in the
   set $\{0, \ldots, 256^{\var{size}}-1\}$.}
 
-{\cf Bytes-uint-set!} stores the unsigned representation of size \var{size}
+{\cf bytes-uint-set!} stores the unsigned representation of size \var{size}
 and specified by \var{endianness} into \var{bytes} at indices
 $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
 \domain{For {\cf bytes-uint-set!}, \var{n} must be an exact integer in
   the interval $\{-256^{\var{size}-1}, \ldots,
   256^{\var{size}-1}-1\}$.}
-{\cf Bytes-sint-set!} stores the two's complement
-representation of size \var{size} and specified by endianness into \var{bytes}
-object at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
+{\cf bytes-sint-set!} stores the two's complement
+representation of size \var{size} and specified by \var{endianness}
+into \var{bytes} at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
 The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 
@@ -162,7 +162,8 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 (bytes-uint-set! b 0 (- (expt 2 128) 3)
                  (endianness little) 16)
 
-(bytes-uint-ref b 0 (endianness little) 16)\lev (- (expt 2 128) 3))
+(bytes-uint-ref b 0 (endianness little) 16)\lev
+    \#xfffffffffffffffffffffffffffffffd
 
 (bytes-sint-ref b 0 (endianness little) 16)\lev -3
 
@@ -172,7 +173,8 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 (bytes-uint-set! b 0 (- (expt 2 128) 3)
                  (endianness big) 16)
 
-(bytes-uint-ref b 0 (endianness big) 16) \lev (- (expt 2 128) 3)
+(bytes-uint-ref b 0 (endianness big) 16) \lev
+    \#xfffffffffffffffffffffffffffffffd
 
 (bytes-sint-ref b 0 (endianness big) 16) \lev -3
 
@@ -191,17 +193,18 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \proto{bytes-u16-native-set!}{ bytes k n}{procedure}
 \proto{bytes-s16-native-set!}{ bytes k n}{procedure}}
    
-\domain{\var{K} must be a valid index of \var{bytes}; so must $\var{k}
+\domain{\var{k} must be a valid index of \var{bytes}; so must $\var{k}
   + 1$.}
    
 These retrieve and set two-byte representations of numbers at indices
 \var{k} and $\var{k}+1$, according to the endianness specified by
 \var{endianness}. The procedures with {\cf u16} in their names deal with the
-unsigned representation, those with {cf s16} with the two's complement
-representation.
+unsigned representation; those with {\cf s16} in their names deal
+with the two's complement representation.
 
-The procedures with {\cf native} in their names employ the native endianness, and
-only work at aligned indices: \var{k} must be a multiple of 2. It is an error to
+The procedures with {\cf native} in their names employ the native
+endianness, and only work at aligned indices:
+\var{k} must be a multiple of 2. It is an error to
 use them at non-aligned indices.
    
 The \ldots{\cf -set!} procedures return \unspecifiedreturn.

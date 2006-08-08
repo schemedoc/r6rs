@@ -1,3 +1,16 @@
+; Copyright 2006 William D Clinger.
+;
+; Permission to copy this software, in whole or in part, to use this
+; software for any lawful purpose, and to redistribute this software
+; is granted subject to the restriction that all copies made of this
+; software must include this copyright notice in full.
+;
+; I also request that you send me a copy of any improvements that you
+; make to this software so that they may be incorporated within it to
+; the benefit of the Scheme community.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
 ; Partial implementation of some of the uglier parts of
 ; SRFI 75 (R6RS Unicode data)
 ;
@@ -442,7 +455,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; Compatibility issue: uses bytevectors.
+; FIXME: Compatibility issue: uses bytevectors.
 ;
 ; The bytevector operations used in this file are
 ;
@@ -450,6 +463,7 @@
 ;     bytevector-length
 ;     bytevector-ref
 ;     bytevector-set!
+;     list->bytevector
 ;
 ; For R6RS, these can be replaced by the corresponding
 ; operations on bytes.
