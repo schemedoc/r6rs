@@ -295,6 +295,10 @@ the value of a literal expression using a mutation procedure like
 \syntax
 \hyper{Formals} should be a formal arguments list as described below,
 and \hyper{body} should be a sequence of one or more expressions.
+FIXME: \hyper{body} is not merely a sequence of one or more expressions
+FIXME: should probably refer Internal definititions section, possibly
+FIXME: renamed appropriately, and have that section cover declarations
+FIXME: as well
 
 \semantics
 \vest A \lambdaexp{} evaluates to a procedure.  The environment in
@@ -550,30 +554,31 @@ otherwise the result of the {\cf case} expression is the unspecified value.
   (else 'consonant))            \ev  consonant%
 \end{scheme}
 
-{\cf Case} could be defined in terms of {\cf if}, {\cf begin}, and
+{\cf Case} can be defined in terms of {\cf let}, {\cf cond}, and
 {\cf memv} (see section~\ref{listutilities} using {\cf syntax-rules}
 (see section~\ref{syntaxrulessection}) as follows:
 
 \begin{scheme}
 (define-syntax \ide{case}
   (syntax-rules (else)
-    ((case (key ...)
-       clauses ...)
-     (let ((atom-key (key ...)))
-       (case atom-key clauses ...)))
-    ((case key
-       (else result1 result2 ...))
-     (begin result1 result2 ...))
-    ((case key
-       ((atoms ...) result1 result2 ...))
-     (if (memv key '(atoms ...))
-         (begin result1 result2 ...)))
-    ((case key
-       ((atoms ...) result1 result2 ...)
-       clause clauses ...)
-     (if (memv key '(atoms ...))
-         (begin result1 result2 ...)
-         (case key clause clauses ...)))))
+    ((case expr0
+       ((key ...) res1 res2 ...)
+       ...
+       (else else-res1 else-res2 ...))
+     (let ((tmp expr0))
+       (cond
+         ((memv tmp '(key ...)) res1 res2 ...)
+         ...
+         (else else-res1 else-res2 ...))))
+    ((case expr0
+       ((keya ...) res1a res2a ...)
+       ((keyb ...) res1b res2b ...)
+       ...)
+     (let ((tmp expr0))
+       (cond
+         ((memv tmp '(keya ...)) res1a res2a ...)
+         ((memv tmp '(keyb ...)) res1b res2b ...)
+         ...)))))
 \end{scheme}
 
 \end{entry}
@@ -734,71 +739,13 @@ in an environment in which the first binding is visible, and so on.
   (syntax-rules ()
     ((let* () body1 body2 ...)
      (let () body1 body2 ...))
-    ((let* ((name1 val1) (name2 val2) ...)
+    ((let* ((name1 expr1) (name2 expr2) ...)
        body1 body2 ...)
-     (let ((name1 val1))
-       (let* ((name2 val2) ...)
+     (let ((name1 expr1))
+       (let* ((name2 expr2) ...)
          body1 body2 ...)))))
 \end{scheme}
 
-\end{entry}
-
-\begin{entry}{%
-\proto{letrec*}{ \hyper{bindings} \hyper{body}}{\exprtype}}
-
-\syntax
-\hyper{Bindings} should have the form
-\begin{scheme}
-((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
-\end{scheme}
-and \hyper{body} should be a sequence of
-one or more expressions. It is an error for a \hyper{variable} to appear more
-than once in the list of variables being bound.
-
-\semantics
-The \hyper{variable}s are bound to fresh locations holding undefined
-values, the \hyper{init}s are evaluated from left to right in the
-resulting environment, after the evaluation of each \hyper{init}, the
-corresponding \hyper{variable} is assigned to the result,
-the \hyper{body} is evaluated in the
-resulting environment, and the value(s) of the last expression in
-\hyper{body} is(are) returned.  Each binding of a \hyper{variable} has the
-entire {\cf letrec*} expression as its region\index{region}, making it possible to
-define mutually recursive procedures.
-
-\begin{scheme}
-(letrec* ((p
-           (lambda (x)
-             (+ 1 (q (- x 1)))))
-          (q
-           (lambda (y)
-             (if (zero? y)
-                 0
-                 (+ 1 (p (- y 1))))))
-          (x (p 5))
-          (y x))
-  y)
-                \ev  5%
-\end{scheme}
-
-{\cf Letrec*} could be defined in terms of {\cf let}, {\cf
-  unspecified}, and {\cf set!} using {\cf syntax-rules} (see
-section~\ref{syntaxrulessection}) as follows:
-
-\begin{scheme}
-(define-syntax \ide{letrec*}
-  (syntax-rules ()
-    ((letrec* ((var1 init1) ...) body ...)
-     (let ((var1 <undefined>) ...)
-       (set! var1 init1)
-       ...
-       body ...))))
-\end{scheme}
-
-The symbol {\cf <undefined>} is used in place of an expression that
-returns something that when stored in a location makes it an error to
-try to obtain the value stored in the location (no such expression is
-defined in Scheme).
 \end{entry}
 
 \begin{entry}{%
@@ -846,48 +793,127 @@ One restriction on {\cf letrec} is very important: it must be possible
 to evaluate each \hyper{init} without assigning or referring to the value of any
 \hyper{variable}.  If this restriction is violated, then it is an error.  The
 restriction is necessary because Scheme passes arguments by value rather than by
-name.  In the most common uses of {\cf letrec}, all the \hyper{init}s are
+name.
+If this restriction is violated, an exception is raised.
+In the most common uses of {\cf letrec}, all the \hyper{init}s are
 \lambdaexp{}s and the restriction is satisfied automatically.
 
-The following {\cf letrec} macro uses the symbol {\cf <undefined>}
-in place of an expression which returns something that when stored in
-a location makes it an error to try to obtain the value stored in the
-location (no such expression is defined in Scheme).
-A trick is used to generate the temporary names needed to avoid
-specifying the order in which the values are evaluated.
-This could also be accomplished by using an auxiliary macro.
+{\cf Letrec} can be defined approximately in terms of {\cf let}
+and {\cf set!} using {\cf syntax-rules} (see
+section~\ref{syntaxrulessection}), using a helper
+to generate the temporary variables
+needed to hold the values before the assignments are made,
+as follows:
 
 \begin{scheme}
 (define-syntax \ide{letrec}
   (syntax-rules ()
-    ((letrec ((var1 init1) ...) body ...)
-     (letrec "generate\_temp\_names"
-       (var1 ...)
+    ((letrec () body1 body2 ...)
+     (let () body1 body2 ...))
+    ((letrec ((var init) ...) body1 body2 ...)
+     (letrec-helper
+       (var ...)
        ()
-       ((var1 init1) ...)
-       body ...))
-    ((letrec "generate\_temp\_names"
+       ((var init) ...)
+       body1 body2 ...))))
+
+(define-syntax letrec-helper
+  (syntax-rules ()
+    ((letrec-helper
        ()
-       (temp1 ...)
-       ((var1 init1) ...)
-       body ...)
-     (let ((var1 <undefined>) ...)
-       (let ((temp1 init1) ...)
-         (set! var1 temp1)
-         ...
-         body ...)))
-    ((letrec "generate\_temp\_names"
+       (temp ...)
+       ((var init) ...)
+       body1 body2 ...)
+     (let ((var <undefined>) ...)
+       (let ((temp init) ...)
+         (set! var temp)
+         ...)
+       (let () body1 body2 ...)))
+    ((letrec-helper
        (x y ...)
        (temp ...)
-       ((var1 init1) ...)
-       body ...)
-     (letrec "generate\_temp\_names"
+       ((var init) ...)
+       body1 body2 ...)
+     (letrec-helper
        (y ...)
        (newtemp temp ...)
-       ((var1 init1) ...)
-       body ...))))
+       ((var init) ...)
+       body1 body2 ...))))
 \end{scheme}
 
+The syntax {\cf <undefined>} represents an expression that
+returns something that, when stored in a location, causes an exception to
+be raised if an attempt to read to or write from the location occurs before the
+assignments generated by the {\cf letrec} transformation take place.
+(No such expression is defined in Scheme.)
+\end{entry}
+
+\begin{entry}{%
+\proto{letrec*}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Bindings} should have the form
+\begin{scheme}
+((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+and \hyper{body} should be a sequence of
+one or more expressions. It is an error for a \hyper{variable} to appear more
+than once in the list of variables being bound.
+
+\semantics
+The \hyper{variable}s are bound to fresh locations holding undefined
+values, each \hyper{variable} is assigned in left-to-right order to the
+result of evaluating the corresponding \hyper{init}, the \hyper{body} is
+evaluated in the resulting environment, and the value(s) of the last
+expression in \hyper{body} is(are) returned. 
+Despite the left-to-right evaluation and assignment order, each binding of
+a \hyper{variable} has the entire {\cf letrec*} expression as its
+region\index{region}, making it possible to define mutually recursive
+procedures.
+
+\begin{scheme}
+(letrec* ((p
+           (lambda (x)
+             (+ 1 (q (- x 1)))))
+          (q
+           (lambda (y)
+             (if (zero? y)
+                 0
+                 (+ 1 (p (- y 1))))))
+          (x (p 5))
+          (y x))
+  y)
+                \ev  5%
+\end{scheme}
+
+One restriction on {\cf letrec*} is very important: it must be possible
+to evaluate each \hyper{init} without assigning or referring to the value
+the corresponding \hyper{variable} or the \hyper{variable} of any of
+the bindings that follow it in \hyper{bindings}.
+If this restriction is violated, an exception is raised.
+The restriction is necessary because Scheme passes arguments by value
+rather than by name. 
+
+{\cf Letrec*} can be defined approximately in terms of {\cf let}
+and {\cf set!}
+using {\cf syntax-rules} (see section~\ref{syntaxrulessection})
+as follows:
+
+\begin{scheme}
+(define-syntax \ide{letrec*}
+  (syntax-rules ()
+    ((letrec* ((var1 init1) ...) body1 body2 ...)
+     (let ((var1 <undefined>) ...)
+       (set! var1 init1)
+       ...
+       (let () body1 body2 ...)))))
+\end{scheme}
+
+The syntax {\cf <undefined>} represents an expression that
+returns something that, when stored in a location, causes an exception to
+be raised if an attempt to read from or write to the location occurs before the
+assignments generated by the {\cf letrec*} transformation take place.
+(No such expression is defined in Scheme.)
 \end{entry}
 
 % \todo{use or uses?  --- Jinx.}
@@ -929,83 +955,85 @@ region.\index{region}
     (list a b x y)))       \ev (x y a b)
 \end{scheme}
 
-The following {\cf let-values} macro uses a trick similar to that used
-in {\cf letrec} to generate temporary names:
+The following definition of {\cf let-values}
+using {\cf syntax-rules} (see section~\ref{syntaxrulessection})
+employs a pair of helpers to
+create temporary names for the formals.
 
 \begin{scheme}
 (define-syntax let-values
   (syntax-rules ()
     ((let-values (binding ...) body1 body2 ...)
-     (let-values "map"
-       () ; associations formals -> temporaries
-       (binding ...)
-       body1 body2 ...))
-
-    ;; map over the bindings
-    ((let-values "map"
-       ((id fresh) ...)
+     (let-values-helper1
        ()
-       . bodies)
-     (let ((id fresh) ...)
-       . bodies))
+       (binding ...)
+       body1 body2 ...))))
 
-    ((let-values "map"
+(define-syntax let-values-helper1
+  ;; map over the bindings
+  (syntax-rules ()
+    ((let-values
+       ((id temp) ...)
+       ()
+       body1 body2 ...)
+     (let ((id temp) ...) body1 body2 ...))
+    ((let-values
        assocs
-       ((formals1 val1) (formals2 val2) ...)
-       . bodies)
-     (let-values "formal-temps"
+       ((formals1 expr1) (formals2 expr2) ...)
+       body1 body2 ...)
+     (let-values-helper2
        formals1
-       ()  ; formals with fresh identifiers
-       val1
+       ()
+       expr1
        assocs
-       ((formals2 val2) ...)
-       . bodies))
+       ((formals2 expr2) ...)
+       body1 body2 ...))))
 
-    ;; create fresh identifiers for the formals
-    ((let-values "formal-temps"
+(define-syntax let-values-helper2
+  ;; create temporaries for the formals
+  (syntax-rules ()
+    ((let-values-helper2
        ()
        temp-formals
-       val1
+       expr1
        assocs
        bindings
-       . bodies)
+       body1 body2 ...)
      (call-with-values
-         (lambda () val1)
+       (lambda () expr1)
        (lambda temp-formals
-         (let-values "map"
+         (let-values-helper1
            assocs
            bindings
-           . bodies))))
-
-    ((let-values "formal-temps"
+           body1 body2 ...))))
+    ((let-values-helper2
        (first . rest)
        (temp ...)
-       val1
+       expr1
        (assoc ...)
        bindings
-       . bodies)
-     (let-values "formal-temps"
+       body1 body2 ...)
+     (let-values-helper2
        rest
-       (temp ... fresh)
-       val1
-       (assoc ... (first fresh))
+       (temp ... newtemp)
+       expr1
+       (assoc ... (first newtemp))
        bindings
-       . bodies))
-
-    ((let-values "formal-temps"
+       body1 body2 ...))
+    ((let-values-helper2
        rest-formal
        (temp ...)
-       val1
+       expr1
        (assoc ...)
        bindings
-       . bodies)
+       body1 body2 ...)
      (call-with-values
-         (lambda () val1)
-       (lambda (temp ... . fresh)
-         (let-values "map"
-           (assoc ... (rest-formal fresh))
+       (lambda () expr1)
+       (lambda (temp ... . newtemp)
+         (let-values-helper1
+           (assoc ... (rest-formal newtemp))
            bindings
-           . bodies))))))
+           body1 body2 ...))))))
 \end{scheme}
 
 \end{entry}
@@ -1014,10 +1042,10 @@ in {\cf letrec} to generate temporary names:
 \proto{let*-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
 {\cf Let*-values} is similar to {\cf let-values}, but the bindings are
-performed sequentially from left to right, and the
+processed sequentially from left to right, and the
 region\index{region} of the bindings indicated by {\cf(\hyper{formals}
   \hyper{init})} is that part of the {\cf let*-values} expression to
-the right of the bindings.  Thus the second set of bindings is evaluated in
+the right of the bindings.  Thus, the second set of bindings is evaluated in
 an environment in which the first set of bindings is visible, and so
 on.
 
@@ -1242,7 +1270,7 @@ follows:
 ``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
 for constructing a list or vector structure when some but not all of the
 desired structure is known in advance.  If no
-\scheme{unquote} or \scheme{unquote-splicing} forms
+{\cf unquote} or {\cf unquote-splicing} forms
 appear within the \hyper{qq template}, the result of
 evaluating
 {\cf (quasiquote \hyper{qq template})} is equivalent to the result of evaluating
@@ -1251,7 +1279,7 @@ evaluating
 If an {\cf (unquote \hyper{expression} \dotsfoo)} form appears inside a
 \hyper{qq template}, however, the \hyper{expression}s are evaluated
 (``unquoted'') and their results are inserted into the structure instead
-of the \scheme{unquote} form.
+of the {\cf unquote} form.
 
 If an {\cf (unquote-splicing \hyper{expression} \dotsfoo)} form
 appears inside a \hyper{qq template}, then the \hyper{expression}s must
@@ -1291,7 +1319,7 @@ As noted in section~\ref{quotesection},
 
 Quasiquote forms may be nested.  Substitutions are made only for
 unquoted components appearing at the same nesting level
-as the outermost \scheme{quasiquote}.  The nesting level increases by one inside
+as the outermost {\cf quasiquote}.  The nesting level increases by one inside
 each successive quasiquotation, and decreases by one inside each
 unquotation.
 
