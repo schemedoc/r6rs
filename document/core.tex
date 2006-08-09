@@ -63,15 +63,129 @@ This report uses the word ``true'' to refer to any
 Scheme value except \schfalse{}, and the word ``false'' to refer to
 \schfalse{}. \mainindex{true} \mainindex{false}
 
+\section{Declarations}
+\label{declarations}
+
+\schindex{declarations}
+A declaration affects a range of code, and indicates that the code
+within that range should be compiled or executed to have certain
+qualities.  A declaration appears at the beginning of a \hyper{body}
+(see section~\ref{bodies}), and its range is the library in which it
+appears, the expression that immediately surrounds the \hyper{body} at
+whose head it appears, or the group of definitions at whose head it
+appears, possibly including code inserted in the range in the course
+of macro expansion.
+
+A declaration \hyper{declaration} has the following form:\mainschindex{declare}
+
+{\cf (declare \hyper{declare spec})}
+
+A \hyper{declare spec} has one of the following forms:
+
+\begin{itemize}
+\item {\cf (\hyper{quality} \hyper{priority})}
+
+  \hyper{Quality} has to be one of {\cf safe}, {\cf fast}, {\cf
+    small}, and {\cf debug}.  \hyper{Priority} has to be one of {\cf
+    0}, {\cf 1}, {\cf 2}, and {\cf 3}.
+
+  This specifies that the code in the range of the declaration should
+  have the indicated quality at the indicated priority, where priority
+  3 is the highest priority.  Priority 0 means the quality is not a
+  priority at all.
+
+\item {\cf \hyper{quality}}
+  
+  This is a synonym for {\cf (\hyper{quality} 3)}.
+  
+\item {\cf unsafe}
+
+  This is a synonym for {\cf (safe 0)}.
+\end{itemize}
+
+For {\cf safe}, the default priority must be 1 or higher.  When the
+priority for {\cf safe} is 1 or higher, implementations must raise all
+required exceptions and let them be handled by the exception mechanism
+(see chapter~\ref{exceptionsconditionschapter}).
+
+Beyond that, the detailed interpretation of declarations will vary in
+different implementations.  In particular, implementations are free to
+ignore declarations, and may observe some declarations while ignoring
+others.
+
+The following descriptions of each quality may provide some guidance
+for programmers and implementors.
+
+\paragraph{{\tt safe}}
+
+This quality's priority influences the degree of checking for
+exceptional situations, and the raising and handling of exceptions in
+response to those situations.  The higher the priority, the more
+likely an exception will be raised.
+
+At priority 0, an implementation is allowed to ignore any requirements
+for raising an exception with condition type {\cf\&violation} (or one
+of its subtypes).  In situations for which this report allows or
+requires the imple mentation to raise an exception with condition type
+{\cf\&violation}, the implementation may ignore the situation and
+continue the computation with an incorrect result, may terminate the
+computation in an unpleasant fashion, or may destroy the invariants of
+run-time data structures in ways that cause unexpected and mysterious
+misbehavior even in code that comes within the scope of a safe
+declaration.  All bets are off.
+
+At priority 1 and higher, an implementation must raise all exceptions
+required by this report, handle those exceptions using the exception
+mechanism described in chapter~\ref{exceptionsconditionschapter}, and
+use the default exception handlers described in that chapter.  See
+also section~\ref{safetysection}.
+
+At higher priorities, implementations may be more likely to raise
+exceptions that are allowed but not required by this report.
+
+Most implementations are able to recognize some violations when
+parsing, expanding macros, or compiling a definition or expression
+whose evaluation has not yet commenced in the usual sense.
+Implementations are allowed to use nonstandard exception handlers at
+those times, and are encouraged to raise {\cf\&syntax} exceptions for
+violations detected at those times, even if the definition or
+expression that contains the violation will never be executed.
+Implementations are also allowed to raise a {\cf\&warning} exception
+at those times if they determine that some subexpression would
+inevitably raise some kind of {\cf\&violation} exception were it ever
+to be evaluated.
+
+\paragraph{{\tt fast}}
+
+This quality's priority influences the speed of the code it governs.
+At high priorities, the code is likely to run faster, but that
+improvement is constrained by other qualities and may come at the
+expense of the small and debug qualities.
+
+\paragraph{{\tt small}}
+
+This quality's priority influences the amount of computer memory
+needed to represent and to run the code.  At high priorities, the code
+is likely to occupy less memory and to require less memory during
+evaluation.
+
+\paragraph{{\tt debug}}
+
+This quality's priority influences the programmer's ability to debug
+the code.  At high priorities, the programmer is more likely to
+understand the correspondence between the original source code and
+information displayed by debugging tools.  At low priorities, some
+debugging tools may not be usable.
+
 \section{Definitions}
 \label{defines}
 
 Definitions are valid in some, but not all, contexts where expressions
 are allowed.  They are valid only at the top level of a \hyper{program}
-and at the beginning of a \hyper{body}.
+and after the declarations in a \hyper{body} (see section~\ref{bodies}).
 \mainindex{definition}
 
-A definition should have one of the following forms:\mainschindex{define}
+A definition \hyper{definition} should have one of the following forms:\mainschindex{define}
 
 \begin{itemize}
 
@@ -89,7 +203,7 @@ This form is equivalent to
 \hyper{Formals} should be either a
 sequence of zero or more variables, or a sequence of one or more
 variables followed by a space-delimited period and another variable (as
-in a lambda expression).  This form is equivalent to
+in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
 \begin{scheme}
 (define \hyper{variable}
   (lambda (\hyper{formals}) \hyper{body}))\rm.%
@@ -137,48 +251,12 @@ such an implementation are truly equivalent to assignments.
 \todo{Rozas: equal time for opposition semantics?}
 
 
-\subsection{Internal definitions}
-\label{internaldefines}
-
-Definitions may occur at the
-beginning of a \hyper{body} (that is, the body of a \ide{lambda},
-\ide{let}, \ide{let*}, \ide{letrec*}, \ide{letrec}, \ide{let-syntax},
-or \ide{letrec-syntax}
-expression or that of a definition of an appropriate form).
-Such definitions are known as {\em internal definitions} \mainindex{internal
-definition} as opposed to the top level definitions described above.
-The variable defined by an internal definition is local to the
-\hyper{body}.  That is, \hyper{variable} is bound rather than assigned,
-and the region of the binding is the entire \hyper{body}.  For example,
-
-\begin{scheme}
-(let ((x 5))
-  (define foo (lambda (y) (bar x y)))
-  (define bar (lambda (a b) (+ (* a b) a)))
-  (foo (+ x 3)))                \ev  45%
-\end{scheme}
-
-A \hyper{body} containing internal definitions can always be converted
-into a completely equivalent {\cf letrec*} expression.  For example, the
-{\cf let} expression in the above example is equivalent to
-
-\begin{scheme}
-(let ((x 5))
-  (letrec* ((foo (lambda (y) (bar x y)))
-            (bar (lambda (a b) (+ (* a b) a))))
-    (foo (+ x 3))))%
-\end{scheme}
-
-Wherever an internal definition may occur
-{\tt(begin \hyperi{definition} \dotsfoo)}
-is equivalent to the sequence of definitions
-that form the body of the \ide{begin}.
-
 \section{Syntax definitions}
 
-Syntax definitions are valid only at the top level of a \hyper{program}.
-\mainindex{syntax definition}
-They have the following form:\mainschindex{define-syntax}
+Syntax definitions are valid only at the top level of a
+\hyper{program}.  \mainindex{syntax definition} Syntax definitions are
+also \hyper{definition}s and have the following
+form:\mainschindex{define-syntax}
 
 {\tt(define-syntax \hyper{keyword} \hyper{transformer spec})}
 
@@ -186,8 +264,6 @@ They have the following form:\mainschindex{define-syntax}
 the \hyper{transformer spec} should be an instance of \ide{syntax-rules}.
 The top-level syntactic environment is extended by binding the
 \hyper{keyword} to the specified transformer.
-
-There is no {\cf define-syntax} analogue of internal definitions.
 
 %[Rationale flushed because it may or may not be true and isn't the
 % real rationale anyway. -RK]
@@ -232,6 +308,52 @@ that follow the group.  For example, the following are errors:
     (define foo x)
     (plus foo x)))
 \end{scheme}
+
+\section{Bodies}
+\label{bodies}
+
+\index{body}The body \hyper{body} of a \ide{lambda}, \ide{let}, \ide{let*},
+\ide{let-values}, \ide{let*-values}, \ide{letrec*}, \ide{letrec},
+\ide{let-syntax}, or \ide{letrec-syntax} expression or that of a
+definition with a body has the following form:
+
+{\cf \arbno{\hyper{declaration}} \arbno{\hyper{definition}} \hyper{sequence}}
+
+\hyper{Declaration} is according to section~\ref{declarations}.
+
+Definitions may occur at the beginning of a \hyper{body} (that is,
+Such definitions are known as {\em internal definitions}
+\mainindex{internal definition} as opposed to the top level
+definitions described above.  The variable defined by an internal
+definition is local to the \hyper{body}.  That is, \hyper{variable} is
+bound rather than assigned, and the region of the binding is the
+entire \hyper{body}.  For example,
+
+\begin{scheme}
+(let ((x 5))
+  (define foo (lambda (y) (bar x y)))
+  (define bar (lambda (a b) (+ (* a b) a)))
+  (foo (+ x 3)))                \ev  45%
+\end{scheme}
+
+An expanded \hyper{body} containing internal definitions, where the
+declarations and original syntax definitions have been elided, de can
+always be converted into a completely equivalent {\cf letrec*}
+expression.  For example, the {\cf let} expression in the above
+example is equivalent to
+
+\begin{scheme}
+(let ((x 5))
+  (letrec* ((foo (lambda (y) (bar x y)))
+            (bar (lambda (a b) (+ (* a b) a))))
+    (foo (+ x 3))))%
+\end{scheme}
+
+Wherever an internal definition may occur
+{\tt(begin \hyperi{definition} \dotsfoo)}
+is equivalent to the sequence of definitions
+that form the body of the \ide{begin}.
+
 
 \section{Expressions}
 
@@ -293,12 +415,8 @@ the value of a literal expression using a mutation procedure like
 \proto{lambda}{ \hyper{formals} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Formals} should be a formal arguments list as described below,
-and \hyper{body} should be a sequence of one or more expressions.
-FIXME: \hyper{body} is not merely a sequence of one or more expressions
-FIXME: should probably refer Internal definititions section, possibly
-FIXME: renamed appropriately, and have that section cover declarations
-FIXME: as well
+\hyper{Formals} must be a formal arguments list as described below,
+and \hyper{body} must be according to~\ref{bodies}.
 
 \semantics
 \vest A \lambdaexp{} evaluates to a procedure.  The environment in
