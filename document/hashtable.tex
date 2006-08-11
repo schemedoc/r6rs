@@ -8,9 +8,9 @@
 \proto{make-eq-hash-table}{}{}
 \rproto{make-eq-hash-table}{ \var{k}}}
 
-Returns a newly allocated hash table that accepts arbitrary objects as keys, 
-and compares those keys with {\cf eq?}. If an argument is given, then the initial 
-capacity of the hash table is set to \var{k} elements.
+Returns a newly allocated mutable hash table that accepts arbitrary objects as keys, 
+and compares those keys with {\cf eq?}. If an argument is given, the initial 
+capacity of the hash table is set to approximately \var{k} elements.
 
 \end{entry}
 
@@ -18,10 +18,10 @@ capacity of the hash table is set to \var{k} elements.
 \proto{make-eqv-hash-table}{}{}
 \rproto{make-eqv-hash-table}{ \var{k}}}
 
-Returns a newly allocated hash table that accepts arbitrary objects as keys, 
+Returns a newly allocated mutable hash table that accepts arbitrary objects as keys, 
 and compares those keys with {\cf eqv?}.
-If an argument is given, then the initial 
-capacity of the hash table is set to \var{k} elements.
+If an argument is given, the initial 
+capacity of the hash table is set to approximately \var{k} elements.
 
 \end{entry}
 
@@ -32,8 +32,8 @@ capacity of the hash table is set to \var{k} elements.
 Returns a newly allocated mutable hash table using \vari{procedure} 
 as the hash function and \varii{procedure} as the procedure used to 
 compare keys.  The hash function must accept a key and return a 
-non-negative exact integer. If a third argument is given, then the 
-initial capacity of the hash table is set to \var{k} elements.
+non-negative exact integer. If a third argument is given, the 
+initial capacity of the hash table is set to approximately \var{k} elements.
 
 Both the hash function \vari{procedure} and the comparison
 predicate \varii{procedure} must behave like pure functions
@@ -83,7 +83,7 @@ then \var{default} is returned.
 
 \begin{entry}{\proto{hash-table-set!}{ \var{hash-table} \var{key} \var{value}}}
 Changes \var{hash-table} to associate \var{key} with value,
-replacing any existing association for \var{key}.
+adding a new association or replacing any existing association for \var{key}.
 Returns the unspecified value.
 \end{entry}
 
@@ -120,11 +120,20 @@ For every association in \var{hash-table}, calls \var{procedure} with three argu
 
 Returns a copy of \var{hash-table}.  If the \var{immutable} argument is provided and is a true value, the returned hash table will be immutable, otherwise it will be mutable.
 
+\begin{rationale}
+Hash table references may be less expensive with immutable hash tables.
+\end{rationale}
+
 \end{entry}
 
-\begin{entry}{\proto{hash-table-clear!}{ \var{hash-table}}}
+\begin{entry}{%
+\proto{hash-table-clear!}{ \var{hash-table}}{}
+\rproto{hash-table-clear!}{ \var{hash-table} \var{k}}}
 Removes all associations from \var{hash-table}.  Returns the unspecified value.
 \end{entry}
+
+If a second argument is given, the current
+capacity of the hash table is reset to approximately \var{k} elements.
 
 \begin{entry}{\proto{hash-table-keys}{ \var{hash-table}}}
 Equivalent to:
