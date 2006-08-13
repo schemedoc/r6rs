@@ -1418,9 +1418,9 @@ As noted in section~\ref{quotesection},
 {\cf (quasiquote \hyper{qq template})} may be abbreviated
 \backquote\hyper{qq template},
 {\cf (unquote \hyper{expression})} may be abbreviated
-\comma\hyper{expression}, and
+{\cf,}\hyper{expression}, and
 {\cf (unquote-splicing \hyper{expression})} may be abbreviated
-\comma\atsign\hyper{expression}.
+{\cf,}\atsign\hyper{expression}.
 
 % struck: "(in the sense of {\cf equal?})" after "equivalent"
 
@@ -1471,6 +1471,40 @@ car is one of these symbols may vary between implementations.
 Unpredictable behavior can result if any of the identifiers
 \ide{quasiquote}, \ide{unquote}, or \ide{unquote-splicing} appear in
 positions within a \hyper{qq template} otherwise than as described above.
+
+The following grammar for quasiquote expressions is not context-free.
+It is presented as a recipe for generating an infinite number of
+production rules.  Imagine a copy of the following rules for $D = 1, 2,
+3, \ldots$.  $D$ keeps track of the nesting depth.
+
+\begin{grammar}%
+\meta{quasiquotation} \: \meta{quasiquotation 1}
+\meta{qq template 0} \: \meta{expression}
+\meta{quasiquotation $D$} \: `\meta{qq template $D$}
+\>    \| (quasiquote \meta{qq template $D$})
+\meta{qq template $D$} \: \meta{simple datum}
+\>    \| \meta{list qq template $D$}
+\>    \| \meta{vector qq template $D$}
+\>    \| \meta{unquotation $D$}
+\meta{list qq template $D$} \: (\arbno{\meta{qq template or splice $D$}})
+\>    \| (\atleastone{\meta{qq template or splice $D$}} .\ \meta{qq template $D$})
+\>    \| '\meta{qq template $D$}
+\>    \| \meta{quasiquotation $D+1$}
+\meta{vector qq template $D$} \: \#(\arbno{\meta{qq template or splice $D$}})
+\meta{unquotation $D$} \: ,\meta{qq template $D-1$}
+\>    \| (unquote \meta{qq template $D-1$})
+\meta{qq template or splice $D$} \: \meta{qq template $D$}
+\>    \| \meta{splicing unquotation $D$}
+\meta{splicing unquotation $D$} \: ,@\meta{qq template $D-1$}
+\>    \| (unquote-splicing \arbno{\meta{qq template $D-1$}})
+\>    \| (unquote \arbno{\meta{qq template $D-1$}}) %
+\end{grammar}
+
+In \meta{quasiquotation}s, a \meta{list qq template $D$} can sometimes
+be confused with either an \meta{un\-quota\-tion $D$} or a \meta{splicing
+un\-quo\-ta\-tion $D$}.  The interpretation as an
+\meta{un\-quo\-ta\-tion} or \meta{splicing
+un\-quo\-ta\-tion $D$} takes precedence.
 
 \end{entry}
 
