@@ -13,12 +13,24 @@ built-in procedure.  An entry begins with one or more header lines of the form
 \noindent\pproto{\var{template}}{\var{category}}\unpenalty
 
 If \var{category} is ``\exprtype'', the entry describes an expression
-type, and the template gives the syntax of the expression type.
-Components of expressions are designated by syntactic variables, which
-are written using angle brackets, for example, \hyper{expression},
-\hyper{variable}.  Syntactic variables should be understood to denote segments of
-program text; for example, \hyper{expression} stands for any string of
-characters which is a syntactically valid expression.  The notation
+type, and the template gives the syntax of the expression type.  Even
+though the template is written in a notation similar to a right-hand
+side of the BNF rules in chapter~\ref{readsyntaxchapter}, it describes
+the set of S-expressions equivalent to the S-expressions matching the
+template.
+
+Components of the S-expressions described by a template are designated
+by syntactic variables, which are written using angle brackets, for
+example, \hyper{expression}, \hyper{variable}.  Syntactic variables
+should be understood to denote other S-expressions, or, in some cases,
+sequences of them.  A syntactic variable may refer to a non-terminal
+in the S-expression grammar, in which case only S-expressions matching
+that non-terminal are permissible in that position.  For example,
+\hyper{expression} stands for any S-expression which is a
+syntactically valid expression.  Other non-terminals that are used in
+templates will be defined as part of the specification.
+
+The notation
 \begin{tabbing}
 \qquad \hyperi{thing} $\ldots$
 \end{tabbing}
@@ -29,7 +41,7 @@ indicates zero or more occurrences of a \hyper{thing}, and
 indicates one or more occurrences of a \hyper{thing}.
 
 If \var{category} is ``procedure'', then the entry describes a procedure, and
-the header line gives a template for a call to the procedure.  Argument
+the header line gives a template for a call to the procedure.  Parameter
 names in the template are \var{italicized}.  Thus the header line
 
 \noindent\pproto{(vector-ref \var{vector} \var{k})}{procedure}\unpenalty
@@ -45,29 +57,35 @@ two arguments, a vector \var{vector} and an exact non-negative integer
 indicate that the {\tt make-vector} procedure must be defined to take
 either one or two arguments.
 
-FIXME
-
 \label{typeconventions}
-It is an error for an operation to be presented with an argument that it
-is not specified to handle.  For succinctness, we follow the convention
-that if an argument name is also the name of a type listed in
-section~\ref{disjointness}, then that argument must be of the named type.
+An operation that is presented with an argument that it
+is not specified to handle will raise an exception with exception type
+{\cf\&contract}.  For succinctness, we follow the convention
+that if an argument name is also the name of a type, then that argument must be of the named type.
 For example, the header line for {\tt vector-ref} given above dictates that the
 first argument to {\tt vector-ref} must be a vector.  The following naming
-conventions also imply type restrictions:
+conventions imply type restrictions:
 \newcommand{\foo}[1]{\vr{#1}, \vri{#1}, $\ldots$ \vrj{#1}, $\ldots$}
 $$
 \begin{tabular}{ll}
 \var{obj}&any object\\
 \foo{list}&list (see section~\ref{listsection})\\
+\foo{vector}&vector (see section~\ref{vectorsection})\\
 \foo{z}&complex number\\
 \foo{x}&real number\\
 \foo{y}&real number\\
 \foo{q}&rational number\\
 \foo{n}&integer\\
 \foo{k}&exact non-negative integer\\
+\foo{condition}&condition (see section~\ref{conditionssection})\\
+\foo{bytes}&bytes object (see section~\ref{bytessection})\\
+\foo{hash-table}&hash table (see section~\ref{hash-table})\\
 \end{tabular}
 $$
+
+Other type restrictions are defined used in specific chapters.  For
+example, chapter~\ref{numberchapter} uses a number of special parameter
+variables for the various subsets of the numbers.
 
 \todo{Provide an example entry??}
 
@@ -102,9 +120,13 @@ the time an argument is passed to the specified procedure and the
 first return of a value to that procedure's continuation.
 
 The times are in any global time that satisfies the axioms proposed in
-chapter 2 of MIT AI TR-633~\cite{AITR633}.  (In most implementations,
+chapter 2 of MIT AI TR-633~\cite{AITR633}.
+
+\begin{note}
+In most implementations,
 the definitions above are believed to be invariant under
-transformations of global time that are allowed by those axioms.)
+transformations of global time that are allowed by those axioms.
+\end{note}
 
 A \textit{plausible list up to $n$ between times $t_0$ and $t_n$} is a
 Scheme value $x$ such that
@@ -160,7 +182,7 @@ means that the expression {\tt(* 5 8)} evaluates to the object {\tt 40}.
 Or, more precisely:  the expression given by the sequence of characters
 ``{\tt(* 5 8)}'' evaluates, in the initial environment, to an object
 that may be represented externally by the sequence of characters ``{\tt
-40}''.  See section~\ref{externalreps} for a discussion of external
+40}''.  See chapter~\ref{readsyntaxchapter} for a discussion of external
 representations of objects.
 
 \section{Exceptional situations}
@@ -234,15 +256,17 @@ FIXME
 
 \section{Unspecified behavior}
 
-FIXME
-
 \vest If the value of an expression is said to be ``unspecified,''
 then the expression must evaluate without raising an exception, but
 the values returned depends on the implementation; this report
 explicitly does not say what values should be returned.
 \mainindex{unspecified}
 
-\todo{Look at KMP's situations paper.}
+Some expressions are specified to return \emph{the} unspecified value,
+which is a special value returned by the \texttt{unspecified}
+procedure.  (See section~\ref{unspecifiedvalue}.)  In this case, the
+return value is meaningless, and programmers are discouraged from
+relying on its specific nature.
 
 \section{Naming conventions}
 
@@ -255,7 +279,7 @@ allocated locations (see section~\ref{storagemodel}) usually end in
 ``\ide{!}''.
 Such procedures are called mutation procedures.
 By convention, the value returned by a mutation procedure is
-\unspecifiedreturn (see section~\ref{unspecifiedvalue}).
+\unspecifiedreturn{} (see section~\ref{unspecifiedvalue}).
 
 By convention, ``\ide{->}'' appears within the names of procedures that
 take an object of one type and return an analogous object of another type.
@@ -389,9 +413,9 @@ convenient to imagine that every object that denotes locations is associated
 with a flag telling whether that object is mutable\index{mutable} or
 immutable\index{immutable}.  In such systems literal constants and the strings
 returned by \ide{symbol->string} are immutable objects, while all objects
-created by the other procedures listed in this report are mutable.  It is an
-error to attempt to store a new value into a location that is denoted by an
-immutable object.
+created by the other procedures listed in this report are mutable.  An
+attempt to store a new value into a location that is denoted by an
+immutable object will raise an exception.
 
 \section{Proper tail recursion}
 \label{proper tail recursion}

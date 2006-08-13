@@ -2,6 +2,7 @@
 
 %%\vfill\eject
 \chapter{Lexical syntax and read syntax}
+\label{readsyntaxchapter}
 
 The syntax of Scheme programs is organized in three levels:
 %
@@ -39,7 +40,8 @@ Note that an object that corresponds to an S-expression (a so-called
 integer 28 also has representations ``{\tt \#e28.000}'' and
 ``{\tt\#x1c}'', and the list in the previous paragraph also has the
 representations ``{\tt( 08 13 )}'' and ``{\tt(8 .\ (13 .\ ()))}'' (see
-section~\ref{listsection}).
+section~\ref{listsection}).  S-expressions that denote equal
+objects are also equivalent as forms of a program.
 
 This chapter gives overviews and formal accounts of the lexical
 syntax and the read syntax.
@@ -334,7 +336,7 @@ The standard boolean objects for true and false are written as
 after a boolean literal must be a delimiter character such as a
 space or parenthesis.
 
-\subsection{Character}
+\subsection{Characters}
 
 Characters are written using the notation
 \sharpsign\backwhack\hyper{character} or
@@ -421,7 +423,7 @@ themselves.  Escape sequences always start with a backslash (\backwhack{}):
 \item{\tt \backwhack{}}\verb|"| : doublequote, Unicode 34 
 \item{\tt \backwhack{}\backwhack{}} : backslash, Unicode 92 
 \item{\tt \backwhack{}\hyper{linefeed}\hyper{intraline whitespace}} : nothing
-\item{\tt \backwhack{}\ } : space, Unicode 32(useful for terminating the
+\item{\tt \backwhack{}\ } : space, Unicode 32 (useful for terminating the
   previous escape sequence before continuing with whitespace)
 \item{\tt \backwhack{}x\atleastone{\hyper{digit 16}};} : (note the
   terminating semi-colon) where no more than eight \hyper{digit 16}s
@@ -588,7 +590,7 @@ compound structure:
 \begin{itemize}
 \item pairs and lists, enclosed by \verb|( )| or \verb|[ ]| (see
   section~\ref{pairlistsyntax})
-\item  vectors (see~\ref{vectorsection}.
+\item  vectors (see~\ref{vectorsection})
 \end{itemize}
 
 Note that the sequence of characters ``{\tt(+ 2 6)}'' is {\em not} an
@@ -612,7 +614,9 @@ section~\ref{lexicalsyntaxsection}:
 \meta{symbol} \: \meta{identifier}
 \meta{compound S-expression} \: \meta{list} \| \meta{vector}
 \meta{list} \: (\arbno{\meta{S-expression}})
+\>    \| [\arbno{\meta{S-expression}}]
 \>    \| (\atleastone{\meta{S-expression}} .\ \meta{S-expression})
+\>    \| [\atleastone{\meta{S-expression}} .\ \meta{S-expression}]
 \>    \| \meta{abbreviation}
 \meta{abbreviation} \: \meta{abbrev prefix} \meta{S-expression}
 \meta{abbrev prefix} \: ' \| ` \| , \| ,@
@@ -639,13 +643,10 @@ core-language expression evaluating to a vector.
 \subsection{Pairs and lists}
 \label{pairlistsyntax}
 
-FIXME: Matching pairs of parentheses that occur in the rules of
-Section~\ref{expressions} and the following sections can also be
-matching pairs of brackets.
-FIXME END
-
 List and pair S-expressions, denoting pairs and lists of values
 (see~\ref{listsection}) are written using parentheses or brackets.
+Matching pairs of parentheses that occur in the rules of \meta{list} are
+equivalent to matching pairs of brackets.
 
 The most general notation (external representation) for Scheme pairs is
 the ``dotted'' notation \hbox{\cf (\vari{c} .\ \varii{c})} where
@@ -676,17 +677,17 @@ are equivalent notations for a list of symbols.
 \begin{entry}{%
 \pproto{\singlequote\hyper{S-expression}}{}
 \pproto{\backquote\hyper{S-expression}}{}
-\pproto{\comma\hyper{S-expression}}{}
-\pproto{\comma\atsign\hyper{S-expression}}{}
+\pproto{,\hyper{S-expression}}{}
+\pproto{,\atsign\hyper{S-expression}}{}
 }
 
 \mainschindex{'}\singlequote\hyper{S-expression} is an abbreviation
 for {\cf (quote \hyper{S-expression})}.
 \mainschindex{`}\backquote\hyper{S-expression} is an abbreviation
 for {\cf (quasiquote \hyper{S-expression})}.
-\mainschindex{,}\comma\hyper{S-expression} is an abbreviation
+\mainschindex{,}{\cf,}\hyper{S-expression} is an abbreviation
 for {\cf (unquote \hyper{S-expression})}.
-\mainschindex{,@}\comma\atsign\hyper{S-expression} is an abbreviation
+\mainschindex{,@}{\cf,}\atsign\hyper{S-expression} is an abbreviation
 for {\cf (unquote-splicing \hyper{S-expression})}.
 \end{entry}
 
