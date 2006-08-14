@@ -248,11 +248,42 @@ violations of implementation restrictions.\mainindex{implementation
   restriction} For example, an implementation may raise an exception
 with condition type {\cf\&implementation-restriction} if it does not
 have enough storage to run a program.
- 
+
+
 \section{Safe and unsafe mode}
 \label{safeunsafemodesection}
 
 FIXME
+
+\section{Safety}
+
+The standard libraries whose exports are described by this
+document are said to be \defining{safe libraries}.  Libraries
+that import only from safe libraries, and do not contain any
+{\cf (safe 0)} or {\cf unsafe} declarations, are also said
+to be safe libraries.  A script is said to be safe if and
+only if its library part is a safe library.
+
+As defined by this document, the Scheme programming language
+is safe in the following sense:
+If a Scheme script is said to be safe, then its execution
+cannot go so badly wrong as to behave in ways that are
+inconsistent with the semantics described in this document,
+unless said execution first encounters some implementation
+restriction or other defect in the implementation of Scheme
+that is executing the script.
+
+Violations of an implementation restriction must raise an
+{\cf\&implementation-restriction} exception, as must all
+violations and errors that would otherwise threaten system
+integrity in ways that might result in execution that is
+inconsistent with the semantics described in this document.
+
+The above safety properties are guaranteed only for scripts
+and libraries that are said to be safe.  Implementations
+may provide access to unsafe libraries, and may interpret
+{\cf (safe 0)} and {\cf unsafe} declarations in ways that
+cannot guarantee safety.
 
 \section{Unspecified behavior}
 

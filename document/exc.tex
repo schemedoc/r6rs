@@ -35,11 +35,19 @@ part of a continuation that does not specify the destination of any
 returned values. It includes the {\tt dynamic-wind} context, and the
 current exception handler.
 
-The initial current exception handler of handles all {\tt \&serious}
-conditions by interrupting the program and reporting that an exception
-has been raised, and displaying some information about the condition
-object that was provided.  Moreover, the initial handler
-returns when passed any other (``non-serious'') condition.
+When a safe script begins its execution, the current
+exception handler is expected to handle all {\cf\&serious}
+conditions by interrupting execution, reporting that an
+exception has been raised, and displaying information
+about the condition object that was provided.  The handler
+may then exit, or may provide a choice of other options.
+Moreover, the exception handler is expected to return when
+passed any other (``non-serious'') condition.
+Interpretation of these expectations necessarily depends
+upon the nature of the system in which scripts are executed,
+but the intent is that users perceive the raising of an
+exception as a controlled escape from the situation that
+raised the exception, not as a crash.
 
 \begin{entry}{%
 \proto{with-exception-handler}{ \var{handler} \var{thunk}}{procedure}}
