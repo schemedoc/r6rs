@@ -24,7 +24,8 @@ object.
 
 Generally, the access procedures come in different flavors according
 to the size of the represented integer, and the endianness of the
-representation.  The procedures also distinguish signed and unsigned representations.
+representation.  The procedures also distinguish signed and unsigned
+representations.
 The signed representations all use two's complement.
 
 \begin{entry}{%
@@ -36,21 +37,23 @@ symbols {\cf big} and {\cf little}, respectively. These symbols
 represent an endianness, and whenever one of the procedures operating
 on bytes objects accepts an endianness as an argument, that argument
 must be one of these symbols. If the operarand to endianness is
-anything other than big or little, an expansion-time error is
-signalled. %% FIXME: error
+anything other than {\cf big} or {\cf little},
+an expansion-time error is signalled. %% FIXME: error
 \end{entry}
 
 \begin{entry}{%
 \proto{native-endianness}{}{procedure}}
 
-This procedure returns the endianness of the underlying machine
-architecture, either {\cf big} or {\cf little}.
+This procedure returns the implementation's preferred endianness
+(usually that of the underlying machine architecture),
+either {\cf big} or {\cf little}.
 \end{entry}   
 
 \begin{entry}{%
 \proto{bytes?}{ obj}{procedure}}
    
-Returns \schtrue{} if \var{obj} is a bytes object, otherwise returns \schfalse{}.
+Returns \schtrue{} if \var{obj} is a bytes object,
+otherwise returns \schfalse{}.
 \end{entry}
 
 \begin{entry}{%
@@ -65,13 +68,13 @@ returned bytes object are unspecified.
 If the \var{fill} argument is present, it must be an exact integer in
 the interval $\{-128, \ldots 255\}$ that specifies the initial value
 for the bytes of the bytes object: If \var{fill} is positive, it is
-interpreted as an octet, if it is negative, it is interpreted as a byte.
+interpreted as an octet; if it is negative, it is interpreted as a byte.
 \end{entry}   
 
 \begin{entry}{%
 \proto{bytes-length}{ bytes}{procedure}}
    
-Returns the number of bytes in bytes as an exact integer.
+Returns, as an exact integer, the number of bytes in \var{bytes}.
 \end{entry}
 
 \begin{entry}{%
@@ -80,9 +83,11 @@ Returns the number of bytes in bytes as an exact integer.
    
 \domain{\var{k} must be a valid index of bytes.}
    
-{\cf bytes-u8-ref} returns the byte at index \var{k} of \var{bytes} as an octet.
+{\cf bytes-u8-ref} returns the byte at index \var{k} of \var{bytes},
+as an octet.
    
-{\cf bytes-s8-ref} returns the byte at index \var{k} of \var{bytes}.
+{\cf bytes-s8-ref} returns the byte at index \var{k} of \var{bytes},
+as a (signed) byte.
 
 \begin{scheme}
 (let ((b1 (make-bytes 16 -127))
@@ -147,9 +152,9 @@ indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
 and specified by \var{endianness} into \var{bytes} at indices
 $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-\domain{For {\cf bytes-uint-set!}, \var{n} must be an exact integer in
-  the interval $\{-256^{\var{size}-1}, \ldots,
-  256^{\var{size}-1}-1\}$.}
+\domain{For {\cf bytes-sint-set!}, \var{n} must be an exact integer in
+  the interval $\{-256^{\var{size}}/2, \ldots,
+  256^{\var{size}}/2-1\}$.}
 {\cf bytes-sint-set!} stores the two's complement
 representation of size \var{size} and specified by \var{endianness}
 into \var{bytes} at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
@@ -358,7 +363,7 @@ elements \var{k} through $\var{k}+3$ of \var{bytes}, and returns
   \var{bytes}.  For {\cf bytes-ieee-double-native-set!}, \var{k} must
   be a multiple of $8$.}
 
-Stores an IEEE-754 single precision representation of \var{x} into
+Stores an IEEE-754 double precision representation of \var{x} into
 elements \var{k} through $\var{k}+7$ of \var{bytes}, and returns
 \unspecifiedreturn.
 \end{entry}
@@ -409,10 +414,10 @@ This returns a newly allocated copy of \var{bytes}.
 \proto{bytes->u8-list}{ bytes}{procedure}
 \proto{u8-list->bytes}{ list}{procedure}}
    
-\ide{Bytes->u8-list} returns a newly allocated list of the bytes of
+\ide{bytes->u8-list} returns a newly allocated list of the bytes of
 \var{bytes} in the same order.
 
-{\cf U8-list->bytes} returns a newly allocated bytes object whose
+{\cf u8-list->bytes} returns a newly allocated bytes object whose
 elements are the elements of list \var{list}, which must all be octets, in
 the same order.  Analogous to {\cf list->vector}.
 \end{entry}
