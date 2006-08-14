@@ -185,6 +185,40 @@ that may be represented externally by the sequence of characters ``{\tt
 40}''.  See chapter~\ref{readsyntaxchapter} for a discussion of external
 representations of objects.
 
+\section{Unspecified behavior}
+
+\vest If the value of an expression is said to be ``unspecified,''
+then the expression must evaluate without raising an exception, but
+the values returned depends on the implementation; this report
+explicitly does not say what values should be returned.
+\mainindex{unspecified}
+
+Some expressions are specified to return \emph{the} unspecified value,
+which is a special value returned by the \texttt{unspecified}
+procedure.  (See section~\ref{unspecifiedvalue}.)  In this case, the
+return value is meaningless, and programmers are discouraged from
+relying on its specific nature.
+
+\section{Multiple return values}
+
+A Scheme expression can evaluate to an arbitrary finite number of
+values.  These values are passed to the expression's continuation.
+
+Not all continuations accept any number of values: A continuation that
+accepts the argument to a procedure call is guaranteed to accept
+exactly one value.  The effect of passing such a continuation a
+different number of values is unspecified.  The {\cf call-with-values}
+described in section~\ref{controlsection} allows creating
+continuations that specified numbers of return values.  If a number of
+return values is passed to a continuation created by {\cf
+  call-with-values} not accepted by its \var{consumer} an exception is
+raised.
+
+A number of forms in the core language have sequences of expressions
+as subforms that are evaluated sequentially, with the return values of
+all but the last expression being discarded.  The continuations
+discarding these values accept any number of values.
+
 \section{Exceptional situations}
 
 \mainindex{error} When speaking of an exceptional situation, this
@@ -284,20 +318,6 @@ and libraries that are said to be safe.  Implementations
 may provide access to unsafe libraries, and may interpret
 {\cf (safe 0)} and {\cf unsafe} declarations in ways that
 cannot guarantee safety.
-
-\section{Unspecified behavior}
-
-\vest If the value of an expression is said to be ``unspecified,''
-then the expression must evaluate without raising an exception, but
-the values returned depends on the implementation; this report
-explicitly does not say what values should be returned.
-\mainindex{unspecified}
-
-Some expressions are specified to return \emph{the} unspecified value,
-which is a special value returned by the \texttt{unspecified}
-procedure.  (See section~\ref{unspecifiedvalue}.)  In this case, the
-return value is meaningless, and programmers are discouraged from
-relying on its specific nature.
 
 \section{Naming conventions}
 

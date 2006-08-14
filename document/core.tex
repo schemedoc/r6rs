@@ -70,7 +70,7 @@ Scheme value except \schfalse{}, and the word ``false'' to refer to
 A declaration affects a range of code, and indicates that the code
 within that range should be compiled or executed to have certain
 qualities.  A declaration appears at the beginning of a \hyper{body}
-(see section~\ref{bodies}), and its range is the library in which it
+(see section~\ref{bodiessection}), and its range is the library in which it
 appears, the expression that immediately surrounds the \hyper{body} at
 whose head it appears, or the group of definitions at whose head it
 appears, possibly including code inserted in the range in the course
@@ -182,7 +182,7 @@ debugging tools may not be usable.
 
 Definitions are valid in some, but not all, contexts where expressions
 are allowed.  They are valid only at the top level of a \hyper{program}
-and after the declarations in a \hyper{body} (see section~\ref{bodies}).
+and after the declarations in a \hyper{body} (see section~\ref{bodiessection}).
 \mainindex{definition}
 
 A definition \hyper{definition} should have one of the following forms:\mainschindex{define}
@@ -309,8 +309,8 @@ that follow the group.  For example, the following are errors:
     (plus foo x)))
 \end{scheme}
 
-\section{Bodies}
-\label{bodies}
+\section{Bodies and sequences}
+\label{bodiessection}
 
 \index{body}The body \hyper{body} of a \ide{lambda}, \ide{let}, \ide{let*},
 \ide{let-values}, \ide{let*-values}, \ide{letrec*}, \ide{letrec},
@@ -320,6 +320,10 @@ definition with a body has the following form:
 {\cf \arbno{\hyper{declaration}} \arbno{\hyper{definition}} \hyper{sequence}}
 
 \hyper{Declaration} is according to section~\ref{declarations}.
+
+A \hyper{sequence} has the following form:
+
+{\cf \arbno{\hyper{expression}}}
 
 Definitions may occur at the beginning of a \hyper{body} (that is,
 Such definitions are known as {\em internal definitions}
@@ -423,7 +427,7 @@ the value of a literal expression using a mutation procedure like
 
 \syntax
 \hyper{Formals} must be a formal arguments list as described below,
-and \hyper{body} must be according to~\ref{bodies}.
+and \hyper{body} must be according to section~\ref{bodies}.
 
 \semantics
 \vest A \lambdaexp{} evaluates to a procedure.  The environment in
@@ -3665,6 +3669,7 @@ condition type {\cf \&violation}.
 \end{entry}
 
 \section{Control features}
+\label{controlsection}
 \label{proceduresection}
  
 % Intro flushed; not very a propos any more.
@@ -3873,17 +3878,17 @@ Delivers all of its arguments to its continuation.
     (lambda (cont) (apply cont things))))
 \end{scheme}
 
-The continuations of all commands (represented by \meta{command} in
-the formal syntax) within a sequence of expressions (represented by
-\meta{sequence} in the formal syntax) in {\cf lambda}, {\cf
-  begin}, {\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*}, {\cf
-  case}, {\cf cond}, and {\cf do} forms take an arbitrary number of
-values.
+The continuations of all non-final expressions within a sequence of
+expressions in {\cf lambda}, {\cf begin}, {\cf let}, {\cf let*}, {\cf
+  letrec}, {\cf letrec*}, {\cf let-values}, {\cf let*-values}, {\cf
+  case}, {\cf cond}, and {\cf do} forms as well as the continuations
+of the \var{before} and \var{after} arguments to {\cf dynamic-wind}
+take an arbitrary number of values.
 
 Except for these and the continuations created by the {\cf
   call-with-values} procedure, all other continuations take exactly
 one value.  The effect of passing an inappropriate number of values to
-a continuation is unspecified.
+a continuation not created by {\cf call-with-values} is undefined.
 \end{entry}
 
 \begin{entry}{%
@@ -3903,6 +3908,9 @@ continuation of the call to {\tt call-with-values}.
 (call-with-values * -)                             \ev  -1
 \end{scheme}
 
+If an inappropriate number of values is passed to a continuation
+created by {\cf call-with-values}, an exception with condition type
+{\cf\&contract} is raised.
 \end{entry}
 
 \begin{entry}{%
