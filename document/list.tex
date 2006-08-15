@@ -4,8 +4,7 @@
 \begin{entry}{%
 \proto{find}{ proc list}{procedure}}
 
-\domain{\var{Proc} must be a procedure taking a single argument,
-  and \var{list} must be a list.}  {\cf Find} applies
+\domain{\var{Proc} must be a procedure taking a single argument.}  {\cf Find} applies
 \var{proc} to the elements of \var{list} in order.  If
 \var{proc} returns a true value for an element, {\cf find}
 immediately returns that element.  If \var{proc} returns
@@ -19,36 +18,47 @@ immediately returns that element.  If \var{proc} returns
 \end{entry}
 
 \begin{entry}{%
-\proto{forall}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}
-\proto{exists}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
+\proto{forall}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}
+\proto{exists}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s must be lists, and \var{proc} must be a
-  procedure taking as many arguments as there are {\it list}s. If more
-  than one \var{list} is given, then they must all be the same
-  length.}  {\cf Forall} applies \var{proc} element-wise to the
-elements of the \var{list}s.  If \var{proc} returns \schtrue{}
+\domain{For the \var{l}s, there must exist a natural number $n$
+  such that all \var{l}s are plausible lists of length $n$, they
+  must be values of according the conditions specified below.
+  \var{Proc} must be a procedure taking as many arguments as there are
+  \var{l}s.}
+
+{\cf Forall} applies \var{proc} element-wise to the
+elements of the \var{l}s.  If \var{proc} returns \schtrue{}
 for all but the last elements of the list, \var{forall} performs a
 tail call of \var{proc} on the last elements.  If \var{proc}
 returns \schfalse{} on any set of elements, {\cf forall} returns
 \schfalse{} after the first such application of \var{proc}.  If
-the \var{list}s are all empty, {\cf forall} returns \schtrue.
+the \var{l}s are all empty, {\cf forall} returns \schtrue.
 
 {\cf Exists} applies \var{proc} element-wise to the
-elements of the \var{list}s.  If \var{proc} returns \schfalse{}
+elements of the \var{l}s.  If \var{proc} returns \schfalse{}
 for all but the last elements of the list, \var{exists} performs a
 tail call of \var{proc} on the last elements.  If \var{proc}
 returns a true value on any set of elements, {\cf exists} returns
 that value after the first such application of \var{proc}.  If
-the \var{list}s are all empty, {\cf exists} returns \schfalse.
+the \var{l}s are all empty, {\cf exists} returns \schfalse.
+
+If the \var{l}s are not as specified, then a natural number $n$ must
+exist where each \varj{l} is the first Scheme value of a plausible
+prefix of length $n$ such that the car of the last value $x_n$ of that
+prefix satisfies the given condition (i.e.\ the procedure returns a
+false value with {\cf forall} or a true value with {\cf exists}) at
+some time after $t_n$ and before the procedure returns.  (See
+section~\ref{listargumentsection}.)
 
 \begin{scheme}
 (forall even? '(3 1 4 1 5 9)) \ev \schfalse{}
 (forall even? '(2 1 4 14)) \ev \schtrue{}
-(forall (lambda (n) (and (even? n) n)) '(2 1 4 14) \ev 14
+(forall (lambda (n) (and (even? n) n)) '(2 1 4 14) \lev 14
 
 (exists even? '(3 1 4 1 5 9)) \ev \schtrue{}
 (exists even? '(3 1 1 5 9)) \ev \schfalse{}
-(exists (lambda (n) (and (even? n) n)) '(2 1 4 14) \ev 2
+(exists (lambda (n) (and (even? n) n)) '(2 1 4 14) \lev 2
 \end{scheme}
 \end{entry}
 
@@ -57,8 +67,7 @@ the \var{list}s are all empty, {\cf exists} returns \schfalse.
 \proto{partition}{ proc list}{procedure}
 }
 
-\domain{\var{Proc} must be a procedure taking a single argument,
-  and \var{list} must be a list.}  {\cf Filter} successively applies
+\domain{\var{Proc} must be a procedure taking a single argument.}  {\cf Filter} successively applies
 \var{proc} to the elements of \var{list} and returns a list of
 the values of \var{list} for which \var{proc} returned a true
 value.  {\cf Partition} also successively applies \var{proc} to
@@ -78,7 +87,7 @@ which \var{proc} returned \schfalse.
 \begin{entry}{%
 \proto{fold-left}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{The \var{list}s must be lists, and \var{kons} must be a
+\domain{\var{Kons} must be a
   procedure taking as one more argument than there are {\it list}s. If
   more than one \var{list} is given, then they must all be the same
   length.}  {\cf Fold-left} iterates the \var{kons} procedure over an
@@ -117,7 +126,7 @@ reached; then the accumulator value is returned.
 \begin{entry}{%
 \proto{fold-right}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{The \var{list}s must be lists, and \var{kons} must be a
+\domain{\var{Kons} must be a
   procedure taking as one more argument than there are {\it list}s. If
   more than one \var{list} is given, then they must all be the same
   length.}  {\cf Fold-right} iterates the \var{kons} procedure over
