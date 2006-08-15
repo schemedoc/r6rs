@@ -3789,7 +3789,7 @@ may cause the invocation of \var{before} and \var{after} thunks installed using
 \ide{dynamic-wind}.
 
 The escape procedure accepts the same number of arguments as the
-continuation to the original call to \callcc.
+continuation of the original call to \callcc.
 
 \vest The escape procedure that is passed to \var{proc} has
 unlimited extent just like any other procedure in Scheme.  It may be stored
@@ -3917,50 +3917,63 @@ created by {\cf call-with-values}, an exception with condition type
 \proto{dynamic-wind}{ before thunk after}{procedure}}
 
 \domain{\var{Before}, \var{thunk}, and \var{after} must be procedures
-taking zero arguments and returning any number of values.}
+accepting zero arguments and returning any number of values.}
 
-Calls \var{thunk} without arguments, returning the result(s) of this call.
-\var{Before} and \var{after} are called, also without arguments, as required
-by the following rules (note that in the absence of calls to continuations
-captured using \ide{call-with-current-continuation} the three arguments are
-called once each, in order).  \var{Before} is called whenever execution
-enters the dynamic extent of the call to \var{thunk} and \var{after} is called
-whenever it exits that dynamic extent.  The dynamic extent of a procedure
-call is the period between when the call is initiated and when it
-returns.  In Scheme, because of {\cf call-with-current-continuation}, the
-dynamic extent of a call may not be a single, connected time period.
-It is defined as follows:
-\begin{itemize}
-\item The dynamic extent is entered when execution of the body of the
-called procedure begins.
+In the absense of any calls to escape procedures
+(see \ide{call-with-current-continuation}),
+{\cf dynamic-wind} behaves as if defined as follows.
 
-\item The dynamic extent is also entered when execution is not within
-the dynamic extent and a continuation is invoked that was captured
-(using {\cf call-with-current-continuation}) during the dynamic
-extent.  It is only entered after all \var{before}s have been called.
+\begin{scheme}
+(define dynamic-wind
+  (lambda (before thunk after)
+    (before)
+    (call-with-values
+      (lambda () (thunk))
+      (lambda vals
+        (after)
+        (apply values vals)))))
+\end{scheme}
 
-\item It is exited when the called procedure returns.
+That is, \var{before} is called without arguments.
+If \var{before} returns, \var{thunk} is called without arguments.
+If \var{thunk} returns, \var{after} is called without arguments.
+Finally, if \var{after} returns, the values resulting from the
+call to \var{thunk} are returned.
 
-\item It is also exited when execution is within the dynamic extent and
-a continuation is invoked that was captured while not within the
-dynamic extent.  It is exited before the \var{after}s have been called.
-\end{itemize}
+Invoking an escape procedure to transfer control into or out of the
+dynamic extent of the call to \var{thunk} can cause additional calls to
+\var{before} and \var{after}.
+When an escape procedure created outside the dynamic extent of the call to
+\var{thunk} is invoked from within the dynamic extent, \var{after} is
+called just after control leaves the dynamic extent.
+Similarly, when an escape procedure created within the dynamic extent of
+the call to \var{thunk} is invoked from outside the dynamic extent,
+\var{before} is called just before control reenters the dynamic extent.
+In the latter case, if \var{thunk} returns, \var{after} is called even
+if \var{thunk} has returned previously.
+While the calls to \var{before} and \var{after} are not considered to be
+within the dynamic extent of the call to \var{thunk}, calls to the before
+and after thunks of any other calls to {\cf dynamic-wind} that occur
+within the dynamic extent of the call to \var{thunk} are considered to be
+within the dynamic extent of the call to \var{thunk}.
 
-If a second call to {\cf dynamic-wind} occurs within the dynamic extent of the
-call to \var{thunk} and then a continuation is invoked in such a way that the
-\var{after}s from these two invocations of {\cf dynamic-wind} are both to be
-called, then the \var{after} associated with the second (inner) call to
-{\cf dynamic-wind} is called first.
-
-If a second call to {\cf dynamic-wind} occurs within the dynamic extent of the
-call to \var{thunk} and then a continuation is invoked in such a way that the
-\var{before}s from these two invocations of {\cf dynamic-wind} are both to be
-called, then the \var{before} associated with the first (outer) call to
-{\cf dynamic-wind} is called first.
-
-If invoking a continuation requires calling the \var{before} from one call
-to {\cf dynamic-wind} and the \var{after} from another, then the \var{after}
-is called first.
+More precisely, an escape procedure used to transfer control out of the
+dynamic extent of a set of zero or more active {\cf dynamic-wind}
+\var{thunk} calls $x\ \dots$ and transfer control into the dynamic extent
+of a set of zero or more active {\cf dynamic-wind} \var{thunk} calls
+$y\ \dots$ proceeds as follows.
+It leaves the dynamic extent of the most recent $x$ and calls without
+arguments the corresponding \var{after} thunk.
+If the \var{after} thunk returns, the escape procedure proceeds to
+the next most recent $x$, and so on.
+Once each $x$ has been handled in this manner,
+the escape procedure calls without arguments the \var{before} thunk
+corresponding to the least recent $y$.
+If the \var{before} thunk returns, the escape procedure reenters the
+dynamic extent of the least recent $y$ and proceeds with the next least
+recent $y$, and so on.
+Once each $y$ has been handled in this manner, control is transfered to
+the continuation packaged in the escape procedure.
 
 \begin{scheme}
 (let ((path '())
@@ -3980,33 +3993,37 @@ is called first.
         (reverse path))))
     \lev (connect talk1 disconnect
                connect talk2 disconnect)
-\end{scheme}
 
-\begin{scheme}
 (let ((n 0))
   (call-with-current-continuation
-   (lambda (k)
-     (dynamic-wind
-      (lambda ()
-        (set! n (+ n 1))
-        (k))
-      values
-      (lambda ()
-        (set! n (+ n 1))))))
+    (lambda (k)
+      (dynamic-wind
+        (lambda ()
+          (set! n (+ n 1))
+          (k))
+        (lambda ()
+          (set! n (+ n 2)))
+        (lambda ()
+          (set! n (+ n 4))))))
   n) \ev 1
-\end{scheme}
 
-\begin{scheme}
 (let ((n 0))
   (call-with-current-continuation
-   (lambda (k)
-     (dynamic-wind
-      values
-      values
-      (lambda ()
-        (set! n (+ n 1))
-        (k)))))
-  n) \ev 1
+    (lambda (k)
+      (dynamic-wind
+        values
+        (lambda ()
+          (dynamic-wind
+            values
+            (lambda ()
+              (set! n (+ n 1))
+              (k))
+            (lambda ()
+              (set! n (+ n 2))
+              (k))))
+        (lambda ()
+          (set! n (+ n 4))))))
+  n) \ev 7
 \end{scheme}
 \end{entry}
 
