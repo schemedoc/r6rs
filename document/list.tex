@@ -179,25 +179,34 @@ uses {\cf eqv?}\ and {\cf remove} uses {\cf equal?}.
 \end{entry}
 
 \begin{entry}{%
-\proto{memp}{ predicate list}{procedure}
-\proto{member}{ obj list}{procedure}
-\proto{memv}{ obj list}{procedure}
-\proto{memq}{ obj list}{procedure}
+\proto{memp}{ predicate l}{procedure}
+\proto{member}{ obj l}{procedure}
+\proto{memv}{ obj l}{procedure}
+\proto{memq}{ obj l}{procedure}
 }
 
-\domain{\var{Predicate} must be a predicate taking a single argument.}
-These procedures return the first sublist of \var{list} whose car
-satisfies a given condition, where the sublists of \var{list} are the
-non-empty lists returned by {\tt (list-tail \var{list} \var{k})} for
-\var{k} less than the length of \var{list}..  {\cf Memp} applies
-\var{predicate} to the cars of the sublists of \var{list} until it
+\domain{\var{Predicate} must be a predicate taking a single argument.
+  \var{L} must be a plausible list or a value according to the
+  conditions specified below.}
+
+These procedures return the first sublist of \var{l} whose car
+satisfies a given condition, where the sublists of \var{l} are the
+non-empty lists returned by {\tt (list-tail \var{l} \var{k})} for
+\var{k} less than the length of \var{l}.  {\cf Memp} applies
+\var{predicate} to the cars of the sublists of \var{l} until it
 finds one for which \var{predicate} returns a true value.  {\cf
   Member}, {\cf memv}, and {\cf memq} look for the first occurrence of
-\var{obj}.  If \var{list} does not contain an element satisfying the
+\var{obj}.  If \var{l} does not contain an element satisfying the
 condition, then \schfalse{} (not the empty list) is returned.  {\cf
   Member} uses {\cf equal?}\ to compare \var{obj} with the elements of
-\var{list}, while {\cf memv} uses {\cf eqv?}\ and {\cf memq} uses
+\var{l}, while {\cf memv} uses {\cf eqv?}\ and {\cf memq} uses
 {\cf eq?}.
+
+If \var{l} is not a plausible list, then it must be such that a
+natural number $n$ exists where \var{l} is the first Scheme value of a
+plausible prefix of length $n$ such that the car of the last value $x_n$ of that
+prefix satisfies the given condition at some time after $t_n$ and before
+the procedure returns.  (See section~\ref{listargumentsection}.)
 
 \begin{scheme}
 (memp even? '(3 1 4 1 5 9 2 6 5)) \lev (4 1 5 9 2 6 5)
