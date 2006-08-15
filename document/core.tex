@@ -3536,7 +3536,12 @@ given strings.
 \proto{string->list}{ string}{procedure}
 \proto{list->string}{ list}{procedure}}
 
-\domain{List\coerce{}string must be a list of characters.}
+\domain{{\cf List\coerce{}string} must be a plausible list where, for every
+  natural number $n$ and for every plausible prefix $x_i$ of that argument
+  of length $n$, there exists a time $t$ with $t_i < t <
+  t_r$, where $t_r$ is the time of first return from {\cf
+    list\coerce{}string}, for which the car of $x_i$ is a character.
+  (See section~\ref{listargumentsection}.)}
 
 {\cf String\coerce{}list} returns a newly allocated list of the
 characters that make up the given string.  {\cf List\coerce{}string}
