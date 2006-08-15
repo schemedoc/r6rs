@@ -223,23 +223,23 @@ discarding these values accept any number of values.
 \section{Exceptional situations}
 
 \mainindex{error} When speaking of an exceptional situation, this
-report uses the phrase ``an exception must be raised'' to indicate
+report uses the phrase ``an exception is raised'' to indicate
 that implementations must detect the situation and report it to the
 program through the exception system described in
 chapter~\ref{exceptionsconditionschapter}.
 
-Several variations on ``an exception must be raised'' are possible:
+Several variations on ``an exception is raised'' are possible:
 
 \begin{itemize}
-\item ``Should raise an exception" means that implementations
+\item ``An exception should be raised'' means that implementations
   are encouraged, but not required, to detect the situation
   and to raise an exception.
 
-\item ``May raise an exception'' means that implementations
+\item ``An exception may be raised'' means that implementations
 are allowed, but not required or encouraged, to detect
 the situation and to raise an exception.
 
-\item ``Might raise an exception'' means that implementations
+\item ``An exception might be  means that implementations
 are allowed, but discouraged, to detect the situation
 and to raise an exception.
 \end{itemize}
@@ -257,7 +257,7 @@ that the object provided with the exception is a condition object of
 the specified type.
 
 \vest For example, an exception with condition type {\cf\&contract}
-must be raised if a procedure is passed an argument that the procedure
+is raised if a procedure is passed an argument that the procedure
 is not explicitly specified to handle, even though such domain
 exceptions are not always mentioned in this report.
 
@@ -308,8 +308,8 @@ unless said execution first encounters some implementation
 restriction or other defect in the implementation of Scheme
 that is executing the script.
 
-Violations of an implementation restriction must raise an
-{\cf\&implementation-restriction} exception, as must all
+Violations of an implementation restriction must cause an exception
+with condition type {\cf\&implementation-restriction} to be raised, as must all
 violations and errors that would otherwise threaten system
 integrity in ways that might result in execution that is
 inconsistent with the semantics described in this document.
@@ -448,7 +448,7 @@ imported from other libraries are immutable.  See
 section~\ref{importsareimmutablesection}.)
 
 If a script or library form is not syntactically correct, then the
-execution of that script or library must be allowed to begin.
+execution of that script or library must not be allowed to begin.
 
 \section{Storage model}
 \label{storagemodel}
