@@ -59,7 +59,7 @@ either one or two arguments.
 
 \label{typeconventions}
 An operation that is presented with an argument that it
-is not specified to handle will raise an exception with exception type
+is not specified to handle will raise an exception with condition type
 {\cf\&contract}.  For succinctness, we follow the convention
 that if an argument name is also the name of a type, then that argument must be of the named type.
 For example, the header line for {\tt vector-ref} given above dictates that the
@@ -255,6 +255,14 @@ classifying them by condition types.  This report uses the phrase
 ``an exception with condition type \meta{condition-type}'' to indicate
 that the object provided with the exception is a condition object of
 the specified type.
+
+For most exceptional situations where an exception is raised, the
+program cannot continue at the place the situation was detected.  In
+that case, the exception handler invoked by the exception must not
+return.  In some cases, however, continuing is permissible; the
+handler may return.  The phrase ``a continuable
+exception is raised'' indicates such a situation.
+See~\ref{exceptionssection}.
 
 \vest For example, an exception with condition type {\cf\&contract}
 is raised if a procedure is passed an argument that the procedure
