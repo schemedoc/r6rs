@@ -372,12 +372,12 @@ section~\ref{primitiveexpressionsection}.
 \label{literalsection}
 
 \begin{entry}{%
-\proto{quote}{ \hyper{datum}}{\exprtype}}
+\proto{quote}{ \hyper{S-expressions}}{\exprtype}}
 
-{\cf (quote \hyper{datum})} evaluates to \hyper{datum}.
-\hyper{Datum}
-may be any external representation of a Scheme object (see
-section~\ref{externalreps}).  This notation is used to include literal
+{\cf (quote \hyper{S-expression})} evaluates to the datum
+denoted by \hyper{S-expression}.
+(See
+section~\ref{readsyntaxsection}.).  This notation is used to include literal
 constants in Scheme code.
 
 \begin{scheme}%
@@ -386,8 +386,8 @@ constants in Scheme code.
 (quote (+ 1 2))               \ev  (+ 1 2)%
 \end{scheme}
 
-As noted in section~\ref{quotesection}, {\cf (quote \hyper{datum})}
-may be abbreviated as \singlequote\hyper{datum}:
+As noted in section~\ref{quotesection}, {\cf (quote \hyper{S-expression})}
+may be abbreviated as \singlequote\hyper{S-expression}:
 
 \begin{scheme}
 '"abc"               \ev  "abc"
@@ -412,10 +412,8 @@ constants evaluate ``to themselves''; they need not be quoted.
 \schtrue   \ev  \schtrue%
 \end{scheme}
 
-As noted in section~\ref{storagemodel}, it is an error to alter 
-the value of a literal expression using a mutation procedure like
-{\cf set-car!}\ or {\cf string-set!}.
-
+As noted in section~\ref{storagemodel}, the value of a literal
+expression may be immutable.
 \end{entry}
 
 
