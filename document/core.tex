@@ -3062,27 +3062,25 @@ Returns the length of \var{list}.
 
 
 \begin{entry}{%
-\proto{append}{ list \dotsfoo}{procedure}}
+\proto{append}{ list \dotsfoo{} obj}{procedure}}
 
 \nodomain{All \var{list}s should be lists.}
-Returns a list consisting of the elements of the first \var{list}
-followed by the elements of the other \var{list}s.
+Returns a possibly improper list consisting of the elements of the first \var{list}
+followed by the elements of the other \var{list}s, with \var{obj} as
+the cdr of the final pair.
+An improper list results if \var{obj} is not a
+proper list.
 
 \begin{scheme}
 (append '(x) '(y))              \ev  (x y)
 (append '(a) '(b c d))          \ev  (a b c d)
-(append '(a (b)) '((c)))        \ev  (a (b) (c))%
-\end{scheme}
-
-The resulting list is always newly allocated, except that it shares
-structure with the last \var{list} argument.  The last argument may
-actually be any object; an improper list results if the last argument is not a
-proper list.  \todo{This is pretty awkward.  I should get Bartley to fix this.}
-
-\begin{scheme}
+(append '(a (b)) '((c)))        \ev  (a (b) (c))
 (append '(a b) '(c . d))        \ev  (a b c . d)
 (append '() 'a)                 \ev  a%
 \end{scheme}
+
+The resulting improper list is always newly allocated, except that it shares
+structure with the \var{obj} argument.
 \end{entry}
 
 
