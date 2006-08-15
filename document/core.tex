@@ -865,7 +865,7 @@ in an environment in which the first binding is visible, and so on.
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
 and \hyper{body} should be a sequence of
-one or more expressions. It is an error for a \hyper{variable} to appear more
+one or more expressions. It is syntax violation for a \hyper{variable} to appear more
 than once in the list of variables being bound.
 
 \semantics
@@ -899,10 +899,10 @@ define mutually recursive procedures.
 
 One restriction on {\cf letrec} is very important: it must be possible
 to evaluate each \hyper{init} without assigning or referring to the value of any
-\hyper{variable}.  If this restriction is violated, then it is an error.  The
-restriction is necessary because Scheme passes arguments by value rather than by
+\hyper{variable}.  If this restriction is violated, an exception  with
+condition type {\cf\&contract} is
+raised.  The restriction is necessary because Scheme passes arguments by value rather than by
 name.
-If this restriction is violated, an exception is raised.
 In the most common uses of {\cf letrec}, all the \hyper{init}s are
 \lambdaexp{}s and the restriction is satisfied automatically.
 
@@ -998,7 +998,8 @@ One restriction on {\cf letrec*} is very important: it must be possible
 to evaluate each \hyper{init} without assigning or referring to the value
 the corresponding \hyper{variable} or the \hyper{variable} of any of
 the bindings that follow it in \hyper{bindings}.
-If this restriction is violated, an exception is raised.
+If this restriction is violated, an exception with condition type
+{\cf\&contract} is raised.
 The restriction is necessary because Scheme passes arguments by value
 rather than by name. 
 
