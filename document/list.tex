@@ -4,7 +4,8 @@
 \begin{entry}{%
 \proto{find}{ proc list}{procedure}}
 
-\domain{\var{Proc} must be a procedure taking a single argument.}  {\cf Find} applies
+\domain{\var{Proc} must be a procedure; it must take a single argument
+  if \var{list} is non-empty.}  {\cf Find} applies
 \var{proc} to the elements of \var{list} in order.  If
 \var{proc} returns a true value for an element, {\cf find}
 immediately returns that element.  If \var{proc} returns
@@ -21,43 +22,42 @@ immediately returns that element.  If \var{proc} returns
 \proto{forall}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}
 \proto{exists}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}}
 
-\domain{For the \var{l}s, there must exist a natural number $n$
-  such that all \var{l}s are plausible lists of length $n$, they
-  must be values of according the conditions specified below.
-  \var{Proc} must be a procedure taking as many arguments as there are
-  \var{l}s.}
+\domain{The \var{l}s must all be the empty list, or chains of pairs of
+  sizes according to the condition specified below.
+  \var{Proc} must be a procedure; it must take a single argument if
+  the \var{l}s are non-empty.}
 
 {\cf Forall} applies \var{proc} element-wise to the
 elements of the \var{l}s.  If \var{proc} returns \schtrue{}
-for all but the last elements of the list, \var{forall} performs a
-tail call of \var{proc} on the last elements.  If \var{proc}
+for all but the last elements of the \var{l}s, \var{forall} performs a
+tail call of \var{proc} on the last elements---in this case, the
+\var{l}s must all be lists.  If \var{proc}
 returns \schfalse{} on any set of elements, {\cf forall} returns
-\schfalse{} after the first such application of \var{proc}.  If
+\schfalse{} after the first such application of \var{proc} without
+further traversing the \var{l}s.  If
 the \var{l}s are all empty, {\cf forall} returns \schtrue.
 
 {\cf Exists} applies \var{proc} element-wise to the
 elements of the \var{l}s.  If \var{proc} returns \schfalse{}
-for all but the last elements of the list, \var{exists} performs a
-tail call of \var{proc} on the last elements.  If \var{proc}
+for all but the last elements of the \var{l}s, \var{exists} performs a
+tail call of \var{proc} on the last elements---in this case, the
+\var{l}s must all be lists..  If \var{proc}
 returns a true value on any set of elements, {\cf exists} returns
-that value after the first such application of \var{proc}.  If
+that value after the first such application of \var{proc} without
+further traversing the \var{l}s.  If
 the \var{l}s are all empty, {\cf exists} returns \schfalse.
 
-If the \var{l}s are not as specified, then a natural number $n$ must
-exist where each \varj{l} is the first Scheme value of a plausible
-prefix of length $n$ such that the car of the last value $x_n$ of that
-prefix satisfies the given condition (i.e.\ the procedure returns a
-false value with {\cf forall} or a true value with {\cf exists}) at
-some time after $t_n$ and before the procedure returns.  (See
-section~\ref{listargumentsection}.)
 
 \begin{scheme}
 (forall even? '(3 1 4 1 5 9)) \ev \schfalse{}
+(forall even? '(3 1 4 1 5 9 . 2)) \ev \schfalse{}
 (forall even? '(2 1 4 14)) \ev \schtrue{}
+(forall even? '(2 1 4 14 . 9)) \ev \exception{\cf\&contract}
 (forall (lambda (n) (and (even? n) n)) '(2 1 4 14) \lev 14
 
 (exists even? '(3 1 4 1 5 9)) \ev \schtrue{}
 (exists even? '(3 1 1 5 9)) \ev \schfalse{}
+(exists even? '(3 1 1 5 9 . 2)) \ev \exception{\cf\&contract}
 (exists (lambda (n) (and (even? n) n)) '(2 1 4 14) \lev 2
 \end{scheme}
 \end{entry}
@@ -67,7 +67,8 @@ section~\ref{listargumentsection}.)
 \proto{partition}{ proc list}{procedure}
 }
 
-\domain{\var{Proc} must be a procedure taking a single argument.}  {\cf Filter} successively applies
+\domain{\var{Proc} must be a procedure; it must take a single argument
+  if \var{list} is non-empty.}  {\cf Filter} successively applies
 \var{proc} to the elements of \var{list} and returns a list of
 the values of \var{list} for which \var{proc} returned a true
 value.  {\cf Partition} also successively applies \var{proc} to
@@ -87,10 +88,12 @@ which \var{proc} returned \schfalse.
 \begin{entry}{%
 \proto{fold-left}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{\var{Kons} must be a
-  procedure taking as one more argument than there are {\it list}s. If
+\domain{If
   more than one \var{list} is given, then they must all be the same
-  length.}  {\cf Fold-left} iterates the \var{kons} procedure over an
+  length.  \var{Kons} must be a
+  procedure; if the \var{list}s are non-empty, it must take one more
+  argument than there are {\it list}s.}
+{\cf Fold-left} iterates the \var{kons} procedure over an
 accumulator value and the values of the {\it list}s from left to
 right, starting with an accumulator value of \var{nil}.  More
 specifically, {\cf fold-left} returns \var{nil} if the {\it list}s are
@@ -126,10 +129,12 @@ reached; then the accumulator value is returned.
 \begin{entry}{%
 \proto{fold-right}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{\var{Kons} must be a
-  procedure taking as one more argument than there are {\it list}s. If
+\domain{ If
   more than one \var{list} is given, then they must all be the same
-  length.}  {\cf Fold-right} iterates the \var{kons} procedure over
+  length.\var{Kons} must be a
+  procedure; if the \var{list}s are non-empty, it must take one more
+  argument than there are {\it list}s.}
+{\cf Fold-right} iterates the \var{kons} procedure over
 the values of the {\it list}s from right to left and an accumulator
 value, starting with an accumulator value of \var{nil}.  More
 specifically, {\cf fold-right} returns \var{nil} if the {\it list}s
@@ -163,7 +168,8 @@ list is reached; then the accumulator value is returned.
 \proto{remv}{ obj list}{procedure}
 \proto{remq}{ obj list}{procedure}}
 
-\domain{\var{Proc} must be a procedure taking a single argument.}
+\domain{\var{Proc} must be a procedure; it must take a single argument
+  if \var{list} is non-empty.}
 Each of these procedures returns a list of the elements of \var{lists}
 that do not satisfy a given condition.  {\cf Remp} successively
 applies \var{proc} to the elements of \var{list} and returns a
@@ -191,28 +197,25 @@ uses {\cf eqv?}\ and {\cf remove} uses {\cf equal?}.
 \proto{memq}{ obj l}{procedure}
 }
 
-\domain{\var{Proc} must be a procedure taking a single argument.
-  \var{L} must be a plausible list or a value according to the
-  conditions specified below.}
+\domain{\var{Proc} must be a procedure; it must take a single argument
+  if \var{l} is non-empty.
+  \var{L} must be the empty list or a chain of pairs of size according
+to the conditions stated below.}
 
 These procedures return the first sublist of \var{l} whose car
-satisfies a given condition, where the sublists of \var{l} are the
-non-empty lists returned by {\tt (list-tail \var{l} \var{k})} for
+satisfies a given condition, where the subchains of \var{l} are the
+chains of pairs returned by {\tt (list-tail \var{l} \var{k})} for
 \var{k} less than the length of \var{l}.  {\cf Memp} applies
 \var{proc} to the cars of the sublists of \var{l} until it
-finds one for which \var{proc} returns a true value.  {\cf
+finds one for which \var{proc} returns a true value without traversing
+\var{l} further.  {\cf
   Member}, {\cf memv}, and {\cf memq} look for the first occurrence of
 \var{obj}.  If \var{l} does not contain an element satisfying the
-condition, then \schfalse{} (not the empty list) is returned.  {\cf
+condition, then \schfalse{} (not the empty list) is returned; in that
+case, \var{l} must be a list.  {\cf
   Member} uses {\cf equal?}\ to compare \var{obj} with the elements of
 \var{l}, while {\cf memv} uses {\cf eqv?}\ and {\cf memq} uses
 {\cf eq?}.
-
-If \var{l} is not a plausible list, then it must be such that a
-natural number $n$ exists where \var{l} is the first Scheme value of a
-plausible prefix of length $n$ such that the car of the last value $x_n$ of that
-prefix satisfies the given condition at some time after $t_n$ and before
-the procedure returns.  (See section~\ref{listargumentsection}.)
 
 \begin{scheme}
 (memp even? '(3 1 4 1 5 9 2 6 5)) \lev (4 1 5 9 2 6 5)
@@ -240,14 +243,17 @@ the procedure returns.  (See section~\ref{listargumentsection}.)
 \proto{assv}{ obj al}{procedure}
 \proto{assq}{ obj al}{procedure}}
 
-\domain{\var{Al} (for ``association list'') must be a a plausible
-  alist or a value according to the conditions specified below.
-  \var{Proc} must be a procedure taking a single argument.}
+\domain{\var{Al} (for ``association list'') must be the empty list or
+  a chain of pairs where each car contains a pair of size according to
+  the conditions specified below.  \var{Proc} must be a procedure; it
+  must take a single argument if \var{al} is non-empty.}
 
 These procedures find the first pair in \var{al}
-whose car field satisfies a given condition, and returns that pair.
+whose car field satisfies a given condition, and returns that pair
+without traversing \var{al} further.
 If no pair in \var{al} satisfies the condition, then \schfalse{}
-(not the empty list) is returned.  {\cf Assp} successively applies
+(not the empty list) is returned; in that case, \var{al} must be a
+list.  {\cf Assp} successively applies
 \var{proc} to the car fields of \var{al} and looks for a pair
 for which it returns a true value.  {\cf Assoc}, {\cf assv}, and {\cf
   assq} look for a pair that has \var{obj} as its car {\cf Assoc} uses
@@ -255,13 +261,6 @@ for which it returns a true value.  {\cf Assoc}, {\cf assv}, and {\cf
 \var{al}, while {\cf assv} uses {\cf eqv?}\ and {\cf assq} uses
 {\cf eq?}.
 
-If \var{al} is not a plausible alist, then a natural number $n$ must
-exist such that \var{al} is the first Scheme value of a plausible
-prefix of length $n$ such that every Scheme value $x_1$ through $x_n$
-of that prefix is a pair, and $x_n$ has a pair as its car at some time
-after $t_n$, and at some time after that the car of that pair is the
-first argument, all before the procedure returns.
-(See section~\ref{listargumentsection}.)
 
 \begin{scheme}
 (define d '((3 a) (1 b) (4 c)))

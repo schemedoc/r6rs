@@ -2824,8 +2824,7 @@ A \defining{pair} (sometimes called a \defining{dotted pair}) is a
 record structure with two fields called the car and cdr fields (for
 historical reasons).  Pairs are created by the procedure {\cf cons}.
 The car and cdr fields are accessed by the procedures {\cf car} and
-{\cf cdr}.  The car and cdr fields are assigned by the procedures
-{\cf set-car!}\ and {\cf set-cdr!} in the FIXME library (see chapter~\ref{pairmutationchapter}).
+{\cf cdr}.
 
 Pairs are used primarily to represent lists.  A list can
 be defined recursively as either the empty list\index{empty list} or a pair whose
@@ -3101,33 +3100,31 @@ in reverse order.
 \begin{entry}{%
 \proto{list-tail}{ l \vr{k}}{procedure}}
 
-\domain{\var{L} must ve a plausible list up to \var{k}.  (See
-  section~\ref{listargumentsection}.)}
+\domain{\var{L} must a chain of pairs of size at least \var{k}, or, if
+  \var{k} is 0, the empty list.}
 
-Returns the sublist of \var{l} obtained by omitting the first \vr{k}
+Returns the subchain of pairs of \var{l} obtained by omitting the first \vr{k}
 elements.
-
-If \var{l} is not a plausible list, but a plausible list up to
-\var{k}, no exception is raised.
+\begin{scheme}
+(list-tail '(a b c d) 2)                 \ev  (c d)
+(list-tail '(a b c . d) 2)                 \ev  (c . d)
+\end{scheme}
 \end{entry}
 
 
 \begin{entry}{%
 \proto{list-ref}{ l \vr{k}}{procedure}}
 
-\domain{\var{L} must ve a plausible list up to and including \var{k}.  (See
-  section~\ref{listargumentsection}.)}
+\domain{\var{L} must be a chain of pairs of size at least $\var{k}+1$.}
 
 Returns the \vr{k}th element of \var{l}.
 
 \begin{scheme}
 (list-ref '(a b c d) 2)                 \ev  c
 (list-ref '(a b c d)
-          (inexact->exact (round 1.8))) \lev  c%
+          (inexact->exact (round 1.8))) \lev  c
+(list-ref '(a b c . d) 2) \ev c
 \end{scheme}
-
-If \var{l} is not a plausible list, but a plausible list up to and
-including \var{k}, no exception is raised.
 \end{entry}
 
 
@@ -3150,11 +3147,10 @@ including \var{k}, no exception is raised.
 \begin{entry}{%
 \proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s must be plausible lists, and \var{proc} must be a
-procedure taking as many arguments as there are {\it list}s
-and returning a single value.  If more
-than one \var{list} is given, a natural number $n$ must exist such
-that all \varj{list} are plausible lists of length $n$.}
+\domain{The \var{list}s must all have the same length.  \var{Proc}
+  must be a procedure.  If the \var{list}s are non-empty, they must
+  take as many arguments as there are {\it list}s and returning a
+  single value.}
 
 {\cf Map} applies \var{proc} element-wise to the elements of the
 \var{list}s and returns a list of the results, in order.
@@ -3538,13 +3534,7 @@ given strings.
 \proto{string->list}{ string}{procedure}
 \proto{list->string}{ list}{procedure}}
 
-\domain{{\cf List\coerce{}string} must be a plausible list where, for every
-  natural number $n$ and for every plausible prefix $x_i$ of that argument
-  of length $n$, there exists a time $t$ with $t_i < t <
-  t_r$, where $t_r$ is the time of first return from {\cf
-    list\coerce{}string}, for which the car of $x_i$ is a character.
-  (See section~\ref{listargumentsection}.)}
-
+\domain{\var{List} must be a list of characters.}
 {\cf String\coerce{}list} returns a newly allocated list of the
 characters that make up the given string.  {\cf List\coerce{}string}
 returns a newly allocated string formed from the characters in the list
@@ -3747,7 +3737,7 @@ flow of program execution in special ways.
 \proto{apply}{ proc \vari{arg} $\ldots$ args}{procedure}}
 
 \domain{\var{Proc} must be a procedure and \var{args} must be a
-  plausible list.}
+  list.}
 Calls \var{proc} with the elements of the list
 {\cf(append (list \vari{arg} \dotsfoo) \var{args})} as the actual
 arguments.

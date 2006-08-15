@@ -70,7 +70,7 @@ $$
 \begin{tabular}{ll}
 \var{obj}&any object\\
 \var{pair}&pair (see section~\ref{listsection})\\
-\var{list}&list (see section~\ref{listsection}, note section~\ref{listargumentsection})\\
+\var{list}&list (see section~\ref{listsection})\\
 \var{vector}&vector (see section~\ref{vectorsection})\\
 \var{z}&complex number\\
 \var{x}&real number\\
@@ -99,81 +99,19 @@ the \var{category} describes the type of that value.  The header line
 indicates that {\cf\&who} is a condition type.
 
 \section{List arguments}
-\label{listargumentsection}
 
-Lists are mutable in Scheme, so a pair that is the head of a list at
-one moment may not always be the head of a list.  Any procedures
-defined in this report specified as accepting a list argument must
-check if that argument indeed appears to be a list.  This checking is
-complicated by the fact that many procedures accepting lists such as
-{\cf map} or {\cf filter} call arbitrary procedures that are passed as
-arguments.  These argument procedures may mutate the list while it is
-being traversed.  Moreover, in the presence of concurrent evaluation,
-whether a pair is the head of a list is not computable in general.
+List arguments are immutable in programs that do not make use of the
+FIXME library.  In such programs, a procedure accepting a list as an
+argument can trivially check that the argument is indeed a list.
 
-Consequently, procedures like {\cf length} are only required to check
-that a list argument is a \textit{plausible list\index{plausible
-    list}}.  Informally, a plausible list is an object that appears as
-a list during a sequential traversal, where that traversal must also
-detect a cycle.  A more formal definition follows:
-
-Plausible lists are defined with respect to the time interval between
-the time an argument is passed to the specified procedure and the
-first return of a value to that procedure's continuation.
-
-The times are in any global time that satisfies the axioms proposed in
-chapter 2 of MIT AI TR-633~\cite{AITR633}.
-
-\begin{note}
-In most implementations,
-the definitions above are believed to be invariant under
-transformations of global time that are allowed by those axioms.
-\end{note}
-
-A \textit{plausible list up to $n$ between times $t_0$ and $t_n$} is a
-Scheme value $x$ such that
-%
-\begin{enumerate}
-\item $x$ is a pair, and $n$ is $0$; or
-\item $x$ is the empty list, and $n$ is $0$; or
-\item $x$ is a pair $p$, $n > 0$, and there exists some time
-  $t_1$ in $(t_0,t_n]$ such that taking the cdr of $p$ at
-  time $t_1$ yields a plausible list up to $n-1$ between
-  times $t_1$ and $t_n$.
-\end{enumerate}
-
-A \textit{plausible list up to and including $n$} is a plausible list
-up to $n$ where case 2 does not apply either directly or through
-recursion.
-
-A \textit{plausible list of length $n$ between times $t_0$ and $t_n$}
-is a Scheme value $x$ such that
-
-\begin{enumerate}
-\item $x$ is the empty list, and $n$ is $0$; or
-\item $x$ is a pair $p$, $n > 0$, and there exists some time
-  $t_1$ in $(t_0,t_n]$ such that taking the cdr of $p$ at
-  time $t_1$ yields a plausible list of length $n-1$
-  between times $t_1$ and $t_n$.
-\end{enumerate}
-
-A \textit{plausible prefix of length $n$ between times $t_0$ and
-  $t_n$} is a sequence of Scheme values $x_0,\ldots,x_n$ and strictly
-increasing times $t_1,\ldots,t_n$ such that $x_0$ through $x_{n-1}$
-are pairs, $x_n$ is either the empty list or a pair, and taking the
-cdr of a pair $x_{i-1}$ at time $t_i$ yields $x_i$.
-
-\textit{A plausible alist up to $n$ between times $t_0$ and $t_n$} is
-a plausible list up to $n$ between $t_0$ and $t_n$ such that, for all
-possible choices of the times $t_1$ and pairs $p$ mentioned in part
-(3) above, there exists a time $t_2$ such that $t_1 < t_2 < t_n$ and
-the car of $p$ at time $t_2$ is a pair.
-
-\textit{A plausible alist of length $n$} is defined similarly, as is
-\textit{a plausible alist prefix of length $n$}.
-
-\textit{A plausible list (alist) between times $t_0$ and $t_n$} is a
-plausible list (alist) of some length $n$ between those times.
+In programs that mutate pairs through use of the FIXME library, a pair
+that is the head of a list at one moment may not always be the head of
+a list.  This complicates the description of how such procedures must
+verify that their arguments are valid.  For that reason, the
+specifications of procedures accepting lists will mostly assume that
+lists are not mutated.  Section~\ref{mutablelistargumentsection}
+extends the notion of lists and defines more precise restrictions on
+the arguments to these procedures.
 
 \section{Evaluation examples}
 
