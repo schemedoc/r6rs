@@ -3099,34 +3099,35 @@ in reverse order.
 
 
 \begin{entry}{%
-\proto{list-tail}{ list \vr{k}}{procedure}}
+\proto{list-tail}{ l \vr{k}}{procedure}}
 
-Returns the sublist of \var{list} obtained by omitting the first \vr{k}
-elements.  It is an error if \var{list} has fewer than \vr{k} elements.
-{\cf List-tail} could be defined by
+\domain{\var{L} must ve a plausible list up to \var{k}.  (See
+  section~\ref{listargumentsection}.)}
 
-\begin{scheme}
-(define list-tail
-  (lambda (x k)
-    (if (zero? k)
-        x
-        (list-tail (cdr x) (- k 1)))))%
-\end{scheme} 
+Returns the sublist of \var{l} obtained by omitting the first \vr{k}
+elements.
+
+If \var{l} is not a plausible list, but a plausible list up to
+\var{k}, no exception is raised.
 \end{entry}
 
 
 \begin{entry}{%
-\proto{list-ref}{ list \vr{k}}{procedure}}
+\proto{list-ref}{ l \vr{k}}{procedure}}
 
-Returns the \vr{k}th element of \var{list}.  (This is the same
-as the car of {\tt(list-tail \var{list} \vr{k})}.)
-It is an error if \var{list} has fewer than \vr{k} elements.
+\domain{\var{L} must ve a plausible list up to and including \var{k}.  (See
+  section~\ref{listargumentsection}.)}
+
+Returns the \vr{k}th element of \var{l}.
 
 \begin{scheme}
 (list-ref '(a b c d) 2)                 \ev  c
 (list-ref '(a b c d)
           (inexact->exact (round 1.8))) \lev  c%
 \end{scheme}
+
+If \var{l} is not a plausible list, but a plausible list up to and
+including \var{k}, no exception is raised.
 \end{entry}
 
 
