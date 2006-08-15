@@ -333,8 +333,9 @@ implementation.
 This section specifies two kinds of operations on fixnums.  Operations
 whose names begin with {\cf fixnum} perform arithmetic modulo
 $2^{w}$.  Operations whose names begin with {\cf fx}
-perform integer arithmetic on their fixnum arguments, but signal an
-error if the result is not a fixnum.
+perform integer arithmetic on their fixnum arguments, but raise an
+exception with condition type {\cf\&implementation-restriction} 
+if the result is not a fixnum.
 
 \begin{rationale}
 The operations whose names begin with {\cf fixnum}
@@ -343,9 +344,9 @@ but their results will not be the same in every implementation
 because the particular ring is parameterized by $w$.
 The operations whose names begin with {\cf fx} do
 not have as nice a closure property, and the arguments that
-cause them to signal an error will not be the same in every
+cause them to raise an exception will not be the same in every
 implementation, but any results they return without
-signalling an error will be the same in all implementations.
+raising an exception will be the same in all implementations.
 \end{rationale}
 
 Some operations (e.g.\ {\cf fixnum<} and {\cf fx<}) behave the same in
@@ -357,13 +358,8 @@ and saves programmers from having to remember which
 names are supplied.
 \end{rationale}
 
-FIXME: We will use \var{fx}, \vari{fx} and \varii{fx} as metavariables that
-range over fixnums.
-
-If an argument to the following procedures that corresponds to a
-fixnum metavariable is not actually a fixnum, then these procedures
-signal an error, unless the implementation is running in unsafe mode,
-in which case all bets are off.
+This section uses \var{fx}, \vari{fx} and \varii{fx} as parameter
+names for arguments that must be fixnums.
 
 \subsection{Signalling fixnum operations}
 
@@ -445,12 +441,10 @@ of its argument.
 \proto{fixnum-div0}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fixnum-mod0}{ \vari{fx} \varii{fx}}{procedure}}
 
+{\varii{Fx} must be nonzero.}
 These procedures implement number-theoretic integer division modulo
 $2^w$.  Each procedure returns the unique fixnum(s) congruent modulo
-$2^w$ to the result(s) specified in section~\ref{integerdivision}.  An
-error is signalled if the second argument is zero, unless the
-implementation is running in unsafe mode, in which case all bets are
-off.
+$2^w$ to the result(s) specified in section~\ref{integerdivision}.
 
 \begin{scheme}
 (fixnum-div \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{div}~\varii{ex}\)
@@ -582,7 +576,7 @@ argument is $0$, then $-1$ is returned.
 \begin{entry}{%
 \proto{fixnum-bit-set?}{ \vari{fx} \varii{fx}}{procedure}}
 
-If the second argument is non-negative, this procedure returns the
+\domain{\varii{Fx} must be non-negative.}  This procedure returns the
 fixnum result of the following computation:
 \begin{scheme}
 (not (fixnum-zero?
@@ -590,15 +584,12 @@ fixnum result of the following computation:
                   (fixnum-logical-shift-left 1 \varii{fx}))))
 \end{scheme}
 %
-If the second argument is negative, then an error is signalled,
-unless the implementation is running in unsafe mode, in which
-case all bets are off.
 \end{entry}
 
 \begin{entry}{%
 \proto{fixnum-copy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-If the second argument is non-negative, then this procedure
+\domain{\varii{Fx} must be non-negative.}  This procedure
 returns the fixnum result of the following computation:
 \begin{scheme}
 (let* ((mask (fixnum-logical-shift-left 1 \varii{fx})))
@@ -606,15 +597,12 @@ returns the fixnum result of the following computation:
              (fixnum-logical-shift-left \variii{fx} \varii{fx})
              \vari{fx}))
 \end{scheme}
-If the second argument is negative, then an error is signalled,
-unless the implementation is running in unsafe mode, in which
-case all bets are off.
 \end{entry}
 
 \begin{entry}{%
 \proto{fixnum-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-If the second and third arguments are non-negative, this procedure
+\domain{\varii{Fx} and \variii{fx} must be non-negative.}  This procedure
 returns the fixnum result of the following computation:
 %
 \begin{scheme}
@@ -624,15 +612,12 @@ returns the fixnum result of the following computation:
                               \varii{fx}))
 \end{scheme}
 %
-If the second or third argument is negative, then an error is
-signalled, unless the implementation is running in unsafe mode, in
-which case all bets are off.
 \end{entry}
 
 \begin{entry}{%
 \proto{fixnum-copy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-If the second and third arguments are non-negative, this procedure
+\domain{The second and third arguments must be non-negative.} This procedure
 returns the fixnum result of the following computation:
 \begin{scheme}
 (let* ((to    \vari{fx})
@@ -647,9 +632,6 @@ returns the fixnum result of the following computation:
              (fixnum-logical-shift-left from start)
              to))
 \end{scheme}
-If the second or third argument is negative, then an error is
-signalled, unless the implementation is running in unsafe mode, in
-which case all bets are off.
 \end{entry}
 
 \begin{entry}{%
@@ -667,14 +649,11 @@ the following computation:
 \proto{fixnum-arithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fixnum-arithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-If the second argument is non-negative, then {\cf
-  fixnum-arithmetic-shift-left} returns the same result as {\cf
+\domain{\varii{Fx} must be non-negative.}  {\cf
+  Fixnum-arithmetic-shift-left} returns the same result as {\cf
   fixnum-arithmetic-shift}, and {\cf (fixnum-arithmetic-shift-right
 \vari{fx} \varii{fx})} returns the same result as
 {\cf (fixnum-arithmetic-shift \vari{fx} (fixnum- \varii{fx}))}.
-If the second argument is negative, then an error is signalled, unless
-the implementation is running in unsafe mode, in which case all bets
-are off.
 \end{entry}
 
 \begin{entry}{%
@@ -686,7 +665,7 @@ This procedure behaves the same as {\cf fixnum-arithmetic-shift-left}.
 \begin{entry}{%
 \proto{fixnum-logical-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-If the second argument is non-negative, then this procedure returns
+\domain{\varii{Fx} must be non-negative.}  This procedure returns
 the result of the following computation:
 \begin{scheme}
 (let* ((n       \vari{fx})
@@ -703,10 +682,6 @@ the result of the following computation:
     (fixnum-and shifted mask)))
 \end{scheme}
 %
-If the second argument is negative, then an error is signalled, unless
-the implementation is running in unsafe mode, in which case all bets
-are off.
-
 \begin{note}
 The results of {\cf fixnum-logical-shift-left}
 and {\cf fixnum-logical-shift-left}
@@ -718,8 +693,8 @@ so they have no {\cf fx} equivalents.
 \begin{entry}{%
 \proto{fixnum-rotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-If the second, third, and fourth arguments are non-negative, this
-procedure returns the result of the following computation:
+\domain{\varii{Fx}, \variii{fx}, and \variv{fx} must be non-negative.}
+This procedure returns the result of the following computation:
 \begin{scheme}
 (let* ((n     \vari{fx})
        (start \varii{fx})
@@ -740,9 +715,6 @@ procedure returns the result of the following computation:
         (fixnum-copy-bit-field n start end field))
       n))
 \end{scheme}
-If the second, third, or fourth argument is negative, then an error is
-signalled, unless the implementation is running in unsafe mode, in
-which case all bets are off.
 \end{entry}
 
 \begin{entry}{%
@@ -812,9 +784,9 @@ and {\cf fixnum-min}, respectively.
 \proto{fx*}{ \vari{fx} \varii{fx}}{procedure}}
 
 These procedures return the sum or product of their arguments,
-provided that sum or product is a fixnum.  An error is signalled if
-that sum or product is not a fixnum, unless the implementation is
-running in unsafe mode, in which case all bets are off.
+provided that sum or product is a fixnum.  An exception with condition
+type {\cf\&implementation-restriction} is raised if
+that sum or product is not a fixnum.
 
 \begin{rationale}
 These procedures are restricted to two arguments because their
@@ -834,11 +806,11 @@ With one argument, this procedure returns the additive
 inverse of its argument, provided that integer is a
 fixnum.
 
-An error is signalled if the mathematically correct
-result of this procedure is not a fixnum.
+An exception with condition type {\cf\&contract} is raised if the
+mathematically correct result of this procedure is not a fixnum.
 
 \begin{scheme}
-(fx- (least-fixnum))  \ev  FIXME
+(fx- (least-fixnum))  \ev  \exception{\&contract}
 \end{scheme}
 \end{entry}
 
@@ -850,14 +822,12 @@ result of this procedure is not a fixnum.
 \proto{fxdiv0}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxmod0}{ \vari{fx} \varii{fx}}{procedure}}
 
+\domain{\varii{Fx} must be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
-specified in the section~\ref{integerdivision}.  An error is signalled
-if a result specified by that section is not a fixnum, unless the
-implementation is running in unsafe mode, in which case all bets are
-off.  An error is signalled if the second argument is zero, unless the
-implementation is running in unsafe mode, in which case all bets are
-off.
+specified in the section~\ref{integerdivision}.  An exception with
+condition type {\cf\&implementation-restriction} is raised if a result
+specified by that section is not a fixnum.
 
 \begin{scheme}
 (fxdiv \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{div}~\varii{ex}\)
@@ -911,82 +881,70 @@ This performs the same operation as {\cf fixnum-first-bit-set}.
 \begin{entry}{%
 \proto{fxbit-set?}{ \var{fx} \varii{fx}}{procedure}}
 
-If the second argument is negative, or greater than or equal to {\cf
-  (fixnum-width)}, then an error is signalled, unless the
-implementation is running in unsafe mode, in which case all bets are
-off.  Otherwise this procedure returns the same result returned by
-{\cf fixnum-bit-set?}.
+\domain{\varii{Fx} must be non-negative and less than {\cf
+  (fixnum-width)}.}  This procedure
+returns the same result returned by {\cf fixnum-bit-set?}.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxcopy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-If the second argument is negative, or greater than or equal
-to {\cf (fixnum-width)}, or the third argument is
-anything other than 0 or 1, then an error is signalled,
-unless the implementation is running in unsafe mode, in which
-case all bets are off.  Otherwise this procedure returns the
-same result returned by {\cf fixnum-copy-bit}.
+\domain{\varii{Fx} must be non-negative and less than {\cf
+  (fixnum-width)}. \variii{Fx} must be 0 or
+1.}  This procedure returns the same result returned by {\cf
+  fixnum-copy-bit}.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxbit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-If the second or third argument is negative, or greater than {\cf
-  (fixnum-width)}, or the second argument is greater than the third,
-then an error is signalled, unless the implementation is running in
-unsafe mode, in which case all bets are off.  Otherwise this procedure
-returns the same result returned by {\cf fixnum-bit-field}.
+\domain{\varii{Fx} and \variii{fx} must be non-negative and less than
+  {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
+    equal to \variii{fx}.}  This procedure returns the same result
+  returned by {\cf fixnum-bit-field}.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxcopy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-If the second or third argument is negative, or greater than {\cf
-  (fixnum-width)}, or the second argument is greater than the third,
-then an error is signalled, unless the implementation is running in
-unsafe mode, in which case all bets are off.  Otherwise this procedure
-returns the same result returned by {\cf fixnum-copy-bit-field}.
+\domain{\varii{Fx} and \variii{fx} must be non-negative and less than
+  {\cf (fixnum-width)}.  Moreover, or \varii{fx} must be less than or
+    equal to \variii{fx}.}  This procedure returns the same result
+  returned by {\cf fixnum-copy-bit-field}.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxarithmetic-shift}{ \vari{fx} \varii{fx}}{procedure}}
 
-If the absolute value of the second argument is greater than or equal
-to {\cf (fixnum-width)}, then an error is signalled, unless the
-implementation is running in unsafe mode, in which case all bets are
-off.  If
+\domain{The absolute value of the \varii{fx} must be less than 
+{\cf (fixnum-width)}.}  If
 %
 \begin{scheme}
 (exact-floor (* \vari{fx} (expt 2 \varii{fx})))
 \end{scheme}
 %
-is a fixnum, then that fixnum is returned.  Otherwise an error is
-signalled, unless the implementation is running in unsafe mode, in
-which case all bets are off.
+is a fixnum, then that fixnum is returned.  Otherwise an exception
+with condition type {\cf\&implementation-restriction} is
+raised.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxarithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxarithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-If the second argument is non-negative, then {\cf
-  fxarithmetic-shift-left} behaves the same as {\cf
+\domain{\varii{Fx} must be non-negative.} {\cf
+  Fxarithmetic-shift-left} behaves the same as {\cf
   fxarithmetic-shift}, and {\cf (fxarithmetic-shift-right \vari{fx}
   \varii{fx})} behaves the same as {\cf (fxarithmetic-shift \vari{fx}
-  (fixnum- \varii{fx}))}.  If the second argument is negative, then an
-error is signalled, unless the implementation is running in unsafe
-mode, in which case all bets are off.
+  (fixnum- \varii{fx}))}.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxrotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-If the second, third, or fourth argument is negative, or greater than
-{\cf (fixnum-width)}, or the fourth argument is greater than or equal
-to the difference between the third and second arguments, then an
-error is signalled, unless the implementation is running in unsafe
-mode, in which case all bets are off.  Otherwise this procedure
+\domain{\varii{Fx}, \variii{fx}, and \variv{fx} must be non-negative
+  and less than {\cf (fixnum-width)}.  \variv{Fx} must be less than
+  the difference between \variii{fx} and \variii{fx}.}  This procedure
 returns the same result as the {\cf fixnum-rotate-bit-field}
 procedure.
 \end{entry}
@@ -994,27 +952,20 @@ procedure.
 \begin{entry}{%
 \proto{fxreverse-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-If the second or third argument is negative, or greater than {\cf
-  (fixnum-width)}, or the second argument is greater than the third,
-then an error is signalled, unless the implementation is running in
-unsafe mode, in which case all bets are off.  Otherwise this procedure
-returns the same result as the {\cf fixnum-reverse-bit-field}
-procedure.
+\domain{\varii{Fx} and \variii{fx} must be non-negative and less than
+  {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
+  equal to \variii{fx}.}  This procedure returns the same result as
+the {\cf fixnum-reverse-bit-field} procedure.
 \end{entry}
 
 \section{Flonums}
 \label{flonumssection}
 
-We will use \var{fl}, \vari{fl} and \varii{fl} as
-metavariables that range over flonums, and \var{ifl},
-\vari{ifl} and \varii{ifl} as metavariables that range over
-integer-valued flonums, i.e. flonums for which the
+This section uses \var{fl}, \vari{fl} and \varii{fl} as
+parameter names for arguments that must be flonums, and \var{ifl},
+\vari{ifl} and \varii{ifl} as parameter names for arguments that 
+must be integer-valued flonums, i.e. flonums for which the
 {\cf integer-valued?} predicate is true.
-
-If an argument to the following procedures that corresponds to a
-(integral) flonum metavariable is not actually a (integral) flonum,
-then these procedures signal an error, unless the implementation is
-running in unsafe mode, in which case all bets are off.
 
 \begin{entry}{%
 \proto{flonum?}{ obj}{procedure}}
@@ -1326,10 +1277,6 @@ The result of this procedure may not be
 numerically equal to its argument, because the fixnum precision
 may be greater than the flonum precision.
 \end{note}
-
-If the argument to {\cf fixnum->flonum} is not a fixnum, then an error
-is signalled, unless the implementation is running in unsafe mode, in
-which case all bets are off.
 \end{entry}
 
 \section{Exact arithmetic}
@@ -1357,16 +1304,11 @@ Consequently, if a type predicate is false of a number, then all lower
 type predicates are also false of that number.
 \end{entry}
 
-We will use \var{ex}, \vari{ex}, \varii{ex}, and \variii{ex} as
-metavariables that range over the exact complex numbers, \var{ef},
-\vari{ef}, \varii{ef}, and \variii{ef} as metavariables that range over
-the exact rational numbers, and \var{ei}, \vari{ei}, \varii{ei}, and
-\variii{ei} as metavariables that range over the exact integers.
-
-If an argument to the following procedures that corresponds to an
-exact (rational, integer) metavariable is not actually an exact
-(rational, integer) number, then these procedures signal an error (and
-should signal an error even in unsafe mode).
+This section uses \var{ex}, \vari{ex}, \varii{ex}, and \variii{ex} as
+parameter names for arguments that must be exact complex numbers, \var{ef},
+\vari{ef}, \varii{ef}, and \variii{ef} as parameter names for arguments 
+that must be exact rational numbers, and \var{ei}, \vari{ei}, \varii{ei}, and
+\variii{ei} as parameter names that must be exact integers.
 
 \begin{entry}{%
 \proto{exact=?}{ \vari{ex} \varii{ex} \variii{ex} \dotsfoo}{procedure}
@@ -1419,7 +1361,8 @@ These procedures return the sum or product of their arguments.
 With two or more arguments, these procedures return the difference or
 quotient of their arguments, associating to the left.  With one
 argument, however, they return the additive or multiplicative inverse
-of their argument. {\cf Exact/} signals an error if a divisor is $0$.
+of their argument. {\cf Exact/} raises an exception with condition
+type {\cf\&contract} if a divisor is $0$.
 \end{entry}
 
 \begin{entry}{%
@@ -1436,10 +1379,10 @@ This procedure returns the absolute value of its argument.
 \proto{exact-div0}{ \vari{ef} \varii{ef}}{procedure}
 \proto{exact-mod0}{ \vari{ef} \varii{ef}}{procedure}}
 
+\domain{\varii{Ef} must be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
-specified in section~\ref{integerdivision}.  In each case, \varii{ef}
-must be nonzero; otherwise, an exception is raised.
+specified in section~\ref{integerdivision}.
 %
 \begin{scheme}
 (exact-div \vari{ef} \varii{ef})         \ev \(\vari{ef}~\mathrm{div}~\varii{ef}\)
@@ -1489,7 +1432,7 @@ halfway between two integers.
 
 Returns \vari{ef} raised to the power \varii{ei}.  $0^{\var{ei}}$ is
 $1$ if $\var{ei} = 0$ and $0$ if \var{ei} is positive.  Otherwise,
-this procedure signals an error.
+this procedure raises an exception with condition type {\cf\&contract}.
 \end{entry}
 
 \begin{entry}{%
@@ -1515,8 +1458,8 @@ Then:
 \begin{entry}{%
 \proto{exact-sqrt}{ ei}{procedure}}
 
-\var{Ei} must be a non-negative exact integer; if it is not, an error
-is signalled.  {\cf Exact-sqrt} returns two non-negative exact
+\domain{\var{Ei} must be a non-negative exact integer.}
+{\cf Exact-sqrt} returns two non-negative exact
 integers $s$ and $r$ where $\var{ei} = s^2 +
 r$ and $\var{ei} < (s+1)^2$.
 \end{entry}
@@ -1593,7 +1536,8 @@ If the argument is $0$, then $-1$ is returned.
 \begin{entry}{%
 \proto{exact-bit-set?}{ \vari{ei} \varii{ei}}{procedure}}
 
-If the second argument is negative, then an error is signalled.
+\domain{\varii{Ei} must be a non-negative exact integer.}
+
 Otherwise returns the result of the following computation:
 \begin{scheme}
 (not (exact-zero?
@@ -1605,9 +1549,9 @@ Otherwise returns the result of the following computation:
 \begin{entry}{%
 \proto{exact-copy-bit}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-If the second argument is negative, or the third argument
-is anything other than $0$ or $1$, then an error is signalled.
-Otherwise returns the result of the following computation:
+\domain{\varii{Ei} must be non-negative, and \variii{ei}
+must be either $0$ or $1$.}
+This procedure returns the result of the following computation:
 \begin{scheme}
 (let* ((mask (exact-arithmetic-shift-left 1 \varii{ei})))
   (exact-if mask
@@ -1619,9 +1563,9 @@ Otherwise returns the result of the following computation:
 \begin{entry}{%
 \proto{exact-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-If the second or third argument is negative, or the second argument is
-greater than the third, then an error is signalled.  Otherwise returns
-the result of the following computation:
+\domain{\varii{Ei} and \variii{ei} must be non-negative, and
+  \varii{fx} must be less than or equal to \variii{fx}.}  This
+procedure returns the result of the following computation:
 %
 \begin{scheme}
 (let* ((mask (exact-not
@@ -1634,10 +1578,9 @@ the result of the following computation:
 \begin{entry}{%
 \proto{exact-copy-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
 
-If the second or third argument is negative,
-or the second argument is greater than the third,
-then an error is signalled.
-Otherwise returns the result of the following computation:
+\domain{\varii{Fx} and \variii{fx} must be non-negative,
+and \varii{fx} must be less than or equal to \variii{fx}.}
+This procedure returns the result of the following computation:
 %
 \begin{scheme}
 (let* ((to    \vari{ei})
@@ -1670,20 +1613,19 @@ Returns the exact integer result of the following computation:
 \proto{exact-arithmetic-shift-left}{ \vari{ei} \varii{ei}}{procedure}
 \proto{exact-arithmetic-shift-right}{ \vari{ei} \varii{ei}}{procedure}}
 
-If the second argument is non-negative, then {\cf
-  exact-arithmetic-shift-left} returns the same result as {\cf
+\domain{\varii{Ei} must bge non-negative.}  {\cf
+  Exact-arithmetic-shift-left} returns the same result as {\cf
   exact-arithmetic-shift}, and {\cf (exact-arithmetic-shift-right
   \vari{fx} \varii{fx})} returns the same result as {\cf
-  (exact-arithmetic-shift \vari{fx} (exact- \varii{fx}))}.  If the
-second argument is negative, then an error is signalled.
+  (exact-arithmetic-shift \vari{fx} (exact- \varii{fx}))}.
 \end{entry}
 
 \begin{entry}{%
 \proto{exact-rotate-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
 
-If the second, third, and fourth arguments are non-negative, or the
-fourth argument is greater than or equal to the difference between the
-second and third arguments, then an error is signalled.
+\domain{\varii{Ei}, \variii{ei}, \variv{ei} must be non-negative, and \variv{ei}
+must be less than the difference between \varii{ei} and \variii{ei}.}
+The procedure returns the result of the following computation:
 %
 \begin{scheme}
 (let* ((n     \vari{ei})
@@ -1709,8 +1651,8 @@ second and third arguments, then an error is signalled.
 \begin{entry}{%
 \proto{exact-reverse-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-If the second or third argument is negative, or the second argument is
-greater than the third, then an error is signalled.  Otherwise returns
+\domain{\varii{Ei} and \variii{ei} must be non-negative, and
+  \varii{ei} must be less than or equal to \variii{ei}.}  This procedure returns
 the result obtained from the first argument by reversing the bit field
 specified by the second and third arguments.
 \begin{scheme}
@@ -1745,19 +1687,13 @@ type predicates are also false of that number.
 \end{entry}
 
 We will use \var{in}, \vari{in}, \varii{in}, and
-\variii{in} as metavariables that range over the inexact numbers,
+\variii{in} as parameter names for arguments that must be inexact numbers,
 \var{ir}, \vari{ir}, \varii{ir}, and \variii{ir} as
-metavariables that range over the inexact real numbers,
+parameter names for arguments that must be inexact real numbers,
 \var{if}, \vari{if}, \varii{if}, and \variii{if} as
-metavariables that range over the inexact rationals. and
+parameter names for arguments that must be inexact rationals, and
 \var{ii}, \vari{ii}, \varii{ii}, and \variii{ii} as
-metavariables that range over the inexact integers.
-
-If an argument to the following procedures that corresponds to an
-inexact metavariable is not actually an inexact number, then these
-procedures signal an error (and should signal an error even in unsafe
-mode).  The same holds true for arguments corresponding to inexact
-real metavariables.
+parameter names for arguments that must be the inexact integers.
 
 \begin{entry}{%
 \proto{inexact=?}{ \vari{in} \varii{in} \variii{in} \dotsfoo}{procedure}
@@ -1834,11 +1770,11 @@ This procedure returns the absolute value of its argument.
 \proto{inexact-div0}{ \vari{ir} \varii{ir}}{procedure}
 \proto{inexact-mod0}{ \vari{ir} \varii{ir}}{procedure}}
 
+\domain{\vari{Ir}
+must be neither infinite nor a NaN, and \varii{ir} must be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
-specified in section~\ref{integerdivision}.  In each case, \vari{ir}
-must be neither infinite nor a NaN, and \varii{ir} must be nonzero;
-otherwise, an exception is raised.
+specified in section~\ref{integerdivision}.  
 
 \begin{scheme}
 (inexact-div \vari{ir} \varii{ir})         \ev \(\vari{ir}~\mathrm{div}~\varii{ir}\)
@@ -2000,4 +1936,3 @@ or \varii{ir} is an infinity, then
 %%% mode: latex
 %%% TeX-master: "r6rs"
 %%% End: 
-
