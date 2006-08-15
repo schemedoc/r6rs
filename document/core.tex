@@ -1911,6 +1911,27 @@ The {\cf unspecified} procedure returns the unspecified
 value.\index{unspecified value}  (See section \ref{disjointness}.)
 \end{entry}
 
+\todo{{\tt Procedure?} doesn't belong in a section with the name
+``control features.''  What to do?}
+
+\section{Procedure predicate}
+
+\begin{entry}{%
+\proto{procedure?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
+
+\begin{scheme}
+(procedure? car)            \ev  \schtrue
+(procedure? 'car)           \ev  \schfalse
+(procedure? (lambda (x) (* x x)))   
+                            \ev  \schtrue
+(procedure? '(lambda (x) (* x x)))  
+                            \ev  \schfalse
+\end{scheme}
+
+\end{entry}
+
 \section{Generic arithmetic}
 \label{genericarithmetic}
 
@@ -3146,6 +3167,55 @@ It is an error if \var{list} has fewer than \vr{k} elements.
 % 
 %\end{entry}
 
+\begin{entry}{%
+\proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
+
+\domain{The \var{list}s must be lists, and \var{proc} must be a
+procedure taking as many arguments as there are {\it list}s
+and returning a single value.  If more
+than one \var{list} is given, then they must all be the same length.}
+{\cf Map} applies \var{proc} element-wise to the elements of the
+\var{list}s and returns a list of the results, in order.
+The dynamic order in which \var{proc} is applied to the elements of the
+\var{list}s is unspecified.
+
+\begin{scheme}
+(map cadr '((a b) (d e) (g h)))   \lev  (b e h)
+
+(map (lambda (n) (expt n n))
+     '(1 2 3 4 5))                \lev  (1 4 27 256 3125)
+
+(map + '(1 2 3) '(4 5 6))         \ev  (5 7 9)
+
+(let ((count 0))
+  (map (lambda (ignored)
+         (set! count (+ count 1))
+         count)
+       '(a b)))                 \ev  (1 2) \var{or} (2 1)
+\end{scheme}
+
+\end{entry}
+
+
+\begin{entry}{%
+\proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
+
+The arguments to {\cf for-each} are like the arguments to {\cf map}, but
+{\cf for-each} calls \var{proc} for its side effects rather than for its
+values.  Unlike {\cf map}, {\cf for-each} is guaranteed to call \var{proc} on
+the elements of the \var{list}s in order from the first element(s) to the
+last, and the value returned by {\cf for-each} is the unspecified value.
+
+\begin{scheme}
+(let ((v (make-vector 5)))
+  (for-each (lambda (i)
+              (vector-set! v i (* i i)))
+            '(0 1 2 3 4))
+  v)                                \ev  \#(0 1 4 9 16)%
+\end{scheme}
+
+\end{entry}
+
 
 \section{Symbols}
 \label{symbolsection}
@@ -3670,36 +3740,13 @@ condition type {\cf \&violation}.
 
 \section{Control features}
 \label{controlsection}
-\label{proceduresection}
+\label{valuessection}
  
 % Intro flushed; not very a propos any more.
 % Procedures should be discussed somewhere, however.
 
 This chapter describes various primitive procedures which control the
 flow of program execution in special ways.
-The {\cf procedure?}\ predicate is also described here.
-
-\todo{{\tt Procedure?} doesn't belong in a section with the name
-``control features.''  What to do?}
-
-\begin{entry}{%
-\proto{procedure?}{ obj}{procedure}}
-
-Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
-
-\begin{scheme}
-(procedure? car)            \ev  \schtrue
-(procedure? 'car)           \ev  \schfalse
-(procedure? (lambda (x) (* x x)))   
-                            \ev  \schtrue
-(procedure? '(lambda (x) (* x x)))  
-                            \ev  \schfalse
-(call-with-current-continuation procedure?)
-                            \ev  \schtrue%
-\end{scheme}
-
-\end{entry}
-
 
 \begin{entry}{%
 \proto{apply}{ proc \vari{arg} $\ldots$ args}{procedure}}
@@ -3719,56 +3766,6 @@ arguments.
 
 ((compose sqrt *) 12 75)              \ev  30%
 \end{scheme}
-\end{entry}
-
-
-\begin{entry}{%
-\proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
-
-\domain{The \var{list}s must be lists, and \var{proc} must be a
-procedure taking as many arguments as there are {\it list}s
-and returning a single value.  If more
-than one \var{list} is given, then they must all be the same length.}
-{\cf Map} applies \var{proc} element-wise to the elements of the
-\var{list}s and returns a list of the results, in order.
-The dynamic order in which \var{proc} is applied to the elements of the
-\var{list}s is unspecified.
-
-\begin{scheme}
-(map cadr '((a b) (d e) (g h)))   \lev  (b e h)
-
-(map (lambda (n) (expt n n))
-     '(1 2 3 4 5))                \lev  (1 4 27 256 3125)
-
-(map + '(1 2 3) '(4 5 6))         \ev  (5 7 9)
-
-(let ((count 0))
-  (map (lambda (ignored)
-         (set! count (+ count 1))
-         count)
-       '(a b)))                 \ev  (1 2) \var{or} (2 1)
-\end{scheme}
-
-\end{entry}
-
-
-\begin{entry}{%
-\proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
-
-The arguments to {\cf for-each} are like the arguments to {\cf map}, but
-{\cf for-each} calls \var{proc} for its side effects rather than for its
-values.  Unlike {\cf map}, {\cf for-each} is guaranteed to call \var{proc} on
-the elements of the \var{list}s in order from the first element(s) to the
-last, and the value returned by {\cf for-each} is the unspecified value.
-
-\begin{scheme}
-(let ((v (make-vector 5)))
-  (for-each (lambda (i)
-              (vector-set! v i (* i i)))
-            '(0 1 2 3 4))
-  v)                                \ev  \#(0 1 4 9 16)%
-\end{scheme}
-
 \end{entry}
 
 
@@ -3824,6 +3821,9 @@ the power of {\cf call-with-current-continuation}.
 (list-length '(1 2 3 4))            \ev  4
 
 (list-length '(a b . c))            \ev  \schfalse%
+
+(call-with-current-continuation procedure?)
+                            \ev  \schtrue%
 \end{scheme}
 
 \begin{rationale}
