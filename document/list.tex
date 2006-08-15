@@ -1,17 +1,14 @@
 \section{List utilities}
 \label{listutilities}
 
-%% FIXME: clarify if predicates need to return a boolean, or can
-%% return anything
-
 \begin{entry}{%
-\proto{find}{ predicate list}{procedure}}
+\proto{find}{ proc list}{procedure}}
 
-\domain{\var{Predicate} must be a predicate taking a single argument,
+\domain{\var{Proc} must be a procedure taking a single argument,
   and \var{list} must be a list.}  {\cf Find} applies
-\var{predicate} to the elements of \var{list} in order.  If
-\var{predicate} returns a true value for an element, {\cf find}
-immediately returns that element.  If \var{predicate} returns
+\var{proc} to the elements of \var{list} in order.  If
+\var{proc} returns a true value for an element, {\cf find}
+immediately returns that element.  If \var{proc} returns
 \schfalse{} for all elements of the list, it returns \schfalse{}
 
 \begin{scheme}
@@ -22,26 +19,26 @@ immediately returns that element.  If \var{predicate} returns
 \end{entry}
 
 \begin{entry}{%
-\proto{forall}{ predicate \vari{list} \varii{list} \dotsfoo}{procedure}
-\proto{exists}{ predicate \vari{list} \varii{list} \dotsfoo}{procedure}}
+\proto{forall}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}
+\proto{exists}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s must be lists, and \var{predicate} must be a
-  predicate taking as many arguments as there are {\it list}s. If more
+\domain{The \var{list}s must be lists, and \var{proc} must be a
+  procedure taking as many arguments as there are {\it list}s. If more
   than one \var{list} is given, then they must all be the same
-  length.}  {\cf Forall} applies \var{predicate} element-wise to the
-elements of the \var{list}s.  If \var{predicate} returns \schtrue{}
+  length.}  {\cf Forall} applies \var{proc} element-wise to the
+elements of the \var{list}s.  If \var{proc} returns \schtrue{}
 for all but the last elements of the list, \var{forall} performs a
-tail call of \var{predicate} on the last elements.  If \var{predicate}
+tail call of \var{proc} on the last elements.  If \var{proc}
 returns \schfalse{} on any set of elements, {\cf forall} returns
-\schfalse{} after the first such application of \var{predicate}.  If
+\schfalse{} after the first such application of \var{proc}.  If
 the \var{list}s are all empty, {\cf forall} returns \schtrue.
 
-{\cf Exists} applies \var{predicate} element-wise to the
-elements of the \var{list}s.  If \var{predicate} returns \schfalse{}
+{\cf Exists} applies \var{proc} element-wise to the
+elements of the \var{list}s.  If \var{proc} returns \schfalse{}
 for all but the last elements of the list, \var{exists} performs a
-tail call of \var{predicate} on the last elements.  If \var{predicate}
+tail call of \var{proc} on the last elements.  If \var{proc}
 returns a true value on any set of elements, {\cf exists} returns
-that value after the first such application of \var{predicate}.  If
+that value after the first such application of \var{proc}.  If
 the \var{list}s are all empty, {\cf exists} returns \schfalse.
 
 \begin{scheme}
@@ -56,19 +53,19 @@ the \var{list}s are all empty, {\cf exists} returns \schfalse.
 \end{entry}
 
 \begin{entry}{%
-\proto{filter}{ predicate list}{procedure}
-\proto{partition}{ predicate list}{procedure}
+\proto{filter}{ proc list}{procedure}
+\proto{partition}{ proc list}{procedure}
 }
 
-\domain{\var{Predicate} must be a predicate taking a single argument,
+\domain{\var{Proc} must be a procedure taking a single argument,
   and \var{list} must be a list.}  {\cf Filter} successively applies
-\var{predicate} to the elements of \var{list} and returns a list of
-the values of \var{list} for which \var{predicate} returned a true
-value.  {\cf Partition} also successively applies \var{predicate} to
+\var{proc} to the elements of \var{list} and returns a list of
+the values of \var{list} for which \var{proc} returned a true
+value.  {\cf Partition} also successively applies \var{proc} to
 the elements of \var{list}, but returns two values, the first one a
-list of the values of \var{list} for which \var{predicate} returned a
+list of the values of \var{list} for which \var{proc} returned a
 true value, and the second a list of the values of \var{list} for
-which \var{predicate} returned \schfalse.
+which \var{proc} returned \schfalse.
 
 \begin{scheme}
 (filter even? '(3 1 4 1 5 9 2 6)) \ev (4 2 6)
@@ -152,16 +149,16 @@ list is reached; then the accumulator value is returned.
 \end{entry}
 
 \begin{entry}{%
-\proto{remp}{ predicate list}{procedure}
+\proto{remp}{ proc list}{procedure}
 \proto{remove}{ obj list}{procedure}
 \proto{remv}{ obj list}{procedure}
 \proto{remq}{ obj list}{procedure}}
 
-\domain{\var{Predicate} must be a predicate taking a single argument.}
+\domain{\var{Proc} must be a procedure taking a single argument.}
 Each of these procedures returns a list of the elements of \var{lists}
 that do not satisfy a given condition.  {\cf Remp} successively
-applies \var{predicate} to the elements of \var{list} and returns a
-list of the values of \var{list} for which \var{predicate} returned
+applies \var{proc} to the elements of \var{list} and returns a
+list of the values of \var{list} for which \var{proc} returned
 \schfalse.  {\cf Remove}, {\cf remv}, and {\cf remq} returns a list of
 the elements that are not \var{obj}.  {\cf Remq} uses {\cf eq?}\ to
 compare \var{obj} with the elements of \var{list}, while {\cf remv}
@@ -179,13 +176,13 @@ uses {\cf eqv?}\ and {\cf remove} uses {\cf equal?}.
 \end{entry}
 
 \begin{entry}{%
-\proto{memp}{ predicate l}{procedure}
+\proto{memp}{ proc l}{procedure}
 \proto{member}{ obj l}{procedure}
 \proto{memv}{ obj l}{procedure}
 \proto{memq}{ obj l}{procedure}
 }
 
-\domain{\var{Predicate} must be a predicate taking a single argument.
+\domain{\var{Proc} must be a procedure taking a single argument.
   \var{L} must be a plausible list or a value according to the
   conditions specified below.}
 
@@ -193,8 +190,8 @@ These procedures return the first sublist of \var{l} whose car
 satisfies a given condition, where the sublists of \var{l} are the
 non-empty lists returned by {\tt (list-tail \var{l} \var{k})} for
 \var{k} less than the length of \var{l}.  {\cf Memp} applies
-\var{predicate} to the cars of the sublists of \var{l} until it
-finds one for which \var{predicate} returns a true value.  {\cf
+\var{proc} to the cars of the sublists of \var{l} until it
+finds one for which \var{proc} returns a true value.  {\cf
   Member}, {\cf memv}, and {\cf memq} look for the first occurrence of
 \var{obj}.  If \var{l} does not contain an element satisfying the
 condition, then \schfalse{} (not the empty list) is returned.  {\cf
@@ -229,20 +226,20 @@ the procedure returns.  (See section~\ref{listargumentsection}.)
 \end{entry}
 
 \begin{entry}{%
-\proto{assp}{ predicate al}{procedure}
+\proto{assp}{ proc al}{procedure}
 \proto{assoc}{ obj al}{procedure}
 \proto{assv}{ obj al}{procedure}
 \proto{assq}{ obj al}{procedure}}
 
 \domain{\var{Al} (for ``association list'') must be a a plausible
   alist or a value according to the conditions specified below.
-  \var{Predicate} must be a predicate taking a single argument.}
+  \var{Proc} must be a procedure taking a single argument.}
 
 These procedures find the first pair in \var{al}
 whose car field satisfies a given condition, and returns that pair.
 If no pair in \var{al} satisfies the condition, then \schfalse{}
 (not the empty list) is returned.  {\cf Assp} successively applies
-\var{predicate} to the car fields of \var{al} and looks for a pair
+\var{proc} to the car fields of \var{al} and looks for a pair
 for which it returns a true value.  {\cf Assoc}, {\cf assv}, and {\cf
   assq} look for a pair that has \var{obj} as its car {\cf Assoc} uses
 {\cf equal?}\ to compare \var{obj} with the car fields of the pairs in
