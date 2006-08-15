@@ -190,6 +190,15 @@ A definition \hyper{definition} should have one of the following forms:\mainschi
 \begin{itemize}
 
 \item{\tt(define \hyper{variable} \hyper{expression})}
+  This will bind \hyper{variable} to a new
+  location before assigning the value of \hyper{expression} to it.
+\begin{scheme}
+(define add3
+  (lambda (x) (+ x 3)))
+(add3 3)                            \ev  6
+(define first car)
+(first '(1 2))                      \ev  1%
+\end{scheme}
 
 \item{\tt(define \hyper{variable})}
 
@@ -219,36 +228,6 @@ variable.  This form is equivalent to
 \end{scheme}
 
 \end{itemize}
-
-\subsection{Top level definitions}
-
-At the top level of a program, a definition
-\begin{scheme}
-(define \hyper{variable} \hyper{expression})%
-\end{scheme}
-has essentially the same effect as the assignment expression
-\begin{scheme}
-(\ide{set!}\ \hyper{variable} \hyper{expression})%
-\end{scheme}
-if \hyper{variable} is bound.  If \hyper{variable} is not bound,
-however, then the definition will bind \hyper{variable} to a new
-location before performing the assignment, whereas it would be an error
-to perform a {\cf set!}\ on an unbound\index{unbound} variable.
-
-\begin{scheme}
-(define add3
-  (lambda (x) (+ x 3)))
-(add3 3)                            \ev  6
-(define first car)
-(first '(1 2))                      \ev  1%
-\end{scheme}
-
-Some implementations of Scheme use an initial environment in
-which all possible variables are bound to locations, most of
-which contain undefined values.  Top level definitions in
-such an implementation are truly equivalent to assignments.
-
-\todo{Rozas: equal time for opposition semantics?}
 
 
 \section{Syntax definitions}
