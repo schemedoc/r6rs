@@ -3349,20 +3349,22 @@ Returns \schtrue{} if \var{obj} is a character, otherwise returns \schfalse.
 
 \begin{entry}{%
 \proto{char->integer}{ char}{procedure}
-\proto{integer->char}{ \vr{n}}{procedure}}
+\proto{integer->char}{ \vr{s}}{procedure}}
+
+\domain{\var{Sv} must be a scalar value, i.e.\ a non-negative exact
+  integer in $\left[0, \#x\textrm{D7FF}\right] \cup
+  \left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]$.}
 
 Given a character, {\cf char\coerce{}integer} returns its scalar value
-as an exact integer.  Given an exact integer that is
-s scalar value, i.e.\ a number in $\left[0, \#x\textrm{D7FF}\right] \cup
-\left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]$,
-{\cf integer\coerce{}char}
+as an exact integer.  
+For a scalar value \var{sv}, {\cf integer\coerce{}char}
 returns its associated character.
 
 \begin{scheme}
 (integer->char 32) \ev \sharpsign\backwhack{}space
 (char->integer (integer->char 5000))
 \ev 5000
-(integer->char \sharpsign{}xD800) \ev \textit{error}
+(integer->char \sharpsign{}xD800) \ev \exception{\&contract}
 \end{scheme}
 \end{entry}
 
