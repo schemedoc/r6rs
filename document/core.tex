@@ -3267,9 +3267,8 @@ Returns \schtrue{} if \var{obj} is a symbol, otherwise returns \schfalse.
 \begin{entry}{%
 \proto{symbol->string}{ symbol}{procedure}}
 
-Returns the name of \var{symbol} as a string.  It is an error
-to apply mutation procedures like \ide{string-set!} to strings returned
-by this procedure.
+Returns the name of \var{symbol} as a string.  
+The returned string may be immutable.
 
 \begin{scheme}
 (symbol->string 'flying-fish)     
@@ -3490,6 +3489,8 @@ and returns the unspecified value.  % <!>
              \sharpsign\backwhack{}?)  \ev  \scherror%
 \end{scheme}
 
+Passing an immutable string to {\cf string-set!} causes an exception
+with condition type {\cf\&contract} to be raised.
 \end{entry}
 
 
@@ -3675,6 +3676,9 @@ The value returned by {\cf vector-set!}\ is the unspecified value.  % <!>
 
 (vector-set! '\#(0 1 2) 1 "doe")  \lev  \scherror  ; constant vector%
 \end{scheme}
+
+Passing an immutable vector to {\cf vector-set!} causes an exception
+with condition type {\cf\&contract} to be raised.
 \end{entry}
 
 
