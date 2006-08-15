@@ -229,23 +229,33 @@ the procedure returns.  (See section~\ref{listargumentsection}.)
 \end{entry}
 
 \begin{entry}{%
-\proto{assp}{ predicate alist}{procedure}
-\proto{assoc}{ obj alist}{procedure}
-\proto{assv}{ obj alist}{procedure}
-\proto{assq}{ obj alist}{procedure}}
+\proto{assp}{ predicate al}{procedure}
+\proto{assoc}{ obj al}{procedure}
+\proto{assv}{ obj al}{procedure}
+\proto{assq}{ obj al}{procedure}}
 
-\domain{\var{Alist} (for ``association list'') must be a list of
-  pairs.  \var{Predicate} must be a predicate taking a single
-  argument.}  These procedures find the first pair in \var{alist}
+\domain{\var{Al} (for ``association list'') must be a a plausible
+  alist or a value according to the conditions specified below.
+  \var{Predicate} must be a predicate taking a single argument.}
+
+These procedures find the first pair in \var{al}
 whose car field satisfies a given condition, and returns that pair.
-If no pair in \var{alist} satisfies the condition, then \schfalse{}
+If no pair in \var{al} satisfies the condition, then \schfalse{}
 (not the empty list) is returned.  {\cf Assp} successively applies
-\var{predicate} to the car fields of \var{alist} and looks for a pair
+\var{predicate} to the car fields of \var{al} and looks for a pair
 for which it returns a true value.  {\cf Assoc}, {\cf assv}, and {\cf
   assq} look for a pair that has \var{obj} as its car {\cf Assoc} uses
 {\cf equal?}\ to compare \var{obj} with the car fields of the pairs in
-\var{alist}, while {\cf assv} uses {\cf eqv?}\ and {\cf assq} uses
+\var{al}, while {\cf assv} uses {\cf eqv?}\ and {\cf assq} uses
 {\cf eq?}.
+
+If \var{al} is not a plausible alist, then a natural number $n$ must
+exist such that \var{al} is the first Scheme value of a plausible
+prefix of length $n$ such that every Scheme value $x_1$ through $x_n$
+of that prefix is a pair, and $x_n$ has a pair as its car at some time
+after $t_n$, and at some time after that the car of that pair is the
+first argument, all before the procedure returns.
+(See section~\ref{listargumentsection}.)
 
 \begin{scheme}
 (define d '((3 a) (1 b) (4 c)))
