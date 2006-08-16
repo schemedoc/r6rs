@@ -648,10 +648,10 @@ section~\ref{syntaxrulessection}) as follows:
 \hyper{Key} may be any expression.  Each \hyper{clause} should have
 the form
 \begin{scheme}
-((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)\rm,%
+((\hyperi{S-expression} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)\rm,%
 \end{scheme}
-where each \hyper{datum} is an external representation of some object.
-All the \hyper{datum}s must be distinct.
+where each \hyper{S-expression} is an external representation of some object.
+The datums denoted by the the \hyper{S-expression}s must be distinct.
 The last \hyper{clause} may be an ``else clause,'' which has the form
 \begin{scheme}
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
@@ -660,13 +660,14 @@ The last \hyper{clause} may be an ``else clause,'' which has the form
 
 \semantics
 A {\cf case} expression is evaluated as follows.  \hyper{Key} is
-evaluated and its result is compared against each \hyper{datum}.  If the
+evaluated and its result is compared against each the datum denoted by
+each \hyper{S-expression}.  If the
 result of evaluating \hyper{key} is equivalent (in the sense of
-{\cf eqv?}; see section~\ref{eqv?}) to a \hyper{datum}, then the
+{\cf eqv?}; see section~\ref{eqv?}) to a datum, then the
 expressions in the corresponding \hyper{clause} are evaluated from left
 to right and the result(s) of the last expression in the \hyper{clause} is(are)
 returned as the result(s) of the {\cf case} expression.  If the result of
-evaluating \hyper{key} is different from every \hyper{datum}, then if
+evaluating \hyper{key} is different from every datum, then if
 there is an else clause its expressions are evaluated and the
 result(s) of the last is(are) the result(s) of the {\cf case} expression;
 otherwise the result of the {\cf case} expression is the unspecified value.
@@ -2920,20 +2921,6 @@ y                       \ev  (a . 4)
 %\item There are no other lists of \var{D}.
 %\end{itemize}
 
-Within literal expressions and representations of objects read by the
-\ide{read} procedure, the forms \singlequote\hyper{datum}\schindex{'},
-\backquote\hyper{datum}, {\tt,}\hyper{datum}\schindex{,}, and
-{\tt,@}\hyper{datum} denote two-ele\-ment lists whose first elements are
-the symbols \ide{quote}, \ide{quasiquote}, \hbox{\ide{unquote}}, and
-\ide{unquote-splicing}, respectively.  The second element in each case
-is \hyper{datum}.  This convention is supported so that arbitrary Scheme
-programs may be represented as lists.  \todo{Can or need this be stated
-more carefully?} That is, according to Scheme's grammar, every
-\meta{expression} is also a \meta{datum} (see section~\ref{datum}).
-Among other things, this permits the use of the {\cf read} procedure to
-parse Scheme programs.  See section~\ref{externalreps}. 
- 
-
 \begin{entry}{%
 \proto{pair?}{ obj}{procedure}}
 
@@ -4095,7 +4082,7 @@ are shown here.
 {\rm where}
 
 \meta{cond clause} \: (\meta{test} \meta{tail sequence})
-\meta{case clause} \: ((\arbno{\meta{datum}}) \meta{tail sequence})
+\meta{case clause} \: ((\arbno{\meta{S-expression}}) \meta{tail sequence})
 
 \meta{tail body} \: \arbno{\meta{definition}} \meta{tail sequence}
 \meta{tail sequence} \: \arbno{\meta{expression}} \meta{tail expression}
