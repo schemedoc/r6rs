@@ -3729,6 +3729,24 @@ Moreover, the condition created by {\cf error} has condition type
 {\cf \&error}, and the condition created by {\cf violation} has
 condition type {\cf \&violation}.
 
+\begin{scheme}
+(define (fac n)
+  (if (not (integer-valued? n))
+      (violation 'fac "non-integral argument" n))
+  (if (negative? n)
+      (violation 'fac "negative argument" n))
+  (letrec
+    ((loop (lambda (n r)
+             (if (zero? n)
+                 r
+                 (loop (- n 1) (* r n))))))
+      (loop n 1)))
+
+(fac 5) \ev 120
+(fac 4.5) \ev \exception{\&violation}
+(fac -3) \ev \exception{\&violation}
+\end{scheme}
+
 \begin{rationale}
   The procedures encode a common pattern of raising exceptions.
 \end{rationale}
