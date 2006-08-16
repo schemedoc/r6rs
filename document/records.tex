@@ -772,11 +772,16 @@ program has access to the original rtd via {\cf
   make-record-type-descriptor} or {\cf record-type-descriptor} it can
 reflect upon it.
 
+Any of the standard types mentioned in this report may or may not be
+implemented as a non-opaque record type.  Consequently, {\cf record?},
+when applied to an object of one of these types, may return
+\schtrue{}.  In this case, reflection is possible for these objects.
+
 \begin{entry}{%
 \proto{record?}{ obj}{procedure}}
    
 Returns \schtrue{} if \var{obj} is a record, and its record type is
-not opaque. Returns \schfalse{} otherwise.
+not opaque. Returns \schfalse{} otherwise.  
 \end{entry}
 
 \begin{entry}{%
