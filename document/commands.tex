@@ -32,6 +32,10 @@
 \newcommand{\schfalse}{\sharpfoo{f}}
 \newcommand{\schtrue}{\sharpfoo{t}}
 
+\newcommand{\ampfoo}[1]{{\tt\&#1}}
+
+\newcommand{\libfoo}[1]{{\tt(#1)}}
+
 \newcommand{\singlequote}{{\tt'}}  %\char19
 \newcommand{\doublequote}{{\tt"}}
 \newcommand{\backquote}{{\tt\char18}}
@@ -101,6 +105,8 @@
 \newcommand{\mainindex}[1]{\reallyindex{#1}{rm}{main}}
 \newcommand{\schindex}[1]{\reallyindex{#1}{tt}{aux}}
 \newcommand{\sharpindex}[1]{\reallyindex{#1}{sharpfoo}{aux}}
+\newcommand{\ampindex}[1]{\reallyindex{#1}{ampfoo}{aux}}
+\newcommand{\libindex}[1]{\reallyindex{#1}{libfoo}{main}}
 \renewcommand{\index}[1]{\reallyindex{#1}{rm}{aux}}
 
 \newcommand{\domain}[1]{#1}
@@ -183,7 +189,7 @@
 % Names of library modules
 
 \newcommand{\library}[1]{{\tt (#1)}}
-\newcommand{\deflibrary}[1]{\library{#1}\index{#1@\texttt{\library{#1} library}}}
+\newcommand{\deflibrary}[1]{\library{#1}\libindex{#1}}
 
 % Manual entries
 
@@ -207,13 +213,13 @@
 \newcommand{\vproto}[2]{\mainschindex{#1}\pproto{#1}{#2}}
 
 % Condition-type prototype
- \newcommand{\ctproto}[1]{\index{#1@{\tt\&#1}}\pproto{\&#1}{condition type}}
+ \newcommand{\ctproto}[1]{\ampfoo{#1}\pproto{\ampfoo{#1}}{condition type}}
 
 % Extending an existing definition (\proto without the index entry)
 \newcommand{\rproto}[3]{\pproto{(\hbox{#1}{\it#2\/})}{#3}}
 
 % Extending an existing definition, with index entry
-\newcommand{\irproto}[3]{\index{#1}\rproto{#1}{#2}{#3}}
+\newcommand{\irproto}[3]{\schindex{#1}\rproto{#1}{#2}{#3}}
 
 % Variable prototype
 \newcommand{\rvproto}[2]{\pproto{#1}{#2}}

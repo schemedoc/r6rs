@@ -4,7 +4,7 @@
 ;
 ;  (define (sort-list list pred) (sort pred list))
 ;  (load "index.sch")
-;  (call-with-input-file "r5rs.idx" read-entries)
+;  (call-with-input-file "r6rs.idx" read-entries)
 ;  (call-with-output-file "index.tex" create-index)
 
 (define main 0)
@@ -107,8 +107,8 @@
                 (and (string=? key (entry-key x))
                      (or (string=? font (entry-font x))
 			 ;; different entries for t and #t aren't inconsistent
-			 (string=? font "sharpfoo")
-			 (string=? (entry-font x) "sharpfoo"))
+			 (member font '("sharpfoo" "ampfoo" "libfoo"))
+			 (member (entry-font x) '("sharpfoo" "ampfoo" "libfoo")))
                      ;(eq? aux (entry-main/aux x))
                      ))
               (cdr entries)))))
