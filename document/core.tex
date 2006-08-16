@@ -2132,15 +2132,17 @@ true.
 inexact numbers of the appropriate type have bounded precision, then
 the value returned is an inexact number that is nearest to the
 argument.  If an exact argument has no reasonably close inexact
-equivalent, then a violation of an implementation restriction may be
-reported. FIXME
+equivalent, an exception with condition type
+{\cf\&implementation-violation} may be
+raised.
 
 {\cf ->exact} returns an exact representation of \var{z}.  The value
 returned is the exact number that is numerically closest to the
 argument; in most cases, the result of this procedure should be
 numerically equal to its argument.  If an inexact argument has no
-reasonably close exact equivalent, then a violation of an
-implementation restriction may be reported. FIXME
+reasonably close exact equivalent, an exception with condition type
+{\cf\&implementation-violation} may be
+raised.
 
 These procedures implement the natural one-to-one correspondence
 between exact and inexact integers throughout an
@@ -4033,10 +4035,9 @@ expression.
 \begin{itemize}
 \item The last expression within the body of a lambda expression,
   shown as \hyper{tail expression} below, occurs in a tail context.
-FIXME
 \begin{grammar}%
 (l\=ambda \meta{formals}
-  \>\arbno{\meta{definition}} \arbno{\meta{expression}} \meta{tail expression})
+  \>\arbno{\hyper{declaration}} \arbno{\hyper{definition}} \arbno{\meta{expression}} \meta{tail expression})
 \end{grammar}%
 
 \item If one of the following expressions is in a tail context,
