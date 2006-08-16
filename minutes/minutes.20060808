@@ -1,0 +1,112 @@
+Conference call August 8 2006 12:45-2:15pm
+All present by about 12:46pm:
+Kent, Mike, Matthew, Anton, Will
+
+0. finalize agenda (1 minute)
+    naming of condition predicates and accessors (if time; could wait)
+
+1. action items from 8/1/2006 (5 minutes)
+   - email Richard, marc, Manuel re: editorial credit (Kent)
+        done, but no reply yet
+   - propose alternate script syntax (Anton)
+        done
+   - revise library and syntax srfis (Kent)
+        done
+   - draft safety (memory integrity) paragraphs (Will)
+        done
+   - carried over:
+     - complete unicode reference implementation (Will)
+        done
+   - note: reserve last week of August for proofreading
+
+2. Report status (5 minutes)
+   - items ready for review
+     <item>                    <editor>   <to be completed by>   <done?>
+     unicode                   Matthew    Aug. 03                done.
+     exceptions & conditions   Matthew    Aug. 03                ongoing
+     quasiquote                Kent       Aug. 08                done.
+     letrec*                   Kent       Aug. 08                done.
+     let-values & let*-values  Kent       Aug. 08                done.
+     records                   Kent       Aug. 08
+     enumerations              Will       Jul. 12                done.
+     bytes                     Will       Aug. 03                8 August
+     equal?                    Will       Aug. 01                done.
+     list-library              Anton      Aug. 07                
+     case-lambda               Anton      Aug. 07                11 August
+     when & unless             Anton      Aug. 07                done.
+     core/library split        Anton      Aug. 07                11 August
+     arithmetic                Will       Aug. 22
+     set-car!, set-cdr!        Anton      Aug. ??
+     condition-type details    Anton      Aug. ??
+     dynamic-wind              Kent       Aug. 15
+   - items not ready for review
+     syntax (read-syntax, syntactic forms)
+     eval
+     I/O
+     hash tables
+     safe/unsafe mode
+     syntax-case
+     library system
+     scripts
+     r5rs compatibility library
+     operational semantics
+     core language
+
+3. future meetings (5 minutes)
+   - Matthew is off to China next week (12 hours different from EDT)
+        out of commission one week from today
+        8am EDT might work (8pm in China, 3pm in Germany)
+        Thursday next week, 8am EDT
+   - Portland, OR in September (Scheme workshop / ICFP)
+        Sunday evening at dinner,
+            after talks end (5:30pm) and before R6RS session (8pm)
+        maybe Monday evening as well
+
+4. relaxation of script syntax (10 minutes)
+   - treat script body as a library body?
+     <script header>
+     (import <import-spec>*)
+     <library body>
+     - requires (command-line) procedure
+   - allow interleaved definitions and expressions?
+    Anton volunteered to prepare written list of issues and options
+
+5. syntax-case (15 minutes)
+   - make fresh-syntax the default?
+     - pros: reduces possibility of unintended intra-transformer capture
+     - cons: complicates many common macros
+             problematic interaction with quasisyntax
+        adding fresh-syntax as a separate form:
+            in: Will, Anton
+            out: Kent, Mike, Matthew
+   - add abstract transformer syntax?
+       (transformer (<variable>) <body>) => transformer
+        Will suggested "syntax-lambda" instead of "transformer"
+        Mike suggested it be restricted to appear close to
+            define-syntax (or whatever)
+        adopted 4-0-1
+   - add quasisyntax/unsyntax/unsyntax-splicing?
+     - can be written as a macro
+        can also be written incorrectly
+        might improve acceptance of syntax-case
+        adopted by acclamation
+   - should let-syntax/letrec-syntax treated like begin or let?
+        yes: Will, Kent, Matthew, Mike, Anton
+        no: 
+     (RKD: 'yes' means "treat like begin")
+   - otherwise accept basically as is?
+        accepted without objection
+
+6. I/O convenience library (10 minutes)
+   - naming of peek-char, write-char, etc.
+        vote by email
+        Will will propose a change to library semantics
+
+7. I/O (15 minutes)
+    extensibility
+        file names
+        file options
+        transcoders
+    mutation of port transcoders, transcoders, whatever
+
+8. adjourned about 2:24pm
