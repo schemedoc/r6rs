@@ -1,46 +1,51 @@
-The details in this draft are superseded by library-contents.html (and related file library-index.html).
+R6RS Standard Libraries
+=======================
 
-R6RS Core vs. Library Split
-===========================
-This proposal provides a sketch of the core vs. library split in the R6RS.  It does not address the question of how the library system specifies its own version.  It assumes that libraries must specify the language they depend on as an ordinary library import, e.g. "(import r6rs)" or "(import r6r6-core)".
+This proposal provides an overview of the R6RS standard libraries.  The names of these libraries are listed below.  When these libraries are named using the new library reference syntax, some or all of them may be qualified with the name "r6rs", e.g. (r6rs base).  
 
-As an overview, the names of the proposed libraries are as follows:
-
-* r6rs-core
+* base
+* list
+* unicode
 * syntax-rules
 * syntax-case
-* exceptions
-* conditions
 * bytes
+* conditions
 * arithmetic-fixnum
 * arithmetic-flonum
 * arithmetic-fx
 * arithmetic-exact
 * arithmetic-inexact
-* arithmetic-generic
 * primitive-i/o
 * port-i/o
-* promises
-* eval
-* records
 * records-procedural
 * records-explicit
-* records-implicit (subsumes records-explicit)
+* records-implicit
 * records-reflection
-* hash-tables
+* when-unless
+* case-lambda
+* promises
+* eval
+* hash
+* mutable-list
+* control
+* r5rs-compatibility
+* simple-i/o
+* obsolete
 
-In addition to the above, some composite libraries are defined, consisting of combinations of the above libraries:
+In addition to the above, some composite libraries are defined, consisting of combinations of the above libraries.  Provisionally, these composite libraries are named:
 
-* r6rs-small
-* r6rs
+* r6rs          - intended to be what "most programs" would import
 * r6rs-big
 
-The contents of these libraries are summarized below.
+The contents of these libraries are summarized below.  Note that some of the details given below are currently superseded by library-contents.html (and the related file library-index.html).
 
 
-Library: r6rs-core
+
+Library: r6rs-base
 ------------------
-This library defines the core Scheme language.  The rationale for the contents of the core needs to be documented.  The r6rs-core library contains the following features:
+This library defines the R6RS base language.  Mike has described this library as specifying a language "similar to R5RS ... that can be quickly explained and understood in its entirety, and can be used to write sensible, complete if somewhat academic programs".
+
+The base library contains the features listed below.  The detailed contents are under discussion, so the following should be considered representative rather than definitive until further notice.  For a more detailed list, see library-contents.html.
 
 * All of the primitive expression types described in R5RS 4.1, including if, lambda, quote, set!
 * 'define' - definitions as described in R5RS 5.2
@@ -56,13 +61,13 @@ This library defines the core Scheme language.  The rationale for the contents o
 * R5RS 6.3 Other data types: booleans, pairs and lists, symbols, chars, strings, vectors and related procedures.
 * values, call-with-values, "let-values", etc.
 
-* R5RS 6.4: procedure? apply map for-each call-with-current-continuation dynamic-wind
-* Exception and conditions (SRFI 34 and 35)
+* R5RS 6.4: procedure? apply map for-each
+* Basic exception and conditions support (SRFI 34 and 35)
 
 This library includes features which some client libraries may wish to exclude.  The SRFI 83 "except" clause can be used for this purpose, e.g.
 
-(library "hello" "scheme://r6rs"
-  (import (except "r6rs" do named-let)
+(library (hello)
+  (import (except (r6rs) do eq?)
           ...)
   ...)
 
@@ -77,14 +82,14 @@ Library: syntax-case
 Provides the syntax-case macro system.
 
 
-Library: exceptions
--------------------
-SRFI 34
-
-
 Library: conditions
 -------------------
-SRFI 35
+SRFI 35 (parts that are not in base)
+
+
+Library: control
+----------------
+call/cc, dynamic-wind
 
 
 Library: bytes
@@ -115,11 +120,6 @@ Exact arithmetic procedures.
 Library: arithmetic-inexact
 ---------------------------
 Inexact arithmetic procedures.
-
-
-Library: arithmetic-generic
----------------------------
-Generic arithmetic procedures.
 
 
 Library: primitive-i/o
@@ -159,36 +159,36 @@ SRFI 76 implicit-naming syntactic layer (subsumes explicit-naming layer)
 
 Library: records-reflection
 ---------------------------
-SRFI 76 explicit-naming syntactic layer
+SRFI 76 record reflection procedures
 
 
-Library: hash-tables
+Library: hash
 --------------------
-Hash tables, hash functions (latter possibly separate library).
-
-
-Library: r6rs-small
--------------------
-This library provides an augmented version of the core language with some basic features to provide a complete yet small language.  It is composed of the following libraries:
-
-    r6rs-core
-    syntax-rules
-    records-explicit
-
-Mike suggests including "error" and "violation" convenience procedures to raise exceptions.
+Hash tables, hash functions
 
 
 Library: r6rs
 -------------
 This library provides a fairly complete set of R6RS features, excluding certain libraries not considered part of the base R6RS language.  Composition:
 
-    r6rs-small
+    r6rs-base
+    list
+    unicode
+    bytes
+    simple-i/o
+    records-explicit
+    records-procedural
+    syntax-rules
     syntax-case
-    exceptions
     conditions
-    arithmetic-generic
-    primitive-i/o
-    port-i/o
+    arithmetic-fixnum
+    arithmetic-flonum
+    arithmetic-fx
+    arithmetic-exact
+    arithmetic-inexact
+    promises
+    control
+    hash
 
 
 Library: r6rs-big
@@ -196,29 +196,21 @@ Library: r6rs-big
 This library provides all features defined in the R6RS.  Composition:
 
     r6rs
-    bytes
-    promises
     eval
-    arithmetic-fixnum
-    arithmetic-flonum
-    arithmetic-fx
-    arithmetic-exact
-    arithmetic-inexact
-    records-procedural
     records-implicit
     records-reflection
-    hash-tables
+    port-i/o
+    primitive-i/o
 
 
 Library: r5rs-compatibility
 ---------------------------
-Some procedures proposed for an r5rs compatibility library:
+See library-contents.html for exact contents.
 
 * inexact->exact exact->inexact (R6RS calls these ->exact and ->inexact)
 * null-environment scheme-report-environment (deprecated per Mike's eval proposal and exceptions vote 47)
     (interaction-environment flushed)
 * quotient remainder modulo
 
-Mike suggests that "R5RS compatibility should be considered for specific libraries, i.e. I/O, but not as a whole---that would be hard to do for a number of reasons, starting with lexical syntax."
 
 **end**
