@@ -143,12 +143,12 @@ also section~\ref{safetysection}.
 At higher priorities, implementations may be more likely to raise
 exceptions that are allowed but not required by this report.
 
-Most implementations are able to recognize some violations when
+Most implementations are able to recognize some defects when
 parsing, expanding macros, or compiling a definition or expression
 whose evaluation has not yet commenced in the usual sense.
 Implementations are allowed to use nonstandard exception handlers at
 those times, and are encouraged to raise {\cf\&syntax} exceptions for
-violations detected at those times, even if the definition or
+defects detected at those times, even if the definition or
 expression that contains the violation will never be executed.
 Implementations are also allowed to raise a {\cf\&warning} exception
 at those times if they determine that some subexpression would
@@ -547,7 +547,7 @@ the unspecified value.
 (+ x 1)                 \ev  5%
 \end{scheme}
 
-It is a syntax violation if the binding \hyper{variable} refers to is
+It is a syntax defect if the binding \hyper{variable} refers to is
 immutable.
 \end{entry}
 
@@ -888,7 +888,7 @@ in an environment in which the first binding is visible, and so on.
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
 and \hyper{body} should be a sequence of
-one or more expressions. It is syntax violation for a \hyper{variable} to appear more
+one or more expressions. It is a syntax defect for a \hyper{variable} to appear more
 than once in the list of variables being bound.
 
 \semantics
@@ -1535,7 +1535,7 @@ bound at top level; see section~\ref{define-syntax}.
 Each \hyper{keyword} is an identifier,
 each \hyper{transformer spec} is an instance of {\cf syntax-rules}, and
 \hyper{body} should be a sequence of one or more expressions.  It is a
-syntax violation for \hyper{keyword} to appear more than once in the list of keywords
+syntax defect for \hyper{keyword} to appear more than once in the list of keywords
 being bound.
 
 \semantics
@@ -2294,8 +2294,8 @@ the procedure can prove that the inaccuracy is not large enough to affect the
 result, which is possible only in unusual implementations).  If {\cf min} or
 {\cf max} is used to compare numbers of mixed exactness, and the numerical
 value of the result cannot be represented as an inexact number without loss of
-accuracy, then the procedure may report a violation of an implementation
-restriction.
+accuracy, then the procedure may raise an exception with condition
+type {\cf\&implementation-restriction}.
 \end{note}
 
 \end{entry}
@@ -2339,8 +2339,8 @@ infinite nor NaN nor 0:
 \end{scheme}
 
 If any of these procedures are applied to mixed non-rational real and
-non-real complex arguments, they either report a violation of an
-implementation restriction or return an unspecified number.
+non-real complex arguments, they either raise an exception with
+condition type {\cf\&implementation-restriction} or return an unspecified number.
 \end{entry}
 
 \begin{entry}{%
@@ -2372,8 +2372,9 @@ of their argument.
 \end{scheme}
 
 If any of these procedures are applied to mixed non-rational real and
-non-real complex arguments, they either report a violation of an
-implementation restriction or return an unspecified number.
+non-real complex arguments, they either raise an exception with
+condition type {\cf\&implementation-restriction} or return an
+unspecified number.
 \end{entry}
 
 \begin{entry}{%
@@ -2592,9 +2593,9 @@ Returns \vari{z} raised to the power \varii{z}.  For nonzero \vari{z},
 \end{displaymath}
 
 $0.0^{\var{z}}$ is $1$ if $\var{z} = 0.0$, and $0.0$ if {\cf
-  (real-part \var{z})} is positive.  Otherwise, this procedure reports
-a violation of an implementation restriction or returns an unspecified
-number.
+  (real-part \var{z})} is positive.  Otherwise, an exception is
+raised with condition type {\cf\&implementation-restriction} or an unspecified
+number is returned.
 
 For an exact \vari{z} and an exact
 integer \varii{z}, {\cf (expt \vari{z}
