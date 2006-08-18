@@ -621,7 +621,10 @@ section~\ref{lexicalsyntaxsection}:
 \>    \| \meta{abbreviation}
 \meta{abbreviation} \: \meta{abbrev prefix} \meta{S-expression}
 \meta{abbrev prefix} \: ' \| ` \| , \| ,@ \| \#'
-\meta{vector} \: \#(\arbno{\meta{S-expression}}) %
+\meta{vector} \: \#(\arbno{\meta{S-expression}})
+\meta{bytes} \: \#vu8(\arbno{\meta{u8}})
+\meta{u8} \: $\langle${\rm any \meta{number} denoting an exact}
+ \>\>\quad\quad {\rm integer in $\{0, \ldots, 255\}$}$\rangle$%
 \end{grammar}
 
 \subsection{Vectors}
@@ -671,6 +674,21 @@ and
 \end{scheme}
 
 are equivalent notations for a list of symbols.
+
+\subsection{Bytes objects}
+
+Bytes S-expressions, denoting bytes objects (see
+section~\ref{bytessection}, are written using the notation
+{\tt\#vu8(\var{u8} \dotsfoo)}, where the \var{u8}s are the octets of
+the bytes object.  For example, a bytes object of length 3 containing the
+octets 2, 24, and 123 can be written as following:
+
+\begin{scheme}
+\#vu8(2 24 123)%
+\end{scheme}
+
+Note that this is the external representation of a bytes object, not a
+core-language expression evaluating to a bytes object.
 
 \subsection{Abbreviations}\unsection
 \label{quotesection}
