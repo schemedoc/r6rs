@@ -4,7 +4,7 @@
 
 \section{Entry format}
 
-The chapters describing bindings in the core language and the standard
+The chapters describing bindings in the base library and the standard
 libraries are organized
 into entries.  Each entry describes one language feature or a group of
 related features, where a feature is either a syntactic construct or a
@@ -161,7 +161,7 @@ return values is passed to a continuation created by {\cf
   call-with-values} not accepted by its \var{consumer} an exception is
 raised.
 
-A number of forms in the core language have sequences of expressions
+A number of forms in the base library have sequences of expressions
 as subforms that are evaluated sequentially, with the return values of
 all but the last expression being discarded.  The continuations
 discarding these values accept any number of values.
@@ -305,15 +305,15 @@ of import and export FIXME specifications and a body, which contains
 the code defining the library.  Chapter~\ref{librarychapter} describes
 the syntax and semantics for libraries.  The subsequent chapters
 describe various standard libraries provided by a Scheme system.  In
-particular, chapter~\ref{corelanguagecchapter} describes a core
-language defining most of the constructs traditionally associated with
+particular, chapter~\ref{baselibrarychapter} describes a base
+library defining most of the constructs traditionally associated with
 Scheme programs.
 
-The division between the core language and other standard libraries is
+The division between the base library and other standard libraries is
 based on use, not on construction.  In particular, some facilities
 that are typically implemented as ``primitives'' by a compiler or
 run-time libraries rather than in terms of other standard procedures
- or syntactic forms are not part of the core language, but defined in
+ or syntactic forms are not part of the base library, but defined in
 separate libraries.  Examples include the fixnum and flonum libraries,
 the exceptions and conditions libraries, and the libraries for
 records.
@@ -348,7 +348,7 @@ and bind syntactic keywords to those new syntaxes, while other
 expression types create new locations and bind variables to those
 locations.  These expression types are called {\em binding constructs}.
 \mainindex{binding construct}
-The constructs in the core language that bind syntactic keywords are listed in section~\ref{macrosection}.
+The constructs in the base library that bind syntactic keywords are listed in section~\ref{macrosection}.
 The most fundamental of the variable binding constructs is the
 {\cf lambda} expression, because all other variable binding constructs
 can be explained in terms of {\cf lambda} expressions.  The other
@@ -396,7 +396,7 @@ defects in the syntax.  A \defining{syntax defect} may be an error with
 respect to the lexical syntax specified in
 section~\ref{lexicalsyntaxsection}, the read syntax specified in
 section~\ref{readsyntaxsection}, or the ``\exprtype'' entries in the
-specification of the core language or the standard libraries.
+specification of the base library or the standard libraries.
 Moreover, attempting to assign to an immutable variable is also
 considered a syntax defect.  (The locations bound to variables
 imported from other libraries are immutable.  See
@@ -456,8 +456,8 @@ return at most once and the active calls would be those that had not
 yet returned.
 A formal definition of proper tail recursion can be found
 in~\cite{propertailrecursion}.  The rules for identifying tail calls
-in core-language programs are described in
-section~\ref{coretailcontextsection}.
+in base-library constructs are described in
+section~\ref{basetailcontextsection}.
 
 \begin{rationale}
 
