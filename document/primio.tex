@@ -1,0 +1,900 @@
+\section{Condition types}
+
+In exceptional situations arising from ``I/O errors,'' the procedures
+described in the specification below will raise an exception with
+condition type {\cf\&i/o}.  Except where explicitly specified, there
+is no guarantee that the raised condition object will contain all the
+information that would be applicable. It is recommended, however, that
+an implementation provide all information about an exceptional
+situation in the condition object that is available at the place where
+it is detected.
+
+\begin{entry}{%
+\ctproto{i/o}
+\proto{i/o-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o \&error
+  i/o-error?)
+\end{scheme}        
+
+This is a supertype for a set of more specific I/O errors.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-read}
+\proto{i/o-read-error?}{ obj}{procedure}}
+
+\begin{scheme}
+(define-condition-type \&i/o-read \&i/o
+  i/o-read-error?)
+\end{scheme}
+
+This condition type describes read errors that occurred during an I/O
+operation.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-write}
+\proto{i/o-write-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-write \&i/o
+  i/o-write-error?)
+\end{scheme}
+This condition type describes write errors that occurred during an I/O
+    operation.
+  \end{entry}   
+  
+\begin{entry}{%
+\ctproto{i/o-invalid-position}
+\proto{i/o-invalid-position-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-invalid-position \&i/o
+  i/o-invalid-position-error?
+  (position i/o-error-position))
+\end{scheme}
+
+This condition type describes attempts to set the file position to an
+invalid position. The value of the position field is the file position that
+the program intended to set. This condition describes a range error, but
+not a contract violation.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-filename}
+\proto{i/o-filename-error?}{ obj}{procedure}
+\proto{i/o-error-filename}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-filename \&i/o
+  i/o-filename-error?
+  (filename i/o-error-filename))
+\end{scheme}
+
+This condition type describes an I/O error that occurred during an
+operation on a named file. Condition objects belonging to this type
+must specify a file name in the {\cf filename} field.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{i/o-file-protection}
+\proto{i/o-file-protection-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-file-protection
+    \&i/o-filename
+  i/o-file-protection-error?)
+\end{scheme}
+
+A condition of this type specifies that an operation tried to operate on a
+named file with insufficient access rights.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-file-is-read-only}
+\proto{i/o-file-is-read-only-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-file-is-read-only
+    \&i/o-file-protection
+  i/o-file-is-read-only-error?)
+\end{scheme}
+
+A condition of this type specifies that an operation tried to operate on a
+named read-only file under the assumption that it is writeable.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-file-already-exists}
+\proto{i/o-file-already-exists-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-file-already-exists
+    \&i/o-filename
+  i/o-file-already-exists-error?)
+\end{scheme}
+A condition of this type specifies that an operation tried to operate on an
+existing named file under the assumption that it does not exist.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-file-exists-not}
+\proto{i/o-exists-not-error?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-file-exists-not
+    \&i/o-filename
+  i/o-file-exists-not-error?)
+\end{scheme}
+
+A condition of this type specifies that an operation tried to operate on an
+non-existent named file under the assumption that it exists.
+\end{entry}   
+
+\begin{entry}{%
+\ctproto{i/o-operation-not-available}
+\proto{i/o-operation-not-available-violation?}{ obj}{procedure}}
+
+This condition type could be defined by
+FIXME: should be a subtype of {\cf\&defect}
+%
+\begin{scheme}
+(define-condition-type \&i/o-operation-not-available
+    \&violation
+  i/o-operation-not-available-violation?)
+\end{scheme}
+
+This condition type indicates that the program tried to perform an I/O
+operation that was not available.
+\end{entry}   
+  
+\begin{entry}{%
+\ctproto{i/o-closed}
+\proto{i/o-closed-violation?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-closed \&violation
+  i/o-closed-violation?)
+\end{scheme}
+
+A condition of this type specifies that an operation tried to operate
+on a closed I/O object under the assumption that it is open.
+\end{entry}
+
+\section{Primitive I/O}
+
+FIXME: parameter type conventions
+
+This section defines the \library{r6rs i/o primitive} library, a
+simple, primitive I/O subsystem.  It provides unbuffered I/O, and is
+close to what a typical operating system offers. Thus, its interface
+is suitable for implementing high-throughput and zero-copy I/O.
+
+The Primitive I/O layer also allows clients to implement custom data
+sources and sinks via a simple interface.
+
+The Primitive I/O layer only handles blocking-I/O.
+
+\subsection{Filenames}
+
+Some of the procedures described here accept a filename filename as an
+argument. Valid values for such a filename include strings naming a file using
+the native notation of the operating system the Scheme implementation happens
+to be running on.
+
+It is expected that a future SRFI will extend this set of values by a more
+abstract representation: This is necessary, as the most common operating
+systems do not really use strings for representing filenames, but rather byte
+or word sequences. Moreover, the string notation is difficult to manipulate and
+not very portable.
+
+\subsection{File options}
+\label{fileoptionssection}
+
+When opening a file, the various procedures in this library accept a
+{\cf file-options} object containing a set of flags that specify how
+the file is to be opened. A {\cf file-options} object is an enum-set
+(see section~\ref{enumerationssection}) over the symbols constituting
+valid file options.
+
+\begin{entry}{%
+\proto{file-options}{ \hyper{file-options-name} \dotsfoo}{\exprtype}}
+   
+The {\cf file-options} syntax returns a file-options object with the
+specified options set. The following options (all affecting output
+only) may be used:
+
+\begin{itemize}   
+\item {\cf create} create file if it does not already exist
+\item {\cf exclusive} an exception with condition type
+  {\cf\&i/o-file-already-exists} will be exclusive raised if this
+  option and {\cf create} are both set and the file already exists
+\item {\cf truncate}
+  file is truncated
+\end{itemize}
+
+FIXME: everything else is ignored
+
+The file-options object returned by {\cf (file-options)} specifies,
+when supplied to an operation opening a file for output, that the file
+must exist (otherwise an exception with condition type
+{\cf\&i/o-file-exists-not} is raised) and its data is unchanged by the
+operation.
+\end{entry}   
+
+\subsection{Readers and Writers}
+
+The objects representing input data sources are called readers and
+those representing output data sinks are called writers for output.
+They are unbuffered and operate purely on binary data.  Although some
+reader and writer objects might conceivably have something to do with
+files or devices, programmers should never assume it.
+
+The \library{r6rs i/o primitive} library has one condition type
+specific to readers and writers:
+
+\begin{entry}{%
+\ctproto{i/o-reader/writer}
+\proto{i/o-reader-writer-error?}{ obj}{procedure}
+\proto{i/o-error-reader/writer}{ condition}{procedure}}
+
+This condition type could be defined by
+
+\begin{scheme}
+(define-condition-type \&i/o-reader/writer \&i/o
+  i/o-reader/writer-error?
+  (reader/writer i/o-error-reader/writer))
+\end{scheme}
+
+This condition type allows specifying the particular reader or writer
+with which an I/O error is associated. Conditions raised by the
+Primitive I/O procedures may include an {\cf\&i/o-reader/writer}
+condition, but are not required to do so.
+\end{entry}
+
+\subsection{I/O buffers}
+
+\begin{entry}{%
+\proto{make-i/o-buffer}{ size}{procedure}}
+   
+This creates a bytes object of size size with undefined contents.
+Callers of the Primitive I/O procedures are encouraged to use bytes
+objects created by {\cf make-i/o-buffer} because they might have
+alignment and placement characteristics that {\cf make reader-read!}
+and {\cf writer-write!} more efficient.  (These procedures are still
+required to work on regular bytes objects, however.)
+\end{entry}
+
+\subsection{Readers}
+
+The purpose of reader objects is to represent the output of arbitrary
+algorithms in a form susceptible to imperative I/O.
+
+FIXME: be precise about argument-type checking
+
+\begin{entry}{%
+\proto{reader?}{ obj}{procedures}}
+   
+Returns \schtrue{} if \var{obj} is a reader, otherwise returns \schfalse.
+\end{entry}
+
+\begin{entry}{%
+\pproto{(make-simple-reader \var{id} \var{descriptor}}{procedure}}
+\mainschindex{make-simple-reader}{\tt\obeyspaces\\
+    \var{chunk-size} \var{read!} \var{available} \var{get-position}
+    \var{set-position!} \var{end-position} \var{close})}
+   
+Returns a reader object. \var{Id} is a string naming the reader,
+provided for informational purposes only. \var{Descriptor} may be any
+object; the Primitive I/O system will not use it internally for any
+purpose. \var{Descriptor} can be extracted from the reader object via
+{\cf reader-descriptor}. Thus, descriptor can be used to keep the
+internal state of certain kinds of readers.
+   
+\var{Chunk-size} must be a positive exact integer, and represents a recommended
+efficient size of the read operations on this reader. This is typically the
+block size of the buffers of the operating system. As such, it is only a
+hint for clients of the reader---calls to the \var{read!} procedure (see below)
+may specify a different read count.
+   
+The remaining arguments are procedures. These procedures must raise
+exceptions with condition types as specified above when they encounter an
+exceptional situation. When they do not, the effects are unspecified.
+
+\var{Get-position}, \var{set-position!}, and \var{end-position} may be
+omitted, in which case the corresponding arguments must be \schfalse.
+   
+\begin{itemize}
+\item {\cf (\var{read!} \var{bytes} \var{start} \var{count})}
+       
+  \var{Start} and \var{count} must be non-negative exact integers.
+  This reads up to \var{count} bytes from the reader and writes them
+  into \var{bytes}, which must be a bytes object, starting at index
+  start. \var{Bytes} must have size at least $\var{start} +
+  \var{count}$. This procedure returns the number of bytes read as an
+  exact integer. It returns 0 if it encounters an end of file, or if
+  count is 0. If count is positive, this procedure blocks until at
+  least one byte has been read or it has encountered end of file.
+  
+  \var{Bytes} may or may not be a bytes object returned by {\cf
+    make-i/o-buffer}. It is possible that {\cf reader-read!} operates
+  more efficiently if it is, however.
+  
+  \var{Count} may or may not be the same as the chunk size of the
+  reader. It is possible that {\cf reader-read!} operates more
+  efficiently if it is, however.
+
+\item {\cf (\var{available})}
+       
+  This returns an estimate of the total number of bytes left in the
+  reader. The return value is either an exact integer, or
+  \schfalse{} if no such estimate is possible. There is no guarantee
+  that this estimate will have any specific relationship to the true
+  number of available bytes.
+
+\item {\cf (\var{get-position})}
+       
+  This procedure, when present, returns the current position in the 
+  reader as an exact integer counting the number of bytes since the
+  beginning of the source. (EOFs do not count as bytes.)
+  
+\item {\cf (\var{set-position!} \var{pos})}
+       
+  This procedure, when present, moves to position \var{pos} (which
+  must be a non-negative exact integer) in the reader.
+       
+  The procedure must return a single value, which is ignored.
+       
+\item {\cf (\var{end-position})}
+       
+  This procedure, when present, returns the position in the reader
+  of the next end of file, without changing the current position.
+
+\item {\cf (\var{close})}
+       
+  This procedure marks the reader as closed, performs any necessary
+  cleanup, and releases the resources associated with the reader.
+  Further operations on the reader must raise an exception with
+  condition type {\cf\&i/o-closed}.
+       
+  The procedure must return a single value, which is ignored.
+\end{itemize}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-id}{ reader}}
+   
+This returns a string naming the reader, provided for informational
+purposes only. For a file reader returned by {\cf open-file-reader} or
+{\cf open-file-reader+writer}, this will be a string representation of the file
+name.
+  
+For a reader created by {\cf make-simple-reader}, this returns the value that was
+supplied as the \var{id} argument to {\cf make-simple-reader}.
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-descriptor}{ reader}{procedure}}
+   
+For a reader created by {\cf make-simple-reader}, this returns the value that was
+supplied as the descriptor argument to {\cf make-simple-reader}.
+   
+For all other readers, this returns an unspecified value.
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-chunk-size}{ reader}{procedure}}
+   
+This returns a positive exact integer that represents a recommended
+efficient size of the read operations on this reader. This is typically the
+block size of the buffers of the operating system. As such, it is only a
+hint for clients of the reader---calls to the {\cf reader-read!} procedure (see
+below) may specify a different read count.
+
+For a reader created by {\cf make-simple-reader}, this returns the
+value that was supplied as the chunk-size argument to {\cf
+  make-simple-reader}.
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-read!}{ reader bytes start count}{procedure}}
+   
+\var{Start} and \var{count} must be non-negative exact integers. This
+reads up to \var{count} bytes from the reader and writes them into
+\var{bytes}, which must be a bytes object, starting at index
+\var{start}. \var{Bytes} must have at least $\var{start} +
+\var{count}$ elements. This procedure returns the number of bytes read
+as an exact integer. It returns 0 if it encounters an end of file, or
+if \var{count} is 0.  This procedure blocks until at least one byte has been
+read or it has encountered end of file.
+   
+\var{Bytes} may or may not be a bytes object returned by {\cf
+  make-i/o-buffer}. It is possible that {\cf reader-read!} operates
+more efficiently if it is, however.
+   
+\var{Count} may or may not be the same as the chunk size of the
+reader. It is possible that {\cf reader-read!} operates more
+efficiently if it is, however.
+   
+For a reader created by {\cf make-simple-reader}, this calls the
+\var{read!} procedure of reader with the remaining arguments.
+
+FIXME: return value
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-available}{ reader}{procedure}}
+   
+This returns an estimate of the total number of available bytes left in the
+stream. The return value is either an exact integer, or \schfalse{} if no such
+estimate is possible. There is no guarantee that this estimate will have
+any specific relationship to the true number of available bytes.
+   
+For a reader created by {\cf make-simple-reader}, this calls the \var{available}
+procedure of reader.
+\end{entry}   
+
+\begin{entry}{%
+\proto{reader-has-get-position?}{ reader}{procedure}}
+   
+This returns \schtrue{} if reader supports the reader-get-position
+procedure, and \schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-get-position}{ reader}{procedure}}
+   
+When {\cf reader-has-get-position} returns \schtrue{} for reader, this
+returns the current position in the byte stream as an exact integer
+counting the number of bytes since the beginning of the stream.
+   
+For a reader created by {\cf make-simple-reader}, this calls the
+\var{get-position} procedure of reader, if present. If reader does not
+have a \var{get-position} procedure, an exception with condition type
+{\cf\&i/o-operation-not-available} is raised.
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-has-set-position!?}{ reader}{procedure}}
+   
+This returns \schtrue{} if reader supports the {\cf reader-set-position!} operation, and
+\schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-set-position!}{ reader pos}{procedure}}
+
+When {\cf reader-has-set-position!?} returns \schtrue{} for
+\var{reader}, moves to position \var{pos} (which must be a non-negative
+exact integer) in the stream.
+ 
+For a reader created by {\cf make-simple-reader}, this calls the
+\var{set-position!}  procedure of \var{reader} with the \var{pos}
+argument, if present. If \var{reader} does not have a set-position!
+procedure, an {\cf exception} with condition type
+{\cf\&i/o-operation-not-available} is raised.
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-has-end-position?}{ reader}{procedure}}
+   
+This returns \schtrue{} if reader supports the {\cf reader-end-position}
+operation, and \schfalse{} otherwise.
+\end{entry}   
+
+\begin{entry}{%
+\proto{reader-end-position}{ reader}{procedure}}
+   
+When {\cf reader-has-end-position?} returns \schtrue{} for \var{reader},
+this returns the position in the byte stream of the next end of file,
+without changing the current position.
+   
+For a reader created by {\cf mmake-simple-reader}, this calls the
+\var{end-position} procedure of \var{reader}, if present. If
+\var{reader} does not have a \var{end-position} procedure, an
+exception with condition type {\cf\&i/o-operation-not-available} is raised.
+\end{entry}
+
+\begin{entry}{%
+\proto{reader-close}{ reader}{procedure}}
+   
+This marks \var{reader} as closed, performs any necessary cleanup, and
+releases the resources associated with the reader. Further operations
+on the reader must raise an exception with condition type
+{\cf\&i/o-closed}.
+   
+For a reader created by {\cf make-simple-reader}, this calls the
+\var{close} procedure of reader.
+\end{entry}
+
+\begin{entry}{%
+\proto{open-bytes-reader}{ bytes}{procedure}}
+   
+This returns a \defining{bytes reader} that uses a copy of
+\var{bytes}, a bytes object, as its contents. This reader has
+\var{get-position}, \var{set-position!}, and \var{end-position}
+operations.
+\end{entry}
+
+\begin{entry}{%
+\proto{open-file-reader}{ filename}{procedure}
+\rproto{open-file-reader}{ filename file-options}{procedure}}
+   
+This returns a reader connected to the file named by \var{filename}.
+The \var{file-options} object defaults to {\cf (file-options)} if not
+present. It may determine various aspects of the returned reader, see
+section~\ref{fileoptionssection}. This reader has \var{get-position},
+\var{set-position!}, and \var{end-position} operations.
+\end{entry} 
+
+\begin{entry}{%
+\proto{standard-input-reader}{}{procedure}}
+   
+This returns a reader connected to the standard input. The meaning of
+``standard input'' is implementation-dependent.
+\end{entry}
+
+\subsection{Writers}
+
+The purpose of writer objects is to represent the input of arbitrary
+algorithms in a form susceptible to imperative I/O.
+
+\begin{entry}{%
+\proto{writer?}{ obj}{procedure}}
+   
+Returns \schtrue{} if \var{obj} is a writer, otherwise returns \schfalse.
+\end{entry}
+
+\begin{entry}{%
+\pproto{(make-simple-writer \var{id} \var{descriptor}}{procedure}}
+\mainschindex{make-simple-writer}{\tt\obeyspaces\\
+    \var{chunk-size} \var{write!} \var{get-position} \var{set-position!}
+    \var{end-position} \var{close})}
+   
+Returns a writer object. \var{Id} is a string naming the writer,
+provided for informational purposes only. For a file, this will be a
+string representation of the file name. \var{Descriptor} may be any
+object; the Primitive I/O system will not use it internally for any
+purpose. \var{Descriptor} can be extracted from the writer object via
+{\cf writer-descriptor}. Thus, descriptor can be used to keep the
+internal state of certain kinds of writers.
+
+\var{Chunk-size} must be a positive exact integer, and is the
+recommended efficient size of the write operations on this writer. As
+such, it is only a hint for clients of the reader---calls to the
+\var{write!} procedure (see below) may specify a different write
+count.
+
+The remaining arguments are procedures. These procedures must raise
+exceptions with condition types as specified above when they encounter
+an exceptional situation. When they do not, the effects are
+unspecified.
+
+\var{Get-position}, \var{set-position!}, and \var{end-position} may be
+omitted, in which case the corresponding arguments must be \schfalse.
+
+\begin{itemize}
+\item {\cf (\var{write!} \var{bytes} \var{start} \var{count})}
+   
+  \var{Start} and \var{count} must be non-negative exact integers.
+  This writes up to \var{count} bytes in bytes object \var{bytes}
+  starting at index \var{start}. Before it does this, it will block
+  until it can write at least one byte. It returns the number of bytes
+  actually written as a positive exact integer.
+  
+  \var{Bytes} may or may not be a bytes object returned by {\cf
+    make-i/o-buffer}. It is possible that {\cf writer-write!} operates more
+  efficiently if it is, however.
+  
+  \var{Count} may or may not be the same as the chunk size of the
+  reader. It is possible that {\cf writer-write!} operates more
+  efficiently if it is, however.
+
+\item {\cf (\var{get-position})}
+   
+  This procedure, when present, returns the current position in the byte
+  stream as an exact integer counting the number of bytes since the
+  beginning of the stream.
+   
+\item {\cf (\var{set-position!} \var{pos})}
+   
+  This procedure, when present, moves to position \var{pos} (which must be a
+  non-negative exact integer) in the stream.
+  
+  The procedure must return a single return value, which is ignored.
+
+\item {\cf (\var{end-position})}
+   
+    This procedure, when present, returns the byte position of the next end
+    of file, without changing the current position.
+   
+\item {\cf (\var{close})}
+  
+  This procedure marks the writer as closed, performs any necessary
+  cleanup, and releases the resources associated with the writer. Further
+  operations on the writer must raise an exception with condition type
+  {\cf\&i/o-closed}.
+   
+  The procedure must return a single value, which is ignored.
+\end{itemize}
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-id}{ writer}{procedure}}
+   
+This returns string naming the writer, provided for informational
+purposes only. For a file writer returned by {\cf open-file-writer}
+or {\cf open-file-reader+writer}, this will be a string
+representation of the file name.
+   
+For a writer created by {\cf make-simple-writer}, this returns the
+value of the \var{id} field of the argument writer.
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-descriptor}{ writer}{procedure}}
+   
+  For a writer created by {\cf make-simple-writer}, this returns the value of the
+  \var{descriptor} field of the argument writer.
+  
+  For all other writers, this returns an unspecified value.
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-chunk-size}{ writer}{procedure}}
+   
+This returns a positive exact integer, and is the recommended efficient
+size of the write operations on this writer. As such, it is only a hint for
+clients of the reader---calls to {\cf writer-write!} (see below) may specify a
+different write count.
+
+For a writer created by {\cf make-simple-writer}, this returns the value of the
+\var{chunk-size} field of the argument writer.
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-write!}{ writer bytes start count}{procedure}}
+   
+\var{Start} and \var{count} must be non-negative exact integers.
+This writes up to \var{count} bytes in bytes object \var{bytes}
+starting at index \var{start}. Before it does this, it will block
+until it can write at least one byte. It returns the number of bytes
+actually written as a positive exact integer.
+   
+\var{Bytes} may or may not be a bytes object returned by {\cf
+  make-i/o-buffer}. It is possible that {\cf writer-write!} operates
+more efficiently if it is, however.
+
+\var{Count} may or may not be the same as the chunk size of the reader. It is
+possible that {\cf writer-write!} operates more efficiently if it is, however.
+
+For a writer created by {\cf make-simple-writer}, this calls the
+\var{write!} procedure of writer with the remaining arguments.
+\end{entry}   
+
+\begin{entry}{%
+\proto{writer-has-get-position?}{ writer}{procedure}}
+   
+This returns \schtrue{} if writer supports the {\cf
+  writer-get-position} operation, and \schfalse{} otherwise.
+\end{entry}   
+
+\begin{entry}{%
+\proto{writer-get-position}{ writer}{procedure}}
+   
+When {\cf writer-has-get-position?} returns \schtrue{} for
+\var{writer}, this returns the current position in the byte stream as
+an exact integer counting the number of bytes since the beginning of
+the stream.
+  
+For a writer created by {\cf make-simple-writer}, this calls the
+\var{get-position} procedure of \var{writer}, if present. If \var{writer}
+does not have a get-position procedure, an exception with condition
+type {\cf\&i/o-operation-not-available} is raised.
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-has-set-position!?}{ writer}{procedure}}
+   
+This returns \schtrue{} if writer supports the \var{writer-set-position!} operation, and
+\schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-set-position!}{ writer pos}{procedure}}
+   
+When {\cf writer-has-set-position!?} returns \schtrue{} for
+\var{writer}, this moves to position \var{pos} (which must be a non-negative
+exact integer) in the stream.
+   
+For a writer created by {\cf make-simple-writer}, this calls the
+\var{set-position!}  procedure of \var{writer} with the \var{pos}
+argument, if present. If \var{writer} does not have a
+\var{set-position!} procedure, an exception with condition type
+{\cf\&i/o-operation-not-available} is raised.
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-has-end-position?}{ writer}{procedure}}
+   
+This returns \schtrue{} if \var{writer} supports the {\cf
+  writer-end-position} operation, and \schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-end-position}{ writer}{procedure}}
+   
+When {\cf writer-has-end-position?} returns \schtrue{} for writer,
+this returns the byte position of the next end of file, without
+changing the current position.
+   
+For a writer created by {\cf make-simple-writer}, this calls the
+\var{end-position} procedure of \var{writer}, if present. If \var{writer}
+does not have a \var{end-position} procedure, an exception with condition
+type {\cf\&i/o-operation-not-available} is raised.
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-close}{ writer}{procedure}}
+   
+This marks the writer as closed, performs any necessary cleanup, and
+releases the resources associated with the writer. Further operations
+on the writer must raise an exception with condition type
+{\cf\&i/o-closed}.
+   
+For a writer created by {\cf make-simple-writer}, this calls the
+\var{close} procedure of \var{writer}.
+\end{entry}
+
+\begin{entry}{%
+\proto{open-bytes-writer}{}{procedure}}
+   
+This returns a \defining{bytes writer} that can yield everything written to it as
+a bytes object. This writer supports the {\cf writer-get-position},
+{\cf writer-set-position!}, and {\cf writer-end-position} operations.
+operations.
+\end{entry}
+
+\begin{entry}{%
+\proto{writer-bytes}{ writer}{procedure}}
+   
+The \var{writer} argument must be a bytes writer.  This procedure
+returns a newly allocated bytes object containing the data written to
+writer in sequence. Doing this in no way invalidates the writer or
+change its store.
+\end{entry}
+
+\begin{entry}{%
+\proto{open-file-writer}{ filename}{procedure}
+\rproto{open-file-writer}{ filename file-options}{procedure}}
+   
+This returns a writer connected to the file named by \var{filename}.
+The \var{file-options} object defaults to {\cf (file-options)} if not
+present. It determines various aspects of the returned writer, see
+section~\ref{fileoptionssection}.  This writer has \var{get-position},
+\var{set-position!}, and \var{end-position} operations.
+\end{entry}
+
+\begin{entry}{%
+\proto{standard-output-writer}{}{procedure}}
+   
+This returns a writer connected to the standard output. The meaning of
+``standard output'' is implementation-dependent.
+\end{entry}
+
+\begin{entry}{%
+\proto{standard-error-writer}{}{procedure}}
+   
+This returns a writer connected to the standard error. The meaning of
+``standard error'' is implementation-dependent.
+\end{entry}   
+
+\subsection{Opening files for reading and writing}
+
+\begin{entry}{%
+\proto{open-file-reader+writer}{ filename}{procedure}
+\rproto{open-file-reader+writer}{ filename file-options}{procedure}}
+   
+This returns two values, a reader and a writer connected to the file
+named by \var{filename}. The \var{file-options} object defaults to
+{\cf (file-options)} if not present. It determines various aspects of
+the returned writer and possibly the reader, see
+section~\ref{fileoptionssection}. The reader and the writer support
+the {\cf reader-get-position}, {\cf reader-set-position!}, {\cf
+  reader-end-position}, and the {\cf writer-get-position}, {\cf
+  writer-set-position!}, {\cf writer-end-position} operations,
+respectively.
+
+\begin{note}
+  This procedure enables opening a file for simultaneous input and
+  output in environments where it is not possible to call
+  open-file-reader and open-file-writer on the same file.
+\end{note}     
+\end{entry}
+
+\subsection{Examples}
+
+\begin{schemenoindent}
+; This customized reader reads from a list of bytes
+; objects. A null bytes object yields EOF.
+
+(define (open-bytess-reader bs)
+  (let* ((pos 0))
+    (make-simple-reader
+     "<byte vectors>"
+     bs
+     5
+     (lambda (bytes start count)
+       (cond
+        ((null? bs)
+         0)
+        (else
+         (let* ((b (car bs))
+                (size (bytes-length b))
+                (real-count (min count (- size pos))))
+           (bytes-copy! b pos
+                           bytes start
+                           real-count)
+           (set! pos (+ pos real-count))
+           (if (= pos size)
+               (begin
+                 (set! bs (cdr bs))
+                 (set! pos 0)))
+           real-count))))
+     ;; pretty rough ...
+     (lambda ()
+       (if (null? bs)
+           0
+           (- (bytes-length (car bs)) pos)))
+     \schfalse{} \schfalse{} \schfalse{}
+     (lambda ()
+       (set! bs \schfalse{})))))
+
+; Algorithmic reader producing an infinite
+; stream of blanks:
+
+(define (make-infinite-blanks-reader)
+  (make-simple-reader
+    "<blanks, blanks, and more blanks>"
+    \schfalse{}
+    4096
+    (lambda (bytes start count)
+      (let loop ((index 0))
+        (if (>= index count)
+            index
+            (begin
+              (bytes-u8-set! bytes (+ start index) 32)
+              (loop (+ 1 index))))))
+    (lambda ()
+      1000) ; some number
+    \schfalse{} \schfalse{} \schfalse{}
+    unspecific))
+
+FIXME: examples for writers
+\end{schemenoindent}
+                    
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
