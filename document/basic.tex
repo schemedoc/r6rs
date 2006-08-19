@@ -133,6 +133,17 @@ that may be represented externally by the sequence of characters ``{\tt
 40}''.  See chapter~\ref{readsyntaxchapter} for a discussion of external
 representations of objects.
 
+The ``\evalsto'' symbol is also used when the evaluation of an
+expression raises an exception.  For example,
+
+\begin{scheme}
+(integer->char \sharpsign{}xD800) \ev \exception{\&contract}
+\end{scheme}
+
+means that the evaluation of the expression {\cf (integer->char
+  \sharpsign{}xD800)} causes an exception with condition type
+{\cf\&contract} to be raised.
+
 \section{Unspecified behavior}
 
 \vest If the value of an expression is said to be ``unspecified,''
