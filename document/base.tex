@@ -353,14 +353,22 @@ procedure.  When the procedure is later called with some actual
 arguments, the environment in which the \lambdaexp{} was evaluated will
 be extended by binding the variables in the formal argument list to
 fresh locations, the corresponding actual argument values will be stored
-in those locations, and the expressions in the body of the \lambdaexp{}
-will be evaluated sequentially in the extended environment.
+in those locations.  Then, the expressions in the body of the \lambdaexp{}
+(which may contain internal definitions and thus represent a {\cf
+  letrec*} form, see section~\ref{bodiessection}) will be evaluated
+sequentially in the extended environment.
 The result(s) of the last expression in the body will be returned as
 the result(s) of the procedure call.
 
 \begin{scheme}
 (lambda (x) (+ x x))      \ev  {\em{}a procedure}
 ((lambda (x) (+ x x)) 4)  \ev  8
+
+((lambda (x)
+   (define (p y)
+     (+ y 1))
+   (+ (p x) x))
+ 5) \ev 11
 
 (define reverse-subtract
   (lambda (x y) (- y x)))
