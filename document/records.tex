@@ -82,8 +82,8 @@ rtd, the returned record type, \var{t}, extends the record type
 \var{p} represented by parent. Each record of type \var{t} is also a
 record of type \var{p}, and all operations applicable to a record of
 type \var{p} are also applicable to a record of type \var{t}, except for
-reflection operations if \var{t} is opaque but \var{p} is not. An error is
-signalled if \var{parent} is sealed (see below).
+reflection operations if \var{t} is opaque but \var{p} is not. An exception with
+condition type {\cf\&contract} is raised if \var{parent} is sealed (see below).
    
 The extension relationship is transitive in the sense that a type extends
 its parent's parent, if any, and so on.
@@ -98,7 +98,8 @@ called repeatedly with the same \var{uid} argument (in the sense of
 \var{opaque?}, and \var{fields} arguments must be the same in the
 sense of {\cf equal?}.  In this case, the same record-type descriptor
 (in the sense of {\cf eqv?})  is returned every time. If a call with
-the same uid differs in any argument, an error is signalled. If
+the same uid differs in any argument, an exception with condition type
+{\cf\&contract} is raised. If
 \var{uid} is \schfalse, or if no record type with the given uid has
 been created before, {\cf make-record-type-descriptor} returns a fresh
 record-type descriptor representing a new type disjoint from all other
@@ -115,8 +116,9 @@ is sealed, i.e., it cannot be extended.
 
 The \var{opaque?} flag is a boolean. If true, the returned record type
 is opaque.  This means that calls to {\cf record?} will return
-\schfalse{} and {\cf record-rtd} (see ``Reflection'' below) will signal
-an error. The record type is also opaque if an opaque parent is
+\schfalse{} and {\cf record-rtd} (see ``Reflection'' below) will raise
+an exception with condition type {\cf\&contract}.
+The record type is also opaque if an opaque parent is
 supplied.  If \var{opaque?} is false and an opaque parent is not
 supplied, the record is not opaque.
 
@@ -127,8 +129,8 @@ parent fields, if any, to determine the complete set of fields of the
 returned record type.  Each name must be a symbol and names the
 corresponding field of the record type; the names need not be
 distinct. A field with tag mutable may be modified, whereas an attempt
-to obtain a mutator for a field with tag immutable will signal an
-error.
+to obtain a mutator for a field with tag immutable will raise an
+exception with condition type {\cf\&contract}.
 
 Where field order is relevant, e.g., for record construction and field
 access, the fields are considered to be ordered as specified, although
@@ -385,8 +387,9 @@ integer \var{k} that specifies one of the fields of \var{rtd}, {\cf
 record of the type represented by \var{rtd}, returns the value of the
 selected field of that record.
 
-It is an error if the accessor procedure is given something other than
-a record of the type represented by \var{rtd}. Note that the records
+If the accessor procedure is given something other than
+a record of the type represented by \var{rtd}, an exception with
+condition type {\cf\&contract} is raised.  Note that the records
 of the type represented by \var{rtd} include records of extensions of
 the type represented by \var{rtd}.
 
@@ -405,7 +408,8 @@ integer \var{k} that specifies one of the mutable fields of \var{rtd},
 record \var{r} of the type represented by \var{rtd} and an object
 \var{obj}, stores \var{obj} within the field of \var{r} specified by
 \var{k}. The \var{k} argument is as in {\cf record-accessor}. If
-\var{k} specifies an immutable field, an error is signalled.
+\var{k} specifies an immutable field, an exception with condition type
+{\cf\&contract} is raised.
 The mutator returns the unspecified value.
 \end{entry}
 
@@ -502,7 +506,7 @@ details, see the description of the protocol clause below.
 for the defined record type.
 
 Each \hyper{record clause} must take one of the following forms; it is
-an error if multiple \hyper{record clause}s of the same kind appear in a
+a syntax defect if multiple \hyper{record clause}s of the same kind appear in a
 {\cf define-record-type} form.
 
 \begin{itemize}
@@ -582,7 +586,8 @@ an error if multiple \hyper{record clause}s of the same kind appear in a
   For two non-generative record-type definitions with the same uid, if
   the implied arguments to {\cf make-record-type-descriptor} would
   create an equivalent record-type descriptor, the created type is the
-  same as the previous one.  Otherwise, an error is signalled.
+  same as the previous one.  Otherwise, an exception with condition
+  type {\cf\&contract} is signalled.
 
   In the absence of a {\cf nongenerative} clause, a new record type
   type descriptor is created every time a {\cf define-record-type}
@@ -837,8 +842,8 @@ not opaque. Returns \schfalse{} otherwise.
 Returns the rtd representing the type of \var{rec} if the type is not
 opaque. The rtd of the most precise type is returned; that is, the
 type \var{t} such that \var{rec} is of type \var{t} but not of any
-type that extends \var{t}.  If the type is opaque, {\cf record-rtd} signals
-an error.
+type that extends \var{t}.  If the type is opaque, {\cf record-rtd} exception
+with condition type {\cf\&contract}.
 \end{entry}
 
 \begin{entry}{%

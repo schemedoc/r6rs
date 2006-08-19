@@ -370,12 +370,12 @@ For example:
 \#\backwhack{}x00006587  ; Unicode 25991
 \#\backwhack{}\(\lambda\)          ; Unicode 955
 
-\#\backwhack{}x0001z     ; parse error
-\#\backwhack{}\(\lambda\)x         ; parse error
-\#\backwhack{}alarmx     ; parse error
+\#\backwhack{}x0001z     \ev \exception{\&lexical}
+\#\backwhack{}\(\lambda\)x         \ev \exception{\&lexical}
+\#\backwhack{}alarmx     \ev \exception{\&lexical}
 \#\backwhack{}alarm x    ; Unicode 7 followed by x
-\#\backwhack{}Alarm      ; parse error
-\#\backwhack{}alert      ; parse error
+\#\backwhack{}Alarm      \ev \exception{\&lexical}
+\#\backwhack{}alert      \ev \exception{\&lexical}
 \#\backwhack{}xA         ; Unicode 10
 \#\backwhack{}xFF        ; Unicode 255
 \#\backwhack{}xff        ; Unicode 255
@@ -384,14 +384,17 @@ For example:
 \#\backwhack{}x(ff)      ; Unicode 120 
              ; followed by another S-expression,
              ; a parenthesized ff
-\#\backwhack{}(x)        ; parse error
-\#\backwhack{}(x         ; parse error
+\#\backwhack{}(x)        \ev \exception{\&lexical}
+\#\backwhack{}(x         \ev \exception{\&lexical}
 \#\backwhack{}((x)       ; Unicode 40
              ; followed by another S-expression,
              ; parenthesized x
-\#\backwhack{}x00110000  ; parse error (out of range)
-\#\backwhack{}x000000001 ; parse error (too many digits)
-\#\backwhack{}xD800      ; parse error (in excluded range)
+\#\backwhack{}x00110000  \ev \exception{\&lexical}
+\>\>; \textrm{out of range}
+\#\backwhack{}x000000001 \ev \exception{\&lexical}
+\>\>; \textrm{too many digits}  
+\#\backwhack{}xD800      \ev \exception{\&lexical}
+\>\>; \textrm{in excluded range}
 \end{scheme}
 
 Case is significant in \sharpsign\backwhack\hyper{character}, and in in
@@ -450,14 +453,14 @@ Examples:
     {\tt "\backwhack{}x41;bc"} & ; ``Abc'', Unicode sequence 65, 98, 99\\
     {\tt "\backwhack{}x41; bc"} & ; ``A bc'', Unicode sequence 65, 32, 98, 99\\
     {\tt "\backwhack{}x41bc;"} & ; Unicode sequence 16828\\
-    {\tt "\backwhack{}x41"} & ; parse error\\
-    {\tt "\backwhack{}x;"} & ; parse error\\
-    {\tt "\backwhack{}x41bx;"} & ; parse error\\
+    {\tt "\backwhack{}x41"} & \exception{\&lexical}\\
+    {\tt "\backwhack{}x;"} & \exception{\&lexical}\\
+    {\tt "\backwhack{}x41bx;"} & \exception{\&lexical}\\
     {\tt "\backwhack{}x00000041;"} & ; ``A'', Unicode sequence 65\\
     {\tt "\backwhack{}x0010FFFF;"} &  ; Unicode sequence \#x10FFFF\\
-    {\tt "\backwhack{}x00110000;"}&  ; parse error (out of range)\\
-    {\tt "\backwhack{}x000000001;"}& ; parse error (too many digits)\\
-    {\tt "\backwhack{}xD800;"}&      ; parse error (in excluded range)
+    {\tt "\backwhack{}x00110000;"}&  \exception{\&lexical} (out of range)\\
+    {\tt "\backwhack{}x000000001;"}& \exception{\&lexical} (too many digits)\\
+    {\tt "\backwhack{}xD800;"}& \exception{\&lexical} (in excluded range)
   \end{tabular}
 \end{center}
 

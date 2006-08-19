@@ -45,9 +45,9 @@ must be quoted:
 symbols {\cf big} and {\cf little}, respectively. These symbols
 represent an endianness, and whenever one of the procedures operating
 on bytes objects accepts an endianness as an argument, that argument
-must be one of these symbols. If the operarand to endianness is
-anything other than {\cf big} or {\cf little},
-an expansion-time error is signalled. %% FIXME: error
+must be one of these symbols. It is a syntax defect for the operand to
+{\cf endianness} to be
+anything other than {\cf big} or {\cf little}.
 \end{entry}
 
 \begin{entry}{%
@@ -218,8 +218,7 @@ with the two's complement representation.
 
 The procedures with {\cf native} in their names employ the native
 endianness, and only work at aligned indices:
-\var{k} must be a multiple of 2. It is an error to
-use them at non-aligned indices.
+\var{k} must be a multiple of 2.
    
 The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 
@@ -262,8 +261,7 @@ procedures with {\cf u32} in their names deal with the unsigned representation,
 those with {\cf s32} with the two's complement representation.
    
 The procedures with {\cf native} in their names employ the native endianness, and
-only work at aligned indices: \var{k} must be a multiple of 4. It is an error to
-use them at non-aligned indices.
+only work at aligned indices: \var{k} must be a multiple of 4..
    
 The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 
@@ -299,8 +297,7 @@ with the unsigned representation, those with {\cf s64} with the two's
 complement representation.
    
 The procedures with {\cf native} in their names employ the native endianness, and
-only work at aligned indices: \var{k} must be a multiple of 8. It is an error to
-use them at non-aligned indices.
+only work at aligned indices: \var{k} must be a multiple of 8.
    
 The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 
