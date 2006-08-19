@@ -271,7 +271,7 @@ separately.
 \begin{entry}{%
 \proto{make-condition-type}{ \var{id} \var{parent} \var{field-names}}{procedure}}
 
-{\cf Make-condition-type} returns a new condition type. \var{Id} must
+The {\cf make-condition-type} procedure returns a new condition type. \var{Id} must
 be a symbol that serves as a symbolic name for the condition type.
 \var{Parent} must itself be a condition type. \var{Field-names} must
 be a list of symbols. It identifies the fields of the conditions
@@ -291,7 +291,7 @@ otherwise
 \begin{entry}{%
 \proto{make-condition}{ \var{type} \var{field-name} \var{obj} \dotsfoo}{procedure}}
 
-{\cf Make-condition} creates a condition object belonging to condition
+The {\cf make-condition} procedure creates a condition object belonging to condition
 type \var{type}. \var{Field-name} must be a field name. There must be
 a pair of a \var{field-name} and an \var{obj} for each field of
 \var{type} and its direct and indirect supertypes. {\cf
@@ -309,7 +309,7 @@ otherwise.
 \begin{entry}{%
 \proto{condition-has-type?}{ \var{condition} \var{condition-type}}{procedure}}
 
-{\cf Condition-has-type?} tests if condition condition belongs to
+The {\cf condition-has-type?} procedure tests if condition condition belongs to
 condition type \var{condition-type}. It returns \schtrue{} if any of
 condition's types includes \var{condition-type}, either directly or as
 an ancestor, and \schfalse{} otherwise.
@@ -321,17 +321,17 @@ an ancestor, and \schfalse{} otherwise.
 \var{Field-name} must be a symbol.
 Moreover, \var{condition} must belong to a condition type which has a
 field name called \var{field-name}, or one of its (direct or indirect)
-supertypes must have the field. {\cf Condition-ref} returns the value
+supertypes must have the field.  The {\cf condition-ref} procedure returns the value
 associated with \var{field-name}.
 \end{entry}
 
 \begin{entry}{%
 \proto{make-compound-condition}{ \vari{condition} \varii{condition} \dotsfoo}{procedure}}
 
-{\cf Make-compound-condition} returns a compound condition belonging
+The {\cf make-compound-condition} procedure returns a compound condition belonging
 to all condition types that the \var{condition}s belong to.
 
-{\cf Condition-ref}, when applied to a compound condition will return
+The {\cf condition-ref} procedure, when applied to a compound condition will return
 the value from the first of the \var{condition}s that has such a field.
 \end{entry}
 
@@ -339,7 +339,7 @@ the value from the first of the \var{condition}s that has such a field.
 \proto{extract-condition}{ \var{condition} \var{condition-type}}{procedure}}
 
 \var{Condition} must be a condition belonging to \var{condition-type}.
-{\cf Extract-condition} returns a condition of condition type
+The {\cf extract-condition} procedure returns a condition of condition type
 \var{condition-type} with the field values specified by
 \var{condition}.
 
@@ -368,12 +368,12 @@ to return \schfalse.
 
 This defines a new condition type. \hyper{Condition-type},
 \hyper{supertypes}, and \hyper{predicate} must all be identifiers.
-{\cf Define-condition-type} defines an identifier
+The {\cf define-condition-type} form defines an identifier
 \hyper{condition-type} to some value describing the condition type.
 \hyper{Supertype} must be the name of a previously defined condition
 type.
 
-{\cf Define-condition-type} also defines \hyper{predicate} to a
+The {\cf define-condition-type} form also defines \hyper{predicate} to a
 predicate that identifies conditions associated with that type, or
 with any of its subtypes.
 
@@ -384,7 +384,7 @@ Each \hyper{field-spec} must be of the form
 \end{scheme}
 %
 where both \hyper{field} and \hyper{accessor} must be identifiers.
-{\cf Define-condition-type} defines each \hyper{accessor} to a
+The {\cf define-condition-type} form defines each \hyper{accessor} to a
 procedure which extracts the value of the named field from a condition
 associated with this condition type.  
 \end{entry}

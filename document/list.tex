@@ -7,7 +7,7 @@ This section describes the \deflibrary{r6rs lists} library.
 \proto{find}{ proc list}{procedure}}
 
 \domain{\var{Proc} must be a procedure; it must take a single argument
-  if \var{list} is non-empty.}  {\cf Find} applies
+  if \var{list} is non-empty.}  The {\cf find} procedure applies
 \var{proc} to the elements of \var{list} in order.  If
 \var{proc} returns a true value for an element, {\cf find}
 immediately returns that element.  If \var{proc} returns
@@ -29,7 +29,7 @@ immediately returns that element.  If \var{proc} returns
   \var{Proc} must be a procedure; it must take a single argument if
   the \var{l}s are non-empty.}
 
-{\cf Forall} applies \var{proc} element-wise to the
+The {\cf forall} procedure applies \var{proc} element-wise to the
 elements of the \var{l}s.  If \var{proc} returns \schtrue{}
 for all but the last elements of the \var{l}s, \var{forall} performs a
 tail call of \var{proc} on the last elements---in this case, the
@@ -39,7 +39,7 @@ returns \schfalse{} on any set of elements, {\cf forall} returns
 further traversing the \var{l}s.  If
 the \var{l}s are all empty, {\cf forall} returns \schtrue.
 
-{\cf Exists} applies \var{proc} element-wise to the
+The {\cf exists} procedure applies \var{proc} element-wise to the
 elements of the \var{l}s.  If \var{proc} returns \schfalse{}
 for all but the last elements of the \var{l}s, \var{exists} performs a
 tail call of \var{proc} on the last elements---in this case, the
@@ -70,10 +70,10 @@ the \var{l}s are all empty, {\cf exists} returns \schfalse.
 }
 
 \domain{\var{Proc} must be a procedure; it must take a single argument
-  if \var{list} is non-empty.}  {\cf Filter} successively applies
+  if \var{list} is non-empty.}  The {\cf filter} procedure successively applies
 \var{proc} to the elements of \var{list} and returns a list of
 the values of \var{list} for which \var{proc} returned a true
-value.  {\cf Partition} also successively applies \var{proc} to
+value.  The {\cf partition} procedure also successively applies \var{proc} to
 the elements of \var{list}, but returns two values, the first one a
 list of the values of \var{list} for which \var{proc} returned a
 true value, and the second a list of the values of \var{list} for
@@ -95,7 +95,7 @@ which \var{proc} returned \schfalse.
   length.  \var{Kons} must be a
   procedure; if the \var{list}s are non-empty, it must take one more
   argument than there are {\it list}s.}
-{\cf Fold-left} iterates the \var{kons} procedure over an
+The {\cf fold-left} procedure iterates the \var{kons} procedure over an
 accumulator value and the values of the {\it list}s from left to
 right, starting with an accumulator value of \var{nil}.  More
 specifically, {\cf fold-left} returns \var{nil} if the {\it list}s are
@@ -136,7 +136,7 @@ reached; then the accumulator value is returned.
   length.\var{Kons} must be a
   procedure; if the \var{list}s are non-empty, it must take one more
   argument than there are {\it list}s.}
-{\cf Fold-right} iterates the \var{kons} procedure over
+The {\cf fold-right} procedure iterates the \var{kons} procedure over
 the values of the {\it list}s from right to left and an accumulator
 value, starting with an accumulator value of \var{nil}.  More
 specifically, {\cf fold-right} returns \var{nil} if the {\it list}s
@@ -173,11 +173,11 @@ list is reached; then the accumulator value is returned.
 \domain{\var{Proc} must be a procedure; it must take a single argument
   if \var{list} is non-empty.}
 Each of these procedures returns a list of the elements of \var{lists}
-that do not satisfy a given condition.  {\cf Remp} successively
+that do not satisfy a given condition.  The {\cf remp} procedure successively
 applies \var{proc} to the elements of \var{list} and returns a
 list of the values of \var{list} for which \var{proc} returned
-\schfalse.  {\cf Remove}, {\cf remv}, and {\cf remq} returns a list of
-the elements that are not \var{obj}.  {\cf Remq} uses {\cf eq?}\ to
+\schfalse.  The {\cf remove}, {\cf remv}, and {\cf remq} procedures return a list of
+the elements that are not \var{obj}.  The {\cf remq} procedure uses {\cf eq?}\ to
 compare \var{obj} with the elements of \var{list}, while {\cf remv}
 uses {\cf eqv?}\ and {\cf remove} uses {\cf equal?}.
 
@@ -207,7 +207,7 @@ to the conditions stated below.}
 These procedures return the first sublist of \var{l} whose car
 satisfies a given condition, where the subchains of \var{l} are the
 chains of pairs returned by {\tt (list-tail \var{l} \var{k})} for
-\var{k} less than the length of \var{l}.  {\cf Memp} applies
+\var{k} less than the length of \var{l}.  The {\cf memp} procedure applies
 \var{proc} to the cars of the sublists of \var{l} until it
 finds one for which \var{proc} returns a true value without traversing
 \var{l} further.  {\cf
@@ -255,10 +255,11 @@ whose car field satisfies a given condition, and returns that pair
 without traversing \var{al} further.
 If no pair in \var{al} satisfies the condition, then \schfalse{}
 (not the empty list) is returned; in that case, \var{al} must be a
-list.  {\cf Assp} successively applies
+list.  The {\cf assp} procedure successively applies
 \var{proc} to the car fields of \var{al} and looks for a pair
-for which it returns a true value.  {\cf Assoc}, {\cf assv}, and {\cf
-  assq} look for a pair that has \var{obj} as its car {\cf Assoc} uses
+for which it returns a true value.  The {\cf assoc}, {\cf assv}, and {\cf
+  assq} procedures look for a pair that has \var{obj} as its car.  The
+{\cf assoc} procedure uses 
 {\cf equal?}\ to compare \var{obj} with the car fields of the pairs in
 \var{al}, while {\cf assv} uses {\cf eqv?}\ and {\cf assq} uses
 {\cf eq?}.

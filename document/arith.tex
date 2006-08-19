@@ -1018,7 +1018,7 @@ predicates are required to be transitive.
 
 These numerical predicates test a flonum for a particular property,
 returning \schtrue{} or \schfalse{}.
-{\cf Flinteger?} tests it if the number is an integer,
+The {\cf flinteger?} procedure tests it if the number is an integer,
 {\cf flzero?} tests if
 it is {\cf fl=?} to zero, {\cf flpositive?} tests if it is greater
 than zero, {\cf flnegative?} tests if it is less
@@ -1160,15 +1160,16 @@ The following behavior is strongly recommended but not required:
 
 These procedures return integral flonums for flonum arguments that are
 not infinities or NaNs.  For such arguments, {\cf flfloor} returns the
-largest integral flonum not larger than \var{fl}.  {\cf Flceiling}
+largest integral flonum not larger than \var{fl}.  The {\cf flceiling}
+procedure
 returns the smallest integral flonum not smaller than \var{fl}.  {\cf
   Fltruncate} returns the integral flonum closest to \var{fl} whose
 absolute value is not larger than the absolute value of \var{fl}.
-{\cf Flround} returns the closest integral flonum to \var{fl},
+The {\cf flround} procedure returns the closest integral flonum to \var{fl},
 rounding to even when \var{fl} is halfway between two integers.
 
 \begin{rationale}
-{\cf Flround} rounds to even for consistency with the default rounding
+The {\cf flround} procedure rounds to even for consistency with the default rounding
 mode specified by the IEEE floating point standard.
 \end{rationale}
 
@@ -1195,12 +1196,12 @@ given a NaN:
 \rproto{flatan}{ \vari{fl} \varii{fl}}{procedure}}
 
 These procedures compute the usual transcendental functions.  
-{\cf Flexp} computes the base-$e$ exponential of \var{fl}.
+The {\cf flexp} procedure computes the base-$e$ exponential of \var{fl}.
 {\cf
   Fllog} with a single argument computes the natural logarithm of
 \var{fl} (not the base ten logarithm); {\cf (fllog \vari{fl}
   \varii{fl})} computes the base-\varii{fl} logarithm of \vari{fl}.
-{\cf Flasin}, {\cf flacos}, and {\cf flatan} compute arcsine,
+The {\cf flasin}, {\cf flacos}, and {\cf flatan} procedures compute arcsine,
 arccosine, and arctangent, respectively.  {\cf (flatan \vari{fl}
   \varii{fl})} computes the arc tangent of \vari{fl}/\varii{fl}.
 
@@ -1338,7 +1339,7 @@ nonincreasing \schfalse{} otherwise.
 \proto{exact-even?}{ ei}{procedure}}
 
 These numerical predicates test an exact number for a particular
-property, returning \schtrue{} or \schfalse{}.  {\cf Exact-zero?}
+property, returning \schtrue{} or \schfalse{}.  The {\cf exact-zero?} procedure
 tests if the number is {\cf exact=?} to zero, {\cf exact-positive?}
 tests if it is greater than zero, {\cf exact-negative?} tests if it is
 less than zero, {\cf exact-odd?} tests if it is odd, {\cf exact-even?}
@@ -1368,7 +1369,7 @@ These procedures return the sum or product of their arguments.
 With two or more arguments, these procedures return the difference or
 quotient of their arguments, associating to the left.  With one
 argument, however, they return the additive or multiplicative inverse
-of their argument. {\cf Exact/} raises an exception with condition
+of their argument.  THe {\cf exact/} procedure raises an exception with condition
 type {\cf\&contract} if a divisor is $0$.
 \end{entry}
 
@@ -1425,11 +1426,12 @@ denominator of $0$ is defined to be $1$.
 \proto{exact-truncate}{ ef}{procedure}
 \proto{exact-round}{ ef}{procedure}}
 
-These procedures return exact integers.  {\cf Exact-floor} returns the
-largest integer not larger than \var{ef}.  {\cf Exact-ceiling} returns
-the smallest integer not smaller than \var{ef}.  {\cf Exact-truncate}
+These procedures return exact integers.  The {\cf exact-floor} procedure returns the
+largest integer not larger than \var{ef}.  The {\cf exact-ceiling} procedure returns
+the smallest integer not smaller than \var{ef}.  The {\cf
+  exact-truncate} procedure
 returns the integer closest to \var{ef} whose absolute value is not
-larger than the absolute value of \var{ef}.  {\cf Exact-round} returns
+larger than the absolute value of \var{ef}.  The {\cf exact-round} procedure returns
 the closest integer to \var{ef}, rounding to even when \var{ef} is
 halfway between two integers.
 \end{entry}
@@ -1466,7 +1468,7 @@ Then:
 \proto{exact-sqrt}{ ei}{procedure}}
 
 \domain{\var{Ei} must be a non-negative exact integer.}
-{\cf Exact-sqrt} returns two non-negative exact
+The {\cf exact-sqrt} procedure returns two non-negative exact
 integers $s$ and $r$ where $\var{ei} = s^2 +
 r$ and $\var{ei} < (s+1)^2$.
 \end{entry}
@@ -1729,7 +1731,8 @@ be transitive.
 \proto{inexact-nan?}{ in}{procedure}}
 
 These numerical predicates test an inexact number for a particular
-property, returning \schtrue{} or \schfalse{}.  {\cf Inexact-zero?}
+property, returning \schtrue{} or \schfalse{}.  The {\cf
+  inexact-zero?} procedure
 tests if the number is {\cf inexact=?} to zero, {\cf
   inexact-positive?} tests if it is greater than zero, {\cf
   inexact-negative?} tests if it is less than zero, {\cf inexact-odd?}
@@ -1823,14 +1826,14 @@ These procedures return inexact integers for real arguments that are
 not infinities or NaNs.  For such arguments, {\cf inexact-floor}
 returns the largest integer not larger than \var{ir}.  {\cf
   Inexact-ceiling} returns the smallest integer not smaller than
-\var{ir}.  {\cf Inexact-truncate} returns the integer closest to
+\var{ir}.  The {\cf inexact-truncate} procedure returns the integer closest to
 \var{in} whose absolute value is not larger than the absolute value of
-\var{in}.  {\cf Inexact-round} returns the closest integer to
+\var{in}.  The {\cf inexact-round} procedure returns the closest integer to
 \var{in}, rounding to even when \var{in} is halfway between two
 integers.
 
 \begin{rationale}
-{\cf Round} rounds to even for consistency with the default rounding
+The {\cf inexact-round} procedure rounds to even for consistency with the default rounding
 mode specified by the IEEE floating point standard.
 \end{rationale}
 
@@ -1855,9 +1858,9 @@ These procedures compute the usual transcendental functions.  {\cf
   Inexact-log} with a single argument computes the natural logarithm
 of \var{in} (not the base ten logarithm); {\cf (inexact-log \vari{in}
   \varii{in})} computes the base-\varii{in} logarithm of \vari{in}.
-{\cf Inexact-asin}, {\cf Inexact-acos}, and {\cf Inexact-atan} compute
+The {\cf inexact-asin}, {\cf inexact-acos}, and {\cf inexact-atan} procedures compute
 arcsine, arccosine, and arctangent, respectively.  The two-argument
-variant of {\cf Inexact-atan} computes {\cf (inexact-angle
+variant of {\cf inexact-atan} computes {\cf (inexact-angle
   (inexact-make-rectangular \vari{ir} \varii{ir}))} (see below).
 
 See section~\ref{transcendentalfunctions} for the underlying

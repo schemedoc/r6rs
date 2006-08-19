@@ -533,7 +533,7 @@ the last one is(are) returned.
       (else \schfalse{}))         \ev  2%
 \end{scheme}
 
-{\cf Cond} could be defined in terms of {\cf if}, {\cf let} and {\cf
+The {\cf cond} keyword could be defined in terms of {\cf if}, {\cf let} and {\cf
   begin} using {\cf syntax-rules} (see
 section~\ref{syntaxrulessection}) as follows:
 
@@ -611,7 +611,7 @@ otherwise the result of the {\cf case} expression is the unspecified value.
   (else 'consonant))            \ev  consonant%
 \end{scheme}
 
-{\cf Case} can be defined in terms of {\cf let}, {\cf cond}, and
+The {\cf case} keyword could be defined in terms of {\cf let}, {\cf cond}, and
 {\cf memv} (see section~\ref{listutilities}) using {\cf syntax-rules}
 (see section~\ref{syntaxrulessection}) as follows:
 
@@ -658,7 +658,7 @@ then \schtrue{} is returned.
 (and)                           \ev  \schtrue%
 \end{scheme}
 
-{\cf And} could be defined in terms of {\cf if} using {\cf
+The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
   syntax-rules} (see section~\ref{syntaxrulessection}) as follows:
 
 \begin{scheme}
@@ -690,7 +690,7 @@ expressions then \schfalse{} is returned.
     (/ 3 0))                    \ev  (b c)%
 \end{scheme}
 
-{\cf Or} could be defined in terms of {\cf if} using {\cf
+The {\cf or} keyword could be defined in terms of {\cf if} using {\cf
   syntax-rules} (see section~\ref{syntaxrulessection}) as follows:
 
 \begin{scheme}
@@ -779,7 +779,7 @@ and \hyper{body} should be a sequence of
 one or more expressions.
 
 \semantics
-{\cf Let*} is similar to {\cf let}, but the bindings are performed
+The {\cf let*} form is similar to {\cf let}, but the bindings are performed
 sequentially from left to right, and the region\index{region} of a binding indicated
 by {\cf(\hyper{variable} \hyper{init})} is that part of the {\cf let*}
 expression to the right of the binding.  Thus the second binding is done
@@ -792,7 +792,7 @@ in an environment in which the first binding is visible, and so on.
     (* z x)))             \ev  70%
 \end{scheme}
 
-{\cf Let*} could be defined in terms of {\cf let} using {\cf
+The {\cf let*} keyword could be defined in terms of {\cf let} using {\cf
   syntax-rules} (see section~\ref{syntaxrulessection}) as follows:
 
 \begin{scheme}
@@ -859,7 +859,7 @@ name.
 In the most common uses of {\cf letrec}, all the \hyper{init}s are
 \lambdaexp{}s and the restriction is satisfied automatically.
 
-{\cf Letrec} can be defined approximately in terms of {\cf let}
+The {\cf letrec} keyword could be defined approximately in terms of {\cf let}
 and {\cf set!} using {\cf syntax-rules} (see
 section~\ref{syntaxrulessection}), using a helper
 to generate the temporary variables
@@ -957,7 +957,7 @@ If this restriction is violated, an exception with condition type
 The restriction is necessary because Scheme passes arguments by value
 rather than by name. 
 
-{\cf Letrec*} can be defined approximately in terms of {\cf let}
+The {\cf letrec*} keyword could be defined approximately in terms of {\cf let}
 and {\cf set!}
 using {\cf syntax-rules} (see section~\ref{syntaxrulessection})
 as follows:
@@ -1105,7 +1105,7 @@ create temporary names for the formals.
 \begin{entry}{%
 \proto{let*-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
-{\cf Let*-values} is similar to {\cf let-values}, but the bindings are
+The {\cf let*-values} form is similar to {\cf let-values}, but the bindings are
 processed sequentially from left to right, and the
 region\index{region} of the bindings indicated by {\cf(\hyper{formals}
   \hyper{init})} is that part of the {\cf let*-values} expression to
@@ -1198,12 +1198,12 @@ of the {\cf begin} contains no definitions.
     (\hyper{test} \hyper{expression} \dotsfoo)\\
   \hyper{command} \dotsfoo)}
 
-{\cf Do} is an iteration construct.  It specifies a set of variables to
+The {\cf do} expression is an iteration construct.  It specifies a set of variables to
 be bound, how they are to be initialized at the start, and how they are
 to be updated on each iteration.  When a termination condition is met,
 the loop exits after evaluating the \hyper{expression}s.
 
-{\cf Do} expressions are evaluated as follows:
+A {\cf do} expression are evaluated as follows:
 The \hyper{init} expressions are evaluated (in some unspecified order),
 the \hyper{variable}s are bound to fresh locations, the results of the
 \hyper{init} expressions are stored in the bindings of the
@@ -1306,7 +1306,7 @@ invoking the procedure named by \hyper{variable}.
   \lev  ((6 1 3) (-5 -2))%
 \end{scheme}
 
-{\cf Let} could be defined in terms of {\cf lambda} and {\cf letrec}
+The {\cf let} keyword could be defined in terms of {\cf lambda} and {\cf letrec}
 using {\cf syntax-rules} (see section~\ref{syntaxrulessection}) as
 follows:
 
@@ -1439,7 +1439,7 @@ un\-quo\-ta\-tion $D$} takes precedence.
 \section{Binding constructs for syntactic keywords}
 \label{bindsyntax}
 
-{\cf Let-syntax} and {\cf letrec-syntax} are
+The {\cf let-syntax} and {\cf letrec-syntax} forms are
 analogous to {\cf let} and {\cf letrec}, but they bind
 syntactic keywords to macro transformers instead of binding variables
 to locations that contain values.  Syntactic keywords may also be
@@ -1540,7 +1540,7 @@ value (\schtrue{} or \schfalse).  An \defining{equivalence predicate} is
 the computational analogue of a mathematical equivalence relation (it is
 symmetric, reflexive, and transitive).  Of the equivalence predicates
 described in this section, {\cf eq?}\ is the finest or most
-discriminating, and {\cf equal?}\ is the coarsest.  {\cf Eqv?}\ is
+discriminating, and {\cf equal?}\ is the coarsest.  The {\cf eqv?} predicate is
 slightly less discriminating than {\cf eq?}.  \todo{Pitman doesn't like
 this paragraph.  Lift the discussion from the Maclisp manual.  Explain
 why there's more than one predicate.}
@@ -1670,9 +1670,9 @@ boolean.
 \end{scheme}
 
 The next set of examples shows the use of {\cf eqv?}\ with procedures
-that have local state.  {\cf Gen-counter} must return a distinct
+that have local state.  Calls to {\cf gen-counter} must return a distinct
 procedure every time, since each procedure has its own internal counter.
-{\cf Gen-loser}, however, returns equivalent procedures each time, since
+The {\cf gen-loser} procedure, however, returns equivalent procedures each time, since
 the local state does not affect the value or side effects of the
 procedures.
 
@@ -1742,17 +1742,17 @@ bit pattern to represent both.
 \begin{entry}{%
 \proto{eq?}{ \vari{obj} \varii{obj}}{procedure}}
 
-{\cf Eq?}\ is similar to {\cf eqv?}\ except that in some cases it is
+The {\cf eq?} predicate is similar to {\cf eqv?}\ except that in some cases it is
 capable of discerning distinctions finer than those detectable by
 {\cf eqv?}.
 
-\vest {\cf Eq?}\ and {\cf eqv?}\ are guaranteed to have the same
+The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the same
 behavior on symbols, booleans, the empty list, pairs, procedures,
 and non-empty
-strings and vectors.  {\cf Eq?}'s behavior on numbers and characters is
+strings and vectors.  The behavior of {\cf eq?} on numbers and characters is
 implementation-dependent, but it will always return either true or
 false, and will return true only when {\cf eqv?}\ would also return
-true.  {\cf Eq?} may also behave differently from {\cf eqv?} on empty
+true.  The {\cf eq?} predicate may also behave differently from {\cf eqv?} on empty
 vectors and empty strings.
 
 \begin{scheme}
@@ -1783,7 +1783,7 @@ more efficiently than {\cf eqv?}, for example, as a simple pointer
 comparison instead of as some more complicated operation.  One reason is
 that it may not be possible to compute {\cf eqv?}\ of two numbers in
 constant time, whereas {\cf eq?}\ implemented as pointer comparison will
-always finish in constant time.  {\cf Eq?}\ may be used like {\cf eqv?}\
+always finish in constant time.  The {\cf eq?} predicate may be used like {\cf eqv?}\
 in applications using procedures to implement objects with state since
 it obeys the same constraints as {\cf eqv?}.
 \end{rationale}
@@ -1798,7 +1798,7 @@ The {\cf equal?}  predicate returns \schtrue{} if and only if the
 (possibly infinite) unfoldings of its arguments into regular trees are
 equal as ordered trees.
 
-{\cf Equal?} treats pairs and vectors as nodes with outgoing edges,
+The {\cf equal?} predicate treats pairs and vectors as nodes with outgoing edges,
 uses {\cf string=?} to compare strings, and uses {\cf eqv?} to compare
 other nodes.
 
@@ -2101,7 +2101,7 @@ implementation-dependent range.
 \begin{entry}{%
 \proto{real->flonum}{ x}{procedure}}
 
-{\cf Real->flonum} returns a flonum representation of
+The {\cf real->flonum} procedure returns a flonum representation of
 \var{x}, which must be a real number.
 
 The value returned is a flonum that is numerically closest to the
@@ -2196,7 +2196,8 @@ When in doubt, consult a numerical analyst.
 \proto{nan?}{ x}{procedure}}
 
 These numerical predicates test a number for a particular property,
-returning \schtrue{} or \schfalse{}.  See note above.  {\cf Zero?}
+returning \schtrue{} or \schfalse{}.  See note above.  The {\cf zero?}
+procedure
 tests if the number is {\cf =} to zero, {\cf positive?} tests if it is
 greater than zero, {\cf negative?} tests if it is less than zero, {\cf
   odd?} tests if it is odd, {\cf even?} tests if it is even, {\cf
@@ -2325,7 +2326,7 @@ unspecified number.
 \begin{entry}{%
 \proto{abs}{ x}{procedure}}
 
-{\cf Abs} returns the absolute value of its argument.
+The {\cf abs} procedure returns the absolute value of its argument.
 
 \begin{scheme}
 (abs -7)                               \ev  7
@@ -2398,15 +2399,15 @@ denominator of $0$ is defined to be $1$.
 These procedures return inexact integers on inexact arguments that are
 not infinities or NaNs, and exact integers on exact rational
 arguments.  For such arguments, {\cf floor} returns the largest
-integer not larger than \var{x}.  {\cf Ceiling} returns the smallest
-integer not smaller than \var{x}.  {\cf Truncate} returns the integer
+integer not larger than \var{x}.  The {\cf ceiling} procedure returns the smallest
+integer not smaller than \var{x}.  The {\cf truncate} procedure returns the integer
 closest to \var{x} whose absolute value is not larger than the
-absolute value of \var{x}.  {\cf Round} returns the closest integer to
+absolute value of \var{x}.  The {\cf round} procedure returns the closest integer to
 \var{x}, rounding to even when \var{x} is halfway between two
 integers.
 
 \begin{rationale}
-{\cf Round} rounds to even for consistency with the default rounding
+The {\cf round} procedure rounds to even for consistency with the default rounding
 mode specified by the IEEE floating point standard.
 \end{rationale}
 
@@ -2444,7 +2445,7 @@ given a NaN.
 \begin{entry}{%
 \proto{rationalize}{ \vari{x} \varii{x}}{procedure}}
 
-{\cf Rationalize} returns the {\em simplest} rational number
+The {\cf rationalize} procedure returns the {\em simplest} rational number
 differing from \vari{x} by no more than \varii{x}.    A rational number $r_1$ is
 {\em simpler} \mainindex{simplest rational} than another rational number
 $r_2$ if $r_1 = p_1/q_1$ and $r_2 = p_2/q_2$ (in lowest terms) and $|p_1|
@@ -2479,10 +2480,10 @@ all.
 \proto{atan}{ z}{procedure}
 \rproto{atan}{ \vari{x} \varii{x}}{procedure}}
 
-These procedures compute the usual transcendental functions.  {\cf
-  Exp} computes the base-$e$ exponential of \var{z}.  {\cf Log}
-computes the natural logarithm of \var{z} (not the base ten
-logarithm).  {\cf Asin}, {\cf acos}, and {\cf atan} compute arcsine,
+These procedures compute the usual transcendental functions.  The {\cf
+  exp} procedure computes the base-$e$ exponential of \var{z}.  The {\cf log}
+procedure computes the natural logarithm of \var{z} (not the base ten
+logarithm).  The {\cf asin}, {\cf acos}, and {\cf atan} procedures compute arcsine,
 arccosine, and arctangent, respectively.  The two-argument variant of
 {\cf atan} computes {\cf (angle (make-rectangular \varii{x}
 \vari{x}))}.
@@ -2518,7 +2519,7 @@ section~\ref{transcendentalfunctions}, the value of {\cf (sqrt
 e^{\frac{\log \var{z}}{2}}.
 \end{displaymath}
 
-{\cf Sqrt} may return an inexact result even when given an exact
+The {\cf sqrt} procedure may return an inexact result even when given an exact
 argument.
 
 \begin{scheme}
@@ -2607,8 +2608,8 @@ or \varii{x} is an infinity, then
 \end{scheme}
 \end{entry}
 
-{\cf Make-polar}, {\cf magnitude}, and
-{\cf angle} may return inexact results even when given exact
+The {\cf make-polar}, {\cf magnitude}, and
+{\cf angle} procedures may return inexact results even when given exact
 arguments.
 
 \begin{scheme}
@@ -2749,7 +2750,7 @@ from the symbol \ide{nil}.
 \begin{entry}{%
 \proto{not}{ obj}{procedure}}
 
-{\cf Not} returns \schtrue{} if \var{obj} is false, and returns
+The {\cf not} procedure returns \schtrue{} if \var{obj} is false, and returns
 \schfalse{} otherwise.
 
 \begin{scheme}
@@ -2768,7 +2769,7 @@ from the symbol \ide{nil}.
 \begin{entry}{%
 \proto{boolean?}{ obj}{procedure}}
 
-{\cf Boolean?} returns \schtrue{} if \var{obj} is either \schtrue{} or
+Returns \schtrue{} if \var{obj} is either \schtrue{} or
 \schfalse{} and returns \schfalse{} otherwise.
 
 \begin{scheme}
@@ -2849,7 +2850,7 @@ field.
 \begin{entry}{%
 \proto{pair?}{ obj}{procedure}}
 
-{\cf Pair?} returns \schtrue{} if \var{obj} is a pair, and otherwise
+Returns \schtrue{} if \var{obj} is a pair, and otherwise
 returns \schfalse.
 
 \begin{scheme}
@@ -3084,7 +3085,7 @@ Returns the \vr{k}th element of \var{l}.
   take as many arguments as there are {\it list}s and returning a
   single value.}
 
-{\cf Map} applies \var{proc} element-wise to the elements of the
+The {\cf map} procedure applies \var{proc} element-wise to the elements of the
 \var{list}s and returns a list of the results, in order.
 The dynamic order in which \var{proc} is applied to the elements of the
 \var{list}s is unspecified.
@@ -3326,7 +3327,7 @@ Returns \schtrue{} if \var{obj} is a string, otherwise returns \schfalse.
 
 %\domain{\vr{k} must be a non-negative integer, and \var{char} must be
 %a character.}  
-{\cf Make-string} returns a newly allocated string of
+The {\cf make-string} procedure returns a newly allocated string of
 length \vr{k}.  If \var{char} is given, then all elements of the string
 are initialized to \var{char}, otherwise the contents of the
 \var{string} are unspecified.
@@ -3351,7 +3352,7 @@ Returns the number of characters in the given \var{string}.
 \proto{string-ref}{ string \vr{k}}{procedure}}
 
 \domain{\vr{k} must be a valid index of \var{string}.}
-{\cf String-ref} returns character \vr{k} of \var{string} using zero-origin indexing.
+The {\cf string-ref} procedure returns character \vr{k} of \var{string} using zero-origin indexing.
 \end{entry}
 
 
@@ -3361,7 +3362,7 @@ Returns the number of characters in the given \var{string}.
 \domain{%\var{String} must be a string, 
 \vr{k} must be a valid index of \var{string}%, and \var{char} must be a character
 .}
-{\cf String-set!} stores \var{char} in element \vr{k} of \var{string}
+The {\cf string-set!} procedure stores \var{char} in element \vr{k} of \var{string}
 and returns the unspecified value.  % <!>
 
 Passing an immutable string to {\cf string-set!} should cause an exception
@@ -3420,7 +3421,7 @@ is considered to be lexicographically less than the longer string.
 \domain{\var{String} must be a string, and \var{start} and \var{end}
 must be exact integers satisfying
 $$0 \leq \var{start} \leq \var{end} \leq \hbox{\tt(string-length \var{string})\rm.}$$}
-{\cf Substring} returns a newly allocated string formed from the characters of
+The {\cf substring} procedure returns a newly allocated string formed from the characters of
 \var{string} beginning with index \var{start} (inclusive) and ending with index
 \var{end} (exclusive).
 \end{entry}
@@ -3440,11 +3441,12 @@ given strings.
 \proto{list->string}{ list}{procedure}}
 
 \domain{\var{List} must be a list of characters.}
-{\cf String\coerce{}list} returns a newly allocated list of the
-characters that make up the given string.  {\cf List\coerce{}string}
+The {\cf string\coerce{}list} procedure returns a newly allocated list of the
+characters that make up the given string.  The {\cf
+  list\coerce{}string} procedure
 returns a newly allocated string formed from the characters in the list
-\var{list}. {\cf String\coerce{}list}
-and {\cf list\coerce{}string} are
+\var{list}. The {\cf string\coerce{}list}
+and {\cf list\coerce{}string} procedures are
 inverses so far as {\cf equal?}\ is concerned.  
 %Implementations that provide
 %destructive operations on strings should ensure that the result of
@@ -3535,7 +3537,7 @@ Returns the number of elements in \var{vector} as an exact integer.
 \proto{vector-ref}{ vector k}{procedure}}
 
 \domain{\vr{k} must be a valid index of \var{vector}.}
-{\cf Vector-ref} returns the contents of element \vr{k} of
+The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 \var{vector}.
 
 \begin{scheme}
@@ -3554,7 +3556,7 @@ Returns the number of elements in \var{vector} as an exact integer.
 \proto{vector-set!}{ vector k obj}{procedure}}
 
 \domain{\vr{k} must be a valid index of \var{vector}.}
-{\cf Vector-set!} stores \var{obj} in element \vr{k} of \var{vector}.
+The {\cf vector-set!} procedure stores \var{obj} in element \vr{k} of \var{vector}.
 The value returned by {\cf vector-set!}\ is the unspecified value.  % <!>
 
 Passing an immutable vector to {\cf vector-set!} should cause an exception
@@ -3577,8 +3579,8 @@ with condition type {\cf\&contract} to be raised.
 \proto{vector->list}{ vector}{procedure}
 \proto{list->vector}{ list}{procedure}}
 
-{\cf Vector->list} returns a newly allocated list of the objects contained
-in the elements of \var{vector}.  {\cf List->vector} returns a newly
+The {\cf vector->list} procedure returns a newly allocated list of the objects contained
+in the elements of \var{vector}.  The {\cf list->vector} procedure returns a newly
 created vector initialized to the elements of the list \var{list}.
 
 \begin{scheme}
@@ -3766,7 +3768,7 @@ the result in some other variable.  Normally these
 ubiquitous continuations are hidden behind the scenes and programmers do not
 think much about them.  On rare occasions, however, a programmer may
 need to deal with continuations explicitly.
-{\cf Call-with-current-continuation} allows Scheme programmers to do
+The {\cf call-with-current-continuation} procedure allows Scheme programmers to do
 that by creating a procedure that acts just like the current
 continuation.
 
