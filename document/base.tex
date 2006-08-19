@@ -38,7 +38,7 @@ boolean?          pair?
 symbol?           number?
 char?             string?
 vector?           procedure?
-unspecified? 
+unspecified?      eof-object?
 \end{scheme}
 
 These predicates define the types {\em boolean}, {\em pair}, {\em
@@ -1877,27 +1877,6 @@ other nodes.
 
 \end{entry}
 
-\section{Unspecified value}
-\label{unspecifiedvalue}
-
-\begin{entry}{%
-\proto{unspecified}{}{procedure}}
-
-The {\cf unspecified} procedure returns the unspecified
-value.\index{unspecified value}  (See section \ref{disjointness}.)
-\end{entry}
-
-\begin{note}
-  The unspecified value has no external representation.
-\end{note}
-
-\begin{entry}{%
-\proto{unspecified?}{ obj}{procedure}}
-
-Returns \schtrue{} if \var{obj} is the unspecified value, otherwise
-returns \schfalse.
-\end{entry}
-
 \section{Procedure predicate}
 
 \begin{entry}{%
@@ -1914,6 +1893,49 @@ Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
                             \ev  \schfalse
 \end{scheme}
 
+\end{entry}
+
+\section{Unspecified value}
+\label{unspecifiedvalue}
+
+\begin{entry}{%
+\proto{unspecified}{}{procedure}}
+
+Returns the unspecified value.\index{unspecified value} (See section
+\ref{disjointness}.)
+\end{entry}
+
+\begin{note}
+  The unspecified value has no external representation.
+\end{note}
+
+\begin{entry}{%
+\proto{unspecified?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is the unspecified value, otherwise
+returns \schfalse.
+\end{entry}
+
+\section{End of file object}
+
+The end of file object is returned by various I/O procedures (see
+section~\ref{portsiosection}) when they reach end of file.
+
+\begin{entry}{%
+\proto{eof-object}{}{procedure}}
+
+Returns the end of file object.
+\end{entry}
+
+\begin{note}
+  The end of file object has no external representation.
+\end{note}
+
+\begin{entry}{%
+\proto{eof-object?}{ obj}{procedure}}
+  
+Returns \schtrue{} if \var{obj} is the end of file object, otherwise
+returns \schfalse.
 \end{entry}
 
 \section{Generic arithmetic}
