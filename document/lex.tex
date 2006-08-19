@@ -347,55 +347,56 @@ no more than eight digits.
 
 For example:
 
-\begin{scheme}
-\#\backwhack{}a          ; lower case letter
-\#\backwhack{}A          ; upper case letter
-\#\backwhack{}(          ; left parenthesis
-\#\backwhack{}           ; the space character
-\#\backwhack{}nul        ; Unicode 0
-\#\backwhack{}alarm      ; Unicode 7
-\#\backwhack{}backspace  ; Unicode 8
-\#\backwhack{}tab        ; Unicode 9
-\#\backwhack{}linefeed   ; Unicode 10
-\#\backwhack{}vtab       ; Unicode 11
-\#\backwhack{}page       ; Unicode 12
-\#\backwhack{}return     ; Unicode 13
-\#\backwhack{}esc        ; Unicode 27
-\#\backwhack{}space      ; Unicode 32;
-             ; the preferred way to write a space
-\#\backwhack{}delete     ; Unicode 127
+\begin{schemenoindent}
+\#\backwhack{}a          \ev \textrm{lower case letter a}
+\#\backwhack{}A          \ev \textrm{upper case letter A}
+\#\backwhack{}(          \ev \textrm{left parenthesis}
+\#\backwhack{}           \ev \textrm{space character}
+\#\backwhack{}nul        \ev \textrm{U+0000}
+\#\backwhack{}alarm      \ev \textrm{U+0007}
+\#\backwhack{}backspace  \ev \textrm{U+0008}
+\#\backwhack{}tab        \ev \textrm{U+0009}
+\#\backwhack{}linefeed   \ev \textrm{U+000A}
+\#\backwhack{}vtab       \ev \textrm{U+000B}
+\#\backwhack{}page       \ev \textrm{U+000C}
+\#\backwhack{}return     \ev \textrm{U+000D}
+\#\backwhack{}esc        \ev \textrm{U+001B}
+\#\backwhack{}space      \ev \textrm{U+0020}
+\>\>; \textrm{preferred way to write a space}
+\#\backwhack{}delete     \ev \textrm{U+007F}
 
-\#\backwhack{}xFF        ; Unicode 255
-\#\backwhack{}x03BB      ; Unicode 955
-\#\backwhack{}x00006587  ; Unicode 25991
-\#\backwhack{}\(\lambda\)          ; Unicode 955
+\#\backwhack{}xFF        \ev \textrm{U+00FF}
+\#\backwhack{}x03BB      \ev \textrm{U+03BB}
+\#\backwhack{}x00006587  \ev \textrm{U+6587}
+\#\backwhack{}\(\lambda\) \ev \textrm{U+03BB}
 
 \#\backwhack{}x0001z     \ev \exception{\&lexical}
 \#\backwhack{}\(\lambda\)x         \ev \exception{\&lexical}
 \#\backwhack{}alarmx     \ev \exception{\&lexical}
-\#\backwhack{}alarm x    ; Unicode 7 followed by x
+\#\backwhack{}alarm x    \ev \textrm{U+0007}
+\>\>; \textrm{followed by {\cf x}}
 \#\backwhack{}Alarm      \ev \exception{\&lexical}
 \#\backwhack{}alert      \ev \exception{\&lexical}
-\#\backwhack{}xA         ; Unicode 10
-\#\backwhack{}xFF        ; Unicode 255
-\#\backwhack{}xff        ; Unicode 255
-\#\backwhack{}x ff       ; Unicode 120
-             ; followed by another S-expression, ff
-\#\backwhack{}x(ff)      ; Unicode 120 
-             ; followed by another S-expression,
-             ; a parenthesized ff
+\#\backwhack{}xA         \ev \textrm{U+000A}
+\#\backwhack{}xFF        \ev \textrm{U+00FF}
+\#\backwhack{}xff        \ev \textrm{U+00FF}
+\#\backwhack{}x ff       \ev \textrm{U+0078}
+\>\>; \textrm{followed by another S-expression, {\cf ff}}
+\#\backwhack{}x(ff)      \ev \textrm{U+0078}
+\>\>; \textrm{followed by another S-expression,}
+\>\>; \textrm{a parenthesized {\cf ff}}
 \#\backwhack{}(x)        \ev \exception{\&lexical}
 \#\backwhack{}(x         \ev \exception{\&lexical}
-\#\backwhack{}((x)       ; Unicode 40
-             ; followed by another S-expression,
-             ; parenthesized x
+\#\backwhack{}((x)       \ev \textrm{U+0028}
+\>\>; \textrm{followed by another S-expression,}
+\>\>; \texttt{parenthesized {\cf x}}
 \#\backwhack{}x00110000  \ev \exception{\&lexical}
 \>\>; \textrm{out of range}
 \#\backwhack{}x000000001 \ev \exception{\&lexical}
 \>\>; \textrm{too many digits}  
 \#\backwhack{}xD800      \ev \exception{\&lexical}
 \>\>; \textrm{in excluded range}
-\end{scheme}
+\end{schemenoindent}
 
 Case is significant in \sharpsign\backwhack\hyper{character}, and in in
 \sharpsign\backwhack{\rm$\langle$character name$\rangle$}, % \hyper doesn't allow a linebreak
@@ -416,17 +417,17 @@ sequences\mainindex{escape sequence} denote characters other than
 themselves.  Escape sequences always start with a backslash (\backwhack{}):
 
 \begin{itemize}
-\item{\tt \backwhack{}a} : alarm, Unicode 7
-\item{\tt \backwhack{}b} : backspace, Unicode 8 
-\item{\tt \backwhack{}t} : tab, Unicode 9 
-\item{\tt \backwhack{}n} : linefeed, Unicode 10 
-\item{\tt \backwhack{}v} : vertical tab, Unicode 11 
-\item{\tt \backwhack{}f} : formfeed, Unicode 12 
-\item{\tt \backwhack{}r} : return, Unicode 13 
-\item{\tt \backwhack{}}\verb|"| : doublequote, Unicode 34 
-\item{\tt \backwhack{}\backwhack{}} : backslash, Unicode 92 
+\item{\tt \backwhack{}a} : alarm, U+0007
+\item{\tt \backwhack{}b} : backspace, U+0008 
+\item{\tt \backwhack{}t} : tab, U+0009 
+\item{\tt \backwhack{}n} : linefeed, U+000A 
+\item{\tt \backwhack{}v} : vertical tab, U+000B 
+\item{\tt \backwhack{}f} : formfeed, U+000C 
+\item{\tt \backwhack{}r} : return, U+000D 
+\item{\tt \backwhack{}}\verb|"| : doublequote, U+0022 
+\item{\tt \backwhack{}\backwhack{}} : backslash, U+005C 
 \item{\tt \backwhack{}\hyper{linefeed}\hyper{intraline whitespace}} : nothing
-\item{\tt \backwhack{}\ } : space, Unicode 32 (useful for terminating the
+\item{\tt \backwhack{}\ } : space, U+0020 (useful for terminating the
   previous escape sequence before continuing with whitespace)
 \item{\tt \backwhack{}x\atleastone{\hyper{digit 16}};} : (note the
   terminating semi-colon) where no more than eight \hyper{digit 16}s
@@ -447,23 +448,25 @@ quote) denotes the same string literal as {\tt "\backwhack{}x03bb;"}.
 
 Examples:
 
-\begin{center}
-  \begin{tabular}{ll}
-    {\tt "abc"}    & ; Unicode sequence 97, 98, 99\\
-    {\tt "\backwhack{}x41;bc"} & ; ``Abc'', Unicode sequence 65, 98, 99\\
-    {\tt "\backwhack{}x41; bc"} & ; ``A bc'', Unicode sequence 65, 32, 98, 99\\
-    {\tt "\backwhack{}x41bc;"} & ; Unicode sequence 16828\\
-    {\tt "\backwhack{}x41"} & \exception{\&lexical}\\
-    {\tt "\backwhack{}x;"} & \exception{\&lexical}\\
-    {\tt "\backwhack{}x41bx;"} & \exception{\&lexical}\\
-    {\tt "\backwhack{}x00000041;"} & ; ``A'', Unicode sequence 65\\
-    {\tt "\backwhack{}x0010FFFF;"} &  ; Unicode sequence \#x10FFFF\\
-    {\tt "\backwhack{}x00110000;"}&  \exception{\&lexical} (out of range)\\
-    {\tt "\backwhack{}x000000001;"}& \exception{\&lexical} (too many digits)\\
-    {\tt "\backwhack{}xD800;"}& \exception{\&lexical} (in excluded range)
-  \end{tabular}
-\end{center}
-
+\begin{schemenoindent}
+"abc" \ev  \textrm{U+0061, U+0062, U+0063}
+"\backwhack{}x41;bc" \ev  \textrm{``Abc'', U+0041, U+0062, U+0063}
+"\backwhack{}x41; bc" \ev  \textrm{``A bc''}
+\>\>\textrm{U+0041, U+0020, U+0062, U+0063}
+"\backwhack{}x41bc;" \ev  \textrm{U+41BC}
+"\backwhack{}x41" \ev \exception{\&lexical}
+"\backwhack{}x;" \ev \exception{\&lexical}
+"\backwhack{}x41bx;" \ev \exception{\&lexical}
+"\backwhack{}x00000041;" \ev  \textrm{``A'', U+0041}
+"\backwhack{}x0010FFFF;" \ev \textrm{U+10FFFF}
+"\backwhack{}x00110000;" \ev  \exception{\&lexical}
+\>\>; \textrm{out of range}
+"\backwhack{}x000000001;" \ev \exception{\&lexical}
+\>\>; \textrm{too many digits}
+"\backwhack{}xD800;" \ev \exception{\&lexical}
+\>\>; \textrm{in excluded range}
+\end{schemenoindent}
+  
 \subsection{Numbers}
 \label{numbernotations}
 
