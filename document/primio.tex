@@ -149,39 +149,7 @@ A condition of this type specifies that an operation tried to operate on an
 non-existent named file under the assumption that it exists.
 \end{entry}   
 
-\begin{entry}{%
-\ctproto{i/o-operation-not-available}
-\proto{i/o-operation-not-available-violation?}{ obj}{procedure}}
-
-This condition type could be defined by
-FIXME: should be a subtype of {\cf\&defect}
-%
-\begin{scheme}
-(define-condition-type \&i/o-operation-not-available
-    \&violation
-  i/o-operation-not-available-violation?)
-\end{scheme}
-
-This condition type indicates that the program tried to perform an I/O
-operation that was not available.
-\end{entry}   
-  
-\begin{entry}{%
-\ctproto{i/o-closed}
-\proto{i/o-closed-violation?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&i/o-closed \&violation
-  i/o-closed-violation?)
-\end{scheme}
-
-A condition of this type specifies that an operation tried to operate
-on a closed I/O object under the assumption that it is open.
-\end{entry}
-
-\section{Primitive I/O}
+section{Primitive I/O}
 
 FIXME: parameter type conventions
 
@@ -375,7 +343,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
   This procedure marks the reader as closed, performs any necessary
   cleanup, and releases the resources associated with the reader.
   Further operations on the reader must raise an exception with
-  condition type {\cf\&i/o-closed}.
+  condition type {\cf\&contract}.
        
   The procedure must return a single value, which is ignored.
 \end{itemize}
@@ -472,7 +440,7 @@ counting the number of bytes since the beginning of the stream.
 For a reader created by {\cf make-simple-reader}, this calls the
 \var{get-position} procedure of reader, if present. If reader does not
 have a \var{get-position} procedure, an exception with condition type
-{\cf\&i/o-operation-not-available} is raised.
+{\cf\&contract} is raised.
 \end{entry}
 
 \begin{entry}{%
@@ -493,7 +461,7 @@ For a reader created by {\cf make-simple-reader}, this calls the
 \var{set-position!}  procedure of \var{reader} with the \var{pos}
 argument, if present. If \var{reader} does not have a set-position!
 procedure, an {\cf exception} with condition type
-{\cf\&i/o-operation-not-available} is raised.
+{\cf\&contract} is raised.
 \end{entry}
 
 \begin{entry}{%
@@ -513,7 +481,7 @@ without changing the current position.
 For a reader created by {\cf mmake-simple-reader}, this calls the
 \var{end-position} procedure of \var{reader}, if present. If
 \var{reader} does not have a \var{end-position} procedure, an
-exception with condition type {\cf\&i/o-operation-not-available} is raised.
+exception with condition type {\cf\&contract} is raised.
 \end{entry}
 
 \begin{entry}{%
@@ -522,7 +490,7 @@ exception with condition type {\cf\&i/o-operation-not-available} is raised.
 This marks \var{reader} as closed, performs any necessary cleanup, and
 releases the resources associated with the reader. Further operations
 on the reader must raise an exception with condition type
-{\cf\&i/o-closed}.
+{\cf\&contract}.
    
 For a reader created by {\cf make-simple-reader}, this calls the
 \var{close} procedure of reader.
@@ -634,7 +602,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
   This procedure marks the writer as closed, performs any necessary
   cleanup, and releases the resources associated with the writer. Further
   operations on the writer must raise an exception with condition type
-  {\cf\&i/o-closed}.
+  {\cf\&contract}.
    
   The procedure must return a single value, which is ignored.
 \end{itemize}
@@ -711,7 +679,7 @@ the stream.
 For a writer created by {\cf make-simple-writer}, this calls the
 \var{get-position} procedure of \var{writer}, if present. If \var{writer}
 does not have a get-position procedure, an exception with condition
-type {\cf\&i/o-operation-not-available} is raised.
+type {\cf\&contract} is raised.
 \end{entry}
 
 \begin{entry}{%
@@ -732,7 +700,7 @@ For a writer created by {\cf make-simple-writer}, this calls the
 \var{set-position!}  procedure of \var{writer} with the \var{pos}
 argument, if present. If \var{writer} does not have a
 \var{set-position!} procedure, an exception with condition type
-{\cf\&i/o-operation-not-available} is raised.
+{\cf\&contract} is raised.
 \end{entry}
 
 \begin{entry}{%
@@ -752,7 +720,7 @@ changing the current position.
 For a writer created by {\cf make-simple-writer}, this calls the
 \var{end-position} procedure of \var{writer}, if present. If \var{writer}
 does not have a \var{end-position} procedure, an exception with condition
-type {\cf\&i/o-operation-not-available} is raised.
+type {\cf\&contract} is raised.
 \end{entry}
 
 \begin{entry}{%
@@ -761,7 +729,7 @@ type {\cf\&i/o-operation-not-available} is raised.
 This marks the writer as closed, performs any necessary cleanup, and
 releases the resources associated with the writer. Further operations
 on the writer must raise an exception with condition type
-{\cf\&i/o-closed}.
+{\cf\&contract}.
    
 For a writer created by {\cf make-simple-writer}, this calls the
 \var{close} procedure of \var{writer}.
