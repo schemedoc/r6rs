@@ -1811,21 +1811,11 @@ other nodes.
 (equal? (lambda (x) x)
         (lambda (y) y))  \ev  \unspecified%
 
-
 (let* ((x (list 'a))
        (y (list 'a))
        (z (list x y)))
   (list (equal? z (list y x))
         (equal? z (list x x))))             \lev  (\schtrue{} \schtrue{})
-
-(let ((x (list 'a 'b 'c 'a))
-      (y (list 'a 'b 'c 'a 'b 'c 'a)))
-  (set-cdr! (list-tail x 2) x)
-  (set-cdr! (list-tail y 5) y)
-  (list
-   (equal? x x)
-   (equal? x y)
-   (equal? (list x y 'a) (list y x 'b)))) \lev  (\schtrue{} \schtrue{} \schfalse{})
 \end{scheme}
 
 \end{entry}
@@ -2837,22 +2827,7 @@ is equivalent to
 \end{scheme}
 
 Whether a given pair is a list depends upon what is stored in the cdr
-field.  When the \ide{set-cdr!} procedure is used, an object can be a
-list one moment and not the next:
-
-\begin{scheme}
-(define x (list 'a 'b 'c))
-(define y x)
-y                       \ev  (a b c)
-(list? y)               \ev  \schtrue
-(set-cdr! x 4)          \ev  \theunspecified
-x                       \ev  (a . 4)
-(eqv? x y)              \ev  \schtrue
-y                       \ev  (a . 4)
-(list? y)               \ev  \schfalse
-(set-cdr! x x)          \ev  \theunspecified
-(list? x)               \ev  \schfalse%
-\end{scheme}
+field.
 
 %It is often convenient to speak of a homogeneous list of objects
 %of some particular data type, as for example \hbox{\cf (1 2 3)} is a list of
@@ -2983,12 +2958,9 @@ By definition, all lists have finite length and are terminated by
 the empty list.
 
 \begin{scheme}
-        (list? '(a b c))     \ev  \schtrue
-        (list? '())          \ev  \schtrue
-        (list? '(a . b))     \ev  \schfalse
-        (let ((x (list 'a)))
-          (set-cdr! x x)
-          (list? x))         \ev  \schfalse%
+(list? '(a b c))     \ev  \schtrue
+(list? '())          \ev  \schtrue
+(list? '(a . b))     \ev  \schfalse
 \end{scheme}
 \end{entry}
 

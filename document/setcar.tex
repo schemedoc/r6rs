@@ -42,6 +42,17 @@ Returns the unspecified value.
 
 Passing an immutable pair to {\cf set-cdr!} should cause an exception
 with condition type {\cf\&contract} to be raised.
+
+\begin{scheme}
+(let ((x (list 'a 'b 'c 'a))
+      (y (list 'a 'b 'c 'a 'b 'c 'a)))
+  (set-cdr! (list-tail x 2) x)
+  (set-cdr! (list-tail y 5) y)
+  (list
+   (equal? x x)
+   (equal? x y)
+   (equal? (list x y 'a) (list y x 'b)))) \lev  (\schtrue{} \schtrue{} \schfalse{})
+\end{scheme}
 \end{entry}
 
 \section{Mutable list arguments}
@@ -49,7 +60,23 @@ with condition type {\cf\&contract} to be raised.
 
 Through the {\cf set-car!} and {\cf set-cdr!} procedures, lists are
 mutable in Scheme, so a pair that is the head of a list at one moment
-may not always be the head of a list.  Any procedures defined in this
+may not always be the head of a list:
+%
+\begin{scheme}
+(define x (list 'a 'b 'c))
+(define y x)
+y                       \ev  (a b c)
+(list? y)               \ev  \schtrue
+(set-cdr! x 4)          \ev  \theunspecified
+x                       \ev  (a . 4)
+(eqv? x y)              \ev  \schtrue
+y                       \ev  (a . 4)
+(list? y)               \ev  \schfalse
+(set-cdr! x x)          \ev  \theunspecified
+(list? x)               \ev  \schfalse%
+\end{scheme}
+
+Any procedures defined in this
 report specified as accepting a list argument must check if that
 argument indeed appears to be a list.  This checking is complicated by
 the fact that many procedures accepting lists such as {\cf map} or
