@@ -3111,18 +3111,27 @@ The dynamic order in which \var{proc} is applied to the elements of the
 \begin{entry}{%
 \proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-The arguments to {\cf for-each} are like the arguments to {\cf map}, but
-{\cf for-each} calls \var{proc} for its side effects rather than for its
-values.  Unlike {\cf map}, {\cf for-each} is guaranteed to call \var{proc} on
-the elements of the \var{list}s in order from the first element(s) to the
-last, and the value returned by {\cf for-each} is the unspecified value.
+\domain{The \var{list}s must all have the same length.  \var{Proc}
+  must be a procedure.  If the \var{list}s are non-empty, they must
+  take as many arguments as there are {\it list}s.}
+The {\cf for-each} procedure applies \var{proc}
+element-wise to the elements of the
+\var{list}s for its side effects,  in order from the first element(s) to the
+last.
+On the last elements of the \var{list}s, {\cf for-each} tail-calls
+\var{proc}.  If the \var{list}s are empty, {\cf for-each} returns the
+unspecified value.
 
 \begin{scheme}
 (let ((v (make-vector 5)))
   (for-each (lambda (i)
               (vector-set! v i (* i i)))
             '(0 1 2 3 4))
-  v)                                \ev  \#(0 1 4 9 16)%
+  v)                                \ev  \#(0 1 4 9 16)
+
+(for-each (lambda (x) x) '(1 2 3 4)) \lev 4
+
+(for-each even? '()) \ev \theunspecified%
 \end{scheme}
 
 \end{entry}
