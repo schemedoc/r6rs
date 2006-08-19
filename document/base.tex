@@ -332,9 +332,6 @@ may be abbreviated as \singlequote\hyper{S-expression}:
 ''a                  \ev  (quote a)%
 \end{scheme}
 
-Numerical constants, string constants, character constants, and boolean
-constants evaluate ``to themselves''; they need not be quoted.
-
 As noted in section~\ref{storagemodel}, the value of a literal
 expression may be immutable.
 \end{entry}
@@ -2748,16 +2745,6 @@ Scheme distinguishes both \schfalse{} and the empty list \index{empty list}
 from the symbol \ide{nil}.
 \end{note}
 
-\vest Boolean constants evaluate to themselves, so they do not need to be quoted
-in programs.
-
-\begin{scheme}
-\schtrue         \ev  \schtrue
-\schfalse        \ev  \schfalse
-'\schfalse       \ev  \schfalse%
-\end{scheme}
-
-
 \begin{entry}{%
 \proto{not}{ obj}{procedure}}
 
@@ -3287,14 +3274,6 @@ values~\cite{Unicode41}.
 %characters be disjoint from other data types; implementations are
 %encouraged to have a separate character data type, but may choose to
 %represent characters as integers, strings, or some other type.
-
-\todo{Fix}
-Characters written in the \sharpsign\backwhack{} notation are self-evaluating.
-That is, they do not have to be quoted in programs.  
-%The \sharpsign\backwhack{}
-%notation is not an essential part of Scheme, however.  Even implementations
-%that support the \sharpsign\backwhack{} notation for input do not have to
-%support it for output.
 
 \vest Some of the procedures that operate on characters ignore the
 difference between upper case and lower case.  The procedures that
