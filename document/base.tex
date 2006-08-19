@@ -1455,16 +1455,20 @@ bound at the top level of a library body; see section~\ref{define-syntax}.
 \end{scheme}
 Each \hyper{keyword} is an identifier,
 each \hyper{transformer spec} is an instance of {\cf syntax-rules}, and
-\hyper{body} should be a sequence of one or more expressions.  It is a
+\hyper{body} is a body according to section~\ref{bodiessection}.  It is a
 syntax defect for \hyper{keyword} to appear more than once in the list of keywords
 being bound.
 
 \semantics
 The \hyper{body} is expanded in the syntactic environment
 obtained by extending the syntactic environment of the
-{\cf let-syntax} expression with macros whose keywords are
+{\cf let-syntax} form with macros whose keywords are
 the \hyper{keyword}s, bound to the specified transformers.
 Each binding of a \hyper{keyword} has \hyper{body} as its region.
+
+Internal definition in the result of expanding the \hyper{body} have
+the same region as any definition appearing in place of the {\cf
+  let-syntax} form would have.
 
 \begin{scheme}
 (let-syntax ((when (syntax-rules ()
@@ -1493,13 +1497,17 @@ Same as for {\cf let-syntax}.
 \semantics
  The \hyper{body} is expanded in the syntactic environment obtained by
 extending the syntactic environment of the {\cf letrec-syntax}
-expression with macros whose keywords are the
+form with macros whose keywords are the
 \hyper{keyword}s, bound to the specified transformers.
 Each binding of a \hyper{keyword} has the \hyper{bindings}
 as well as the \hyper{body} within its region,
 so the transformers can
-transcribe expressions into uses of the macros
-introduced by the {\cf letrec-syntax} expression.
+transcribe forms into uses of the macros
+introduced by the {\cf letrec-syntax} form.
+
+Internal definition in the result of expanding the \hyper{body} have
+the same region as any definition appearing in place of the {\cf
+  let-syntax} form would have.
 
 \begin{scheme}
 (letrec-syntax
