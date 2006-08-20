@@ -31,17 +31,17 @@ Consequently, Scheme's syntax has the property that any sequence of
 characters that is an expression is also an S-expression representing
 some object.  This can lead to confusion, since it may not be obvious
 out of context whether a given sequence of characters is intended to
-denote data or program, but it is also a source of power, since it
+denote data or program. It is also a source of power, since it
 facilitates writing programs such as interpreters and compilers that
 treat programs as data (or vice versa).
 
 Note that an object that corresponds to an S-expression (a so-called
-\defining{datum}) may also correspond to other S-expressions.  The
+\defining{datum}) may also correspond to other S-expressions.  For example, the
 integer 28 also has representations ``{\tt \#e28.000}'' and
-``{\tt\#x1c}'', and the list in the previous paragraph also has the
-representations ``{\tt( 08 13 )}'' and ``{\tt(8 .\ (13 .\ ()))}'' (see
+``{\tt\#x1c}''; a list containing the integers 8 and 13 has representations
+ ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\ (13 .\ ()))}'', and more (see
 section~\ref{listsection}).  S-expressions that denote equal
-objects are also equivalent as forms of a program.
+objects are always equivalent as forms of a program.
 
 This chapter gives overviews and formal accounts of the lexical
 syntax and the read syntax.
@@ -67,7 +67,7 @@ The lexical syntax describes how a character sequence is split into a
 sequence of lexemes\index{lexeme}, omitting non-significant portions
 such as comments and whitespace.  The character sequence is assumed to
 be text according to the Unicode standard~\cite{Unicode41}.  Some of
-the lexemes, such as numbers, identifiers, strings etc. of the lexical
+the lexemes, such as numbers, identifiers, strings etc.\ of the lexical
 syntax are S-expressions in the read syntax, and thus represent data.
 Besides the formal account of the syntax, this section also describes
 what data objects are denoted by these S-expressions.
@@ -88,12 +88,12 @@ except in literals specifying hexadecimal numbers.  For example, {\cf
 \meta{Interlexeme space} may occur on either side of any lexeme, but not
 within a lexeme.
 
-\vest Lexemes which require implicit termination (identifiers, numbers,
+\vest Lexemes that require implicit termination (identifiers, numbers,
 and dot) may be terminated by any \meta{delimiter}, but not
 necessarily by anything else.  \meta{Character} and \meta{boolean}
 must be terminated by a \meta{delimiter} or by the end of the input.
 
-The following three characters are reserved for future extensions to the
+The following two characters are reserved for future extensions to the
 language: {\tt \verb"{" \verb"}"}
 
 \begin{grammar}%
@@ -239,29 +239,31 @@ In the these rules, case is insignificant.
 
 \subsection{Whitespace and comments}
 
-\defining{Whitespace} characters are spaces and newlines.
-(Implementations typically provide additional whitespace characters such
-as tab or page break.)  Whitespace is used for improved readability and
-as necessary to separate lexemes from each other, a lexeme being an
-indivisible lexical unit such as an identifier or number, but is
-otherwise insignificant.  Whitespace may occur between any two lexemes,
+\defining{Whitespace} characters are spaces, linefeeds,
+carriage returns, horizontal tabs, form feeds, vertical tabs,
+and any other character whose category is Zs, Zl, or Zp.
+Whitespace is used for improved readability and
+as necessary to separate lexemes from each other.  Whitespace may
+occur between any two lexemes,
 but not within a lexeme.  Whitespace may also occur inside a string,
 where it is significant.
 
-A semicolon ({\tt;}) indicates the start of a
-comment.\mainindex{comment}\mainschindex{;}  The comment continues to the
-end of the line on which the semicolon appears.  Comments are invisible
-to Scheme, but the end of the line is visible as whitespace.  This
-prevents a comment from appearing in the middle of an identifier or
-number.
+The lexical syntax includes several comment forms. In all cases,
+comments are invisible to Scheme, except that they act as delimiters,
+so a comment cannot appear in the middle of an identifier or number.
 
-Another way to indicate a comment is to prefix a \hyper{S-expression} (cf.\
-Section~\ref{datumsyntax}) with {\tt \#;}, possibly with whitespace in
-between.  The comment consists of the comment prefix {\tt \#;} and the
-\hyper{S-expression}.  (This notation is useful for ``commenting out''
-sections of code.)
+A semicolon ({\tt;}) indicates the start of a line
+comment.\mainindex{comment}\mainschindex{;} The comment continues to
+the end of the line on which the semicolon appears (i.e., it is
+terminated by a linefeed character).
 
-Moreover, block comments may be indicated with properly nested {\tt
+Another way to indicate a comment is to prefix a \hyper{S-expression}
+(cf.\ Section~\ref{datumsyntax}) with {\tt \#;}, possibly with
+whitespace before the \hyper{S-expression}.  The comment consists of
+the comment prefix {\tt \#;} and the \hyper{S-expression} together.  (This
+notation is useful for ``commenting out'' sections of code.)
+
+Bqlock comments may be indicated with properly nested {\tt
   \#|} and {\tt |\#} pairs.
 
 \begin{scheme}
@@ -314,7 +316,7 @@ they were letters.  The following are extended alphabetic characters:
 
 Moreover, all characters whose scalar values are greater than 127 and
 whose Unicode category is Lu, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pd,
-Pc, Po, Sc, Sm, Sk, So, or Co, can be used within identifiers.
+Pc, Po, Sc, Sm, Sk, So, or Co can be used within identifiers.
 Moreover, any character can appear as the constituent of an identifier
 when denoted via a hexadecimal escape sequence.  For example, the
 identifier \verb|H\x65;llo| is the same as the identifier
@@ -333,7 +335,7 @@ Moreover, when viewed as data, an identifier denotes a {\em symbol\index{symbol}
 
 The standard boolean objects for true and false are written as
 \schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f}  The character
-after a boolean literal must be a delimiter character such as a
+after a boolean literal must be a delimiter character, such as a
 space or parenthesis.
 
 \subsection{Characters}
@@ -341,7 +343,7 @@ space or parenthesis.
 Characters are written using the notation
 \sharpsign\backwhack\hyper{character} or
 \sharpsign\backwhack\hyper{character name} or
-\sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}, where the latter
+\sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}, where the last
 specifies the scalar value of a character with a hexadecimal number of
 no more than eight digits.
 
@@ -492,7 +494,7 @@ exponent, or a ``\sharpsign'' character in the place of a digit,
 otherwise it is exact.
 
 In systems with inexact numbers
-of varying precisions it may be useful to specify
+of varying precisions, it may be useful to specify
 the precision of a constant.  For this purpose, numerical constants
 may be written with an exponent marker that indicates the
 desired precision of the inexact
@@ -684,7 +686,7 @@ are equivalent notations for a list of symbols.
 \subsection{Bytes objects}
 
 Bytes S-expressions, denoting bytes objects (see
-section~\ref{bytessection}, are written using the notation
+section~\ref{bytessection}), are written using the notation
 {\tt\#vu8(\var{u8} \dotsfoo)}, where the \var{u8}s are the octets of
 the bytes object.  For example, a bytes object of length 3 containing the
 octets 2, 24, and 123 can be written as following:

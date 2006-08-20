@@ -267,14 +267,14 @@ example is equivalent to
     (foo (+ x 3))))%
 \end{scheme}
 
-In the body of a {\cf let-values} or {\cf letrec-values} form, the
+In the body of a {\cf let-syntax} or {\cf letrec-syntax} form, the
 region of the binding of an internal definition is the same as that of
 an internal definition that would appear in place of the {\cf
-  let-values} or {\cf letrec-values} form.  That is, a {\cf
-  let-values} or {\cf letrec-values} form does not establish a new
+  let-syntax} or {\cf letrec-syntax} form.  That is, a {\cf
+  let-syntax} or {\cf letrec-syntax} form does not establish a new
 region for internal definitions appearing in its body; the expanded
 body is spliced into the surrounding program in the place of the {\cf
-  let-values} or {\cf letrec-values} form.
+  let-syntax} or {\cf letrec-syntax} form.
 
 \begin{scheme}
 (let ()
@@ -285,7 +285,7 @@ body is spliced into the surrounding program in the place of the {\cf
   foo) \ev 42
 \end{scheme}
 
-Wherever an internal definition may occur
+Wherever an internal definition may occur,
 {\tt(begin \hyperi{definition} \dotsfoo)}
 is equivalent to the sequence of definitions
 that form the body of the \ide{begin}.
@@ -473,8 +473,8 @@ the unspecified value.
 (+ x 1)                 \ev  5%
 \end{scheme}
 
-It is a syntax defect if the binding \hyper{variable} refers to is
-immutable.
+It is a syntax defect if \hyper{variable} refers to an
+immutable binding.
 \end{entry}
 
 \subsection{Conditionals}\unsection
@@ -577,7 +577,7 @@ the form
 ((\hyperi{S-expression} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)\rm,%
 \end{scheme}
 where each \hyper{S-expression} is an external representation of some object.
-The datums denoted by the the \hyper{S-expression}s must be distinct.
+The datums denoted by the \hyper{S-expression}s must be distinct.
 The last \hyper{clause} may be an ``else clause,'' which has the form
 \begin{scheme}
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
@@ -1350,6 +1350,7 @@ appears inside a \hyper{qq template}, then the \hyper{expression}s must
 evaluate to lists; the opening and closing parentheses of the list are
 then ``stripped away'' and the elements of the lists are inserted in
 place of the {\cf unquote-splicing} form.  {\cf
+
 Unquote-splicing} and multi-operand {\cf unquote} forms should
 appear only within a list or vector \hyper{qq template}.
 
