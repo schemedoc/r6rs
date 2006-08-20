@@ -835,41 +835,6 @@ respectively.
 \subsection{Examples}
 
 \begin{schemenoindent}
-; This customized reader reads from a list of bytes
-; objects. A null bytes object yields EOF.
-
-(define (open-bytess-reader bs)
-  (let* ((pos 0))
-    (make-simple-reader
-     "<byte vectors>"
-     bs
-     5
-     (lambda (bytes start count)
-       (cond
-        ((null? bs)
-         0)
-        (else
-         (let* ((b (car bs))
-                (size (bytes-length b))
-                (real-count (min count (- size pos))))
-           (bytes-copy! b pos
-                           bytes start
-                           real-count)
-           (set! pos (+ pos real-count))
-           (if (= pos size)
-               (begin
-                 (set! bs (cdr bs))
-                 (set! pos 0)))
-           real-count))))
-     ;; pretty rough ...
-     (lambda ()
-       (if (null? bs)
-           0
-           (- (bytes-length (car bs)) pos)))
-     \schfalse{} \schfalse{} \schfalse{}
-     (lambda ()
-       (set! bs \schfalse{})))))
-
 ; Algorithmic reader producing an infinite
 ; stream of blanks:
 
@@ -889,10 +854,88 @@ respectively.
       1000) ; some number
     \schfalse{} \schfalse{} \schfalse{}
     unspecific))
+ 
+; Sample implementation of bytes writer
 
-FIXME: examples for writers
+(define-record-type (buffer
+                     make-buffer buffer?)
+  (fields (mutable bytes
+                   buffer-bytes set-buffer-bytes!)
+          (mutable size
+                   buffer-set-size set-buffer-size!)))
+
+(define (open-bytes-writer)
+  (let ((buffer
+         (make-buffer (make-bytes 512) 0))
+        (pos 0))
+
+    (define (ensure-open)
+      (if (not buffer)
+          (raise (condition
+                  (\&message
+                   (message "bytes writer closed"))
+                  (\&contract)
+                  (\&i/o-reader/writer
+                   (reader/writer writer))))))
+
+    (define writer
+      (make-writer
+       "<bytes writer>"
+       buffer
+       3
+       (lambda (bytes start count)
+         (ensure-open)
+         ;; resize buffer if necessary
+         (let loop ((length 
+                     (bytes-length
+                       (buffer-bytes buffer))))
+           (cond
+            ((> (+ pos count) length)
+             (loop (* 2 length)))
+            ((> length (bytes-length (car buffer)))
+             (let ((new-buffer (make-bytes length)))
+               (bytes-copy! (buffer-bytes buffer) 0
+                            new-buffer 0
+                            (buffer-size buffer))
+               (set-buffer-bytes! buffer new-buffer)))))
+
+         (bytes-copy! bytes start
+                      (buffer-bytes buffer) pos
+                      count)
+         (set-buffer-size!
+           buffer
+           (max (buffer-size buffer) (+ pos count)))
+         (set! pos (+ pos count))
+         count)
+       (lambda ()
+         (ensure-open)
+         pos)
+       (lambda (new-pos)
+         (ensure-open)
+         (if (<= new-pos (buffer-size buffer))
+             (set! pos new-pos)
+             (raise
+              (condition
+               (\&message
+                (message "invalid position"))
+               (\&i/o-invalid-position
+                (position new-pos))))))
+       (lambda ()
+         (ensure-open)
+         (buffer-size buffer))
+       (lambda ()
+         (set-buffer-bytes! buffer \schfalse{}))))
+    writer))
+
+(define (writer-bytes writer)
+  (let* ((buffer (writer-descriptor writer))
+         (target (make-bytes (buffer-size buffer))))
+    (bytes-copy! (buffer-bytes buffer) 0
+                 target 0
+                 (buffer-size buffer))
+    target))
 \end{schemenoindent}
-                    
+                
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "r6rs"
