@@ -190,11 +190,12 @@ A \var{file-options} parameter name means that the
 corresponding argument must be a file-options object.
 
 \begin{entry}{%
-\proto{file-options}{ \hyper{file-options-name} \dotsfoo}{\exprtype}}
-   
+\proto{file-options}{ \hyper{file-options name} \dotsfoo}{\exprtype}}
+
+Each \hyper{file-options name} must be a symbol.
 The {\cf file-options} syntax returns a file-options object with the
 specified options set. The following options (all affecting output
-only) may be used:
+only) have predefined meaning:
 
 \begin{itemize}   
 \item {\cf create} create file if it does not already exist
@@ -205,13 +206,23 @@ only) may be used:
   file is truncated
 \end{itemize}
 
-FIXME: everything else is ignored
+\hyper{File-options name}s other than those listed above may be used;
+they have implementation-specific and thus potentially unpredictable
+meaning.
 
 The file-options object returned by {\cf (file-options)} specifies,
 when supplied to an operation opening a file for output, that the file
 must exist (otherwise an exception with condition type
 {\cf\&i/o-file-exists-not} is raised) and its data is unchanged by the
 operation.
+
+\begin{rationale}
+  The flags specified above represent only a common subset of
+  meaningful options on popular platforms.  The {\cf file-options}
+  form does not restrict the \hyper{file-options name}s to allow
+  implementations to extend the file options by platform-specific
+  flags.
+\end{rationale}
 \end{entry}   
 
 \subsection{Readers and Writers}
