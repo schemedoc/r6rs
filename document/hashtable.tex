@@ -37,25 +37,25 @@ capacity of the hash table is set to approximately \var{k} elements.
 \end{entry}
 
 \begin{entry}{%
-\proto{make-hash-table}{ \vari{procedure} \varii{procedure}}{}
-\rproto{make-hash-table}{ \vari{procedure} \varii{procedure} \var{k}}}
+\proto{make-hash-table}{ \var{hash-function} \var{comparator}}{}
+\rproto{make-hash-table}{ \var{hash-function} \var{comparator} \var{k}}}
 
-Returns a newly allocated mutable hash table using \vari{procedure} 
-as the hash function and \varii{procedure} as the procedure used to 
+Returns a newly allocated mutable hash table using \var{hash-function} 
+as the hash function and \var{comparator} as the procedure used to 
 compare keys.  The hash function must accept a key and return a 
 non-negative exact integer. If a third argument is given, the 
 initial capacity of the hash table is set to approximately \var{k} elements.
 
-Both the hash function \vari{procedure} and the comparison
-predicate \varii{procedure} must behave like pure functions
+Both the hash function \vari{hash-function} and the comparison
+predicate \var{comparator} must behave like pure functions
 on the domain of keys.  For example, the {\cf string-hash}
 and {\cf string=?} procedures are permissible only if all
 keys are strings and the contents of those strings are never
 changed so long as any of them continue to serve as a key in
 the hash table.  Furthermore any pair of values for which
-the comparison predicate \varii{procedure} returns true must
+the comparison predicate \var{comparator} returns true must
 be hashed to the same exact integers by the hash function
-\vari{procedure}.
+\var{hash-function}.
 
 \begin{note}
 Hash tables are allowed to cache the results of calling the
