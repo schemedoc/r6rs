@@ -1,0 +1,136 @@
+August 17 2006 8:00am-10:00am EDT 812-856-3600
+All present by about 8:02 am EST
+
+0. finalize agenda (1 minute)
+
+1. action items from 8/8/2006 (5 minutes)
+   - write up summary of script options (Anton)
+        done
+   - propose change to library semantics (Will)
+        done
+   - express opinions on peek-char, write-char, etc., naming options (All)
+        done
+   - note: reserve last week of August for proofreading
+
+2. Report status (5 minutes)
+   - items ready for review
+     <item>                    <editor>   <to be completed by>   <done?>
+     unicode                   Matthew    Aug. 03                done.
+     exceptions & conditions   Matthew    Aug. 03
+     quasiquote                Kent       Aug. 08                done.
+     letrec*                   Kent       Aug. 08                done.
+     let-values & let*-values  Kent       Aug. 08                done.
+     records                   Kent       Aug. 15
+     enumerations              Will       Jul. 12                done.
+     bytes                     Will       Aug. 03                done.
+     equal?                    Will       Aug. 01                done.
+     list-library              Anton      Aug. 11 (21)
+     case-lambda               Anton      Aug. 11 (21)
+     when & unless             Anton      Aug. 08                done.
+     core/library split        Anton      Aug. 11 (21)
+     arithmetic                Will       Aug. 22
+     set-car!, set-cdr!        Anton      Aug. ?? (21)
+     condition-type details    Anton      Aug. ?? (21)
+     dynamic-wind              Kent       Aug. 15                done.
+   - items not ready for review
+     syntax (read-syntax, syntactic forms)
+        now ready to be reviewed
+        Matthew will review (Aug 20)
+     eval
+     I/O
+     hash tables
+        almost ready to be reviewed
+     safe/unsafe mode
+        probably ready to look at
+        issue: do we need an additional section?
+        Kent volunteers
+     syntax-case
+     library system
+     scripts
+     r5rs compatibility library
+     operational semantics
+        in progress
+
+3. R6RS header material (5 minutes)
+
+4. future meetings (5 minutes)
+    8am EST Tuesday next two weeks
+    may add additional conference call(s)
+
+5. script syntax (10 minutes)
+   (see https://r6rs.scheming.org/node/346)
+    1.  script header
+        script form (script lib-name entry-name) library-form
+    2.  script header
+        import form
+        library body
+    3.  script header
+        script form as in 1, except library body is inside script form
+    Straw poll:
+        Kent: 2, 1, 3
+        Matthew: 2, 1, 3
+        Mike: 3, 1, 2
+        Will: 2 (with interleaving), 1, 3
+        Anton: 2, 3, 1
+
+6. naming of condition predicates and accessors (5 minutes)
+    to be discussed via email
+    re-adding a condition type for syntax violations
+        no objections
+
+7. libraries (15 minutes)
+   - phasing again (see https://r6rs.scheming.org/node/102#comment-1701)
+        revote via email
+   - Will's proposed change to library semantics
+     ---same binding may be imported from two libraries
+     (see https://r6rs.scheming.org/node/352)
+        no objections
+
+8. I/O (15 minutes)
+    write-char, peek-char
+    prefixes:
+        display/read
+        put/get
+        output/input
+        out/in
+        push/pull
+    Will moved the new procedures begin with display-
+        and read-.  Kent seconded.
+    Mike prefers put/get, as does Anton.
+    Yes: Kent, Will
+    No: Anton, Mike
+    Abstain: Matthew
+    Mike moved to adopt either the display/read or put/get
+        convention.  Kent seconded.
+    Yes: Will, Kent, Mike, Matthew, Anton
+    No: 
+    Abstain: 
+    Vote between two options:
+    display/read: Kent
+    put/get: Matthew, Mike, Anton
+    abstain: Will
+    put/get it is.
+    Will moved to keep peek-char as in R5RS, and to name
+        the new one lookahead-char.  Mike seconded.
+    Yes: Will, Kent, Matthew, Mike, Anton
+    Will moved that read and write retain their names
+        in the simple-io library, with R5RS argument
+        order, and that put-datum and get-datum be added
+        in some library with the mandatory port first.
+        Mike seconded.
+    Yes: Will, Kent, Mike, Matthew, Anton
+    No: 
+    Open i/o issues:
+        side effect to change transcoder
+        open/read+write
+
+#vu8(...) syntax proposed for bytes objects
+    no objections
+
+core/library split
+    Kent wants call/cc and named let in r6rs-base,
+        but otherwise agrees with Will's suggested
+        list.
+    
+
+9. adjourned about 10:07am EST
