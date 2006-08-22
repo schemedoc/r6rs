@@ -3611,7 +3611,7 @@ and returns the unspecified value.  % <!>
 
 \begin{entry}{%
 \proto{error}{ who message \vari{irritant} \dotsfoo}{procedure}
-\proto{violation}{ who message \vari{irritant} \dotsfoo}{procedure}}
+\proto{contract-violation}{ who message \vari{irritant} \dotsfoo}{procedure}}
 
 \domain{\var{Who} must be a string or a symbol or \schfalse{}.
   \var{Message} must be a string.
@@ -3620,9 +3620,9 @@ and returns the unspecified value.  % <!>
 These procedures raise an exception.  Calling the {\cf error}
 procedure means that an error has occurred, typically caused by
 something has gone wrong in the interaction of the program with the
-external world or the user.  Calling the {\cf violation} procedure
-means that a violation of the language standard or a library standard
-has occurred, typically caused by a programming error.
+external world or the user.  Calling the {\cf contract-violation} procedure
+means that an invalid call to a procedure was made, either passing an
+invalid number of arguments, or passing an argument of the wrong type.
 
 The \var{who} argument should describe the procedure or operation that
 detected the exception.  The \var{irritant}s should be the arguments
@@ -3644,15 +3644,15 @@ chapter~\ref{exceptionsconditionschapter}) has the following condition types:
 \end{itemize}
 %
 Moreover, the condition created by {\cf error} has condition type 
-{\cf \&error}, and the condition created by {\cf violation} has
-condition type {\cf \&violation}.
+{\cf \&error}, and the condition created by {\cf contract-violation} has
+condition type {\cf \&contracr}.
 
 \begin{scheme}
 (define (fac n)
   (if (not (integer-valued? n))
-      (violation 'fac "non-integral argument" n))
+      (contract-violation 'fac "non-integral argument" n))
   (if (negative? n)
-      (violation 'fac "negative argument" n))
+      (contract-violation 'fac "negative argument" n))
   (letrec
     ((loop (lambda (n r)
              (if (zero? n)
@@ -3661,8 +3661,8 @@ condition type {\cf \&violation}.
       (loop n 1)))
 
 (fac 5) \ev 120
-(fac 4.5) \ev \exception{\&violation}
-(fac -3) \ev \exception{\&violation}
+(fac 4.5) \ev \exception{\&contract}
+(fac -3) \ev \exception{\&contract}
 \end{scheme}
 
 \begin{rationale}
