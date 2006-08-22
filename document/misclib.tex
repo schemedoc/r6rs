@@ -101,77 +101,8 @@ FIXME
 (foo 1 2 3 4) \ev (four 1 2 3 4 ())
 \end{scheme}
 
-The {\cf case-lambda} expression is a derived form.  It
-could be defined in terms of base library by the following macros:
-%
-\begin{scheme}
-(define-syntax \ide{case-lambda}
-  (syntax-rules ()
-    ((case-lambda
-      (formals-0 body0-0 body1-0 ...)
-      (formals-1 body0-1 body1-1 ...)
-      ...)
-     (lambda args
-       (let ((l (length args)))
-         (case-lambda-helper
-          l args
-          (formals-0 body0-0 body1-0 ...)
-          (formals-1 body0-1 body1-1 ...) ...))))))
-
-(define-syntax \ide{case-lambda-helper}
-  (syntax-rules ()
-    ((case-lambda-helper
-      l args)
-     (violation 'case-lambda
-                "wrong number of arguments" l args))
-    ((case-lambda-helper
-      l args
-      ((formal ...) body ...)
-      clause ...)
-     (if (= l (length '(formal ...)))
-         (apply (lambda (formal ...) body ...)
-                args)
-         (case-lambda-helper l args clause ...)))
-    ((case-lambda-helper
-      l args
-      ((formal . formals-rest) body ...)
-      clause ...)
-     (case-lambda-helper-dotted l args
-                                (body ...)
-                                (formal . formals-rest)
-                                formals-rest 1
-                                clause ...))
-    ((case-lambda-helper
-      l args
-      (formal body ...))
-     (let ((formal args))
-       body ...))))
-
-(define-syntax \ide{case-lambda-helper-dotted}
-  (syntax-rules ()
-    ((case-lambda-helper-dotted
-      l args
-      (body ...)
-      formals
-      (formal . formals-rest) k
-      clause ...)
-     (case-lambda-helper-dotted
-      l args
-      (body ...)
-      formals
-      formals-rest (+ 1 k)
-      clause ...))
-    ((case-lambda-helper-dotted
-      l args
-      (body ...)
-      formals
-      rest-formal k
-      clause ...)
-     (if (>= l k)
-         (apply (lambda formals body ...) args)
-         (case-lambda-helper
-          l args clause ...)))))
-\end{scheme}
+A sample definition of {\cf case-lambda} in terms of simpler forms is in
+appendix~\ref{derivedformsappendix}.
 \end{entry}
 
 \section{Delayed evaluation}
