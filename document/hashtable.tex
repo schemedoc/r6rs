@@ -5,11 +5,10 @@ The \deflibrary{r6rs hash-tables} library operates on hash tables.
 A \defining{hash table} is a data structure that associates keys with values.
 Any object can be used as a key, provided a \defining{hash function}
 and an equality-checking operation is available.  A hash function maps
-keys to integers, and must be in compatible with the equality
-operation.  Standard hash tables for arbitrary objects based on the
-{\cf eq?} and {\cf eqv?} equalities (see
-section~\ref{equivalencesection}) are provided.  Also, standard hash
-functions for several types are provided.
+keys to integers, and must be compatible with the equality operation.  
+Standard hash tables for arbitrary objects based on the {\cf eq?} and 
+{\cf eqv?} equalities (see section~\ref{equivalencesection}) are provided.  
+Also, standard hash functions for several types are provided.
 
 \subsection{Constructors}
 
@@ -110,14 +109,18 @@ for \var{key}, otherwise returns \schfalse{}.
 
 \begin{entry}{%
 \proto{hash-table-update!}{ \var{hash-table} \var{key} \var{procedure} \var{default}}}
-Equivalent to, but potentially more efficient than:
+Applies \var{procedure} to the value in \var{hash-table} associated with \var{key}, 
+or to \var{default} if \var{hash-table} does not contain an association for \var{key}.
+The \var{hash-table} is then changed to associate \var{key} with the result of \var{procedure}.
+
+The behavior of hash-table-update! is equivalent to the following code, but may be implemented 
+more efficiently in cases where the implementation can avoid looking up the same key twice:
 \begin{scheme}
 (hash-table-set!
  hash-table key
  (procedure (hash-table-ref
              hash-table key default)))
 \end{scheme}
-If \var{hash-table} does not contain an association for \var{key}, then \var{default} is passed to \var{procedure}.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-fold}{ \var{procedure} \var{hash-table} \var{init}}}
