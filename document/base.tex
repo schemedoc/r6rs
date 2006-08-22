@@ -231,9 +231,14 @@ definition with a body has the following form:
 
 \hyper{Declaration} is according to section~\ref{declarations}.
 
-A \hyper{sequence} has the following form:
+\hyper{Sequence} has the following form:
 
 {\cf \arbno{\hyper{expression}}}
+
+In most contexts, a \hyper{sequence} must contain at least one
+\hyper{expression}.  The only exceptions are the bodies of {\cf
+  let-syntax} and {\cf letrec-syntax} forms that occur in a place
+where a definition is allowed.
 
 Definitions may occur after the declarations in a \hyper{body}.
 Such definitions are known as {\em internal definitions}
@@ -1276,7 +1281,9 @@ bound at the top level of a library body; see section~\ref{define-syntax}.
 \end{scheme}
 Each \hyper{keyword} is an identifier,
 each \hyper{transformer spec} is an instance of {\cf syntax-rules}, and
-\hyper{body} is a body according to section~\ref{bodiessection}.  It is a
+\hyper{body} is a body according to section~\ref{bodiessection}; its
+\hyper{sequence} may be empty if the {\cf let-syntax} form occurs in a
+place where a definition is allowed.  It is a
 syntax defect for \hyper{keyword} to appear more than once in the list of keywords
 being bound.
 
@@ -1305,6 +1312,10 @@ the same region as any definition appearing in place of the {\cf
   (let-syntax ((m (syntax-rules () ((m) x))))
     (let ((x 'inner))
       (m))))                       \ev  outer%
+
+(let ()
+  (let-syntax ())
+  5) \ev 5
 \end{scheme}
 
 \end{entry}
