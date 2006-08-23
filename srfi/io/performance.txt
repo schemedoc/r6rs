@@ -1,0 +1,172 @@
+A note on the performance of port i/o
+=====================================
+
+The purpose of this note is to sketch an efficient
+implementation of the proposal for port i/o that
+specifies the transcoder as an optional argument
+for every textual i/o operation.
+
+This note also contains some remarks comparing the
+efficiency of that proposal to the efficiency of
+associating the transcoder with a port, while
+allowing the transcoder associated with a port
+to be changed via side effect.
+
+
+Basic observations
+==================
+
+The set of transcoders described by the proposal
+is finite, and the set of transcoders supported
+by an implementation is likely to be a small
+finite set.  Since transcoders are an opaque
+type, they can be represented by some immediate
+representation that is easy to decode.
+
+Any inefficiency caused by this proposal would
+be minor in interpreted systems, because the
+inefficiency of interpretation would be so much
+greater.  I will therefore assume a compiled
+implementation.
+
+The performance-critical operations are get-u8,
+get-char, lookahead-char, put-u8, and put-char.
+Operations such as get-bytes-n, get-line, and
+put-string will be more efficient than an
+equivalent sequence of single-byte or single-
+character operations, and the techniques that
+make the single-byte and single-character
+operations fast will also make the larger
+operations fast, so this note will focus on
+the smaller operations.
+
+The R6RS library system will make it easy for
+compilers to recognize and to optimize calls
+to these procedures.  In particular, there is
+no "rest argument" overhead from passing the
+optional transcoder argument.
+
+If no optional transcoder argument is passed,
+then the compiler knows what the transcoder
+will be, and can generate inline code for the
+operation.  For example, the machine code
+generated for (get-char port) on a Unix system
+(with the lf eol-style) will probably look
+something like
+
+    ld      r1[nextbyte],r2
+    cmp     r2,BUFSIZE
+    bge     L999slowcase
+    add     r1,r2,r3
+    ldbyte  r3[BUF],r3
+    cmpbyte r3,128
+    bge     L999slowcase
+    add     r2,1,r2
+    store   r2,r1[nextbyte]
+    shift   r3,TAGWIDTH,r3
+    or      r3,CHARTAG,r3
+L999slowcase_returns_here:
+
+That's about 12 machine instructions, on average,
+to obtain an ASCII character by calling get-char,
+not counting the low-level i/o that fills the port
+buffer when it's empty.  At 2.4 GIPS, that's
+5 nanoseconds, which is not going to be limiting
+unless your low-level i/o system can pump close
+to 100 megabytes per second into the buffer.
+
+The code shown above does not include runtime
+checking to make sure the port is a port, that
+it an input port, or that it is a buffered
+input port whose buffer is of the standard
+size.  Those checks will probably be hoisted
+out of the loop that calls get-char, so they
+are rarely executed compared to the machine
+code sketched above.  Even when executed,
+they are probably not much more expensive
+than the code shown above, and may well be
+less expensive.
+
+If the optional transcoder argument is passed,
+then the compiler will try to figure out which
+particular transcoder is passed.  If it can
+figure that out, it can still generate code
+that resembles the code shown above.
+
+Which transcoder is passed will be obvious if
+the transcoder is constructed right at the
+call to get-char.  The syntactic overhead of
+doing this is fairly heavy, however, and is
+likely to frighten programmers into thinking
+it is slow (though it would take zero time in
+reality), so programmers are likely to define
+the transcoder outside the loop or somewhere
+else in the library.  Either way, the compiler
+can probably identify the transcoder using
+flow analysis.
+
+
+Digression on mutable transcoders
+=================================
+
+With the original proposal, however, the
+transcoder is associated with the port, and
+can be changed via side effect.  That means
+the compiler probably cannot figure out which
+transcoder will be used.  To figure that out,
+the flow analysis would have to establish that
+the port is never passed to any procedure that
+might change its transcoder.
+
+There are two reasons why that flow analysis
+is more difficult than the flow analysis that
+establishes the identity of an immutable
+transcoder: (1) transcoders are immutable, so
+passing one to an unknown procedure doesn't
+interfere with the flow analysis; (2) ports,
+having state, cannot be duplicated locally,
+so they are more likely to be passed around
+through multiple procedures.
+
+I suspect that the design featuring ports
+whose transcoders could be changed via side
+effect was based upon the belief that large
+volumes of data could be transcoded and
+buffered.  That doesn't work very well when
+a port's transcoder can change through side
+effect---you'd have to throw buffered data
+away and do the transcoding again---or when
+mixing what I mean by mixing binary i/o with
+textual i/o.
+
+
+Minor details
+=============
+
+The lookahead-char procedure might find that
+some of the bytes it needs to look at have
+not yet been loaded into the buffer.  That
+implies a minor deviation from the usual
+model in which a buffer is emptied completely
+before refilling.  There would have to be
+enough overlap so the beginning of a
+character encoding remains in the buffer.
+With 1000-byte buffers, a 5-byte overlap
+would be insignificant.
+
+The put-char procedure would have a similar
+issue, with a similar solution.
+
+The main reasons why the procedures that deal
+with longer sequences of bytes would be faster
+are: (1) the benefits of loop unrolling; (2)
+the benefits of hoisting runtime checks (Is
+this a port?  Is it an output port?  Is it
+buffered in the standard way?) outside the
+loop.  Compiler optimization achieves these
+benefits automatically.  Hand-written code
+might do slightly better, but is probably
+not going to be worthwhile in systems that
+have good compilers.
+
+Will
