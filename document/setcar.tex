@@ -2,14 +2,15 @@
 \label{pairmutationchapter}
 
 The procedures provided by the \deflibrary{r6rs mutable-pairs} library allow assigning values to
-the car and cdr fields of pairs.  In programs that use them, the
-criteria for determining the validity of list arguments are more
-complex than with only immutable lists.
+the car and cdr fields of pairs.  In programs that use this library,
+the criteria for determining the validity of list arguments are more
+complex than in programs whose lists are immutable.
 Section~\ref{mutablelistargumentsection} spells out the definitions
-needed for clarifying the specifications of procedures accepting
-lists.  Section~\ref{proceduresmutablelistargumentssection} clarifies
-the specifications of the procedures of this report using these
-definitions.
+that will be needed to clarify the specifications of procedures that
+accept lists.
+Section~\ref{proceduresmutablelistargumentssection} uses those
+definitions to clarify the specifications of procedures that
+are described by this report.
 
 \section{Procedures}
 
@@ -60,6 +61,14 @@ with condition type {\cf\&contract} to be raised.
 
 Through the {\cf set-car!} and {\cf set-cdr!} procedures, lists are
 mutable in Scheme, so a pair that is the head of a list at one moment
+<<<<<<< .mine
+may not always be the head of a list.  Any procedures that are defined
+in this report and are specified as requiring a list argument
+must check whether that argument appears to be a list.
+This checking is complicated by
+the fact that many procedures that accept lists, such as {\cf map} or
+{\cf filter}, call arbitrary procedures that are passed as arguments.
+=======
 may not always be the head of a list:
 %
 \begin{scheme}
@@ -81,29 +90,28 @@ report specified as accepting a list argument must check if that
 argument indeed appears to be a list.  This checking is complicated by
 the fact that many procedures accepting lists such as {\cf map} or
 {\cf filter} call arbitrary procedures that are passed as arguments.
+>>>>>>> .r678
 These argument procedures may mutate the list while it is being
 traversed.  Moreover, in the presence of concurrent evaluation,
 whether a pair is the head of a list is not computable in general.
 
 Consequently, procedures like {\cf length} are only required to check
-that a list argument is a \textit{plausible list\index{plausible
-    list}}.  Informally, a plausible list is an object that appears as
+that a list argument is a
+\textit{plausible list\index{plausible list}}.
+Informally, a plausible list is an object that appears as
 a list during a sequential traversal, where that traversal must also
-detect a cycle.  In particular, a plausible immutable list is always a list.
+detect a cycle.
+In particular, an immutable plausible list is always a list.
 A more formal definition follows:
 
 Plausible lists are defined with respect to the time interval between
 the time an argument is passed to the specified procedure and the
 first return of a value to that procedure's continuation.
 
-The times are in any global time that satisfies the axioms proposed in
-chapter 2 of MIT AI TR-633~\cite{AITR633}.
-
-\begin{note}
-In most implementations,
-the definitions above are believed to be invariant under
-transformations of global time that are allowed by those axioms.
-\end{note}
+    Note:  In most implementations, the
+    definitions that follow are believed to be
+    invariant under reasonable transformations
+    of global time \cite{AITR633}.
 
 A \textit{plausible list up to $n$ between times $t_0$ and $t_n$} is a
 Scheme value $x$ such that
@@ -117,9 +125,16 @@ Scheme value $x$ such that
   times $t_1$ and $t_n$.
 \end{enumerate}
 
-A \textit{plausible list up to and including $n$} is a plausible list
-up to $n$ where case 2 does not apply either directly or through
-recursion.
+A \textit{plausible list up to and including $n$} is a
+Scheme value $x$ such that
+%
+\begin{enumerate}
+\item $x$ is a pair, and $n$ is $0$; or
+\item $x$ is a pair $p$, $n > 0$, and there exists some time
+  $t_1$ in $(t_0,t_n]$ such that taking the cdr of $p$ at
+  time $t_1$ yields a plausible list up to $n-1$ between
+  times $t_1$ and $t_n$.
+\end{enumerate}
 
 A \textit{plausible list of length $n$ between times $t_0$ and $t_n$}
 is a Scheme value $x$ such that
@@ -136,17 +151,23 @@ A \textit{plausible prefix of length $n$ between times $t_0$ and
   $t_n$} is a sequence of Scheme values $x_0,\ldots,x_n$ and strictly
 increasing times $t_1,\ldots,t_n$ such that $x_0$ through $x_{n-1}$
 are pairs, $x_n$ is either the empty list or a pair, and taking the
-cdr of a pair $x_{i-1}$ at time $t_i$ yields $x_i$.
+cdr of $x_{i-1}$ at time $t_i$ yields $x_i$.
 
 \textit{A plausible alist up to $n$ between times $t_0$ and $t_n$} is
-a plausible list up to $n$ between $t_0$ and $t_n$ such that, for all
-possible choices of the times $t_1$ and pairs $p$ mentioned in part
-(3) above, there exists a time $t_2$ such that $t_1 < t_2 < t_n$ and
-the car of $p$ at time $t_2$ is a pair.
+a Scheme value $x$ such that
+\begin{enumerate}
+\item $x$ is a pair, and $n$ is $0$; or
+\item $x$ is the empty list, and $n$ is $0$; or
+\item $x$ is a pair $p$, $n > 0$, and there exist times
+  $t_1$ and $t_1^\prime$ in $(t_0,t_n]$ such that
+  the car of $x$ at time $t_1^\prime$ is a pair and
+  the cdr of $x$ at time $t_1$ is a plausible alist up to $n-1$
+  between times $t_1$ and $t_n$.
+\end{enumerate}
 
 \textit{A plausible alist of length $n$} is defined similarly, as is
 \textit{a plausible alist prefix of length $n$}.
-
+a
 \textit{A plausible list (alist) between times $t_0$ and $t_n$} is a
 plausible list (alist) of some length $n$ between those times.
 
@@ -202,6 +223,7 @@ that all \varj{list} are plausible lists of length $n$.}
 
 \begin{entry}{%
 \irproto{apply}{ proc \vari{arg} $\ldots$ args}{procedure}}
+
 \domain{\var{Proc} must be a procedure and \var{args} must be a
   plausible list.}
 \end{entry}
@@ -215,18 +237,24 @@ library described in chapter~\ref{listutilities}:
 \irproto{forall}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}
 \irproto{exists}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}}
 
-\domain{For the \var{l}s, there must exist a natural number $n$
-  such that all \var{l}s are plausible lists of length $n$, they
-  must be values of according the conditions specified below.
-  \var{Proc} must be a procedure taking as many arguments as there are
-  \var{l}s.}
-
-If the \var{l}s are not as specified, then a natural number $n$ must
-exist where each \varj{l} is the first Scheme value of a plausible
-prefix of length $n$ such that the car of the last value $x_n$ of that
-prefix satisfies the given condition (i.e.\ the procedure returns a
-false value with {\cf forall} or a true value with {\cf exists}) at
-some time after $t_n$ and before the procedure returns.
+\domain{\var{Proc} must be a procedure taking as many arguments
+as there are \var{l}s.
+    Either there exists a natural number $n$ such
+    that every $l_i$ is a plausible list of length $n$
+    between entry and some subsequent time before exit,
+    or there exists a natural number $n$,
+    Scheme objects $x_{i,j}$, and times $t_{i,j}$
+    such that for every $l_i$:
+    $l_i, x_{i,1}, \dots, x_{i,n}$ and $t_{i,1}, \ldots, t_{i,n}$
+    is a plausible prefix up to and including $n$, where
+    $t_{i,1}$ is after entry and $t_{i,n}$ is before exit
+    and there exist $t_i^\prime$ before exit such that
+    $t_i^\prime > t_{i,n}$ (where $t_{i,0}$ is defined to be $t_0$),
+    the car of $x_{i,n}$ at $t_i^\prime$ is $y_i$,
+    and a call to \var{proc} on the $y_i$ at some time
+    after the maximum of the $t_i^\prime$ but before exit
+    yields a false value (for {\cf forall}) or a true
+    value (for {\cf exists}).}
 \end{entry}
 
 \begin{entry}{%

@@ -105,17 +105,22 @@ indicates that {\cf\&who} is a condition type.
 
 List arguments are immutable in programs that do not make use of the
 \library{r6rs mutable-pairs} library.  In such programs, a procedure accepting a list as an
-argument can trivially check that the argument is indeed a list.
+argument can check whether the argument is a list by traversing it.
 
 In programs that mutate pairs through use of the \library{r6rs
   mutable-pairs} library, a pair
 that is the head of a list at one moment may not always be the head of
-a list.  This complicates the description of how such procedures must
-verify that their arguments are valid.  For that reason, the
-specifications of procedures accepting lists will mostly assume that
-lists are not mutated.  Section~\ref{mutablelistargumentsection}
-extends the notion of lists and defines more precise restrictions on
-the arguments to these procedures.
+a list.  Thus a traversal of the structure cannot by itself guarantee
+that the structure is a list; one must also know that no concurrent or
+interleaved computation can mutate the pairs of the structure.
+This greatly complicates the description of how certain procedures
+must verify that their arguments are valid.
+
+For that reason, the specifications of procedures that accept lists
+will generally assume that those lists are not mutated.
+Section~\ref{mutablelistargumentsection} relaxes that assumption
+and states more precise restrictions on the arguments to these
+procedures.
 
 \section{Evaluation examples}
 
@@ -305,7 +310,7 @@ For example, {\cf list->vector} takes a list and returns a vector whose
 elements are the same as those of the list.
 
 
-	
+        
 \todo{Terms that need defining: thunk, command (what else?).}
 
 \section{Programs and libraries}
