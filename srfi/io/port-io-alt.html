@@ -1,0 +1,1385 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>An Alternative to SRFI 81: Port I/O</title>
+</head>
+<body>
+
+<H1>Title</H1>
+
+Port I/O (Alternative Design)
+
+<H1>Authors</H1>
+
+Michael Sperber and Will Clinger
+
+<h1>Abstract</h1>
+<p>
+This document defines an I/O layer similar in 
+nature to the ports subsystem in R5RS, and provides 
+conventional, imperative buffered input and output.
+</p>
+
+<p>
+The layer architecture is related to the upper three layers of 
+the I/O subsystem in <a href="http://www.standardml.org/Basis/">
+The Standard ML Basis Library</a>.
+</p>
+
+<p>
+In particular, this proposal has the following properties:
+</p>
+<ul>
+<li>buffered reading and writing</li>
+<li>binary and textual I/O, mixed if needed</li>
+<li>the ability to create arbitrary I/O ports from readers and writers</li>
+</ul>
+
+<p>
+In some ways, this proposal can be seen as building on the Primitive 
+I/O layer specified in
+<a href="http://srfi.schemers.org/srfi-79/">SRFI 79 (Primitive I/O)</a>.
+</p>
+
+<h1>Rationale</h1>
+<p>
+This document proposes a
+replacement for the R5RS I/O subsystem.
+</p>
+
+<p>
+The design of this document is driven by the need to resolve
+the outstanding issues quickly.
+It could, however, be integrated into a three-layer I/O subsystem 
+where ports can be built on top of streams, as specified in
+<a href="http://srfi.schemers.org/srfi-80/">SRFI 80 (Stream I/O)</a>.
+Ports can be implemented independently, however.
+</p>
+
+<h1>Specification</h1>
+
+<h2>Prerequisites</h2>
+
+<p>
+This SRFI refers to a number of additions and changes of the 
+upcoming R6RS.
+</p>
+<ul>
+<li><a href="http://srfi.schemers.org/srfi-34/">SRFI 34 (Exception Handling for Programs)</a></li>
+<li><a href="http://srfi.schemers.org/srfi-35/">SRFI 35 (Conditions)</a></li>
+</ul>
+
+<p>
+The specification frequently mentions <i>bytes</i> objects.  
+These refer to the bytes objects that will be part of the 
+upcoming R6RS. These are equivalent in functionality to the 
+blobs of <a href="http://srfi.schemers.org/srfi-74/">SRFI 74
+(Octet-Addressed Binary Blocks)</a> but differ in terminology 
+and some aspects of the interface.
+</p>
+
+<p>
+This SRFI uses the term "the unspecified value" to refer to 
+the value returned by the <code>unspecified</code> procedure, 
+which is the same as the value returned by <code>(if #f #f)</code>.
+</p>
+
+<p>
+This document also assumes the presence of a unique end-of-file object.
+</p>
+
+<p>
+Within this document, an <i>octet</i> is an exact integer
+within the closed interval [0,255].
+</p>
+
+<p>
+This document assumes that the <code>char</code> datatype in 
+Scheme corresponds to Unicode scalar values, and that strings
+are analogous to vectors of scalar values.
+(Note that this is consistent with
+<a href="http://srfi.schemers.org/srfi-14/">SRFI 14
+(Character-set library)</a> and
+<a href="http://srfi.schemers.org/srfi-75/">SRFI 75
+(R6RS Unicode data)</a>.)
+</p>
+
+<h2>Filenames</h2>
+
+<p>
+Filenames in this SRFI are the same as in
+<a href="http://srfi.schemers.org/srfi-79/">SRFI 79
+(Primitive I/O)</a>.
+</p>
+
+<h2>File options</h2>
+
+<p>
+File options are a subset of a certain set of symbols, as in
+<a href="http://srfi.schemers.org/srfi-79">SRFI 79
+(Primitive I/O)</a>.
+</p>
+
+<h2>Buffer modes</h2>
+<p>
+Each output port has an associated <i>buffer mode</i> that 
+defines when an output operation will flush the buffer 
+associated with the output port.  The possible buffer modes 
+are the symbols <code>none</code> for no buffering,
+<code>line</code> for flushing upon newlines, and
+<code>block</code> for block-based buffering.
+</p>
+<dl>
+<dt>
+<code>(buffer-mode </code><var>name</var><code>)</code> (syntax)
+</dt>
+<dd>
+<p><var>Name</var> must be one of the symbols
+<code>none</code>, <code>line</code>, and <code>block</code>.
+This returns the corresponding symbol denoting the associated
+buffer mode.
+</p>
+
+<p>
+If <var>name</var> is not one of the valid symbols, an 
+exception must be raised with condition type
+<code>&amp;contract</code> at macro-expansion time.
+</p>
+</dd>
+<dt>
+<code>(buffer-mode? </code><var>obj</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns <code>#t</code> if the argument is a valid
+buffer-mode symbol, <code>#f</code> otherwise.
+</p>
+</dd>
+</dl>
+
+<h2>Text Transcoders</h2>
+
+<p>
+Several different Unicode encoding schemes describe
+standard ways to encode characters and strings as byte
+sequences and to decode those sequences.  With this
+document, a <i>codec</i> is a Scheme object that
+somehow represents a Unicode or similar encoding
+scheme.
+</p>
+
+<p>
+The text transcoders of this document generalize codecs
+to deal with common end-of-line conventions.  Other
+extensions are possible and are permitted by this
+document.
+</p>
+
+<p>
+A <i>transcoder</i> is an opaque object that somehow
+represents some specific bidirectional (but not
+necessarily lossless) translation between byte
+sequences and Unicode characters and strings.
+The transcoder specifies how procedures that perform
+textual input are to interpret input bytes as characters
+or strings.
+The transcoder also specifies how procedures that
+perform textual output are to translate characters
+into bytes.
+</p>
+
+<p>
+The procedures that perform textual input recognize
+the end-of-line convention specified by their optional
+transcoder argument and translate bytes or sequences
+of bytes that match that convention to the linefeed
+character, U+000A.
+The procedures that perform textual output translate
+the linefeed character into a byte or sequence of
+bytes as determined by the end-of-line convention
+specified by their optional transcoder argument.
+If the transcoder argument to a textual input/output
+procedure is omitted, the transcoder defaults to UTF-8
+with a platform-specific default for the end-of-line
+convention.
+(<strong>FIXME:</strong> Using linefeed is a sure way
+to paint ourselves into a corner.  We ought to use
+the Unicode line separator, U+2028, but that might
+create a problem for systems that are using some
+eight-bit character set.)
+</p>
+
+<p>
+(<strong>FIXME:</strong> Have we decided what to do about
+this yet?)
+With most transcoders, certain sequences of bytes are illegal.
+If an illegal sequence of bytes is encountered during textual
+input, or an attempt is made to output a character or string
+that cannot be translated by the specified or default
+transcoder, then one of the following will happen, but
+I don't know which:
+<ul>
+<li>the textual input/output procedure will raise
+    some specific continuable exception
+<li>the textual input/output procedure will raise
+    a possibly non-specific and/or non-continuable
+    exception
+<li>for input operations, one or more bytes are skipped,
+    and the skipped bytes are silently transcoded as the
+    Unicode replacement character, U+FFFD.
+<li>for input operations, one or more bytes are skipped,
+    and the skipped bytes are silently transcoded as some
+    random character such as a question mark, U+003F.
+<li>for output operations, a character is silently transcoded
+    though it were the Unicode replacement character, U+FFFD.
+<li>for output operations, a character is silently transcoded
+    as though it were some random character such as a question
+    mark, U+003F.
+</ul>
+</p>
+
+<dl>
+<dt>
+<code>(transcoder </code><code>(codec <var>codec</var>)</code>
+    <code>(eol-style <var>eol-style</var>)</code><code>)</code>
+    (syntax)
+</dt>
+<dd>
+<p>
+This constructs a transcoder object from a specified codec and 
+a specified end-of-line style.  The <code>codec</code> and 
+the <code>eol-style</code> clauses may appear in either order,
+and are both optional.  If 
+present, <var>codec</var> and <var>eol-style</var>, must be 
+expressions that evaluate to a codec and an eol-style symbol
+(see below), respectively.  If not present, the codec defaults 
+to UTF-8, and the eol-style
+symbol defaults to a platform-specific convention.
+</p>
+
+<p>
+Any operands to a <code>transcoder</code> form that do not
+match the above syntax may be platform-specific extensions.
+The implementation is free to ignore them, but must not raise
+a syntax exception.
+</p>
+</dd>
+<dt>
+<code>(update-transcoder </code><var>old</var>
+    <code>(codec <var>codec</var>)</code>
+    <code>(eol-style <var>eol-style</var>)</code><code>)
+    </code> (syntax)
+</dt>
+<dd>
+<p>
+This form returns a new transcoder object constructed from an 
+old one, with the <code>codec</code> and <code>eol-style</code>
+fields replaced by the specified values.  The <var>old</var> 
+transcoder is unaffected by the operation.
+Once again, the <code>codec</code> and the <code>eol-style</code> 
+clauses may appear in either order, are both optional.
+Also, unrecognized operands are ignored, and do not raise an
+exception.
+</p>
+</dd>
+
+<dt>
+<code>(eol-style </code><var>name</var><code>)</code> (syntax)</dt>
+<dd>
+<p>
+<var>Name</var> must be one of the symbols <code>lf</code>,
+<code>lf</code>, <code>crlf</code>, and <code>ls</code>.
+</p>
+
+<p>
+This returns the symbol that denotes the corresponding
+end-of-line style - <code>lf</code> stands for using U+000A,
+<code>crlf</code> stands for using U+000D U+000A,
+<code>cr</code> stands for using U+000D, and
+<code>ls</code> stands for using the Unicode line separator,
+U+2028, to signify the end of a line.
+</p>
+</dd>
+<dt>
+<code>(native-eol-style)</code>
+</dt>
+<dd>
+<p>
+This returns the default end-of-line style of the underlying 
+platform, e.g. <code>lf</code> on Unix and <code>crlf</code> 
+on Windows.
+</p>
+</dd>
+
+<dt>
+<code>(utf-8-codec)</code>
+</dt>
+<dt>
+<code>(latin-1-codec)</code>
+</dt>
+<dt>
+<code>(utf-16le-codec)</code>
+</dt>
+<dt>
+<code>(utf-16be-codec)</code>
+</dt>
+<dt>
+<code>(utf-32le-codec)</code>
+</dt>
+<dt>
+<code>(utf-32be-codec)</code>
+</dt>
+<dd>
+<p>
+These are predefined codecs for the UTF-8, ISO8859-1,
+UTF-16LE, UTF-16BE, UTF32-LE, and UTF-32BE encoding
+schemes.
+</p>
+</dd>
+</dl>
+
+<h2>Input and Output Ports</h2>
+
+<p>
+This document described buffered and unbuffered I/O based on
+<i>ports</i>.  Ports are imperative;
+a get operation destructively removes data from the port, and
+a put operation destructively adds data to the port, just as
+in the R5RS I/O system.
+</p>
+
+<p>
+The Port I/O layer introduces one condition type of its own.
+</p>
+<pre>(define-condition-type &amp;i/o-port &amp;i/o
+  i/o-port-error?
+  (port i/o-error-port))
+</pre>
+<dl>
+<dd>
+<p>
+This condition type allows specifying the particular port
+associated with an I/O error.  The purpose of the
+<code>port</code> field is purely informational.
+Conditions raised by Port I/O procedures <em>may</em>
+include an <code>&amp;i/o-port-error</code> condition,
+but are not required to do so.
+</p>
+</dd>
+
+<dt>
+<code>(port? </code><var>obj</var><code>)</code>
+</dt>
+<dd>
+<p>
+Returns <code>#t</code> if the argument is a port,
+and returns <code>#f</code> otherwise.
+</p>
+</dd>
+
+<dt>
+<a name="port-has-position?"><code>(port-has-position?
+    </code><var>port</var><code>)</code></a>
+</dt>
+<dd>
+<p>
+This returns <code>#t</code> if the <var>port</var> supports 
+the <code>port-position</code> operation (see below), 
+and <code>#f</code> otherwise.
+(<strong>FIXME:</strong> Does this document describe any way
+to create a port that does not support that operation?)
+</p>
+</dd>
+<dt>
+<code>(port-position </code><var>port</var><code>)</code>
+</dt>
+<dd>
+<p>
+Returns the exact non-negative integer index of the position
+at which the next byte would be read from or written to
+the port.
+</p>
+
+<p>
+This procedure raises an exception 
+with condition type <code>&amp;i/o-operation-not-available</code>
+if the port does not support the operation.
+</p>
+</dd>
+
+<dt>
+<a name="port-has-set-port-position!?"><code>(port-has-set-port-position!?
+    </code><var>port</var><code>)</code></a>
+</dt>
+<dd>
+<p>
+Returns <code>#t</code> if the <var>port</var> supports 
+the <code>set-port-position!</code> operation (see 
+below), and <code>#f</code> otherwise.
+(<strong>FIXME:</strong> Does this document describe any way
+to create a port that does not support that operation?)
+</p>
+</dd>
+<dt>
+
+<code>(set-port-position! </code><var>port</var>
+    <var>pos</var><code>)</code>
+</dt>
+<dd>
+<p>
+<var>pos</var> must be a non-negative exact integer.
+Sets the current byte position of the <var>port</var> to
+<var>pos</var>.  This procedure raises an exception with 
+condition type <code>&amp;i/o-operation-not-available</code> 
+if the port does not support the operation.
+</p>
+</dd>
+
+<dt>
+<code>(close-port </code><var>port</var><code>)</code>
+</dt>
+<dd>
+<p>
+Closes the <var>port</var>, rendering the port 
+incapable of delivering or accepting data.
+This has no effect if the port has already been closed.
+A closed port is still a port.
+The unspecified value is returned.
+</p>
+</dd>
+
+<dt>
+<code>(call-with-port
+    </code><var>port</var> <var>proc</var><code>)</code>
+</dt>
+<dd>
+<p>
+Calls <var>proc</var> with <var>port</var> as an argument.
+If <var>proc</var> returns, then the port is closed 
+automatically and the values returned by <var>proc</var> are 
+returned.  If <var>proc</var> does not return, then the port 
+will not be closed automatically, unless it is possible to 
+prove that the port will never again be used for a lookahead,
+get, or put operation.
+</p>
+</dd>
+
+</dl>
+
+<h3>Input ports</h3>
+
+<p>
+An input port allows reading a finite or infinite sequence
+of bytes.  A finite sequence of bytes is terminated by the
+end-of-file object; with some operating systems, spurious
+end-of-file objects may also be seen before an end to the
+sequence is reached.
+With the operations described in this document,
+a finite sequence of input bytes is indistinguishable from
+a finite sequence of bytes followed by an infinite sequence
+of end-of-file objects, so all input ports may be regarded
+as infinite sequences of bytes mixed with end-of-file objects.
+</p>
+
+<dl>
+<dt>
+<code>(input-port? </code><var>obj</var><code>)</code>
+</dt>
+<dd>
+<p>
+Returns <code>#t</code> if the argument is an input 
+port (or combined input and output port),
+and returns <code>#f</code> otherwise.
+</p>
+</dd>
+
+<dt>
+<code>(port-eof? </code><var>input-port</var><code>)</code>
+</dt>
+<dd>
+<p>
+Returns <code>#t</code> if the <code>lookahead-u8</code>
+procedure would return the end-of-file object, and
+returns <code>#f</code> otherwise.
+</p>
+</dd>
+
+<dt>
+<code>(close-input-port </code><var>input-port</var><code>)</code>
+</dt>
+<dd>
+<p>
+This closes <var>input-port</var>, rendering the port 
+incapable of accepting data.  This has no effect if the port 
+has already been closed.  The unspecified value is returned.
+</p>
+</dd>
+
+<dt>
+<code>(open-file-input-port </code><var>filename</var><code>)</code>
+</dt>
+<dt>
+<code>(open-file-input-port
+    </code><var>filename</var> <var>file-options</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns an input port for the named file.
+The <var>file-options</var> object defaults to
+<code>(file-options)</code> if not present.  It may determine 
+various aspects of the returned port; see the
+<a href="#file-options">section on file options</a>.
+</p>
+
+<p>
+The returned input port supports the
+<code>port-position</code> and
+<code>set-port-position!</code> operations.
+</p>
+</dd>
+<dt>
+<code>(open-bytes-input-port </code><var>bytes</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns an input port whose bytes are drawn from the
+bytes object <var>bytes</var>.
+(<strong>FIXME:</strong> Does this operation copy the contents
+of the bytes object, or do subsequent side effects to the bytes
+object have unspecified and possibly bizarre interactions with
+the i/o operations?)
+</p>
+</dd>
+<dt>
+<code>(open-string-input-port </code><var>string</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns an input port whose bytes are drawn from the UTF-8
+encoding of <var>string</var>.
+</p>
+</dd>
+
+<dt>
+<code>(standard-input-port)</code>
+</dt>
+<dd>
+<p>
+Returns an input port connected to standard input, possibly a 
+fresh one on each call.
+</p>
+</dd>
+</dl>
+
+<h3>Binary input</h3>
+
+<p>
+The procedures in this section do not accept a transcoder
+as an optional argument.  Some translation of the input
+may occur even with these procedures, e.g. decompression
+of a compressed file, but that level of translation is
+beyond the scope of this document.
+</p>
+
+<dl>
+<dt>
+<code>(get-u8 </code><var>input-port</var><code>)</code>
+</dt>
+<dd>
+<p>
+This reads from <var>input-port</var>, blocking as necessary, 
+until data is available from <var>input-port</var> or an
+apparent end of the input is reached.  If a byte becomes
+available, this returns that byte as an octet, and 
+updates <var>input-port</var> to point just past that byte.
+If no input byte is seen before an apparent end of the input
+is reached, then the end-of-file object is returned.
+</p>
+</dd>
+
+<dt>
+<code>(lookahead-u8 </code><var>input-port</var><code>)</code>
+</dt>
+<dd>
+<p>
+This is the same as <code>get-u8</code>, except it does
+not consume the byte from the port.
+</p>
+</dd>
+
+<dt>
+<code>(get-bytes-n </code><var>input-port</var> <var>n</var><code>)</code>
+</dt>
+<dd>
+<p>
+<var>n</var> must be an exact, non-negative integer, 
+specifying the number of bytes to be read.
+</p>
+
+<p>
+This reads from <var>input-port</var>, blocking as necessary, 
+until <var>n</var> bytes are available from <var>input-port</var>
+or an apparent end of the input is reached.
+If <var>n</var> or more bytes are available before an
+apparent end of the input, it returns a 
+bytes object of size <var>n</var>.
+If fewer bytes are available before an apparent end of the
+input, it returns a bytes object containing those bytes.
+In either case, the input port is updated to point just past
+the bytes read.
+If an apparent end of the input is reached before any bytes
+are available, this returns the end-of-file object.
+</p>
+</dd>
+
+<dt>
+<code>(get-bytes-n! </code><var>input-port</var>
+    <var>bytes</var> <var>start</var> <var>count</var><code>)</code>
+</dt>
+<dd>
+<p>
+<var>count</var> must be an exact, non-negative integer, 
+specifying the number of bytes to be read. <var>bytes</var> 
+must be a bytes object with at least
+<var>start</var> + <var>count</var> elements.
+</p>
+
+<p>
+This reads from <var>input-port</var>, blocking as necessary,
+until <var>count</var> are available from <var>input-port</var>
+or an apparent end of the input is reached.
+If <var>count</var> or more bytes are available before an
+apparent end of input, they are written into <var>bytes</var> 
+starting at index <var>start</var>, and the procedure returns
+<var>count</var>.  If fewer bytes are available before the 
+next end of file, it writes the available bytes into
+<var>bytes</var> starting at index <var>start</var>, and 
+returns the number of bytes actually read. In either case, the 
+input port is updated to point just past the data read.
+If an apparent end of the input is reached before any bytes
+are available, this returns the end-of-file object.
+</p>
+</dd>
+
+<dt>
+<code>(get-bytes-some </code><var>input-port</var><code>)</code>
+</dt>
+<dd>
+<p>
+This reads from <var>input-port</var>, blocking as necessary, 
+until data is available from <var>input-port</var> or an
+apparent end of the input is reached.  If data becomes
+available, this returns a freshly allocated bytes object of
+non-zero size containing that data, and updates
+<var>input-port</var> to point just past that data.
+If no input bytes are seen before an apparent end of the
+input is reached, then the end-of-file object is returned.
+</p>
+</dd>
+
+<dt>
+<code>(get-bytes-all </code><var>input-port</var><code>)</code>
+</dt>
+<dd>
+<p>
+This attempts to read all data until the next apparent end
+of the input, blocking as necessary.
+If one or more bytes are read, this returns a bytes object
+containing all bytes up to the next apparent end of the input.
+Otherwise <code>get-bytes-all</code> returns the end-of-file
+object.
+Note that this procedure may block indefinitely, waiting to
+see an apparent end of the input, even though some bytes are
+available.
+</p>
+</dd>
+</dl>
+
+<h3>Textual input</h3>
+
+<p>
+All of the procedures in this section accept a transcoder
+as an optional argument.  If no transcoder is supplied,
+the input bytes are interpreted as UTF-8 with a
+platform-specific end-of-line convention.
+</p>
+
+<dl>
+<dt>
+<code>(get-char </code><var>input-port</var><code>)</code>
+</dt>
+<dt>
+<code>(get-char </code><var>input-port</var><code> </code>
+    <var>transcoder</var><code>)</code>
+</dt>
+<dd>
+<p>
+This reads from <var>input-port</var>, blocking as necessary, 
+until the complete encoding for a character is available 
+from <var>input-port</var>, or the bytes that are available
+cannot be the prefix of any valid encoding, or an apparent
+end of the input is reached.
+</p>
+
+<p>
+If a complete character is available before the next end of 
+file, <code>get-char</code> this returns that character,
+and updates the input port to point past the bytes that
+encoded that character.
+If an apparent end of the input is reached before any bytes
+are read, then <code>get-char</code> returns the end-of-file
+object.
+</p>
+</dd>
+
+<dt>
+<code>(lookahead-char </code><var>input-port</var><code>)</code>
+</dt>
+<dt>
+<code>(lookahead-char </code><var>input-port</var>
+    <code> </code><var>transcoder</var><code>)</code>
+</dt>
+<dd>
+<p>
+This is the same as <code>get-char</code>, but does not
+consume any bytes from the port.  (Note that, with some
+of the standard transcoders described in this document,
+up to five bytes of lookahead are required.  Nonstandard
+transcoders may require even more lookahead.)
+</p>
+</dd>
+
+<dt>
+<code>(get-string-n </code><var>input-port</var>
+    <code> </code> <var>n</var><code>)</code>
+</dt>
+<dt>
+<code>(get-string-n </code><var>input-port</var>
+    <code> </code> <var>n</var>
+    <code> </code><var>transcoder</var><code>)</code>
+</dt>
+<dd>
+<p>
+<var>N</var> must be an exact, non-negative integer, 
+specifying the number of characters to be read.
+</p>
+
+<p>
+This reads from <var>input-port</var>, blocking as necessary, 
+until the encodings of <var>n</var> characters (including 
+invalid encodings, if they don't raise an exception) are
+available, or until an apparent end of the input is reached.
+</p>
+
+<p>
+If <var>n</var> or more characters are read before the end
+of input, <code>get-string-n</code>
+returns a string consisting of those <var>n</var>
+characters.  If fewer characters are available before an
+apparent end of the input, but one or more characters can
+be read, it returns a string containing those characters.
+In either case, the input port is updated to point just
+past the data read.  If no bytes can be read before an
+apparent end of the input, then the end-of-file object
+is returned.
+</p>
+</dd>
+<dt>
+<code>(get-string-n! </code><var>input-port</var>
+    <var>string</var> <var>start</var> <var>count</var><code>)</code>
+</dt>
+<dt>
+<code>(get-string-n! </code><var>input-port</var>
+    <var>string</var> <var>start</var> <var>count</var>
+    <code> </code><var>transcoder</var><code>)</code>
+</dt>
+<dd>
+<p>
+This reads from <var>input-port</var> in the same manner as
+<code>get-string-n</code>.
+</p>
+
+<p>
+<var>count</var> must be an exact, non-negative integer, 
+specifying the number of characters to be read.
+If <var>count</var> or more 
+characters are available before an apparent end of the input,
+they are 
+written into <var>string</var> starting at index <var>start</var>,
+and <var>count</var> is returned.
+If fewer characters are available before an apparent end
+of the input, but one or more can be read, then those
+characters are written into <var>string</var> 
+starting at index <var>start</var>, and the number 
+of characters actually read is returned.
+If no bytes can be read before an apparent end of the input,
+then the end-of-file object is returned.
+</p>
+</dd>
+
+<dt>
+<code>(get-string-all </code><var>input-port</var><code>)</code>
+</dt>
+<dt>
+<code>(get-string-all </code><var>input-port</var>
+    <code> </code><var>transcoder</var><code>)</code>
+</dt>
+<dd>
+<p>
+This reads from <var>input-port</var> until an apparent
+end of the input, decoding characters in the same manner as
+<code>get-string-n</code> and <code>get-string-n!</code>.
+</p>
+
+<p>
+If data is available before the apparent end of the input,
+a string containing all the text decoded from that data is
+returned.  If no data precedes the apparent end of the input,
+the end-of-file object file object.
+</p>
+</dd>
+
+<dt>
+<code>(get-line </code><var>input-port</var><code>)</code>
+</dt>
+<dt>
+<code>(get-line </code><var>input-port</var>
+    <code> </code><var>transcoder</var><code>)</code>
+</dt>
+<dd>
+<p>
+This reads from <var>input-port</var> up to and including
+the next end-of-line encoding or apparent end of the input,
+decoding characters in the same manner as
+<code>get-string-n</code> and <code>get-string-n!</code>.
+</p>
+
+<p>
+If an end-of-line encoding is read, then a string containing
+all of the text up to (but not including) the end-of-line
+encoding is returned, and the port is updated to point just
+past the end-of-line encoding.
+If an apparent end of the input is encountered before any
+end-of-line encoding is read, but some bytes have been
+read and decoded as characters, then a string containing
+those characters is returned.
+If an apparent end of the input is encountered before any
+bytes are read and decoded, then the end-of-file object
+is returned.
+</p>
+</dd>
+
+</dl>
+
+<h3>Output ports</h3>
+
+<p>
+An port is a sink to which bytes are written.
+These bytes may control external devices, or may produce
+files and other objects that may subsequently be opened
+for input.
+</p>
+
+<dl>
+<dt>
+<code>(output-port? </code><var>obj</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns <code>#t</code> if the argument is an output 
+port (or a combined input and output port),
+and returns <code>#f</code> otherwise.
+</p>
+</dd>
+<dt>
+<code>(flush-output-port </code><var>output-port</var><code>)</code>
+</dt>
+<dd>
+<p>
+This flushes any output from the buffer of <var>output-port</var>
+to the underlying data or device.  The unspecified value is returned.
+</p>
+</dd>
+<dt>
+<code>(output-port-buffer-mode </code><var>output-port</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns the symbol that represents the buffer-mode
+of <var>output-port</var>.
+</p>
+</dd>
+
+<dt>
+<code>(close-output-port </code><var>output-port</var><code>)</code>
+</dt>
+<dd>
+<p>
+This closes <var>output-port</var>, rendering the port 
+incapable of writing data.  This has no effect if the port 
+has already been closed.  The unspecified value is returned.
+</p>
+</dd>
+
+<dt>
+<code>(open-file-output-port </code><var>filename</var><code>)</code>
+</dt>
+<dt>
+<code>(open-file-output-port
+    </code><var>filename</var> <var>file-options</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns an output port for the named file and the 
+specified options (which default to <code>file-options</code>.)
+The <var>buffer-mode</var> argument is optional;
+it defaults to <code>block</code>.
+</p>
+
+<p>
+The returned output port supports the
+<code>port-position</code> and
+<code>set-port-position!</code> operations.
+</p>
+</dd>
+<dt>
+<code>(call-with-bytes-output-port </code><var>proc</var><code>)</code>
+</dt>
+<dd>
+<p>
+<var>Proc</var> is a procedure accepting one argument.  This 
+creates an unbuffered output port connected to a bytes writer, 
+and calls <var>proc</var> with that output port as an 
+argument.  The call to <code>call-with-bytes-output-port</code>
+returns the bytes object associated with the port when
+<var>proc</var> returns.
+(<strong>FIXME:</strong> What does it mean for this output port
+to be unbuffered?)
+</p>
+</dd>
+
+<dt>
+<code>(call-with-string-output-port </code><var>proc</var><code>)</code>
+</dt>
+<dd>
+<p>
+<var>Proc</var> is a procedure accepting one argument.  This 
+creates an unbuffered output connected to a bytes writer, and 
+calls <var>proc</var> with that port as an argument.  When
+<var>proc</var> returns, the call to
+<code>call-with-string-output-port</code> returns the string
+obtained by interpreting the bytes written to the port as the
+UTF-8 encoding of a string.
+(<strong>FIXME:</strong> What does it mean for this output port
+to be unbuffered?)
+</p>
+</dd>
+
+<dt>
+<code>(standard-output-port)</code>
+</dt>
+<dt>
+<code>(standard-error-port)</code>
+</dt>
+<dd>
+<p>
+Returns a port connected to the standard output or standard 
+error, respectively.
+</p>
+</dd>
+</dl>
+
+<h3>Binary output</h3>
+
+<p>
+The procedures in this section do not accept a transcoder
+as an optional argument.  Some translation of the output
+may occur even with these procedures, e.g. compression
+or packetization, but that level of translation is
+beyond the scope of this document.
+</p>
+
+<dl>
+<dt>
+<code>(put-bytes
+    </code><var>output-port</var> <var>bytes</var><code>)</code>
+</dt>
+<dt>
+<code>(put-bytes </code><var>output-port</var>
+    <var>bytes</var> <var>start</var><code>)</code>
+</dt>
+<dt>
+<code>(put-bytes </code><var>output-port</var>
+    <var>bytes</var> <var>start</var> <var>count</var><code>)</code>
+</dt>
+<dd>
+<p>
+<var>start</var> and <var>count</var> must be non-negative 
+exact integers that default to 0 and
+<code>(bytes-length </code><var>bytes</var><code>)</code>
+- <var>start</var>, respectively.  <var>bytes</var> must have 
+a size of at least <var>start</var> + <var>count</var>.  This 
+writes the <var>count</var> bytes of the bytes object
+<var>bytes</var>, starting at index <var>start</var>, to the 
+output port.  The unspecified value is returned.
+</p>
+</dd>
+<dt>
+<code>(put-u8 </code><var>output-port</var> <var>octet</var><code>)</code>
+</dt>
+<dd>
+<p>
+This writes <var>octet</var> to the output port.  The 
+unspecified value is returned.
+</p>
+</dd>
+</dl>
+
+<h3>Textual output</h3>
+
+<p>
+All of the procedures in this section accept a transcoder
+as an optional argument.  If no transcoder is supplied,
+the character(s) output will be translated to UTF-8 with
+a platform-specific end-of-line convention.
+</p>
+
+<dl>
+<dt>
+<code>(put-char </code><var>output-port</var> <var>char</var><code>)</code>
+</dt>
+<dt>
+<code>(put-char </code><var>output-port</var> <var>char</var>
+    <code> </code><var>transcoder</var><code>)</code>
+</dt>
+<dd>
+<p>
+Writes an encoding of the character <var>char</var>
+to the port.  The unspecified value is returned.
+</p>
+</dd>
+
+<dt>
+<code>(put-string </code><var>output-port</var> <var>string</var><code>)</code>
+</dt>
+<dt>
+<code>(put-string </code><var>output-port</var> <var>string</var>
+    <code> </code><var>transcoder</var><code>)</code>
+</dt>
+<dd>
+<p>
+Writes an encoding of the <var>string</var>
+to the port.  The unspecified value is returned.
+</p>
+</dd>
+
+<dt>
+<code>(put-string-n
+    </code><var>output-port</var> <var>string</var><code>)</code>
+</dt>
+<dt>
+<code>(put-string-n </code><var>output-port</var>
+    <var>string</var> <var>start</var><code>)</code>
+</dt>
+<dt>
+<code>(put-string-n </code><var>output-port</var>
+    <var>string</var> <var>start</var> <var>count</var><code>)</code>
+</dt>
+<dt>
+<code>(put-string-n </code><var>output-port</var>
+    <var>string</var> <var>start</var> <var>count</var>
+    <code> </code><var>transcoder</var><code>)</code>
+</dt>
+<dd>
+<p>
+<var>start</var> and <var>count</var> must be non-negative 
+exact integers.  <var>start</var> defaults to 0.
+<var>count</var> defaults to
+<code>(- (string-length <var>bytes</var>) <var>start</var>)</code>.
+Writes an encoding of the substring
+<code>(substring <var>string</var>
+    (+ <var>start</var> <var>count</var>))</code>
+to the port.  The unspecified value is returned.
+</p>
+</dd>
+</dl>
+
+<h3>Opening files for reading and writing</h3>
+
+<dl>
+<dt>
+<code>(open-file-input/output-port </code><var>filename</var><code>)</code>
+</dt>
+<dt>
+<code>(open-file-input/output-port
+    </code><var>filename</var> <var>file-options</var><code>)</code>
+</dt>
+<dt>
+<code>(open-file-input/output-port
+    </code><var>filename</var> <var>file-options</var>
+    <var>buffer-mode</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns a single port that is both an input port and
+an output port, for the named file and
+options (which default to <code>(file-options)</code>).
+<var>Buffer-mode</var> optionally specifies the buffer mode of 
+the port; it defaults to <code>block</code>.
+</p>
+
+<p>
+The returned port supports the <code>port-position</code>,
+<code>set-port-position!</code>,
+<code>port-position</code>, and
+<code>set-port-position!</code> operations.
+The same port position is used for both input and output.
+</p>
+</dd>
+</dl>
+
+<h3>Ports from readers and writers</h3>
+
+<dl>
+<dt>
+<code>(open-reader-input-port </code><var>reader</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns an input port connected to the reader
+<var>reader</var>.
+</p>
+</dd>
+
+<dt>
+<code>(open-writer-output-port </code><var>writer</var><code>)</code>
+</dt>
+<dt>
+<code>(open-writer-output-port </code><var>writer</var>
+    <var>buffer-mode</var><code>)</code>
+</dt>
+<dd>
+<p>
+This returns an output port connected to the writer
+<var>writer</var>.
+<var>Buffer-mode</var> optionally specifies the buffer mode
+of the port; it defaults to <code>block</code>.
+</p>
+</dd>
+
+</dl>
+
+<h1>Design rationale</h1>
+
+<h3>Encoding</h3>
+
+<p>
+Many I/O system implementations allow associating an encoding 
+with a port, allowing the direct use of several different 
+encodings with ports.  The problem with this approach is that 
+the encoding/decoding defines a mapping from binary data to 
+text or vice versa.  Because of this asymmetry, such mappings 
+do not compose.  The result is usually complications and 
+restrictions in the I/O API, such as the inability to mix text 
+or binary data.
+(<strong>FIXME:</strong> As we have seen, treating transcoders
+as composable mappings from binary to binary creates its own
+problems.)
+</p>
+
+<p>
+This proposal avoids the problem by allowing the transcoder
+to be specified as optional argument to every operation that
+performs textual I/O, and by specifying a default transcoder
+to be used when none is specified, while also providing
+operations that perform binary I/O.  Since transcoders
+are associated with the operations, not with the ports,
+fine-grained interleaving of binary and textual I/O
+becomes possible and efficient.  The primary disadvantage
+is that of having to specify an extra argument for each
+use of a textual I/O operations.
+</p>
+
+<h3>Naming conventions</h3>
+
+<p>
+The procedures in this proposal follow a consistent naming 
+scheme, and do not conflict with the somewhat inconsistent
+naming conventions used in R5RS.
+</p>
+
+<h3><code>char-ready?</code></h3>
+
+<p>
+This proposal intentionally does not provide
+<code>char-ready?</code>, which is part of R5RS.  The original 
+intention of the procedure seems to have been to interface 
+with something like Unix <code>select(2)</code>.  With
+multi-byte encodings such as UTF-8, this is no longer 
+sufficient: the procedure would really have to look at the 
+actual input data in order to determine whether a complete 
+character is actually present.  This makes realistic 
+implementations of <code>char-ready?</code> inconsistent with 
+the user's expectations.  A procedure <code>byte-ready?</code> 
+would be more consistent.  On the other hand, such a procedure 
+is rarely useful in real-world programs, hard to specify to 
+the point where it would be portably usable, and complicates 
+all layers of the I/O system, as readers would have to provide 
+an additional member procedure to enable its implementation.  
+Moreover, a <code>select(2)</code>-like implementation is not 
+possible on all plattforms and all types of ports.  
+Consequently, <code>char-ready?</code> and
+<code>byte-ready?</code> are not part of this SRFI.
+</p>
+
+<h3>Optional ports and argument order</h3>
+
+<p>
+The argument order of the procedures in this SRFI is different 
+from R5RS: The port is always at the beginning, and it is 
+mandatory.
+For a rationale, see
+<a href="http://srfi.schemers.org/srfi-68/mail-archive/msg00031.html">the message by Taylor Campbell</a> on the subject.
+</p>
+
+<h1>Reference Implementation</h1>
+
+<p>
+No reference implementation is provided, but most of the
+proposal should be straightforward to implement.
+The <code>set-port-position!</code> operation is
+worrisome, especially because its semantics are
+somewhat unclear.
+</p>
+
+<p>
+As usual, efficient implementation is less straightforward.
+The efficiency of this proposal will be addressed by a separate
+note.
+</p>
+
+<h1>Examples</h1>
+
+<p>
+Many examples are adapted from
+<a href="http://www.standardml.org/Basis/">The Standard ML 
+Basis Library</a> edited by Emden R. Gansner and John H. 
+Reppy.  Cambrige University Press, 2004.
+</p>
+
+<p>
+The code makes liberal use of SRFIs
+<a href="http://srfi.schemers.org/srfi-1/"> SRFI 1
+(List Library)</a>,
+<a href="http://srfi.schemers.org/srfi-11/">SRFI 11
+(Syntax for receiving multiple values)</a>,
+<a href="http://srfi.schemers.org/srfi-26/">SRFI 26
+(Notation for Specializing Parameters without Currying)</a>.
+</p>
+
+<p>
+<pre>
+(define three-lines-string
+  (call-with-string-output-port
+   (lambda (port)
+     (put-string port "foo") (put-char port #\linefeed)
+     (put-string port "bar") (put-char port #\linefeed)
+     (put-string port "baz") (put-char port #\linefeed))))
+</pre>
+</p>
+
+<p>
+Read a file directly:
+</p>
+<pre>
+(define (get-contents filename)
+  (call-with-input-port (open-file-input-port filename)
+    get-bytes-all))
+</pre>
+
+<p>
+Read a file byte-by-byte:
+</p>
+<pre>
+(define (get-contents-2 filename)
+  (call-with-input-port (open-file-input-port filename)
+    (lambda (port)
+      (let loop ((accum '()))
+        (let ((thing (get-u8 port)))
+          (if (eof-object? thing)
+              (list-&gt;bytes (reverse accum))
+              (loop (cons thing accum))))))))
+</pre>
+
+<p>
+Read file chunk-by-chunk:
+</p>
+<pre>
+(define (get-contents-3 filename)
+  (call-with-input-port (open-file-input-port filename)
+    (lambda (port)
+      (let loop ((accum '()))
+        (let ((bytes (get-bytes-some port)))
+          (if (not (eof-object? bytes))
+              (loop (cons bytes accum))
+              (concatenate-bytess (reverse accum))))))))
+
+(define (concatenate-bytess list)
+  (let* ((size (fold + 0 (map bytes-length list)))
+         (result (make-bytes size)))
+    (let loop ((index 0)
+               (bytess list))
+      (if (null? bytess)
+          result
+          (let* ((b (car bytess))
+                 (size (bytes-length b)))
+            (bytes-copy! b 0 result index size)
+            (loop (+ index size)
+                  (cdr bytess)))))))
+</pre>
+
+<h1>Acknowledgements</h1>
+
+<p>
+This proposal is based on a draft of SRFI 81, which was
+written by Mike Sperber.  The following acknowledgements
+are his.
+</p>
+
+<p>
+Sebastian Egner provided valuable comments on a draft of this 
+SRFI. The posters to the
+<a href="http://srfi.schemers.org/srfi-68/">SRFI 68
+(Comprehensive I/O)</a> provided many very valuable comments.  
+Donovan Kolbly did thorough pre-draft editing.  Any remaining 
+mistakes are mine.
+</p>
+
+<h1>References</h1>
+
+<ul><li><a href="http://www.standardml.org/Basis/">The Standard ML Basis Library</a> edited by Emden R. Gansner and John H. Reppy.  Cambrige University Press, 2004.</li>
+
+</ul><H1>Copyright</H1>
+Copyright (C) Michael Sperber (2005). All Rights Reserved. 
+<p>
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+<p>
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+<p>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+    <hr>
+    <address>Editor: <a href="mailto:srfi-editors@srfi.schemers.org">Donovan Kolbly</a></address>
+</body></html>
