@@ -134,18 +134,19 @@ are the symbols <code>none</code> for no buffering,
 <code>(buffer-mode </code><var>name</var><code>)</code> (syntax)
 </dt>
 <dd>
-<p><var>Name</var> must be one of the symbols
-<code>none</code>, <code>line</code>, and <code>block</code>.
-This returns the corresponding symbol denoting the associated
-buffer mode.
+<p>
+If <var>name</var> is one of the symbols
+<code>none</code>, <code>line</code>, and <code>block</code>,
+then this form evaluates to <var>name</var>.
 </p>
 
 <p>
-If <var>name</var> is not one of the valid symbols, an 
+Otherwise an
 exception must be raised with condition type
 <code>&amp;contract</code> at macro-expansion time.
 </p>
 </dd>
+
 <dt>
 <code>(buffer-mode? </code><var>obj</var><code>)</code>
 </dt>
@@ -280,6 +281,7 @@ Once again, the <code>codec</code> and the <code>eol-style</code>
 clauses may appear in either order, are both optional.
 Also, unrecognized operands are ignored, and do not raise an
 exception.
+(<strong>FIXME:</strong> Is this syntax all that useful?)
 </p>
 </dd>
 
@@ -287,19 +289,27 @@ exception.
 <code>(eol-style </code><var>name</var><code>)</code> (syntax)</dt>
 <dd>
 <p>
-<var>Name</var> must be one of the symbols <code>lf</code>,
-<code>lf</code>, <code>crlf</code>, and <code>ls</code>.
+If <var>name</var> is one of the symbols <code>lf</code>,
+<code>cr</code>, <code>crlf</code>, or <code>ls</code>,
+then this form evaluates to <var>name</var>.
+(<strong>FIXME:</strong> I hope the absence of language
+about exceptions here was not just an oversight in the
+previous proposal, but was intended to allow systems to
+extend the set of eol-styles as practice evolves.  Note
+that <code>(native-eol-style)</code> is not constrained
+to return one of the four symbols mentioned above.)
 </p>
 
 <p>
-This returns the symbol that denotes the corresponding
-end-of-line style - <code>lf</code> stands for using U+000A,
-<code>crlf</code> stands for using U+000D U+000A,
-<code>cr</code> stands for using U+000D, and
+The standard symbols stand for the common end-of-line conventions.
+<code>lf</code> stands for using U+000A,
+<code>cr</code> stands for using U+000D,
+<code>crlf</code> stands for using U+000D U+000A, and
 <code>ls</code> stands for using the Unicode line separator,
 U+2028, to signify the end of a line.
 </p>
 </dd>
+
 <dt>
 <code>(native-eol-style)</code>
 </dt>
@@ -378,7 +388,7 @@ and returns <code>#f</code> otherwise.
 </dd>
 
 <dt>
-<a name="port-has-position?"><code>(port-has-position?
+<a name="port-has-port-position?"><code>(port-has-port-position?
     </code><var>port</var><code>)</code></a>
 </dt>
 <dd>
@@ -386,8 +396,6 @@ and returns <code>#f</code> otherwise.
 This returns <code>#t</code> if the <var>port</var> supports 
 the <code>port-position</code> operation (see below), 
 and <code>#f</code> otherwise.
-(<strong>FIXME:</strong> Does this document describe any way
-to create a port that does not support that operation?)
 </p>
 </dd>
 <dt>
@@ -416,8 +424,6 @@ if the port does not support the operation.
 Returns <code>#t</code> if the <var>port</var> supports 
 the <code>set-port-position!</code> operation (see 
 below), and <code>#f</code> otherwise.
-(<strong>FIXME:</strong> Does this document describe any way
-to create a port that does not support that operation?)
 </p>
 </dd>
 <dt>
@@ -501,17 +507,6 @@ and returns <code>#f</code> otherwise.
 Returns <code>#t</code> if the <code>lookahead-u8</code>
 procedure would return the end-of-file object, and
 returns <code>#f</code> otherwise.
-</p>
-</dd>
-
-<dt>
-<code>(close-input-port </code><var>input-port</var><code>)</code>
-</dt>
-<dd>
-<p>
-This closes <var>input-port</var>, rendering the port 
-incapable of accepting data.  This has no effect if the port 
-has already been closed.  The unspecified value is returned.
 </p>
 </dd>
 
@@ -911,17 +906,6 @@ of <var>output-port</var>.
 </dd>
 
 <dt>
-<code>(close-output-port </code><var>output-port</var><code>)</code>
-</dt>
-<dd>
-<p>
-This closes <var>output-port</var>, rendering the port 
-incapable of writing data.  This has no effect if the port 
-has already been closed.  The unspecified value is returned.
-</p>
-</dd>
-
-<dt>
 <code>(open-file-output-port </code><var>filename</var><code>)</code>
 </dt>
 <dt>
@@ -1001,6 +985,16 @@ beyond the scope of this document.
 
 <dl>
 <dt>
+<code>(put-u8 </code><var>output-port</var> <var>octet</var><code>)</code>
+</dt>
+<dd>
+<p>
+Writes <var>octet</var> to the output port.  The 
+unspecified value is returned.
+</p>
+</dd>
+
+<dt>
 <code>(put-bytes
     </code><var>output-port</var> <var>bytes</var><code>)</code>
 </dt>
@@ -1019,20 +1013,12 @@ exact integers that default to 0 and
 <code>(bytes-length </code><var>bytes</var><code>)</code>
 - <var>start</var>, respectively.  <var>bytes</var> must have 
 a size of at least <var>start</var> + <var>count</var>.  This 
-writes the <var>count</var> bytes of the bytes object
+procedure writes the <var>count</var> bytes of the bytes object
 <var>bytes</var>, starting at index <var>start</var>, to the 
 output port.  The unspecified value is returned.
 </p>
 </dd>
-<dt>
-<code>(put-u8 </code><var>output-port</var> <var>octet</var><code>)</code>
-</dt>
-<dd>
-<p>
-This writes <var>octet</var> to the output port.  The 
-unspecified value is returned.
-</p>
-</dd>
+
 </dl>
 
 <h3>Textual output</h3>

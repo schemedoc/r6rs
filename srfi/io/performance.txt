@@ -136,8 +136,8 @@ buffered.  That doesn't work very well when
 a port's transcoder can change through side
 effect---you'd have to throw buffered data
 away and do the transcoding again---or when
-mixing what I mean by mixing binary i/o with
-textual i/o.
+mixing what I mean by binary i/o with textual
+i/o.
 
 
 Minor details
@@ -168,5 +168,67 @@ benefits automatically.  Hand-written code
 might do slightly better, but is probably
 not going to be worthwhile in systems that
 have good compilers.
+
+
+Examples
+========
+
+; The following definition assumes that an exception
+; handler for illegal encodings has been established
+; that continues by treating the illegal encoding as
+; the replacement character.
+
+(define (guess-the-transcoder port)
+  (let* ((zwnbsp #\xfeff)
+         (utf-8    (transcoder (codec (utf-8-codec))))
+         (utf-16le (transcoder (codec (utf-16le-codec))))
+         (utf-16be (transcoder (codec (utf-16be-codec))))
+         (utf-32le (transcoder (codec (utf-32le-codec))))
+         (utf-32be (transcoder (codec (utf-32be-codec))))
+         (c8       (lookahead-char port utf-8))
+         (c16le    (lookahead-char port utf-16le))
+         (c16be    (lookahead-char port utf-16be))
+         (c32le    (lookahead-char port utf-32le))
+         (c32be    (lookahead-char port utf-32be)))
+    (cond ((char=? c8 zwnbsp)
+           utf8)
+          ((char=? c16le zwnbsp)
+           utf-16le)
+          ((char=? c16be zwnbsp)
+           utf-16be)
+          ((char=? c32le zwnbsp)
+           utf-32le)
+          ((char=? c32be zwnbsp)
+           utf-32be)
+          (else
+           utf-8))))
+
+; The following procedure is likely to be inefficient
+; because the compiler cannot deduce the transcoder.
+; The compiler will probably generate closed calls to
+; get-char, which will have to interpret the transcoder
+; on each call.  (That interpretation, or dynamic method
+; dispatch if you prefer, would also have been necessary
+; with the proposal that associated transcoders with
+; ports, and changed the transcoder via side effect.)
+
+(define (get-string-all-by-guessing-transcoder port)
+  (let ((transcoder (guess-the-transcoder port))
+        (utf-8 (transcoder (codec utf-8))))
+    (call-with-string-output-port
+     (lambda (out)
+       (do ((c (get-char port transcoder)
+               (get-char port transcoder)))
+           ((eof-object? c))
+         (put-char out c utf-8))))))
+
+; The following procedure should be efficient.
+; (Its analogue would also have been efficient
+; with the proposal that associated transcoders
+; with ports, and changed the transcoder via side
+; effects.)
+
+(define (get-string-all-by-guessing-transcoder port)
+  (get-string-all port (guess-the-transcoder port)))
 
 Will
