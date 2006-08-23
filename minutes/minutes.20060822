@@ -1,0 +1,108 @@
+August 22 2006 8:00am-10:00am EDT
+All present by about 8:18 am EDT
+Kent, Mike, Will, Anton, Matthew
+
+0. finalize agenda (1 minute)
+
+1. action items from 8/17/2006 (5 minutes)
+   - email note about open-read+write concerns (Kent)
+        done
+   - email note about different transcoding mechanism (Mike)
+        done
+   - revise safety paragraphs (Will)
+        not done
+   - discuss naming of condition predicates and accessors via email (All)
+        done previously
+   - note: reserve last week of August for proofreading
+
+2. Report status (5 minutes)
+   - items ready for review
+     <item>                    <editor>   <to be completed by>   <done?>
+     unicode                   Matthew    Aug. 03                done.
+     quasiquote                Kent       Aug. 08                done.
+     letrec*                   Kent       Aug. 08                done.
+     let-values & let*-values  Kent       Aug. 08                done.
+     records                   Kent       Aug. 24
+     enumerations              Will       Jul. 12                done.
+     bytes                     Will       Aug. 03                done.
+     equal?                    Will       Aug. 01                done.
+     list-library              Anton      Aug. 21
+     case-lambda               Anton      Aug. 21
+     when & unless             Anton      Aug. 08                done.
+     core/library split        Anton      Aug. 21
+     arithmetic                Will       Aug. 22
+     set-car!, set-cdr!        Anton      Aug. 21
+     condition-type details    Anton      Aug. 21
+     dynamic-wind              Kent       Aug. 15                done.
+     read-syntax, syn. forms   Matthew    Aug. 20                done.
+     hash tables               Anton      Aug. ??
+     safe/unsafe mode          Kent       Aug. ??
+     primitive i/o             Matthew
+   - items not ready for review
+     exceptions & conditions
+     eval
+     I/O
+     hash tables
+     syntax-case
+     library system
+     scripts
+     r5rs compatibility library
+     operational semantics
+
+3. removing the distinct S-expression requirement for case (5 minutes)
+    no objections
+
+4. name of contract-defect procedure (5 minutes)
+    contract-violated might be a better name
+    contract-violation might be more parallel
+    related to:
+        error
+        violation (could ditch in favor of contract-violation)
+    contract-violation it is (no objections)
+    ditch violation
+
+5. semantics of library-body call/cc (5 minutes)
+    exported bindings are immutable after the initializing assignment
+        definitions of non-exported variables may be executed more
+        than once
+    continuation for the entire library's invocation should be unspecified
+    disallow multiple definitions of a variable within the same library
+
+6. script syntax (5 minutes)
+   - yes/no vote:
+     <script header><optional #!r6rs><import form><interleaved library body>
+     <import form> -> (import <import-spec>*)
+     <interleaved library body> -> library body with interleaved definitions
+        and commands
+    Yes: Kent, Matthew, Anton, Will, Mike
+    No: 
+   - separate <script header> vote between:
+     <script header> -> #!/usr/bin/scheme-script <line terminator>
+     <script header> -> #!/usr/bin/env scheme-script <line terminator>
+    #!/usr/bin/scheme-script
+    #!/usr/bin/env
+        consensus for #!/usr/bin/env
+
+7. library phasing (10 minutes)
+    allow both monophase and multiphase interpretations
+
+order of import and export clauses
+    Mike would like for the export clause to come first
+        no objections
+
+8. I/O (20 minutes)
+    read+write issue
+        Kent's email proposal sounds plausible
+        no objections
+    transcoder issue
+        Will will write up a proposal that moves
+            transcoders to operations, don't specify when opening
+
+core/library split
+    number and size of libraries to be described by R6RS
+    something like Java's wild card syntax?
+    Kent proposed something like
+        (except (r6rs base (all-from syntax-case)))
+    congruence between R6RS document and R6RS libraries
+
+9. adjourned about 10:03am
