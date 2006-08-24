@@ -136,20 +136,20 @@ Returns a copy of \var{hash-table}.  If the \var{immutable} argument is provided
 
 \begin{rationale}
 Hash table references may be less expensive with immutable hash tables.
+Also, a library may choose to export a hash table which cannot be changed by clients.
 \end{rationale}
 
 \end{entry}
-
 \begin{entry}{%
 \proto{hash-table-clear!}{ \var{hash-table}}{}
 \rproto{hash-table-clear!}{ \var{hash-table} \var{k}}}
 Removes all associations from \var{hash-table}.  Returns the unspecified value.
-\end{entry}
 
 If a second argument is given, the current
 capacity of the hash table is reset to approximately \var{k} elements.
-
+\end{entry}
 \begin{entry}{\proto{hash-table-keys}{ \var{hash-table}}}
+Returns a list of all keys in \var{hash-table}.  The order of the list is unspecified.
 Equivalent to:
 \begin{scheme}
 (hash-table-fold (lambda (k v a) (cons k a)) 
@@ -157,8 +157,8 @@ Equivalent to:
                  '())
 \end{scheme}
 \end{entry}
-
 \begin{entry}{\proto{hash-table-values}{ \var{hash-table}}}
+Returns a list of all values in \var{hash-table}.  The order of the list is unspecified.
 Equivalent to:
 \begin{scheme}
 (hash-table-fold (lambda (k v a) (cons v a)) 
@@ -174,7 +174,8 @@ Returns the equivalence predicate used by \var{hash-table} to compare keys.  For
 \end{entry}
 
 \begin{entry}{\proto{hash-table-hash-function}{ \var{hash-table}}}
-Returns the hash function used by hash-table.  For hash tables created by {\cf make-eq-hash-table} or {\cf make-eqv-hash-table}, \schfalse{} is returned.
+Returns the hash function used by \var{hash-table}.  For hash tables created by {\cf make-eq-hash-table} 
+or {\cf make-eqv-hash-table}, \schfalse{} is returned.
 
 \begin{rationale}
 The {\cf make-eq-hash-table} and {\cf make-eqv-hash-table} constructors
