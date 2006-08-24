@@ -1720,17 +1720,20 @@ returns \schfalse.
 \section{Generic arithmetic}
 \label{genericarithmetic}
 
-The procedures described here implement generic arithmetic based on
+The procedures described here implement arithmetic that is
+generic over
 the numerical tower described in chapter~\ref{numberchapter}.  They
-are exported by the base library, but also through the \defining{r6rs
-  arithmetic generic} library.  Unlike
-the libraries in chapter~\ref{numberchapter}, the procedures generic
-arithmetic accept both exact and inexact numbers as arguments, and
-perform coercions and the appropriate operations as necessary.  Refer
+are exported by the base library, and also by the \defining{r6rs
+  arithmetic generic} library.  Unlike the procedures exported by
+the libraries described in chapter~\ref{numberchapter},
+the generic procedures described in this section
+accept both exact and inexact numbers as arguments,
+performing coercions and selecting the appropriate operations
+as determined by the numeric subtypes of their arguments.  Refer
 to chapter~\ref{numberchapter} for a detailed description of the
 numerical types of Scheme, a discussion of the concept of exactness,
 the definition of some of the numerical operations used here, and
-libraries defining more numerical operations.
+libraries that define other numerical operations.
 
 \subsection{Propagation of exactness}
 
@@ -1770,10 +1773,12 @@ results when given exact arguments.
 
 \subsection{Numerical operations}
 
-The procedures described here behave consistently with the
-corresponding {\cf inexact-} procedure if passed inexact arguments,
-and with the corresponding {\cf exact-} procedure if passed exact
-arguments.
+On inexact arguments, the procedures described here behave
+consistently with the corresponding procedures whose names
+are prefixed by {\cf inexact-}.
+On exact arguments, the procedures described here behave
+consistently with the corresponding procedures whose names
+are prefixed by {\cf exact-}.
 
 We will use \var{z}, \vari{z}, \varii{z}, and \variii{z} as
 metavariables that range over the complex numbers, \var{x}, \vari{x},
@@ -1791,7 +1796,8 @@ that range over the rationals. and \var{n}, \vari{n}, \varii{n}, and
 \proto{rational?}{ obj}{procedure}
 \proto{integer?}{ obj}{procedure}}
 
-These numerical type predicates can be applied to any kind ofargument, including non-numbers.  They return \schtrue{} if the object is
+These numerical type predicates can be applied to any kind of
+argument, including non-numbers.  They return \schtrue{} if the object is
 of the named type, and otherwise they return \schfalse{}.
 In general, if a type predicate is true of a number then all higher
 type predicates are also true of that number.  Consequently, if a type
@@ -2108,7 +2114,7 @@ For any real number \var{x} that is neither infinite nor NaN:
 \end{scheme}
 
 For any real number \var{x} that is neither
-infinite nor NaN nor 0:
+infinite nor NaN nor an exact 0:
 
 \begin{scheme}
 (* +nan.0 \var{x})                           \ev  +nan.0
@@ -2177,7 +2183,7 @@ These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
 specified in section~\ref{integerdivision}.  In each case, \vari{x}
 must be neither infinite nor a NaN, and \varii{x} must be nonzero;
-otherwise, an exception is raised.
+otherwise, an exception must be raised.
 
 \begin{scheme}
 (div \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{div}~\varii{x}\)
@@ -2353,7 +2359,7 @@ The {\cf sqrt} procedure may return an inexact result even when given an exact
 argument.
 
 \begin{scheme}
-(sqrt -5)                   \ev  0.0+2.23606797749979i
+(sqrt -5)                   \lev  0.0+2.23606797749979i ; approximately
 (sqrt +inf.0)               \ev  +inf.0
 (sqrt -inf.0)               \ev  +inf.0i
 \end{scheme}
@@ -2368,9 +2374,10 @@ Returns \vari{z} raised to the power \varii{z}.  For nonzero \vari{z},
   \vari{z}^{\varii{z}} = e^{\varii{z} \log \vari{z}}
 \end{displaymath}
 
-$0.0^{\var{z}}$ is $1$ if $\var{z} = 0.0$, and $0.0$ if {\cf
-  (real-part \var{z})} is positive.  Otherwise, an exception is
-raised with condition type {\cf\&implementation-restriction} or an unspecified
+$0.0^{\var{z}}$ is $1.0$ if $\var{z} = 0.0$, and $0.0$ if {\cf
+  (real-part \var{z})} is positive.  For other cases in which
+the first argument is zero, an exception is raised with
+condition type {\cf\&implementation-restriction} or an unspecified
 number is returned.
 
 For an exact \vari{z} and an exact
@@ -2433,7 +2440,7 @@ Moreover, suppose \vari{x}, \varii{x} are such that either \vari{x}
 or \varii{x} is an infinity, then
 %
 \begin{scheme}
-(make-rectangular \vari{x} \varii{x}) \lev \var{z}
+(make-rectangular \vari{x} \varii{x}) \ev \var{z}
 (magnitude \var{z})              \ev +inf.0
 \end{scheme}
 \end{entry}
@@ -2462,7 +2469,7 @@ arguments.
 omitted, \var{radix} defaults to 10.  If a \var{precision} is
 specified, then \var{z} must be an inexact complex number,
 \var{precision} must be an exact positive integer, and the \var{radix}
-must be 10.  The procedure {\cf number->string} takes a number and a
+must be 10.  The {\cf number->string} procedure takes a number and a
 radix and returns as a string an external representation of the given
 number in the given radix such that
 %
