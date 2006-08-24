@@ -50,11 +50,26 @@ August 24 2006 8:00am-10:00am EDT 812-856-3600, PIN 001386#
    - can lookahead-u8 or get-u8 return something other than eof if
      the last operation on the port was a lookahead-u8 that returned
      eof but the underlying file/object was extended in the meantime?
+   - must lookahead-u8 or get-u8 return eof if the last operation on the
+     port was a lookahead-u8 that returned eof but the underlying
+     file/object was extended in the meantime?
+   - what happens with illegal byte sequences during textual i/o?
+   - must lookahead-u8 or get-u8 raise an excption if the last operation
+     on the port was a lookahead-u8 that raised an exception due to
+     insufficient bytes but the underlying file/object was extended in the
+     meantime?
+   - do we want to translate different end-of-line conventions to linefeed?
+   - should get-line recognize the Unicode line separator in adition to
+     the specified or default end-of-line convention?  Should it recognize
+     all common conventions even if they aren't the current one?
+   - add open-bytes-output-port, get-output-bytes, open-string-output-port,
+     get-output-string?
 
 4. Core/library split (20 minutes)
    - number and size of libraries to be described by R6RS
    - size of "mimimal language" presented by document
    - congruence between R6RS document and R6RS libraries
    - hierarchies and something like Java's wild card syntax?
+   - do wildcards apply outside of r6rs hierarchy?
 
 5. adjourn
