@@ -281,9 +281,9 @@ unless said execution first encounters some implementation
 restriction or other defect in the implementation of Scheme
 that is executing the script.
 
-Violations of an implementation restriction must cause an
-exception with condition type {\cf\&implementation-restriction}
-to be raised, as must all
+Violations of an implementation restriction must raise an
+exception with condition type {\cf\&implementation-restriction},
+as must all
 violations and errors that would otherwise threaten system
 integrity in ways that might result in execution that is
 inconsistent with the semantics described in this document.
@@ -444,7 +444,7 @@ immutable\index{immutable}.  In such systems literal constants and the strings
 returned by \ide{symbol->string} are immutable objects, while all objects
 created by the other procedures listed in this report are mutable.  An
 attempt to store a new value into a location that is denoted by an
-immutable object will raise an exception.
+immutable object should raise an exception.
 
 \section{Proper tail recursion}
 \label{proper tail recursion}
