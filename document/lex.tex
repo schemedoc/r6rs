@@ -107,7 +107,7 @@ language: {\tt \verb"{" \verb"}"}
 \meta{intra-line whitespace} \: $\langle${\rm any \meta{whitespace}}
 \> \quad {\rm that is not \meta{linefeed}}
 \meta{comment} \: ; \= $\langle$\rm all subsequent characters up to a
-		    \>\ \rm linefeed$\rangle$\index{comment}
+                    \>\ \rm linefeed$\rangle$\index{comment}
 \qquad \= \| \meta{nested comment}
 \> \| \#; \meta{S-expression}
 \> \| \#!r6rs \| \#!/usr/bin/env
@@ -263,7 +263,7 @@ whitespace before the \hyper{S-expression}.  The comment consists of
 the comment prefix {\tt \#;} and the \hyper{S-expression} together.  (This
 notation is useful for ``commenting out'' sections of code.)
 
-Bqlock comments may be indicated with properly nested {\tt
+Block comments may be indicated with properly nested {\tt
   \#|} and {\tt |\#} pairs.
 
 \begin{scheme}
@@ -434,7 +434,7 @@ themselves.  Escape sequences always start with a backslash (\backwhack{}):
 \item{\tt \backwhack{}x\atleastone{\hyper{digit 16}};} : (note the
   terminating semi-colon) where no more than eight \hyper{digit 16}s
   are provided, and the sequence of \hyper{digit 16}s forms a
-  hexadecimal number between 0 and \sharpsign{}xFFFF excluding the
+  hexadecimal number between 0 and \sharpsign{}x10FFFF excluding the
   range $\left[\sharpsign{}x\textrm{D800},
     \sharpsign{}x\textrm{DFFF}\right]$.
 \end{itemize}
@@ -649,8 +649,9 @@ following:
 \#(0 (2 2 2 2) "Anna")%
 \end{scheme}
 
-Note that this is the external representation of a vector, not a
-base-library expression evaluating to a vector.
+Note that this is the external representation of a vector,
+and is not a
+base-library expression that evaluates to a vector.
 
 \subsection{Pairs and lists}
 \label{pairlistsyntax}
@@ -695,8 +696,9 @@ octets 2, 24, and 123 can be written as following:
 \#vu8(2 24 123)%
 \end{scheme}
 
-Note that this is the external representation of a bytes object, not a
-base-library expression evaluating to a bytes object.
+Note that this is the external representation of a bytes object,
+and is not a
+base-library expression that evaluates to a bytes object.
 
 \subsection{Abbreviations}\unsection
 \label{quotesection}
