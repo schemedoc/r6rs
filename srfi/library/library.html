@@ -263,7 +263,10 @@ No identifier can be imported multiple times, defined multiple times, or
 both defined and imported.
 
 <p>
-Library names are consist of a sequence of identifiers in parentheses,
+<b>FIXME</b>: duplicate identifiers okay from same home module
+
+<p>
+Library names consist of a sequence of identifiers in parentheses,
 followed optionally by a version consisting of a sequence of unsigned
 integers:
 
@@ -272,10 +275,11 @@ integers:
     
     
    <TABLE><TR><TD nowrap align="left">
-&lt;library&nbsp;name&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(&lt;identifier&gt;<sup>+</sup>)</tt>
-                    | <tt>(&lt;identifier&gt;<sup>+</sup>&nbsp;&lt;version&gt;)</tt></TD></TR><TR><TD nowrap align="left">
+&lt;library&nbsp;name&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(&lt;identifier&gt;<sup>+</sup>&nbsp;&lt;version&gt;)</tt>
 </TD></TR><TR><TD nowrap align="left">
-&lt;version&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(&lt;uinteger&nbsp;10&gt;<sup>+</sup>)</tt>
+&lt;version&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;empty&gt; | <tt>(&lt;subversion&gt;<sup>+</sup>)</tt></TD></TR><TR><TD nowrap align="left">
+</TD></TR><TR><TD nowrap align="left">
+&lt;subversion&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;exact nonnegative integer&gt;
 </TD></TR></TABLE>
 
 <p>
@@ -295,7 +299,7 @@ names by which they are to be known.
 <p>
 Valid import phases are <tt>run</tt>, <tt>expand</tt>, <tt>eval</tt>, and
 <tt>(meta&nbsp;<i>n</i>)</tt>, where <tt>run</tt> is an abbreviation for
-<tt>(meta&nbsp;0)</tt> and <tt>expand</tt> is an abbreviation for and
+<tt>(meta&nbsp;0)</tt> and <tt>expand</tt> is an abbreviation for
 <tt>(meta&nbsp;1)</tt>.
 
 <p>
@@ -305,7 +309,7 @@ Valid import phases are <tt>run</tt>, <tt>expand</tt>, <tt>eval</tt>, and
    <TABLE><TR><TD nowrap align="left">
 &lt;import&nbsp;phase&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>run</tt> | <tt>expand</tt> | <tt>eval</tt> | <tt>(meta&nbsp;&lt;level&gt;)</tt></TD></TR><TR><TD nowrap align="left">
 </TD></TR><TR><TD nowrap align="left">
-&lt;level&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;uinteger&nbsp;10&gt;
+&lt;level&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;exact nonnegative integer&gt;
 </TD></TR></TABLE>
 
 <p>
@@ -336,19 +340,17 @@ name and optionally by its version.
     
     
    <TABLE><TR><TD nowrap align="left">
-&lt;library&nbsp;reference&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;identifier&gt;
-                    | <tt>(&lt;identifier&gt;<sup>+</sup>)</tt>
-                    | <tt>(&lt;identifier&gt;<sup>+</sup>&nbsp;&lt;version&nbsp;reference&gt;)</tt></TD></TR><TR><TD nowrap align="left">
+&lt;library&nbsp;reference&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(&lt;identifier&gt;<sup>+</sup>&nbsp;&lt;version&nbsp;reference&gt;)</tt></TD></TR><TR><TD nowrap align="left">
 </TD></TR><TR><TD nowrap align="left">
-&lt;version&nbsp;reference&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(&lt;uinteger&nbsp;10&gt;<sup>+</sup>)</tt>
-                         | &lt;version&nbsp;condition&gt;</TD></TR><TR><TD nowrap align="left">
+&lt;version&nbsp;reference&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;empty&gt; | <tt>(&lt;subversion&nbsp;reference&gt;<sup>+</sup>)</tt></TD></TR><TR><TD nowrap align="left">
 </TD></TR><TR><TD nowrap align="left">
-&lt;version&nbsp;condition&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(&lt;uinteger&nbsp;10&gt;<sup>+</sup>)</tt></TD></TR><TR><TD nowrap align="left">
-                        </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(&gt;=&nbsp;&lt;uinteger&nbsp;10&gt;)</tt></TD></TR><TR><TD nowrap align="left">
-                        </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(&lt;=&nbsp;&lt;uinteger&nbsp;10&gt;)</tt></TD></TR><TR><TD nowrap align="left">
-                        </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(and&nbsp;&lt;version&nbsp;condition&gt;<sup>+</sup>)</tt></TD></TR><TR><TD nowrap align="left">
-                        </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(or&nbsp;&lt;version&nbsp;condition&gt;<sup>+</sup>)</tt></TD></TR><TR><TD nowrap align="left">
-                        </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(not&nbsp;&lt;version&nbsp;condition&gt;)</tt>
+&lt;subversion&nbsp;reference&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;subversion&gt; | &lt;subversion&nbsp;condition&gt;</TD></TR><TR><TD nowrap align="left">
+</TD></TR><TR><TD nowrap align="left">
+&lt;subversion&nbsp;condition&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(&gt;=&nbsp;&lt;subversion&gt;)</tt></TD></TR><TR><TD nowrap align="left">
+                           </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(&lt;=&nbsp;&lt;subversion&gt;)</tt></TD></TR><TR><TD nowrap align="left">
+                           </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(and&nbsp;&lt;subversion&nbsp;condition&gt;<sup>+</sup>)</tt></TD></TR><TR><TD nowrap align="left">
+                           </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(or&nbsp;&lt;subversion&nbsp;condition&gt;<sup>+</sup>)</tt></TD></TR><TR><TD nowrap align="left">
+                           </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(not&nbsp;&lt;subversion&nbsp;condition&gt;)</tt>
 </TD></TR></TABLE>
 
 <p>
@@ -366,7 +368,7 @@ choice of libraries is determined in some implementation-dependent manner.
 <p>
 To avoid problems such as incompatible types and replicated state, two
 libraries whose library names contain the same sequence of identifiers but
-whose versions do match cannot co-exist in the same program.
+whose versions do not match cannot co-exist in the same program.
 
 <p>
 By default, all of an imported library's exported bindings are made
@@ -427,7 +429,7 @@ local and exported bindings and initalization expressions to be evaluated
 when the library is invoked.
 
 <p>
-A &lt;library&nbsp;body&gt; is like <tt>lambda</tt> body (see below) except that
+A &lt;library&nbsp;body&gt; is like a <tt>lambda</tt> body (see below) except that
 the latter requires the body to contain at least one expression.
 
 <p>
@@ -435,20 +437,19 @@ the latter requires the body to contain at least one expression.
     
     
    <TABLE><TR><TD nowrap align="left">
-&lt;library&nbsp;body&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;common&nbsp;body&gt;</TD></TR><TR><TD nowrap align="left">
+&lt;library&nbsp;body&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;declaration&gt;* &lt;definition&gt;* &lt;command&gt;*</TD></TR><TR><TD nowrap align="left">
+  </TD><TD nowrap align="center">|</TD><TD nowrap align="left">&lt;declaration&gt;* &lt;definition&gt;* &lt;library&nbsp;begin&gt; &lt;command&gt;*</TD></TR><TR><TD nowrap align="left">
 </TD></TR><TR><TD nowrap align="left">
-&lt;common&nbsp;body&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;declaration&gt;* &lt;definition&gt;* &lt;command&gt;*</TD></TR><TR><TD nowrap align="left">
-  </TD><TD nowrap align="center">|</TD><TD nowrap align="left">&lt;declaration&gt;* &lt;definition&gt;* &lt;body&nbsp;begin&gt; &lt;command&gt;*</TD></TR><TR><TD nowrap align="left">
-</TD></TR><TR><TD nowrap align="left">
-&lt;body&nbsp;begin&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(begin&nbsp;&lt;common&nbsp;body&gt;)</tt> | &lt;derived&nbsp;body&nbsp;begin&gt;
+&lt;library&nbsp;begin&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(begin&nbsp;&lt;library&nbsp;body&gt;)</tt> | &lt;derived&nbsp;library&nbsp;begin&gt;
 </TD></TR></TABLE>
 
 <p>
-The &lt;body&nbsp;begin&gt; permitted to allow macros to expand into a sequence
+The &lt;library&nbsp;begin&gt; is included to allow macros to expand into a sequence
 including both definitions and expressions at the point where the
-sequence of definitions ends and the sequence of expressions begins.
-A &lt;derived&nbsp;body&nbsp;begin&gt; is a syntactic abstraction that expands into
-a &lt;body&nbsp;begin&gt;.
+sequence of definitions ends and the sequence of expressions begins,
+or to expand into an entire &lt;library&nbsp;body&gt;.
+A &lt;derived&nbsp;library&nbsp;begin&gt; is a syntactic abstraction that expands into
+a &lt;library&nbsp;begin&gt;.
 
 <p>
 Declarations allow a program to specify various <i>qualities</i> for the
@@ -493,14 +494,37 @@ only definitions, and derived definitions.
 </TD></TR><TR><TD nowrap align="left">
 &lt;variable&nbsp;definition&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(define&nbsp;&lt;variable&gt;)</tt></TD></TR><TR><TD nowrap align="left">
   </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(define&nbsp;&lt;variable&gt;&nbsp;&lt;expression&gt;)</tt></TD></TR><TR><TD nowrap align="left">
-  </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(define&nbsp;(&lt;variable&gt;&nbsp;&lt;def&nbsp;formals&gt;)&nbsp;&lt;body&gt;)</tt></TD></TR><TR><TD nowrap align="left">
-</TD></TR><TR><TD nowrap align="left">
-&lt;body&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">&lt;common&nbsp;body&gt; &lt;expression&gt;
+  </TD><TD nowrap align="center">|</TD><TD nowrap align="left"><tt>(define&nbsp;(&lt;variable&gt;&nbsp;&lt;def&nbsp;formals&gt;)&nbsp;&lt;body&gt;)</tt>
 </TD></TR></TABLE>
+
+<p>
+
+    
+    
+   <TABLE><TR><TD nowrap align="left">
+&lt;body&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left">longis &lt;declaration&gt;* &lt;definition&gt;* &lt;command&gt;* &lt;expression&gt;</TD></TR><TR><TD nowrap align="left">
+  </TD><TD nowrap align="center">|</TD><TD nowrap align="left">&lt;declaration&gt;* &lt;definition&gt;* &lt;body&nbsp;begin&gt; &lt;command&gt;*</TD></TR><TR><TD nowrap align="left">
+</TD></TR><TR><TD nowrap align="left">
+&lt;body&nbsp;begin&gt;</TD><TD nowrap align="center"><img src="math/library/0.gif" alt="<graphic>"></TD><TD nowrap align="left"><tt>(begin&nbsp;&lt;body&gt;)</tt> | &lt;derived&nbsp;body&nbsp;begin&gt;
+</TD></TR></TABLE>
+
+<p>
+<b>FIXME</b>: 
+needs to be much messier than the above
+consider extra-grammatical description of <tt>begin</tt>: "(begin" and ")"
+can be wrapped around any sequence of body forms
+
+<p>
+note: begin can't be true splicing form since decl in
+<tt>(lambda&nbsp;()&nbsp;defn1&nbsp;(begin&nbsp;decl&nbsp;defn2)&nbsp;defn3&nbsp;expr)</tt> applies only to defn2
+consider flushing <tt>(begin&nbsp;decl*&nbsp;defn*)</tt> definition form
+
 
 <p>
 A &lt;derived&nbsp;definition&gt; is a syntactic abstraction that expands into
 a &lt;definition&gt;.
+A &lt;derived&nbsp;body&nbsp;begin&gt; is a syntactic abstraction that expands into
+a &lt;body&nbsp;begin&gt;.
 
 <p>
 The production for &lt;body&gt; is also relevant for <tt>lambda</tt>
@@ -551,7 +575,7 @@ defined as a macro within the library, or if any of the associated
 &lt;identifiers&gt;s is not defined within the library.
 An exception is also raised if a macro used outside of its defining
 library expands into a reference to an identifier that is defined within
-or imported into the library but is neither directly nor indirectly
+the library but is neither directly nor indirectly
 exported from the library.
 Identifiers that are not directly exported are not otherwise visible
 outside of the defining library.
@@ -599,9 +623,11 @@ The import phases of an imported binding are determined by the enclosing
 library, otherwise the enclosing <tt>for</tt> form, if any, in the
 <tt>export</tt> form of the exporting library. 
 If neither is given, then the binding is imported "for <tt>run</tt>" only.
+All standard R6RS bindings are exported both "for <tt>expand</tt>" and
+"for <tt>run</tt>."
 
 <p>
-The import phases thus implicitly determine when information about a
+The import phases implicitly determine when information about a
 library must be available and also when the various forms contained within
 a library must be evaluated.
 
@@ -650,9 +676,12 @@ More precisely, visiting a library at phase <i>N</i> causes the system to:
 <ul>
 <li>Visit at phase <i>N</i> any library that is imported by this library
       "for <tt>run</tt>" and that is not yet visited at phase <i>N</i>.
-<li>Visit and invoke at phase <i>N</i> + <i>M</i> any library that is imported by this
-      library "for <tt>(meta&nbsp;<i>M</i>)</tt> and that is not yet invoked at
-      phase <i>N</i> + <i>M</i>.
+<li>Visit at phase <i>N</i> + <i>M</i> any library that is imported by this
+      library "for <tt>(meta&nbsp;<i>M</i>)</tt>," <i>M</i> &gt; 0 and that is not yet
+      visited at phase <i>N</i> + <i>M</i>.
+<li>Invoke at phase <i>N</i> + <i>M</i> any library that is imported by this
+      library "for <tt>(meta&nbsp;<i>M</i>)</tt>," <i>M</i> &gt; 0 and that is not yet
+      invoked at phase <i>N</i> + <i>M</i>.
 <li>Evaluate the library's transformer expressions.
 </ul>
 
@@ -723,6 +752,10 @@ Section&nbsp;<a href="./library.html#g5">3.3</a>.
 <h1><a name="./library:h7"></a>4. Examples</h1>
 
 
+
+<p>
+<b>FIXME</b>: compare examples with von Tonder macros.test file.
+<b>FIXME</b>: need some eval examples
 
 <p>
 Hello world:
@@ -838,7 +871,7 @@ Hello world:
 
 <p>
 
-<p><tt>(library&nbsp;(helper)<br>
+<p><tt>(library&nbsp;(id-stuff)<br>
 
 &nbsp;&nbsp;(import&nbsp;(r6rs))<br>
 
@@ -860,11 +893,11 @@ Hello world:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[else&nbsp;(loop&nbsp;(cdr&nbsp;rest))])))))
 <br>
 <br>
-(library&nbsp;(mvlet)<br>
+(library&nbsp;(values-stuff)<br>
 
-&nbsp;&nbsp;(improt&nbsp;(r6rs)&nbsp;(import&nbsp;(for&nbsp;(helper)&nbsp;expand))<br>
+&nbsp;&nbsp;(import&nbsp;(r6rs)&nbsp;(import&nbsp;(for&nbsp;(id-stuff)&nbsp;expand)))<br>
 
-&nbsp;&nbsp;(export&nbsp;mvlet)
+&nbsp;&nbsp;(export&nbsp;(for&nbsp;mvlet&nbsp;expand&nbsp;run))
 <br>
 <br>
 &nbsp;&nbsp;(define-syntax&nbsp;mvlet<br>

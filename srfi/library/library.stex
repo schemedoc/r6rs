@@ -1,6 +1,8 @@
 \documentclass{monograph}
 
-% eval examples
+% look for FIXME
+\ifhtml\def\long{}\fi
+\long\def\FIXME#1{{\bf FIXME}: #1}
 
 \usepackage{scheme}
 
@@ -161,15 +163,18 @@ library.
 No identifier can be imported multiple times, defined multiple times, or
 both defined and imported.
 
-Library names are consist of a sequence of identifiers in parentheses,
+\FIXME{duplicate identifiers okay from same home module}
+
+Library names consist of a sequence of identifiers in parentheses,
 followed optionally by a version consisting of a sequence of unsigned
 integers:
 
 \begin{grammar}
-\ang{library~name}\longis \scheme{(\raw{\ang{identifier}}\raw{\kplus})}
-                    \bar\ \scheme{(\raw{\ang{identifier}}\raw{\kplus} \raw{\ang{version}})}\\
+\ang{library~name}\longis \scheme{(\raw{\ang{identifier}}\raw{\kplus} \raw{\ang{version}})}
 \\
-\ang{version}\longis \scheme{(\raw{\ang{uinteger~10}}\raw{\kplus})}
+\ang{version}\longis \ang{empty} \bar\ \scheme{(\raw{\ang{subversion}}\raw{\kplus})}\\
+\\
+\ang{subversion}\longis \ang{exact nonnegative integer}
 \end{grammar}
 
 Each \scheme{import spec} specifies a set of bindings to be imported into
@@ -183,13 +188,13 @@ names by which they are to be known.
 
 Valid import phases are \scheme{run}, \scheme{expand}, \scheme{eval}, and
 \scheme{(meta \var{n})}, where \scheme{run} is an abbreviation for
-\scheme{(meta 0)} and \scheme{expand} is an abbreviation for and
+\scheme{(meta 0)} and \scheme{expand} is an abbreviation for
 \scheme{(meta 1)}.
 
 \begin{grammar}
 \ang{import~phase}\longis \scheme{run} \bar\ \scheme{expand} \bar\ \scheme{eval} \bar\ \scheme{(meta \raw{\ang{level}})}\\
 \\
-\ang{level}\longis \ang{uinteger~10}
+\ang{level}\longis \ang{exact nonnegative integer}
 \end{grammar}
 
 Phases are discussed in Section~\ref{sec:phases}.
@@ -209,19 +214,17 @@ A \ang{library~reference} identifies a library by its (possibly compound)
 name and optionally by its version.
 
 \begin{grammar}
-\ang{library~reference}\longis \ang{identifier}
-                    \bar\ \scheme{(\raw{\ang{identifier}}\raw{\kplus})}
-                    \bar\ \scheme{(\raw{\ang{identifier}}\raw{\kplus} \raw{\ang{version~reference}})}\\
+\ang{library~reference}\longis \scheme{(\raw{\ang{identifier}}\raw{\kplus} \raw{\ang{version~reference}})}\\
 \\
-\ang{version~reference}\longis \scheme{(\raw{\ang{uinteger~10}}\raw{\kplus})}
-                         \bar\ \ang{version~condition}\\
+\ang{version~reference}\longis \ang{empty} \bar\ \scheme{(\raw{\ang{subversion~reference}}\raw{\kplus})}\\
 \\
-\ang{version~condition}\longis \scheme{(\raw{\ang{uinteger~10}}\raw{\kplus})}\\
-                        \orbar \scheme{(>= \raw{\ang{uinteger~10}})}\\
-                        \orbar \scheme{(<= \raw{\ang{uinteger~10}})}\\
-                        \orbar \scheme{(and \raw{\ang{version~condition}}\raw{\kplus})}\\
-                        \orbar \scheme{(or \raw{\ang{version~condition}}\raw{\kplus})}\\
-                        \orbar \scheme{(not \raw{\ang{version~condition}})}
+\ang{subversion~reference}\longis \ang{subversion} \bar\ \ang{subversion~condition}\\
+\\
+\ang{subversion~condition}\longis \scheme{(>= \raw{\ang{subversion}})}\\
+                           \orbar \scheme{(<= \raw{\ang{subversion}})}\\
+                           \orbar \scheme{(and \raw{\ang{subversion~condition}}\raw{\kplus})}\\
+                           \orbar \scheme{(or \raw{\ang{subversion~condition}}\raw{\kplus})}\\
+                           \orbar \scheme{(not \raw{\ang{subversion~condition}})}
 \end{grammar}
 
 The sequence of identifiers in the importing library's
@@ -237,7 +240,7 @@ choice of libraries is determined in some implementation-dependent manner.
 
 To avoid problems such as incompatible types and replicated state, two
 libraries whose library names contain the same sequence of identifiers but
-whose versions do match cannot co-exist in the same program.
+whose versions do not match cannot co-exist in the same program.
 
 By default, all of an imported library's exported bindings are made
 visible within an importing library using the names given to the bindings
@@ -288,23 +291,22 @@ The \ang{library~body} of a \scheme{library} form contains definitions for
 local and exported bindings and initalization expressions to be evaluated
 when the library is invoked.
 
-A \ang{library~body} is like \scheme{lambda} body (see below) except that
+A \ang{library~body} is like a \scheme{lambda} body (see below) except that
 the latter requires the body to contain at least one expression.
 
 \begin{grammar}
-\ang{library~body}\longis \ang{common~body}\\
+\ang{library~body}\longis \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{command}\kstar\\
+  \orbar \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{library~begin} \ang{command}\kstar\\
 \\
-\ang{common~body}\longis \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{command}\kstar\\
-  \orbar \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{body~begin} \ang{command}\kstar\\
-\\
-\ang{body~begin}\longis \scheme{(begin \raw{\ang{common~body}})} \bar\ \ang{derived~body~begin}
+\ang{library~begin}\longis \scheme{(begin \raw{\ang{library~body}})} \bar\ \ang{derived~library~begin}
 \end{grammar}
 
-The \ang{body~begin} permitted to allow macros to expand into a sequence
+The \ang{library~begin} is included to allow macros to expand into a sequence
 including both definitions and expressions at the point where the
-sequence of definitions ends and the sequence of expressions begins.
-A \ang{derived~body~begin} is a syntactic abstraction that expands into
-a \ang{body~begin}.
+sequence of definitions ends and the sequence of expressions begins,
+or to expand into an entire \ang{library~body}.
+A \ang{derived~library~begin} is a syntactic abstraction that expands into
+a \ang{library~begin}.
 
 Declarations allow a program to specify various \emph{qualities} for the
 evaluated code.
@@ -338,13 +340,30 @@ only definitions, and derived definitions.
 \\
 \ang{variable~definition}\longis \scheme{(define \raw{\ang{variable}})}\\
   \orbar \scheme{(define \raw{\ang{variable}} \raw{\ang{expression}})}\\
-  \orbar \scheme{(define (\raw{\ang{variable}} \raw{\ang{def~formals}}) \raw{\ang{body}})}\\
-\\
-\ang{body}\longis \ang{common~body} \ang{expression}
+  \orbar \scheme{(define (\raw{\ang{variable}} \raw{\ang{def~formals}}) \raw{\ang{body}})}
 \end{grammar}
+
+\begin{grammar}
+\ang{body}\longis longis \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{command}\kstar\ \ang{expression}\\
+  \orbar \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{body~begin} \ang{command}\kstar\\
+\\
+\ang{body~begin}\longis \scheme{(begin \raw{\ang{body}})} \bar\ \ang{derived~body~begin}
+\end{grammar}
+
+\FIXME{
+needs to be much messier than the above
+consider extra-grammatical description of \scheme{begin}: ``(begin'' and ``)''
+can be wrapped around any sequence of body forms
+
+note: begin can't be true splicing form since decl in
+\scheme{(lambda () defn1 (begin decl defn2) defn3 expr)} applies only to defn2
+consider flushing \scheme{(begin decl* defn*)} definition form
+}
 
 A \ang{derived~definition} is a syntactic abstraction that expands into
 a \ang{definition}.
+A \ang{derived~body~begin} is a syntactic abstraction that expands into
+a \ang{body~begin}.
 
 The production for \ang{body} is also relevant for \scheme{lambda}
 bodies, recalling that \ang{lambda~expression} is defined as follows.
@@ -382,7 +401,7 @@ defined as a macro within the library, or if any of the associated
 \ang{identifiers}s is not defined within the library.
 An exception is also raised if a macro used outside of its defining
 library expands into a reference to an identifier that is defined within
-or imported into the library but is neither directly nor indirectly
+the library but is neither directly nor indirectly
 exported from the library.
 Identifiers that are not directly exported are not otherwise visible
 outside of the defining library.
@@ -419,8 +438,10 @@ The import phases of an imported binding are determined by the enclosing
 library, otherwise the enclosing \scheme{for} form, if any, in the
 \scheme{export} form of the exporting library. 
 If neither is given, then the binding is imported ``for \scheme{run}'' only.
+All standard R6RS bindings are exported both ``for \scheme{expand}'' and
+``for \scheme{run}.''
 
-The import phases thus implicitly determine when information about a
+The import phases implicitly determine when information about a
 library must be available and also when the various forms contained within
 a library must be evaluated.
 
@@ -464,9 +485,12 @@ More precisely, visiting a library at phase $N$ causes the system to:
 \begin{itemize}
 \item Visit at phase $N$ any library that is imported by this library
       ``for \scheme{run}'' and that is not yet visited at phase $N$.
-\item Visit and invoke at phase $N+M$ any library that is imported by this
-      library ``for \scheme{(meta \var{M})} and that is not yet invoked at
-      phase $N+M$.
+\item Visit at phase $N+M$ any library that is imported by this
+      library ``for \scheme{(meta \var{M})},'' $M>0$ and that is not yet
+      visited at phase $N+M$.
+\item Invoke at phase $N+M$ any library that is imported by this
+      library ``for \scheme{(meta \var{M})},'' $M>0$ and that is not yet
+      invoked at phase $N+M$.
 \item Evaluate the library's transformer expressions.
 \end{itemize}
 
@@ -522,6 +546,9 @@ when the call to \scheme{environment} occurs, in the sense of
 Section~\ref{sec:phases}.
 
 \section{Examples}
+
+\FIXME{compare examples with von Tonder macros.test file.}
+\FIXME{need some eval examples}
 
 Hello world:
 
@@ -591,7 +618,7 @@ Examples for various \ang{import~spec}s and \ang{export~spec}s:
 Examples for macros and phases:
 
 \schemedisplay
-(library (helper)
+(library (id-stuff)
   (import (r6rs))
   (export find-dup)
 
@@ -603,9 +630,9 @@ Examples for macros and phases:
             [(bound-identifier=? (car l) (car rest)) (car rest)]
             [else (loop (cdr rest))])))))
 
-(library (mvlet)
-  (improt (r6rs) (import (for (helper) expand))
-  (export mvlet)
+(library (values-stuff)
+  (import (r6rs) (import (for (id-stuff) expand)))
+  (export (for mvlet expand run))
 
   (define-syntax mvlet
     (lambda (stx)
