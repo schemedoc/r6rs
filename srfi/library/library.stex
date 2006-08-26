@@ -160,10 +160,11 @@ Bindings defined with a library are not visible in code that appears
 outside of the library unless they are explicitly exported from the
 library. 
 
-No identifier can be imported multiple times, defined multiple times, or
-both defined and imported.
-
-\FIXME{duplicate identifiers okay from same home module}
+An identifier can be imported from multiple libraries only if the
+binding exported by each library is the same (i.e., the binding is
+defined in one library, and it arrives throgh the imports only by
+exporting and re-exporting). Otherwise, no identifier can be imported
+multiple times, defined multiple times, or both defined and imported.
 
 Library names consist of a sequence of identifiers in parentheses,
 followed optionally by a version consisting of a sequence of unsigned
@@ -177,7 +178,7 @@ integers:
 \ang{subversion}\longis \ang{exact nonnegative integer}
 \end{grammar}
 
-Each \scheme{import spec} specifies a set of bindings to be imported into
+Each \ang{import~spec} specifies a set of bindings to be imported into
 the library, the phases in which they are to be available, and the local
 names by which they are to be known.
 
@@ -228,8 +229,8 @@ name and optionally by its version.
 \end{grammar}
 
 The sequence of identifiers in the importing library's
-\scheme{library reference} must match the sequence of identifiers in the
-imported library's \scheme{library name}.
+\dangscheme{library~reference} must match the sequence of identifiers in the
+imported library's \ang{library~name}.
 The importing library's \ang{version~reference} specifies a predicate on a
 prefix of the imported library's \ang{version}.
 Each integer must match exactly and each condition has the expected meaning.
@@ -270,7 +271,8 @@ if the new name is already in \ang{import~set}, an exception is raised.
 \end{itemize}
 
 An \ang{export~set} names a set of imported and locally defined bindings to
-be exported, possibly giving them different external names.
+be exported from optionally specified phases, possibly giving them different
+external names.
 
 \begin{grammar}
 \ang{export~spec}\longis \ang{export~set}\\
@@ -308,74 +310,63 @@ or to expand into an entire \ang{library~body}.
 A \ang{derived~library~begin} is a syntactic abstraction that expands into
 a \ang{library~begin}.
 
-Declarations allow a program to specify various \emph{qualities} for the
-evaluated code.
-Their interpretation is implementation dependent.
-
-\begin{grammar}
-\ang{declaration}\longis \scheme{(declare \raw{\ang{declare~spec}})} \bar\ \ang{derived~declaration}\\
-\\
-\ang{declare~spec}\longis \scheme{unsafe} \bar\ \ang{quality} \bar\ \scheme{(\raw{\ang{quality}} \raw{\ang{priority}})}\\
-\\
-\ang{quality}\longis \scheme{safe} \bar\ \scheme{fast} \bar\ \scheme{small} \bar\ \scheme{debug}\\
-\\
-\ang{priority}\longis \scheme{0} \bar\ \scheme{1} \bar\ \scheme{2} \bar\ \scheme{3}
+Declarations of the form \scheme{(declare \raw{\ang{declare~spec}})}
+allow a program to specify various \emph{qualities} for the
+evaluated code (see ??).
+\ang{declaration}\longis \scheme{(declare \raw{\ang{declare~spec}})} \bar\ \ang{derived~declaration}%
+\ \bar\ \scheme{(begin \raw{\ang{declation}\kstar})}\\
 \end{grammar}
-
 A \ang{derived~declaration} is a syntactic abstraction that expands into
 a \ang{declaration}.
 
-Definitions consist of syntax definitions, variable definitions,
-\scheme{indirect-export} forms, \scheme{begin} forms containing
-only definitions, and derived definitions.
+\FIXME{section numbers}
+
+Definitions consist of syntax definitions using \scheme{define-syntax} (see ??), 
+variable definitions using \scheme{define} (see ??),
+\scheme{indirect-export} forms, \scheme{let-syntax} and \scheme{letrec-syntax} 
+forms containing only definitions (see ??),
+\scheme{begin} forms containing only definitions, and derived definitions.
 
 \begin{grammar}
-\ang{definition}\longis \ang{syntax~definition}\\
-  \orbar \ang{variable~definition}\\
-  \orbar \scheme{(indirect-export \raw{\ang{indirect~spec}}\raw{\kstar})}\\
-  \orbar \scheme{(begin \raw{\ang{declaration}}\raw{\kstar} \raw{\ang{definition}}\raw{\kstar})}\\
-  \orbar \ang{derived~definition}\\
-\\
-\ang{syntax~definition}\longis \scheme{(define-syntax \raw{\ang{keyword}} \raw{\ang{transformer~spec}})}\\
-\\
-\ang{variable~definition}\longis \scheme{(define \raw{\ang{variable}})}\\
+\ang{definition}\longis \scheme{(define-syntax \raw{\ang{keyword}} \raw{\ang{transformer~spec}})}\\
+  \orbar \scheme{(define \raw{\ang{variable}})}\\
   \orbar \scheme{(define \raw{\ang{variable}} \raw{\ang{expression}})}\\
   \orbar \scheme{(define (\raw{\ang{variable}} \raw{\ang{def~formals}}) \raw{\ang{body}})}
-\end{grammar}
-
-\begin{grammar}
-\ang{body}\longis longis \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{command}\kstar\ \ang{expression}\\
-  \orbar \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{body~begin} \ang{command}\kstar\\
+  \orbar \scheme{(indirect-export \raw{\ang{indirect~spec}}\raw{\kstar})}\\
+  \orbar \scheme{(begin \raw{\ang{definition}}\raw{\kstar})}\\
+  \orbar \scheme{(let-syntax \raw{\ang{bindings}} \ang{definition}\raw{\kstar})}\\
+  \orbar \scheme{(letrec-syntax \raw{\ang{bindings}} \ang{definition}\raw{\kstar})}\\
+  \orbar \ang{derived~definition}\\
 \\
-\ang{body~begin}\longis \scheme{(begin \raw{\ang{body}})} \bar\ \ang{derived~body~begin}
 \end{grammar}
 
-\FIXME{
-needs to be much messier than the above
-consider extra-grammatical description of \scheme{begin}: ``(begin'' and ``)''
-can be wrapped around any sequence of body forms
+\FIXME{(MF)
+I attempted to fix \scheme{begin} by adding it to the \ang{declaration}
+grammar, and by removing \ang{declaration} in the \scheme{begin} for \ang{definition}
+(otherwise \scheme{(begin \raw{\ang{declaration}})}
+is ambigious).
 
-note: begin can't be true splicing form since decl in
-\scheme{(lambda () defn1 (begin decl defn2) defn3 expr)} applies only to defn2
-consider flushing \scheme{(begin decl* defn*)} definition form
+note: old begin can't be true splicing form, since decl in
+\scheme{(lambda () defn1 (begin decl defn2) defn3 expr)} applies only to defn2;
+for now, I flushed the \scheme{(begin decl* defn*)} definition form for now
 }
 
 A \ang{derived~definition} is a syntactic abstraction that expands into
 a \ang{definition}.
-A \ang{derived~body~begin} is a syntactic abstraction that expands into
-a \ang{body~begin}.
 
-The production for \ang{body} is also relevant for \scheme{lambda}
-bodies, recalling that \ang{lambda~expression} is defined as follows.
+\FIXME{Dropped description of lambda bodies --- covered in 5.5, right?}
 
-\begin{grammar}
-\ang{lambda~expression}\longis \scheme{(lambda \raw{\ang{formals}} \raw{\ang{body}})}
-\end{grammar}
+%The production for \ang{body} is also relevant for \scheme{lambda}
+%bodies, recalling that \ang{lambda~expression} is defined as follows.
+%
+%\begin{grammar}
+%\ang{lambda~expression}\longis \scheme{(lambda \raw{\ang{formals}} \raw{\ang{body}})}
+%\end{grammar}
+%
+%A \ang{body} is like a \ang{library~body} except that at least one
+%expression must be present. 
 
-A \ang{body} is like a \ang{library~body} except that at least one
-expression must be present. 
-
-The definitions of a \ang{library~body} or \ang{body} are mutually
+The definitions of a \ang{library~body} are mutually
 recursive.
 The transformer expressions and transformer bindings are created
 from left to right, as described in the R6RS \scheme{syntax-case}
@@ -419,7 +410,7 @@ exporting and importing libraries.
 
 All bindings imported via a library's \scheme{import} form are
 \emph{visible} throughout the library's \ang{library~body}.
-An exception is raised, however, if a binding is used out of its declared
+An exception may be raised, however, if a binding is used out of its declared
 phase(s):
 
 \begin{itemize}
@@ -435,14 +426,23 @@ and so on.
 
 The import phases of an imported binding are determined by the enclosing
 \scheme{for} form, if any, in the \scheme{import} form of the importing
-library, otherwise the enclosing \scheme{for} form, if any, in the
-\scheme{export} form of the exporting library. 
-If neither is given, then the binding is imported ``for \scheme{run}'' only.
-All standard R6RS bindings are exported both ``for \scheme{expand}'' and
-``for \scheme{run}.''
+library, in addition to the phase of the identifier in the exporting library.
+An \ang{import~set} without an enclosing \scheme{for} is equivalent to
+\scheme{(for \raw{\ang{import~set}} run)}.
+
+% FIXME: I don't know how to typeset subscripts
+Import and export phases are combined by pairwise addition of all
+phase combinations. For each imported identifier, if it is exported at
+phases \var{n_1} through \var{n_p} and imported at phases \var{m_1}
+through \var{m_q}, then the bindings are available at phases \var{n_1 * m_1},
+... \var{n_p * m_1}, \var{n_2 * m_1}, ... \var{n_p * m_1}, ...
+\var{n_p * m_q}.
+
+All standard R6RS bindings are exported from the \scheme{(r6rs)} 
+both ``for \scheme{expand}'' and ``for \scheme{run}.''
 
 The import phases implicitly determine when information about a
-library must be available and also when the various forms contained within
+library must be available, and also when the various forms contained within
 a library must be evaluated.
 
 Every library can be characterized by expand-time information (minimally,
@@ -455,7 +455,7 @@ any exported binding, and the run-time information must be available to
 evaluate references to any exported variable binding.
 
 If any of a library's bindings is imported by another library ``for
-\scheme{expand}'' (or for any meta level greater than 0) both expand-time and
+\scheme{expand}'' (or for any meta level greater than 0), then both expand-time and
 run-time information for the first library is made available when the second
 library is expanded.
 If any of a library's bindings is imported by another library ``for
@@ -476,7 +476,7 @@ We refer to executing the transformer expressions as \emph{visiting}
 the library and to executing the variable-definition right-hand-side 
 expressions and body expressions as \emph{invoking} the library.
 A library must be visited before code that uses its bindings can be
-expanded and invoked before code that uses its bindings can be executed.
+expanded, and it must be invoked before code that uses its bindings can be executed.
 Visiting or invoking a library may also trigger the visiting or
 invoking of other libraries.
 
@@ -511,10 +511,13 @@ The order in which imported libraries are invoked is not defined, but
 imported libraries must be invoked before the library's variable-definition
 right-hand-side and body expressions are evaluated.
 
-The bindings established by visiting or invoking a library at a given
-phase are entirely separate from the bindings established by visiting or
-invoking the library at any other phase, preventing information from being
-shared through these bindings across phases.
+An implementation is allowed to either distinguish invocations of a
+library across different phases, or to treat an invocation at any
+phases as an invocation at all phases. An implementation is further
+allowed to start each expansion of a \scheme{library} form by removing
+all invocations of libraries above phase 0. Thus, a portable library's
+meaning must not depend on whether the invocations are distinguished
+or perserved across \scheme{library} expansions.
 
 \subsection{Eval\label{sec:eval}}
 
@@ -632,7 +635,7 @@ Examples for macros and phases:
 
 (library (values-stuff)
   (import (r6rs) (import (for (id-stuff) expand)))
-  (export (for mvlet expand run))
+  (export (for (mvlet) expand run))
 
   (define-syntax mvlet
     (lambda (stx)
