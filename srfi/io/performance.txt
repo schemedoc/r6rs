@@ -170,6 +170,78 @@ not going to be worthwhile in systems that
 have good compilers.
 
 
+Getting the transcoder from the port
+====================================
+
+Some ports, e.g. stdio on Unix, actually have some
+idea of what transcoder would be most appropriate
+for them, perhaps from locale information or from
+Windows code pages (?).  We therefore decided that
+ports can be queried to find out what transcoder
+they think might be best, but that this transcoder
+cannot be changed via side effect.  We further
+agreed that read-char (and presumably write-char
+and the other procedures in the simple i/o library)
+would query the port to get the transcoder, while
+get-char and the other new procedures would not,
+as in:
+
+    (define (read-char port)
+      (get-char port (port-locale-transcoder port)))
+
+Since the transcoder associated with a port cannot
+be changed by side effect, its extraction from a
+port is more likely to be hoisted out of loops than
+under the original proposal.  In systems that
+associate the same transcoder with all ports, of
+course, the compiler will know which transcoder to
+use.  In systems that associate the same transcoder
+with all ports that are created in the same way,
+the compiler may have a good chance of deducing
+the specific port.
+
+When the transcoder cannot be determined by the
+compiler, however, calls to the read-char procedure
+are unlikely to be coded inline.
+
+
+Benchmarks
+==========
+
+The following table shows how many ASCII characters
+can be read in one second by several current systems.
+The first column is for a benchmark that performs a
+full procedure call for each character; its purpose
+is to estimate the performance that would be lost by
+calling the simple i/o library's version read-char
+instead of get-char.  The other columns use current
+implementations of R5RS's read-char to estimate the
+performance of R6RS get-char.
+
+On a 1.5 GHz SunBlade 1500:
+
+            read-char   get-char    get-char    read        read
+            from        from        from        from        from
+system      string      string      file        string      file
+
+Chez        10.7 M      19.1 M      16.3 M      12.7 M      11.4 M
+Larceny      4.7 M       5.4 M       5.9 M       1.8 M       1.8 M
+Bigloo       3.8 M       3.9 M       4.0 M      12.3 M      12.9 M
+Gambit       1.9 M       1.9 M       2.0 M       1.6 M       1.8 M
+MzScheme     1.0 M       1.4 M       1.5 M       1.9 M       2.5 M
+Chicken       .4 M        .4 M        .4 M        .4 M        .4 M
+
+On a 2.8 GHz Pentium (Linux):
+
+            read-char   get-char    get-char    read        read
+            from        from        from        from        from
+system      string      string      file        string      file
+
+Bigloo      12.7 M      16.2 M      14.6 M      33.7 M      33.3 M
+Larceny     13.7 M      15.0 M      22.8 M       3.5 M       3.8 M
+MzScheme     6.8 M       8.8 M      11.1 M       5.0 M       7.3 M
+
+
 Examples
 ========
 
