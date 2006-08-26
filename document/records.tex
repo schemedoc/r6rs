@@ -7,26 +7,22 @@ mechanism comes in four parts:
 
 \begin{itemize}
 \item a procedural layer for creating and manipulating record types and record
-  instances
-\item an explicit-naming syntactic layer for defining the various entities
-  associated with a record type---construction procedure, predicate, field
-  accessors, mutators, etc.---at once
-\item an implicit-naming syntactic layer built on top of the explicit-naming
-  syntactic layer, which chooses the names for the various products based on
-  the names of the record type and fields
-\item a set of reflection procedures
+  instances,
+\item an explicit-naming syntactic layer for defining record types and
+  explicitly named bindings for various procedures to manipulate the record
+  type,
+\item an implicit-naming syntactic layer that extends the explicit-naming
+  syntactic layer, allowing the names of the defined procedures to be
+  determined implicitly from the names of the record type and fields, and
+\item a set of inspection procedures.
 \end{itemize}
 % 
-The procedural layer allows dynamic construction of new record types and
-associated procedures for creating and manipulating records, which is
-particularly useful when writing interpreters that construct host-compatible
-record types. It may also serve as a target for expansion of the syntactic
-layers.
-
-The procedural layer allows record types to be extended. This allows using
-record types to naturally model hierarchies that occur in applications like
-algebraic data types, and also single-inheritance class systems. This model of
-extension has a well-understood representation that is simple to implement.
+The procedural layer allows programs to construct new record types
+and the associated procedures for creating and manipulating records
+dynamically.
+It is particularly useful for writing interpreters that construct
+host-compatible record types.  It may also serve as a target for expansion
+of the syntactic layers.
 
 The explicit-naming syntactic layer provides a basic syntactic interface
 whereby a single record definition serves as a shorthand for the definition of
@@ -34,7 +30,6 @@ several record creation and manipulation routines: a construction procedure, a
 predicate, field accessors, and field mutators. As the name suggests, the
 explicit-naming syntactic layer requires the programmer to name each of these
 products explicitly.
-and non-generative record types.
 
 The implicit-naming syntactic layer extends the explicit-naming syntactic layer
 by allowing the names for the construction procedure, predicate, accessors, and
@@ -43,18 +38,26 @@ of the fields. This establishes a standard naming convention and allows
 record-type definitions to be more succinct, with the downside that the product
 definitions cannot easily be located via a simple search for the product name.
 The programmer may override some or all of the default names by specifying them
-explicitly as in the explicit-naming syntactic layer.
+explicitly, as in the explicit-naming syntactic layer.
 
-The two layers are designed to be fully compatible; the implicit-naming layer
-is simply a conservative extension of the explicit-naming layer. The goal is to
-make both explicit-naming and implicit-naming definitions reasonably natural
-while allowing a seamless transition between explicit and implicit naming.
+The two syntactic layers are designed to be fully compatible; the
+implicit-naming layer is simply a conservative extension of the
+explicit-naming layer.  The design makes both explicit-naming and
+implicit-naming definitions reasonably natural while allowing a seamless
+transition between explicit and implicit naming.
 
-The reflection procedures allow programs to obtain from a record instance a
+Each of these layers permits record types to be extended via single
+inheritence, allowing record types to model hierarchies that occur in
+applications like algebraic data types as well as single-inheritance class
+systems.
+
+Each of the layers also supports generative and non-generative record types.
+
+The inspection procedures allow programs to obtain from a record instance a
 descriptor for the type and from there obtain access to the fields of the
 record instance. This allows the creation of portable printers and inspectors.
 A program may prevent access to a record's type and thereby protect the
-information stored in the record from the reflection mechanism by declaring the
+information stored in the record from the inspection mechanism by declaring the
 type opaque. Thus, opacity as presented here can be used to enforce abstraction
 barriers.
 
@@ -68,45 +71,49 @@ The procedural layer is provided by the \deflibrary{r6rs records
 \mainschindex{make-record-type-descriptor}{\tt\obeyspaces\\
         \var{parent} \var{uid} \var{sealed?} \var{opaque?} \var{fields})}
    
-This returns a \defining{record-type descriptor}, or \defining{rtd}.
-The rtd represents a record type distinct from all built-in types and
-other record types. The rtd and the data type it represents are new
-except possibly if \var{uid} is provided (see below).
+This returns a \defining{record-type descriptor}, or \defining{rtd},
+representing a record type distinct from all built-in types and
+other record types.
 
 The \var{name} argument must be a symbol naming the record type; it is
-purely for informational purposes, and may be used for printing by the
-underlying Scheme system.
+intended purely for informational purposes and may be used for printing by
+the underlying Scheme system.
 
 The \var{parent} argument is either \schfalse{} or an rtd. If it is an
 rtd, the returned record type, \var{t}, extends the record type
-\var{p} represented by parent. Each record of type \var{t} is also a
+\var{p} represented by \var{parent}. Each record of type \var{t} is also a
 record of type \var{p}, and all operations applicable to a record of
 type \var{p} are also applicable to a record of type \var{t}, except for
-reflection operations if \var{t} is opaque but \var{p} is not. An exception with
+inspection operations if \var{t} is opaque but \var{p} is not. An exception with
 condition type {\cf\&contract} is raised if \var{parent} is sealed (see below).
    
 The extension relationship is transitive in the sense that a type extends
 its parent's parent, if any, and so on.
    
-The \var{uid} argument is either \schfalse{} or a symbol. If it is a
-symbol, the created record type is non-generative, i.e. there may be
-only one record type with that \var{uid} in the entire system (in the
-sense of {\cf eqv?}).  When {\cf make-record-type-descriptor} is
-called repeatedly with the same \var{uid} argument (in the sense of
-{\cf eq?}), the parent argument must be the same in the sense of {\cf
-  eqv?}  (more on this below), and the \var{uid}, \var{sealed?},
-\var{opaque?}, and \var{fields} arguments must be the same in the
-sense of {\cf equal?}.  In this case, the same record-type descriptor
-(in the sense of {\cf eqv?})  is returned every time. If a call with
-the same uid differs in any argument, an exception with condition type
-{\cf\&contract} is raised. If
-\var{uid} is \schfalse, or if no record type with the given uid has
-been created before, {\cf make-record-type-descriptor} returns a fresh
-record-type descriptor representing a new type disjoint from all other
-types.
+The \var{uid} argument is either \schfalse{} or a symbol.
+If \var{uid} is a symbol, the record-creation operation is
+\emph{non-generative} i.e., a new record type is created only
+if no previous call to {\cf make-record-type-descriptor}
+was made with the \var{uid}.
+If \var{uid} is \schfalse{}, the record-creation operation is
+\emph{generative}, i.e., a new record type is created even if
+a previous call to {\cf make-record-type-descriptor} was
+made with the same arguments.
+
+If {\cf make-record-type-descriptor} is
+called twice with the same \var{uid} symbol, the parent
+arguments in the two calls must be {\cf eqv?}, the \var{fields}
+arguments {\cf equal?}, the \var{sealed?} arguments boolean-equivalent
+(both false or both non-false), and the \var{opaque?} arguments
+boolean-equivalent.
+If these conditions are not met, an error is signaled when the
+second call occurs.
+If they are met, the second call returns, without creating a new
+record type, the same record-type descriptor
+(in the sense of {\cf eqv?}) as the first call.
 
 \begin{note}   
-  Users are strongly strongly encouraged to use symbol names
+  Users are encouraged to use symbol names
   constructed using the UUID namespace (for example, using the
   record-type name as a prefix) for the uid argument.
 \end{note}
@@ -114,34 +121,35 @@ types.
 The \var{sealed?} flag is a boolean. If true, the returned record type
 is sealed, i.e., it cannot be extended.
 
-The \var{opaque?} flag is a boolean. If true, the returned record type
-is opaque.  This means that calls to {\cf record?} will return
-\schfalse{} and {\cf record-rtd} (see ``Reflection'' below) will raise
+The \var{opaque?} flag is a boolean. If true, the record type
+is opaque.
+If passed an instance of the record type,
+{\cf record?} returns
+\schfalse{} and {\cf record-rtd} (see ``Inspection'' below) raises
 an exception with condition type {\cf\&contract}.
 The record type is also opaque if an opaque parent is
 supplied.  If \var{opaque?} is false and an opaque parent is not
 supplied, the record is not opaque.
 
 The \var{fields} argument must be a list of field specifiers. Each
-field specifier must be a list of the form (mutable name), or a list
-of the form (immutable name). The specified fields are added to the
-parent fields, if any, to determine the complete set of fields of the
-returned record type.  Each name must be a symbol and names the
-corresponding field of the record type; the names need not be
-distinct. A field with tag mutable may be modified, whereas an attempt
-to obtain a mutator for a field with tag immutable will raise an
-exception with condition type {\cf\&contract}.
-
+field specifier must be a list of the form {\cf (mutable \var{name})}
+or a list of the form {\cf (immutable \var{name})}.
+Each name must be a symbol and names the corresponding field of the record
+type; the names need not be distinct.  A field identified as mutable may
+be modified, whereas an attempt to obtain a mutator for a field identified
+as immutable raises an exception with condition type {\cf\&contract}.
 Where field order is relevant, e.g., for record construction and field
 access, the fields are considered to be ordered as specified, although
 no particular order is required for the actual representation of a
 record instance.
 
-A record type whose complete set of fields are all immutable is
-considered immutable itself. Conversely, a record type is considered
-mutable if there is at least one mutable field in its complete set of
-fields.
+The specified fields are added to the parent fields, if any, to determine
+the complete set of fields of the returned record type.
 
+A record type is considered immutable if each of its complete set of
+fields is immutable and mutable otherwise.
+
+\HERE
 A generative record-type descriptor created by a call to {\cf
   make-record-type-descriptor} is not {\cf eqv?} to any record-type
 descriptor (generative or non-generative) created by another call to
@@ -227,17 +235,18 @@ types of \var{rtd} with initial values.
 
 If \var{rtd} is not an extension of another record type, then
 parent-constructor-descriptor must be \schfalse. In this case, the
-protocol receives as argument a procedure \var{new} that has a
-parameter for every field of \var{rtd}; \var{new} will return a record
+protocol receives as an argument a procedure \var{new} that has a
+parameter for every field of \var{rtd}; \var{new} returns a record
 object with the fields of \var{rtd} initialized to its arguments.
 
 Protocol example:
 
+\HERE: simplify this to (lambda (new) new)?
 \begin{scheme}
 (lambda (new) (lambda (v \ldots)  (new v \ldots)))
 \end{scheme}
 
-Here, the call to {\cf new} will return a record where the fields of
+Here, the call to {\cf new} returns a record where the fields of
 \var{rtd} are simply initialized with the arguments {\tt v \ldots}.
 
 As the protocol can be used to construct records of an extension of
@@ -248,8 +257,8 @@ If \var{rtd} is an extension of another record type \var{rtd'},
 parent-constructor-descriptor itself must be a constructor descriptor
 of \var{rtd'} (except for default values; see below). In this case,
 the protocol receives as argument a procedure \var{p} whose arguments
-will be passed unchanged to the constructor of
-parent-constructor-descriptor; \var{p} will return another procedure that
+are passed unchanged to the constructor of
+parent-constructor-descriptor; \var{p} returns another procedure that
 accepts as argument the initial values for the fields of \var{rtd} and
 itself returns what the constructor of parent-constructor-descriptor
 returned, with the field values of \var{rtd'} (and its parent and so on)
@@ -268,7 +277,7 @@ Protocol example:
       (construct v \ldots))))
 \end{scheme}
     
-This will initialize the fields of the parent of \var{rtd} according
+This initializes the fields of the parent of \var{rtd} according
 to parent-constructor-descriptor, calling the associated constructor
 with {\tt x \ldots} as arguments, and initializing the fields of \var{rtd}
 itself with {\tt v \ldots}
@@ -281,19 +290,20 @@ associated record type.
 Protocol can be \schfalse, specifying a default. This is only
 admissible if either \var{rtd} is not an extension of another record
 type, or, if it is, if parent-constructor-descriptor itself was
-constructed with a default protocol. In the first case, protocol will
-default to a procedure equivalent to the following:
+constructed with a default protocol. In the first case, protocol
+defaults to a procedure equivalent to the following:
 
+\HERE: simplify this to (lambda (p) p)?
 \begin{scheme}
 (lambda (p)
   (lambda field-values
     (apply p field-values)))
 \end{scheme}
   
-In the latter case, it will default to a protocol that returns a
-constructor that will accept as many arguments as \var{rtd} has total
+In the latter case, it defaults to a protocol that returns a
+constructor that accepts as many arguments as \var{rtd} has total
 fields (i.e. as the sum of the number of fields in the entire chain of
-record types) and will return a record with fields initialized to
+record types) and returns a record with fields initialized to
 those arguments, with the field values for the parent coming before
 those of the extension in the argument list.
 
@@ -327,12 +337,12 @@ those of the extension in the argument list.
 Calls the protocol of record-constructor descriptor
 \var{constructor-descriptor} with an appropriate procedure \var{c} as
 an argument (see the description of {\cf
-  make-record-constructor-descriptor}) that will create a record of
+  make-record-constructor-descriptor}) that creates a record of
 the record type associated with \var{constructor-descriptor}.
 
 If the record type associated with \var{constructor-descriptor} is
 opaque, then the values created by such a constructor are not
-considered by the reflection procedures to be records; see the
+considered by the inspection procedures to be records; see the
 specification of {\cf record?} below.
 
 A record from an immutable record type is called immutable;
@@ -806,28 +816,28 @@ of accessor and mutator names for the widget field.
 \end{scheme}
 
 
-\section{Reflection}
+\section{Inspection}
 
 The implicit-naming syntactic layer is provided by the
-\deflibrary{r6rs records reflection} library.
+\deflibrary{r6rs records inspection} library.
 
-A set of procedures are provided for reflecting on records and their
+A set of procedures are provided for inspecting records and their
 record-type descriptors. These procedures are designed to allow the
 writing of portable printers and inspectors.
 
 Note that {\cf record?} and {\cf record-rtd} treat records of opaque
 record types as if they were not records. On the other hand, the
-reflection procedures that operate on record-type descriptors
+inspection procedures that operate on record-type descriptors
 themselves are not affected by opacity. In other words, opacity
 controls whether a program can obtain an rtd from an instance. If the
 program has access to the original rtd via {\cf
   make-record-type-descriptor} or {\cf record-type-descriptor} it can
-reflect upon it.
+still make use of the inspection procedures.
 
 Any of the standard types mentioned in this report may or may not be
 implemented as a non-opaque record type.  Consequently, {\cf record?},
 when applied to an object of one of these types, may return
-\schtrue{}.  In this case, reflection is possible for these objects.
+\schtrue{}.  In this case, inspection is possible for these objects.
 
 \begin{entry}{%
 \proto{record?}{ obj}{procedure}}
