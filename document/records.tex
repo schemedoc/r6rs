@@ -149,54 +149,38 @@ the complete set of fields of the returned record type.
 A record type is considered immutable if each of its complete set of
 fields is immutable and mutable otherwise.
 
-\HERE
 A generative record-type descriptor created by a call to {\cf
   make-record-type-descriptor} is not {\cf eqv?} to any record-type
 descriptor (generative or non-generative) created by another call to
 {\cf make-record-type-descriptor}. A generative record-type descriptor
 is {\cf eqv?}  only to itself, i.e., {\tt (eqv?~\vri{rtd} \vrii{rtd})} iff
-{\tt (eq?~\vri{rtd} \vrii{rtd})}.  Moreover:
-
-\begin{scheme}
-(let ((rtd (make-record-type-descriptor \ldots)))
-  (eqv? rtd rtd))                \ev \schfalse
-\end{scheme}
-
-Note that this does not imply the following:
-
-\begin{scheme}
-(let ((rtd (make-record-type-descriptor \ldots)))
-  (eq? rtd rtd))                 \ev \schtrue
-\end{scheme}
-
-Also, two non-generative record-type descriptors are eqv? iff they were
-successfully created by calls to make-record-type-descriptor with the same
+{\tt (eq?~\vri{rtd} \vrii{rtd})}.
+Also, two non-generative record-type descriptors are {\cf eqv?} iff they were
+created by calls to {\cf make-record-type-descriptor} with the same
 uid arguments.
 
 \begin{rationale}
-  The field names provided as an argument to {\cf
-    make-record-type-descriptor} and in the syntactic layers are only
-  for informational purposes for use in, say, debuggers. They are not
-  actively used anywhere else in the interface except for the implicit
-  generation of field names in the implicit-naming syntactic layer,
-  where there is a restriction on duplicate names.
+  The record and field names passed to
+  {\cf make-record-type-descriptor} and appearing in the explicit-naming
+  syntactic layer are for informational purposes only, e.g., for
+  printers and debuggers.
+  In particular, the accessor and mutator creation routines do not use
+  names, but rather field indices, to identify fields.
+  
+  Thus, field names are not required to be distinct in the procedural or
+  implicit-naming syntactic layers.
+  This relieves macros and other code generators from the need to
+  generate distinct names.
 
-  They are not required to be distinct because it is inconvenient for
-  a macro that calls make-record-type-descriptor to arrange for the
-  names it provides to be both unique and meaningful. Moreover, a
-  symbolic key would have to be combined with the rtd it appears in to
-  uniquely reference a field, as disallowing duplicate field names
-  between a record type and its extensions would break important
-  abstraction barriers.
-
-  The record abstractions described here do not use names as keys into
-  record values but instead indices relative to the record type.
+  The record and field names are used in the implicit-naming syntactic
+  layer for the generation of field names, where duplicate field names are
+  prohibited.
 \end{rationale}
 
 \begin{rationale}
-  Making a record type sealed helps enforce abstration barriers.
-  Extending a record type may make monomorphic code polymorphic, and
-  expose implementation details of the parent type.  This may make it
+  Sealing a record type can help enforce abstration barriers by preventing
+  extensions that may expose implementation details of the parent type.
+  Type extensions also make monomorphic code polymorphic and
   difficult to change the parent class at a later time, and also
   prevent effective predictions of types by a compiler or human
   reader.
@@ -204,7 +188,7 @@ uid arguments.
 
 \begin{rationale}
   Multiple inheritance was considered but omitted from the records
-  facility, as it would raise a number of semantic issues such as
+  facility, as it raises a number of semantic issues such as
   sharing among common parent types.
 \end{rationale}
 \end{entry}
@@ -241,7 +225,7 @@ object with the fields of \var{rtd} initialized to its arguments.
 
 Protocol example:
 
-\HERE: simplify this to (lambda (new) new)?
+FIXME: simplify this to (lambda (new) new)?
 \begin{scheme}
 (lambda (new) (lambda (v \ldots)  (new v \ldots)))
 \end{scheme}
@@ -293,7 +277,7 @@ type, or, if it is, if parent-constructor-descriptor itself was
 constructed with a default protocol. In the first case, protocol
 defaults to a procedure equivalent to the following:
 
-\HERE: simplify this to (lambda (p) p)?
+FIXME: simplify this to (lambda (p) p)?
 \begin{scheme}
 (lambda (p)
   (lambda field-values
