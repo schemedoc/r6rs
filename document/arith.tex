@@ -1,158 +1,16 @@
-\chapter{Numbers}
+\chapter{Arithmetic}
 \label{numberchapter}
 \index{number}
 
-Numerical computation has traditionally been neglected by the Lisp
-community.  Until Common Lisp there was no carefully thought out
-strategy for organizing numerical computation, and with the exception of
-the MacLisp system \cite{Pitman83} little effort was made to
-execute numerical code efficiently.  This report recognizes the excellent work
-of the Common Lisp committee and accepts many of their recommendations.
-In some ways this report simplifies and generalizes their proposals in a manner
-consistent with the purposes of Scheme.
-
-It is important to distinguish between the mathematical numbers, the
-Scheme numbers that attempt to model them, the machine representations
-used to implement the Scheme numbers, and notations used to write numbers.
-This report uses the types \type{number}, \type{complex}, \type{real},
-\type{rational}, and \type{integer} to refer to both mathematical numbers
-and Scheme numbers.  Machine representations such as fixed point and
-floating point are referred to by names such as \type{fixnum} and
-\type{flonum}.
-
-\section{Numerical types}
-\label{numericaltypes}
-\index{numerical types}
-
-\vest Mathematically, numbers may be arranged into a tower of subtypes
-in which each level is a subset of the level above it:
-\begin{tabbing}
-\ \ \ \ \ \ \ \ \ \=\tupe{number} \\
-\> \tupe{complex} \\
-\> \tupe{real} \\
-\> \tupe{rational} \\
-\> \tupe{integer} 
-\end{tabbing}
-
-For example, 3 is an integer.  Therefore 3 is also a rational,
-a real, and a complex.  The same is true of the Scheme numbers
-that model 3.  For Scheme numbers, these types are defined by the
-predicates \ide{number?}, \ide{complex?}, \ide{real?}, \ide{rational?},
-and \ide{integer?}.
-
-There is no simple relationship between a number's type and its
-representation inside a computer.  Although most implementations of
-Scheme will offer at least two different representations of 3, these
-different representations denote the same integer.
-
-Scheme's numerical operations treat numbers as abstract data, as
-independent of their representation as possible.  Although an implementation
-of Scheme may use fixnum, flonum, and perhaps other representations for
-numbers, this should not be apparent to a casual programmer writing
-simple programs.
-
-It is necessary, however, to distinguish between numbers that are
-represented exactly and those that may not be.  For example, indexes
-into data structures must be known exactly, as must some polynomial
-coefficients in a symbolic algebra system.  On the other hand, the
-results of measurements are inherently inexact, and irrational numbers
-may be approximated by rational and therefore inexact approximations.
-In order to catch uses of inexact numbers where exact numbers are
-required, Scheme explicitly distinguishes exact from inexact numbers.
-This distinction is orthogonal to the dimension of type.
-
-A subrange of the exact integers is designated as the set of fixnums.
-Conversely, a \defining{fixnum} is an exact integer whose value lies
-within this fixnum range.  Moreover, every implementation is required
-to designate a subset of its inexact reals as \defining{flonum}s, and
-to convert certain external representations into flonums.  Note that
-this does not imply that an implementation is required to use
-floating-point representations
-
-\section{Exactness}
-\label{exactly}
-
-\mainindex{exactness} Scheme numbers are either \type{exact} or
-\type{inexact}.  A number is exact if it was written as an exact
-constant or was derived from exact numbers using only exact
-operations.  A number is inexact if it was written as an inexact
-constant or was derived from inexact numbers.  Thus inexactness is
-contagious.  
-
-It is the programmer's responsibility to avoid using numbers with
-magnitude or significand too large to be represented in the
-implementation.
-
-If two implementations produce exact results for a computation that
-did not involve inexact intermediate results, the two ultimate results
-will be mathematically equivalent.  This is generally not true of
-computations involving inexact numbers because approximate methods
-such as floating point arithmetic may be used, but it is the duty of
-each implementation to make the result as close as practical to the
-mathematically ideal result.
-
-\section{Implementation restrictions}
-
-\index{implementation restriction}\label{restrictions}
-
-\vest Implementations of Scheme are required to implement the whole
-tower of subtypes given in section~\ref{numericaltypes}.
-
-\vest Implementations may also support only a limited range of inexact numbers of
-any type, subject to the requirements of this section.  For example,
-an implementation that uses flonums to represent all its
-inexact real numbers may
-limit the range of inexact reals (and therefore
-the range of inexact integers and rationals)
-to the dynamic range of the flonum format.
-Furthermore
-the gaps between the representable inexact integers and
-rationals are
-likely to be very large in such an implementation as the limits of this
-range are approached.
-
-\vest Implementations are required to support
-exact integers and exact rationals of
-practically unlimited size and precision, and to implement the
-above procedures and the {\cf /} procedure in
-such a way that they always return exact results when given exact
-arguments.
-
-\vest An implementation may use floating point and other approximate 
-representation strategies for \tupe{inexact} numbers.
-This report recommends, but does not require, that the IEEE 
-floating point standards be followed by implementations that use
-flonum representations, and that implementations using
-other representations should match or exceed the precision achievable
-using these floating point standards~\cite{IEEE}.
-
-\vest In particular, implementations that use flonum representations
-must follow these rules: A flonum result
-must be represented with at least as much precision as is used to express any of
-the inexact arguments to that operation.  It is desirable (but not required) for
-potentially inexact operations such as {\cf sqrt}, when applied to exact
-arguments, to produce exact answers whenever possible (for example the
-square root of an exact 4 ought to be an exact 2).
-If, however, an
-exact number is operated upon so as to produce an inexact result
-(as by {\cf sqrt}), and if the result is represented as a flonum, then
-the most precise flonum format available must be used; but if the result
-is represented in some other way then the representation must have at least as
-much precision as the most precise \tupe{flonum} format available.
-
+This chapter describes Scheme's libraries for more specialized
+numerical operations: fixnum and flonum arithmetic, as well as generic
+exact and generic inexact arithmetic.  It also gives more precise
+descriptions of the semantics of infinities and NaNs, and some of the
+underlying mathematical operations for integer division and the
+transcendental functions.
 
 \section{Infinities and NaNs}
 \label{infinitiesnanssection}
-
-Positive infinity is regarded as a real (but not rational) number,
-whose value is indeterminate but greater than all rational numbers.
-Negative infinity is regarded as a real (but not rational) number,
-whose value is indeterminate but less than all rational numbers.
-
-A NaN is regarded as a real (but not rational) number whose value is
-so indeterminate that it might represent any real number, including
-positive or negative infinity, and might even be greater than positive
-infinity or less than negative infinity.
 
 The specification of the numerical operations is written as though
 infinities and NaNs are representable, and specifies many operations
@@ -1943,6 +1801,12 @@ or \varii{ir} is an infinity, then
 (inexact-magnitude \var{z})              \ev +inf.0
 \end{scheme}
 \end{entry}
+
+\section{Generic arithmetic}
+
+The \library{r6rs arithmetic generic} contains bindings for the
+procedures described in section~\ref{genericarithmeticsection}, which
+are already part of the \library{r6rs base} library.
 
 %%% Local Variables: 
 %%% mode: latex
