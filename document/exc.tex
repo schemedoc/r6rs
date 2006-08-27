@@ -641,13 +641,13 @@ This type describes defects in the program.
 
 \begin{entry}{%
 \ctproto{lexical}
-\proto{lexical-defect?}{ obj}{procedure}}
+\proto{lexical-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&lexical \&defect
-  lexical-defect?)
+  lexical-violation?)
 \end{scheme}
 %
 This type describes syntax errors at the level of the read syntax.
@@ -655,35 +655,35 @@ This type describes syntax errors at the level of the read syntax.
 
 \begin{entry}{%
 \ctproto{defect}
-\proto{syntax-defect?}{ obj}{procedure}}
+\proto{syntax-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
-(define-condition-type \&syntax \&defect
-  syntax-defect?
-  (expression syntax-defect-expression)
-  (subexpression syntax-defect-subexpression))
+(define-condition-type \&syntax \&violation
+  syntax-violation?
+  (expression syntax-violation-expression)
+  (subexpression syntax-violation-subexpression))
 \end{scheme}
 
 This type describes syntax errors at the level of the library syntax.
 The {\cf expression} field contains the erroneous syntax object or an
 S-expression representing that code of the erroneous form.  The {\cf
   subexpression} field may contain an optional syntax object or
-S-expression within the errnoeous forn that more precisely locates the
-defect.  It can be \schfalse{} to indicate the absence of more precise
+S-expression within the erroneous form that more precisely locates the
+violation.  It can be \schfalse{} to indicate the absence of more precise
 information.
 \end{entry}
 
 \begin{entry}{%
 \ctproto{undefined}
-\proto{undefined-defect?}{ obj}{procedure}}
+\proto{undefined-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&undefined \&defect
-  undefined-defect?)
+  undefined-violation?)
 \end{scheme}
 % 
 This type describes unbound identifiers in the program.
