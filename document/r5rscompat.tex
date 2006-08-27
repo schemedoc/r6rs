@@ -1,0 +1,115 @@
+\section{R$^5$RS compatibility}
+
+The procedures described in this section are exported from the
+\library{r6rs r5rs} library, and provide procedures described in the
+previous revision of this report~\cite{R5RS}, but omitted from this
+revision.
+
+\begin{entry}{%
+\proto{exact->inexact}{ z}{procedure}
+\proto{inexact->exact}{ z}{procedure}}
+
+These are the same as the {\cf ->inexact} and {\cf ->exact}
+procedures, see section~\ref{->inexact}.
+\end{entry}
+
+\begin{entry}{%
+\proto{quotient}{ \vari{n} \varii{n}}{procedure}
+\proto{remainder}{ \vari{n} \varii{n}}{procedure}
+\proto{modulo}{ \vari{n} \varii{n}}{procedure}}
+
+These procedures implement number-theoretic (integer)
+division.  \vrii{n} must be non-zero.  All three procedures
+return integers.  If \vri{n}/\vrii{n} is an integer:
+\begin{scheme}
+    (quotient \vri{n} \vrii{n})   \ev \vri{n}/\vrii{n}
+    (remainder \vri{n} \vrii{n})  \ev 0
+    (modulo \vri{n} \vrii{n})     \ev 0
+\end{scheme}
+If \vri{n}/\vrii{n} is not an integer:
+\begin{scheme}
+    (quotient \vri{n} \vrii{n})   \ev \vr{n_q}
+    (remainder \vri{n} \vrii{n})  \ev \vr{n_r}
+    (modulo \vri{n} \vrii{n})     \ev \vr{n_m}
+\end{scheme}
+where \vr{n_q} is $\vri{n}/\vrii{n}$ rounded towards zero,
+$0 < |\vr{n_r}| < |\vrii{n}|$, $0 < |\vr{n_m}| < |\vrii{n}|$,
+\vr{n_r} and \vr{n_m} differ from \vri{n} by a multiple of \vrii{n},
+\vr{n_r} has the same sign as \vri{n}, and
+\vr{n_m} has the same sign as \vrii{n}.
+
+Consequently, for integers \vri{n} and \vrii{n} with
+\vrii{n} not equal to 0,
+\begin{scheme}
+     (= \vri{n} (+ (* \vrii{n} (quotient \vri{n} \vrii{n}))
+           (remainder \vri{n} \vrii{n})))
+                                 \ev  \schtrue%
+\end{scheme}
+provided all numbers involved in that computation are exact.
+
+\begin{scheme}
+(modulo 13 4)           \ev  1
+(remainder 13 4)        \ev  1
+
+(modulo -13 4)          \ev  3
+(remainder -13 4)       \ev  -1
+
+(modulo 13 -4)          \ev  -3
+(remainder 13 -4)       \ev  1
+
+(modulo -13 -4)         \ev  -1
+(remainder -13 -4)      \ev  -1
+
+(remainder -13 -4.0)    \ev  -1.0  ; inexact%
+\end{scheme}
+
+\begin{note}
+  These procedures could be defined in terms of {\cf div} and {\cf
+    mod} (see section~\ref{div}) as follows (without checking of the
+  argument types):
+\begin{scheme}
+(define (sign n)
+  (cond
+    ((negative? n) -1)
+    ((positive? n) 0)
+    (else 0)))
+
+(define (quotient  n1 n2)
+  (* (sign n1) (sign n2) (div (abs n1) (abs n2))))
+
+(define (remainder n1 n2)
+  (* (sign n1) (mod (abs n1) (abs n2))))
+
+(define (modulo n1 n2)
+  (* (sign n2) (mod (* (sign n2) n1) (abs n2))))
+\end{scheme}
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\proto{null-environment}{ n}{procedure}}
+
+\domain{\var{N} must be the exact integer 5.}  This returns an
+environment specifier suitable for use with {\cf eval} (see
+section~\ref{eval}) representing an environment that is empty except
+for the (syntactic) bindings for all syntactic keywords described in
+the previous revision of this report~\cite{R5RS}.
+\end{entry}
+
+\begin{entry}{%
+\proto{scheme-report-environment}{ n}{procedure}}
+
+\domain{\var{N} must be the exact integer 5.}  This procedure returns
+an environment specifier for an environment that is empty except for
+the bindings for the standard procedures described in the previous
+revision of this report~\cite{R5RS}, except for {\cf load}, {\cf
+  transcript-on}, {\cf transcript-off}, and {\cf char-ready?}.  The
+bindings have as values the procedures of the same names described in
+this report.
+\end{entry}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
