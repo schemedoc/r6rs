@@ -49,120 +49,6 @@ This report uses the word ``true'' to refer to any
 Scheme value except \schfalse{}, and the word ``false'' to refer to
 \schfalse{}. \mainindex{true} \mainindex{false}
 
-\section{Declarations}
-\label{declarations}
-
-\schindex{declarations}
-A declaration affects a range of code, and indicates that the code
-within that range should be compiled or executed to have certain
-qualities.  A declaration appears at the beginning of a \hyper{body}
-(see section~\ref{bodiessection}), and its range is the library in which it
-appears, the expression that immediately surrounds the \hyper{body} at
-whose head it appears, or the group of definitions at whose head it
-appears, possibly including code inserted into the range
-by macro expansion.
-
-A declaration \hyper{declaration} has the following form:\mainschindex{declare}
-
-{\cf (declare \arbno{\hyper{declare spec}})}
-
-A \hyper{declare spec} has one of the following forms:
-
-\begin{itemize}
-\item {\cf (\hyper{quality} \hyper{priority})}
-
-  \hyper{quality} has to be one of {\cf safe}, {\cf fast}, {\cf
-    small}, and {\cf debug}.  \hyper{priority} has to be one of {\cf
-    0}, {\cf 1}, {\cf 2}, and {\cf 3}.
-
-  This specifies that the code in the range of the declaration should
-  have the indicated quality at the indicated priority, where priority
-  3 is the highest priority.  Priority 0 means the quality is not a
-  priority at all.
-
-\item {\cf \hyper{quality}}
-  
-  This is a synonym for {\cf (\hyper{quality} 3)}.
-  
-\item {\cf unsafe}
-
-  This is a synonym for {\cf (safe 0)}.
-\end{itemize}
-
-For {\cf safe}, the default priority must be 1 or higher.  When the
-priority for {\cf safe} is 1 or higher, implementations must raise all
-required exceptions and let them be handled by the exception mechanism
-(see chapter~\ref{exceptionsconditionschapter}).
-
-Beyond that, the detailed interpretation of declarations will vary in
-different implementations.  In particular, implementations are free to
-ignore declarations, and may observe some declarations while ignoring
-others.
-
-The following descriptions of each quality may provide some guidance
-for programmers and implementors.
-
-\paragraph{{\tt safe}}
-
-This quality's priority influences the degree of checking for
-exceptional situations, and the raising and handling of exceptions in
-response to those situations.  The higher the priority, the more
-likely an exception will be raised.
-
-At priority 0, an implementation is allowed to ignore any requirements
-for raising an exception with condition type {\cf\&violation} (or one
-of its subtypes).  In situations for which this report allows or
-requires the implementation to raise an exception with condition type
-{\cf\&violation}, the implementation may ignore the situation and
-continue the computation with an incorrect result, may terminate the
-computation in an unpleasant fashion, or may destroy the invariants of
-run-time data structures in ways that cause unexpected and mysterious
-misbehavior even in code that comes within the scope of a safe
-declaration.  All bets are off.
-
-At priority 1 and higher, an implementation must raise all exceptions
-required by this report, handle those exceptions using the exception
-mechanism described in chapter~\ref{exceptionsconditionschapter}, and
-use the default exception handlers described in that chapter.  See
-also section~\ref{safetysection}.
-
-At higher priorities, implementations may be more likely to raise
-exceptions that are allowed but not required by this report.
-
-Most implementations are able to recognize some violations when
-parsing, expanding macros, or compiling a definition or expression
-whose evaluation has not yet commenced in the usual sense.
-Implementations are allowed to use nonstandard exception handlers at
-those times, and are encouraged to raise {\cf\&syntax} exceptions for
-violations detected at those times, even if the definition or
-expression that contains the violation will never be executed.
-Implementations are also allowed to raise a {\cf\&warning} exception
-at those times if they determine that some subexpression would
-inevitably raise some kind of {\cf\&violation} exception were it ever
-to be evaluated.
-
-\paragraph{{\tt fast}}
-
-This quality's priority influences the speed of the code it governs.
-At high priorities, the code is likely to run faster, but that
-improvement is constrained by other qualities and may come at the
-expense of the small and debug qualities.
-
-\paragraph{{\tt small}}
-
-This quality's priority influences the amount of computer memory
-needed to represent and to run the code.  At high priorities, the code
-is likely to occupy less memory and to require less memory during
-evaluation.
-
-\paragraph{{\tt debug}}
-
-This quality's priority influences the programmer's ability to debug
-the code.  At high priorities, the programmer is more likely to
-understand the correspondence between the original source code and
-information displayed by debugging tools.  At low priorities, some
-debugging tools may not be usable.
-
 \section{Definitions}
 \label{defines}
 
@@ -1009,357 +895,6 @@ of the {\cf begin} contains no definitions.
          (lambda () exp1)
        (lambda ignored
          (begin exp2 ...))))))
-\end{scheme}
-
-\end{entry}
-
-
-\subsection{Iteration}%\unsection
-
-\noindent%
-\pproto{(do ((\hyperi{variable} \hyperi{init} \hyperi{step})}{\exprtype}
-\mainschindex{do}{\tt\obeyspaces%
-     \dotsfoo)\\
-    (\hyper{test} \hyper{expression} \dotsfoo)\\
-  \hyper{command} \dotsfoo)}
-
-The {\cf do} expression is an iteration construct.  It specifies a set of variables to
-be bound, how they are to be initialized at the start, and how they are
-to be updated on each iteration.  When a termination condition is met,
-the loop exits after evaluating the \hyper{expression}s.
-
-A {\cf do} expression are evaluated as follows:
-The \hyper{init} expressions are evaluated (in some unspecified order),
-the \hyper{variable}s are bound to fresh locations, the results of the
-\hyper{init} expressions are stored in the bindings of the
-\hyper{variable}s, and then the iteration phase begins.
-
-\vest Each iteration begins by evaluating \hyper{test}; if the result is
-false (see section~\ref{booleansection}), then the \hyper{command}
-expressions are evaluated in order for effect, the \hyper{step}
-expressions are evaluated in some unspecified order, the
-\hyper{variable}s are bound to fresh locations, the results of the
-\hyper{step}s are stored in the bindings of the
-\hyper{variable}s, and the next iteration begins.
-
-\vest If \hyper{test} evaluates to a true value, then the
-\hyper{expression}s are evaluated from left to right and the value(s) of
-the last \hyper{expression} is(are) returned.  If no \hyper{expression}s
-are present, then the value of the {\cf do} expression is the
-unspecified value.
-
-\vest The region\index{region} of the binding of a \hyper{variable}
-consists of the entire {\cf do} expression except for the \hyper{init}s.
-It is syntax violation for a \hyper{variable} to appear more than once in the
-list of {\cf do} variables.
-
-\vest A \hyper{step} may be omitted, in which case the effect is the
-same as if {\cf(\hyper{variable} \hyper{init} \hyper{variable})} had
-been written instead of {\cf(\hyper{variable} \hyper{init})}.
-
-\begin{scheme}
-(do ((vec (make-vector 5))
-     (i 0 (+ i 1)))
-    ((= i 5) vec)
-  (vector-set! vec i i))          \ev  \#(0 1 2 3 4)
-
-(let ((x '(1 3 5 7 9)))
-  (do ((x x (cdr x))
-       (sum 0 (+ sum (car x))))
-      ((null? x) sum)))             \ev  25%
-\end{scheme}
-
-The following definition
-of {\cf do} uses a trick to expand the variable clauses.
-As with {\cf letrec} above, an auxiliary macro would also work.
-
-\begin{scheme}
-(define-syntax \ide{do}
-  (syntax-rules ()
-    ((do ((var init step ...) ...)
-         (test expr ...)
-         command ...)
-     (letrec
-       ((loop
-         (lambda (var ...)
-           (if test
-               (begin
-                 (unspecified)
-                 expr ...)
-               (begin
-                 command
-                 ...
-                 (loop (do "step" var step ...)
-                       ...))))))
-       (loop init ...)))
-    ((do "step" x)
-     x)
-    ((do "step" x y)
-     y)))
-\end{scheme}
-
-%\end{entry}
-
-
-\begin{entry}{%
-\rproto{let}{ \hyper{variable} \hyper{bindings} \hyper{body}}{\exprtype}}
-
-\label{namedlet}
-``Named {\cf let}'' is a variant on the syntax of \ide{let} which provides
-a more general looping construct than {\cf do} and may also be used to express
-recursions.
-It has the same syntax and semantics as ordinary {\cf let}
-except that \hyper{variable} is bound within \hyper{body} to a procedure
-whose formal arguments are the bound variables and whose body is
-\hyper{body}.  Thus the execution of \hyper{body} may be repeated by
-invoking the procedure named by \hyper{variable}.
-
-%                                              |  <-- right margin
-\begin{scheme}
-(let loop ((numbers '(3 -2 1 6 -5))
-           (nonneg '())
-           (neg '()))
-  (cond ((null? numbers) (list nonneg neg))
-        ((>= (car numbers) 0)
-         (loop (cdr numbers)
-               (cons (car numbers) nonneg)
-               neg))
-        ((< (car numbers) 0)
-         (loop (cdr numbers)
-               nonneg
-               (cons (car numbers) neg))))) %
-  \lev  ((6 1 3) (-5 -2))%
-\end{scheme}
-
-The {\cf let} keyword could be defined in terms of {\cf lambda} and {\cf letrec}
-using {\cf syntax-rules} (see section~\ref{syntaxrulessection}) as
-follows:
-
-\begin{scheme}
-(define-syntax \ide{let}
-  (syntax-rules ()
-    ((let ((name val) ...) body1 body2 ...)
-     ((lambda (name ...) body1 body2 ...)
-      val ...))
-    ((let tag ((name val) ...) body1 body2 ...)
-     ((letrec ((tag (lambda (name ...)
-                      body1 body2 ...)))
-        tag)
-      val ...))))
-\end{scheme}
-
-\end{entry}
-
-\subsection{Quasiquotation}\unsection
-\label{quasiquotesection}
-
-\begin{entry}{%
-\proto{quasiquote}{ \hyper{qq template}}{\exprtype}}
-
-``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
-for constructing a list or vector structure when some but not all of the
-desired structure is known in advance.  If no
-{\cf unquote} or {\cf unquote-splicing} forms
-appear within the \hyper{qq template}, the result of
-evaluating
-{\cf (quasiquote \hyper{qq template})} is equivalent to the result of evaluating
-{\cf (quote \hyper{qq template})}.
-
-If an {\cf (unquote \hyper{expression} \dotsfoo)} form appears inside a
-\hyper{qq template}, however, the \hyper{expression}s are evaluated
-(``unquoted'') and their results are inserted into the structure instead
-of the {\cf unquote} form.
-
-If an {\cf (unquote-splicing \hyper{expression} \dotsfoo)} form
-appears inside a \hyper{qq template}, then the \hyper{expression}s must
-evaluate to lists; the opening and closing parentheses of the list are
-then ``stripped away'' and the elements of the lists are inserted in
-place of the {\cf unquote-splicing} form.  {\cf
-
-Unquote-splicing} and multi-operand {\cf unquote} forms should
-appear only within a list or vector \hyper{qq template}.
-
-As noted in section~\ref{quotesection},
-{\cf (quasiquote \hyper{qq template})} may be abbreviated
-\backquote\hyper{qq template},
-{\cf (unquote \hyper{expression})} may be abbreviated
-{\cf,}\hyper{expression}, and
-{\cf (unquote-splicing \hyper{expression})} may be abbreviated
-{\cf,}\atsign\hyper{expression}.
-
-% struck: "(in the sense of {\cf equal?})" after "equivalent"
-
-\begin{scheme}
-`(list ,(+ 1 2) 4)  \ev  (list 3 4)
-(let ((name 'a)) `(list ,name ',name)) %
-          \lev  (list a (quote a))
-`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) %
-          \lev  (a 3 4 5 6 b)
-`(({\cf foo} ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) %
-          \lev  ((foo 7) . cons)
-`\#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8) %
-          \lev  \#(10 5 2 4 3 8)
-(let ((name 'foo))
-  `((unquote name name name)))%
-          \lev (foo foo foo)
-(let ((name '(foo)))
-  `((unquote-splicing name name name)))%
-          \lev (foo foo foo)
-\end{scheme}
-
-Quasiquote forms may be nested.  Substitutions are made only for
-unquoted components appearing at the same nesting level
-as the outermost {\cf quasiquote}.  The nesting level increases by one inside
-each successive quasiquotation, and decreases by one inside each
-unquotation.
-
-\begin{scheme}
-`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f) %
-          \lev  (a `(b ,(+ 1 2) ,(foo 4 d) e) f)
-(let ((name1 'x)
-      (name2 'y))
-  `(a `(b ,,name1 ,',name2 d) e)) %
-          \lev  (a `(b ,x ,'y d) e)%
-\end{scheme}
-
-It is a syntax violation if any of the identifiers
-\ide{quasiquote}, \ide{unquote}, or \ide{unquote-splicing} appear in
-positions within a \hyper{qq template} otherwise than as described above.
-
-The following grammar for quasiquote expressions is not context-free.
-It is presented as a recipe for generating an infinite number of
-production rules.  Imagine a copy of the following rules for $D = 1, 2,
-3, \ldots$.  $D$ keeps track of the nesting depth.
-
-\begin{grammar}%
-\meta{quasiquotation} \: \meta{quasiquotation 1}
-\meta{qq template 0} \: \meta{expression}
-\meta{quasiquotation $D$} \: `\meta{qq template $D$}
-\>    \| (quasiquote \meta{qq template $D$})
-\meta{qq template $D$} \: \meta{simple datum}
-\>    \| \meta{list qq template $D$}
-\>    \| \meta{vector qq template $D$}
-\>    \| \meta{unquotation $D$}
-\meta{list qq template $D$} \: (\arbno{\meta{qq template or splice $D$}})
-\>    \| (\atleastone{\meta{qq template or splice $D$}} .\ \meta{qq template $D$})
-\>    \| '\meta{qq template $D$}
-\>    \| \meta{quasiquotation $D+1$}
-\meta{vector qq template $D$} \: \#(\arbno{\meta{qq template or splice $D$}})
-\meta{unquotation $D$} \: ,\meta{qq template $D-1$}
-\>    \| (unquote \meta{qq template $D-1$})
-\meta{qq template or splice $D$} \: \meta{qq template $D$}
-\>    \| \meta{splicing unquotation $D$}
-\meta{splicing unquotation $D$} \: ,@\meta{qq template $D-1$}
-\>    \| (unquote-splicing \arbno{\meta{qq template $D-1$}})
-\>    \| (unquote \arbno{\meta{qq template $D-1$}}) %
-\end{grammar}
-
-In \meta{quasiquotation}s, a \meta{list qq template $D$} can sometimes
-be confused with either an \meta{un\-quota\-tion $D$} or a \meta{splicing
-un\-quo\-ta\-tion $D$}.  The interpretation as an
-\meta{un\-quo\-ta\-tion} or \meta{splicing
-un\-quo\-ta\-tion $D$} takes precedence.
-
-\end{entry}
-
-\section{Binding constructs for syntactic keywords}
-\label{bindsyntax}
-
-The {\cf let-syntax} and {\cf letrec-syntax} forms are
-analogous to {\cf let} and {\cf letrec}, but they bind
-syntactic keywords to macro transformers instead of binding variables
-to locations that contain values.  Syntactic keywords may also be
-bound at the top level of a library body; see section~\ref{define-syntax}.
-
-\begin{entry}{%
-\proto{let-syntax}{ \hyper{bindings} \hyper{body}}{\exprtype}}
-
-\syntax
-\hyper{Bindings} should have the form
-\begin{scheme}
-((\hyper{keyword} \hyper{transformer spec}) \dotsfoo)%
-\end{scheme}
-Each \hyper{keyword} is an identifier,
-each \hyper{transformer spec} is an instance of {\cf syntax-rules}, and
-\hyper{body} is a body according to section~\ref{bodiessection}; its
-\hyper{sequence} may be empty if the {\cf let-syntax} form occurs in a
-place where a definition is allowed.  It is a
-syntax violation for \hyper{keyword} to appear more than once in the list of keywords
-being bound.
-
-\semantics
-The \hyper{body} is expanded in the syntactic environment
-obtained by extending the syntactic environment of the
-{\cf let-syntax} form with macros whose keywords are
-the \hyper{keyword}s, bound to the specified transformers.
-Each binding of a \hyper{keyword} has \hyper{body} as its region.
-
-Internal definition in the result of expanding the \hyper{body} have
-the same region as any definition appearing in place of the {\cf
-  let-syntax} form would have.
-
-\begin{scheme}
-(let-syntax ((when (syntax-rules ()
-                     ((when test stmt1 stmt2 ...)
-                      (if test
-                          (begin stmt1
-                                 stmt2 ...))))))
-  (let ((if \schtrue))
-    (when if (set! if 'now))
-    if))                           \ev  now
-
-(let ((x 'outer))
-  (let-syntax ((m (syntax-rules () ((m) x))))
-    (let ((x 'inner))
-      (m))))                       \ev  outer%
-
-(let ()
-  (let-syntax ())
-  5) \ev 5
-\end{scheme}
-
-\end{entry}
-
-\begin{entry}{%
-\proto{letrec-syntax}{ \hyper{bindings} \hyper{body}}{\exprtype}}
-
-\syntax
-Same as for {\cf let-syntax}.
-
-\semantics
- The \hyper{body} is expanded in the syntactic environment obtained by
-extending the syntactic environment of the {\cf letrec-syntax}
-form with macros whose keywords are the
-\hyper{keyword}s, bound to the specified transformers.
-Each binding of a \hyper{keyword} has the \hyper{bindings}
-as well as the \hyper{body} within its region,
-so the transformers can
-transcribe forms into uses of the macros
-introduced by the {\cf letrec-syntax} form.
-
-Internal definition in the result of expanding the \hyper{body} have
-the same region as any definition appearing in place of the {\cf
-  let-syntax} form would have.
-
-\begin{scheme}
-(letrec-syntax
-  ((my-or (syntax-rules ()
-            ((my-or) \schfalse)
-            ((my-or e) e)
-            ((my-or e1 e2 ...)
-             (let ((temp e1))
-               (if temp
-                   temp
-                   (my-or e2 ...)))))))
-  (let ((x \schfalse)
-        (y 7)
-        (temp 8)
-        (let odd?)
-        (if even?))
-    (my-or x
-           (let temp)
-           (if y)
-           y)))        \ev  7%
 \end{scheme}
 
 \end{entry}
@@ -3795,6 +3330,471 @@ the continuation packaged in the escape procedure.
   n) \ev 7
 \end{scheme}
 \end{entry}
+
+\section{Iteration}%\unsection
+
+\noindent%
+\pproto{(do ((\hyperi{variable} \hyperi{init} \hyperi{step})}{\exprtype}
+\mainschindex{do}{\tt\obeyspaces%
+     \dotsfoo)\\
+    (\hyper{test} \hyper{expression} \dotsfoo)\\
+  \hyper{command} \dotsfoo)}
+
+The {\cf do} expression is an iteration construct.  It specifies a set of variables to
+be bound, how they are to be initialized at the start, and how they are
+to be updated on each iteration.  When a termination condition is met,
+the loop exits after evaluating the \hyper{expression}s.
+
+A {\cf do} expression are evaluated as follows:
+The \hyper{init} expressions are evaluated (in some unspecified order),
+the \hyper{variable}s are bound to fresh locations, the results of the
+\hyper{init} expressions are stored in the bindings of the
+\hyper{variable}s, and then the iteration phase begins.
+
+\vest Each iteration begins by evaluating \hyper{test}; if the result is
+false (see section~\ref{booleansection}), then the \hyper{command}
+expressions are evaluated in order for effect, the \hyper{step}
+expressions are evaluated in some unspecified order, the
+\hyper{variable}s are bound to fresh locations, the results of the
+\hyper{step}s are stored in the bindings of the
+\hyper{variable}s, and the next iteration begins.
+
+\vest If \hyper{test} evaluates to a true value, then the
+\hyper{expression}s are evaluated from left to right and the value(s) of
+the last \hyper{expression} is(are) returned.  If no \hyper{expression}s
+are present, then the value of the {\cf do} expression is the
+unspecified value.
+
+\vest The region\index{region} of the binding of a \hyper{variable}
+consists of the entire {\cf do} expression except for the \hyper{init}s.
+It is syntax violation for a \hyper{variable} to appear more than once in the
+list of {\cf do} variables.
+
+\vest A \hyper{step} may be omitted, in which case the effect is the
+same as if {\cf(\hyper{variable} \hyper{init} \hyper{variable})} had
+been written instead of {\cf(\hyper{variable} \hyper{init})}.
+
+\begin{scheme}
+(do ((vec (make-vector 5))
+     (i 0 (+ i 1)))
+    ((= i 5) vec)
+  (vector-set! vec i i))          \ev  \#(0 1 2 3 4)
+
+(let ((x '(1 3 5 7 9)))
+  (do ((x x (cdr x))
+       (sum 0 (+ sum (car x))))
+      ((null? x) sum)))             \ev  25%
+\end{scheme}
+
+The following definition
+of {\cf do} uses a trick to expand the variable clauses.
+As with {\cf letrec} above, an auxiliary macro would also work.
+
+\begin{scheme}
+(define-syntax \ide{do}
+  (syntax-rules ()
+    ((do ((var init step ...) ...)
+         (test expr ...)
+         command ...)
+     (letrec
+       ((loop
+         (lambda (var ...)
+           (if test
+               (begin
+                 (unspecified)
+                 expr ...)
+               (begin
+                 command
+                 ...
+                 (loop (do "step" var step ...)
+                       ...))))))
+       (loop init ...)))
+    ((do "step" x)
+     x)
+    ((do "step" x y)
+     y)))
+\end{scheme}
+
+%\end{entry}
+
+
+\begin{entry}{%
+\rproto{let}{ \hyper{variable} \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\label{namedlet}
+``Named {\cf let}'' is a variant on the syntax of \ide{let} which provides
+a more general looping construct than {\cf do} and may also be used to express
+recursions.
+It has the same syntax and semantics as ordinary {\cf let}
+except that \hyper{variable} is bound within \hyper{body} to a procedure
+whose formal arguments are the bound variables and whose body is
+\hyper{body}.  Thus the execution of \hyper{body} may be repeated by
+invoking the procedure named by \hyper{variable}.
+
+%                                              |  <-- right margin
+\begin{scheme}
+(let loop ((numbers '(3 -2 1 6 -5))
+           (nonneg '())
+           (neg '()))
+  (cond ((null? numbers) (list nonneg neg))
+        ((>= (car numbers) 0)
+         (loop (cdr numbers)
+               (cons (car numbers) nonneg)
+               neg))
+        ((< (car numbers) 0)
+         (loop (cdr numbers)
+               nonneg
+               (cons (car numbers) neg))))) %
+  \lev  ((6 1 3) (-5 -2))%
+\end{scheme}
+
+The {\cf let} keyword could be defined in terms of {\cf lambda} and {\cf letrec}
+using {\cf syntax-rules} (see section~\ref{syntaxrulessection}) as
+follows:
+
+\begin{scheme}
+(define-syntax \ide{let}
+  (syntax-rules ()
+    ((let ((name val) ...) body1 body2 ...)
+     ((lambda (name ...) body1 body2 ...)
+      val ...))
+    ((let tag ((name val) ...) body1 body2 ...)
+     ((letrec ((tag (lambda (name ...)
+                      body1 body2 ...)))
+        tag)
+      val ...))))
+\end{scheme}
+
+\end{entry}
+
+\section{Quasiquotation}\unsection
+\label{quasiquotesection}
+
+\begin{entry}{%
+\proto{quasiquote}{ \hyper{qq template}}{\exprtype}}
+
+``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
+for constructing a list or vector structure when some but not all of the
+desired structure is known in advance.  If no
+{\cf unquote} or {\cf unquote-splicing} forms
+appear within the \hyper{qq template}, the result of
+evaluating
+{\cf (quasiquote \hyper{qq template})} is equivalent to the result of evaluating
+{\cf (quote \hyper{qq template})}.
+
+If an {\cf (unquote \hyper{expression} \dotsfoo)} form appears inside a
+\hyper{qq template}, however, the \hyper{expression}s are evaluated
+(``unquoted'') and their results are inserted into the structure instead
+of the {\cf unquote} form.
+
+If an {\cf (unquote-splicing \hyper{expression} \dotsfoo)} form
+appears inside a \hyper{qq template}, then the \hyper{expression}s must
+evaluate to lists; the opening and closing parentheses of the list are
+then ``stripped away'' and the elements of the lists are inserted in
+place of the {\cf unquote-splicing} form.  {\cf
+
+Unquote-splicing} and multi-operand {\cf unquote} forms should
+appear only within a list or vector \hyper{qq template}.
+
+As noted in section~\ref{quotesection},
+{\cf (quasiquote \hyper{qq template})} may be abbreviated
+\backquote\hyper{qq template},
+{\cf (unquote \hyper{expression})} may be abbreviated
+{\cf,}\hyper{expression}, and
+{\cf (unquote-splicing \hyper{expression})} may be abbreviated
+{\cf,}\atsign\hyper{expression}.
+
+% struck: "(in the sense of {\cf equal?})" after "equivalent"
+
+\begin{scheme}
+`(list ,(+ 1 2) 4)  \ev  (list 3 4)
+(let ((name 'a)) `(list ,name ',name)) %
+          \lev  (list a (quote a))
+`(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) %
+          \lev  (a 3 4 5 6 b)
+`(({\cf foo} ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) %
+          \lev  ((foo 7) . cons)
+`\#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8) %
+          \lev  \#(10 5 2 4 3 8)
+(let ((name 'foo))
+  `((unquote name name name)))%
+          \lev (foo foo foo)
+(let ((name '(foo)))
+  `((unquote-splicing name name name)))%
+          \lev (foo foo foo)
+\end{scheme}
+
+Quasiquote forms may be nested.  Substitutions are made only for
+unquoted components appearing at the same nesting level
+as the outermost {\cf quasiquote}.  The nesting level increases by one inside
+each successive quasiquotation, and decreases by one inside each
+unquotation.
+
+\begin{scheme}
+`(a `(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f) %
+          \lev  (a `(b ,(+ 1 2) ,(foo 4 d) e) f)
+(let ((name1 'x)
+      (name2 'y))
+  `(a `(b ,,name1 ,',name2 d) e)) %
+          \lev  (a `(b ,x ,'y d) e)%
+\end{scheme}
+
+It is a syntax violation if any of the identifiers
+\ide{quasiquote}, \ide{unquote}, or \ide{unquote-splicing} appear in
+positions within a \hyper{qq template} otherwise than as described above.
+
+The following grammar for quasiquote expressions is not context-free.
+It is presented as a recipe for generating an infinite number of
+production rules.  Imagine a copy of the following rules for $D = 1, 2,
+3, \ldots$.  $D$ keeps track of the nesting depth.
+
+\begin{grammar}%
+\meta{quasiquotation} \: \meta{quasiquotation 1}
+\meta{qq template 0} \: \meta{expression}
+\meta{quasiquotation $D$} \: `\meta{qq template $D$}
+\>    \| (quasiquote \meta{qq template $D$})
+\meta{qq template $D$} \: \meta{simple datum}
+\>    \| \meta{list qq template $D$}
+\>    \| \meta{vector qq template $D$}
+\>    \| \meta{unquotation $D$}
+\meta{list qq template $D$} \: (\arbno{\meta{qq template or splice $D$}})
+\>    \| (\atleastone{\meta{qq template or splice $D$}} .\ \meta{qq template $D$})
+\>    \| '\meta{qq template $D$}
+\>    \| \meta{quasiquotation $D+1$}
+\meta{vector qq template $D$} \: \#(\arbno{\meta{qq template or splice $D$}})
+\meta{unquotation $D$} \: ,\meta{qq template $D-1$}
+\>    \| (unquote \meta{qq template $D-1$})
+\meta{qq template or splice $D$} \: \meta{qq template $D$}
+\>    \| \meta{splicing unquotation $D$}
+\meta{splicing unquotation $D$} \: ,@\meta{qq template $D-1$}
+\>    \| (unquote-splicing \arbno{\meta{qq template $D-1$}})
+\>    \| (unquote \arbno{\meta{qq template $D-1$}}) %
+\end{grammar}
+
+In \meta{quasiquotation}s, a \meta{list qq template $D$} can sometimes
+be confused with either an \meta{un\-quota\-tion $D$} or a \meta{splicing
+un\-quo\-ta\-tion $D$}.  The interpretation as an
+\meta{un\-quo\-ta\-tion} or \meta{splicing
+un\-quo\-ta\-tion $D$} takes precedence.
+
+\end{entry}
+
+\section{Binding constructs for syntactic keywords}
+\label{bindsyntax}
+
+The {\cf let-syntax} and {\cf letrec-syntax} forms are
+analogous to {\cf let} and {\cf letrec}, but they bind
+syntactic keywords to macro transformers instead of binding variables
+to locations that contain values.  Syntactic keywords may also be
+bound at the top level of a library body; see section~\ref{define-syntax}.
+
+\begin{entry}{%
+\proto{let-syntax}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+\hyper{Bindings} should have the form
+\begin{scheme}
+((\hyper{keyword} \hyper{transformer spec}) \dotsfoo)%
+\end{scheme}
+Each \hyper{keyword} is an identifier,
+each \hyper{transformer spec} is an instance of {\cf syntax-rules}, and
+\hyper{body} is a body according to section~\ref{bodiessection}; its
+\hyper{sequence} may be empty if the {\cf let-syntax} form occurs in a
+place where a definition is allowed.  It is a
+syntax violation for \hyper{keyword} to appear more than once in the list of keywords
+being bound.
+
+\semantics
+The \hyper{body} is expanded in the syntactic environment
+obtained by extending the syntactic environment of the
+{\cf let-syntax} form with macros whose keywords are
+the \hyper{keyword}s, bound to the specified transformers.
+Each binding of a \hyper{keyword} has \hyper{body} as its region.
+
+Internal definition in the result of expanding the \hyper{body} have
+the same region as any definition appearing in place of the {\cf
+  let-syntax} form would have.
+
+\begin{scheme}
+(let-syntax ((when (syntax-rules ()
+                     ((when test stmt1 stmt2 ...)
+                      (if test
+                          (begin stmt1
+                                 stmt2 ...))))))
+  (let ((if \schtrue))
+    (when if (set! if 'now))
+    if))                           \ev  now
+
+(let ((x 'outer))
+  (let-syntax ((m (syntax-rules () ((m) x))))
+    (let ((x 'inner))
+      (m))))                       \ev  outer%
+
+(let ()
+  (let-syntax ())
+  5) \ev 5
+\end{scheme}
+
+\end{entry}
+
+\begin{entry}{%
+\proto{letrec-syntax}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+
+\syntax
+Same as for {\cf let-syntax}.
+
+\semantics
+ The \hyper{body} is expanded in the syntactic environment obtained by
+extending the syntactic environment of the {\cf letrec-syntax}
+form with macros whose keywords are the
+\hyper{keyword}s, bound to the specified transformers.
+Each binding of a \hyper{keyword} has the \hyper{bindings}
+as well as the \hyper{body} within its region,
+so the transformers can
+transcribe forms into uses of the macros
+introduced by the {\cf letrec-syntax} form.
+
+Internal definition in the result of expanding the \hyper{body} have
+the same region as any definition appearing in place of the {\cf
+  let-syntax} form would have.
+
+\begin{scheme}
+(letrec-syntax
+  ((my-or (syntax-rules ()
+            ((my-or) \schfalse)
+            ((my-or e) e)
+            ((my-or e1 e2 ...)
+             (let ((temp e1))
+               (if temp
+                   temp
+                   (my-or e2 ...)))))))
+  (let ((x \schfalse)
+        (y 7)
+        (temp 8)
+        (let odd?)
+        (if even?))
+    (my-or x
+           (let temp)
+           (if y)
+           y)))        \ev  7%
+\end{scheme}
+
+\end{entry}
+
+\section{Declarations}
+\label{declarations}
+
+\schindex{declarations}
+A declaration affects a range of code, and indicates that the code
+within that range should be compiled or executed to have certain
+qualities.  A declaration appears at the beginning of a \hyper{body}
+(see section~\ref{bodiessection}), and its range is the library in which it
+appears, the expression that immediately surrounds the \hyper{body} at
+whose head it appears, or the group of definitions at whose head it
+appears, possibly including code inserted into the range
+by macro expansion.
+
+A declaration \hyper{declaration} has the following form:\mainschindex{declare}
+
+{\cf (declare \arbno{\hyper{declare spec}})}
+
+A \hyper{declare spec} has one of the following forms:
+
+\begin{itemize}
+\item {\cf (\hyper{quality} \hyper{priority})}
+
+  \hyper{quality} has to be one of {\cf safe}, {\cf fast}, {\cf
+    small}, and {\cf debug}.  \hyper{priority} has to be one of {\cf
+    0}, {\cf 1}, {\cf 2}, and {\cf 3}.
+
+  This specifies that the code in the range of the declaration should
+  have the indicated quality at the indicated priority, where priority
+  3 is the highest priority.  Priority 0 means the quality is not a
+  priority at all.
+
+\item {\cf \hyper{quality}}
+  
+  This is a synonym for {\cf (\hyper{quality} 3)}.
+  
+\item {\cf unsafe}
+
+  This is a synonym for {\cf (safe 0)}.
+\end{itemize}
+
+For {\cf safe}, the default priority must be 1 or higher.  When the
+priority for {\cf safe} is 1 or higher, implementations must raise all
+required exceptions and let them be handled by the exception mechanism
+(see chapter~\ref{exceptionsconditionschapter}).
+
+Beyond that, the detailed interpretation of declarations will vary in
+different implementations.  In particular, implementations are free to
+ignore declarations, and may observe some declarations while ignoring
+others.
+
+The following descriptions of each quality may provide some guidance
+for programmers and implementors.
+
+\paragraph{{\tt safe}}
+
+This quality's priority influences the degree of checking for
+exceptional situations, and the raising and handling of exceptions in
+response to those situations.  The higher the priority, the more
+likely an exception will be raised.
+
+At priority 0, an implementation is allowed to ignore any requirements
+for raising an exception with condition type {\cf\&violation} (or one
+of its subtypes).  In situations for which this report allows or
+requires the implementation to raise an exception with condition type
+{\cf\&violation}, the implementation may ignore the situation and
+continue the computation with an incorrect result, may terminate the
+computation in an unpleasant fashion, or may destroy the invariants of
+run-time data structures in ways that cause unexpected and mysterious
+misbehavior even in code that comes within the scope of a safe
+declaration.  All bets are off.
+
+At priority 1 and higher, an implementation must raise all exceptions
+required by this report, handle those exceptions using the exception
+mechanism described in chapter~\ref{exceptionsconditionschapter}, and
+use the default exception handlers described in that chapter.  See
+also section~\ref{safetysection}.
+
+At higher priorities, implementations may be more likely to raise
+exceptions that are allowed but not required by this report.
+
+Most implementations are able to recognize some violations when
+parsing, expanding macros, or compiling a definition or expression
+whose evaluation has not yet commenced in the usual sense.
+Implementations are allowed to use nonstandard exception handlers at
+those times, and are encouraged to raise {\cf\&syntax} exceptions for
+violations detected at those times, even if the definition or
+expression that contains the violation will never be executed.
+Implementations are also allowed to raise a {\cf\&warning} exception
+at those times if they determine that some subexpression would
+inevitably raise some kind of {\cf\&violation} exception were it ever
+to be evaluated.
+
+\paragraph{{\tt fast}}
+
+This quality's priority influences the speed of the code it governs.
+At high priorities, the code is likely to run faster, but that
+improvement is constrained by other qualities and may come at the
+expense of the small and debug qualities.
+
+\paragraph{{\tt small}}
+
+This quality's priority influences the amount of computer memory
+needed to represent and to run the code.  At high priorities, the code
+is likely to occupy less memory and to require less memory during
+evaluation.
+
+\paragraph{{\tt debug}}
+
+This quality's priority influences the programmer's ability to debug
+the code.  At high priorities, the programmer is more likely to
+understand the correspondence between the original source code and
+information displayed by debugging tools.  At low priorities, some
+debugging tools may not be usable.
+
 
 \section{Tail calls and tail contexts}
 \label{basetailcontextsection}
