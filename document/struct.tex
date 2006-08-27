@@ -71,29 +71,418 @@ the mathematical ideal, and inexact arithmetic on approximations.
 Exact arithmetic includes arithmetic on integers, rationals and
 complex numbers.
 
-FIXME: overview of the language to be added
+The following sections give a brief overview of the most fundamental
+elements of the language.  The purpose of this overview is to explain
+enough of the basic concepts of the language to facilitate
+understanding the subsequent chapters of the report, which are
+organized as a reference manual.  Consequently, this overview is
+not a complete introduction of the language, nor is formally precise
+in all respects.
 
-\section{Programs and libraries}
+\section{Basic types}
 
-A Scheme consists of a set of \textit{libraries\index{library}}, each
-of which defines a part of the program connected to the others through
-explicitly specified exports and imports.  A library consists of a set
-of import and export FIXME specifications and a body, which contains
-the code defining the library.  Chapter~\ref{librarychapter} describes
-the syntax and semantics for libraries.  The subsequent chapters
-describe various standard libraries provided by a Scheme system.  In
-particular, chapter~\ref{baselibrarychapter} describes a base
-library defining most of the constructs traditionally associated with
-Scheme programs.
+Scheme programs manipulate \textit{objects} or \textit{values}.
+Scheme values are organized into sets of values called \textit{types}.
+This gives an overview of the fundamentally important types of the
+Scheme language.  More types are described in later chapters.
 
-The division between the base library and other standard libraries is
-based on use, not on construction.  In particular, some facilities
-that are typically implemented as ``primitives'' by a compiler or
-run-time libraries rather than in terms of other standard procedures
- or syntactic forms are not part of the base library, but defined in
-separate libraries.  Examples include the fixnum and flonum libraries,
-the exceptions and conditions libraries, and the libraries for
-records.
+\begin{note}
+  As Scheme is latently typed, the use of the term \textit{type} in
+  this report differs from the use of the term in the context of other
+  languages, particularly those with manifest typing.
+\end{note}
+
+\paragraph{Boolean values}
+
+\mainindex{boolean}A boolean value denotes a truth value, and can either be
+true or false.  In Scheme, the value for ``false'' is written
+\schfalse{}.  The value ``true'' is written \schtrue{}.  However, in
+most places where truth value is expected, any value different from
+\schfalse{} counts as true.
+
+\paragraph{Numbers}
+
+\mainindex{number}Scheme supports a rich variety of numerical data types, including
+integers of arbitrary precision, rational numbers, complex numbers and
+inexact numbers of various kinds.  Chapter~\ref{numbertypeschapter} gives an
+overview of the structure of Scheme's numerical tower.
+
+\paragraph{Characters}
+
+\mainindex{character}Scheme characters mostly correspond to regular textual characters.
+More precisely, they are specified as \textit{scalar values} according
+to the Unicode standard.
+
+\paragraph{Strings}
+
+\mainindex{string}Strings are finite sequences of characters with fixed length and thus
+represent arbitrary Unicode texts.
+
+\paragraph{Symbols}
+
+\mainindex{symbol}A symbol is an object representing a string that
+cannot be modified.  This string is called the symbol's \textit{name}.
+Different from strings, two symbols whose names are spelled the same
+way are equivalent.  Symbols are useful for many other applications;
+for instance, they may be used the way enumerated values are used in
+other languages.
+
+\paragraph{Pairs and lists}
+
+\mainindex{pair}\mainindex{list}
+A pair is a data structure with two components.  The most popular use
+of pairs is to represents (singly linked) lists, where the first
+component (the ``car'') represents the first element of the list, and
+the second component (the ``cdr'') the rest of the list.  Scheme also
+has a distinguished empty list, which is the last cdr in a chain of
+pairs representing a list.
+
+\paragraph{Vectors}
+
+\mainindex{vector}Vectors, like lists, are linear data structures
+representing finite sequences.  Whereas a list is accessed
+sequentially through the pair chain representing it, a vector is
+addressed by an integer.  Thus, vectors are more appropriate than
+lists for randomly accessing elements.
+
+\paragraph{Procedures}
+
+\mainindex{procedure}As mentioned in the introduction, procedures are
+values in Scheme.
+
+\section{Expressions}
+
+The most important elements of a Scheme program are
+\mainindex{expression}\textit{expressions}.  Expressions can be
+\textit{evaluated}, producing a \textit{value}.  (Actually, any number
+of values---see section~\ref{multiplereturnvaluessection}.)  The most
+fundamental expressions are literal expressions:
+
+\begin{scheme}
+\schtrue{} \ev \schtrue
+23 \ev 23
+42 \ev 42
+\end{scheme}
+
+This notation means that the expression \schtrue{} evaluates to
+\schtrue{}, that is, the value for ``true,''  and that the expression
+{\cf 23} evaluates to the number 23.
+
+Compound expressions are formed by placing parantheses around their
+subexpressions.  The first subexpression is an
+\textit{operator}\mainindex{operator} and identifies an operation, the
+remaining subexpressions are \textit{operands}\mainindex{operand}:
+%
+\begin{scheme}
+(+ 23 42) \ev 65
+(+ 14 (* 23 42)) \ev 980
+\end{scheme}
+%
+In the first of these examples, {\cf +}, the operator, is the name of
+the built-in operation for addition, and {\cf 23} and {\cf 42} are the
+operands.  The expression {\cf (+ 23 42)} reads as ``the sum of 23 and
+42.''  Compound expressions can be nested---the second example reads
+as ``the sum of 14 and the product of 23 and 42.''
+
+As these examples indicate, compound expressions in Scheme are always
+written using the same prefix notation\mainindex{prefix notation}.  As
+a consequence, the parentheses are needed to indicate structure, and
+``superfluous'' parentheses, which are permissible in mathematics and
+many other programming languages, are not allowed in Scheme.
+
+As in many other languages, whitespace and newlines are not
+significant when they separate subexpressions of an expression, and
+can be used to indicate structure.
+
+\section{Variables and binding}
+
+\mainindex{variable}\mainindex{binding}\mainindex{identifier}Scheme
+allows using identifiers to denote values bound to them.  These
+identifiers are called variables. (More precisely, variables denote
+locations.  However, this distinction is not important for a large
+proportion of Scheme code.)
+
+\begin{scheme}
+(let ((x 23)
+      (y 42))
+  (+ x y)) \ev 65
+\end{scheme}
+
+In this case, the operator of the expression, {\cf let}, is a binding
+construct---the parenthesized structure following the {\cf let} lists
+variables alongside expressions: the variable {\cf x} alongside {\cf
+  23}, and the variable {\cf y} alongside {\cf 42}.  The {\cf let}
+expression binds {\cf x} to 23, and {\cf y} to 42.  These bindings are
+available in the \textit{body} of the {\cf let} expression, {\cf (+ x
+  y)}, and only there.
+
+\section{Definitions}
+
+\mainindex{definition}The variables bound by a {\cf let} expression
+are \textit{local}, because their bindings are only visible in the
+{\cf let}'s body.  Scheme also allows creating global bindings for
+identifiers as follows:
+
+\begin{scheme}
+(define x 23)
+(define y 42)
+(+ x y) \ev 65
+\end{scheme}
+
+The first two parenthesized structures are \textit{definitions}; they
+create global bindings, binding {\cf x} to 23 and {\cf y} to 42.
+Definitions are not expressions: they cannot appear in all places
+where an expression can occur.  Moreover, a definition has no value.
+
+Bindings follow the lexical structure of the program:  When several
+bindings with the same name exist, a variable refers to the binding
+that is closest to it, following from its occurrence in the program
+from the inside to the outside, and only to a global binding, if no
+local binding can be found along the way:
+
+\begin{scheme}
+(define x 23)
+(define y 42)
+(let ((y 43))
+  (+ x y)) \ev 66
+
+(let ((y 43))
+  (let ((y 44))
+    (+ x y))) \ev 67%
+\end{scheme}
+
+\section{Procedures}
+
+\mainindex{procedure}Definitions can also be used to define
+procedures:
+
+\begin{scheme}
+(define (f x)
+  (+ x 42))
+
+(f 23) \ev 65%
+\end{scheme}
+
+A procedure is, slightly simplified, an abstraction over an
+expression.  In the example, the first definition defines a procedure
+called {\cf f}.  (Note the parentheses around {\cf f x}, which
+indicate that this is a procedure definition.)  The expression {\cf (f
+  23)} is a \mainindex{procedure call}procedure call, meaning,
+roughly, ``evaluate {\cf (+ x 42)} (the body of the procedure) with
+{\cf x} bound to 23.''
+
+As procedures are regular values, they can be passed to other
+procedures:
+%
+\begin{scheme}
+(define (f x)
+  (+ x 42))
+
+(define (g p x)
+  (p x))
+
+(g f 23) \ev 65%
+\end{scheme}
+
+In this example, the body of {\cf g} is evaluated with its {\cf p}
+variable bound to {\cf f} and {\cf x} bound to 23, which is equivalent
+to {\cf (f 23)}, which evaluates to 42.
+
+In fact, many seemingly ``built-in'' operations of Scheme are simply
+global bindings for procedures.  {\cf +}, for example, which receives
+special syntactic treatment in many other languages, is just a regular
+identifier in Scheme, bound to a procedure that adds numbers.  The
+same holds for {\cf *} and many others:
+
+\begin{scheme}
+(define (h op x y)
+  (op x y))
+
+(h + 23 42) \ev 65
+(h * 23 42) \ev 966
+\end{scheme}
+
+Procedure definitions are not the only way to create procedures.  A
+{\cf lambda} expression creates a new procedure as a value, with no
+need to specify a name:
+
+\begin{scheme}
+((lambda (x) (+ x 42)) 23) \ev 65%
+\end{scheme}
+
+The entire expression in this example is a procedure call; its
+operator is {\cf (lambda (x) (+ x 42))}, which evaluates to a
+procedure that will take a single number and add it to 42.
+
+\section{Procedure calls and syntactic keywords}
+
+Whereas {\cf (+ 23 42)}, {\cf (f 23)}, and {\cf ((lambda (x) (+ x 42))
+  23)} are all examples for procedure calls, {\cf lambda} and {\cf
+  let} expressions are not.  This is because {\cf let}, even though an
+identifier, is not a variable, but instead a \textit{syntactic
+  keyword}\mainindex{syntactic keyword}.  An expression that has a
+syntactic keyword as its operator obeys special rules determined by
+the keyword.
+
+In the case of {\cf lambda}, these rules specify that the first
+operand is a list of parameters, and the second operand the body of
+the procedure.  In {\cf let} expressions, the first operand is a list
+of binding specifications, the and the second one is a body
+expressions.
+
+Procedure calls can be distinguished from these ``special forms'' by
+looking for a syntactic keyword in the operator position of an
+expression: if the operator is not a syntactic keyword, the expression
+is a procedure call.  The set of syntactic keywords of Scheme is
+fairly small, which usually makes this task fairly simple.  However,
+it is possible to create new bindings for syntactic keywords; see
+below.
+
+\section{Assignment}
+
+Scheme variables bound by definitions or {\cf let} or {\cf lambda}
+forms are not actually bound to the values specified in the
+respective bindings, but to locations containing these values.  The
+contents of these locations can subsequently be modified destructively
+via \textit{assignment}\mainindex{assignment}:
+
+%
+\begin{scheme}
+(let ((x 23))
+  (set! x 42)
+  x) \ev 42
+\end{scheme}
+
+In this case, the body of the {\cf let} expression consists of two
+expressions which are evaluated sequentially, with the value of the
+final expression becoming the value of the entire {\cf let}
+expression.  The {\cf set! x 42} expression is an assignment, saying
+``replace the value in the location denoted by {\cf x} with 42.''
+Thus, the previous value of 23 is discarded and replaced by 42.
+
+\section{Derived forms and macros}
+
+Many syntactic keywords specified in this report actually do not
+contribute to the power of the language because special forms using
+them can be translated into special forms using simpler syntactic
+keywords.  For example, the {\cf let} expressions can be translated
+into procedure calls and {\cf lambda} expressions.  The following two
+expressions are equivalent:
+%
+\begin{scheme}
+(let ((x 23)
+      (y 42))
+  (+ x y)) \ev 65
+
+((lambda (x y) (+ x y)) 23 42) \lev 65%
+\end{scheme}
+
+Special forms like {\cf let} expressions are called \textit{derived
+  forms}\mainindex{derived form} because their semantics can be
+derived from that of other kinds of forms by a syntactic
+transformation.  Procedure definitions are also derived form.  The
+following two definitions are equivalent:
+
+\begin{scheme}
+(define (f x)
+  (+ x 42))
+
+(define f
+  (lambda (x)
+    (+ x 42)))%
+\end{scheme}
+
+In Scheme, it is possible for a program to create its own derived
+forms by binding syntactic keywords to macros\mainindex{macro}:
+
+\begin{scheme}
+(define-syntax def
+  (syntax-rules ()
+    ((def f (p ...) body)
+     (define (f p ...)
+       body))))
+
+(def f (x)
+  (+ x 32))%
+\end{scheme}
+
+The {\cf define-syntax} construct specifies that a parenthesized
+structure matching the pattern {\cf (def f (p ...) body)}, where {\cf
+  f}, {\cf p}, and {\cf body} are pattern variables, is translated to
+{\cf (define (f p ...) body)}.  Thus, the {\cf def} form appearing in
+the example gets translated to:
+
+\begin{scheme}
+(define (f x)
+  (+ x 42))%
+\end{scheme}
+
+The ability to create new syntactic keywords makes Scheme extremely
+flexible and expressive, and enables the formulation of many features
+built-in to other languages as derived forms.
+
+\section{S-expressions and datums}
+
+A subset of the Scheme values called \textit{datums} have a special
+status in the language.  These include booleans, numbers, characters,
+strings, and lists and vectors with other datums as elements.  Each
+datum has a unique representation as text called
+\textit{S-expression}\index{S-expression}, which can be written out
+and read back in without loss of information.  Moreover, each datum
+can be trivially translated to a literal expression in a program by
+prepending a {\cf\singlequote}:
+
+\begin{scheme}
+'23 \ev 23
+'\schtrue{} \ev \schtrue{}
+'foo \ev foo
+'(1 2 3) \ev (1 2 3)
+'\#(1 2 3) \ev \#(1 2 3)%
+\end{scheme}
+
+The {\cf\singlequote} clearly is not needed for number or boolean
+literals.  However, {\cf foo} is the S-expression for a symbol with
+name ``foo,'' and {\cf 'foo} is therefore a literal expression with
+that symbol as its value.  {\cf (1 2 3)} is the S-expression for a
+list with elements 1, 2, and 3, and thus {\cf '(1 2 3)} is a literal
+expression with such a list as its value.  Moreover, {\cf \#(1 2 3)}
+is the S-expression for a vector with elements 1, 2 and 3, and thus
+{\cf '\#(1 2 3)} is the corresponding literal.
+
+The S-expressions form a superset of the Scheme forms.  Thus, datums
+can be used to represent Scheme programs as data objects.  In
+particular, symbols can be used to represent identifiers.
+
+\begin{scheme}
+'(+ 23 42) \ev (+ 23 42)
+'(define (f x) (+ x 42)) \lev (define (f x) (+ x 42))
+\end{scheme}
+
+This facilitates writing programs that operate on Scheme source code,
+in particular intpreters and program transformations.
+
+\section{Libraries}
+
+Scheme code is organized in components called
+\textit{libraries}\mainindex{library}.  Each library contains 
+declarations, definitions and expressions.  It can import definitions
+from other libraries, and export definitions to other libraries:
+
+\begin{scheme}
+FIXME: example
+\end{scheme}
+
+\section{Scripts}
+
+A Scheme program is invoked via a \textit{script}\mainindex{script}.
+Like a library, a script contains declarations, definitions and
+expressions, but specifies an entry point for execution.  Thus, a
+script defines, via the transitive closure of the libraries it
+imports, a Scheme program.
+
+\begin{scheme}
+FIXME: example
+\end{scheme}
 
 %%% Local Variables: 
 %%% mode: latex

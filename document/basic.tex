@@ -2,6 +2,28 @@
 \chapter{Semantic concepts}
 \label{basicchapter}
 
+\section{Programs and libraries}
+
+A Scheme consists of a set of \textit{libraries\index{library}}, each
+of which defines a part of the program connected to the others through
+explicitly specified exports and imports.  A library consists of a set
+of import and export FIXME specifications and a body, which contains
+the code defining the library.  Chapter~\ref{librarychapter} describes
+the syntax and semantics for libraries.  The subsequent chapters
+describe various standard libraries provided by a Scheme system.  In
+particular, chapter~\ref{baselibrarychapter} describes a base
+library defining most of the constructs traditionally associated with
+Scheme programs.
+
+The division between the base library and other standard libraries is
+based on use, not on construction.  In particular, some facilities
+that are typically implemented as ``primitives'' by a compiler or
+run-time libraries rather than in terms of other standard procedures
+ or syntactic forms are not part of the base library, but defined in
+separate libraries.  Examples include the fixnum and flonum libraries,
+the exceptions and conditions libraries, and the libraries for
+records.
+
 \section{Variables, syntactic keywords, and regions}
 \label{specialformsection}
 \label{variablesection}
@@ -61,6 +83,7 @@ binding for the identifier,
 it is said to be \defining{unbound}.\mainindex{bound}
 
 \section{Multiple return values}
+\label{multiplereturnvaluessection}
 
 A Scheme expression can evaluate to an arbitrary finite number of
 values.  These values are passed to the expression's continuation.
