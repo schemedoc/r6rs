@@ -1,0 +1,262 @@
+%\vfill\eject
+\chapter{Notation and terminology}
+\label{terminologychapter}
+
+\section{Entry format}
+
+The chapters describing bindings in the base library and the standard
+libraries are organized
+into entries.  Each entry describes one language feature or a group of
+related features, where a feature is either a syntactic construct or a
+built-in procedure.  An entry begins with one or more header lines of the form
+
+\noindent\pproto{\var{template}}{\var{category}}\unpenalty
+
+If \var{category} is ``\exprtype'', the entry describes an expression
+type, and the template gives the syntax of the expression type.  Even
+though the template is written in a notation similar to a right-hand
+side of the BNF rules in chapter~\ref{readsyntaxchapter}, it describes
+the set of S-expressions equivalent to the S-expressions matching the
+template.
+
+Components of the S-expressions described by a template are designated
+by syntactic variables, which are written using angle brackets, for
+example, \hyper{expression}, \hyper{variable}.  Syntactic variables
+should be understood to denote other S-expressions, or, in some cases,
+sequences of them.  A syntactic variable may refer to a non-terminal
+in the S-expression grammar, in which case only S-expressions matching
+that non-terminal are permissible in that position.  For example,
+\hyper{expression} stands for any S-expression which is a
+syntactically valid expression.  Other non-terminals that are used in
+templates will be defined as part of the specification.
+
+The notation
+\begin{tabbing}
+\qquad \hyperi{thing} $\ldots$
+\end{tabbing}
+indicates zero or more occurrences of a \hyper{thing}, and
+\begin{tabbing}
+\qquad \hyperi{thing} \hyperii{thing} $\ldots$
+\end{tabbing}
+indicates one or more occurrences of a \hyper{thing}.
+
+If \var{category} is ``procedure'', then the entry describes a procedure, and
+the header line gives a template for a call to the procedure.  Parameter
+names in the template are \var{italicized}.  Thus the header line
+
+\noindent\pproto{(vector-ref \var{vector} \var{k})}{procedure}\unpenalty
+
+indicates that the built-in procedure {\tt vector-ref} takes
+two arguments, a vector \var{vector} and an exact non-negative integer
+\var{k} (see below).  The header lines
+
+\noindent%
+\pproto{(make-vector \var{k})}{procedure}
+\pproto{(make-vector \var{k} \var{fill})}{procedure}\unpenalty
+
+indicate that the {\tt make-vector} procedure must be defined to take
+either one or two arguments.
+
+\label{typeconventions}
+An operation that is presented with an argument that it
+is not specified to handle will raise an exception with condition type
+{\cf\&contract}.  For succinctness, we follow the convention
+that if a parameter name is also the name of a type, then the corresponding argument must be of the named type.
+For example, the header line for {\tt vector-ref} given above dictates that the
+first argument to {\tt vector-ref} must be a vector.  The following naming
+conventions imply type restrictions:
+\newcommand{\foo}[1]{\vr{#1}, \vri{#1}, $\ldots$ \vrj{#1}, $\ldots$}
+$$
+\begin{tabular}{ll}
+\var{obj}&any object\\
+\var{z}&complex number\\
+\var{x}&real number\\
+\var{y}&real number\\
+\var{q}&rational number\\
+\var{n}&integer\\
+\var{k}&exact non-negative integer\\
+\var{octet}&exact non-negative integer in $$\{0, \ldots, 255\}\\
+\var{char}&character (see section~\ref{charactersection})\\
+\var{pair}&pair (see section~\ref{listsection})\\
+\var{list}&list (see section~\ref{listsection})\\
+\var{vector}&vector (see section~\ref{vectorsection})\\
+\var{datum}&datum (see section~\ref{readsyntaxsection})\\
+\var{string}&string (see section~\ref{stringsection})\\
+\var{condition}&condition (see section~\ref{conditionssection})\\
+\var{bytes}&bytes object (see section~\ref{bytessection})\\
+\var{hash-table}&hash table (see section~\ref{hashtablesection})\\
+\end{tabular}
+$$
+
+Other type restrictions are defined used in specific chapters.  For
+example, chapter~\ref{numberchapter} uses a number of special parameter
+variables for the various subsets of the numbers.
+
+\todo{Provide an example entry??}
+
+If \var{category} is something other than ``syntax'' and
+``procedure,'' then the entry describes a non-procedural value, and
+the \var{category} describes the type of that value.  The header line
+
+\noindent\rvproto{\&who}{condition type}
+
+indicates that {\cf\&who} is a condition type.
+
+\section{List arguments}
+
+List arguments are immutable in programs that do not make use of the
+\library{r6rs mutable-pairs} library.  In such programs, a procedure accepting a list as an
+argument can check whether the argument is a list by traversing it.
+
+In programs that mutate pairs through use of the \library{r6rs
+  mutable-pairs} library, a pair
+that is the head of a list at one moment may not always be the head of
+a list.  Thus a traversal of the structure cannot by itself guarantee
+that the structure is a list; one must also know that no concurrent or
+interleaved computation can mutate the pairs of the structure.
+This greatly complicates the description of how certain procedures
+must verify that their arguments are valid.
+
+For that reason, the specifications of procedures that accept lists
+will generally assume that those lists are not mutated.
+Section~\ref{mutablelistargumentsection} relaxes that assumption
+and states more precise restrictions on the arguments to these
+procedures.
+
+\section{Evaluation examples}
+
+The symbol ``\evalsto'' used in program examples should be read
+``evaluates to.''  For example,
+
+\begin{scheme}
+(* 5 8)      \ev  40%
+\end{scheme}
+
+means that the expression {\tt(* 5 8)} evaluates to the object {\tt 40}.
+Or, more precisely:  the expression given by the sequence of characters
+``{\tt(* 5 8)}'' evaluates, in the initial environment, to an object
+that may be represented externally by the sequence of characters ``{\tt
+40}''.  See chapter~\ref{readsyntaxchapter} for a discussion of external
+representations of objects.
+
+The ``\evalsto'' symbol is also used when the evaluation of an
+expression raises an exception.  For example,
+
+\begin{scheme}
+(integer->char \sharpsign{}xD800) \ev \exception{\&contract}
+\end{scheme}
+
+means that the evaluation of the expression {\cf (integer->char
+  \sharpsign{}xD800)} causes an exception with condition type
+{\cf\&contract} to be raised.
+
+\section{Unspecified behavior}
+
+\vest If the value of an expression is said to be ``unspecified,''
+then the expression must evaluate without raising an exception, but
+the values returned depends on the implementation; this report
+explicitly does not say what values should be returned.
+\mainindex{unspecified behavior}
+
+Some expressions are specified to return \emph{the} unspecified value,
+which is a special value returned by the \texttt{unspecified}
+procedure.  (See section~\ref{unspecifiedvalue}.)  In this case, the
+return value is meaningless, and programmers are discouraged from
+relying on its specific nature.
+
+\section{Multiple return values}
+
+A Scheme expression can evaluate to an arbitrary finite number of
+values.  These values are passed to the expression's continuation.
+
+Not all continuations accept any number of values: A continuation that
+accepts the argument to a procedure call is guaranteed to accept
+exactly one value.  The effect of passing such a continuation a
+different number of values is unspecified.  The {\cf call-with-values}
+described in section~\ref{controlsection} allows creating
+continuations that specified numbers of return values.  If a number of
+return values is passed to a continuation created by {\cf
+  call-with-values} not accepted by its \var{consumer} an exception is
+raised.
+
+A number of forms in the base library have sequences of expressions
+as subforms that are evaluated sequentially, with the return values of
+all but the last expression being discarded.  The continuations
+discarding these values accept any number of values.
+
+\section{Exceptional situations}
+
+When speaking of an exceptional situation (see section~\ref{exceptionalsituationsection}), this
+report uses the phrase ``an exception is raised'' to indicate
+that implementations must detect the situation and report it to the
+program through the exception system described in
+chapter~\ref{exceptionsconditionschapter}.
+
+Several variations on ``an exception is raised'' are possible:
+
+\begin{itemize}
+\item ``An exception should be raised'' means that implementations
+  are encouraged, but not required, to detect the situation
+  and to raise an exception.
+
+\item ``An exception may be raised'' means that implementations
+are allowed, but not required or encouraged, to detect
+the situation and to raise an exception.
+
+\item ``An exception might be raised'' means that implementations
+are allowed, but discouraged, to detect the situation
+and to raise an exception.
+\end{itemize}
+
+This report uses the phrase ``an exception with condition type
+\meta{condition-type}'' to indicate that the object provided with the
+exception is a condition object of the specified type.
+
+The phrase ``a continuable exception is raised'' indicates a
+an exceptional situation that permits the exception handler to return,
+thereby allowing program execution to continue at the place where the
+original exception occurred.  See~\ref{exceptionssection}.
+
+\vest For example, an exception with condition type {\cf\&contract}
+is raised if a procedure is passed an argument that the procedure
+is not explicitly specified to handle, even though such domain
+exceptions are not always mentioned in this report.
+
+\section{Naming conventions}
+
+By convention, the names of procedures that always return a boolean
+value usually end
+in ``\ide{?}''.  Such procedures are called predicates.
+
+By convention, the names of procedures that store values into previously
+allocated locations (see section~\ref{storagemodel}) usually end in
+``\ide{!}''.
+Such procedures are called mutation procedures.
+By convention, the value returned by a mutation procedure is
+\unspecifiedreturn{} (see section~\ref{unspecifiedvalue}).
+
+By convention, ``\ide{->}'' appears within the names of procedures that
+take an object of one type and return an analogous object of another type.
+For example, {\cf list->vector} takes a list and returns a vector whose
+elements are the same as those of the list.
+
+\section{Syntax violations}
+
+Scheme implementations conformant with this report must detect
+violations of the syntax.  A \defining{syntax violation} may be an error with
+respect to the lexical syntax specified in
+section~\ref{lexicalsyntaxsection}, the read syntax specified in
+section~\ref{readsyntaxsection}, or the ``\exprtype'' entries in the
+specification of the base library or the standard libraries.
+Moreover, attempting to assign to an immutable variable is also
+considered a syntax violation.  (The locations bound to variables
+imported from other libraries are immutable.  See
+section~\ref{importsareimmutablesection}.)
+
+If a script or library form is not syntactically correct, then the
+execution of that script or library must not be allowed to begin.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
