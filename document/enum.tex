@@ -212,9 +212,8 @@ universe of the enumeration (in order).
 {\cf (\hyper{type-name} \hyper{symbol})} checks at macro-expansion
 time whether \hyper{symbol} is in the universe associated with
 \hyper{type-name}.  If it is, then {\cf (\hyper{type-name}
-  \hyper{symbol})} is equivalent to {\cf \hyper{symbol}}.  If it is
-not, then an exception must be raised at macro expansion
-time. FIXME: clarify
+  \hyper{symbol})} is equivalent to {\cf \hyper{symbol}}.  
+It is a syntax violation if it is not.
 
 \hyper{constructor-syntax} is an identifier that will be bound to a
 macro that, given any finite sequence of the symbols in the universe,
@@ -223,9 +222,9 @@ to the enumeration set of those symbols.
 
 {\cf (\hyper{constructor-syntax} \hyper{symbol}~\dotsfoo{})} checks at
 macro-expansion time whether every \hyper{symbol}~\dotsfoo{} is in the
-universe associated with \hyper{type-name}.  If one or more is not,
-then an exception must be raised at macro expansion time. FIXME:
-clarify. Otherwise
+universe associated with \hyper{type-name}.  It is a syntax violation
+if one or more is not.
+Otherwise
 \begin{scheme}
 (\hyper{constructor-syntax} \hyper{symbol}~\dotsfoo{})
 \end{scheme}

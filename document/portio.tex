@@ -16,7 +16,10 @@ whereas an output port is a sink for data.  A port may be both an
 input and an output source; such a port typically provides
 simultaneous read and write access to a file or other piece of data.
 
-FIXME: argument-type conventions
+This section uses the \var{input-port}, \var{output-port}, \var{port}
+parameter names for arguments that must be input ports (or combined
+input/output ports), output ports (or combined input/output ports),
+or any kind of port.
 
 \subsection{Condition type}
 
@@ -46,9 +49,10 @@ so.
 
 Each output port has an associated buffer mode that defines when an
 output operation will flush the buffer associated with the output
-port. The possible buffer modes are the symbols none for no buffering,
-line for flushing upon line feeds and line separators (U+2028), and
-block for block-based buffering.
+port. The possible buffer modes are the symbols {\cf none} for no buffering,
+{\cf line} for flushing upon line feeds and line separators (U+2028), and
+{\cf block} for block-based buffering.  This section uses the parameter name
+\var{buffer-name} for arguments that must be buffer-mode symbols.
 
 \begin{entry}{%
 \proto{buffer-mode}{ \hyper{name}}{\exprtype}}
@@ -87,6 +91,9 @@ interpret input bytes as characters or strings.  The transcoder also
 specifies how procedures that perform textual output are to translate
 characters into bytes.  Moreover, the transcoder specifies a
 mode for handling encoding or decoding errors.
+
+A \var{transcoder} parameter name means that the corresponding
+argument must be a transcoder.
 
 \begin{entry}{%
 \proto{utf-8-codec}{}{procedure}
@@ -332,7 +339,8 @@ otherwise.
    
 The {\cf set-port-position!} procedure sets the current byte position
 of the port to \var{pos}.  If \var{port} is an output or combined
-input and output port, this will first flush \var{pos}.  (See FIXME.)
+input and output port, this will first flush \var{pos}.  (See {\cf
+  flush-output-port}, section~\ref{flush-output-port}.)
 This procedure raises an exception with condition type {\cf\&contract}
 if the port does not support the operation.
 \end{entry}
