@@ -105,6 +105,34 @@ procedure.
 \end{entry}
 
 \begin{entry}{%
+\proto{utf-16bom-codec}{}{procedure}}
+   
+This predefined codec can only be used with input ports. The first
+attempt to read from a port transcoded using a transcoder with this
+codec will lead to the first two bytes of the port being read, which
+must be a byte-order mark. (The byte-order mark is not returned as
+part of the read operation.) If they are \#xFE, \#xFF, the decoding of
+the following data happens according to UTF-16be, if they are \#xFF,
+\#xFE, the decoding happens according to UTF-16le.  If they are
+anything else, an exception with condition type {\cf\&i/o-decoding} is
+raised.
+\end{entry}
+
+\begin{entry}{%
+\proto{utf-32bom-codec}{}{procedure}}
+   
+This predefined codec can only be used with input ports.  The first
+attempt to read from a port transcoded using a transcoder with this
+codec will lead to the first four bytes of the port being read, which
+must be a byte-order mark. (The byte-order mark is not returned as
+part of the read operation.) If they are \#x00, \#x00, \#xFE, \#xFF,
+the decoding of the following data happens according to UTF-32be, if
+they are \#xFF, \#xFE, \#x00, \#x00 the decoding happens according to
+UTF-16le.  If they are anything else, an exception with condition type
+{\cf\&i/o-decoding} is raised.
+\end{entry}
+
+\begin{entry}{%
 \proto{eol-style}{ name}{\exprtype}}
 
 If \var{name} is one of the symbols {\cf lf}, {\cf cr}, {\cf crlf}, or
