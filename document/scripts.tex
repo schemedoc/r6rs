@@ -1,0 +1,72 @@
+\chapter{Scripts}
+\label{scriptchapter}
+
+A \defining{script} specifies an entry point for defining and running
+a Scheme program.  A script specifies a set of libraries to import and
+code to run.  Through the imported libraries, whether directly or the
+transitive closure of importing, the script define a complete Scheme
+program.
+
+Scripts follow the convention of many common platforms of accepting a
+list of string \defining{command-line arguments} that may be used to
+pass data to the script.  Moreover, a script can return an exact
+integer specifying the script's \defining{exit value}.
+
+A script is a delimited piece of text, typically a file, that follows
+the following syntax:
+
+\begin{grammar}
+\meta{script header} \: \#!/usr/bin/env scheme-script
+  \> \meta{linefeed}
+  \> \meta{script substance}
+\meta{script substance} \: \#!r6rs \meta{import form} \meta{script body}
+  \> \| \meta{import form} \meta{script body}
+\meta{import form} \: (import \arbno{\meta{import spec}})
+\meta{script body} \: \arbno{\meta{script body form}} \meta{expression}
+\meta{script body form} \: \meta{declaration}
+\> \| \meta{definition}
+\> \| \meta{expression}
+\> \| (begin \meta{script body form})
+\end{grammar}
+
+The syntax of \meta{script header} is literal: the first line of a
+script must contain exactly the characters specified in the rule.  The
+remaining rules specify syntax at the S-expression level.  
+
+The \meta{import form} FIXME is identical to the import clause in
+libraries and specifies a set of libraries to import.  A \meta{script
+  body} is like a \meta{library body} (see
+section~\ref{librarybodysection}), except that declarations,
+definitions and expressions may occur in any order, and that the final
+form of the script body must be an expression.  Thus, the syntax
+specified by \meta{script body form} refers to the result of macro
+expansion.
+
+A script is executed by treating the script similar to a library, and
+invoking it.  The semantics of a script body is explained by
+translating it to a library body: All declarations at the script top
+level are moved to the front, and apply to the entire script body.
+Each expression \hyper{expression} that appears before definitions in
+the script body is converted into a definition {\cf (define \hyper{id}
+  \hyper{expression})} by choosing a fresh identifier \hyper{id}.
+
+A script may access its command-line arguments by calling the {\cf
+  command-line-arguments} procedure (see
+section~\ref{command-line-arguments}).  The final expression of a
+script must return an exact integer, which becomes the exit value of
+the script.  How that exit value is communicated to the environment is
+implementation-specific.  When a script is invoked as a Unix or
+Windows program, the exit value simply becomes the exit status of the
+program.
+
+If an exception with a {\cf\&serious} condition is raised during the
+execution of the script, the default exception handler will behave as
+described in section~\ref{exceptionssection}, and an
+implementation-specific exit value will be communicated to the
+environment.  On Unix, this value is according to the definition of
+{\cf EX\_SOFTWARE} in the {\cf sysexits.h} header~\cite{srfi22}.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
