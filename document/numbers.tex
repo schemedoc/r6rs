@@ -2,13 +2,14 @@
 \label{numbertypeschapter}
 \index{number}
 
-Numerical computation has traditionally been neglected by the Lisp
+Numerical computation was long neglected by the Lisp
 community.  Until Common Lisp there was no carefully thought out
 strategy for organizing numerical computation, and with the exception of
 the MacLisp system \cite{Pitman83} little effort was made to
-execute numerical code efficiently.  This report recognizes the excellent work
-of the Common Lisp committee and accepts many of their recommendations.
-In some ways this report simplifies and generalizes their proposals in a manner
+execute numerical code efficiently.
+The Scheme reports recognized the excellent work
+of the Common Lisp committee and accepted many of their recommendations,
+while simplifying and generalizing in some ways
 consistent with the purposes of Scheme.
 
 It is important to distinguish between the mathematical numbers, the
@@ -16,9 +17,9 @@ Scheme numbers that attempt to model them, the machine representations
 used to implement the Scheme numbers, and notations used to write numbers.
 This report uses the types \type{number}, \type{complex}, \type{real},
 \type{rational}, and \type{integer} to refer to both mathematical numbers
-and Scheme numbers.  Machine representations such as fixed point and
-floating point are referred to by names such as \type{fixnum} and
-\type{flonum}.
+and Scheme numbers.
+The \type{fixnum} and \type{flonum} types refer to certain
+subtypes of the Scheme numbers, as explained below.
 
 \section{Numerical types}
 \label{numericaltypes}
@@ -34,20 +35,20 @@ in which each level is a subset of the level above it:
 \> \tupe{integer} 
 \end{tabbing}
 
-For example, 3 is an integer.  Therefore 3 is also a rational,
+For example, 5 is an integer.  Therefore 5 is also a rational,
 a real, and a complex.  The same is true of the Scheme numbers
-that model 3.  For Scheme numbers, these types are defined by the
+that model 5.  For Scheme numbers, these types are defined by the
 predicates \ide{number?}, \ide{complex?}, \ide{real?}, \ide{rational?},
 and \ide{integer?}.
 
 There is no simple relationship between a number's type and its
 representation inside a computer.  Although most implementations of
-Scheme will offer at least two different representations of 3, these
+Scheme will offer at least three different representations of 5, these
 different representations denote the same integer.
 
 Scheme's numerical operations treat numbers as abstract data, as
 independent of their representation as possible.  Although an implementation
-of Scheme may use fixnum, flonum, and perhaps other representations for
+of Scheme may use many different representations for
 numbers, this should not be apparent to a casual programmer writing
 simple programs.
 
@@ -61,13 +62,14 @@ In order to catch uses of inexact numbers where exact numbers are
 required, Scheme explicitly distinguishes exact from inexact numbers.
 This distinction is orthogonal to the dimension of type.
 
-A subrange of the exact integers is designated as the set of fixnums.
-Conversely, a \defining{fixnum} is an exact integer whose value lies
-within this fixnum range.  Moreover, every implementation is required
+A \defining{fixnum} is an exact integer whose value lies
+within a certain implementation-dependent subrange of the
+exact integers (section \ref{fixnumssection}).
+Likewise, every implementation is required
 to designate a subset of its inexact reals as \defining{flonum}s, and
 to convert certain external representations into flonums.  Note that
 this does not imply that an implementation is required to use
-floating-point representations
+floating point representations.
 
 \section{Exactness}
 \label{exactly}
@@ -78,10 +80,6 @@ constant or was derived from exact numbers using only exact
 operations.  A number is inexact if it was written as an inexact
 constant or was derived from inexact numbers.  Thus inexactness is
 contagious.  
-
-It is the programmer's responsibility to avoid using numbers with
-magnitude or significand too large to be represented in the
-implementation.
 
 If two implementations produce exact results for a computation that
 did not involve inexact intermediate results, the two ultimate results
@@ -98,10 +96,17 @@ mathematically ideal result.
 \vest Implementations of Scheme are required to implement the whole
 tower of subtypes given in section~\ref{numericaltypes}.
 
-\vest Implementations may also support only a limited range of inexact numbers of
+\vest Implementations are required to support
+exact integers and exact rationals of
+practically unlimited size and precision, and to implement
+certain procedures (listed in \ref{propagationsection})
+so they always return exact results when given exact
+arguments.
+
+\vest Implementations may also support only a limited range of
+inexact numbers of
 any type, subject to the requirements of this section.  For example,
-an implementation that uses flonums to represent all its
-inexact real numbers may
+an implementation may
 limit the range of inexact reals (and therefore
 the range of inexact integers and rationals)
 to the dynamic range of the flonum format.
@@ -111,34 +116,34 @@ rationals are
 likely to be very large in such an implementation as the limits of this
 range are approached.
 
-\vest Implementations are required to support
-exact integers and exact rationals of
-practically unlimited size and precision, and to implement the
-above procedures and the {\cf /} procedure in
-such a way that they always return exact results when given exact
-arguments.
-
 \vest An implementation may use floating point and other approximate 
 representation strategies for \tupe{inexact} numbers.
 This report recommends, but does not require, that the IEEE 
 floating point standards be followed by implementations that use
-flonum representations, and that implementations using
+floating point representations, and that implementations using
 other representations should match or exceed the precision achievable
 using these floating point standards~\cite{IEEE}.
 
-\vest In particular, implementations that use flonum representations
-must follow these rules: A flonum result
-must be represented with at least as much precision as is used to express any of
-the inexact arguments to that operation.  It is desirable (but not required) for
+\vest In particular, implementations that use floating point
+representations must follow these rules: A floating point result
+must be represented with at least as much precision as is
+used to express any of the inexact arguments to that operation.
+It is desirable (but not required) for
 potentially inexact operations such as {\cf sqrt}, when applied to exact
 arguments, to produce exact answers whenever possible (for example the
 square root of an exact 4 ought to be an exact 2).
 If, however, an
 exact number is operated upon so as to produce an inexact result
-(as by {\cf sqrt}), and if the result is represented as a flonum, then
-the most precise flonum format available must be used; but if the result
-is represented in some other way then the representation must have at least as
-much precision as the most precise \tupe{flonum} format available.
+(as by {\cf sqrt}), and if the result is represented in floating
+point, then the most precise floating point format available
+must be used; but if the result
+is represented in some other way then the representation must have
+at least as much precision as the most precise
+floating point format available.
+
+It is the programmer's responsibility to avoid using inexact numbers
+with magnitude or significand too large to be represented in the
+implementation.
 
 \section{Infinities and NaNs}
 
