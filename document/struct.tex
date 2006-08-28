@@ -42,7 +42,7 @@ syntactic sugar.  See section~\ref{proper tail recursion}.
 objects in their own right.  Procedures can be created dynamically,
 stored in data structures, returned as results of procedures, and so
 on.  Other languages with these properties include Common Lisp,
-Haskell, ML, Python, Ruby, and Smalltalk.
+Haskell, ML, Python, and Ruby.
 
 \vest One distinguishing feature of Scheme is that continuations, which
 in most other languages only operate behind the scenes, also have
@@ -74,9 +74,9 @@ complex numbers.
 The following sections give a brief overview of the most fundamental
 elements of the language.  The purpose of this overview is to explain
 enough of the basic concepts of the language to facilitate
-understanding the subsequent chapters of the report, which are
+understanding of the subsequent chapters of the report, which are
 organized as a reference manual.  Consequently, this overview is
-not a complete introduction of the language, nor is formally precise
+not a complete introduction of the language, nor is it precise
 in all respects.
 
 \section{Basic types}
@@ -97,7 +97,7 @@ Scheme language.  More types are described in later chapters.
 \mainindex{boolean}A boolean value denotes a truth value, and can either be
 true or false.  In Scheme, the value for ``false'' is written
 \schfalse{}.  The value ``true'' is written \schtrue{}.  However, in
-most places where truth value is expected, any value different from
+most places where a truth value is expected, any value different from
 \schfalse{} counts as true.
 
 \paragraph{Numbers}
@@ -109,9 +109,9 @@ overview of the structure of Scheme's numerical tower.
 
 \paragraph{Characters}
 
-\mainindex{character}Scheme characters mostly correspond to regular textual characters.
-More precisely, they are specified as \textit{scalar values} according
-to the Unicode standard.
+\mainindex{character}Scheme characters mostly correspond to textual characters.
+More precisely, they are isomorphic to the \textit{scalar values} of
+the Unicode standard.
 
 \paragraph{Strings}
 
@@ -122,7 +122,7 @@ represent arbitrary Unicode texts.
 
 \mainindex{symbol}A symbol is an object representing a string that
 cannot be modified.  This string is called the symbol's \textit{name}.
-Different from strings, two symbols whose names are spelled the same
+Unlike strings, two symbols whose names are spelled the same
 way are equivalent.  Symbols are useful for many other applications;
 for instance, they may be used the way enumerated values are used in
 other languages.
@@ -131,7 +131,7 @@ other languages.
 
 \mainindex{pair}\mainindex{list}
 A pair is a data structure with two components.  The most popular use
-of pairs is to represents (singly linked) lists, where the first
+of pairs is to represent (singly linked) lists, where the first
 component (the ``car'') represents the first element of the list, and
 the second component (the ``cdr'') the rest of the list.  Scheme also
 has a distinguished empty list, which is the last cdr in a chain of
@@ -140,10 +140,12 @@ pairs representing a list.
 \paragraph{Vectors}
 
 \mainindex{vector}Vectors, like lists, are linear data structures
-representing finite sequences.  Whereas a list is accessed
-sequentially through the pair chain representing it, a vector is
-addressed by an integer.  Thus, vectors are more appropriate than
-lists for randomly accessing elements.
+representing finite sequences of arbitrary objects.
+Whereas the elements of a list are accessed
+sequentially through the pair chain representing it,
+the elements of a vector are addressed by an integer index.
+Thus, vectors are more appropriate than
+lists for random access to elements.
 
 \paragraph{Procedures}
 
@@ -197,7 +199,7 @@ can be used to indicate structure.
 \section{Variables and binding}
 
 \mainindex{variable}\mainindex{binding}\mainindex{identifier}Scheme
-allows using identifiers to denote values bound to them.  These
+allows identifiers to denote values.  These
 identifiers are called variables. (More precisely, variables denote
 locations.  However, this distinction is not important for a large
 proportion of Scheme code.)
@@ -231,13 +233,14 @@ identifiers as follows:
 
 The first two parenthesized structures are \textit{definitions}; they
 create global bindings, binding {\cf x} to 23 and {\cf y} to 42.
-Definitions are not expressions: they cannot appear in all places
+Definitions are not expressions, and cannot appear in all places
 where an expression can occur.  Moreover, a definition has no value.
 
 Bindings follow the lexical structure of the program:  When several
 bindings with the same name exist, a variable refers to the binding
-that is closest to it, following from its occurrence in the program
-from the inside to the outside, and only to a global binding, if no
+that is closest to it, starting with its occurrence in the program
+and going from inside to outside, going all the way to a global
+binding only if no
 local binding can be found along the way:
 
 \begin{scheme}
@@ -317,17 +320,17 @@ procedure that will take a single number and add it to 42.
 \section{Procedure calls and syntactic keywords}
 
 Whereas {\cf (+ 23 42)}, {\cf (f 23)}, and {\cf ((lambda (x) (+ x 42))
-  23)} are all examples for procedure calls, {\cf lambda} and {\cf
-  let} expressions are not.  This is because {\cf let}, even though an
-identifier, is not a variable, but instead a \textit{syntactic
+  23)} are all examples of procedure calls, {\cf lambda} and {\cf
+  let} expressions are not.  This is because {\cf let}, even though
+it is an identifier, is not a variable, but is instead a \textit{syntactic
   keyword}\mainindex{syntactic keyword}.  An expression that has a
 syntactic keyword as its operator obeys special rules determined by
 the keyword.
 
 In the case of {\cf lambda}, these rules specify that the first
-operand is a list of parameters, and the second operand the body of
-the procedure.  In {\cf let} expressions, the first operand is a list
-of binding specifications, the and the second one is a body
+subform is a list of parameters, and the second subform the body of
+the procedure.  In {\cf let} expressions, the first subform is a list
+of binding specifications, the and the second is a body of
 expressions.
 
 Procedure calls can be distinguished from these ``special forms'' by
@@ -362,9 +365,9 @@ Thus, the previous value of 23 is discarded and replaced by 42.
 
 \section{Derived forms and macros}
 
-Many syntactic keywords specified in this report actually do not
-contribute to the power of the language because special forms using
-them can be translated into special forms using simpler syntactic
+Many syntactic keywords specified in this report do not actually
+contribute to the power of the language because special forms that
+use them can be translated into special forms that use simpler syntactic
 keywords.  For example, the {\cf let} expressions can be translated
 into procedure calls and {\cf lambda} expressions.  The following two
 expressions are equivalent:
