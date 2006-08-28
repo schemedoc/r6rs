@@ -17,7 +17,7 @@ Which external representation is chosen is implementation-dependent.
   The {\cf put-datum} procedure merely writes the external
   reprentation.  If {\cf put-datum} is used to write several
   subsequent external representations to an output port, care must be
-  taken to property delimit them to enable reading them back in by
+  taken to delimit them properly so they can be read back in by
   subsequent calls to {\cf get-datum}.
 \end{note}
 \end{entry}
@@ -32,10 +32,10 @@ datum parsable from the given \var{input-port}, updating
 \var{input-port} to point exactly past the end of the external
 representation of the object.
 
-Any \meta{intertoken space} (see section~\ref{lexicalsyntaxsection} in
+Any \meta{intertoken space} (see section~\ref{lexicalsyntaxsection}) in
 the input is first skipped.  If an end of file occurs after the
 \meta{intertoken space}, the end of file object (see
-section~\ref{eofsection}) is returned.  The port remains open, and
+section~\ref{eofsection}) is returned, the port remains open, and
 further calls to {\cf get-datum} will also return the end of file
 object.
 

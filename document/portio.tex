@@ -5,16 +5,16 @@ The \library{r6rs i/o ports} library defines an I/O layer for
 conventional, imperative buffered input and output with mixed text and
 binary data.  A \defining{port} represents a buffered access object
 for a data sink or source or both simultaneously.  The library allows
-creating ports from from arbitrary input sources and sink represented
+creating ports from arbitrary input sources and sinks represented
 as readers and writers (see section~\ref{primiosection}), but does not
 require that all ports be built from readers and writers.
 
-The \library{r6rs i/o ports} distinguishes between \textit{input
+The \library{r6rs i/o ports} library distinguishes between \textit{input
   ports\mainindex{input port}} and \textit{output
   ports\mainindex{output ports}}.  An input port is a source for data,
 whereas an output port is a sink for data.  A port may be both an
-input and an output source; such a port typically provides
-simultaneous read and write access to a file or other piece of data.
+input source and an output sink; such a port typically provides
+simultaneous read and write access to a file or other data.
 
 This section uses the \var{input-port}, \var{output-port}, \var{port}
 parameter names for arguments that must be input ports (or combined
@@ -27,7 +27,7 @@ This library introduces the following condition type:
 
 \begin{entry}{%
 \ctproto{i/o-port}
-\proto{i/o-port-error}{ obj}{procedure}
+\proto{i/o-port-error?}{ obj}{procedure}
 \proto{i/o-error-port}{ condition}{procedure}}
 
 This condition type could be defined by
@@ -51,7 +51,7 @@ Each output port has an associated buffer mode that defines when an
 output operation will flush the buffer associated with the output
 port. The possible buffer modes are the symbols {\cf none} for no buffering,
 {\cf line} for flushing upon line feeds and line separators (U+2028), and
-{\cf block} for block-based buffering.  This section uses the parameter name
+{\cf block} for arbitrary buffering.  This section uses the parameter name
 \var{buffer-name} for arguments that must be buffer-mode symbols.
 
 \begin{entry}{%
@@ -76,7 +76,7 @@ This returns \schtrue{} if the argument is a valid buffer-mode symbol,
 
 Several different Unicode encoding schemes describe standard ways to
 encode characters and strings as byte sequences and to decode those
-sequences.  With this document, a \defining{codec} is a Scheme object
+sequences.  Within this document, a \defining{codec} is a Scheme object
 that somehow represents a Unicode or similar encoding scheme.
 
 The text transcoders of this document generalize codecs
@@ -129,7 +129,7 @@ implementation-dependent.
 \begin{entry}{%
 \proto{native-eol-style}{}{procedure}}
 
-This returns the default end-of-line style of the underlying platform, i.e.
+This returns the default end-of-line style of the underlying platform, e.g.
 {\cf lf} on Unix and {\cf crlf} on Windows.
 \end{entry}
 
@@ -198,7 +198,7 @@ implementation-dependent.
   listed.
 \end{rationale}
 
-When part of a transcoder, an error-handling mode specifies the behvior
+When part of a transcoder, an error-handling mode specifies the behavior
 of a text I/O operation in the presence of an encoding or decoding
 error:
 
@@ -241,7 +241,7 @@ case it defaults to {\cf raise}.  This returns a transcoder with the
 behavior specified by its arguments.
 
 A transcoder returned by {\cf make-transcoder} is equal in the sense
-of {\cf eqv?} to any other transcoder returnd by {\cf
+of {\cf eqv?} to any other transcoder returned by {\cf
   make-transcoder}, if and only if the \var{code}, \var{eol-style},
 and \var{handling-mode} arguments are equal in the sense of {\cf
   eqv?}.
@@ -252,7 +252,7 @@ and \var{handling-mode} arguments are equal in the sense of {\cf
 \proto{transcoder-eol-style}{ transcoder}{procedure}
 \proto{transcoder-error-handling-mode}{ transcoder}{procedure}}
 
-These are accessors for transcoder object; when applied to a
+These are accessors for transcoder objects; when applied to a
 transcoder returned by {\cf make-transcoder}, they return the
 \var{codec}, \var{eol-style}, \var{handling-mode} arguments.
 \end{entry}
@@ -266,7 +266,8 @@ count from the beginning of the sink or source, and operations for
 inspecting and setting it.  A port may also have an associated
 transcoder that represents a default text encoding associated with the
 port.  Note that the transcoder associated with a port does not have
-any direct effect to the procedures performing textual I/O.  However,
+any direct effect on the behavior of procedures that perform
+textual I/O.  However,
 it can be passed to those procedures to specify that the text encoding
 or decoding should happen according to that transcoder.
 
@@ -292,9 +293,9 @@ The {\cf port-has-port-position?} procedure returns \schtrue{} if the
 port supports the {\cf port-position} operation, and \schfalse{}
 otherwise.
 
-Returns the exact non-negative integer index of the position at which the
+The {\cf port-position} procedure
+returns the exact non-negative integer index of the position at which the
 next byte would be read from or written to the port.
-   
 This procedure raises an exception with condition type {\cf\&contract}
 if the port does not support the operation.
 \end{entry}   
@@ -303,7 +304,7 @@ if the port does not support the operation.
 \proto{port-has-set-port-position!?}{ port}{procedure}
 \proto{set-port-position!}{ port pos}{procedure}
 
-\domain{\var{Pos} must be a non-negative exact integer.}
+\domain{\var{pos} must be a non-negative exact integer.}
    
 The {\cf port-has-set-port-position?} procedure returns \schtrue{} if the port
 supports the {\cf set-port-position!} operation, and \schfalse}
@@ -311,7 +312,7 @@ otherwise.
    
 The {\cf set-port-position!} procedure sets the current byte position
 of the port to \var{pos}.  If \var{port} is an output or combined
-input and output port, this will first flush \var{pos}.  (See {\cf
+input and output port, this will first flush \var{port}.  (See {\cf
   flush-output-port}, section~\ref{flush-output-port}.)
 This procedure raises an exception with condition type {\cf\&contract}
 if the port does not support the operation.
@@ -329,7 +330,7 @@ A closed port is still a port. The unspecified value is returned.
 \begin{entry}{%
 \proto{call-with-port}{ port proc}{procedure}}
    
-\domain{\var{Proc} must be a procedure that accepts a single
+\domain{\var{proc} must be a procedure that accepts a single
   argument.}  Calls \var{proc} with \var{port} as an argument. If
 \var{proc} returns, then the \var{port} is closed automatically and
 the values returned by \var{proc} are returned. If \var{proc} does not
@@ -340,10 +341,10 @@ possible to prove that the port will never again be used for a
 
 \section{Input ports}
 
-An input port allows reading an infinite sequence of bytes puncuated
+An input port allows reading an infinite sequence of bytes punctuated
 by end of file objects. An input port connected to a finite data
 source ends in an infinite sequence of end of file objects.  All of
-the procedures containing textual input accept a transcoder as an
+the procedures that perform textual input accept a transcoder as an
 optional argument. If no transcoder is supplied or the
 \var{transcoder} argument is \schfalse{}, the input bytes are
 interpreted as UTF-8 with a platform-specific end-of-line convention.
@@ -413,8 +414,8 @@ associated with the returned port.
    
 Returns an input port connected to standard input, possibly a fresh
 one on each call.  If the returned port supports textual input, it has
-an associated transcoder with its encoding, end-of-line style, and
-error-handling mode {\cf raise}.
+an associated transcoder with some encoding, some end-of-line style,
+and error-handling mode {\cf raise}.
 \end{entry}
 
 \begin{entry}{%
@@ -564,9 +565,9 @@ then the end-of-file object is returned.
 This reads from \var{input-port} until an apparent end of the input, decoding
 characters in the same manner as {\cf get-string-n} and {\cf get-string-n!}.
    
-If data is available before the end of file, a string
+If data are available before the end of file, a string
 containing all the text decoded from that data is returned. If no data
-precedes the end of file, the end-of-file object file object is
+precede the end of file, the end-of-file object file object is
 returned.
 \end{entry}
 
@@ -592,9 +593,10 @@ returned.
 
 \section{Output ports}
 
-An port is a sink to which bytes are written. These bytes may control
+An output port is a sink to which bytes are written. These bytes may control
 external devices, or may produce files and other objects that may
-subsequently be opened for input.  The procedures in this section for
+subsequently be opened for input.  The procedures in this section
+that perform
 textual output accept a transcoder as an optional argument.  If no
 transcoder is supplied, the character(s) output will be translated to
 UTF-8 with a platform-specific end-of-line convention.
@@ -610,7 +612,7 @@ combined input and output port), and returns \schfalse{} otherwise.
 \proto{flush-output-port}{ output-port}{procedure}}
    
 This flushes any output from the buffer of \var{output-port} to the
-underlying data or device. The unspecified value is returned.
+underlying file, device, or object. The unspecified value is returned.
 \end{entry}
 
 \begin{entry}{%
@@ -626,7 +628,7 @@ This returns the symbol that represents the buffer-mode of
 \rproto{open-file-output-port}{ filename file-options transcoder}{procedure}}
 
 This returns an output port for the named file and the specified
-options (which default to {\cf (file-options)}.) The \var{buffer-mode}
+options (which default to {\cf (file-options)}). The \var{buffer-mode}
 argument is optional; it defaults to {\cf block}.  If \var{transcoder}
 is specified, it becomes the transcoder associated with the returned
 port.
@@ -644,7 +646,7 @@ the transcoder associated with the returned port.
 \begin{entry}{%
 \proto{get-output-bytes}{ output-port}{procedure}}
 
-\domain{\var{Output-port} must be a port that accumulates a bytes
+\domain{\var{output-port} must be a port that accumulates a bytes
   object from the output written to it, such as the ports created by
   {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
 This returns a copy of the bytes object that has been accumulated with
@@ -655,7 +657,7 @@ This returns a copy of the bytes object that has been accumulated with
 \proto{call-with-bytes-output-port}{ proc}{procedure}
 \rproto{call-with-bytes-output-port}{ proc transcoder}{procedure}}
 
-\domain{\var{Proc} is a procedure accepting one argument.} This
+\domain{\var{proc} is a procedure accepting one argument.} This
 creates an output port that accumulates a bytes object from the output
 written to it, and calls \var{proc} with that output port as an
 argument. When \var{proc} returns for the first time, the port is
@@ -675,12 +677,14 @@ This is the same as {\cf open-bytes-output-port}.
 \proto{get-output-string}{ output-port}{procedure}
 \rproto{get-output-string}{ output-port transcoder}{procedure}}
 
-\domain{\var{Output-port} must be a port that accumulates a bytes
+\domain{\var{output-port} must be a port that accumulates a bytes
   object from the output written to it, such as the ports created by
   {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
 The decoding of the bytes object associated with that port is returned
 as a freshly allocated string.  That decoding is according to
-\var{transcoder} if it is specified, and UTF-8 if not.  In either
+\var{transcoder} if it is specified, and UTF-8 if not.
+(FIXME: Shouldn't the port's transcoder be considered?)
+In either
 case, decoding errors are always handled analogously to the {\cf
   replace} error-handling mode: the first byte of each invalid
 encoding is skipped and decoded as the U+FFFD replacement character.
@@ -696,7 +700,9 @@ written to it, and calls \var{proc} with that port as an argument.
 When \var{proc} returns for the first time, the port is closed and the
 decoding of the bytes object associated with that port is returned as
 a freshly allocated string.  That decoding is according to
-\var{transcoder} if it is specified, and UTF-8 if not.  In either
+\var{transcoder} if it is specified, and UTF-8 if not.
+(FIXME: Shouldn't the port's transcoder be considered?)
+In either
 case, decoding errors are always handled analogously to the {\cf
   replace} error-handling mode: the first byte of each invalid
 encoding is skipped and decoded as the U+FFFD replacement character.
@@ -710,7 +716,7 @@ associated with the port.
    
 Returns a port connected to the standard output or standard error,
 respectively. If the returned port supports textual input, it has an
-associated transcoder with its encoding, end-of-line style, and
+associated transcoder with some encoding, some end-of-line style, and
 error-handling mode {\cf raise}.
 \end{entry}
 
@@ -725,9 +731,9 @@ Writes \var{octet} to the output port. The unspecified value is returned.
 \rproto{put-bytes}{ output-port bytes start}{procedure}
 \rproto{put-bytes}{ output-port bytes start count}{procedure}}
    
-\domain{\var{Start} and \var{count} must be non-negative exact
+\domain{\var{start} and \var{count} must be non-negative exact
   integers that default to 0 and $\texttt{(bytes-length \var{bytes})}
-  - \var{start}$, respectively. \var{Bytes} must have a size of at
+  - \var{start}$, respectively. \var{bytes} must have a size of at
   least $\var{start} + \var{count}$.}  This procedure writes the
 \var{count} bytes of the bytes object \var{bytes}, starting at index
 \var{start}, to the output port. The unspecified value is returned.
@@ -755,9 +761,9 @@ returned.
 \rproto{put-string-n}{ output-port string start count}{procedure}
 \rproto{put-string-n}{ output-port string start count transcoder}{procedure}}
    
-\domain{\var{Start} and \var{count} must be non-negative exact
-  integers.  var{String} must have a length of at least $\var{start} +
-  \var{count}$.}  \var{Start} defaults to 0.  \var{Count} defaults to
+\domain{\var{start} and \var{count} must be non-negative exact
+  integers.  var{string} must have a length of at least $\var{start} +
+  \var{count}$.}  \var{start} defaults to 0.  \var{count} defaults to
 $\texttt{(string-length \var{bytes})} - \var{start}$. Writes the
 encodings of the \var{count} characters of \var{string}, starting at
 index \var{start}, to the port. The unspecified value is returned.
@@ -773,7 +779,7 @@ index \var{start}, to the port. The unspecified value is returned.
    
 This returns a single port that is both an input port and an output
 port, for the named file and options (which default to {\cf
-  (file-options)}).  \var{Buffer-mode} optionally specifies the buffer
+  (file-options)}).  \var{buffer-mode} optionally specifies the buffer
 mode of the port; it defaults to {\cf block}.
    
 The returned port supports the {\cf port-position} and {\cf
@@ -801,7 +807,7 @@ with the returned port.
 \rproto{open-writer-output-port}{ writer buffer-mode transcoder}{procedure}}
    
 This returns an output port connected to the writer \var{writer}.
-\var{Buffer-mode} optionally specifies the buffer mode of the port; it
+\var{buffer-mode} optionally specifies the buffer mode of the port; it
 defaults to {\cf block}.
 If \var{transcoder} is specified, it becomes the transcoder associated
 with the returned port.
