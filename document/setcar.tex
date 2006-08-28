@@ -1,8 +1,9 @@
 \chapter{Mutable pairs}
 \label{pairmutationchapter}
 
-The procedures provided by the \deflibrary{r6rs mutable-pairs} library allow assigning values to
-the car and cdr fields of pairs.  In programs that use this library,
+The procedures provided by the \deflibrary{r6rs mutable-pairs} library
+allow new values to be assigned to the car and cdr fields of
+previously allocated pairs.  In programs that use this library,
 the criteria for determining the validity of list arguments are more
 complex than in programs whose lists are immutable.
 Section~\ref{mutablelistargumentsection} spells out the definitions
@@ -25,8 +26,7 @@ Returns the unspecified value.
 (define (f) (list 'not-a-constant-list))
 (define (g) '(constant-list))
 (set-car! (f) 3)             \ev  \theunspecified
-(set-car! (g) 3)             \ev  \unspecified%
-          ; should raise \exception{\&contract}
+(set-car! (g) 3)             \ev  \unspecified\\\>; should raise \exception{\&contract}
 \end{scheme}
 
 If an immutable pair is passed to {\cf set-car!}, an exception
@@ -61,14 +61,6 @@ with condition type {\cf\&contract} should be raised.
 
 Through the {\cf set-car!} and {\cf set-cdr!} procedures, lists are
 mutable in Scheme, so a pair that is the head of a list at one moment
-<<<<<<< .mine
-may not always be the head of a list.  Any procedures that are defined
-in this report and are specified as requiring a list argument
-must check whether that argument appears to be a list.
-This checking is complicated by
-the fact that many procedures that accept lists, such as {\cf map} or
-{\cf filter}, call arbitrary procedures that are passed as arguments.
-=======
 may not always be the head of a list:
 %
 \begin{scheme}
@@ -90,17 +82,16 @@ report specified as accepting a list argument must check if that
 argument indeed appears to be a list.  This checking is complicated by
 the fact that many procedures accepting lists such as {\cf map} or
 {\cf filter} call arbitrary procedures that are passed as arguments.
->>>>>>> .r678
-These argument procedures may mutate the list while it is being
+These procedures may mutate the list while it is being
 traversed.  Moreover, in the presence of concurrent evaluation,
 whether a pair is the head of a list is not computable in general.
 
 Consequently, procedures like {\cf length} are only required to check
 that a list argument is a
 \textit{plausible list\index{plausible list}}.
-Informally, a plausible list is an object that appears as
-a list during a sequential traversal, where that traversal must also
-detect a cycle.
+Informally, a plausible list is an object that appears to
+be a list during a sequential traversal, where that traversal
+must also attempt to detect a cycle.
 In particular, an immutable plausible list is always a list.
 A more formal definition follows:
 
@@ -167,38 +158,84 @@ a Scheme value $x$ such that
 
 \textit{A plausible alist of length $n$} is defined similarly, as is
 \textit{a plausible alist prefix of length $n$}.
-a
+
 \textit{A plausible list (alist) between times $t_0$ and $t_n$} is a
 plausible list (alist) of some length $n$ between those times.
 
 \section{Procedures with list arguments}
 \label{proceduresmutablelistargumentssection}
 
-This section contains clarifications to the domains of the procedures of the base
+This section clarifies the domains of procedures in the base
 library and the \library{r6rs lists} library.
 
 \subsection{Base-library procedures}
 
 These are clarifications to the domains of the procedures of the base
-library described in sections~\ref{listsection} and \ref{controlsection}:
+library described in sections~\ref{listsection}, \ref{stringsection},
+and \ref{controlsection}:
 
 \begin{entry}{%
 \irproto{list?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a plausible list, otherwise returns
-\schfalse{}.
+Returns \schtrue{} if \var{obj} is a list that is not modified
+by {\cf set-cdr!} between entry and exit.
+Returns \schfalse{} if \var{obj} is not a plausible list.
+Otherwise, this procedure returns an unspecified boolean
+or does not return at all.
+
+\begin{note}
+The unspecified and non-terminating cases can occur only
+in implementations that allow the argument to be modified
+by concurrent execution, which is beyond the scope of this
+document.
+To reduce the number of unspecified cases that must be
+mentioned, the rest of this chapter will mostly ignore
+the possibility of unspecified behavior being caused by
+concurrent execution.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\irproto{length}{ list \vr{k}}{procedure}}
+
+\domain{\var{list} must be a plausible list.}
+\begin{note}
+In other words, an exception must be raised if \var{list}
+is not a plausible list.
+That \var{list} is a plausible list is not by
+itself sufficient to avoid the exception, however.
+If \var{list} is a plausible list, but is
+mutated in certain ways during the call to {\cf length},
+then an exception may still be raised.
+This can occur only in implementations that allow
+concurrent execution.  The rest of this chapter
+will mostly ignore the possibility of exceptions being
+caused by concurrent modification of an argument.
+\end{note}
+\end{entry}
+
+\begin{entry}{%
+\irproto{append}{ list \dotsfoo{} obj}{procedure}}
+
+\nodomain{All \var{list}s must be plausible lists.}
+\end{entry}
+
+\begin{entry}{%
+\irproto{reverse}{ list}{procedure}}
+
+\nodomain{\var{list} must be a plausible list.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{list-tail}{ l \vr{k}}{procedure}}
 
-\domain{\var{L} must be a plausible list up to \var{k}.}
+\domain{\var{l} must be a plausible list up to \var{k}.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{list-ref}{ l \vr{k}}{procedure}}
 
-\domain{\var{L} must be a plausible list up to and including \var{k}.}
+\domain{\var{l} must be a plausible list up to and including \var{k}.}
 \end{entry}
 
 \begin{entry}{%
@@ -209,12 +246,36 @@ procedure taking as many arguments as there are {\it list}s
 and returning a single value.  If more
 than one \var{list} is given, a natural number $n$ must exist such
 that all \varj{list} are plausible lists of length $n$.}
+\begin{note}
+In other words, an exception must be raised if no such $n$ exists.
+The existence of a natural number $n$ such that
+all of the \var{list}s are plausible lists of length $n$
+is not by itself sufficient to avoid the exception, however.
+If \var{proc} mutates the lists in certain ways during the
+call to {\cf map}, then an exception may still be raised,
+even in systems that do not allow concurrent execution.
+\end{note}
+\begin{scheme}
+(let* ((ones (list 1))
+       (f (lambda (x)
+            (set-cdr! ones (list x))
+            (set! ones (cdr ones))
+            2)))
+  (map f ones))              \ev \unspecified\\\>; may not terminate
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\irproto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
+
+\domain{A natural number $n$ must exist such
+that all \varj{list} are plausible lists of length $n$.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{list->string}{ list}{procedure}}
 
-\domain{\var{List} must be a plausible list where, for every
+\domain{\var{list} must be a plausible list where, for every
   natural number $n$ and for every plausible prefix $x_i$ of that argument
   of length $n$, there exists a time $t$ with $t_i < t <
   t_r$, where $t_r$ is the time of first return from {\cf
@@ -224,21 +285,45 @@ that all \varj{list} are plausible lists of length $n$.}
 \begin{entry}{%
 \irproto{apply}{ proc \vari{arg} $\ldots$ args}{procedure}}
 
-\domain{\var{Proc} must be a procedure and \var{args} must be a
+\domain{\var{proc} must be a procedure and \var{args} must be a
   plausible list.}
 \end{entry}
 
 \subsection{List utilities}
 
-These are clarifications to the domains of the procedures of the \library{r6rs lists}
+These are clarifications to the domains of the procedures
+of the \library{r6rs lists}
 library described in chapter~\ref{listutilities}:
+
+\begin{entry}{%
+\irproto{find}{ proc list}{procedure}}
+
+\domain{\var{proc} must be a procedure; it must take a single argument
+    if \var{list} is non-empty.
+    Either there exists a natural number $n$ such
+    that \var{list} is a plausible list of length $n$
+    between entry and some subsequent time before exit,
+    or there exists a natural number $n$,
+    Scheme objects $x_j$, and times $t_j$
+    such that
+    $list, x_1, \dots, x_n$ and $t_1, \ldots, t_n$
+    is a plausible prefix up to and including $n$, where
+    $t_1$ is after entry and $t_n$ is before exit
+    and there exists $t^\prime$ before exit such that
+    $t^\prime > t_n$,
+    the car of $x_n$ at $t^\prime$ is $y$,
+    and a call to \var{proc} with argument $y$ at some time
+    after $t^\prime$ but before exit
+    yields a true value.}
+\end{entry}
 
 \begin{entry}{%
 \irproto{forall}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}
 \irproto{exists}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}}
 
-\domain{\var{Proc} must be a procedure taking as many arguments
-as there are \var{l}s.
+\domain{\var{proc} must be a procedure; if any \varj{l} is
+    nonempty, then \var{proc} must take as many arguments
+    as there are \var{l}s.
     Either there exists a natural number $n$ such
     that every $l_i$ is a plausible list of length $n$
     between entry and some subsequent time before exit,
@@ -258,19 +343,53 @@ as there are \var{l}s.
 \end{entry}
 
 \begin{entry}{%
+\irproto{filter}{ proc list}{procedure}
+\irproto{partition}{ proc list}{procedure}
+}
+
+\domain{\var{proc} must be a procedure; it must take a single argument
+    if \var{list} is non-empty.
+    \var{list} must be a plausible list.}
+\end{entry}
+
+\begin{entry}{%
+\irproto{fold-left}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}
+\irproto{fold-right}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
+
+\domain{\var{kons} must be a
+  procedure; if the \var{list}s are non-empty, it must take one more
+  argument than there are {\it list}s.
+    There must exist a natural number $n$ such
+    that every \var{list} is a plausible list of length $n$
+    between entry and some subsequent time before exit.}
+\end{entry}
+
+\begin{entry}{%
+\irproto{remp}{ proc list}{procedure}
+\irproto{remove}{ obj list}{procedure}
+\irproto{remv}{ obj list}{procedure}
+\irproto{remq}{ obj list}{procedure}}
+
+\domain{\var{proc} must be a procedure; it must take a single argument
+    if \var{list} is non-empty.
+    \var{list} must be a plausible list.}
+\end{entry}
+
+\begin{entry}{%
 \irproto{memp}{ proc l}{procedure}
 \irproto{member}{ obj l}{procedure}
 \irproto{memv}{ obj l}{procedure}
 \irproto{memq}{ obj l}{procedure}
 }
 
-\domain{\var{Proc} must be a procedure taking a single argument.
-  \var{L} must be a plausible list or a value according to the
+\domain{\var{proc} must be a procedure taking a single argument.
+  \var{l} must be a plausible list or a value according to the
   conditions specified below.}
 
 If \var{l} is not a plausible list, then it must be such that a
 natural number $n$ exists where \var{l} is the first Scheme value of a
-plausible prefix of length $n$ such that the car of the last value $x_n$ of that
+plausible prefix of length $n$ such that
+the car of the last value $x_n$ of that
 prefix satisfies the given condition at some time after $t_n$ and before
 the procedure returns.
 \end{entry}
@@ -281,7 +400,7 @@ the procedure returns.
 \irproto{assv}{ obj al}{procedure}
 \irproto{assq}{ obj al}{procedure}}
 
-\domain{\var{Al} (for ``association list'') must be a a plausible
+\domain{\var{al} (for ``association list'') must be a a plausible
   alist or a value according to the conditions specified below.
   \var{Proc} must be a procedure taking a single argument.}
 
