@@ -106,8 +106,8 @@ arguments in the two calls must be {\cf eqv?}, the \var{fields}
 arguments {\cf equal?}, the \var{sealed?} arguments boolean-equivalent
 (both false or both non-false), and the \var{opaque?} arguments
 boolean-equivalent.
-If these conditions are not met, an error is signaled when the
-second call occurs.
+If these conditions are not met, an exception with condition type
+{\cf\&contract} is raised when the second call occurs.
 If they are met, the second call returns, without creating a new
 record type, the same record-type descriptor
 (in the sense of {\cf eqv?}) as the first call.
@@ -209,82 +209,77 @@ This returns a \defining{record-constructor descriptor} (or
 \defining{constructor descriptor} for short) that can be used to
 create record constructors (via {\cf record-constructor}; see below)
 or other constructor descriptors.  \var{Rtd} must be a record-type
-descriptor.  Protocol is a \defining{protocol}, that describes how to
-initialize the fields of \var{rtd} in the record when it is constructed. The
-protocol is a procedure of one parameter that must itself return a
-procedure, the constructor. The protocol procedure is called by
-{\cf record-constructor} with a procedure as an argument that can be used to
-construct the record object itself and seed the fields of the parent
-types of \var{rtd} with initial values.
+descriptor.  \defining{Protocol} must be a procedure.
+\var{Protocol} is called by {\cf record-constructor} with a single
+argument \var{p} and must return a procedure that creates and returns an
+instance of the record type using \var{p} as described below.
 
 If \var{rtd} is not an extension of another record type, then
-parent-constructor-descriptor must be \schfalse. In this case, the
-protocol receives as an argument a procedure \var{new} that has a
-parameter for every field of \var{rtd}; \var{new} returns a record
-object with the fields of \var{rtd} initialized to its arguments.
+\var{parent-constructor-descriptor} must be \schfalse.
+In this case, \var{protocol}'s argument \var{p} is a procedure \var{new}
+that expects one parameter for every field of \var{rtd} and returns a
+record instance with the fields of \var{rtd} initialized to its arguments.
+The procedure returned by \var{protocol} may take any number of arguments
+but must call \var{new} with the number of arguments it expects and return
+the resulting record instance, as shown in the simple example below.
 
-Protocol example:
-
-FIXME: simplify this to (lambda (new) new)?
 \begin{scheme}
-(lambda (new) (lambda (v \ldots)  (new v \ldots)))
+(lambda (\var{new}) (lambda (v \ldots) (\var{new} v \ldots)))
 \end{scheme}
 
-Here, the call to {\cf new} returns a record where the fields of
-\var{rtd} are simply initialized with the arguments {\tt v \ldots}.
+Here, the call to \var{new} returns a record whose fields
+are simply initialized with the arguments {\tt v \ldots}.
+The expression above may of course be simplified to
+{\cf (lambda (\var{new}) \var{new})}.
 
-As the protocol can be used to construct records of an extension of
-\var{rtd}, the record returned by new may actually be of a record type
-extending \var{rtd}.  (See below.)
-
-If \var{rtd} is an extension of another record type \var{rtd'},
-parent-constructor-descriptor itself must be a constructor descriptor
-of \var{rtd'} (except for default values; see below). In this case,
-the protocol receives as argument a procedure \var{p} whose arguments
-are passed unchanged to the constructor of
-parent-constructor-descriptor; \var{p} returns another procedure that
-accepts as argument the initial values for the fields of \var{rtd} and
-itself returns what the constructor of parent-constructor-descriptor
-returned, with the field values of \var{rtd'} (and its parent and so on)
-initialized according to parent-constructor-descriptor and with the
-field values of \var{rtd} initialized according to \var{p}.
-
-As a matter of convention, the constructor created through the
-protocol should always return the record object itself.
-
-Protocol example:
+If \var{rtd} is an extension of another record type \var{parent-rtd},
+\var{parent-constructor-descriptor} itself must be a constructor descriptor
+of \var{parent-rtd}. In this case, \var{p} is a procedure that accepts
+the same number
+of arguments as the constructor of \var{parent-constructor-descriptor}
+and returns a procedure \var{new}, which, as above,
+expects one parameter for every field of \var{rtd} (not including parent
+fields) and returns a record instance with the fields of \var{rtd}
+initialized to its arguments and the fields of \var{parent-rtd} and
+its parents initialized by the constructor of
+\var{parent-constructor-descriptor}.
+A simple \var{protocol} in this case might be written as follows.
 
 \begin{scheme}
-(lambda (p)
+(lambda (\var{p})
   (lambda (x \ldots v \ldots)
-    (let ((construct (p x \ldots)))
-      (construct v \ldots))))
+    (let ((new (\var{p} x \ldots)))
+      (\var{new} v \ldots))))
 \end{scheme}
     
-This initializes the fields of the parent of \var{rtd} according
-to parent-constructor-descriptor, calling the associated constructor
-with {\tt x \ldots} as arguments, and initializing the fields of \var{rtd}
-itself with {\tt v \ldots}
+This passes some number of arguments {\tt x \ldots} to \var{p} for the
+constructor of \var{parent-constructor-descriptor} and calls \var{new}
+with {\tt v \ldots} to initialize \var{rtd}'s own fields.
 
-Summarizing: the constructor descriptors for a record type form a chain of
+The constructor descriptors for a record type form a chain of
 protocols exactly parallel to the chain of record-type parents. Each
 constructor descriptor in the chain determines the field values for the
 associated record type.
+Child record constructors need not know the number or contents of parent
+fields, only the number of arguments required by the parent constructor.
 
-Protocol can be \schfalse, specifying a default. This is only
-admissible if either \var{rtd} is not an extension of another record
-type, or, if it is, if parent-constructor-descriptor itself was
-constructed with a default protocol. In the first case, protocol
+Protocol may be \schfalse, specifying a default. This is
+permissible only if either \var{rtd} is not an extension of another record
+type, or, if it is, if \var{parent-constructor-descriptor} itself was
+constructed with a default protocol. In the first case, \var{protocol}
 defaults to a procedure equivalent to the following:
 
-FIXME: simplify this to (lambda (p) p)?
 \begin{scheme}
 (lambda (p)
   (lambda field-values
     (apply p field-values)))
 \end{scheme}
-  
-In the latter case, it defaults to a protocol that returns a
+
+or, more simply:
+
+{\tt (lambda (\var{p}) \var{p})}.
+
+In the second case, the default \var{protocol} returns a
 constructor that accepts as many arguments as \var{rtd} has total
 fields (i.e. as the sum of the number of fields in the entire chain of
 record types) and returns a record with fields initialized to
@@ -318,50 +313,37 @@ those of the extension in the argument list.
 \begin{entry}{%
 \proto{record-constructor}{ constructor-descriptor}{procedure}}
    
-Calls the protocol of record-constructor descriptor
-\var{constructor-descriptor} with an appropriate procedure \var{c} as
-an argument (see the description of {\cf
-  make-record-constructor-descriptor}) that creates a record of
-the record type associated with \var{constructor-descriptor}.
+Calls the \var{protocol} of the record-constructor descriptor
+\var{constructor-descriptor} as described in
+{\cf make-record-constructor-descriptor}) and returns the resulting
+construction procedure \var{constructor} for instances of the record type
+associated with \var{constructor-descriptor}.
 
-If the record type associated with \var{constructor-descriptor} is
-opaque, then the values created by such a constructor are not
-considered by the inspection procedures to be records; see the
-specification of {\cf record?} below.
-
-A record from an immutable record type is called immutable;
-conversely, a record from a mutable record type is called mutable.
-
-Two records created by such a constructor are equal according to {\cf
+Two values created by \var{constructor} are equal according to {\cf
   equal?} iff they are {\cf eqv?}, provided their record type was not
 used to implement any of the types explicitly mentioned in the
 definition of {\cf equal?}.
 
-If construct is bound to a constructor returned by {\cf
-  record-constructor}, the following holds:
+For any \var{constructor} returned by {\cf record-constructor},
+the following holds:
 
 \begin{scheme}
-(let ((r (construct \ldots)))
+(let ((r (\var{constructor} v \ldots)))
   (eqv? r r))                \ev \schtrue
 \end{scheme}
 
 For mutable records, but not necessarily for immutable ones, the following
-holds:
+hold.
+(A record of an mutable record type is mutable;
+a record of a immutable record type is immutable.)
 
 \begin{scheme}
-(let ((r (construct \ldots)))
+(let ((r (\var{constructor} v \ldots)))
   (eq? r r))                 \ev \schtrue
+
+(let ((f (lambda () (\var{constructor} v \ldots))))
+  (eq? (f) (f)))             \ev \schfalse
 \end{scheme}
-
-For mutable records, the following holds:
-
-\begin{scheme}
-(let ((f (lambda () (construct \ldots))))
-  (eq? (f) (f))) \ev \schfalse
-\end{scheme}
-
-For immutable records, the value of the above expression is
-unspecified.
 \end{entry}
 
 \begin{entry}{%
@@ -381,16 +363,16 @@ integer \var{k} that specifies one of the fields of \var{rtd}, {\cf
 record of the type represented by \var{rtd}, returns the value of the
 selected field of that record.
 
-If the accessor procedure is given something other than
-a record of the type represented by \var{rtd}, an exception with
-condition type {\cf\&contract} is raised.  Note that the records
-of the type represented by \var{rtd} include records of extensions of
-the type represented by \var{rtd}.
-
 The field selected is the one corresponding the the \var{k}th element
 (0-based) of the \var{fields} argument to the invocation of {\cf
   make-record-type-descriptor} that created \var{rtd}. Note that
 \var{k} cannot be used to specify a field of any type \var{rtd} extends.
+
+If the accessor procedure is given something other than
+a record of the type represented by \var{rtd}, an exception with
+condition type {\cf\&contract} is raised.  Records
+of the type represented by \var{rtd} include records of extensions of
+the type represented by \var{rtd}.
 \end{entry}
 
 \begin{entry}{%
@@ -581,7 +563,7 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
   the implied arguments to {\cf make-record-type-descriptor} would
   create an equivalent record-type descriptor, the created type is the
   same as the previous one.  Otherwise, an exception with condition
-  type {\cf\&contract} is signalled.
+  type {\cf\&contract} is raised.
 
   In the absence of a {\cf nongenerative} clause, a new record type
   type descriptor is created every time a {\cf define-record-type}
@@ -801,6 +783,8 @@ of accessor and mutator names for the widget field.
 
 
 \section{Inspection}
+
+FIXME: make sure the library name is correct in the rest of the document
 
 The implicit-naming syntactic layer is provided by the
 \deflibrary{r6rs records inspection} library.
