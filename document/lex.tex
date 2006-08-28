@@ -472,7 +472,7 @@ Examples:
 \subsection{Numbers}
 \label{numbernotations}
 
-The syntax of the written representations for numbers is described
+The syntax of written representations for numbers is described
 formally by the \meta{number} rule in the formal grammar.  Note that
 case is not significant in numerical constants.
 
@@ -490,7 +490,7 @@ prefix may appear before or after any radix prefix that is used.  If
 the written representation of a number has no exactness prefix, the
 constant may be either inexact or exact.  It is
 inexact if it contains a decimal point, an
-exponent, or a ``\sharpsign'' character in the place of a digit,
+exponent, or a ``\sharpsign'' character in the place of a digit;
 otherwise it is exact.
 
 In systems with inexact numbers
@@ -520,7 +520,8 @@ implementations may wish to allow this default to be set by the user.
 \end{scheme}
 
 If \var{x} is an external representation of an inexact real number
-according to R5RS, and \var{p} is a sequence of 1 or more decimal
+that contains no vertical bar,
+and \var{p} is a sequence of 1 or more decimal
 digits, then {\cf \var{x}|\var{p}} is an external representation that
 denotes the best binary floating point approximation to \var{x} using
 a \var{p}-bit significand.  For example, {\cf 1.1|53} is an external
@@ -528,20 +529,16 @@ representation for the best approximation to 1.1 in IEEE double
 precision.
 
 If \var{x} is an external representation of an inexact real number
-according to R5RS, then \var{x} by itself should be regarded as
-equivalent to {\cf \var{x}|53}
-
-The literals {\cf +inf.0} and {\cf -inf.0} represent positive and
-negative infinity, respectively.  The {\cf +nan.0} and {\cf -nan.0}
-literals represent the NaN that is the result of {\cf (/ 0.0 0.0)}
-and may represent other NaNs as well.
+that contains no vertical bar,
+then \var{x} by itself should be regarded as
+equivalent to {\cf \var{x}|53}.
 
 Implementations that use binary floating point representations
 of real numbers should represent {\cf \var{x}|\var{p}}
 using a \var{p}-bit significand if practical, or by a greater
 precision if a \var{p}-bit significand is not practical, or
 by the largest available precision if \var{p} or more bits
-of significand is not practical within the implementation.
+of significand are not practical within the implementation.
 
 \begin{note}
 The precision of a significand should not be confused with the
@@ -563,15 +560,19 @@ precision can be calculated by calling the following procedure:
 
 \begin{note}
 When the underlying floating-point representation is IEEE double
-precision, the {\cf |\var{p}} suffix should not be
-omitted for all cases:
+precision, the {\cf |\var{p}} suffix should not always be omitted:
 Denormalized numbers have diminished precision, and therefore should
 carry a {\cf |\var{p}} suffix with the actual width of the
 significand.
 \end{note}
 
-If a \meta{decimal 10} does not contain a non-empty \meta{mantissa
-  width} and does not contain one of the exponent markers {\cf s},
+The literals {\cf +inf.0} and {\cf -inf.0} represent positive and
+negative infinity, respectively.  The {\cf +nan.0}
+literal represents the NaN that is the result of {\cf (/ 0.0 0.0)},
+and may represent other NaNs as well.
+
+If a \meta{decimal 10} contains no vertical bar
+and does not contain one of the exponent markers {\cf s},
 {\cf f}, {\cf d}, or {\cf l}, but does contain a decimal point or the
 exponent marker {\cf e}, then it is an external representation for a
 flonum.  Furthermore {\cf inf.0}, {\cf +inf.0}, {\cf -inf.0}, {\cf
