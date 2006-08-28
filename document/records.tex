@@ -51,7 +51,7 @@ inheritence, allowing record types to model hierarchies that occur in
 applications like algebraic data types as well as single-inheritance class
 systems.
 
-Each of the layers also supports generative and non-generative record types.
+Each of the layers also supports generative and nongenerative record types.
 
 The inspection procedures allow programs to obtain from a record instance a
 descriptor for the type and from there obtain access to the fields of the
@@ -92,7 +92,7 @@ its parent's parent, if any, and so on.
    
 The \var{uid} argument is either \schfalse{} or a symbol.
 If \var{uid} is a symbol, the record-creation operation is
-\emph{non-generative} i.e., a new record type is created only
+\emph{nongenerative} i.e., a new record type is created only
 if no previous call to {\cf make-record-type-descriptor}
 was made with the \var{uid}.
 If \var{uid} is \schfalse{}, the record-creation operation is
@@ -151,11 +151,11 @@ fields is immutable and mutable otherwise.
 
 A generative record-type descriptor created by a call to {\cf
   make-record-type-descriptor} is not {\cf eqv?} to any record-type
-descriptor (generative or non-generative) created by another call to
+descriptor (generative or nongenerative) created by another call to
 {\cf make-record-type-descriptor}. A generative record-type descriptor
 is {\cf eqv?}  only to itself, i.e., {\tt (eqv?~\vri{rtd} \vrii{rtd})} iff
 {\tt (eq?~\vri{rtd} \vrii{rtd})}.
-Also, two non-generative record-type descriptors are {\cf eqv?} iff they were
+Also, two nongenerative record-type descriptors are {\cf eqv?} iff they were
 created by calls to {\cf make-record-type-descriptor} with the same
 uid arguments.
 
@@ -224,12 +224,14 @@ but must call \var{new} with the number of arguments it expects and return
 the resulting record instance, as shown in the simple example below.
 
 \begin{scheme}
-(lambda (\var{new}) (lambda (v \ldots) (\var{new} v \ldots)))
+(lambda (\var{new})
+  (lambda (v \ldots)
+    (\var{new} v \ldots)))
 \end{scheme}
 
 Here, the call to \var{new} returns a record whose fields
 are simply initialized with the arguments {\tt v \ldots}.
-The expression above may of course be simplified to
+The expression above is equivalent to
 {\cf (lambda (\var{new}) \var{new})}.
 
 If \var{rtd} is an extension of another record type \var{parent-rtd},
@@ -275,9 +277,7 @@ defaults to a procedure equivalent to the following:
     (apply p field-values)))
 \end{scheme}
 
-or, more simply:
-
-{\tt (lambda (\var{p}) \var{p})}.
+or, simply, {\cf (lambda (\var{p}) \var{p})}.
 
 In the second case, the default \var{protocol} returns a
 constructor that accepts as many arguments as \var{rtd} has total
@@ -392,14 +392,14 @@ The mutator returns the unspecified value.
 \begin{scheme}
 (define :point
   (make-record-type-descriptor
-   'point \schfalse{}
-   \schfalse{} \schfalse{} \schfalse{} 
-   '((mutable x) (mutable y))))
+    'point \schfalse{}
+    \schfalse{} \schfalse{} \schfalse{} 
+    '((mutable x) (mutable y))))
 
 (define make-point
   (record-constructor
     (make-record-constructor-descriptor :point
-                                        \schfalse{} \schfalse{})))
+      \schfalse{} \schfalse{})))
 
 (define point? (record-predicate :point))
 (define point-x (record-accessor :point 0))
@@ -416,13 +416,13 @@ The mutator returns the unspecified value.
 
 (define :point2
   (make-record-type-descriptor
-   'point2 :point 
-   \schfalse{} \schfalse{} \schfalse{} '((mutable x) (mutable y))))
+    'point2 :point 
+    \schfalse{} \schfalse{} \schfalse{} '((mutable x) (mutable y))))
 
 (define make-point2
   (record-constructor
     (make-record-constructor-descriptor :point2
-                                        \schfalse{} \schfalse{})))
+      \schfalse{} \schfalse{})))
 (define point2? (record-predicate :point2))
 (define point2-xx (record-accessor :point2 0))
 (define point2-yy (record-accessor :point2 1))
@@ -446,9 +446,9 @@ can appear anywhere any other \hyper{definition} can appear.
 \begin{entry}{%
 \proto{define-record-type}{ \hyper{name spec} \arbno{\hyper{record clause}}}{\exprtype}}
 
-A {\cf define-record-type} form defines a new record type along with
+A {\cf define-record-type} form defines a record type along with
 associated constructor descriptor and constructor, predicate, field
-accessors and field mutators. The {\cf define-record-type} form expands into
+accessors, and field mutators. The {\cf define-record-type} form expands into
 a set of definitions in the environment where {\cf define-record-type}
 appears; hence, it is possible to refer to the bindings (except for
 that of the record type itself) recursively.
@@ -475,8 +475,8 @@ below).
 
 \hyper{Constructor name} is defined by this definition to a
 constructor for the defined record type, with a protocol specified by
-the protocol clause, or, in its absence, using a default value. For
-details, see the description of the protocol clause below.
+the {\cf protocol} clause, or, in its absence, using a default protocol. For
+details, see the description of the {\cf protocol} clause below.
 
 \hyper{Predicate name} is defined by this definition to a predicate
 for the defined record type.
@@ -490,8 +490,9 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
    
   where each \hyper{field-spec} has one of the following forms
   
-  {\cf \mbox{(immutable \hyper{field name} \hyper{accessor name})}}\\
-  {\cf \mbox{(mutable \hyper{field name} \hyper{accessor name} \hyper{mutator name})}}
+  {\cf (immutable \hyper{field name} \hyper{accessor name})}\\
+  {\cf (mutable \hyper{field name} \hyper{accessor name}\\
+  \null\qquad\hyper{mutator name})}
 
   \hyper{Field name}, \hyper{accessor name}, and \hyper{mutator name}
   must all be identifiers. The first form declares an immutable field
@@ -509,18 +510,18 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
   This specifies that the record type is to have parent type
   \hyper{parent name}, where \hyper{parent name} is the \hyper{record
       name} of a record type previously defined using {\cf
-      define-record-type}. The absence of a parent clause implies a
+      define-record-type}. The absence of a {\cf parent} clause implies a
     record type with no parent type.
    
 \item {\tt (protocol \hyper{exp})}
    
   \hyper{Exp} is evaluated in the same environment as the
   define-record-type form, and must evaluate to a protocol appropriate
-  for the record type being defined (see above in the description of
+  for the record type being defined (see the description of
   {\cf make-record-constructor-descriptor}). The protocol is used to
   create a record-constructor descriptor where, if the record type
   being defined has a parent, the parent-type constructor descriptor
-  is that associated with the parent type specified in the {\cf
+  is the one associated with the parent type specified in the {\cf
     parent} clause.
    
   If no {\cf protocol} clause is specified, a constructor descriptor
@@ -532,42 +533,31 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
 \item {\tt (sealed \schtrue)}\\
   {\tt (sealed \schfalse)}
    
-  If this option is specified, it means that the opacity of the type
-  is the value specified as the operand. If no {\cf sealed} option is
-  present, the defined record type is not sealed.
+  If this option is specified with operand \schtrue,
+  the defined record type is sealed.
+  Otherwise, the defined record type is not sealed.
    
 \item {\tt (opaque \schtrue)}\\
   {\tt (opaque \schfalse)}
    
-  If this option is specified, it means that the opacity of the type
-  is the value specified as the operand. It is also opaque if an
-  opaque parent is specified. If the opaque {\cf option} is not
-  present, the record type is not opaque.
+  If this option is specified with operand \schtrue, or if an opaque
+  parent record type is specified, the defined record type is opaque.
+  Otherwise, the defined record type is not opaque.
    
 \item {\tt (nongenerative \hyper{uid})}
    
-  This specifies that the record type be nongenerative with uid
-  \hyper{uid}, which must be an \hyper{identifier}. The absence of a
-  {\cf nongenerative} clause implies that the defined type is
-  generative. In the latter case, a new type may be generated once for
-  each evaluation of the record definition or once for all evaluations
-  of the record definition, but the type is guaranteed to be distinct
-  even for verbatim copies of the same record definition appearing in
-  different parts of a program.
-   
-  Note that all bindings created by this form (for the record type, the
-  construction procedure, the predicate, the accessors, and the mutators)
-  must have names that are pairwise distinct.
+  This specifies that the record type is nongenerative with uid
+  \hyper{uid}, which must be an \hyper{identifier}.
+  If two record-type definitions specify the same \var{uid}, the
+  the implied arguments to {\cf make-record-type-descriptor}
+  must be equivalent as described under {\cf make-record-type-descriptor}.
+  If this condition is not met, it is either considered a syntax violation or
+  an exception with condition type {\cf\&contract} is raised.
+  If the condition is met, a single record type is generated for both
+  definitions.
 
-  For two non-generative record-type definitions with the same uid, if
-  the implied arguments to {\cf make-record-type-descriptor} would
-  create an equivalent record-type descriptor, the created type is the
-  same as the previous one.  Otherwise, an exception with condition
-  type {\cf\&contract} is raised.
-
-  In the absence of a {\cf nongenerative} clause, a new record type
-  type descriptor is created every time a {\cf define-record-type}
-  form is encountered:
+  In the absence of a {\cf nongenerative} clause, a new record type is
+  generated every time a {\cf define-record-type} form is evaluated:
 
 \begin{scheme}
 (let ((f (lambda (x)
@@ -576,6 +566,10 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
   ((f \schtrue) (f \schfalse))) \ev \schfalse{}
 \end{scheme}
 \end{itemize}
+
+All bindings created by {\cf define-record-type} (for the record type,
+the construction procedure, the predicate, the accessors, and the
+mutators) must have names that are pairwise distinct.
 \end{entry}
 
 \begin{entry}{%
@@ -584,16 +578,6 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
 This evaluates to the record-type descriptor associated with the type
 specified by \hyper{record-name}.
    
-Note that, in the absense, of a {\cf nongenerative} clause, the return value of
-the following expression is unspecified:
-  
-\begin{scheme} 
-(let ((f (lambda ()
-           (define-record-type r \ldots)
-           (record-type-descriptor r))))
-  (eqv? (f) (f)))
-\end{scheme}
-
 Note that {\cf record-type-descriptor} works on both opaque and non-opaque record
 types.
 \end{entry}
@@ -602,8 +586,10 @@ types.
 \proto{record-constructor-descriptor}{ \hyper{record name}}{\exprtype}}
    
 This evaluates to the record-constructor descriptor associated with
-\hyper{record-name}.
+\hyper{record name}.
 \end{entry}
+
+Explicit-naming syntactic-layer examples:
 
 \begin{scheme}
 (define-record-type (point3 make-point3 point3?)
