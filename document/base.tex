@@ -1314,43 +1314,52 @@ returns \schfalse.
 
 The procedures described here implement arithmetic that is
 generic over
-the numerical tower described in chapter~\ref{numberchapter}.  They
-are exported by the base library, and also by the \defining{r6rs
-  arithmetic generic} library.  Unlike the procedures exported by
+the numerical tower described in chapter~\ref{numbertypeschapter}.
+Unlike the procedures exported by
 the libraries described in chapter~\ref{numberchapter},
 the generic procedures described in this section
 accept both exact and inexact numbers as arguments,
 performing coercions and selecting the appropriate operations
-as determined by the numeric subtypes of their arguments.  Refer
-to chapter~\ref{numbertypeschapter} for a detailed description of the
-numerical types of Scheme, a discussion of the concept of exactness,
-the definition of some of the numerical operations used here, and
-libraries that define other numerical operations.
+as determined by the numeric subtypes of their arguments.
+
+Chapter~\ref{numbertypeschapter} contains a detailed description of the
+numerical types of Scheme and a discussion of the concept of exactness.
+Chapter~\ref{numberchapter} contains the mathematical definitions of
+some operations that are assumed here, and describes
+libraries that define other numerical procedures.
 
 \subsection{Propagation of exactness}
 \label{propagationsection}
 
-The procedures listed below will always return an exact integer result
-provided all their arguments are exact integers and the mathematically
-expected result is representable as an exact integer within the
-implementation:
+The procedures listed below must return the correct exact result
+provided all their arguments are exact:
 
 \begin{scheme}
-+            -             *
-div          mod           div+mod
-div0         mod0          div0+mod0
-max          min           abs
-numerator    denominator   gcd
-lcm          floor         ceiling
-truncate     round         rationalize
-expt%
++            -            *
+max          min          abs
+numerator    denominator  gcd
+lcm          floor        ceiling
+truncate     round        rationalize
+expt         real-part    imag-part
+make-rectangular%
 \end{scheme}
 
-The generic operations generally return the correct exact
-result when all of their arguments are exact and the result is
+The procedures listed below must return the correct exact result
+provided all their arguments are exact, and no divisors are zero:
+
+\begin{scheme}
+/
+div          mod           div+mod
+div0         mod0          div0+mod0
+\end{scheme}
+
+The general rule is that the generic operations return the correct
+exact result when all of their arguments are exact and the result is
 mathematically well-defined, but return an inexact result when any
-argument is inexact.  Exceptions are {\cf sqrt}, {\cf exp}, {\cf log},
-{\cf sin}, {\cf cos}, {\cf tan}, {\cf asin}, {\cf acos}, {\cf atan},
+argument is inexact.  Exceptions to this rule include
+{\cf sqrt}, {\cf exp}, {\cf log},
+{\cf sin}, {\cf cos}, {\cf tan},
+{\cf asin}, {\cf acos}, {\cf atan},
 {\cf expt}, {\cf make-polar}, {\cf magnitude}, and {\cf angle}, which
 are allowed (but not required) to return inexact results even when
 given exact arguments, as indicated in the specification of these
@@ -1361,17 +1370,16 @@ return an exact result despite inexact arguments if that exact result
 would be the correct result for all possible substitutions of exact
 arguments for the inexact ones.
 
-Rational operations such as {\cf +} should always produce exact
-results when given exact arguments. 
-
 \subsection{Numerical operations}
 
-On inexact arguments, the procedures described here behave
-consistently with the corresponding procedures whose names
-are prefixed by {\cf inexact} or {\cf inexact-}.
 On exact arguments, the procedures described here behave
-consistently with the corresponding procedures whose names
+consistently with the corresponding procedures of
+section~\ref{exactsection} whose names
 are prefixed by {\cf exact} or {\cf exact-}.
+On inexact arguments, the procedures described here behave
+consistently with the corresponding procedures of
+section~\ref{inexactsection} whose names
+are prefixed by {\cf inexact} or {\cf inexact-}.
 
 We will use \var{z}, \vari{z}, \varii{z}, and \variii{z} as
 metavariables that range over the complex numbers, \var{x}, \vari{x},
