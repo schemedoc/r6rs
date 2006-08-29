@@ -78,22 +78,22 @@ y                       \ev  (a . 4)
 \end{scheme}
 
 Any procedures defined in this
-report specified as accepting a list argument must check if that
+report that are specified to accept a list argument must check if that
 argument indeed appears to be a list.  This checking is complicated by
-the fact that many procedures accepting lists such as {\cf map} or
-{\cf filter} call arbitrary procedures that are passed as arguments.
+the fact that some such procedures, e.g. {\cf map} and
+{\cf filter}, call arbitrary procedures that are passed as arguments.
 These procedures may mutate the list while it is being
 traversed.  Moreover, in the presence of concurrent evaluation,
 whether a pair is the head of a list is not computable in general.
 
-Consequently, procedures like {\cf length} are only required to check
+Consequently, procedures like {\cf length} are only required to confirm
 that a list argument is a
 \textit{plausible list\index{plausible list}}.
 Informally, a plausible list is an object that appears to
 be a list during a sequential traversal, where that traversal
 must also attempt to detect a cycle.
 In particular, an immutable plausible list is always a list.
-A more formal definition follows:
+A more formal definition follows.
 
 Plausible lists are defined with respect to the time interval between
 the time an argument is passed to the specified procedure and the
@@ -123,7 +123,7 @@ Scheme value $x$ such that
 \item $x$ is a pair, and $n$ is $0$; or
 \item $x$ is a pair $p$, $n > 0$, and there exists some time
   $t_1$ in $(t_0,t_n]$ such that taking the cdr of $p$ at
-  time $t_1$ yields a plausible list up to $n-1$ between
+  time $t_1$ yields a plausible list up to and including $n-1$ between
   times $t_1$ and $t_n$.
 \end{enumerate}
 
@@ -199,6 +199,7 @@ concurrent execution.
 \irproto{length}{ list \vr{k}}{procedure}}
 
 \domain{\var{list} must be a plausible list.}
+
 \begin{note}
 In other words, an exception must be raised if \var{list}
 is not a plausible list.
@@ -217,13 +218,13 @@ caused by concurrent modification of an argument.
 \begin{entry}{%
 \irproto{append}{ list \dotsfoo{} obj}{procedure}}
 
-\nodomain{All \var{list}s must be plausible lists.}
+\domain{All \var{list}s must be plausible lists.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{reverse}{ list}{procedure}}
 
-\nodomain{\var{list} must be a plausible list.}
+\domain{\var{list} must be a plausible list.}
 \end{entry}
 
 \begin{entry}{%
@@ -241,11 +242,12 @@ caused by concurrent modification of an argument.
 \begin{entry}{%
 \irproto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s must be plausible lists, and \var{proc} must be a
-procedure taking as many arguments as there are {\it list}s
-and returning a single value.  If more
-than one \var{list} is given, a natural number $n$ must exist such
+\domain{\var{proc} must be a procedure; if any of the \varj{list}
+are nonempty, then \var{proc} must take as many arguments as there
+are \varj{list}.
+A natural number $n$ must exist such
 that all \varj{list} are plausible lists of length $n$.}
+
 \begin{note}
 In other words, an exception must be raised if no such $n$ exists.
 The existence of a natural number $n$ such that
@@ -261,6 +263,7 @@ even in systems that do not allow concurrent execution.
             (set-cdr! ones (list x))
             (set! ones (cdr ones))
             2)))
+  ; ones is a plausible list
   (map f ones))              \ev \unspecified\\\>; may not terminate
 \end{scheme}
 \end{entry}
@@ -382,7 +385,8 @@ library described in chapter~\ref{listutilities}:
 \irproto{memq}{ obj l}{procedure}
 }
 
-\domain{\var{proc} must be a procedure taking a single argument.
+\domain{\var{proc} must be a procedure;
+  if \var{l} is nonempty, then it must take a single argument.
   \var{l} must be a plausible list or a value according to the
   conditions specified below.}
 
@@ -402,14 +406,16 @@ the procedure returns.
 
 \domain{\var{al} (for ``association list'') must be a a plausible
   alist or a value according to the conditions specified below.
-  \var{Proc} must be a procedure taking a single argument.}
+  \var{proc} must be a procedure; if \var{al} is nonempty, then
+  \var{proc} must take a single argument.}
 
 If \var{al} is not a plausible alist, then a natural number $n$ must
 exist such that \var{al} is the first Scheme value of a plausible
 prefix of length $n$ such that every Scheme value $x_1$ through $x_n$
 of that prefix is a pair, and $x_n$ has a pair as its car at some time
 after $t_n$, and at some time after that the car of that pair is the
-first argument, all before the procedure returns.
+first argument (or, for {\cf assp}, a value for which \var{proc}
+returns true), all before the procedure returns.
 \end{entry}
 
 %%% Local Variables: 
