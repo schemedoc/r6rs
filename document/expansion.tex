@@ -1,0 +1,138 @@
+\chapter{Expansion Process}
+\label{expansionchapter}
+
+FIXME: this material has just been moved here from the syntax-case chapter
+
+Syntactic abstractions are expanded into core
+forms at the start of evaluation (before compilation or interpretation)
+by a syntax \emph{expander}.
+(The set of core forms is implementation-dependent, as is the
+representation of these forms in the expander's output.)
+The expander is invoked once for each top-level form in a program.
+If the expander encounters a syntactic abstraction, it invokes
+the associated transformer to expand the syntactic abstraction, then
+repeats the expansion process for the form returned by the transformer.
+If the expander encounters a core form, it recursively
+processes the subforms, if any, and reconstructs the form from the
+expanded subforms.
+Information about identifier bindings is maintained during expansion
+to enforce lexical scoping for variables and keywords.
+
+To handle internal definitions, the expander
+processes the initial forms in a {\cf library} or {\cf lambda} body
+from left to right.
+How the expander processes each form encountered as it does so depends
+upon the kind of form.
+
+\begin{description}
+\item[syntactic abstraction:]
+The expander invokes the associated transformer to transform the syntactic abstraction,
+then recursively performs whichever of these actions are appropriate
+for the resulting form.
+
+\item[{\cf define-syntax} form:]
+The expander expands and evaluates the right-hand-side expression and binds the
+keyword to the resulting transformer.
+
+\item[{\cf define} form:]
+The expander records the fact that the defined identifier is a variable but defers
+expansion of the right-hand-side expression until after all of the
+definitions have been processed.
+
+\item[{\cf begin} form:]
+The expander splices the subforms into the list of body forms it is processing.
+
+\item[{\cf let-syntax} or {\cf letrec-syntax} form:]
+The expander splices the inner body forms into the list of (outer) body forms it is
+processing, arranging for the keywords bound by the {\cf let-syntax}
+and {\cf letrec-syntax} to be visible only in the inner body forms.
+
+\item[expression, i.e., nondefinition:]
+The expander completes the expansion of the deferred right-hand-side forms
+and the current and remaining expressions in the body, then
+constructs a residual {\cf letrec*} form from the defined variables,
+expanded right-hand-side expressions, and expanded body expressions.
+\end{description}
+
+An error is signaled if the keyword that identifies one of the body forms
+as a definition (derived or core) is redefined by the same definition or a
+later definition in the same body.
+To catch this error, the expander records the identifying keyword for each
+syntactic abstraction, {\cf define-syntax} form, {\cf define}
+form, {\cf begin} form, {\cf let-syntax} form, and {\cf letrec-syntax}
+form it encounters while processing the definitions and checks each
+newly defined identifier ({\cf define} or {\cf define-syntax}
+left-hand side) against the recorded keywords, as with
+{\cf bound-identifier=?} (section~\ref{identifierpredicatessection}).
+For example, the following forms result in an error.
+
+\begin{scheme}
+(let ()
+  (define define 17)
+  define)
+
+(let-syntax ([def0 (syntax-rules ()
+                     [(\_ x) (define x 0)])])
+  (let ()
+    (def0 z)
+    (define def0 '(def 0))
+    (list z def0)))
+\end{scheme}
+
+Expansion of each variable definition right-hand side is deferred until
+after all of the definitions have been seen so that each keyword and
+variable reference within the right-hand side resolves to the local
+binding, if any.
+
+Note that this algorithm does not directly reprocess any form.
+It requires a single left-to-right pass over the definitions followed by a
+single pass (in any order) over the body expressions and deferred
+right-hand sides.
+
+For example, in
+
+\begin{scheme}
+(lambda (x)
+  (define-syntax defun
+    (syntax-rules ()
+      [(\_ (x . a) e) (define x (lambda a e))]))
+  (defun (even? n) (or (= n 0) (odd? (- n 1))))
+  (define-syntax odd?
+    (syntax-rules () [(\_ n) (not (even? n))]))
+  (odd? (if (odd? x) (* x x) x)))
+\end{scheme}
+
+The definition of {\cf defun} is encountered first, and the keyword
+{\cf defun} is associated with the transformer resulting from
+the expansion and evaluation of the corresponding right-hand side.
+A use of {\cf defun} is encountered next and expands into a
+{\cf define} form.
+Expansion of the right-hand side of this define form is deferred.
+The definition of {\cf odd?} is next and results in the association
+of the keyword {\cf odd?} with the transformer resulting from
+expanding and evaluating the corresponding right-hand side.
+A use of {\cf odd?} appears next and is expanded; the resulting
+call to {\cf not} is recognized as an expression
+because {\cf not} is bound as a variable.
+At this point, the expander completes the expansion of the current
+expression (the {\cf not} call) and the deferred right-hand side of the
+{\cf even?} definition;
+the uses of {\cf odd?} appearing in these expressions are expanded
+using the transformer associated with the keyword {\cf odd?}.
+The final output is the equivalent of
+
+\begin{scheme}
+(lambda (x)
+  (letrec* ([even?
+              (lambda (n)
+                (or (= n 0)
+                    (not (even? (- n 1)))))])
+    (not (even? (if (not (even? x)) (* x x) x)))))
+\end{scheme}
+
+although the structure of the output is implementation dependent.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

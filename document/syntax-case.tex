@@ -1,4 +1,6 @@
-\documentclass{monograph}
+\chapter{{\tt syntax-case}}
+\label{syntaxcasechapter}
+
 
 %TODO:
 %  - algebra for marks and substitutions
@@ -40,263 +42,55 @@
 % - would like Oscar's algebra updated for r6rs and included
 %   (Andre van Tonder <andre@now.het.brown.edu>)
 
-\usepackage{scheme}
-% \usepackage{grammar}
+The \library{r6rs syntax-case} library
+FIXME: need to state default phase
+provides
+support for writing low-level macros
+in a high-level style, with automatic syntax checking, input
+destructuring, output restructuring, maintenance of lexical scoping
+and referential transparency (hygiene), and support for controlled
+identifier capture, with constant expansion overhead.  Because it does
+not require literals, including quoted lists or vectors, to be copied
+or even traversed, it preserves sharing and cycles within and among
+the constants of a program.  It also supports source-object
+correlation, i.e., the maintenance of ties between the original source
+code and expanded output, allowing implementations to provide
+source-level support for debuggers and other tools.
 
-\def\r#1rs{R#1RS}
-\iflatex
-\input{fullpage.sty}
-\fi
-
-\ifhtml
-\headerstuff{\raw{
-<style type="text/css">
-<!--
- a:link, a:active, a:visited {color:blue}
- a:hover {color:white; background:blue}
- a.plain:link, a.plain:active, a.plain:visited {color:blue; text-decoration:none}
- a.plain:hover {color:white; text-decoration:none; background:blue}
- table.indent {margin-left: 20px}
- h1 { font-size: 1.75em }
- h2 { font-size: 1.25em }
- h3 { font-size: 1.12em }
- h4 { font-size: 1em }
--->
-</style>
-}}
-\documenttitle{R6RS Syntax-Case Macros}
-\fi
-
-\iflatex
-\pagestyle{plain}
-\fi
-
-\ifhtml
-\renewcommand{\sectionstar}[1]{\raw{\raw{<h1>}}#1\raw{\raw{</h1>}}}
-\renewcommand{\subsectionstar}[1]{\raw{\raw{<h2>}}#1\raw{\raw{</h2>}}}
-\renewcommand{\subsubsectionstar}[1]{\raw{\raw{<h3>}}#1\raw{\raw{</h3>}}}
-\fi
-
-\begin{document}
-
-\iflatex
-% block paragraphs
-\schemeindent=0pt
-\parskip=4pt
-\parindent=0pt
-\fi
-
-\sectionstar{Title}
-
-R6RS Syntax-Case Macros
-
-\sectionstar{Authors}
-
-Kent Dybvig
-
-\sectionstar{Status}
-
-This SRFI is being submitted by a member of the Scheme Language Editor's
-Committee as part of the {\r6rs} Scheme standardization process.  The purpose
-of such ``{\r6rs} SRFIs'' is to inform the Scheme community of features and
-design ideas under consideration by the editors and to allow the community
-to give the editors some direct feedback that will be considered during
-the design process.
-
-At the end of the discussion period, this SRFI will be withdrawn.  When
-the {\r6rs} specification is finalized, the SRFI may be revised to conform to
-the {\r6rs} specification and then resubmitted with the intent to finalize
-it.  This procedure aims to avoid the situation where this SRFI is
-inconsistent with {\r6rs}.  An inconsistency between {\r6rs} and this SRFI could
-confuse some users.  Moreover it could pose implementation problems for
-{\r6rs} compliant Scheme systems that aim to support this SRFI.  Note that
-departures from the SRFI specification by the Scheme Language Editor's
-Committee may occur due to other design constraints, such as design
-consistency with other features that are not under discussion as SRFIs.
-
-\ifhtml
-\sectionstar{Table of Contents}
-\tableofcontents
-\fi
-
-\section{Abstract}
-
-The syntactic abstraction system described here extends the {\r5rs} macro
-system with support for writing low-level macros in a high-level style,
-with automatic syntax checking, input destructuring, output restructuring,
-maintenance of lexical scoping and referential transparency (hygiene), and
-support for controlled identifier capture, with constant expansion
-overhead.
-Because it does not require literals, including quoted lists or vectors,
-to be copied or even traversed, it preserves sharing and cycles within and
-among the constants of a program.
-It also supports source-object correlation, i.e., the maintenance of ties
-between the original source code and expanded output, allowing
-implementations to provide source-level support for debuggers and other
-tools.
-
-\section{Rationale\label{sec:rationale}}
-
+\begin{rationale}
 While many syntactic abstractions are succinctly expressed using the
-high-level \scheme{syntax-rules} form, others are difficult or impossible
+high-level {\cf syntax-rules} form, others are difficult or impossible
 to write, including some that introduce visible bindings for or references
 to identifiers that do not appear explicitly in the input form, ones that
 maintain state or read from the file system, and ones that construct new
 identifiers.
-The \scheme{syntax-case} system~\cite{Dybvig:syntactic} described here
+The {\cf syntax-case} system~\cite{Dybvig:syntactic} described here
 allows the programmer to write transformers that perform these sorts of
 transformations, and arbitrary additional transformations, without
 sacrificing the default enforcement of hygiene or the high-level
 pattern-based syntax matching and template-based output construction
-provided by {\r6rs} \scheme{syntax-rules}.
-
-\section{Specification\label{sec:specification}}
+provided by {\r6rs} {\cf syntax-rules}.
+\end{rationale}
 
 A syntactic abstraction typically takes the form
-\scheme{(\var{keyword} \var{subform} \dots)}, where \var{keyword} is the
+{\cf (\hyper{keyword} \hyper{subform} \dots)}, where \hyper{keyword} is the
 identifier that names the syntactic abstraction.
-The syntax of each \var{subform} varies from one syntactic abstraction to
+The syntax of each \hyper{subform} varies from one syntactic abstraction to
 another.
 Syntactic abstractions can also take the form of improper lists (or even
-singleton identifiers; see Section~\ref{sec:transformers}), although this is
+singleton identifiers; see section~\ref{transformerssection}), although this is
 less common.
 
 New syntactic abstractions are defined by associating keywords with
 \emph{transformers}.
-Keyword bindings are created using \scheme{define-syntax},
-\scheme{let-syntax}, or \scheme{letrec-syntax}.
-Transformers are created using \scheme{syntax-rules} or
-\scheme{syntax-case} and \scheme{syntax}, which allow transformations to
+Keyword bindings are created using {\cf define-syntax},
+{\cf let-syntax}, or {\cf letrec-syntax}.
+Transformers are created using {\cf syntax-rules} or
+{\cf syntax-case} and {\cf syntax}, which allow transformations to
 be specified via pattern matching and template reconstruction.
 
-\subsection{Expansion Process\label{sec:expansion}}
-
-Syntactic abstractions are expanded into core
-forms at the start of evaluation (before compilation or interpretation)
-by a syntax \emph{expander}.
-(The set of core forms is implementation-dependent, as is the
-representation of these forms in the expander's output.)
-The expander is invoked once for each top-level form in a program.
-If the expander encounters a syntactic abstraction, it invokes
-the associated transformer to expand the syntactic abstraction, then
-repeats the expansion process for the form returned by the transformer.
-If the expander encounters a core form, it recursively
-processes the subforms, if any, and reconstructs the form from the
-expanded subforms.
-Information about identifier bindings is maintained during expansion
-to enforce lexical scoping for variables and keywords.
-
-To handle internal definitions, the expander
-processes the initial forms in a \scheme{library} or \scheme{lambda} body
-from left to right.
-How the expander processes each form encountered as it does so depends
-upon the kind of form.
-
-\begin{description}
-\item[syntactic abstraction:]
-The expander invokes the associated transformer to transform the syntactic abstraction,
-then recursively performs whichever of these actions are appropriate
-for the resulting form.
-
-\item[\scheme{define-syntax} form:]
-The expander expands and evaluates the right-hand-side expression and binds the
-keyword to the resulting transformer.
-
-\item[\scheme{define} form:]
-The expander records the fact that the defined identifier is a variable but defers
-expansion of the right-hand-side expression until after all of the
-definitions have been processed.
-
-\item[\scheme{begin} form:]
-The expander splices the subforms into the list of body forms it is processing.
-
-\item[\scheme{let-syntax} or \scheme{letrec-syntax} form:]
-The expander splices the inner body forms into the list of (outer) body forms it is
-processing, arranging for the keywords bound by the \scheme{let-syntax}
-and \scheme{letrec-syntax} to be visible only in the inner body forms.
-
-\item[expression, i.e., nondefinition:]
-The expander completes the expansion of the deferred right-hand-side forms
-and the current and remaining expressions in the body, then
-constructs a residual \scheme{letrec*} form from the defined variables,
-expanded right-hand-side expressions, and expanded body expressions.
-\end{description}
-
-An error is signaled if the keyword that identifies one of the body forms
-as a definition (derived or core) is redefined by the same definition or a
-later definition in the same body.
-To catch this error, the expander records the identifying keyword for each
-syntactic abstraction, \scheme{define-syntax} form, \scheme{define}
-form, \scheme{begin} form, \scheme{let-syntax} form, and \scheme{letrec-syntax}
-form it encounters while processing the definitions and checks each
-newly defined identifier (\scheme{define} or \scheme{define-syntax}
-left-hand side) against the recorded keywords, as with
-\scheme{bound-identifier=?} (Section~\ref{sec:identifierpredicates}).
-For example, the following forms result in an error.
-
-\schemedisplay
-(let ()
-  (define define 17)
-  define)
-
-(let-syntax ([def0 (syntax-rules ()
-                     [(_ x) (define x 0)])])
-  (let ()
-    (def0 z)
-    (define def0 '(def 0))
-    (list z def0)))
-\endschemedisplay
-
-Expansion of each variable definition right-hand side is deferred until
-after all of the definitions have been seen so that each keyword and
-variable reference within the right-hand side resolves to the local
-binding, if any.
-
-Note that this algorithm does not directly reprocess any form.
-It requires a single left-to-right pass over the definitions followed by a
-single pass (in any order) over the body expressions and deferred
-right-hand sides.
-
-For example, in
-
-\schemedisplay
-(lambda (x)
-  (define-syntax defun
-    (syntax-rules () [(_ (x . a) e) (define x (lambda a e))]))
-  (defun (even? n) (or (= n 0) (odd? (- n 1))))
-  (define-syntax odd? (syntax-rules () [(_ n) (not (even? n))]))
-  (odd? (if (odd? x) (* x x) x)))
-\endschemedisplay
-
-The definition of \scheme{defun} is encountered first, and the keyword
-\scheme{defun} is associated with the transformer resulting from
-the expansion and evaluation of the corresponding right-hand side.
-A use of \scheme{defun} is encountered next and expands into a
-\scheme{define} form.
-Expansion of the right-hand side of this define form is deferred.
-The definition of \scheme{odd?} is next and results in the association
-of the keyword \scheme{odd?} with the transformer resulting from
-expanding and evaluating the corresponding right-hand side.
-A use of \scheme{odd?} appears next and is expanded; the resulting
-call to \scheme{not} is recognized as an expression
-because \scheme{not} is bound as a variable.
-At this point, the expander completes the expansion of the current
-expression (the \scheme{not} call) and the deferred right-hand side of the
-\scheme{even?} definition;
-the uses of \scheme{odd?} appearing in these expressions are expanded
-using the transformer associated with the keyword \scheme{odd?}.
-The final output is the equivalent of
-
-\schemedisplay
-(lambda (x)
-  (letrec* ([even? (lambda (n)
-                     (or (= n 0) (not (even? (- n 1)))))])
-    (not (even? (if (not (even? x)) (* x x) x)))))
-\endschemedisplay
-
-although the structure of the output is implementation dependent.
-
-\subsection{Maintaining Hygiene\label{sec:hygiene}}
+\section{Hygiene}
+\label{hygienesection}
 
 % hygiene condition for macro expansion
 % (Kohlbecker, E.E., Friedman, D.P., Felleisen, M., Duba, B. 'Hygienic macro expansion' (1986))
@@ -324,8 +118,8 @@ to introduced variable bindings alone.
 This leaves open what happens to an introduced identifier that appears
 outside the scope of a binding introduced by the same call.
 Such an identifier refers to the lexical binding in effect where it
-appears (within a \scheme{syntax} \var{template};
-see Section~\ref{sec:syntaxcase}) inside the transformer body or one of
+appears (within a {\cf syntax} \hyper{template};
+see section~\ref{syntaxcasesection}) inside the transformer body or one of
 the helpers it calls.
 This is essentially the referential transparency property described
 by Clinger and Rees~\cite{Clinger:macros}.
@@ -341,15 +135,15 @@ A reference to an identifier introduced into the output of a transformer
 refers to the closest enclosing binding for the introduced identifier or,
 if it appears outside of any enclosing binding for the introduced
 identifier, the closest enclosing lexical binding where the identifier
-appears (within a \scheme{syntax} \var{template})
+appears (within a {\cf syntax} \hyper{template})
 inside the transformer body or one of the helpers it calls.
 \end{quotation}
 
-Explicit captures are handled via \scheme{datum->syntax}; see
-Section~\ref{sec:conversions}.
+Explicit captures are handled via {\cf datum\coerce{}syntax}; see
+section~\ref{conversionssection}.
 
 Operationally, the expander can maintain hygiene with the help of
-\emph{marks} and \emph{substitutions}.
+\emph{marks\mainindex{mark}} and \emph{substitutions\mainindex/substitution}.
 Marks are applied selectively by the expander to the output of each
 transformer it invokes, and substitutions are applied to the portions
 of each binding form that are supposed to be within the scope of the bound
@@ -360,7 +154,7 @@ into the output of a particular transformer call), and substitutions are
 used to map identifiers to their expand-time values.
 
 Each time the expander encounters a syntactic abstraction, it applies an
-\emph{antimark} to the input form, invokes the associated transformer,
+\defining{antimark} to the input form, invokes the associated transformer,
 then applies a fresh mark to the output.
 Marks and antimarks cancel, so the portions of the input that appear in
 the output are effectively left unmarked, while the portions of the output
@@ -369,18 +163,19 @@ that are introduced are marked with the fresh mark.
 Each time the expander encounters a binding form it creates a set of
 substitutions, each mapping one of the (possibly marked) bound identifiers
 to information about the binding.
-(For a \scheme{lambda} expression, the expander might map each bound
+(For a {\cf lambda} expression, the expander might map each bound
 identifier to a representation of the formal parameter in the output of
 the expander.
-For a \scheme{let-syntax} form, the expander might map each bound
+For a {\cf let-syntax} form, the expander might map each bound
 identifier to the associated transformer.)
 These substitutions are applied to the portions of the input form in
 which the binding is supposed to be visible.
 
-Marks and substitutions together form a \emph{wrap} that is layered on the
+Marks and substitutions together form a \defining{wrap} that is layered on the
 form being processed by the expander and pushed down toward the leaves as
 necessary.
-A wrapped form is referred to as a \emph{wrapped syntax object}.
+A wrapped form is referred to as a \defining{wrapped syntax object}.
+FIXME: syntax object hasn't been defined
 Ultimately, the wrap may rest on a leaf that represents an identifier, in
 which case the wrapped syntax object is referred to more precisely
 as an \emph{identifier}.
@@ -396,162 +191,32 @@ matching substitution to be applied to the identifier, i.e., the outermost
 substitution in the wrap whose name and marks match the name and
 marks recorded in the substitution.
 The name matches if it is the same name (if using symbols, then by
-\scheme{eq?}), and the marks match if the marks recorded with the
+{\cf eq?}), and the marks match if the marks recorded with the
 substitution are the same as those that appear \emph{below} the
 substitution in the wrap, i.e., those that were applied \emph{before} the
 substitution.
 Marks applied after a substitution, i.e., appear over the substitution in
 the wrap, are not relevant and are ignored.
 
+FIXME
 An algebra that defines how marks and substitutions work more precisely is
-given in Section~2.4 of Oscar Waddell's PhD thesis~\cite{Waddell:phd}.
+given in section~2.4 of Oscar Waddell's PhD thesis~\cite{Waddell:phd}.
 
-\subsection{Keyword Bindings\label{sec:bindings}}
+\section{Transformers}
+\label{transformerssection}
 
-Keyword bindings may be established with \scheme{define-syntax},
-\scheme{let-syntax}, or \scheme{letrec-syntax}.
+In {\cf define-syntax} (section~\ref{define-syntax}), {\cf
+  let-syntax}, and {\cf letrec-syntax} forms
+(section~\ref{let-syntax}), a binding for a syntactic keyword must be
+a \hyper{transformer spec}.  A \hyper{transformer spec} can be an
+expression that evaluates to a transformer.
 
-A \scheme{define-syntax} form is a \var{definition} and may appear
-anywhere other definitions may appear.
-The syntax
-
-\schemedisplay
-(define-syntax \var{keyword} \var{transformer-expr})
-\endschemedisplay
-
-binds \var{keyword} to the result of evaluating, at expansion time,
-the expression \var{transformer-expr}, which must evaluate
-to a \emph{transformer} (Section~\ref{sec:transformers}).
-
-The example below defines \scheme{let*} as a syntactic abstraction,
-specifying the transformer with \scheme{syntax-rules} (see
-Section~\ref{sec:derived}).
-
-\schemedisplay
-(define-syntax let*
-  (syntax-rules ()
-    [(_ () e1 e2 ...) (let () e1 e2 ...)]
-    [(_ ([i1 v1] [i2 v2] ...) e1 e2 ...)
-     (let ([i1 v1])
-       (let* ([i2 v2] ...) e1 e2 ...))]))
-\endschemedisplay
-
-Keyword bindings established by \scheme{define-syntax} are visible
-throughout the body in which they appear, except where shadowed by
-other bindings, and nowhere else, just like variable bindings established
-by \scheme{define}.
-All bindings established by a set of internal definitions, whether
-keyword or variable definitions, are visible within the definitions
-themselves.
-For example, the expression
-
-\schemedisplay
-(let ()
-  (define even?
-    (lambda (x)
-      (or (= x 0) (odd? (- x 1)))))
-  (define-syntax odd?
-    (syntax-rules ()
-      [(_ x) (not (even? x))]))
-  (even? 10))
-\endschemedisplay
-
-is valid and should return \scheme{#t}.
-
-An implication of the left-to-right processing order
-(Section~\ref{sec:expansion}) is that one internal definition can affect
-whether a subsequent form is also a definition.
-For example, the expression
-
-\schemedisplay
-(let ()
-  (define-syntax bind-to-zero
-    (syntax-rules ()
-      [(_ id) (define id 0)]))
-  (bind-to-zero x)
-  x)
-\endschemedisplay
-
-evaluates to \scheme{0}, regardless of any binding for
-\scheme{bind-to-zero} that might appear outside of the \scheme{let}
-expression.
-
-\scheme{let-syntax} and \scheme{letrec-syntax} are analogous to \scheme{let}
-and \scheme{letrec} but bind keywords rather than variables.
-Like \scheme{begin}, a \scheme{let-syntax} or \scheme{letrec-syntax} form
-may appear in a definition context, in which case it is treated as a
-definition, and the forms in the body of the form must also be
-definitions.
-A \scheme{let-syntax} or \scheme{letrec-syntax} form may also appear in an
-expression context, in which case the forms within their bodies must be
-expressions.
-
-The syntax
-
-\schemedisplay
-(let-syntax ((\var{keyword} \var{transformer-expr}) \dots) \var{form_1} \var{form_2} \dots)
-\endschemedisplay
-
-binds the keywords \scheme{\var{keyword} \dots} to the results of
-evaluating, at expansion time, the expressions
-\scheme{\var{transformer-expr} \dots}, which must evaluate to
-transformers (Section~\ref{sec:transformers}).
-
-Keyword bindings established by \scheme{let-syntax} are visible
-throughout the forms in the body of the \scheme{let-syntax} form,
-except where shadowed, and nowhere else.
-
-The syntax
-
-\schemedisplay
-(letrec-syntax ((\var{keyword} \var{transformer-expr}) \dots) \var{form_1} \var{form_2} \dots)
-\endschemedisplay
-
-is similar, but the bindings established by \scheme{let-syntax} are
-also visible within \scheme{\var{transformer-expr} ...}.
-
-The forms in the of a \scheme{let-syntax} or \scheme{letrec-syntax} are
-treated, whether in definition or expression context, as if wrapped in
-an implicit \scheme{begin}.
-
-The following example highlights how \scheme{let-syntax}
-and \scheme{letrec-syntax} differ.
-
-\schemedisplay
-(let ([f (lambda (x) (+ x 1))])
-  (let-syntax ([f (syntax-rules ()
-                    [(_ x) x])]
-               [g (syntax-rules ()
-                    [(_ x) (f x)])])
-    (list (f 1) (g 1)))) ;=> (1 2)
-
-(let ([f (lambda (x) (+ x 1))])
-  (letrec-syntax ([f (syntax-rules ()
-                       [(_ x) x])]
-                  [g (syntax-rules ()
-                       [(_ x) (f x)])])
-    (list (f 1) (g 1)))) ;=> (1 1)
-\endschemedisplay
-
-The two expressions are identical except that the \scheme{let-syntax} form
-in the first expression is a \scheme{letrec-syntax} form in the second.
-In the first expression, the \scheme{f} occurring in \scheme{g} refers to
-the \scheme{let}-bound variable \scheme{f}, whereas in the second it refers
-to the keyword \scheme{f} whose binding is established by the
-\scheme{letrec-syntax} form.
-
-Keywords occupy the same name space as variables, i.e., within the same
-scope, an identifier can be bound as a variable or keyword, or neither, but
-not both.
-
-\subsection{Transformers\label{sec:transformers}}
-
-A transformer is a \emph{transformation procedure} or a
-\var{variable transformer}.
+A transformer is a \defining{transformation procedure} or a
+\defining{variable transformer}.
 A transformation procedure is a procedure that must accept one
-argument, a wrapped syntax object (Section~\ref{sec:syntaxobjects})
-representing the input, and return a \emph{syntax object}
-(Section~\ref{sec:syntaxobjects}) representing the output.
+argument, a wrapped syntax object (section~\ref{syntaxobjectssection})
+representing the input, and return a \defining{syntax object}
+(section~\ref{syntaxobjectssection}) representing the output.
 The procedure is called by the expander whenever a reference to
 a keyword with which it has been associated is found.
 If the keyword appears in the first position of a list-structured
@@ -560,29 +225,30 @@ form, and its output replaces the entire form.
 If the keyword is found in any other definition or expression context, the
 transformer receives a wrapped syntax object representing just the keyword
 reference, and its output replaces just the reference.
-An error is signaled if the keyword appears on the
-left-hand side of a \scheme{set!} expression.
+An exception with condition type {\cf\&syntax} is signaled if the keyword appears on the
+left-hand side of a {\cf set!} expression.
 
 Variable transformers are similar.
 If a keyword associated with a variable transformer appears on
-the left-hand side of a \scheme{set!} expression, however, an error
+the left-hand side of a {\cf set!} expression, however, an error
 is not signaled.
 Instead, the transformer receives a wrapped syntax object representing the
-entire \scheme{set!} expression as its argument, and its output
-replaces the entire \scheme{set!} expression.
+entire {\cf set!} expression as its argument, and its output
+replaces the entire {\cf set!} expression.
 A variable transformer is created by passing a transformation
-procedure to \scheme{make-variable-transformer}:
+procedure to {\cf make-variable-transformer}
 
-\schemedisplay
-(make-variable-transformer \var{procedure})
-\endschemedisplay
+\begin{entry}{%
+\proto{make-variable-transformer}{ proc}{procedure}}
 
-\scheme{make-variable-transformer} returns
-an implementation-dependent encapsulation of the transformation
-procedure that allows the expander to recognize that it is a
-variable transformer.
+\domain{\var{Proc} must be a procedure  FIXME  What should it do?.}
 
-\subsection{Syntax objects\label{sec:syntaxobjects}}
+{\cf make-variable-transformer} returns a transformer procedure that
+allows the expander to recognize that it is a variable transformer.
+\end{entry}
+
+\section{Syntax objects}
+\label{syntaxobjectssection}
 
 A syntax object is a representation of a Scheme form that contains
 contextual information about the form in addition to its structure.
@@ -591,26 +257,22 @@ lexical scoping and may also be used by an implementation to maintain
 source-object correlation.
 
 Syntax objects may be wrapped or unwrapped.
-A wrapped syntax object (Section~\ref{sec:hygiene}), consists of a
-\emph{wrap} (Section~\ref{sec:hygiene}) and some internal representation
+A wrapped syntax object (section~\ref{hygienesection}), consists of a
+\textit{wrap} (section~\ref{hygienesection}) and some internal representation
 of a Scheme form.
-(The internal representation is unspecified, but is typically a Scheme
-s-expression or s-expression annotated with source information.)
+(The internal representation is unspecified, but is typically a 
+datum value or datum value annotated with source information.)
 A wrapped syntax object representing an identifier is itself referred to as
-an identifier; thus, the term \emph{identifier} may refer either to
+an identifier; thus, the term \textit{identifier\mainindex{identifier}} may refer either to
 the syntactic entity (symbol, variable, or keyword) or to the
 concrete representation of the syntactic entity as a syntax object.
 Wrapped syntax objects are distinct from other types of values.
-
-% NOTE: if we want to allow wrapped syntax objects to be represented
-% as unwrapped syntax objects, we can say instead that "identifiers" are
-% distinct from other types of values
 
 An unwrapped syntax object is one that is unwrapped, fully or partially,
 i.e., whose outer layers consist of lists and vectors and whose leaves are
 either wrapped syntax objects or nonsymbol values.
 
-The term \emph{syntax object} is used in this document to refer to
+The term \defining{syntax object} is used in this document to refer to
 a syntax object that is either wrapped or unwrapped.
 More formally, a syntax object is:
 
@@ -624,52 +286,56 @@ More formally, a syntax object is:
 The distinction between the terms ``syntax object'' and ``wrapped syntax
 object'' is important.
 For example, when invoked by the expander, a transformer
-(Section~\ref{sec:transformers}) must accept a wrapped syntax object but
+(section~\ref{transformerssection}) must accept a wrapped syntax object but
 may return any syntax object, including an unwrapped syntax object.
 
-\subsection{Parsing input and producing output\label{sec:syntaxcase}}
+\section{Parsing input and producing output}
+\label{syntaxcasesection}
 
-Transformers destructure their input with \scheme{syntax-case} and rebuild
-their output with \scheme{syntax}.
+Transformers destructure their input with {\cf syntax-case} and rebuild
+their output with {\cf syntax}.
 
-A \scheme{syntax-case} expression has the following syntax.
+\begin{entry}{%
+\pproto{(syntax-case \hyper{expression} (\hyper{literal} \dots) \hyper{clause} \dots)}{\exprtype}}
+\mainschindex{syntax-case}
 
-\schemedisplay
-(syntax-case \var{expr} (\var{literal} \dots) \var{clause} \dots)
-\endschemedisplay
+\syntax Each \hyper{literal} must be an identifier.
+Each \hyper{clause} must take one of the following two forms.
 
-Each \var{literal} must be an identifier.
-Each \var{clause} must take one of the following two forms.
+\begin{scheme}
+(\hyper{pattern} \hyper{output expression})
+(\hyper{pattern} \hyper{fender} \hyper{output expression})
+\end{scheme}
 
-\schemedisplay
-(\var{pattern} \var{output-expr})
-(\var{pattern} \var{fender} \var{output-expr})
-\endschemedisplay
+\hyper{Fender} must and \hyper{output expression} must be
+\hyper{expression}s.
 
-A \var{pattern} is an identifier, constant, or one of the following.
+A \hyper{pattern} is an identifier, constant, or one of the following.
 
-\scheme{(}\var{pattern}{\kstar}\scheme{)}\\
-\scheme{(}\var{pattern}\kplus\ . \var{pattern}\scheme{)}\\
-\scheme{(}\var{pattern}{\kstar} \var{pattern} \var{ellipsis} \var{pattern}{\kstar}\scheme{)}\\
-\scheme{(}\var{pattern}{\kstar} \var{pattern} \var{ellipsis} \var{pattern}{\kstar} . \var{pattern}\scheme{)}\\
-\scheme{#(}\var{pattern}{\kstar}\scheme{)}\\
-\scheme{#(}\var{pattern}{\kstar} \var{pattern} \var{ellipsis} \var{pattern}{\kstar}\scheme{)}
+\begin{schemenoindent}
+(\hyper{pattern} \ldots)
+(\hyper{pattern} \hyper{pattern} \ldots . \hyper{pattern})
+(\hyper{pattern} \ldots \hyper{pattern} \hyper{ellipsis} \hyper{pattern} \ldots)
+(\hyper{pattern} \ldots \hyper{pattern} \hyper{ellipsis} \hyper{pattern} \ldots . \hyper{pattern})
+\#(\hyper{pattern} \ldots)
+\#(\hyper{pattern} \ldots \hyper{pattern} \hyper{ellipsis} \hyper{pattern} \ldots)%
+\end{schemenoindent}
 
-An identifier appearing within a \var{pattern} may be an underscore
-(~\scheme{_}~), a literal identifier listed in the list of literals
-\scheme{(\var{literal} \dots)}, or an ellipsis (~\scheme{...}~).
-All other identifiers appearing within a \var{pattern} are
-\emph{pattern variables}.
-An ellipsis or underscore may not appear in \scheme{(\var{literal} \dots)}.
+An identifier appearing within a \hyper{pattern} may be an underscore
+(~{\cf \_}~), a literal identifier listed in the list of literals
+{\cf (\hyper{literal} \dots)}, or an ellipsis (~{\cf ...}~).
+All other identifiers appearing within a \hyper{pattern} are
+\textit{pattern variables\mainindex{pattern variable}}.
+An ellipsis or underscore may not appear in {\cf (\hyper{literal} \dots)}.
 
 Pattern variables match arbitrary input subforms and
 are used to refer to elements of the input.
 The same pattern variable may not appear more than once in a
-\var{pattern}.
+\hyper{pattern}.
 
 Underscores also match arbitrary input subforms but are not pattern variables
 and so cannot be used to refer to those elements.
-Multiple underscores may appear in a \var{pattern}.
+Multiple underscores may appear in a \hyper{pattern}.
 
 A literal identifier matches an input subform if and only if the input
 subform is an identifier and either both its occurrence in the input
@@ -680,86 +346,87 @@ no lexical binding.
 A subpattern followed by an ellipsis can match zero or more elements of
 the input.
 
-More formally, an input form \var{F} matches a pattern \var{P} if and only if
+More formally, an input form $F$ matches a pattern $P$ if and only if
 
 \begin{itemize}
-\item \var{P} is an underscore (~\scheme{_}~),
+\item $P$ is an underscore (~{\cf \_}~),
 
-\item \var{P} is a pattern variable,
+\item $P$ is a pattern variable,
 
-\item \var{P} is a literal identifier
-and \var{F} is an equivalent identifier in the
-sense of \scheme{free-identifier=?}
-(Section~\ref{sec:identifierpredicates}),
+\item $P$ is a literal identifier
+and $F$ is an equivalent identifier in the
+sense of {\cf free-identifier=?}
+(section~\ref{identifierpredicatessection}),
 
-\item \var{P} is of the form
-\scheme{(\var{P_1} \dots \var{P_n})}
-and \var{F} is a list of $n$ elements that match \var{P_1} through
-\var{P_n},
+\item $P$ is of the form
+{\cf ($P_1$ \dots $P_n$)}
+and $F$ is a list of $n$ elements that match $P_1$ through
+$P_n$,
 
-\item \var{P} is of the form
-\scheme{(\var{P_1} \dots \var{P_n} . \var{P_x})}
-and \var{F} is a list or improper list of $n$ or more elements
-whose first $n$ elements match \var{P_1} through \var{P_n}
+\item $P$ is of the form
+{\cf ($P_1$ \dots $P_n$ . $P_x$)}
+and $F$ is a list or improper list of $n$ or more elements
+whose first $n$ elements match $P_1$ through $P_n$
 and
-whose $n$th cdr matches \var{P_x},
+whose $n$th cdr matches $P_x$,
 
-\item \var{P} is of the form
-\scheme{(\var{P_1} \dots \var{P_k} \var{P_e} \var{ellipsis} \var{P_{m+1}} \dots \var{P_n})},
-where \var{ellipsis} is the identifier \scheme{...}
-and \var{F} is a proper list of $n$
-elements whose first $k$ elements match \var{P_1} through \var{P_k},
-whose next $m-k$ elements each match \var{P_e},
+\item $P$ is of the form
+{\cf ($P_1$ \dots $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots $P_n$)},
+where \hyper{ellipsis} is the identifier {\cf ...}
+and $F$ is a proper list of $n$
+elements whose first $k$ elements match $P_1$ through $P_k$,
+whose next $m-k$ elements each match $P_e$,
 and
-whose remaining $n-m$ elements match \var{P_{m+1}} through \var{P_n},
+whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$,
 
-\item \var{P} is of the form
-\scheme{(\var{P_1} \dots \var{P_k} \var{P_e} \var{ellipsis} \var{P_{m+1}} \dots \var{P_n} . \var{P_x})},
-where \var{ellipsis} is the identifier \scheme{...}
-and \var{F} is a list or improper list of $n$
-elements whose first $k$ elements match \var{P_1} through \var{P_k},
-whose next $m-k$ elements each match \var{P_e},
-whose next $n-m$ elements match \var{P_{m+1}} through \var{P_n},
+\item $P$ is of the form
+{\cf ($P_1$ \dots $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots $P_n$ . $P_x$)},
+where \hyper{ellipsis} is the identifier {\cf ...}
+and $F$ is a list or improper list of $n$
+elements whose first $k$ elements match $P_1$ through $P_k$,
+whose next $m-k$ elements each match $P_e$,
+whose next $n-m$ elements match $P_{m+1}$ through $P_n$,
 and 
-whose $n$th and final cdr matches \var{P_x},
+whose $n$th and final cdr matches $P_x$,
 
-\item \var{P} is of the form
-\scheme{#(\var{P_1} \dots \var{P_n})}
-and \var{F} is a vector of $n$ elements that match \var{P_1} through
-\var{P_n},
+\item $P$ is of the form
+{\cf \#($P_1$ \dots $P_n$)}
+and $F$ is a vector of $n$ elements that match $P_1$ through
+$P_n$,
 
-\item \var{P} is of the form
-\scheme{#(\var{P_1} \dots \var{P_k} \var{P_e} \var{ellipsis} \var{P_{m+1}} \dots \var{P_n})},
-where \var{ellipsis} is the identifier \scheme{...}
-and \var{F} is a vector of $n$ or more elements
-whose first $k$ elements match \var{P_1} through \var{P_k},
-whose next $m-k$ elements each match \var{P_e},
+\item $P$ is of the form
+{\cf \#($P_1$ \dots $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots $P_n$)},
+where \hyper{ellipsis} is the identifier {\cf ...}
+and $F$ is a vector of $n$ or more elements
+whose first $k$ elements match $P_1$ through $P_k$,
+whose next $m-k$ elements each match $P_e$,
 and
-whose remaining $n-m$ elements match \var{P_{m+1}} through \var{P_n},
+whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$,
 or
 
-\item \var{P} is a pattern datum (any nonlist, nonvector, nonsymbol
-object) and \var{F} is equal to \var{P} in the sense of the
-\scheme{equal?} procedure.
+\item $P$ is a pattern datum (any nonlist, nonvector, nonsymbol
+object) and $F$ is equal to $P$ in the sense of the
+{\cf equal?} procedure.
 \end{itemize}
 
-\scheme{syntax-case} first evaluates \var{expr}.
+\semantics
+{\cf syntax-case} first evaluates \hyper{expression}.
 It then attempts to match
-the \var{pattern} from the first \var{clause} against the resulting value,
+the \hyper{pattern} from the first \hyper{clause} against the resulting value,
 which is unwrapped as necessary to perform the match.
 If the pattern matches the value and no
-\var{fender} is present,
-\var{output-expr} is evaluated and its value returned as the
-value of the \scheme{syntax-case} expression.
-If the pattern does not match the value, \scheme{syntax-case} tries
-the second \var{clause}, then the third, and so on.
+\hyper{fender} is present,
+\hyper{output expression} is evaluated and its value returned as the
+value of the {\cf syntax-case} expression.
+If the pattern does not match the value, {\cf syntax-case} tries
+the second \hyper{clause}, then the third, and so on.
 An error is signaled if the value does not match any of the patterns.
 
-If the optional \var{fender} is present, it serves as an additional
+If the optional \hyper{fender} is present, it serves as an additional
 constraint on acceptance of a clause.
-If the \var{pattern} of a given \var{clause} matches the input value,
-the corresponding \var{fender} is evaluated.
-If \var{fender} evaluates to a true value, the clause is accepted;
+If the \hyper{pattern} of a given \hyper{clause} matches the input value,
+the corresponding \hyper{fender} is evaluated.
+If \hyper{fender} evaluates to a true value, the clause is accepted;
 otherwise, the clause is rejected as if the pattern had failed to match
 the value.
 Fenders are logically a part of the matching process, i.e., they
@@ -767,44 +434,43 @@ specify additional matching constraints beyond the basic structure of
 the input.
 
 Pattern variables contained within a clause's
-\var{pattern} are bound to the corresponding pieces of the input
-value within the clause's \var{fender} (if present) and
-\var{output-expr}.
-Pattern variables can be referenced only within \scheme{syntax}
+\hyper{pattern} are bound to the corresponding pieces of the input
+value within the clause's \hyper{fender} (if present) and
+\hyper{output expression}.
+Pattern variables can be referenced only within {\cf syntax}
 expressions (see below).
 Pattern variables occupy the same name space as program variables and
 keywords.
+\end{entry}
 
-See the examples following the description of \scheme{syntax}.
+\begin{entry}{%
+\proto{syntax}{ \hyper{template}}{\exprtype}}
 
-A \scheme{syntax} form has the following syntax.
+\begin{note}
+{\cf \#'\hyper{template}} is equivalent to {\cf (syntax
+  \hyper{template})}.
+\end{note}
 
-\schemedisplay
-(syntax \var{template})
-\endschemedisplay
-
-\scheme{#'\var{template}} is equivalent to \scheme{(syntax \var{template})}.
-The abbreviated form is converted into the longer form when the expression
-is read, i.e., prior to expansion.
-
-A \scheme{syntax} expression is similar to a \scheme{quote} expression
+A {\cf syntax} expression is similar to a {\cf quote} expression
 except that (1) the values of pattern variables appearing within
-\var{template} are inserted into \var{template}, (2) contextual
+\hyper{template} are inserted into \hyper{template}, (2) contextual
 information associated both with the input and with the template is
 retained in the output to support lexical scoping, and (3) the value
-of a \scheme{syntax} expression is a syntax object.
+of a {\cf syntax} expression is a syntax object.
 
-A \var{template} is a pattern variable, an identifier that
+A \hyper{template} is a pattern variable, an identifier that
 is not a pattern
 variable, a pattern datum, or one of the following.
 
-\scheme{(}\var{subtemplate}{\kstar}\scheme{)}\\
-\scheme{(}\var{subtemplate}{\kplus} . \var{template}\scheme{)}\\
-\scheme{#(}\var{subtemplate}{\kstar}\scheme{)}
+\begin{scheme}
+(\hyper{subtemplate} \ldots)
+(\hyper{subtemplate} \ldots . \hyper{template})
+\#(\hyper{subtemplate} \ldots)
+\end{scheme}
 
-A \var{subtemplate} is a \var{template} followed by zero or more ellipses.
+A \hyper{subtemplate} is a \hyper{template} followed by zero or more ellipses.
 
-The value of a \var{syntax} form is a copy of \var{template} in which
+The value of a \hyper{syntax} form is a copy of \hyper{template} in which
 the pattern variables appearing within the template are replaced with
 the input subforms to which they are bound.
 Pattern data and identifiers that are not pattern variables
@@ -826,336 +492,347 @@ than in the associated pattern, the input form is replicated as
 necessary.
 
 A template of the form
-\scheme{(\var{ellipsis} \var{template})} is identical to \var{template}, except that
+{\cf (\hyper{ellipsis} \hyper{template})} is identical to \hyper{template}, except that
 ellipses within the template have no special meaning.
-That is, any ellipses contained within \var{template} are
+That is, any ellipses contained within \hyper{template} are
 treated as ordinary identifiers.
-In particular, the template \scheme{(... ...)} produces a single
-ellipsis, \scheme{...}.
+In particular, the template {\cf (... ...)} produces a single
+ellipsis, {\cf ...}.
 This allows syntactic abstractions to expand into forms containing
 ellipses.
 
 \label{wrappingrules}
-The output produced by \scheme{syntax} is wrapped or unwrapped according to
+The output produced by {\cf syntax} is wrapped or unwrapped according to
 the following rules.
 
 \begin{itemize}
-\item the copy of \scheme{(\var{t_1} .  \var{t_2})} is a pair if \var{t_1}
-      or \var{t_2} contain any pattern variables,
-\item the copy of \scheme{(\var{t} \var{ellipsis})} is a list if \var{t}
+\item the copy of {\cf (\hyperi{t} .  \hyperii{t})} is a pair if \hyperi{t}
+      or \hyperii{t} contain any pattern variables,
+\item the copy of {\cf (\hyper{t} \hyper{ellipsis})} is a list if \hyper{t}
       contains any pattern variables,
-\item the copy of \scheme{#(\var{t_1} ... \var{t_n})} is a vector if any of
-      \var{t_1},~\dots,~\var{t_n} contain any pattern variables, and
-\item the copy of any portion of \var{t} not containing any pattern variables
+\item the copy of {\cf \#(\hyperi{t} ... \hypern{t})} is a vector if any of
+      \hyperi{t},~\dots,~\hypern{t} contain any pattern variables, and
+\item the copy of any portion of \hyper{t} not containing any pattern variables
       is a wrapped syntax object.
 \end{itemize}
 
 The input subforms inserted in place of the pattern variables are wrapped
 if and only if the corresponding input subforms are wrapped.
+\end{entry}
 
-The following definitions of \scheme{or} illustrate \scheme{syntax-case}
-and \scheme{syntax}.
-The second is equivalent to the first but uses the the \scheme{#'}
-prefix instead of the full \scheme{syntax} form.
+The following definitions of {\cf or} illustrate {\cf syntax-case}
+and {\cf syntax}.
+The second is equivalent to the first but uses the the {\cf \#'}
+prefix instead of the full {\cf syntax} form.
 
-\schemedisplay
+\begin{schemenoindent}
 (define-syntax or
   (lambda (x)
     (syntax-case x ()
-      [(_) (syntax #f)]
-      [(_ e) (syntax e)]
-      [(_ e1 e2 e3 ...)
+      [(\_) (syntax \schfalse{})]
+      [(\_ e) (syntax e)]
+      [(\_ e1 e2 e3 ...)
        (syntax (let ([t e1])
                  (if t t (or e2 e3 ...))))])))
 
 (define-syntax or
   (lambda (x)
     (syntax-case x ()
-      [(_) #'#f]
-      [(_ e) #'e]
-      [(_ e1 e2 e3 ...)
-       #'(let ([t e1])
+      [(\_) \#'\schfalse{}]
+      [(\_ e) \#'e]
+      [(\_ e1 e2 e3 ...)
+       \#'(let ([t e1])
            (if t t (or e2 e3 ...)))])))
 
 (define-syntax case
   (lambda (x)
     (syntax-case x (else)
-      [(_ e0 [(k ...) e1 e2 ...] ... [else else-e1 else-e2 ...])
-       #'(let ([t e0])
+      [(\_ e0 [(k ...) e1 e2 ...] ...
+              [else else-e1 else-e2 ...])
+       \#'(let ([t e0])
            (cond
              [(memv t '(k ...)) e1 e2 ...]
              ...
              [else else-e1 else-e2 ...]))]
-      [(_ e0 [(ka ...) e1a e2a ...] [(kb ...) e1b e2b ...] ...)
-       #'(let ([t e0])
+      [(\_ e0 [(ka ...) e1a e2a ...]
+              [(kb ...) e1b e2b ...] ...)
+       \#'(let ([t e0])
            (cond
              [(memv t '(ka ...)) e1a e2a ...]
              [(memv t '(kb ...)) e1b e2b ...]
              ...))])))
-\endschemedisplay
+\end{schemenoindent}
 
-The examples below define \emph{identifier macros}, syntactic abstractions
+The examples below define \emph{identifier macros\mainindex{identifier
+  macro}}, syntactic abstractions
 supporting keyword references that do not necessarily appear in the first
 position of a list-structured form.
-The second example uses \scheme{make-variable-transformer} to handle the case
+The second example uses {\cf make-variable-transformer} to handle the case
 where the keyword appears on the left-hand side of a
-\scheme{set!} expression.
+{\cf set!} expression.
 
-\schemedisplay
+\begin{scheme}
 (define p (cons 4 5))
 (define-syntax p.car
   (lambda (x)
     (syntax-case x ()
-      [(_ . rest) #'((car p) . rest)]
-      [_  #'(car p)])))
-p.car ;=> 4
-(set! p.car 15) ;=> \var{syntax error}
+      [(\_ . rest) \#'((car p) . rest)]
+      [\_  \#'(car p)])))
+p.car \ev 4
+(set! p.car 15) \ev \exception{\&syntax}
 
 (define p (cons 4 5))
 (define-syntax p.car
   (make-variable-transformer
     (lambda (x)
       (syntax-case x (set!)
-        [(set! _ e) #'(set-car! p e)]
-        [(_ . rest) #'((car p) . rest)]
-        [_  #'(car p)]))))
+        [(set! \_ e) \#'(set-car! p e)]
+        [(\_ . rest) \#'((car p) . rest)]
+        [\_  \#'(car p)]))))
 (set! p.car 15)
-p.car           ;=> 15
-p               ;=> (15 5)
-\endschemedisplay
+p.car           \ev 15
+p               \ev (15 5)
+\end{scheme}
 
-A derived \scheme{identifier-syntax} form that simplifies the definition
-of identifier macros is described in Section~\ref{sec:derived}.
+A derived {\cf identifier-syntax} form that simplifies the definition
+of identifier macros is described in section~\ref{derivedsection}.
 
-\subsection{Identifier predicates\label{sec:identifierpredicates}}
+\section{Identifier predicates}
+\label{identifierpredicatessection}
 
-The procedure \scheme{identifier?} is used to determine if a value is
-an identifier.
+\begin{entry}{%
+\proto{identifier?}{ obj}{procedure}}
 
-\schemedisplay
-(identifier? \var{x})
-\endschemedisplay
+Returns \schtrue{} if \var{obj} is an identifier, i.e., a
+syntax object representing an identifier, and \schfalse{} otherwise.
 
-It returns \scheme{#t} if its argument \var{x} is an identifier, i.e., a
-syntax object representing an identifier, and \scheme{#f} otherwise.
-
-\scheme{identifier?} is often used within a fender to verify
+The {\cf identifier?} procedure is often used within a fender to verify
 that certain subforms of an input form are identifiers, as in the
-definition of \scheme{rec}, which creates self-contained
+definition of {\cf rec}, which creates self-contained
 recursive objects, below.
 
-\schemedisplay
+\begin{scheme}
 (define-syntax rec
   (lambda (x)
     (syntax-case x ()
-      [(_ x e)
-       (identifier? #'x)
-       #'(letrec ([x e]) x)])))
+      [(\_ x e)
+       (identifier? \#'x)
+       \#'(letrec ([x e]) x)])))
 
 (map (rec fact
        (lambda (n)
-         (if (= n 0)                 ;=> (1 2 6 24 120)
+         (if (= n 0)                 
              1
              (* n (fact (- n 1))))))
-     '(1 2 3 4 5))
+     '(1 2 3 4 5)) \lev (1 2 6 24 120)
+ 
+(rec 5 (lambda (x) x)) \ev \exception{\&syntax}
+\end{scheme}
+\end{entry}
 
-(rec 5 (lambda (x) x)) ;=> \var{syntax error}
-\endschemedisplay
-
-The procedures \scheme{bound-identifier=?} and \scheme{free-identifier=?}
-each take two identifier arguments and return \scheme{#t} if their
-arguments are equivalent and \scheme{#f} otherwise.
+The procedures {\cf bound-identifier=?} and {\cf free-identifier=?}
+each take two identifier arguments and return \schtrue{} if their
+arguments are equivalent and \schfalse{} otherwise.
 These predicates are used to compare identifiers according to their
 \emph{intended use} as free references or bound identifiers in a given
 context.
 
-\schemedisplay
-(bound-identifier=? \var{id_1} \var{id_2})
-\endschemedisplay
+\begin{entry}{%
+\proto{bound-identifier=?}{ \vari{id} \varii{id}}{procedure}}
 
-The procedure \scheme{bound-identifier=?} returns true if and only if a
+\domain{\vari{Id} and \varii{id} must be identifiers.}
+The procedure {\cf bound-identifier=?} returns true if and only if a
 binding for one would capture a reference to the other in the output of
 the transformer, assuming that the reference appears within the scope of
 the binding.
-In general, two identifiers are \scheme{bound-identifier=?} only if
+In general, two identifiers are {\cf bound-identifier=?} only if
 both are present in the original program or both are introduced by the
 same transformer application
-(perhaps implicitly---see \scheme{datum->syntax}).
+(perhaps implicitly---see {\cf datum\coerce{}syntax}).
 Operationally, two identifiers are
-considered equivalent by \scheme{bound-identifier=?} if and only if they
-have the same name and same marks (Section~\ref{sec:hygiene}).
+considered equivalent by {\cf bound-identifier=?} if and only if they
+have the same name and same marks (section~\ref{hygienesection}).
 
-\scheme{bound-identifier=?} can be used for detecting
+{\cf bound-identifier=?} can be used for detecting
 duplicate identifiers in a binding construct or for other
 preprocessing of a binding construct that requires detecting instances
 of the bound identifiers.
+\end{entry}
 
-\schemedisplay
-(free-identifier=? \var{id_1} \var{id_2})
-\endschemedisplay
+\begin{entry}{%
+\proto{free-identifier=?}{ \vari{id} \varii{id}}{procedure}}
 
-The procedure \scheme{free-identifier=?} returns \scheme{#t} if and
+\domain{\vari{Id} and \varii{id} must be identifiers.}
+The procedure {\cf free-identifier=?} returns \schtrue{} if and
 only if the two identifiers would resolve to the same binding if both were
 to appear in the output of a transformer outside of any bindings inserted
 by the transformer.
 (If neither of two like-named identifiers resolves to a binding, i.e., both
 are unbound, they are considered to resolve to the same binding.)
 Operationally, two identifiers are considered equivalent by
-\scheme{free-identifier=?} if and only the topmost matching
-substitution for each maps to the same binding (Section~\ref{sec:hygiene})
+{\cf free-identifier=?} if and only the topmost matching
+substitution for each maps to the same binding (section~\ref{hygienesection})
 or the identifiers have the same name and no matching substitution.
 
-\scheme{syntax-case} and \scheme{syntax-rules} use
-\scheme{free-identifier=?} to compare identifiers listed in the literals
+{\cf syntax-case} and {\cf syntax-rules} use
+{\cf free-identifier=?} to compare identifiers listed in the literals
 list against input identifiers.
 
-The following definition of unnamed \scheme{let}
-uses \scheme{bound-identifier=?} to detect duplicate identifiers.
+The following definition of unnamed {\cf let}
+uses {\cf bound-identifier=?} to detect duplicate identifiers.
 
-\schemedisplay
+\begin{schemenoindent}
 (define-syntax let
   (lambda (x)
     (define unique-ids?
       (lambda (ls)
         (or (null? ls)
-            (and (let notmem? ([x (car ls)] [ls (cdr ls)])
+            (and (let notmem?
+                        ([x (car ls)] [ls (cdr ls)])
                    (or (null? ls)
-                       (and (not (bound-identifier=? x (car ls)))
+                       (and (not (bound-identifier=?
+                                   x (car ls)))
                             (notmem? x (cdr ls)))))
                  (unique-ids? (cdr ls))))))
     (syntax-case x ()
-      [(_ ((i v) ...) e1 e2 ...)
-       (unique-ids? #'(i ...))
-       #'((lambda (i ...) e1 e2 ...) v ...)])))
-\endschemedisplay
+      [(\_ ((i v) ...) e1 e2 ...)
+       (unique-ids? \#'(i ...))
+       \#'((lambda (i ...) e1 e2 ...) v ...)])))
+\end{schemenoindent}
 
-The argument \scheme{#'(i ...)} to \scheme{unique-ids?} is guaranteed
-to be a list by the rules given in the description of \scheme{syntax}
+The argument {\cf \#'(i ...)} to {\cf unique-ids?} is guaranteed
+to be a list by the rules given in the description of {\cf syntax}
 above.
 
-With this definition of \scheme{let}, the expression
+With this definition of {\cf let}:
 
-\schemedisplay
-(let ([a 3] [a 4]) (+ a a))
-\endschemedisplay
+\begin{scheme}
+(let ([a 3] [a 4]) (+ a a)) \lev \exception{\&syntax-error}
+\end{scheme}
 
-causes a syntax error exception to be raised, whereas
+However,
 
-\schemedisplay
-(let-syntax ([dolet (lambda (x)
-                      (syntax-case x ()
-                        [(_ b)
-                         #'(let ([a 3] [b 4]) (+ a b))]))])
-  (dolet a))
-\endschemedisplay
+\begin{scheme}
+(let-syntax
+  ([dolet (lambda (x)
+            (syntax-case x ()
+              [(\_ b)
+               \#'(let ([a 3] [b 4]) (+ a b))]))])
+  (dolet a)) \lev 7
+\end{scheme}
 
-evaluates to \scheme{7}, since the identifier \scheme{a} introduced by \scheme{dolet}
-and the identifier \scheme{a} extracted from the input form are not
-\scheme{bound-identifier=?}.
+since the identifier {\cf a} introduced by {\cf dolet}
+and the identifier {\cf a} extracted from the input form are not
+{\cf bound-identifier=?}.
 
-The following definition of \scheme{case} is equivalent to the one in
-Section~\ref{sec:syntaxcase}.
-Rather than including \scheme{else} in the literals list as before,
-this version explicitly tests for \scheme{else} using
-\scheme{free-identifier=?}.
+The following definition of {\cf case} is equivalent to the one in
+section~\ref{syntaxcasesection}.
+Rather than including {\cf else} in the literals list as before,
+this version explicitly tests for {\cf else} using
+{\cf free-identifier=?}.
 
-\schemedisplay
+\begin{schemenoindent}
 (define-syntax case
   (lambda (x)
     (syntax-case x ()
-      [(_ e0 [(k ...) e1 e2 ...] ... [else-key else-e1 else-e2 ...])
-       (and (identifier? #'else-key)
-            (free-identifier=? #'else-key #'else))
-       #'(let ([t e0])
+      [(\_ e0 [(k ...) e1 e2 ...] ...
+              [else-key else-e1 else-e2 ...])
+       (and (identifier? \#'else-key)
+            (free-identifier=? \#'else-key \#'else))
+       \#'(let ([t e0])
            (cond
              [(memv t '(k ...)) e1 e2 ...]
              ...
              [else else-e1 else-e2 ...]))]
-      [(_ e0 [(ka ...) e1a e2a ...] [(kb ...) e1b e2b ...] ...)
-       #'(let ([t e0])
+      [(\_ e0 [(ka ...) e1a e2a ...]
+              [(kb ...) e1b e2b ...] ...)
+       \#'(let ([t e0])
            (cond
              [(memv t '(ka ...)) e1a e2a ...]
              [(memv t '(kb ...)) e1b e2b ...]
              ...))])))
-\endschemedisplay
+\end{schemenoindent}
 
-With either definition of \scheme{case}, \scheme{else} is not
+With either definition of {\cf case}, {\cf else} is not
 recognized as an auxiliary
-keyword if an enclosing lexical binding for \scheme{else} exists.
+keyword if an enclosing lexical binding for {\cf else} exists.
 For example,
 
-\schemedisplay
-(let ([else #f])
+\begin{scheme}
+(let ([else \schfalse{}])
   (case 0 [else (write "oops")]))
-\endschemedisplay
+\end{scheme}
 
-results in a syntax error, since \scheme{else} is bound
+results in a syntax error, since {\cf else} is bound
 lexically and is
-therefore not the same \scheme{else} that appears in the definition of
-\scheme{case}.
+therefore not the same {\cf else} that appears in the definition of
+{\cf case}.
+\end{entry}
 
-\subsection{Syntax-object and datum conversions\label{sec:conversions}}
+\section{Syntax-object and datum conversions}
+\label{conversionssection}
 
-The procedure \scheme{syntax->datum}
+\begin{entry}{%
+\proto{syntax->datum}{ syntax-object}{procedure}}
+
+The procedure {\cf syntax\coerce{}datum}
 strips all syntactic information from a syntax
-object and returns the corresponding Scheme ``datum.''
-
-\schemedisplay
-(syntax->datum \var{syntax-object})
-\endschemedisplay
+object and returns the corresponding Scheme datum.
+\end{entry}
 
 Identifiers stripped in this manner are converted to their symbolic
-names, which can then be compared with \scheme{eq?}.
-Thus, a predicate \scheme{symbolic-identifier=?} might be defined as follows.
+names, which can then be compared with {\cf eq?}.
+Thus, a predicate {\cf symbolic-identifier=?} might be defined as follows.
 
-\schemedisplay
+\begin{scheme}
 (define symbolic-identifier=?
   (lambda (x y)
     (eq? (syntax->datum x)
          (syntax->datum y))))
-\endschemedisplay
+\end{scheme}
 
 % not be true with import alias and rename
-%Two identifiers that are \scheme{bound-identifier=?} or
-%\scheme{free-identifier=?} are \scheme{symbolic-identifier=?}; in order to
+%Two identifiers that are {\cf bound-identifier=?} or
+%{\cf free-identifier=?} are {\cf symbolic-identifier=?}; in order to
 %refer to the same binding, two identifiers must have the same name.
 %The converse is not always true, since two identifiers may have
 %the same name but different bindings.
 
-The procedure \scheme{datum->syntax} accepts two arguments, a
-template identifier and a datum.
+\begin{entry}{%
+\proto{datum->syntax}{ template-id datum}{procedure}}
+\end{entry}
 
-\schemedisplay
-(datum->syntax \var{template-id} \var{datum})
-\endschemedisplay
-
-It returns a syntax object representation of \var{datum} that
+\domain{\var{Template-id} must be a
+template identifier and \var{datum} must be a datum value.}
+This returns a syntax object representation of \var{datum} that
 contains the same contextual information as
 \var{template-id}, with the effect that the
 syntax object behaves
 as if it were introduced into the code when
 \var{template-id} was introduced.
 
-\scheme{datum->syntax} allows a transformer to ``bend'' lexical
-scoping rules by creating \emph{implicit identifiers}
+The {\cf datum\coerce{}syntax} procedure allows a transformer to ``bend'' lexical
+scoping rules by creating \textit{implicit
+  identifiers\mainindex{implicit identifier}}
 that behave as if they were present in the input form,
 thus permitting the definition of syntactic
 abstractions that introduce visible bindings for or references to
 identifiers that do not appear explicitly in the input form.
-For example, the following defines a \scheme{loop} expression that
+For example, the following defines a {\cf loop} expression that
 uses this controlled form of identifier capture to
-bind the variable \scheme{break} to an escape procedure
+bind the variable {\cf break} to an escape procedure
 within the loop body.
-(The derived \scheme{with-syntax} form is like \scheme{let} but binds
-pattern variables---see Section~\ref{sec:derived}.)
+(The derived {\cf with-syntax} form is like {\cf let} but binds
+pattern variables---see section~\ref{derivedsection}.)
 
-\schemedisplay
+\begin{scheme}
 (define-syntax loop
   (lambda (x)
     (syntax-case x ()
       [(k e ...)
-       (with-syntax ([break (datum->syntax #'k 'break)])
-         #'(call-with-current-continuation
+       (with-syntax
+           ([break (datum->syntax \#'k 'break)])
+         \#'(call-with-current-continuation
              (lambda (break)
                (let f () e ... (f)))))])))
 
@@ -1163,148 +840,153 @@ pattern variables---see Section~\ref{sec:derived}.)
   (loop
     (if (= n 0) (break ls))
     (set! ls (cons 'a ls))
-    (set! n (- n 1)))) ;=> (a a a)
-\endschemedisplay
+    (set! n (- n 1)))) \lev (a a a)
+\end{scheme}
 
-Were \scheme{loop} to be defined as
+Were {\cf loop} to be defined as
 
-\schemedisplay
+\begin{scheme}
 (define-syntax loop
   (lambda (x)
     (syntax-case x ()
-      [(_ e ...)
-       #'(call-with-current-continuation
-           (lambda (break) (let f () e ... (f))))])))
-\endschemedisplay
+      [(\_ e ...)
+       \#'(call-with-current-continuation
+           (lambda (break)
+             (let f () e ... (f))))])))
+\end{scheme}
 
-the variable \scheme{break} would not be visible in \scheme{e \dots}.
+the variable {\cf break} would not be visible in {\cf e \dots}.
 
 The datum argument \var{datum} may also represent an arbitrary
 Scheme form, as demonstrated by the following definition of
-\scheme{include}, an expand-time version of \scheme{load}.
+{\cf include}, an expand-time version of {\cf load}.
 
-\schemedisplay
+\begin{scheme}
 (define-syntax include
   (lambda (x)
     (define read-file
       (lambda (fn k)
-        (let ([p (open-input-file fn)])
-          (let f ([x (read p)])
+        (let ([p (open-file-input-port fn)])
+          (let f ([x (get-datum p)])
             (if (eof-object? x)
-                (begin (close-input-port p) '())
+                (begin (close-port p) '())
                 (cons (datum->syntax k x)
-                      (f (read p))))))))
+                      (f (get-datum p))))))))
     (syntax-case x ()
       [(k filename)
-       (let ([fn (syntax->datum #'filename)])
-         (with-syntax ([(exp ...) (read-file fn #'k)])
-           #'(begin exp ...)))])))
-\endschemedisplay
+       (let ([fn (syntax->datum \#'filename)])
+         (with-syntax ([(exp ...)
+                        (read-file fn \#'k)])
+           \#'(begin exp ...)))])))
+\end{scheme}
 
-
-\scheme{(include "filename")} expands into a \scheme{begin} expression
+{\cf (include "filename")} expands into a {\cf begin} expression
 containing the forms found in the file named by
-\scheme{"filename"}.
-For example, if the file \scheme{flib.ss} contains
-\scheme{(define f (lambda (x) (g (* x x))))}, and the file
-\scheme{glib.ss} contains
-\scheme{(define g (lambda (x) (+ x x)))},
+{\cf "filename"}.
+For example, if the file {\cf flib.ss} contains
+{\cf (define f (lambda (x) (g (* x x))))}, and the file
+{\cf glib.ss} contains
+{\cf (define g (lambda (x) (+ x x)))},
 the expression
 
-\schemedisplay
+\begin{scheme}
 (let ()
   (include "flib.ss")
   (include "glib.ss")
   (f 5))
-\endschemedisplay
+\end{scheme}
 
-evaluates to \scheme{50}.
+evaluates to {\cf 50}.
 
-The definition of \scheme{include} uses \scheme{datum->syntax} to convert
+The definition of {\cf include} uses {\cf datum\coerce{}syntax} to convert
 the objects read from the file into syntax objects in the proper
 lexical context, so that identifier references and definitions within
-those expressions are scoped where the \scheme{include} form appears.
+those expressions are scoped where the {\cf include} form appears.
 
-Using \scheme{datum->syntax}, it is even possible to break hygiene
+Using {\cf datum\coerce{}syntax}, it is even possible to break hygiene
 entirely and write macros in the style of old Lisp macros.
-The \scheme{lisp-transformer} procedure defined below creates a transformer
+The {\cf lisp-transformer} procedure defined below creates a transformer
 that converts its input into a datum, calls the programmer's procedure on
 this datum, and converts the result back into a syntax object that is
 scoped at top level (or, more accurately, wherever
-\scheme{lisp-transformer} is defined).
+{\cf lisp-transformer} is defined).
 
-\schemedisplay
+\begin{scheme}
 (define lisp-transformer
   (lambda (p)
     (lambda (x)
-      (datum->syntax #'lisp-transformer
-        (p (syntax->datum x))))))
-\endschemedisplay
+      (datum\coerce{}syntax \#'lisp-transformer
+        (p (syntax\coerce{}datum x))))))
+\end{scheme}
 
-Using \scheme{lisp-transformer}, defining a basic version of Common Lisp's
-\scheme{defmacro} is a straightforward exercise.
+Using {\cf lisp-transformer}, defining a basic version of Common Lisp's
+{\cf defmacro} is a straightforward exercise.
 
-\subsection{Generating lists of temporaries\label{sec:generatingtemporaries}}
+\section{Generating lists of temporaries}
+\label{generatingtemporariessection}
 
 Transformers can introduce a fixed number of identifiers into their
 output simply by naming each identifier.
 In some cases, however, the number of identifiers to be introduced depends
 upon some characteristic of the input expression.
-A straightforward definition of \scheme{letrec}, for example,
+A straightforward definition of {\cf letrec}, for example,
 requires as many
 temporary identifiers as there are binding pairs in the
 input expression.
-The procedure \scheme{generate-temporaries} is used to construct
+The procedure {\cf generate-temporaries} is used to construct
 lists of temporary identifiers.
 
-\schemedisplay
-(generate-temporaries \var{list})
-\endschemedisplay
+\begin{entry}{%
+\proto{generate-temporaries}{ l}{procedure}}
 
-\var{list} may be any list or syntax object representing a list-structured
-form; its contents are not important.
-The number of temporaries generated is the number of elements in \var{list}.
+\domain{\var{L} must be be a list or syntax object representing a list-structured
+form; its contents are not important.}
+The number of temporaries generated is the number of elements in \var{l}.
 Each temporary is guaranteed to be unique, i.e., different from all other
 identifiers.
 
-A definition of \scheme{letrec} that
-uses \scheme{generate-temporaries} is shown below.
+A definition of {\cf letrec} that
+uses {\cf generate-temporaries} is shown below.
 
-\schemedisplay\label{defn:letrec}
+\begin{schemenoindent}\label{defn:letrec}
 (define-syntax letrec
   (lambda (x)
     (syntax-case x ()
-      ((_ ((i v) ...) e1 e2 ...)
-       (with-syntax (((t ...) (generate-temporaries (syntax (i ...)))))
-          (syntax (let ((i #f) ...)
+      ((\_ ((i v) ...) e1 e2 ...)
+       (with-syntax
+            (((t ...)
+              (generate-temporaries (syntax (i ...)))))
+          (syntax (let ((i \schfalse{}) ...)
                     (let ((t v) ...)
                       (set! i t) ...
                       (let () e1 e2 ...)))))))))
-\endschemedisplay
+\end{schemenoindent}
 
-Any transformer that uses \scheme{generate-temporaries} in this fashion can
+Any transformer that uses {\cf generate-temporaries} in this fashion can
 be rewritten to avoid using it, albeit with a loss of clarity.
 The trick is to use a recursively defined intermediate form that
 generates one temporary per expansion step and completes the
 expansion after enough temporaries have been generated.
+\end{entry}
 
-\subsection{Derived forms and procedures\label{sec:derived}}
+\section{Derived forms and procedures}
+\label{derivedsection}
 
 The forms and procedures described in this section are \emph{derived},
 i.e., they can defined in terms of the forms and procedures described
 in earlier sections of this document.
 
-The {\r5rs} \scheme{syntax-rules} form is supported as a derived form,
-with the following extensions:
+The {\cf syntax-rules} form (section~\ref{syntax-rules}) could be
+implemented as a derived form, with the following extensions:
 
 \begin{itemize}
  \item Patterns are generalized slightly to allow a fixed number of   
    subpatterns to appear after an ellipsis, e.g.,
-   \scheme{(\var{p_1} ... \var{p_2} \var{p_3})}.
+   {\cf (\hyperi{p} ... \hyperii{p} \hyperiii{p})}.
 
- \item Underscores (~\scheme{_}~) may appear within the pattern
+ \item Underscores (~{\cf \_}~) may appear within the pattern
    and match any input, but are not pattern variables and so
-   are not bound in the output \var{template}.
+   are not bound in the output \hyper{template}.
 
  \item The first position of a syntax-rules pattern may be any
    identifier, including an underscore, i.e., it need not be the name
@@ -1313,636 +995,202 @@ with the following extensions:
 
  \item An optional fender may appear between the pattern and
    template of any clause and has the same meaning as a
-   \scheme{syntax-case} fender.
+   {\cf syntax-case} fender.
 \end{itemize}
 
-A \scheme{syntax-rules} form has the syntax
+\begin{entry}{%
+\rproto{syntax-rules}{ (\hyper{literal} \dotsfoo) \hyper{clause} \dotsfoo}{\exprtype}}
 
-\schemedisplay
-(syntax-rules (\var{literal} \dots) \var{clause} \dots)
-\endschemedisplay
+\syntax
+Each \hyper{literal} must be an identifier.
+Each \hyper{clause} must take one of the following two forms.
 
-Each \var{literal} must be an identifier.
-Each \var{clause} must take one of the following two forms.
+\begin{scheme}
+(\hyper{pattern} \hyper{template})
+(\hyper{pattern} \hyper{fender} \hyper{template})
+\end{scheme}
 
-\schemedisplay
-(\var{pattern} \var{template})
-(\var{pattern} \var{fender} \var{template})
-\endschemedisplay
+Each \hyper{pattern} and \hyper{fender} are as in {\cf syntax-case},
+and each \hyper{template}
+is as in {\cf syntax}.
+(See section~\ref{syntaxcasesection}.)
 
-Each \var{pattern} and \var{fender} are as in \scheme{syntax-case},
-and each \var{template}
-is as in \scheme{syntax}.
-(See Section~\ref{sec:syntaxcase}.)
-
-The definition of \scheme{or} below is like the ones given in
-Section~\ref{sec:syntaxcase}, except
-that \scheme{syntax-rules} is used in place of \scheme{syntax-case}
-and \scheme{syntax}.
-
-\schemedisplay
-(define-syntax or
-  (syntax-rules ()
-    [(_) #f]
-    [(_ e) e]
-    [(_ e1 e2 e3 ...)
-     (let ([t e1])
-       (if t t (or e2 e3 ...)))]))
-\endschemedisplay
-
-The \scheme{lambda} expression used to produce the transformer is
-implicit, as are the \scheme{syntax} forms used to construct the
-output.
-
-Any \scheme{syntax-rules} form can be expressed with
-\scheme{syntax-case} by making the \scheme{lambda} expression and
-\scheme{syntax} expressions explicit, and
-\scheme{syntax-rules} may be defined in terms of \scheme{syntax-case}
+\semantics
+Any {\cf syntax-rules} form can be expressed with
+{\cf syntax-case} by making the {\cf lambda} expression and
+{\cf syntax} expressions explicit, and
+{\cf syntax-rules} may be defined in terms of {\cf syntax-case}
 as follows.
 
-\schemedisplay
+\begin{scheme}
 (define-syntax syntax-rules
   (lambda (x)
     (syntax-case x ()
-      [(_ (k ...) [(_ . p) f ... t] ...)
-       #'(lambda (x)
+      [(\_ (k ...) [(\_ . p) f ... t] ...)
+       \#'(lambda (x)
            (syntax-case x (k ...)
-             [(_ . p) f ... #'t] ...))])))
-\endschemedisplay
+             [(\_ . p) f ... \#'t] ...))])))
+\end{scheme}
 
 A more robust implementation would verify that the literals
-\scheme{\var{k} \dots} are all identifiers, that the first position
+{\cf \hyper{literal} \dots} are all identifiers, that the first position
 of each pattern is an identifier, and that at most one fender
 is present in each clause.
 
-Since the \scheme{lambda} and \scheme{syntax} expressions are implicit in
-a \scheme{syntax-rules} form, definitions expressed with
-\scheme{syntax-rules} are shorter than the equivalent definitions
-expressed with \scheme{syntax-case}.
+Since the {\cf lambda} and {\cf syntax} expressions are implicit in
+a {\cf syntax-rules} form, definitions expressed with
+{\cf syntax-rules} are shorter than the equivalent definitions
+expressed with {\cf syntax-case}.
 The choice of which to use when either suffices is a matter of taste, but
-some transformers that can be written easily with \scheme{syntax-case}
-cannot be written easily or at all with \scheme{syntax-rules}.
+some transformers that can be written easily with {\cf syntax-case}
+cannot be written easily or at all with {\cf syntax-rules}.
 
+The definition of {\cf or} below is like the ones given in
+section~\ref{syntaxcasesection}, except
+that {\cf syntax-rules} is used in place of {\cf syntax-case}
+and {\cf syntax}.
 
-The definitions of \scheme{p.car} in Section~\ref{sec:syntaxcase}
+\begin{scheme}
+(define-syntax or
+  (syntax-rules ()
+    [(\_) \schfalse{}]
+    [(\_ e) e]
+    [(\_ e1 e2 e3 ...)
+     (let ([t e1])
+       (if t t (or e2 e3 ...)))]))
+\end{scheme}
+\end{entry}
+
+The definitions of {\cf p.car} in section~\ref{syntaxcasesection}
 demonstrated how identifier macros might be written using
-\scheme{syntax-case}.
+{\cf syntax-case}.
 Many identifier macros can be defined more succinctly using
-the derived \scheme{identifier-syntax} form.
-An \scheme{identifier-syntax} form has one of the following syntaxes:
+the derived {\cf identifier-syntax} form.
 
-\schemedisplay
-(identifier-syntax \var{template})
-(identifier-syntax (\var{id_1} \var{template_1}) ((set! \var{id_2} \var{pattern}) \var{template_2}))
-\endschemedisplay
+\begin{entry}{%
+\proto{identifier-syntax}{ \hyper{template}}{\exprtype}
+\pproto{(identifier-syntax (\hyperi{id} \hyperi{template})}{\exprtype}}\\
+{\tt\obeyspaces
+                   ((set! \hyperii{id} \hyper{pattern})
+                    \hyperii{template}))}
 
+\syntax The \hyper{id}s must be identifiers.
+
+\semantics
 When a keyword is bound to a transformer produced by the first form of
-\scheme{identifier-syntax}, references to the keyword within the scope
-of the binding are replaced by \var{template}.
+{\cf identifier-syntax}, references to the keyword within the scope
+of the binding are replaced by \hyper{template}.
 
-\schemedisplay
+\begin{scheme}
 (define p (cons 4 5))
 (define-syntax p.car (identifier-syntax (car p)))
-p.car ;=> 4
-(set! p.car 15) ;=> \var{syntax error}
-\endschemedisplay
+p.car \ev 4
+(set! p.car 15) \ev \exception{\&syntax}
+\end{scheme}
 
-The second, more general, form of \scheme{identifier-syntax} permits
-the transformer to determine what happens when \scheme{set!} is used.
+The second, more general, form of {\cf identifier-syntax} permits
+the transformer to determine what happens when {\cf set!} is used.
 
-\schemedisplay
+\begin{scheme}
 (define p (cons 4 5))
 (define-syntax p.car
   (identifier-syntax
-    [_ (car p)]
-    [(set! _ e) (set-car! p e)]))
+    [\_ (car p)]
+    [(set! \_ e) (set-car! p e)]))
 (set! p.car 15)
-p.car           ;=> 15
-p               ;=> (15 5)
-\endschemedisplay
+p.car           \ev 15
+p               \ev (15 5)
+\end{scheme}
 
-\scheme{identifier-syntax} may be defined in terms of \scheme{syntax-case},
-\scheme{syntax}, and \scheme{make-variable-transformer} as follows.
+The {\cf identifier-syntax} form may be defined in terms of {\cf syntax-case},
+{\cf syntax}, and {\cf make-variable-transformer} as follows.
 
-\schemedisplay
+\begin{schemenoindent}
 (define-syntax identifier-syntax
   (syntax-rules (set!)
-    [(_ e)
+    [(\_ e)
      (lambda (x)
        (syntax-case x ()
-         [id (identifier? #'id) #'e]
-         [(_ x (... ...)) #'(e x (... ...))]))]
-    [(_ (id exp1) ((set! var val) exp2))
-     (and (identifier? #'id) (identifier? #'var))
+         [id (identifier? \#'id) \#'e]
+         [(\_ x (... ...)) \#'(e x (... ...))]))]
+    [(\_ (id exp1) ((set! var val) exp2))
+     (and (identifier? \#'id) (identifier? \#'var))
      (make-variable-transformer
        (lambda (x)
          (syntax-case x (set!)
-           [(set! var val) #'exp2]
-           [(id x (... ...)) #'(exp1 x (... ...))]
-           [id (identifier? #'id) #'exp1])))]))
-\endschemedisplay
+           [(set! var val) \#'exp2]
+           [(id x (... ...)) \#'(exp1 x (... ...))]
+           [id (identifier? \#'id) \#'exp1])))]))
+\end{schemenoindent}
+\end{entry}
 
-The derived \scheme{with-syntax} form is used to bind pattern variables,
-just as \scheme{let} is used to bind variables.
+FIXME: Kent: I replaced expr1 expr2 etc. by body
+ 
+\begin{entry}{%
+\pproto{(with-syntax ((\hyper{pattern} \hyper{expression}) \dotsfoo) \hyper{body})}{\exprtype}}
+\mainschindex{with-syntax}
+
+The derived {\cf with-syntax} form is used to bind pattern variables,
+just as {\cf let} is used to bind variables.
 This allows a transformer to construct its output in separate
 pieces, then put the pieces together.
 
-A \scheme{with-syntax} form has the following syntax.
+Each \hyper{pattern} is identical in form to a {\cf syntax-case} pattern.
+The value of each \hyper{expression} is computed and destructured according
+to the corresponding \hyper{pattern}, and pattern variables within
+the \hyper{pattern} are bound as with {\cf syntax-case} to the
+corresponding portions of the value within \hyper{body}.
 
-\schemedisplay
-(with-syntax ((\var{pattern} \var{expr_0}) \dots) \var{expr_1} \var{expr_2} \dots)
-\endschemedisplay
-
-Each \var{pattern} is identical in form to a \scheme{syntax-case} pattern.
-The value of each \var{expr_0} is computed and destructured according
-to the corresponding \var{pattern}, and pattern variables within
-the \var{pattern} are bound as with \scheme{syntax-case} to the
-corresponding portions of the value within
-\scheme{\var{expr_1} \var{expr_2} \dots}.
-
-\scheme{with-syntax} may be defined in terms of \scheme{syntax-case} as
+The {\cf with-syntax} form may be defined in terms of {\cf syntax-case} as
 follows.
 
-\schemedisplay
+\begin{scheme}
 (define-syntax with-syntax
   (lambda (x)
     (syntax-case x ()
-      ((_ ((p e0) ...) e1 e2 ...)
+      ((\_ ((p e0) ...) e1 e2 ...)
        (syntax (syntax-case (list e0 ...) ()
                  ((p ...) (begin e1 e2 ...))))))))
-\endschemedisplay
+\end{scheme}
 
-The following definition of \scheme{cond} demonstrates the use of
-\scheme{with-syntax} to support transformers that employ recursion
+The following definition of {\cf cond} demonstrates the use of
+{\cf with-syntax} to support transformers that employ recursion
 internally to construct their output.
-It handles all \scheme{cond} clause variations and takes care to produce
-one-armed \scheme{if} expressions where appropriate.
+It handles all {\cf cond} clause variations and takes care to produce
+one-armed {\cf if} expressions where appropriate.
 
-\schemedisplay
+\begin{schemenoindent}
 (define-syntax cond
   (lambda (x)
     (syntax-case x ()
-      [(_ c1 c2 ...)
-       (let f ([c1 #'c1] [c2* #'(c2 ...)])
+      [(\_ c1 c2 ...)
+       (let f ([c1 \#'c1] [c2* \#'(c2 ...)])
          (syntax-case c2* ()
            [()
             (syntax-case c1 (else =>)
-              [(else e1 e2 ...) #'(begin e1 e2 ...)]
-              [(e0) #'(let ([t e0]) (if t t))]
-              [(e0 => e1) #'(let ([t e0]) (if t (e1 t)))]
-              [(e0 e1 e2 ...) #'(if e0 (begin e1 e2 ...))])]
+              [(else e1 e2 ...) \#'(begin e1 e2 ...)]
+              [(e0) \#'(let ([t e0]) (if t t))]
+              [(e0 => e1)
+               \#'(let ([t e0]) (if t (e1 t)))]
+              [(e0 e1 e2 ...)
+               \#'(if e0 (begin e1 e2 ...))])]
            [(c2 c3 ...)
-            (with-syntax ([rest (f #'c2 #'(c3 ...))])
+            (with-syntax ([rest (f \#'c2 \#'(c3 ...))])
               (syntax-case c1 (=>)
-                [(e0) #'(let ([t e0]) (if t t rest))]
-                [(e0 => e1) #'(let ([t e0]) (if t (e1 t) rest))]
-                [(e0 e1 e2 ...) #'(if e0 (begin e1 e2 ...) rest)]))]))])))
-\endschemedisplay
-
-\section{Reference Implementation\label{sec:implementation}}
-
-A reference implementation is available in source
-(\hyperlink{implementation/syntax.ss}{syntax.ss}) and expanded
-(\hyperlink{implementation/syntax.pp}{syntax.pp}) forms.
-The source form is the more readable of the two but uses
-\scheme{syntax-case} and thus must be bootstrapped using the expanded
-form.
-
-\section{Issues\label{sec:issues}}
-
-% \subsection{Possible additional features}
-
-% include
-% datum
-% with-implicit
-% syntax-error
-
-% \subsection{Interspersed definitions and expressions}
-
-\subsection{Library interaction}
-
-This SRFI does not fully address the interaction between the proposed R6RS
-library system and the macro system, nor does it specify the environment
-in which a transformer is run.
-These issues are still open to some extent, but we anticipate that the
-environment in which a transformer runs will be dictated by the set of
-libraries imported ``for syntax'' and possibly the ``meta level'' at
-which the transformer is evaluated.
-
-% The following is not an option: modules of transformer helpers need
-% "for run-time" access to syntax-case, etc., since their run time is the
-% meta time of transformer evaluation.
-
-% It may be that \scheme{syntax-case}, \scheme{syntax-rules}, and most of
-% the other features (aside from the keyword binding constructs) will be
-% relegated to a module that is imported ``for syntax only'' by default so
-% that they do not clutter the run-time name space.
-
-\subsection{Name changes}
-
-We have chosen the SRFI~72~\cite{vantonder:srfi72} names
-\scheme{syntax->datum} and \scheme{datum->syntax} for the procedures that
-Chez Scheme~\cite{Dybvig:csug7}, MzScheme~\cite{flatt:mzscheme}, and most
-other systems call \scheme{syntax-object->datum} and
-\scheme{datum->syntax-object}, because the SRFI~72 names are shorter.
-While this change is incompatible with a large amount of existing code, it
-is easy to identify and fix the incompatible code.
-
-\subsection{Top-level keyword bindings}
-
-This SRFI has nothing to say about top-level keyword bindings. 
-Implementations that allow variable definitions at top level, however, are
-encouraged to allow syntax definitions at top level as well.
-
-\subsection{Expansion of internal definitions}
-
-The operational semantics of \scheme{library} and \scheme{lambda} body
-expansion has been specified more precisely than in {\r5rs}.
-This operational description obviates the restriction below from
-Section~5.3 of {\r5rs}:
-
-\begin{quotation}
-\noindent
-Although macros may expand into definitions and syntax definitions in
-any context that permits them, it is an error for a definition or syntax
-definition to shadow a syntactic keyword whose meaning is needed to
-determine whether some form in the group of forms that contains the
-shadowing definition is in fact a definition, or, for internal definitions,
-is needed to determine the boundary between the group and the expressions
-that follow the group.
-\end{quotation}
-
-With the expansion algorithm described in this document, the expression
-
-\schemedisplay
-(let ([y 55] [z 73])
-  (define foo (lambda (x) (set! y z)))
-  (foo z)
-  y)
-\endschemedisplay
-
-evaluates to \scheme{73}.
-With the {\r5rs} restriction, however, it is an error, hence the
-expression's behavior is unspecified, if it appears within the scope of a
-keyword binding for \scheme{foo} that expands \scheme{(foo z)} into a
-definition, e.g.:
-
-\schemedisplay
-(define-syntax foo
-  (syntax-rules ()
-    [(foo x) (define x 88)]))
-\endschemedisplay
-
-The algorithm signals an error when the forms in the expression above are
-swapped, i.e.:
-
-\schemedisplay
-(let ([y 55] [z 73])
-  (foo z)
-  (define foo (lambda (x) (set! y z)))
-  y)
-\endschemedisplay
-
-In this case, the keyword \scheme{foo} identifying the definition
-\scheme{(foo z)} is redefined by the subsequent definition of
-\scheme{foo}.
-
-With internal syntax definitions, the algorithm produces similar results. 
-For example, in
-
-\schemedisplay
-(let ()
-  (define-syntax foo
-    (syntax-rules ()
-      ((foo x) (define x 37))))
-  (foo a)
-  a)
-\endschemedisplay
-
-the occurrence of \scheme{foo} in \scheme{(foo a)} is a reference to the
-local binding of \scheme{foo}, as expected, and the expression evaluates
-to \scheme{37},
-whereas in
-
-\schemedisplay
-(let ()
-  (foo a)
-  (define-syntax foo
-    (syntax-rules ()
-      ((foo x) (define x 37))))
-  a)
-\endschemedisplay
-
-the keyword \scheme{foo} identifying \scheme{(foo a)} as a definition
-is subsequently redefined, and an error is signaled.
-
-Specifying the expansion algorithm operationally, as we have done, may be
-disquieting to some, yet we believe it is preferable to the more
-declarative {\r5rs} semantics both in giving the expected meaning to
-expressions like the first of each pair above and in signaling an error
-for the second of each pair.
-
-\subsection{Fluid identifiers or bindings}
-
-Chez Scheme~\cite{Dybvig:csug7}, MzScheme~\cite{flatt:mzscheme}, and
-various other systems support a \scheme{fluid-let-syntax} construct that
-dynamically (at expansion time) rebinds an existing syntactic binding.
-SRFI~72~\cite{vantonder:srfi72} supports a more general concept of fluid
-identifiers.
-Should we include either feature in {\r6rs}?
-
-\subsection{Expand-time environment}
-
-Chez Scheme~\cite{Dybvig:csug7} and various other systems allow arbitrary bindings to be added
-to the expand-time environment and provide a mechanism for retrieving
-those bindings.
-Chez Scheme uses this feature, for example, to record information about
-record definitions for use in subordinate record definitions.
-Should we include such a feature in {\r6rs}?
-
-\subsection{Quasisyntax}
-
-MzScheme~\cite{flatt:mzscheme} provides \scheme{quasisyntax},
-\scheme{unsyntax}, and \scheme{unsyntax-splicing} forms, analogous to
-\scheme{quasiquote}, \scheme{unquote}, and \scheme{unquote-splicing}, with
-the reader syntax \scheme{#`}, \scheme{#,}, and \scheme{#,@}.
-SRFI~72~\cite{vantonder:srfi72} also includes \scheme{quasisyntax} but
-overloads \scheme{unquote} and \scheme{unquote-splicing}, which reduces
-the number of additional constructs but complicates the use of
-\scheme{quasisyntax} for generating \scheme{quasiquote} expressions.
-Should we include either variant in {\r6rs}?
-
-\subsection{Fresh syntax}
-
-SRFI~72~\cite{vantonder:srfi72} proposes that \scheme{syntax} apply a
-fresh mark, so that identifiers contained within two different
-\scheme{syntax} forms are not \scheme{bound-identifier=?}.
-(It makes an exception, however, for identifiers that appear nested within
-the same \scheme{quasisyntax} form.)
-We have opted to keep the traditional semantics in which a fresh mark is
-applied to all introduced portions of a transformer's output, as
-described in Section~\ref{sec:hygiene}.
-Ignoring the SRFI~72 \scheme{quasisyntax} exception, which muddies the
-SRFI~72 semantics somewhat, both models are straightforward, logical
-points in the design space.
-The SRFI~72 semantics allows transformation helpers defined in
-separate libraries to introduce their own unique identifier bindings.
-On the other hand, the traditional semantics requires less work in the
-common case where a macro and its transformation helpers are
-self-contained and there is no reason to introduce two different
-identifiers with the same name.
-Of less concern but still relevant, the SRFI~72 semantics is also
-potentially incompatible with a large amount of existing
-\scheme{syntax-case} code, and identifying the affected code is not
-straightforward.
-
-This SRFI's \scheme{generate-temporaries}, while intended to generate
-lists of temporaries as illustrated in the \scheme{letrec} example
-of Section~\ref{sec:generatingtemporaries}, can of course be used to generate
-single identifiers as well, and library helpers can use that feature
-to introduce their own unique bindings if necessary.
-Should we consider instead a variant of \scheme{syntax}, say
-\scheme{fresh-syntax}, that applies a unique mark to its output?
-Should we consider something more general, like MzScheme's
-\scheme{make-syntax-introducer}~\cite{flatt:mzscheme}, which creates a
-procedure that applies the same mark to a syntax object each time it is
-applied?
-Either can be used to define \scheme{generate-temporaries}, which can
-then be considered a derived procedure.
-
-\subsection{Degree of wrapping}
-
-This SRFI strikes a middle ground between two extremes in the degree
-to which syntax objects are wrapped.
-At one extreme, syntax objects are always fully wrapped.
-That is, the expander passes transformers fully wrapped input,
-transformers must return fully wrapped output to the expander,
-\scheme{syntax-case} must receive a fully wrapped input
-value, and \scheme{syntax} forms always produce fully wrapped
-output values.
-Transformers and their helpers must use \scheme{syntax-case}
-to destructure their input and \scheme{syntax} to produce their
-output.
-At the other extreme, syntax objects are mostly unwrapped: only the
-identifiers occurring within a syntax object are wrapped.
-Transformers and their helpers can use arbitrary list operations
-to destructure their input or produce their output.
-
-Each extreme has advantages. 
-The fully wrapped representation frees an implementation to choose an
-appropriate internal representation that allows the implementation to
-provide more functionality and/or efficiency. 
-In particular, it allows an implementation to avoid traversals of list-
-and vector-structured constants to record binding information in embedded
-identifiers that will end up being stripped of this information in the
-end.
-Because constants need not be traversed or copied, shared structure and
-cycles among and within constants (more precisely, parts of the input that
-will end up being constant in the final output) can be preserved for
-free.
-Also, again because constants need not be traversed or copied, the
-expander can be written in such a way that it is linear in the size of the
-input and new nodes added by transformers.
-Since fully wrapped syntax objects can be destructured only via
-syntax-case, which automates matching and syntax checking, it encourages a
-safe, high-level style of transformer code, like syntax-rules. 
-
-On the other hand, the unwrapped representation provides more flexibility
-to the programmer, who can use familiar list-processing operations, like
-map, to process portions of a transformer's input.
-
-The flexibility of the unwrapped representation can obviously lead to an
-undisciplined style in which appropriate matching is not done before a
-transformer goes grabbing for a piece of the input or ignores extra pieces
-of the input that should not be there. 
-This is counter to one of the main goals of \scheme{syntax-case}, which is
-to encourage a high-level style of transformer code, i.e., a style that is
-both more readable and robust.
-An important facet of this high-level style is that syntax checking is
-performed automatically.
-Such checking in low-level hand-written code is tedious and all too likely
-to be incomplete.
-
-Ironically, the fully wrapped representation can lead to similar problems.
-With the fully wrapped representation, programmers are compelled to use
-a procedure like MzScheme's \scheme{syntax->list}~\cite{flatt:mzscheme} to
-convert wrapped syntax objects into lists in order to map helpers over
-portions of the input.
-When \scheme{syntax->list} is applied to properly matched input, there
-is no problem, but \scheme{syntax->list} can also be applied to arbitrary
-subforms for which no matching has been done.
-
-The middle point described in this SRFI strikes a balance between the two
-extremes, yielding the advantages of both without the shortcomings.
-The \hpageref{wrappingrules}{rules for the degree to which the output of a
-syntax form is unwrapped} are the key to this middle point between the two
-extremes. 
-They allow the programmer to use list- and vector-processing operations,
-but only on portions of the transformer input that have been properly
-matched. 
-For example, if a transformer's input is matched using the following
-\scheme{syntax-case} input pattern:
-
-\schemedisplay
-(_ ([x e] ...) b1 b2 ...)
-\endschemedisplay
-
-the corresponding output expression can treat \scheme{#'(x ...)},
-\scheme{#'(e ...)}, \scheme{#'([x e] ...)}, and \scheme{#'(b1 b2 ...)} as
-lists, but cannot delve into the \scheme{x}'s, \scheme{e}'s, \scheme{b1},
-or \scheme{b2}'s without using syntax-case to further destructure them.
-
-Compared with the fully wrapped extreme, the middle point eliminates the
-need for potentially problematic helpers like \scheme{syntax->list}. 
-Because a transformer can return partially unwrapped output, it also
-eliminates the need for corresponding output constructors like
-\scheme{list->syntax}. 
-Compared with the mostly unwrapped extreme, the middle point ties the
-implementation down less without unduly restricting the programmer from
-using list- and vector-processing operations. 
-It also encourages a safer, higher-level style of transformer code.
-
-While the middle point is not as simple as either extreme and does not
-provide quite as much implementation freedom as the fully wrapped extreme,
-it is a natural and appropriate compromise between the two extremes.
-
-Note:  Programmers wishing to employ the fully unwrapped representation
-can define and use the following procedures that convert from the fully
-wrapped to the unwrapped representation and back.
-
-\schemedisplay
-(define syntax->sexpr
-  (lambda (x)
-    (syntax-case x ()
-      [(a . d) (cons (syntax->sexpr #'a) (syntax->sexpr #'d))]
-      [#(a ...)
-       (list->vector
-         (map syntax->sexpr (syntax->sexpr #'(a ...))))]
-      [_ (if (identifier? x) x (syntax->datum x))])))
-
-(define sexpr->syntax
-  (lambda (x)
-    (cond
-      [(pair? x)
-       (with-syntax ([a (sexpr->syntax (car x))]
-                     [d (sexpr->syntax (cdr x))]) 
-         #'(a . d))]
-      [(vector? x)
-       (with-syntax ([(x ...) (map sexpr->syntax (vector->list x))])
-         #'#(x ...))]
-      [else (if (identifier? x) x (datum->syntax #'* x))])))
-\endschemedisplay
-
-A library that exports versions of \scheme{define-syntax},
-\scheme{make-variable-expander}, and \scheme{syntax} to make these
-operations transparent is left as an exercise for the reader.
-
-It is cleaner and possibly much more efficient, however, for a transformer
-to traverse only those parts of the input that it needs to traverse and to
-treat as s-expressions only those parts that it has matched.
-
-\section{Acknowledgments}
-
-This SRFI was written in consultation with the full set of {\r6rs} editors: 
-Will Clinger, Kent Dybvig, Matthew Flatt, Michael Sperber, and Anton
-van~Straaten.
-
-Much of this document has been copied from or adapted from Chapter~10 of the
-\emph{Chez Scheme Version~7 User's Guide}~\cite{Dybvig:csug7}, some
-of which also appears in Chapter~8 of \emph{The Scheme Programming
-Language, 3rd edition}~\cite{Dybvig:tspl3}.
-
-\iflatex
-\def\url#1{{\let~=\schtilde\\\emph{#1}}}
-\renewcommand{\bibname}{References}
-\bibliographystyle{srfi}
-\bibliography{syntax}
-\fi
-\ifhtml
-\section{References}
-\def\url#1{\hyperlink{#1}{Online version}}
-\input{syntax.bbl}
-\fi
-
-\section{Change Log}
-
-Changes since first SRFI release.
-
-\begin{itemize}
-% Jorgen Schaefer <forcer@forcix.cx>
-\item Section~\ref{sec:specification} ``singleton identifier'' sentence
-      now refers to Section~\ref{sec:transformers} rather than
-      Section~\ref{sec:syntaxcase}.
-
-% Jorgen Schaefer <forcer@forcix.cx>
-\item A statement about constructing residual \scheme{letrec*} forms has
-      been added to the expression entry under body evaluation in
-      Section~\ref{sec:expansion}.
-
-% Arthur A. Gleckler <arthur@zurich.csail.mit.edu>
-\item An errant ``s'' has been removed from ``variable references''
-      in the Section~\ref{sec:expansion} that begins ``Expansion of
-      each.''
-
-% Arthur A. Gleckler <arthur@zurich.csail.mit.edu>
-\item The output of the expander for the Secton~\ref{sec:expander}
-      \scheme{even?}/\scheme{odd?} example has been corrected.
-
-% Andre van Tonder <andre@now.het.brown.edu>
-\item The last couple of sentences of the Section~\ref{sec:hygiene}
-      paragraph that begins with ``When a substitution'' have been
-      reworded.
-
-% Arthur A. Gleckler <arthur@zurich.csail.mit.edu>
-\item The word ``novector'' has been changed to ``nonvector'' in
-      Section~\ref{sec:syntaxobjects}.
-
-% Andre van Tonder <andre@now.het.brown.edu>
-\item The phrase ``identifiers are equal'' has been corrected to read
-      ``identifiers have the same name'' in Section~\ref{syntax-case}.
-
-% Andre van Tonder <andre@now.het.brown.edu>
-\item The description of \scheme{datum->syntax} in
-      Section~\ref{sec:conversions} no longer claims that the datum
-      argument is an ``arbitrary value.''
-      (It should be a datum.)
-
-% Andre van Tonder <andre@now.het.brown.edu>
-\item The second occurrence of ``\var{datum}'' in the Section~\ref{sec:conversions}
-      paragraph starting with ``It returns a syntax object'' has been
-      corrected to read ``\var{template-id}.''
-
-% Andre van Tonder <andre@now.het.brown.edu>
-\item The Section~\ref{sec:hygiene} description description of marking
-      now describes antimarks as an integral rather than optional part
-      of the mechanism.
-
-\item The text now says that an implementation ``can'' use marks and
-      substitutions to avoid the appearance that their use is required.
-      Any implementation would already have been free to use any
-      mechanism as long as it achieves the same results.
-\end{itemize}
-
-\section{Copyright}
-
-Copyright {\copyright} R. Kent Dybvig (2006). All Rights Reserved.
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE. 
-
-\end{document}
+                [(e0) \#'(let ([t e0]) (if t t rest))]
+                [(e0 => e1)
+                 \#'(let ([t e0]) (if t (e1 t) rest))]
+                [(e0 e1 e2 ...)
+                 \#'(if e0 
+                        (begin e1 e2 ...)
+                        rest)]))]))])))
+\end{schemenoindent}
+\end{entry}
+
+FIXME
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 

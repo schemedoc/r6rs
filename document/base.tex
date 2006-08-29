@@ -98,10 +98,64 @@ variable.  This form is equivalent to
 
 \end{itemize}
 
-
 \section{Syntax definitions}
 
-FIXME: insert section ``Keyword Bindings'' from Kent's SRFI here
+Keyword bindings may be established with {\cf define-syntax},
+{\cf let-syntax}, or {\cf letrec-syntax}.
+
+A {\cf define-syntax} form is a \hyper{definition} and may appear
+anywhere other definitions may appear.
+
+\begin{entry}{%
+\proto{define-syntax}{ \hyper{variable} \hyper{transformer spec}}{\exprtype}}
+
+This binds the keyword \hyper{variable} to the transformer specified by
+\hyper{transformer spec}, which must either be a {\cf syntax-rules}
+form (see section~\ref{syntax-rules}, or evaluate, at macro-expansion
+time, to a transformer.  (Section~\ref{transformerssection}).
+
+Keyword bindings established by {\cf define-syntax} are visible
+throughout the body in which they appear, except where shadowed by
+other bindings, and nowhere else, just like variable bindings established
+by {\cf define}.
+All bindings established by a set of internal definitions, whether
+keyword or variable definitions, are visible within the definitions
+themselves.
+
+For example, the expression
+
+\begin{scheme}
+(let ()
+  (define even?
+    (lambda (x)
+      (or (= x 0) (odd? (- x 1)))))
+  (define-syntax odd?
+    (syntax-rules ()
+      ((odd?  x) (not (even? x)))))
+  (even? 10))
+\end{scheme}
+
+is valid and should return \schtrue{}.
+FIXME: Kent: what do you mean ``should''?
+
+An implication of the left-to-right processing order
+(section~\ref{expansionchapter}) is that one internal definition can
+affect whether a subsequent form is also a definition.  For example,
+the expression
+
+\begin{scheme}
+(let ()
+  (define-syntax bind-to-zero
+    (syntax-rules ()
+      ((bind-to-zero id) (define id 0))))
+  (bind-to-zero x)
+  x) \ev 0
+\end{scheme}
+
+This behavior is irrespective of any binding for
+{\cf bind-to-zero} that might appear outside of the {\cf let}
+expression.
+\end{entry}
 
 \section{Bodies and sequences}
 \label{bodiessection}
@@ -3584,11 +3638,15 @@ un\-quo\-ta\-tion $D$} takes precedence.
 \section{Binding constructs for syntactic keywords}
 \label{bindsyntax}
 
-The {\cf let-syntax} and {\cf letrec-syntax} forms are
-analogous to {\cf let} and {\cf letrec}, but they bind
-syntactic keywords to macro transformers instead of binding variables
-to locations that contain values.  Syntactic keywords may also be
-bound at the top level of a library body; see section~\ref{define-syntax}.
+{\cf let-syntax} and {\cf letrec-syntax} are analogous to {\cf let}
+and {\cf letrec} but bind keywords rather than variables.
+Like {\cf begin}, a {\cf let-syntax} or {\cf letrec-syntax} form
+may appear in a definition context, in which case it is treated as a
+definition, and the forms in the body of the form must also be
+definitions.
+A {\cf let-syntax} or {\cf letrec-syntax} form may also appear in an
+expression context, in which case the forms within their bodies must be
+expressions.
 
 \begin{entry}{%
 \proto{let-syntax}{ \hyper{bindings} \hyper{body}}{\exprtype}}
@@ -3599,10 +3657,9 @@ bound at the top level of a library body; see section~\ref{define-syntax}.
 ((\hyper{keyword} \hyper{transformer spec}) \dotsfoo)%
 \end{scheme}
 Each \hyper{keyword} is an identifier,
-each \hyper{transformer spec} is an instance of {\cf syntax-rules}, and
-\hyper{body} is a body according to section~\ref{bodiessection}; its
-\hyper{sequence} may be empty if the {\cf let-syntax} form occurs in a
-place where a definition is allowed.  It is a
+each \hyper{transformer spec} is either an instance of {\cf syntax-rules}
+or an expression that evaluates to a transformer FIXME, and
+\hyper{body} is a body according to section~\ref{bodiessection}.  It is a
 syntax violation for \hyper{keyword} to appear more than once in the list of keywords
 being bound.
 
@@ -3656,7 +3713,10 @@ so the transformers can
 transcribe forms into uses of the macros
 introduced by the {\cf letrec-syntax} form.
 
-Internal definition in the result of expanding the \hyper{body} have
+The forms in the of a {\cf let-syntax} or {\cf letrec-syntax} are
+treated, whether in definition or expression context, as if wrapped in
+an implicit {\cf begin}.
+Thus, internal definitions in the result of expanding the \hyper{body} have
 the same region as any definition appearing in place of the {\cf
   let-syntax} form would have.
 
@@ -3681,6 +3741,31 @@ the same region as any definition appearing in place of the {\cf
            y)))        \ev  7%
 \end{scheme}
 
+The following example highlights how {\cf let-syntax}
+and {\cf letrec-syntax} differ.
+
+\begin{scheme}
+(let ((f (lambda (x) (+ x 1))))
+  (let-syntax ((f (syntax-rules ()
+                    ((f x) x)))
+               (g (syntax-rules ()
+                    ((g x) (f x)))))
+    (list (f 1) (g 1)))) \lev (1 2)
+
+(let ((f (lambda (x) (+ x 1))))
+  (letrec-syntax ((f (syntax-rules ()
+                       ((f x) x)))
+                  (g (syntax-rules ()
+                       ((g x) (f x)))))
+    (list (f 1) (g 1)))) \lev (1 1)
+\end{scheme}
+
+The two expressions are identical except that the {\cf let-syntax} form
+in the first expression is a {\cf letrec-syntax} form in the second.
+In the first expression, the {\cf f} occurring in {\cf g} refers to
+the {\cf let}-bound variable {\cf f}, whereas in the second it refers
+to the keyword {\cf f} whose binding is established by the
+{\cf letrec-syntax} form.
 \end{entry}
 
 \section{Declarations}
