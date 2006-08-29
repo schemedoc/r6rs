@@ -1217,10 +1217,11 @@ The {\cf equal?}  predicate returns \schtrue{} if and only if the
 (possibly infinite) unfoldings of its arguments into regular trees are
 equal as ordered trees.
 
-The {\cf equal?} predicate treats pairs, vectors and byte objects (see
-section~\ref{bytessection}) as nodes with outgoing edges, uses {\cf
-  string=?} to compare strings, and uses {\cf eqv?} to compare other
-nodes.
+The {\cf equal?} predicate treats pairs and vectors
+as nodes with outgoing edges, uses {\cf
+  string=?} to compare strings, uses {\cf
+  bytes=?} to compare bytes objects (see section~\ref{bytessection}),
+  and uses {\cf eqv?} to compare other nodes.
 
 \begin{scheme}
 (equal? 'a 'a)                  \ev  \schtrue
@@ -1232,7 +1233,8 @@ nodes.
 (equal? (make-vector 5 'a)
         (make-vector 5 'a))     \ev  \schtrue
 (equal? '\#vu8(1 2 3 4 5)
-        (u8-list->bytes '(1 2 3 4 5)) \lev \schtrue
+        (u8-list->bytes
+         '(1 2 3 4 5))          \ev  \schtrue
 (equal? (lambda (x) x)
         (lambda (y) y))  \ev  \unspecified
 
