@@ -1,7 +1,7 @@
 \section{Hash tables}
 \label{hashtablesection}
 
-The \deflibrary{r6rs hash-tables} library operates on hash tables.
+The \deflibrary{r6rs hash-tables} library provides hash tables.
 A \defining{hash table} is a data structure that associates keys with values.
 Any object can be used as a key, provided a \defining{hash function}
 and an equality-checking operation is available.  A hash function maps
@@ -77,38 +77,45 @@ in many calls to the hash function.
 
 \begin{entry}{%
 \proto{hash-table?}{ \var{hash-table}}}
+
 Returns \schtrue{} if \var{hash-table} is a hash table, otherwise returns \schfalse.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-size}{ \var{hash-table}}}
+
 Returns the number of keys contained in \var{hash-table} as an exact integer.
 \end{entry}
 
 \begin{entry}{%
 \proto{hash-table-ref}{ \var{hash-table} \var{key} \var{default}}}
+
 Returns the value in \var{hash-table} associated with \var{key}.
 If \var{hash-table} does not contain an association for \var{key},
 then \var{default} is returned.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-set!}{ \var{hash-table} \var{key} \var{value}}}
+
 Changes \var{hash-table} to associate \var{key} with value,
 adding a new association or replacing any existing association for \var{key}.
 Returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-delete!}{ \var{hash-table} \var{key}}}
+
 Removes any association for \var{key} within \var{hash-table}.
 Returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-contains?}{ \var{hash-table} \var{key}}}
+
 Returns \schtrue{} if \var{hash-table} contains an association
 for \var{key}, otherwise returns \schfalse{}.
 \end{entry}
 
 \begin{entry}{%
 \proto{hash-table-update!}{ \var{hash-table} \var{key} \var{procedure} \var{default}}}
+
 Applies \var{procedure} to the value in \var{hash-table} associated with \var{key}, 
 or to \var{default} if \var{hash-table} does not contain an association for \var{key}.
 The \var{hash-table} is then changed to associate \var{key} with the result of \var{procedure}.
@@ -124,6 +131,7 @@ more efficiently in cases where the implementation can avoid looking up the same
 \end{entry}
 
 \begin{entry}{\proto{hash-table-fold}{ \var{procedure} \var{hash-table} \var{init}}}
+
 For every association in \var{hash-table}, calls \var{procedure} with three arguments: the association key, the association value, and an accumulated value. The accumulated value is \var{init} for the first invocation of \var{procedure}, and for subsequent invocations of \var{procedure}, it is the return value of the previous invocation of \var{procedure}. The order of the calls to \var{procedure} is indeterminate. The return value of {\cf hash-table-fold} is the value of the last invocation of \var{procedure}. If any side effect is performed on the hash table while a {\cf hash-table-fold} operation is in progress, then the behavior of {\cf hash-table-fold} is unspecified.
 
 \end{entry}
@@ -143,12 +151,15 @@ Also, a library may choose to export a hash table which cannot be changed by cli
 \begin{entry}{%
 \proto{hash-table-clear!}{ \var{hash-table}}{}
 \rproto{hash-table-clear!}{ \var{hash-table} \var{k}}}
+
 Removes all associations from \var{hash-table}.  Returns the unspecified value.
 
 If a second argument is given, the current
 capacity of the hash table is reset to approximately \var{k} elements.
 \end{entry}
+
 \begin{entry}{\proto{hash-table-keys}{ \var{hash-table}}}
+
 Returns a list of all keys in \var{hash-table}.  The order of the list is unspecified.
 Equivalent to:
 \begin{scheme}
@@ -157,7 +168,9 @@ Equivalent to:
                  '())
 \end{scheme}
 \end{entry}
+
 \begin{entry}{\proto{hash-table-values}{ \var{hash-table}}}
+
 Returns a list of all values in \var{hash-table}.  The order of the list is unspecified.
 Equivalent to:
 \begin{scheme}
@@ -170,10 +183,12 @@ Equivalent to:
 \subsection{Inspection}
 
 \begin{entry}{\proto{hash-table-equivalence-predicate}{ \var{hash-table}}}
+
 Returns the equivalence predicate used by \var{hash-table} to compare keys.  For hash tables created with {\cf make-eq-hash-table} and {\cf make-eqv-hash-table}, returns {\cf eq?} and {\cf eqv?} respectively.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-hash-function}{ \var{hash-table}}}
+
 Returns the hash function used by \var{hash-table}.  For hash tables created by {\cf make-eq-hash-table} 
 or {\cf make-eqv-hash-table}, \schfalse{} is returned.
 
@@ -187,6 +202,7 @@ objects to a different address.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-mutable?}{ \var{hash-table}}}
+
 Returns \schtrue{} if \var{hash-table} is mutable, \schfalse{} otherwise.
 \end{entry}
 
@@ -198,18 +214,22 @@ if the keys on which they are called do not suffer side effects
 while the hash table remains in use.
 
 \begin{entry}{\proto{equal-hash}{ \var{obj}}}
+
 Returns an integer hash value for \var{obj}, based on its structure and current contents.
 \end{entry}
 
 \begin{entry}{\proto{string-hash}{ \var{string}}}
+
 Returns an integer hash value for \var{string}, based on its current contents.
 \end{entry}
 
 \begin{entry}{\proto{string-ci-hash}{ \var{string}}}
+
 Returns an integer hash value for \var{string} based on its current contents, ignoring case.
 \end{entry}
 
 \begin{entry}{\proto{symbol-hash}{ \var{symbol}}}
+
 Returns an integer hash value for \var{symbol}.
 \end{entry}
 
