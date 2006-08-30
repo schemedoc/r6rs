@@ -1,11 +1,9 @@
 \chapter{{\tt syntax-case}}
 \label{syntaxcasechapter}
 
-
 %TODO:
 %  - algebra for marks and substitutions
 %    see Waddell's dissertation or POPL '99 module paper
-%  - spell out the connection between syntax and lists somewhere
 %  - spell out scoping rules, something like:
 %    - the body of a library imported "for run" is at meta-level 0
 %    - a transformer appearing in a meta-level n expression is at
@@ -17,33 +15,15 @@
 %      of x outside of a template in T do not refer to the x
 %      bound by (define x e), while occurrences of x inside of a template
 %      in T do refer x bound by (define x e).
-%  - work fresh-syntax into main SRFI body
 
-%SRFI notes (see also Change Log section):
-% - we need a test suite
-%   (Per Bothner <per@bothner.com>)
-% - would like a shorter convenience form for syntax-case definitions
-%   (Per Bothner <per@bothner.com>)
-% - consider (syntax-lambda (stx) ---) form or similar to abstract away from
-%   single-argument procedure
-%   (Jorgen Schaefer <forcer@forcix.cx>)
-% - mixed feelings on identifier macros
-%   (various in ``Various comments'' thread)
-% - prefer that fresh-syntax be the default
-%   (Andre van Tonder <andre@now.het.brown.edu>)
-% - would like quasisyntax to be added if can't be defined as a
-%   syntax-case macro
-%   (Andre van Tonder <andre@now.het.brown.edu>)
-% - please spell out in more detail how the expander deals with ellipses
-%   in output templates.  See case example in +srfi93, message 54.
-%   (Arthur A. Gleckler <arthur@zurich.csail.mit.edu>)
-% - "Let me mention that I like the rules for unwrapping."
-%   (Andre van Tonder <andre@now.het.brown.edu>)
-% - would like Oscar's algebra updated for r6rs and included
-%   (Andre van Tonder <andre@now.het.brown.edu>)
+% specify export phases for r6rs syntax-case as "run" and "expand"
+% - can't specify "expand" only because with additive export/import
+%   "for" semantics (see https://r6rs.scheming.org/node/383#comment-1809)
+%   this would prevent a library intended for use at expand time
+%   from referencing the exports of this library at its own run time,
+%   i.e., at the expand time of the importing library
 
 The \deflibrary{r6rs syntax-case} library
-FIXME: need to state default phase
 provides
 support for writing low-level macros
 in a high-level style, with automatic syntax checking, input
@@ -175,7 +155,6 @@ Marks and substitutions together form a \defining{wrap} that is layered on the
 form being processed by the expander and pushed down toward the leaves as
 necessary.
 A wrapped form is referred to as a \defining{wrapped syntax object}.
-FIXME: syntax object hasn't been defined
 Ultimately, the wrap may rest on a leaf that represents an identifier, in
 which case the wrapped syntax object is referred to more precisely
 as an \emph{identifier}.
@@ -208,7 +187,7 @@ given in section~2.4 of Oscar Waddell's PhD thesis~\cite{Waddellphd}.
 In {\cf define-syntax} (section~\ref{define-syntax}), {\cf
   let-syntax}, and {\cf letrec-syntax} forms
 (section~\ref{let-syntax}), a binding for a syntactic keyword shall be
-a \hyper{transformer spec}.  A \hyper{transformer spec} can be an
+a \hyper{transformer spec}.  A \hyper{transformer spec} shall be an
 expression that evaluates to a transformer.
 
 A transformer is a \defining{transformation procedure} or a
@@ -241,10 +220,11 @@ procedure to {\cf make-variable-transformer}
 \begin{entry}{%
 \proto{make-variable-transformer}{ proc}{procedure}}
 
-\domain{\var{Proc} shall be a procedure  FIXME  What should it do?.}
+\domain{\var{Proc} shall be a procedure that accepts one argument,
+a wrapped syntax object representing the input, and return a syntax
+object representing the output.
 
-{\cf make-variable-transformer} returns a transformer procedure that
-allows the expander to recognize that it is a variable transformer.
+{\cf make-variable-transformer} returns a variable transformer.
 \end{entry}
 
 \section{Syntax objects}
@@ -1128,8 +1108,6 @@ The {\cf identifier-syntax} form may be defined in terms of {\cf syntax-case},
 \end{schemenoindent}
 \end{entry}
 
-FIXME: Kent: I replaced expr1 expr2 etc. by body
- 
 \begin{entry}{%
 \pproto{(with-syntax ((\hyper{pattern} \hyper{expression}) \dotsfoo) \hyper{body})}{\exprtype}}
 \mainschindex{with-syntax}
@@ -1154,7 +1132,7 @@ follows.
     (syntax-case x ()
       ((\_ ((p e0) ...) e1 e2 ...)
        (syntax (syntax-case (list e0 ...) ()
-                 ((p ...) (begin e1 e2 ...))))))))
+                 ((p ...) (let () e1 e2 ...))))))))
 \end{scheme}
 
 The following definition of {\cf cond} demonstrates the use of
