@@ -12,8 +12,8 @@ built-in procedure.  An entry begins with one or more header lines of the form
 
 \noindent\pproto{\var{template}}{\var{category}}\unpenalty
 
-If \var{category} is ``\exprtype'', the entry describes an expression
-type, and the template gives the syntax of the expression type.  Even
+If \var{category} is ``\exprtype'', the entry describes a 
+special syntactic form, and the template gives the syntax of form.  Even
 though the template is written in a notation similar to a right-hand
 side of the BNF rules in chapter~\ref{readsyntaxchapter}, it describes
 the set of forms equivalent to the forms matching the
@@ -90,16 +90,16 @@ $$
 \var{q}&rational number\\
 \var{n}&integer\\
 \var{k}&exact non-negative integer\\
-\var{octet}&exact non-negative integer in $$\{0, \ldots, 255\}\\
+\var{octet}&exact integer in $$\{0, \ldots, 255\}\\
+\var{bytes}&exact integer in $$\{-128, \ldots, 127\}\\
 \var{char}&character (see section~\ref{charactersection})\\
 \var{pair}&pair (see section~\ref{listsection})\\
-\var{list}&list (see section~\ref{listsection})\\
+\var{list}&list (see section~\ref{listargumentssection})\\
 \var{vector}&vector (see section~\ref{vectorsection})\\
-\var{datum}&datum (see section~\ref{readsyntaxsection})\\
+\var{datum}&datum value (see section~\ref{readsyntaxsection})\\
 \var{string}&string (see section~\ref{stringsection})\\
 \var{condition}&condition (see section~\ref{conditionssection})\\
-\var{bytes}&bytes object (see section~\ref{bytessection})\\
-\var{hash-table}&hash table (see section~\ref{hashtablesection})\\
+\var{bytes}&bytes object (see section~\ref{bytessection})
 \end{tabular}
 $$
 
@@ -124,6 +124,7 @@ the \var{category} describes the type of that value.  The header line
 indicates that {\cf\&who} is a condition type.
 
 \section{List arguments}
+\label{listargumentssection}
 
 List arguments are immutable in programs that do not make use of the
 \library{r6rs mutable-pairs} library.  In such programs, a procedure accepting a list as an
