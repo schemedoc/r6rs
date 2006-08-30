@@ -1187,6 +1187,53 @@ one-armed {\cf if} expressions where appropriate.
 \end{schemenoindent}
 \end{entry}
 
+\section{Syntax violations}
+
+\begin{entry}{%
+\proto{syntax-violation}{ who message form}{procedure}
+\rproto{syntax-violation}{ who message form subform}{procedure}}
+
+\domain{\var{Name} must be \schfalse{} or a string or a symbol.
+  \var{Message} must be a string.
+  \var{Form} must be a syntax object or a datum value.
+  \var{Subform} must be a syntax object or a datum value.}
+The {\cf syntax-violation} procedure raises an exception, reporting 
+a syntax violation.  
+The \var{who} argument should describe the macro transformer that
+detected the exception.  The \var{message} argument should describe
+the violation.
+The \var{form} argument is the erroneous source syntax
+object or a datum value representing a form. The optional \var{subform} argument is a syntax
+object or datum value representing a form that more precisely locates the
+violation.
+
+If \var{who} is \schfalse{}, {\cf syntax-violation} will attempt to
+infer an appropriate value for the condition object (see below) as
+follows:  When \var{form} is either an identifier or a
+list-structured syntax object containing an identifier as its first element, then
+the inferred value is the identifier's symbol.
+Otherwise, no value for \var{who} will be provided as part of the
+condition object.
+
+The condition object provided with the exception (see
+chapter~\ref{exceptionsconditionschapter}) has the following condition types:
+%
+\begin{itemize}
+\item If \var{who} is not \schfalse or can be inferred, the condition has condition type
+  {\cf \&who}, with \var{who} as the value of the {\cf who} field.  In
+  that case, \var{who} should identify the procedure or entity that
+  detected the exception.  If it is \schfalse, the condition does not
+  have condition type {\cf \&who}.
+\item The condition has condition type {\cf \&message}, with
+  \var{message} as the value of the {\cf message} field.
+\item The condition has condition type {\cf \&syntax-violation} 
+  with \var{form} as the value of the {\cf form} field,
+  and \var{subform} as the value of the {\cf subform} field.
+  If \var{subform} is not provided, the value of the {\cf subform}
+  field is \schfalse.
+\end{itemize}
+\end{entry}
+
 \section{{\tt quasisyntax}}
 
 \begin{entry}{%
