@@ -366,7 +366,7 @@ Returns the two fixnum results of the following computation:
 \begin{entry}{%
 \proto{fixnum-not}{ \var{fx}}{procedure}}
 
-This procedure returns the unique fixnum that is congruent
+Returns the unique fixnum that is congruent
 mod $2^w$ to the one's-complement of its argument.
 \end{entry}
 
@@ -386,7 +386,7 @@ operation.
 \begin{entry}{%
 \proto{fixnum-if}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-This procedure return the fixnum result of the following
+Returns the fixnum result of the following
 computation:
 \begin{scheme}
 (fixnum-ior (fixnum-and \vari{fx} \varii{fx})
@@ -406,7 +406,7 @@ representation of \var{fx}.
 \begin{entry}{%
 \proto{fixnum-length}{ \var{fx}}{procedure}}
 
-This procedure returns the fixnum result of the following
+Returns the fixnum result of the following
 computation:
 \begin{scheme}
 (do ((result 0 (+ result 1))
@@ -422,7 +422,7 @@ computation:
 \begin{entry}{%
 \proto{fixnum-first-bit-set}{ \var{fx}}{procedure}}
 
-This procedure returns the index of the least significant $1$ bit in
+Returns the index of the least significant $1$ bit in
 the two's complement representation of their argument.  If the
 argument is $0$, then $-1$ is returned.
 %
@@ -436,7 +436,7 @@ argument is $0$, then $-1$ is returned.
 \begin{entry}{%
 \proto{fixnum-bit-set?}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be non-negative.}  This procedure returns the
+\domain{\varii{fx} shall be non-negative.}  The {\cf fixnum-bit-set?} procedure returns the
 fixnum result of the following computation:
 \begin{scheme}
 (not (fixnum-zero?
@@ -449,7 +449,7 @@ fixnum result of the following computation:
 \begin{entry}{%
 \proto{fixnum-copy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be non-negative.}  This procedure
+\domain{\varii{fx} shall be non-negative.}  The {\cf fixnum-copy-bit} procedure
 returns the fixnum result of the following computation:
 \begin{scheme}
 (let* ((mask (fixnum-logical-shift-left 1 \varii{fx})))
@@ -462,7 +462,7 @@ returns the fixnum result of the following computation:
 \begin{entry}{%
 \proto{fixnum-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{Fx} and \variii{fx} shall be non-negative.}  This procedure
+\domain{\varii{Fx} and \variii{fx} shall be non-negative.}  The {\cf fixnum-bit-field} procedure
 returns the fixnum result of the following computation:
 %
 \begin{scheme}
@@ -477,7 +477,8 @@ returns the fixnum result of the following computation:
 \begin{entry}{%
 \proto{fixnum-copy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-\domain{The second and third arguments shall be non-negative.} This procedure
+\domain{The second and third arguments shall be non-negative.} The
+{\cf fixnum-copy-bit-field} procedure
 returns the fixnum result of the following computation:
 \begin{scheme}
 (let* ((to    \vari{fx})
@@ -519,13 +520,13 @@ the following computation:
 \begin{entry}{%
 \proto{fixnum-logical-shift-left}{ \vari{fx} \varii{fx}}{procedure}}
 
-This procedure behaves the same as {\cf fixnum-arithmetic-shift-left}.
+Behaves the same as {\cf fixnum-arithmetic-shift-left}.
 \end{entry}
 
 \begin{entry}{%
 \proto{fixnum-logical-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{Fx} shall be non-negative.}  This procedure returns
+\domain{\varii{Fx} shall be non-negative.}  The {\cf fixnum-logical-shift-right} procedure returns
 the result of the following computation:
 \begin{scheme}
 (let* ((n       \vari{fx})
@@ -554,7 +555,7 @@ so they have no {\cf fx} equivalents.
 \proto{fixnum-rotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
 \domain{\varii{Fx}, \variii{fx}, and \variv{fx} shall be non-negative.}
-This procedure returns the result of the following computation:
+The {\cf fixnum-rotate-bit-field} procedure returns the result of the following computation:
 \begin{scheme}
 (let* ((n     \vari{fx})
        (start \varii{fx})
@@ -745,7 +746,7 @@ This performs the same operation as {\cf fixnum-first-bit-set}.
 \proto{fxbit-set?}{ \var{fx} \varii{fx}}{procedure}}
 
 \domain{\varii{fx} shall be non-negative and less than {\cf
-  (fixnum-width)}.}  This procedure
+  (fixnum-width)}.}  The {\cf fxbit-set?} procedure
 returns the same result returned by {\cf fixnum-bit-set?}.
 \end{entry}
 
@@ -754,7 +755,7 @@ returns the same result returned by {\cf fixnum-bit-set?}.
 
 \domain{\varii{fx} shall be non-negative and less than {\cf
   (fixnum-width)}. \variii{fx} shall be 0 or
-1.}  This procedure returns the same result returned by {\cf
+1.}  The {\cf fxcopy-bit} procedure returns the same result returned by {\cf
   fixnum-copy-bit}.
 \end{entry}
 
@@ -763,7 +764,7 @@ returns the same result returned by {\cf fixnum-bit-set?}.
 
 \domain{\varii{fx} and \variii{fx} shall be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} shall be less than or
-    equal to \variii{fx}.}  This procedure returns the same result
+    equal to \variii{fx}.}  The {\cf fxbit-field} procedure returns the same result
   returned by {\cf fixnum-bit-field}.
 \end{entry}
 
@@ -772,7 +773,7 @@ returns the same result returned by {\cf fixnum-bit-set?}.
 
 \domain{\varii{fx} and \variii{fx} shall be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, or \varii{fx} shall be less than or
-    equal to \variii{fx}.}  This procedure returns the same result
+    equal to \variii{fx}.}  The {\cf fxcopy-bit-field} procedure returns the same result
   returned by {\cf fixnum-copy-bit-field}.
 \end{entry}
 
@@ -807,7 +808,7 @@ raised.
 
 \domain{\varii{fx}, \variii{fx}, and \variv{fx} shall be non-negative
   and less than {\cf (fixnum-width)}.  \variv{fx} shall be less than
-  the difference between \variii{fx} and \variii{fx}.}  This procedure
+  the difference between \variii{fx} and \variii{fx}.}  The {\cf fxrotate-bit-field} procedure
 returns the same result as the {\cf fixnum-rotate-bit-field}
 procedure.
 \end{entry}
@@ -817,7 +818,7 @@ procedure.
 
 \domain{\varii{fx} and \variii{fx} shall be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} shall be less than or
-  equal to \variii{fx}.}  This procedure returns the same result as
+  equal to \variii{fx}.}  The {\cf fxreverse-bit-field} procedure returns the same result as
 the {\cf fixnum-reverse-bit-field} procedure.
 \end{entry}
 
@@ -1235,7 +1236,7 @@ type {\cf\&contract} if a divisor is $0$.
 \begin{entry}{%
 \proto{exact-abs}{ ef}{procedure}}
 
-This procedure returns the absolute value of its argument.
+Returns the absolute value of its argument.
 \end{entry}
 
 \begin{entry}{%
@@ -1392,7 +1393,7 @@ computation:
 \begin{entry}{%
 \proto{exact-first-bit-set}{ ei}{procedure}}
 
-This procedures returns the index of the least significant $1$
+Returns the index of the least significant $1$
 bit in the two's complement representation of its argument.
 If the argument is $0$, then $-1$ is returned.
 \begin{scheme}
@@ -1421,7 +1422,7 @@ Otherwise returns the result of the following computation:
 
 \domain{\varii{Ei} shall be non-negative, and \variii{ei}
 shall be either $0$ or $1$.}
-This procedure returns the result of the following computation:
+The {\cf exact-copy-bit} procedure returns the result of the following computation:
 \begin{scheme}
 (let* ((mask (exact-arithmetic-shift-left 1 \varii{ei})))
   (exact-if mask
@@ -1452,7 +1453,7 @@ procedure returns the result of the following computation:
 
 \domain{\varii{Fx} and \variii{fx} shall be non-negative,
 and \varii{fx} shall be less than or equal to \variii{fx}.}
-This procedure returns the result of the following computation:
+The {\cf exact-copy-bit-field} procedure returns the result of the following computation:
 %
 \begin{scheme}
 (let* ((to    \vari{ei})
@@ -1525,7 +1526,7 @@ The procedure returns the result of the following computation:
 \proto{exact-reverse-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
 \domain{\varii{ei} and \variii{ei} shall be non-negative, and
-  \varii{ei} shall be less than or equal to \variii{ei}.}  This procedure returns
+  \varii{ei} shall be less than or equal to \variii{ei}.}  The {\cf exact-reverse-bit-field} procedure returns
 the result obtained from the first argument by reversing the bit field
 specified by the second and third arguments.
 \begin{scheme}
@@ -1636,7 +1637,7 @@ of their argument.
 \begin{entry}{%
 \proto{inexact-abs}{ in}{procedure}}
 
-This procedure returns the absolute value of its argument.
+Returns the absolute value of its argument.
 \end{entry}
 
 \begin{entry}{%
