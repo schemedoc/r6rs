@@ -707,7 +707,7 @@ above.
 With this definition of {\cf let}:
 
 \begin{scheme}
-(let ([a 3] [a 4]) (+ a a)) \lev \exception{\&syntax-error}
+(let ([a 3] [a 4]) (+ a a)) \lev \exception{\&syntax-violation}
 \end{scheme}
 
 However,
@@ -760,10 +760,10 @@ For example,
 
 \begin{scheme}
 (let ([else \schfalse{}])
-  (case 0 [else (write "oops")]))
+  (case 0 [else (write "oops")])) \lev \exception{\&syntax-violation}
 \end{scheme}
 
-results in a syntax error, since {\cf else} is bound
+since {\cf else} is bound
 lexically and is
 therefore not the same {\cf else} that appears in the definition of
 {\cf case}.
