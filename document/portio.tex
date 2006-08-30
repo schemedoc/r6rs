@@ -713,9 +713,11 @@ with the port.
   object from the output written to it, such as the ports created by
   {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
 The decoding of the bytes object associated with \var{output-port} is returned
-as a freshly allocated string.  The decoding is according to
-\var{transcoder} if it is specified, and UTF-8 if not.
-(FIXME: Shouldn't the port's transcoder be considered?)
+as a string.  That decoding is according to
+\var{transcoder} if it is specified.  If it is not specified,
+the decoding is according to the transcoder associated with the port.
+If no transcoder is associated with the port, the decoding is
+according to UTF-8.
 In either
 case, decoding errors are always handled analogously to the {\cf
   replace} error-handling mode: the first byte of each invalid
@@ -734,9 +736,11 @@ Creates an output port that accumulates a bytes object from the output
 written to it, and calls \var{proc} with that port as an argument.
 When \var{proc} returns for the first time, the port is closed and the
 decoding of the bytes object associated with the port is returned as
-a freshly allocated string.  The decoding is according to
-\var{transcoder} if it is specified, and UTF-8 if not.
-(FIXME: Shouldn't the port's transcoder be considered?)
+a string.  That decoding is according to
+\var{transcoder} if it is specified.  If it is not specified,
+the decoding is according to the transcoder associated with the port.
+If no transcoder is associated with the port, the decoding is
+according to UTF-8.
 In either
 case, decoding errors are always handled analogously to the {\cf
   replace} error-handling mode: the first byte of each invalid
