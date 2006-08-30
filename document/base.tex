@@ -161,8 +161,8 @@ expression.
 \label{bodiessection}
 
 \index{body}The body \hyper{body} of a \ide{lambda}, \ide{let}, \ide{let*},
-\ide{let-values}, \ide{let*-values}, \ide{letrec*}, \ide{letrec},
-\ide{let-syntax}, or \ide{letrec-syntax} expression or that of a
+\ide{let-values}, \ide{let*-values}, \ide{letrec*}, \ide{letrec}
+expression or that of a
 definition with a body has the following form:
 
 {\cf \arbno{\hyper{declaration}} \arbno{\hyper{definition}} \hyper{sequence}}
@@ -171,12 +171,7 @@ definition with a body has the following form:
 
 \hyper{Sequence} has the following form:
 
-{\cf \arbno{\hyper{expression}}}
-
-In most contexts, a \hyper{sequence} shall contain at least one
-\hyper{expression}.  The only exceptions are the bodies of {\cf
-  let-syntax} and {\cf letrec-syntax} forms that occur in a place
-where a definition is allowed.
+{\cf \atleastone{\hyper{expression}}}
 
 Definitions may occur after the declarations in a \hyper{body}.
 Such definitions are known as {\em internal definitions}
@@ -210,29 +205,10 @@ example is equivalent to
     (foo (+ x 3))))%
 \end{scheme}
 
-In the body of a {\cf let-syntax} or {\cf letrec-syntax} form, the
-region of the binding of an internal definition is the same as that of
-an internal definition that would appear in place of the {\cf
-  let-syntax} or {\cf letrec-syntax} form.  That is, a {\cf
-  let-syntax} or {\cf letrec-syntax} form does not establish a new
-region for internal definitions appearing in its body; the expanded
-body is spliced into the surrounding program in the place of the {\cf
-  let-syntax} or {\cf letrec-syntax} form.
-
-\begin{scheme}
-(let ()
-  (let-syntax
-    ((def (syntax-rules ()
-            ((def stuff ...) (define stuff ...)))))
-    (def foo 42))
-  foo) \ev 42
-\end{scheme}
-
 Wherever an internal definition may occur,
 {\tt(begin \hyperi{definition} \dotsfoo)}
 is equivalent to the sequence of definitions
 that form the body of the \ide{begin}.
-
 
 \section{Expressions}
 \label{expressionsection}
@@ -921,6 +897,9 @@ output.
  \>{\em and prints}  4 plus 1 equals 5%
 \end{scheme}
 
+The {\cf begin} form, depending on context, can also express splicing,
+see section~\ref{bodiessection}.
+
 The following macro, which uses {\cf syntax-rules} (see
 section~\ref{syntaxrulessection}), defines {\cf begin} in terms of {\cf
   lambda}:
@@ -934,8 +913,9 @@ section~\ref{syntaxrulessection}), defines {\cf begin} in terms of {\cf
 
 The following alternative expansion for {\cf begin} does not make use of
 the ability to write more than one expression in the body of a lambda
-expression.  In any case, note that these rules apply only if the body
-of the {\cf begin} contains no definitions.
+expression.  In any case, note that these rules apply only if the {\cf
+  begin} acts as a sequencing form, but not when it acts as a splicing
+form (see section~\ref{bodiessection}).
 
 \begin{scheme}
 (define-syntax begin
@@ -3660,7 +3640,8 @@ expression context, in which case the forms within their bodies shall be
 expressions.
 
 \begin{entry}{%
-\proto{let-syntax}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+\proto{let-syntax}{ \hyper{bindings} \hyperi{expression} \hyperii{expression} \dotsfoo}{\exprtype}
+\rproto{let-syntax}{ \hyper{bindings} \hyperi{definition} \dotsfoo}{\exprtype}}
 
 \syntax
 \hyper{Bindings} should have the form
@@ -3669,19 +3650,24 @@ expressions.
 \end{scheme}
 Each \hyper{keyword} is an identifier,
 each \hyper{transformer spec} is either an instance of {\cf syntax-rules}
-or an expression that evaluates to a transformer (see chapter~\ref{syntaxcasechapter}), and
-\hyper{body} is a body according to section~\ref{bodiessection}.  It is a
+or an expression that evaluates to a transformer (see
+chapter~\ref{syntaxcasechapter}).  It is a
 syntax violation for \hyper{keyword} to appear more than once in the list of keywords
 being bound.
 
 \semantics
-The \hyper{body} is expanded in the syntactic environment
+The \hyper{expression}s or \hyper{definitions}s are expanded in the syntactic environment
 obtained by extending the syntactic environment of the
 {\cf let-syntax} form with macros whose keywords are
 the \hyper{keyword}s, bound to the specified transformers.
-Each binding of a \hyper{keyword} has \hyper{body} as its region.
+Each binding of a \hyper{keyword} has the \hyper{expression}s or
+\hyper{definition}s as its region.
 
-Internal definition in the result of expanding the \hyper{body} have
+The \hyper{expression}s or \hyper{definition}s of a {\cf let-syntax}
+form are treated, whether in definition or expression context, as if
+wrapped in an implicit {\cf begin}.
+
+Internal definition in the result of expanding the \hyper{definition}s have
 the same region as any definition appearing in place of the {\cf
   let-syntax} form would have.
 
@@ -3701,6 +3687,13 @@ the same region as any definition appearing in place of the {\cf
       (m))))                       \ev  outer%
 
 (let ()
+  (let-syntax
+    ((def (syntax-rules ()
+            ((def stuff ...) (define stuff ...)))))
+    (def foo 42))
+  foo) \ev 42
+
+(let ()
   (let-syntax ())
   5) \ev 5
 \end{scheme}
@@ -3708,26 +3701,30 @@ the same region as any definition appearing in place of the {\cf
 \end{entry}
 
 \begin{entry}{%
-\proto{letrec-syntax}{ \hyper{bindings} \hyper{body}}{\exprtype}}
+\pproto{(letrec-syntax \hyper{bindings}}{\exprtype}
+{\tt\hspace*{4em}\hyperi{expression} \hyperii{expression} \dotsfoo)}\\
+\proto{letrec-syntax}{ \hyper{bindings} \hyperi{definition} \dotsfoo}{\exprtype}}
 
 \syntax
 Same as for {\cf let-syntax}.
 
 \semantics
- The \hyper{body} is expanded in the syntactic environment obtained by
+ The \hyper{expression}s or \hyper{definition}s are
+expanded in the syntactic environment obtained by
 extending the syntactic environment of the {\cf letrec-syntax}
 form with macros whose keywords are the
 \hyper{keyword}s, bound to the specified transformers.
 Each binding of a \hyper{keyword} has the \hyper{bindings}
-as well as the \hyper{body} within its region,
+as well as the \hyper{expression}s or \hyper{definition}s within its region,
 so the transformers can
 transcribe forms into uses of the macros
 introduced by the {\cf letrec-syntax} form.
 
-The forms in the of a {\cf let-syntax} or {\cf letrec-syntax} are
-treated, whether in definition or expression context, as if wrapped in
-an implicit {\cf begin}.
-Thus, internal definitions in the result of expanding the \hyper{body} have
+The \hyper{expression}s or \hyper{definition}s of a {\cf letrec-syntax}
+form are treated, whether in definition or expression context, as if
+wrapped in an implicit {\cf begin}.
+
+Thus, internal definitions in the result of expanding the \hyper{definition}s have
 the same region as any definition appearing in place of the {\cf
   let-syntax} form would have.
 
