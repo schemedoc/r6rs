@@ -372,10 +372,12 @@ values are unspecified.
 \begin{entry}{%
 \proto{open-bytes-reader}{ bytes}{procedure}}
 
-Returns a \defining{bytes reader} that uses a copy of
+Returns a \defining{bytes reader} that uses 
 \var{bytes}, a bytes object, as its contents. The result reader supports
 the {\cf reader-get-position}, {\cf reader-set-position!}, and \var{reader-end-position}
 operations.
+The effect of modifying the contents of \var{bytes}, after 
+{\cf open-bytes-reader} has been called, on the reader is unspecified.
 \end{entry}
 
 \begin{entry}{%
@@ -628,10 +630,21 @@ operations.
 \begin{entry}{%
 \proto{writer-bytes}{ writer}{procedure}}
    
-The \var{writer} argument must be a bytes writer. 
-Returns a newly allocated bytes object containing the data written to
+\domain{The \var{writer} argument must be a bytes writer.}
+Returns a bytes object containing the data written to
 writer in sequence. Doing this in no way invalidates the writer or
 change its store.
+The effect of modifying the contents of the returned bytes object
+on \var{writer} is unspecified.
+\end{entry}
+
+\begin{entry}{%
+\proto{clear-writer-bytes!}{ writer}{procedure}}
+
+\domain{\var{Writer} must be a bytes writer.}
+The {\cf clear-writer-bytes!} 
+procedure clears the bytes object associated with \var{writer},
+associating it with an empty bytes object.
 \end{entry}
 
 \begin{entry}{%

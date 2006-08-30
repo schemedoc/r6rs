@@ -391,11 +391,13 @@ with the returned port.
 \proto{open-bytes-input-port}{ bytes}{procedure}
 \rproto{open-bytes-input-port}{ bytes transcoder}{procedure}}
    
-This returns an input port whose bytes are drawn from a copy of the
+This returns an input port whose bytes are drawn from the
 bytes object \var{bytes}.
-
 If \var{transcoder} is specified, it becomes the transcoder associated
 with the returned port.
+
+The effect of modifying \var{bytes}, after {\cf open-bytes-input-port}
+has been called, on the returned port is unspecified.
 \end{entry}
 
 \begin{entry}{%
@@ -407,6 +409,8 @@ This returns an input port whose bytes are drawn from an encoding of
 UTF-8.  If \var{transcoder} is specified, the encoding is according to
 \var{transcoder}.  Also, \var{transcoder} becomes the transcoder
 associated with the returned port.
+The effect of modifying \var{string}, after {\cf open-string-input-port}
+has been called, on the returned port is unspecified.
 \end{entry}
 
 \begin{entry}{%
@@ -679,8 +683,10 @@ The {\cf open-string-output-port} procedure is the same as {\cf
 \domain{\var{output-port} must be a port that accumulates a bytes
   object from the output written to it, such as the ports created by
   {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
-This returns a copy of the bytes object that has been accumulated with
+This returns a bytes object containing the output that has been accumulated with
 \var{output-port} so far.
+The effect of modifying the returned bytes object on \var{output-port}
+is unspecified.
 \end{entry}
 
 \begin{entry}{%
@@ -711,6 +717,9 @@ In either
 case, decoding errors are always handled analogously to the {\cf
   replace} error-handling mode: the first byte of each invalid
 encoding is skipped and decoded as the U+FFFD replacement character.
+
+The effect of modifying the returned string on \var{output-port}
+is unspecified.
 \end{entry}
 
 \begin{entry}{%
@@ -737,7 +746,7 @@ associated with the port.
 \proto{clear-bytes-output-port!}{ output-port}{procedure}
 \proto{clear-string-output-port!}{ output-port}{procedure}}
 
-\domain{\var{output-port} must be a port that accumulates a bytes
+\domain{\var{Output-port} must be a port that accumulates a bytes
   object from the output written to it, such as the ports created by
   {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
 The {\cf clear-bytes-output-port!} and {\cf clear-string-output-port!}
