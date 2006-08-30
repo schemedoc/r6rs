@@ -835,8 +835,10 @@ Which external representation is chosen is implementation-dependent.
 \begin{entry}{%
 \proto{open-file-input/output-port}{ filename}{procedure}
 \rproto{open-file-input/output-port}{ filename file-options}{procedure}
-\rproto{open-file-input/output-port}{ filename file-options buffer-mode}{procedure}
-\rproto{open-file-input/output-port}{ filename file-options buffer-mode transcoder}{procedure}}
+\pproto{(open-file-input/output-port \var{filename}}{procedure}
+{\tt\hspace*{4em}\var{file-options} \var{buffer-mode})}\\
+\pproto{(open-file-input/output-port \var{filename}}{procedure}
+{\tt\hspace*{4em}\var{file-options} \var{buffer-mode} \var{transcoder})}}
    
 This returns a single port that is both an input port and an output
 port, for the named file and options (which default to {\cf
@@ -865,7 +867,8 @@ with the returned port.
 \begin{entry}{%
 \proto{open-writer-output-port}{ writer}{procedure}
 \rproto{open-writer-output-port}{ writer buffer-mode}{procedure}
-\rproto{open-writer-output-port}{ writer buffer-mode transcoder}{procedure}}
+\pproto{(open-writer-output-port \var{writer}}{procedure}
+{\tt\hspace*{4em}\var{buffer-mode} \var{transcoder})}}
    
 Returns an output port connected to the writer \var{writer}.
 \var{Buffer-mode} optionally specifies the buffer mode of the port; it
@@ -875,7 +878,8 @@ with the returned port.
 \end{entry}
 
 \begin{entry}{%
-\proto{open-reader/writer-input/output-port}{ reader writer buffer-mode transcoder}{procedure}}
+\pproto{(open-reader/writer-input/output-port}{procedure}
+{\tt\hspace*{4em}\var{reader} \var{writer} \var{buffer-mode} \var{transcoder})}}
 
 Returns a combined input/output port connected to \var{reader} for
 reading operations and to \var{writer} for writing operations. 
