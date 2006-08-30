@@ -247,10 +247,10 @@ section~\ref{primitiveexpressionsection}.
 \label{literalsection}
 
 \begin{entry}{%
-\proto{quote}{ \hyper{S-expression}}{\exprtype}}
+\proto{quote}{ \hyper{datum}}{\exprtype}}
 
-{\cf (quote \hyper{S-expression})} evaluates to the datum
-denoted by \hyper{S-expression}.
+{\cf (quote \hyper{datum})} evaluates to the datum
+denoted by \hyper{datum}.
 (See
 section~\ref{readsyntaxsection}.).  This notation is used to include literal
 constants in Scheme code.
@@ -261,8 +261,8 @@ constants in Scheme code.
 (quote (+ 1 2))               \ev  (+ 1 2)%
 \end{scheme}
 
-As noted in section~\ref{quotesection}, {\cf (quote \hyper{S-expression})}
-may be abbreviated as \singlequote\hyper{S-expression}:
+As noted in section~\ref{quotesection}, {\cf (quote \hyper{datum})}
+may be abbreviated as \singlequote\hyper{datum}:
 
 \begin{scheme}
 '"abc"               \ev  "abc"
@@ -488,10 +488,10 @@ appendix~\ref{derivedformsappendix}.
 \hyper{Key} may be any expression.  Each \hyper{clause} should have
 the form
 \begin{scheme}
-((\hyperi{S-expression} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)\rm,%
+((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)\rm,%
 \end{scheme}
-where each \hyper{S-expression} is an external representation of some object.
-The datums denoted by the \hyper{S-expression}s must not be distinct.
+where each \hyper{datum} is an external representation of some object.
+The datums denoted by the \hyper{datum}s must not be distinct.
 The last \hyper{clause} may be an ``else clause,'' which has the form
 \begin{scheme}
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
@@ -501,7 +501,7 @@ The last \hyper{clause} may be an ``else clause,'' which has the form
 \semantics
 A {\cf case} expression is evaluated as follows.  \hyper{Key} is
 evaluated and its result is compared against each the datum denoted by
-each \hyper{S-expression}.  If the
+each \hyper{datum}.  If the
 result of evaluating \hyper{key} is equivalent (in the sense of
 {\cf eqv?}; see section~\ref{eqv?}) to a datum, then the
 expressions in the corresponding \hyper{clause} are evaluated from left
@@ -4173,7 +4173,7 @@ are shown here.
 {\rm where}
 
 \meta{cond clause} \: (\meta{test} \meta{tail sequence})
-\meta{case clause} \: ((\arbno{\meta{S-expression}}) \meta{tail sequence})
+\meta{case clause} \: ((\arbno{\meta{datum}}) \meta{tail sequence})
 
 \meta{tail body} \: \arbno{\meta{declaration}} \arbno{\meta{definition}} \meta{tail sequence}
 \meta{tail sequence} \: \arbno{\meta{expression}} \meta{tail expression}

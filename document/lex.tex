@@ -11,37 +11,47 @@ The syntax of Scheme programs is organized in three levels:
   into a sequence of lexemes,
 \item the \textit{read syntax}, formulated in terms of the lexical
   syntax, that structures the lexeme sequence as a sequence of
-  \textit{S-expressions\index{S-expression}}, where an S-expression is
+  \textit{syntactic datums\mainindex{datum}\mainindex{syntactic
+      datum}}, where a syntactic datum is
     a recursively structured entity,
 \item the \textit{program syntax} formulated in terms of the read
   syntax, imposing further structure and assigning meaning to
-  S-expressions.
+  syntactic datums.
 \end{enumerate}
 %
-S-expressions (also called \textit{external
+Syntactic datums (also called \textit{external
   representations\index{external representation}}) double
-as a notation for data, and Scheme's FIXME library provides procedures
-for reading and writing S-expressions, converting between their
-textual representation and the corresponding objects.  Also, an
-S-expression can be used in a program to obtain the corresponding
-object using a {\cf quote} form (see section~\ref{quote}).
+as a notation for data, and Scheme's \library{r6rs i/o ports} library provides procedures
+for reading and writing syntactic datums, converting between their
+textual representation and the corresponding values. 
+A
+syntactic datum can be used in a program to obtain the corresponding
+value using {\cf quote} (see section~\ref{quote}).
 
-Moreover, valid Scheme expressions form a subset of the S-expressions.
+Moreover, valid Scheme expressions form a subset of the syntactic datums.
 Consequently, Scheme's syntax has the property that any sequence of
-characters that is an expression is also an S-expression representing
+characters that is an expression is also a syntactic datum representing
 some object.  This can lead to confusion, since it may not be obvious
 out of context whether a given sequence of characters is intended to
 denote data or program. It is also a source of power, since it
 facilitates writing programs such as interpreters and compilers that
 treat programs as data (or vice versa).
+A syntactic datum occurring in program text is often called a \defining{form}.
 
-Note that an object that corresponds to an S-expression (a so-called
-\defining{datum}) may also correspond to other S-expressions.  For example, the
-integer 28 also has representations ``{\tt \#e28.000}'' and
-``{\tt\#x1c}''; a list containing the integers 8 and 13 has representations
- ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\ (13 .\ ()))}'', and more (see
-section~\ref{listsection}).  S-expressions that denote equal
-objects are always equivalent as forms of a program.
+Note that several syntactic datums may represent the same object, a
+so-called \defining{datum value}.
+For example, both``{\tt \#e28.000}'' and
+``{\tt\#x1c}'' are syntactic datums representing the exact integer 28;
+The syntactic datums ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
+  (13 .\ ()))}'' (and more)
+all represent a list containing the integers 8 and 13. 
+Syntactic datums that denote equal objects are always equivalent 
+as forms of a program.
+
+Because of the close correspondence between syntactic datums and datum
+values, this report sometimes uses the term \defining{datum} to denote
+either a syntactic datum or a datum value when it is apparent from the
+context.
 
 This chapter gives overviews and formal accounts of the lexical
 syntax and the read syntax.
@@ -68,13 +78,13 @@ sequence of lexemes\index{lexeme}, omitting non-significant portions
 such as comments and whitespace.  The character sequence is assumed to
 be text according to the Unicode standard~\cite{Unicode41}.  Some of
 the lexemes, such as numbers, identifiers, strings etc.\ of the lexical
-syntax are S-expressions in the read syntax, and thus represent data.
+syntax are syntactic datums in the read syntax, and thus represent data.
 Besides the formal account of the syntax, this section also describes
-what data objects are denoted by these S-expressions.
+what data objects are denoted by these syntactic datums.
 
 Note that the lexical syntax, in the description of comments, contains
-a forward reference to \meta{S-expression}, which is described as part of the
-read syntax.  However, being comments, these \meta{S-expression}s do not play
+a forward reference to \meta{datum}, which is described as part of the
+read syntax.  However, being comments, these \meta{datum}s do not play
 a significant role in the syntax.
 
 Generally, upper and lower case forms of a letter are distinguished,
@@ -109,7 +119,7 @@ language: {\tt \verb"{" \verb"}"}
 \meta{comment} \: ; \= $\langle$\rm all subsequent characters up to a
                     \>\ \rm linefeed$\rangle$\index{comment}
 \qquad \= \| \meta{nested comment}
-\> \| \#; \meta{S-expression}
+\> \| \#; \meta{datum}
 \> \| \#!r6rs \| \#!/usr/bin/env
 \meta{nested comment} \: \#| \= \meta{comment text}
 \> \arbno{\meta{comment cont}} |\#
@@ -257,10 +267,10 @@ comment.\mainindex{comment}\mainschindex{;} The comment continues to
 the end of the line on which the semicolon appears (i.e., it is
 terminated by a linefeed character).
 
-Another way to indicate a comment is to prefix a \hyper{S-expression}
+Another way to indicate a comment is to prefix a \hyper{datum}
 (cf.\ Section~\ref{datumsyntax}) with {\tt \#;}, possibly with
-whitespace before the \hyper{S-expression}.  The comment consists of
-the comment prefix {\tt \#;} and the \hyper{S-expression} together.  (This
+whitespace before the \hyper{datum}.  The comment consists of
+the comment prefix {\tt \#;} and the \hyper{datum} together.  (This
 notation is useful for ``commenting out'' sections of code.)
 
 Block comments may be indicated with properly nested {\tt
@@ -383,14 +393,14 @@ For example:
 \#\backwhack{}xFF        \ev \textrm{U+00FF}
 \#\backwhack{}xff        \ev \textrm{U+00FF}
 \#\backwhack{}x ff       \ev \textrm{U+0078}
-\>\>; \textrm{followed by another S-expression, {\cf ff}}
+\>\>; \textrm{followed by another datum, {\cf ff}}
 \#\backwhack{}x(ff)      \ev \textrm{U+0078}
-\>\>; \textrm{followed by another S-expression,}
+\>\>; \textrm{followed by another datum,}
 \>\>; \textrm{a parenthesized {\cf ff}}
 \#\backwhack{}(x)        \ev \exception{\&lexical}
 \#\backwhack{}(x         \ev \exception{\&lexical}
 \#\backwhack{}((x)       \ev \textrm{U+0028}
-\>\>; \textrm{followed by another S-expression,}
+\>\>; \textrm{followed by another datum,}
 \>\>; \texttt{parenthesized {\cf x}}
 \#\backwhack{}x00110000  \ev \exception{\&lexical}
 \>\>; \textrm{out of range}
@@ -590,10 +600,10 @@ represent a flonum.
 \label{readsyntaxsection}
 
 The read syntax describes the syntax of
-S-expressions\index{S-expression} in terms of a sequence of
+syntactic datums\mainindex{syntactic datum} in terms of a sequence of
 \meta{lexeme}s, as defined in the lexical syntax.
 
-S-expressions include the lexeme S-expressions described in the
+Syntactic datums include the lexeme datums described in the
 previous section as well as the following constructs for forming
 compound structure:
 %
@@ -603,34 +613,34 @@ compound structure:
 \item  vectors (see section~\ref{vectorsection})
 \end{itemize}
 
-Note that the sequence of characters ``{\tt(+ 2 6)}'' is {\em not} an
-S-expression representing the integer 8, even though it {\em is} a
-base-library expression evaluating to the integer 8; rather, it is an
-S-expression representing a three-element list, the elements of which
+Note that the sequence of characters ``{\tt(+ 2 6)}'' is {\em not} a
+syntactic datum representing the integer 8, even though it {\em is} a
+base-library expression evaluating to the integer 8; rather, it is a
+datum representing a three-element list, the elements of which
 are the symbol {\tt +} and the integers 2 and 6.
 
 \subsection{Formal account}
 \label{datumsyntax}
 
-The following grammar describes the syntax of S-expressions in terms
+The following grammar describes the syntax of syntactic datums in terms
 of various kinds of lexemes defined in the grammar in
 section~\ref{lexicalsyntaxsection}:
 
 \begin{grammar}%
-\meta{S-expression} \: \meta{simple S-expression}
-\>  \| \meta{compound S-expression}
-\meta{simple S-expression} \: \meta{boolean} \| \meta{number}
+\meta{datum} \: \meta{simple datum}
+\>  \| \meta{compound datum}
+\meta{simple datum} \: \meta{boolean} \| \meta{number}
 \>  \| \meta{character} \| \meta{string} \|  \meta{symbol}
 \meta{symbol} \: \meta{identifier}
-\meta{compound S-expression} \: \meta{list} \| \meta{vector}
-\meta{list} \: (\arbno{\meta{S-expression}})
-\>    \| [\arbno{\meta{S-expression}}]
-\>    \| (\atleastone{\meta{S-expression}} .\ \meta{S-expression})
-\>    \| [\atleastone{\meta{S-expression}} .\ \meta{S-expression}]
+\meta{compound datum} \: \meta{list} \| \meta{vector}
+\meta{list} \: (\arbno{\meta{datum}})
+\>    \| [\arbno{\meta{datum}}]
+\>    \| (\atleastone{\meta{datum}} .\ \meta{datum})
+\>    \| [\atleastone{\meta{datum}} .\ \meta{datum}]
 \>    \| \meta{abbreviation}
-\meta{abbreviation} \: \meta{abbrev prefix} \meta{S-expression}
+\meta{abbreviation} \: \meta{abbrev prefix} \meta{datum}
 \meta{abbrev prefix} \: ' \| ` \| , \| ,@ \| \#' | \#` | \#,
-\meta{vector} \: \#(\arbno{\meta{S-expression}})
+\meta{vector} \: \#(\arbno{\meta{datum}})
 \meta{bytes} \: \#vu8(\arbno{\meta{u8}})
 \meta{u8} \: $\langle${\rm any \meta{number} denoting an exact}
  \>\>\quad\quad {\rm integer in $\{0, \ldots, 255\}$}$\rangle$%
@@ -639,7 +649,7 @@ section~\ref{lexicalsyntaxsection}:
 \subsection{Vectors}
 \label{vectorsyntax}
 
-Vector S-expressions, denoting vectors of values (see
+Vector datums, denoting vectors of values (see
 section~\ref{vectorsection}, are written using the notation
 {\tt\#(\var{obj} \dotsfoo)}.  For example, a vector of length 3
 containing the number zero in element 0, the list {\cf(2 2 2 2)} in
@@ -657,7 +667,7 @@ base-library expression that evaluates to a vector.
 \subsection{Pairs and lists}
 \label{pairlistsyntax}
 
-List and pair S-expressions, denoting pairs and lists of values
+List and pair datums, denoting pairs and lists of values
 (see section~\ref{listsection}) are written using parentheses or brackets.
 Matching pairs of parentheses that occur in the rules of \meta{list} are
 equivalent to matching pairs of brackets.
@@ -687,7 +697,7 @@ are equivalent notations for a list of symbols.
 
 \subsection{Bytes objects}
 
-Bytes S-expressions, denoting bytes objects (see
+Bytes datums, denoting bytes objects (see
 section~\ref{bytessection}), are written using the notation
 {\tt\#vu8(\var{u8} \dotsfoo)}, where the \var{u8}s are the octets of
 the bytes object.  For example, a bytes object of length 3 containing the
@@ -705,29 +715,29 @@ base-library expression that evaluates to a bytes object.
 \label{quotesection}
 
 \begin{entry}{%
-\pproto{\singlequote\hyper{S-expression}}{}
-\pproto{\backquote\hyper{S-expression}}{}
-\pproto{,\hyper{S-expression}}{}
-\pproto{,\atsign\hyper{S-expression}}{}
-\pproto{\#'\hyper{S-expression}}{}
-\pproto{\#\backquote\hyper{S-expression}}{}
-\pproto{\#,\hyper{S-expression}}{}
+\pproto{\singlequote\hyper{datum}}{}
+\pproto{\backquote\hyper{datum}}{}
+\pproto{,\hyper{datum}}{}
+\pproto{,\atsign\hyper{datum}}{}
+\pproto{\#'\hyper{datum}}{}
+\pproto{\#\backquote\hyper{datum}}{}
+\pproto{\#,\hyper{datum}}{}
 }
 
-\mainschindex{'}\singlequote\hyper{S-expression} is an abbreviation
-for {\cf (quote \hyper{S-expression})}.
-\mainschindex{`}\backquote\hyper{S-expression} is an abbreviation
-for {\cf (quasiquote \hyper{S-expression})}.
-\mainschindex{,}{\cf,}\hyper{S-expression} is an abbreviation
-for {\cf (unquote \hyper{S-expression})}.
-\mainschindex{,@}{\cf,}\atsign\hyper{S-expression} is an abbreviation
-for {\cf (unquote-splicing \hyper{S-expression})}.
-\sharpindex{'}{\cf\#'}\hyper{S-expression} is an abbreviation
-for {\cf (syntax \hyper{S-expression})}.
-\sharpindex{`}{\cf\#`}\hyper{S-expression} is an abbreviation
-for {\cf (quasisyntax \hyper{S-expression})}.
-\sharpindex{,}{\cf\#,}\hyper{S-expression} is an abbreviation
-for {\cf (unsyntax \hyper{S-expression})}.
+\mainschindex{'}\singlequote\hyper{datum} is an abbreviation
+for {\cf (quote \hyper{datum})}.
+\mainschindex{`}\backquote\hyper{datum} is an abbreviation
+for {\cf (quasiquote \hyper{datum})}.
+\mainschindex{,}{\cf,}\hyper{datum} is an abbreviation
+for {\cf (unquote \hyper{datum})}.
+\mainschindex{,@}{\cf,}\atsign\hyper{datum} is an abbreviation
+for {\cf (unquote-splicing \hyper{datum})}.
+\sharpindex{'}{\cf\#'}\hyper{datum} is an abbreviation
+for {\cf (syntax \hyper{datum})}.
+\sharpindex{`}{\cf\#`}\hyper{datum} is an abbreviation
+for {\cf (quasisyntax \hyper{datum})}.
+\sharpindex{,}{\cf\#,}\hyper{datum} is an abbreviation
+for {\cf (unsyntax \hyper{datum})}.
 \end{entry}
 
 %%% Local Variables: 

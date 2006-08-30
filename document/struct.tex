@@ -424,16 +424,20 @@ The ability to create new syntactic keywords makes Scheme extremely
 flexible and expressive, and enables the formulation of many features
 built-in to other languages as derived forms.
 
-\section{S-expressions and datums}
+\section{Syntactic datums and datum values}
 
-A subset of the Scheme values called \textit{datums} have a special
+A subset of the Scheme values called \textit{datum
+  values}\mainindex{datum value} have a special
 status in the language.  These include booleans, numbers, characters,
 strings, and lists and vectors with other datums as elements.  Each
-datum has a unique representation as text called
-\textit{S-expression}\index{S-expression}, which can be written out
-and read back in without loss of information.  Moreover, each datum
+datum value has a representation as text called
+\textit{syntactic datum}\index{syntactic datum}, which can be written out
+and read back in without loss of information.  
+(Several syntactic datums can represent the same datum value,
+but the datum value corresponding to a syntactic datum is uniquely determined.)
+Moreover, each datum value
 can be trivially translated to a literal expression in a program by
-prepending a {\cf\singlequote}:
+prepending a {\cf\singlequote} to a corresponding syntactic datum:
 
 \begin{scheme}
 '23 \ev 23
@@ -444,15 +448,15 @@ prepending a {\cf\singlequote}:
 \end{scheme}
 
 The {\cf\singlequote} clearly is not needed for number or boolean
-literals.  However, {\cf foo} is the S-expression for a symbol with
+literals.  However, {\cf foo} is a syntactic datum representing a symbol with
 name ``foo,'' and {\cf 'foo} is therefore a literal expression with
-that symbol as its value.  {\cf (1 2 3)} is the S-expression for a
+that symbol as its value.  {\cf (1 2 3)} is a syntactic datum representing a
 list with elements 1, 2, and 3, and thus {\cf '(1 2 3)} is a literal
 expression with such a list as its value.  Moreover, {\cf \#(1 2 3)}
-is the S-expression for a vector with elements 1, 2 and 3, and thus
+is a syntactic datum representing a vector with elements 1, 2 and 3, and thus
 {\cf '\#(1 2 3)} is the corresponding literal.
 
-The S-expressions form a superset of the Scheme forms.  Thus, datums
+The syntactic datums form a superset of the Scheme forms.  Thus, datums
 can be used to represent Scheme programs as data objects.  In
 particular, symbols can be used to represent identifiers.
 
