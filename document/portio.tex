@@ -867,11 +867,37 @@ with the returned port.
 \rproto{open-writer-output-port}{ writer buffer-mode}{procedure}
 \rproto{open-writer-output-port}{ writer buffer-mode transcoder}{procedure}}
    
-This returns an output port connected to the writer \var{writer}.
-\var{buffer-mode} optionally specifies the buffer mode of the port; it
+Returns an output port connected to the writer \var{writer}.
+\var{Buffer-mode} optionally specifies the buffer mode of the port; it
 defaults to {\cf block}.
 If \var{transcoder} is specified, it becomes the transcoder associated
 with the returned port.
+\end{entry}
+
+\begin{entry}{%
+\proto{open-reader/writer-input/output-port}{ reader writer buffer-mode transcoder}{procedure}}
+
+Returns a combined input/output port connected to \var{reader} for
+reading operations and to \var{writer} for writing operations. 
+\var{Buffer-mode} optionally specifies the buffer mode of the port; it
+defaults to {\cf block}.
+If \var{transcoder} is specified, it becomes the transcoder associated
+with the returned port.
+
+The returned port supports the {\cf port-position} operation if and
+only if \var{reader} supports the {\cf reader-get-position} operation and
+\var{writer} supports the {\cf writer-get-position} operation.
+It supports the {\cf set-port-position!} operation if and
+only if \var{reader} supports the {\cf reader-set-position!} operation and
+\var{writer} supports the {\cf writer-set-position!} operation.
+In that case, each call to {\cf set-port-position!} will set the
+position of both \var{reader} and \var{writer}.
+
+\begin{note}
+  It is expected that \var{reader} and \var{writer} access the same
+  underlying data, as is the case with the reader and writer and
+  writer returned by {\cf open-file-reader+writer}.
+\end{note}
 \end{entry}
 
 %%% Local Variables: 
