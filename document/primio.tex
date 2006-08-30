@@ -113,8 +113,8 @@ condition, but they are not required to do so.
 \begin{entry}{%
 \proto{make-i/o-buffer}{ size}{procedure}}
 
-\domain{\var{Size} shall be a non-negative exact integer.}
-Creates a bytes object of size \var{size} with undefined contents.
+\domain{\var{Size} shall be a non-negative exact integer.} The {\cf make-i/o-buffer} procedure
+creates a bytes object of size \var{size} with undefined contents.
 Callers of the procedures from\library{r6rs i/o primitive}  are encouraged to use bytes
 objects created by {\cf make-i/o-buffer}, because they might have
 alignment and placement characteristics that {\cf make reader-read!}
@@ -147,7 +147,7 @@ purpose, but \var{descriptor} can be extracted from the reader object via
 internal state of certain kinds of readers.
    
 \var{Chunk-size} shall be a positive exact integer, and it represents a recommended
-efficient size of the read operations on this reader. This is typically the
+efficient size of the read operations on this reader. This integer is typically the
 block size of the buffers of the operating system. As such, it is only a
 hint for clients of the reader---calls to the \var{read!} procedure (see below)
 may specify a different read count.
@@ -171,20 +171,21 @@ omitted, in which case the corresponding arguments shall be \schfalse.
 \item {\cf (\var{read!} \var{bytes} \var{start} \var{count})}
        
   \var{Start} and \var{count} shall be non-negative exact integers.
-  Reads up to \var{count} bytes from the reader and writes them
+  The \var{read!} procedure
+  reads up to \var{count} bytes from the reader and writes them
   into \var{bytes}, which shall be a bytes object, starting at index
   start. \var{Bytes} shall have size at least $\var{start} +
-  \var{count}$. This procedure returns the number of bytes read as an
-  exact integer. It returns 0 if it encounters an end of file, or if
-  count is 0. If count is positive, this procedure blocks until at
+  \var{count}$. The result is the number of bytes read as an
+  exact integer. The result is 0 if \var{read!} encounters an end of file, or if
+  count is 0. If \var{count} is positive, \var{read!} blocks until at
   least one byte has been read or until it has encountered an end of file.
   
   \var{Bytes} may or may not be a bytes object returned by {\cf
-    make-i/o-buffer}, but {\cf reader-read!} may operate
+    make-i/o-buffer}, but \var{read!} may operate
   more efficiently if it is.
   
   \var{Count} may or may not be the same as the chunk size of the
-  reader, but {\cf reader-read!} may operate more
+  reader, but \var{read!} may operate more
   efficiently if it is.
 
 \item {\cf (\var{available})}
@@ -197,18 +198,19 @@ omitted, in which case the corresponding arguments shall be \schfalse.
 
 \item {\cf (\var{get-position})}
        
-  When present, returns the current position in the 
+  When present, \var{get-position}
+  returns the current position in the 
   reader as an exact integer, counting the number of bytes since the
   beginning of the source. (Ends of file do not count as bytes.)
   
 \item {\cf (\var{set-position!} \var{pos})}
        
-  When present, moves to position \var{pos} (which
+  When present, \var{set-position!} moves to position \var{pos} (which
   shall be a non-negative exact integer) in the reader.
        
 \item {\cf (\var{end-position})}
        
-  When present, returns the position in the reader
+  When present, \var{end-position} returns the position in the reader
   of the next end of file, without changing the current position.
 
 \item {\cf (\var{close})}
@@ -246,7 +248,7 @@ For all other readers, the result is an unspecified value.
 \proto{reader-chunk-size}{ reader}{procedure}}
    
 Returns a positive exact integer that represents a recommended
-efficient size of the read operations on this reader. This result is typically the
+efficient size of the read operations on this reader. The result is typically the
 block size of the buffers of the operating system. As such, it is only a
 hint for clients of the reader---calls to the {\cf reader-read!} procedure (see
 below) may specify a different read count.
@@ -261,12 +263,13 @@ value that was supplied as the chunk-size argument to {\cf
    
 \domain{\var{Start} and \var{count} shall be non-negative exact
   integers.  \var{Bytes} shall have at least $\var{start} +
-\var{count}$ elements.}
-Reads up to \var{count} bytes from the reader and writes them into
+\var{count}$ elements.} The {\cf reader-read!} procedure 
+reads up to \var{count} bytes from the reader and writes them into
 \var{bytes} starting at index
-\var{start}.  This procedure returns the number of bytes read
-as an exact integer. It returns 0 if it encounters an end of file, or
-if \var{count} is 0.  This procedure blocks until at least one byte has been
+\var{start}.  The result is the number of bytes read
+as an exact integer. The result is 0 if {\cf reader-read!} encounters an end of file, or
+if \var{count} is 0.  If \var{count} is positive, {\cf reader-read!}
+blocks until at least one byte has been
 read or until it has encountered end of file.
    
 \var{Bytes} may or may not be a bytes object returned by {\cf
@@ -277,7 +280,7 @@ more efficiently if it is.
 reader, but {\cf reader-read!} may operate more
 efficiently if it is.
    
-For a reader created by {\cf make-simple-reader}, this procedure
+For a reader created by {\cf make-simple-reader}, {\cf reader-read!}
 tail-calls the \var{read!} procedure of reader with the remaining
 arguments.
 \end{entry}
@@ -290,7 +293,7 @@ stream. The result is either an exact integer, or \schfalse{} if no such
 estimate is possible. There is no guarantee that this estimate will have
 any specific relationship to the true number of available bytes.
    
-For a reader created by {\cf make-simple-reader}, this procedure
+For a reader created by {\cf make-simple-reader}, {\cf reader-available}
 tail-calls the \var{available} procedure of reader.
 \end{entry}   
 
@@ -305,10 +308,11 @@ procedure, and \schfalse{} otherwise.
 \proto{reader-get-position}{ reader}{procedure}}
    
 When {\cf reader-has-get-position} returns \schtrue{} for reader,
+{\cf reader-get-position}
 returns the current position in the byte stream as an exact integer
 counting the number of bytes since the beginning of the stream.
    
-For a reader created by {\cf make-simple-reader}, this procedure tail-calls the
+For a reader created by {\cf make-simple-reader}, {\cf reader-get-position} tail-calls the
 \var{get-position} procedure of reader, if present. If reader does not
 have a \var{get-position} procedure, an exception with condition type
 {\cf\&contract} is raised.
@@ -326,10 +330,11 @@ Returns \schtrue{} if reader supports the {\cf reader-set-position!} operation, 
 
 \domain{\var{Pos} shall be a non-negative exact integer.}
 When {\cf reader-has-set-position!?} returns \schtrue{} for
-\var{reader}, moves to position \var{pos} in the stream.
+\var{reader}, {\cf reader-set-position!}
+moves to position \var{pos} in the stream.
  
-For a reader created by {\cf make-simple-reader}, this procedure tail-calls the
-\var{set-position!}  procedure of \var{reader} with the \var{pos}
+For a reader created by {\cf make-simple-reader}, {\cf reader-set-position!} tail-calls the
+\var{set-position!} procedure of \var{reader} with the \var{pos}
 argument, if present.  If \var{reader} does not support the operation,
 an {\cf exception} with condition type {\cf\&contract} is raised.
 For readers not created by {\cf make-simple-reader}, the result values
@@ -347,10 +352,11 @@ operation, and \schfalse{} otherwise.
 \proto{reader-end-position}{ reader}{procedure}}
    
 When {\cf reader-has-end-position?} returns \schtrue{} for \var{reader},
+{\cf reader-end-position}
 returns the position in the byte stream of the next end of file,
 without changing the current position.
    
-For a reader created by {\cf mmake-simple-reader}, this procedure tail-calls the
+For a reader created by {\cf mmake-simple-reader}, {\cf reader-end-position} tail-calls the
 \var{end-position} procedure of \var{reader}, if present. If
 \var{reader} does not have a \var{end-position} procedure, an
 exception with condition type {\cf\&contract} is raised.
@@ -364,7 +370,7 @@ releases the resources associated with the reader. Further operations
 on the reader must raise an exception with condition type
 {\cf\&contract}.
    
-For a reader created by {\cf make-simple-reader}, this procedure tail-calls the
+For a reader created by {\cf make-simple-reader}, {\cf reader-close} tail-calls the
 \var{close} procedure of reader.  For all other readers, the return
 values are unspecified.
 \end{entry}
@@ -425,7 +431,7 @@ internal state of certain kinds of writers.
 
 \var{Chunk-size} shall be a positive exact integer, and it is the
 recommended efficient size of the write operations on this writer. As
-such, it is only a hint for clients of the reader---calls to the
+such, it is only a hint for clients of the writer---calls to the
 \var{write!} procedure (see below) may specify a different write
 count.
 
@@ -448,7 +454,8 @@ omitted, in which case the corresponding arguments shall be \schfalse.
 \item {\cf (\var{write!} \var{bytes} \var{start} \var{count})}
    
   \var{Start} and \var{count} shall be non-negative exact integers.
-  Writes up to \var{count} bytes in bytes object \var{bytes}
+  The \var{write!} procedure
+  writes up to \var{count} bytes in bytes object \var{bytes}
   starting at index \var{start}. Before writing any bytes, {\cf write!} blocks
   until it can write at least one byte. The result is the number of bytes
   actually written as a positive exact integer.
@@ -463,18 +470,18 @@ omitted, in which case the corresponding arguments shall be \schfalse.
 
 \item {\cf (\var{get-position})}
    
-  When present, returns the current position in the byte
+  When present, \var{get-position} returns the current position in the byte
   stream as an exact integer counting the number of bytes since the
   beginning of the stream.
    
 \item {\cf (\var{set-position!} \var{pos})}
    
-  When present, moves to position \var{pos} (which shall be a
+  When present, \var{set-position!} moves to position \var{pos} (which shall be a
   non-negative exact integer) in the stream.
   
 \item {\cf (\var{end-position})}
    
-    When present, returns the byte position of the next end
+    When present, \var{end-position} returns the byte position of the next end
     of file without changing the current position.
    
 \item {\cf (\var{close})}
@@ -501,7 +508,8 @@ value of the \var{id} field of the argument writer.
 \begin{entry}{%
 \proto{writer-descriptor}{ writer}{procedure}}
    
-  For a writer created by {\cf make-simple-writer}, returns the value of the
+  For a writer created by {\cf make-simple-writer}, {\cf write-descriptor} 
+  returns the value of the
   \var{descriptor} field of the argument writer.
   
   For all other writers, the result is an unspecified value.
@@ -512,7 +520,7 @@ value of the \var{id} field of the argument writer.
    
 Returns a positive exact integer, and is the recommended efficient
 size of the write operations on this writer. As such, it is only a hint for
-clients of the reader---calls to {\cf writer-write!} (see below) may specify a
+clients of the writer---calls to {\cf writer-write!} (see below) may specify a
 different write count.
 
 For a writer created by {\cf make-simple-writer}, the result is the value of the
@@ -524,8 +532,8 @@ For a writer created by {\cf make-simple-writer}, the result is the value of the
    
 \domain{\var{Start} and \var{count} shall be non-negative exact
   integers. \var{Bytes} shall have at least $\var{start} +
-\var{count}$ elements.}
-Writes up to \var{count} bytes in bytes object \var{bytes}
+\var{count}$ elements.} The {\cf writer-write!} procedure
+writes up to \var{count} bytes in bytes object \var{bytes}
 starting at index \var{start}. Before writing any bytes, {\cf write-write!} blocks
 until it can write at least one byte. The result is the number of bytes
 actually written as a positive exact integer.
@@ -537,7 +545,7 @@ more efficiently if it is.
 \var{Count} may or may not be the same as the chunk size of the reader, but
  {\cf writer-write!} may operate more efficiently if it is.
 
-For a writer created by {\cf make-simple-writer}, this procedure tail-calls the
+For a writer created by {\cf make-simple-writer}, {writer-write!} tail-calls the
 \var{write!} procedure of writer with the remaining arguments.  For
 all other writers, the result values are unspecified.
 \end{entry}   
@@ -553,11 +561,13 @@ Returns \schtrue{} if writer supports the {\cf
 \proto{writer-get-position}{ writer}{procedure}}
    
 When {\cf writer-has-get-position?} returns \schtrue{} for
-\var{writer}, returns the current position in the byte stream as
+\var{writer}, {\cf writer-get-position}
+returns the current position in the byte stream as
 an exact integer counting the number of bytes since the beginning of
 the stream.
   
-For a writer created by {\cf make-simple-writer}, calls the
+For a writer created by {\cf make-simple-writer}, 
+{\cf writer-get-position} calls the
 \var{get-position} procedure of \var{writer}, if present. If \var{writer}
 does not have a get-position procedure, an exception with condition
 type {\cf\&contract} is raised.
@@ -574,10 +584,11 @@ Returns \schtrue{} if writer supports the \var{writer-set-position!} operation, 
 \proto{writer-set-position!}{ writer pos}{procedure}}
    
 When {\cf writer-has-set-position!?} returns \schtrue{} for
-\var{writer}, moves to position \var{pos} (which shall be a non-negative
+\var{writer}, {\cf writer-set-position!}
+moves to position \var{pos} (which shall be a non-negative
 exact integer) in the stream.
    
-For a writer created by {\cf make-simple-writer}, this procedure calls the
+For a writer created by {\cf make-simple-writer}, {\cf writer-set-position!} calls the
 \var{set-position!}  procedure of \var{writer} with the \var{pos}
 argument, if present. If \var{writer} does not have a
 \var{set-position!} procedure, an exception with condition type
@@ -596,10 +607,12 @@ Returns \schtrue{} if \var{writer} supports the {\cf
 \proto{writer-end-position}{ writer}{procedure}}
    
 When {\cf writer-has-end-position?} returns \schtrue{} for writer,
+{\cf writer-end-position}
 returns the byte position of the next end of file, without
 changing the current position.
    
-For a writer created by {\cf make-simple-writer}, calls the
+For a writer created by {\cf make-simple-writer}, 
+{\cf writer-end-position} calls the
 \var{end-position} procedure of \var{writer}, if present. If \var{writer}
 does not have a \var{end-position} procedure, an exception with condition
 type {\cf\&contract} is raised.
@@ -631,7 +644,8 @@ operations.
 \proto{writer-bytes}{ writer}{procedure}}
    
 \domain{The \var{writer} argument shall be a bytes writer.}
-Returns a bytes object containing the data written to
+The {\cf writer-bytes} procedure
+returns a bytes object containing the data written to
 writer in sequence. Doing this in no way invalidates the writer or
 change its store.
 The effect of modifying the contents of the returned bytes object
@@ -689,9 +703,10 @@ the {\cf reader-get-position}, {\cf reader-set-position!}, {\cf
   writer-set-position!}, {\cf writer-end-position} operations.
 
 \begin{note}
-  This procedure enables opening a file for simultaneous input and
+  The {\cf open-file-reader+writer} procedure enables opening 
+  a file for simultaneous input and
   output in environments where it is not possible to call
-  open-file-reader and open-file-writer on the same file.
+  {\cf open-file-reader} and {\cf open-file-writer} on the same file.
 \end{note}     
 \end{entry}
 
