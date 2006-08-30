@@ -45,7 +45,7 @@ must be quoted:
 symbols {\cf big} and {\cf little}, respectively. These symbols
 represent an endianness, and whenever one of the procedures operating
 on bytes objects accepts an endianness as an argument, that argument
-must be one of these symbols. It is a syntax violation for the operand to
+shall be one of these symbols. It is a syntax violation for the operand to
 {\cf endianness} to be
 anything other than {\cf big} or {\cf little}.
 \end{entry}
@@ -74,7 +74,7 @@ Returns a newly allocated bytes object of \var{k} bytes.
 If the \var{fill} argument is missing, the initial contents of the
 returned bytes object are unspecified.
    
-If the \var{fill} argument is present, it must be an exact integer in
+If the \var{fill} argument is present, it shall be an exact integer in
 the interval $\{-128, \ldots 255\}$ that specifies the initial value
 for the bytes of the bytes object: If \var{fill} is positive, it is
 interpreted as an octet; if it is negative, it is interpreted as a byte.
@@ -90,7 +90,7 @@ Returns, as an exact integer, the number of bytes in \var{bytes}.
 \proto{bytes-u8-ref}{ bytes k}{procedure}
 \proto{bytes-s8-ref}{ bytes k}{procedure}}
    
-\domain{\var{k} must be a valid index of bytes.}
+\domain{\var{k} shall be a valid index of bytes.}
    
 {\cf bytes-u8-ref} returns the byte at index \var{k} of \var{bytes},
 as an octet.
@@ -113,7 +113,7 @@ as a (signed) byte.
 \proto{bytes-u8-set!}{ bytes k octet}{procedure}
 \proto{bytes-s8-set!}{ bytes k byte}{procedure}}
    
-\var{k} must be a valid index of \var{bytes}.
+\var{k} shall be a valid index of \var{bytes}.
    
 {\cf bytes-u8-set!} stores \var{octet} in element \var{k} of
 \var{bytes}.
@@ -143,8 +143,8 @@ Both procedures return \unspecifiedreturn.
 \proto{bytes-uint-set!}{ bytes k n endianness size}{procedure}
 \proto{bytes-sint-set!}{ bytes k n endianness size}{procedure}}
    
-\domain{\var{size} must be a positive exact integer. $\{\var{k}, \ldots,
-  \var{k} + \var{size} - 1\}$ must be valid indices of \var{bytes}.}
+\domain{\var{size} shall be a positive exact integer. $\{\var{k}, \ldots,
+  \var{k} + \var{size} - 1\}$ shall be valid indices of \var{bytes}.}
    
 {\cf bytes-uint-ref} retrieves the exact integer corresponding to the
 unsigned representation of size \var{size} and specified by \var{endianness}
@@ -154,14 +154,14 @@ at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
 complement representation of size \var{size} and specified by \var{endianness} at
 indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-\domain{For {\cf bytes-uint-set!}, \var{n} must be an exact integer in the
+\domain{For {\cf bytes-uint-set!}, \var{n} shall be an exact integer in the
   set $\{0, \ldots, 256^{\var{size}}-1\}$.}
 
 {\cf bytes-uint-set!} stores the unsigned representation of size \var{size}
 and specified by \var{endianness} into \var{bytes} at indices
 $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-\domain{For {\cf bytes-sint-set!}, \var{n} must be an exact integer in
+\domain{For {\cf bytes-sint-set!}, \var{n} shall be an exact integer in
   the interval $\{-256^{\var{size}}/2, \ldots,
   256^{\var{size}}/2-1\}$.}
 {\cf bytes-sint-set!} stores the two's complement
@@ -207,7 +207,7 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \proto{bytes-u16-native-set!}{ bytes k n}{procedure}
 \proto{bytes-s16-native-set!}{ bytes k n}{procedure}}
    
-\domain{\var{k} must be a valid index of \var{bytes}; so must $\var{k}
+\domain{\var{k} shall be a valid index of \var{bytes}; so shall $\var{k}
   + 1$.}
    
 These retrieve and set two-byte representations of numbers at indices
@@ -218,7 +218,7 @@ with the two's complement representation.
 
 The procedures with {\cf native} in their names employ the native
 endianness, and only work at aligned indices:
-\var{k} must be a multiple of 2.
+\var{k} shall be a multiple of 2.
    
 The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 
@@ -253,7 +253,7 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \proto{bytes-u32-native-set!}{ bytes k n}{procedure}
 \proto{bytes-s32-native-set!}{ bytes k n}{procedure}}
    
-\domain{$\{\var{k}, \ldots, \var{k}+ 3\}$ must be valid indices of \var{bytes}.}.
+\domain{$\{\var{k}, \ldots, \var{k}+ 3\}$ shall be valid indices of \var{bytes}.}.
    
 These retrieve and set four-byte representations of numbers at indices $\{\var{k},
 \ldots, \var{k}+ 3\}$, according to the endianness specified by \var{endianness}. The
@@ -261,7 +261,7 @@ procedures with {\cf u32} in their names deal with the unsigned representation,
 those with {\cf s32} with the two's complement representation.
    
 The procedures with {\cf native} in their names employ the native endianness, and
-only work at aligned indices: \var{k} must be a multiple of 4..
+only work at aligned indices: \var{k} shall be a multiple of 4..
    
 The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 
@@ -288,7 +288,7 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 \proto{bytes-u64-native-set!}{ bytes k n}{procedure}
 \proto{bytes-s64-native-set!}{ bytes k n}{procedure}}
  
-\domain{$\{\var{k}, \ldots, \var{k}+ 7\}$ must be valid indices of \var{bytes}.}
+\domain{$\{\var{k}, \ldots, \var{k}+ 7\}$ shall be valid indices of \var{bytes}.}
    
 These retrieve and set eight-byte representations of numbers at
 indices $\{\var{k}, \ldots, \var{k}+ 7\}$, according to the endianness
@@ -297,7 +297,7 @@ with the unsigned representation, those with {\cf s64} with the two's
 complement representation.
    
 The procedures with {\cf native} in their names employ the native endianness, and
-only work at aligned indices: \var{k} must be a multiple of 8.
+only work at aligned indices: \var{k} shall be a multiple of 8.
    
 The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 
@@ -326,8 +326,8 @@ It returns \schfalse{} otherwise.
 \proto{bytes-ieee-single-native-ref}{ bytes k}{procedure}
 \proto{bytes-ieee-single-ref}{ bytes k endianness}{procedure}}
 
-\domain{$\{\var{k}, \ldots, \var{k}+3\}$ must be valid indices of
-  \var{bytes}.  For {\cf bytes-ieee-single-native-ref}, \var{k} must
+\domain{$\{\var{k}, \ldots, \var{k}+3\}$ shall be valid indices of
+  \var{bytes}.  For {\cf bytes-ieee-single-native-ref}, \var{k} shall
   be a multiple of $4$.}
 
 Returns the inexact real that best represents the IEEE-754 single
@@ -339,8 +339,8 @@ precision number represented by the four bytes beginning at index
 \proto{bytes-ieee-double-native-ref}{ bytes k}{procedure}
 \proto{bytes-ieee-double-ref}{ bytes k endianness}{procedure}}
 
-\domain{$\{\var{k}, \ldots, \var{k}+7\}$ must be valid indices of
-  \var{bytes}.  For {\cf bytes-ieee-double-native-ref}, \var{k} must
+\domain{$\{\var{k}, \ldots, \var{k}+7\}$ shall be valid indices of
+  \var{bytes}.  For {\cf bytes-ieee-double-native-ref}, \var{k} shall
   be a multiple of $8$.}
 
 Returns the inexact real that best represents the IEEE-754 single
@@ -352,9 +352,9 @@ precision number represented by the eight bytes beginning at index
 \proto{bytes-ieee-single-native-set!}{ bytes k x}{procedure}
 \proto{bytes-ieee-single-set!}{ bytes k x endianness}{procedure}}
 
-\domain{$\{\var{k}, \ldots, \var{k}+3\}$ must be valid indices of
-  \var{bytes}.  For {\cf bytes-ieee-single-native-set!}, \var{k} must
-  be a multiple of $4$.  \var{X} must be a real number.}
+\domain{$\{\var{k}, \ldots, \var{k}+3\}$ shall be valid indices of
+  \var{bytes}.  For {\cf bytes-ieee-single-native-set!}, \var{k} shall
+  be a multiple of $4$.  \var{X} shall be a real number.}
 
 Stores an IEEE-754 single precision representation of \var{x} into
 elements \var{k} through $\var{k}+3$ of \var{bytes}, and returns
@@ -365,8 +365,8 @@ elements \var{k} through $\var{k}+3$ of \var{bytes}, and returns
 \proto{bytes-ieee-double-native-set!}{ bytes k x}{procedure}
 \proto{bytes-ieee-double-set!}{ bytes k x endianness}{procedure}}
 
-\domain{$\{\var{k}, \ldots, \var{k}+7\}$ must be valid indices of
-  \var{bytes}.  For {\cf bytes-ieee-double-native-set!}, \var{k} must
+\domain{$\{\var{k}, \ldots, \var{k}+7\}$ shall be valid indices of
+  \var{bytes}.  For {\cf bytes-ieee-double-native-set!}, \var{k} shall
   be a multiple of $8$.}
 
 Stores an IEEE-754 double precision representation of \var{x} into
@@ -378,7 +378,7 @@ elements \var{k} through $\var{k}+7$ of \var{bytes}, and returns
 \proto{bytes-copy!}{ source source-start target target-start n}{procedure}}
 
 \domain{\var{Source-start}, \var{target-start},
-  and \var{n} must be non-negative exact integers that satisfy
+  and \var{n} shall be non-negative exact integers that satisfy
   
   \begin{displaymath}
     \begin{array}{rcccccl}
@@ -424,7 +424,7 @@ This returns a newly allocated copy of \var{bytes}.
 \var{bytes} in the same order.
 
 {\cf u8-list->bytes} returns a newly allocated bytes object whose
-elements are the elements of list \var{list}, which must all be octets, in
+elements are the elements of list \var{list}, which shall all be octets, in
 the same order.  Analogous to {\cf list->vector}.
 \end{entry}
 
@@ -434,7 +434,7 @@ the same order.  Analogous to {\cf list->vector}.
 \proto{uint-list->bytes}{ list endianness size}{procedure}
 \proto{sint-list->bytes}{ list endianness size}{procedure}}
    
-\domain{\var{Size} must be a positive exact integer.}
+\domain{\var{Size} shall be a positive exact integer.}
    
 These convert between lists of integers and their consecutive
 representations according to \var{size} and \var{endianness} in the

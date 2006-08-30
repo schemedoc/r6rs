@@ -17,7 +17,7 @@ input source and an output sink; such a port typically provides
 simultaneous read and write access to a file or other data.
 
 This section uses the \var{input-port}, \var{output-port}, \var{port}
-parameter names for arguments that must be input ports (or combined
+parameter names for arguments that shall be input ports (or combined
 input/output ports), output ports (or combined input/output ports),
 or any kind of port.
 
@@ -52,16 +52,16 @@ output operation will flush the buffer associated with the output
 port. The possible buffer modes are the symbols {\cf none} for no buffering,
 {\cf line} for flushing upon line feeds and line separators (U+2028), and
 {\cf block} for arbitrary buffering.  This section uses the parameter name
-\var{buffer-name} for arguments that must be buffer-mode symbols.
+\var{buffer-name} for arguments that shall be buffer-mode symbols.
 
 \begin{entry}{%
 \proto{buffer-mode}{ \hyper{name}}{\exprtype}}
    
-\hyper{Name} must be one of the symbols {\cf none}, {\cf line}, and
+\hyper{Name} shall be one of the symbols {\cf none}, {\cf line}, and
 {\cf block}. This returns the corresponding symbol denoting the
 associated buffer mode.
 
-If name is not one of the valid identifiers, an exception must be
+If name is not one of the valid identifiers, an exception shall be
 raised with condition type {\cf\&syntax} at macro-expansion time.
 \end{entry}
 
@@ -93,7 +93,7 @@ characters into bytes.  Moreover, the transcoder specifies a
 mode for handling encoding or decoding errors.
 
 A \var{transcoder} parameter name means that the corresponding
-argument must be a transcoder.
+argument shall be a transcoder.
 
 \begin{entry}{%
 \proto{utf-8-codec}{}{procedure}
@@ -150,7 +150,7 @@ contains the transcoder specified with the operation.
 
 Exceptions of this type raised by the operations described in this
 section are continuable.  When it is raised, the port's position is at
-the beginning of the invalid encoding.  The exception handler must
+the beginning of the invalid encoding.  The exception handler shall
 return a character or string representing the decoded text starting at
 the port's current position, and update the port's position to point
 past the error.
@@ -232,7 +232,7 @@ on how to handle such an exception.
 \rproto{make-transcoder}{ codec eol-style}{procedure}
 \rproto{make-transcoder}{ codec}{procedure}}
 
-\domain{\var{Codec} must be a codec, \var{eol-style}, if present, an
+\domain{\var{Codec} shall be a codec, \var{eol-style}, if present, an
   eol-style symbol, and \var{handling-mode}, if present, an
   error-handling-mode symbol.}  \var{Eol-style} may be omitted, in
 which case it defaults to the native end-of-line style of the
@@ -304,7 +304,7 @@ if the port does not support the operation.
 \proto{port-has-set-port-position!?}{ port}{procedure}
 \proto{set-port-position!}{ port pos}{procedure}
 
-\domain{\var{pos} must be a non-negative exact integer.}
+\domain{\var{pos} shall be a non-negative exact integer.}
    
 The {\cf port-has-set-port-position?} procedure returns \schtrue{} if the port
 supports the {\cf set-port-position!} operation, and \schfalse}
@@ -330,7 +330,7 @@ A closed port is still a port. The unspecified value is returned.
 \begin{entry}{%
 \proto{call-with-port}{ port proc}{procedure}}
    
-\domain{\var{proc} must be a procedure that accepts a single
+\domain{\var{proc} shall be a procedure that accepts a single
   argument.}  Calls \var{proc} with \var{port} as an argument. If
 \var{proc} returns, then the \var{port} is closed automatically and
 the values returned by \var{proc} are returned. If \var{proc} does not
@@ -456,8 +456,8 @@ any bytes are available, this returns the end-of-file object.
 \begin{entry}{%
 \proto{get-bytes-n!}{ input-port bytes start count}{procedure}}
    
-\domain{\var{Count} must be an exact, non-negative integer, specifying
-  the number of bytes to be read. \var{Bytes} must be a bytes object with at
+\domain{\var{Count} shall be an exact, non-negative integer, specifying
+  the number of bytes to be read. \var{Bytes} shall be a bytes object with at
   least $\var{start} + \var{count}$ elements.}
    
 This reads from \var{input-port}, blocking as necessary, until
@@ -546,9 +546,9 @@ end of file, then the end-of-file object is returned.
 \proto{get-string-n!}{ input-port string start count}{procedure}
 \rproto{get-string-n!}{ input-port string start count transcoder}{procedure}}
 
-\domain{\var{Start} and \var{count} must be an exact, non-negative
+\domain{\var{Start} and \var{count} shall be an exact, non-negative
   integer, specifying the number of characters to be read.
-  \var{String} must be a string with at least $\var{start} +
+  \var{String} shall be a string with at least $\var{start} +
   \var{count}$ characters.}
 
 This reads from \var{input-port} in the same manner as {\cf
@@ -680,7 +680,7 @@ The {\cf open-string-output-port} procedure is the same as {\cf
 \begin{entry}{%
 \proto{get-output-bytes}{ output-port}{procedure}}
 
-\domain{\var{output-port} must be a port that accumulates a bytes
+\domain{\var{output-port} shall be a port that accumulates a bytes
   object from the output written to it, such as the ports created by
   {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
 This returns a bytes object containing the output that has been accumulated with
@@ -706,7 +706,7 @@ with the port.
 \proto{get-output-string}{ output-port}{procedure}
 \rproto{get-output-string}{ output-port transcoder}{procedure}}
 
-\domain{\var{output-port} must be a port that accumulates a bytes
+\domain{\var{output-port} shall be a port that accumulates a bytes
   object from the output written to it, such as the ports created by
   {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
 The decoding of the bytes object associated with that port is returned
@@ -746,7 +746,7 @@ associated with the port.
 \proto{clear-bytes-output-port!}{ output-port}{procedure}
 \proto{clear-string-output-port!}{ output-port}{procedure}}
 
-\domain{\var{Output-port} must be a port that accumulates a bytes
+\domain{\var{Output-port} shall be a port that accumulates a bytes
   object from the output written to it, such as the ports created by
   {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
 The {\cf clear-bytes-output-port!} and {\cf clear-string-output-port!}
@@ -775,9 +775,9 @@ Writes \var{octet} to the output port. The unspecified value is returned.
 \rproto{put-bytes}{ output-port bytes start}{procedure}
 \rproto{put-bytes}{ output-port bytes start count}{procedure}}
    
-\domain{\var{start} and \var{count} must be non-negative exact
+\domain{\var{start} and \var{count} shall be non-negative exact
   integers that default to 0 and $\texttt{(bytes-length \var{bytes})}
-  - \var{start}$, respectively. \var{bytes} must have a size of at
+  - \var{start}$, respectively. \var{bytes} shall have a size of at
   least $\var{start} + \var{count}$.}  This procedure writes the
 \var{count} bytes of the bytes object \var{bytes}, starting at index
 \var{start}, to the output port. The unspecified value is returned.
@@ -805,8 +805,8 @@ returned.
 \rproto{put-string-n}{ output-port string start count}{procedure}
 \rproto{put-string-n}{ output-port string start count transcoder}{procedure}}
    
-\domain{\var{start} and \var{count} must be non-negative exact
-  integers.  var{string} must have a length of at least $\var{start} +
+\domain{\var{start} and \var{count} shall be non-negative exact
+  integers.  var{string} shall have a length of at least $\var{start} +
   \var{count}$.}  \var{start} defaults to 0.  \var{count} defaults to
 $\texttt{(string-length \var{bytes})} - \var{start}$. Writes the
 encodings of the \var{count} characters of \var{string}, starting at

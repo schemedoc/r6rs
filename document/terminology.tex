@@ -40,6 +40,19 @@ indicates zero or more occurrences of a \hyper{thing}, and
 \end{tabbing}
 indicates one or more occurrences of a \hyper{thing}.
 
+It is a syntax violation if a component of a form does not have the
+shape specified by a template---an exception with condition type
+{\cf\&syntax-violation} will be raised at expansion time.
+
+Descriptions of syntax may express other restrictions on the
+components of a form.  Typically, such a restriction is formulated
+as a phrase of the form ``\hyper{x} shall be a \ldots'' (or otherwise
+using the word ``shall'')  As with
+implicit restrictions, such a phrase means that an exception with
+condition type {\cf\&syntax-violation} will be raised if the component does not
+meet the restriction.
+
+
 If \var{category} is ``procedure'', then the entry describes a procedure, and
 the header line gives a template for a call to the procedure.  Parameter
 names in the template are \var{italicized}.  Thus the header line
@@ -54,13 +67,15 @@ two arguments, a vector \var{vector} and an exact non-negative integer
 \pproto{(make-vector \var{k})}{procedure}
 \pproto{(make-vector \var{k} \var{fill})}{procedure}\unpenalty
 
-indicate that the {\tt make-vector} procedure must be defined to take
+indicate that the {\tt make-vector} procedure takes
 either one or two arguments.
 
 \label{typeconventions}
 An operation that is presented with an argument that it
 is not specified to handle will raise an exception with condition type
-{\cf\&contract}.  For succinctness, we follow the convention
+{\cf\&contract}.
+
+For succinctness, we follow the convention
 that if a parameter name is also the name of a type, then the corresponding argument must be of the named type.
 For example, the header line for {\tt vector-ref} given above dictates that the
 first argument to {\tt vector-ref} must be a vector.  The following naming
@@ -88,11 +103,17 @@ $$
 \end{tabular}
 $$
 
-Other type restrictions are defined used in specific chapters.  For
+Other type restrictions expressed through parameter are defined used in specific chapters.  For
 example, chapter~\ref{numberchapter} uses a number of special parameter
 variables for the various subsets of the numbers.
 
-\todo{Provide an example entry??}
+Descriptions of procedures may express other restrictions on the
+arguments of a procedure.  Typically, such a restriction is formulated
+as a phrase of the form ``\var{x} shall be a \ldots'' (or otherwise
+using the word ``shall.'')  As with
+implicit restrictions, such a phrase means that an exception with
+condition type {\cf\&contract} will be raised if the argument does not
+meet the restriction.
 
 If \var{category} is something other than ``syntax'' and
 ``procedure,'' then the entry describes a non-procedural value, and

@@ -207,13 +207,13 @@ given in section~2.4 of Oscar Waddell's PhD thesis~\cite{Waddellphd}.
 
 In {\cf define-syntax} (section~\ref{define-syntax}), {\cf
   let-syntax}, and {\cf letrec-syntax} forms
-(section~\ref{let-syntax}), a binding for a syntactic keyword must be
+(section~\ref{let-syntax}), a binding for a syntactic keyword shall be
 a \hyper{transformer spec}.  A \hyper{transformer spec} can be an
 expression that evaluates to a transformer.
 
 A transformer is a \defining{transformation procedure} or a
 \defining{variable transformer}.
-A transformation procedure is a procedure that must accept one
+A transformation procedure is a procedure that shall accept one
 argument, a wrapped syntax object (section~\ref{syntaxobjectssection})
 representing the input, and return a \defining{syntax object}
 (section~\ref{syntaxobjectssection}) representing the output.
@@ -241,7 +241,7 @@ procedure to {\cf make-variable-transformer}
 \begin{entry}{%
 \proto{make-variable-transformer}{ proc}{procedure}}
 
-\domain{\var{Proc} must be a procedure  FIXME  What should it do?.}
+\domain{\var{Proc} shall be a procedure  FIXME  What should it do?.}
 
 {\cf make-variable-transformer} returns a transformer procedure that
 allows the expander to recognize that it is a variable transformer.
@@ -286,7 +286,7 @@ More formally, a syntax object is:
 The distinction between the terms ``syntax object'' and ``wrapped syntax
 object'' is important.
 For example, when invoked by the expander, a transformer
-(section~\ref{transformerssection}) must accept a wrapped syntax object but
+(section~\ref{transformerssection}) shall accept a wrapped syntax object but
 may return any syntax object, including an unwrapped syntax object.
 
 \section{Parsing input and producing output}
@@ -299,15 +299,15 @@ their output with {\cf syntax}.
 \pproto{(syntax-case \hyper{expression} (\hyper{literal} \dots) \hyper{clause} \dots)}{\exprtype}}
 \mainschindex{syntax-case}
 
-\syntax Each \hyper{literal} must be an identifier.
-Each \hyper{clause} must take one of the following two forms.
+\syntax Each \hyper{literal} shall be an identifier.
+Each \hyper{clause} shall take one of the following two forms.
 
 \begin{scheme}
 (\hyper{pattern} \hyper{output expression})
 (\hyper{pattern} \hyper{fender} \hyper{output expression})
 \end{scheme}
 
-\hyper{Fender} must and \hyper{output expression} must be
+\hyper{Fender} shall and \hyper{output expression} shall be
 \hyper{expression}s.
 
 A \hyper{pattern} is an identifier, constant, or one of the following.
@@ -481,7 +481,7 @@ are copied directly into the output.
 A subtemplate followed by an ellipsis expands
 into zero or more occurrences of the subtemplate.
 The subtemplate
-must contain at least one pattern variable from a subpattern
+shall contain at least one pattern variable from a subpattern
 followed by an ellipsis.
 (Otherwise, the expander would not be able to determine how many times the
 subform should be repeated in the output.)
@@ -644,7 +644,7 @@ context.
 \begin{entry}{%
 \proto{bound-identifier=?}{ \vari{id} \varii{id}}{procedure}}
 
-\domain{\vari{Id} and \varii{id} must be identifiers.}
+\domain{\vari{Id} and \varii{id} shall be identifiers.}
 The procedure {\cf bound-identifier=?} returns true if and only if a
 binding for one would capture a reference to the other in the output of
 the transformer, assuming that the reference appears within the scope of
@@ -666,7 +666,7 @@ of the bound identifiers.
 \begin{entry}{%
 \proto{free-identifier=?}{ \vari{id} \varii{id}}{procedure}}
 
-\domain{\vari{Id} and \varii{id} must be identifiers.}
+\domain{\vari{Id} and \varii{id} shall be identifiers.}
 The procedure {\cf free-identifier=?} returns \schtrue{} if and
 only if the two identifiers would resolve to the same binding if both were
 to appear in the output of a transformer outside of any bindings inserted
@@ -806,8 +806,8 @@ Thus, a predicate {\cf symbolic-identifier=?} might be defined as follows.
 \proto{datum->syntax}{ template-id datum}{procedure}}
 \end{entry}
 
-\domain{\var{Template-id} must be a
-template identifier and \var{datum} must be a datum value.}
+\domain{\var{Template-id} shall be a
+template identifier and \var{datum} shall be a datum value.}
 This returns a syntax object representation of \var{datum} that
 contains the same contextual information as
 \var{template-id}, with the effect that the
@@ -943,7 +943,7 @@ lists of temporary identifiers.
 \begin{entry}{%
 \proto{generate-temporaries}{ l}{procedure}}
 
-\domain{\var{L} must be be a list or syntax object representing a list-structured
+\domain{\var{L} shall be be a list or syntax object representing a list-structured
 form; its contents are not important.}
 The number of temporaries generated is the number of elements in \var{l}.
 Each temporary is guaranteed to be unique, i.e., different from all other
@@ -1006,8 +1006,8 @@ implemented as a derived form, with the following extensions:
 \rproto{syntax-rules}{ (\hyper{literal} \dotsfoo) \hyper{clause} \dotsfoo}{\exprtype}}
 
 \syntax
-Each \hyper{literal} must be an identifier.
-Each \hyper{clause} must take one of the following two forms.
+Each \hyper{literal} shall be an identifier.
+Each \hyper{clause} shall take one of the following two forms.
 
 \begin{scheme}
 (\hyper{pattern} \hyper{template})
@@ -1078,7 +1078,7 @@ the derived {\cf identifier-syntax} form.
                    ((set! \hyperii{id} \hyper{pattern})
                     \hyperii{template}))}
 
-\syntax The \hyper{id}s must be identifiers.
+\syntax The \hyper{id}s shall be identifiers.
 
 \semantics
 When a keyword is bound to a transformer produced by the first form of
@@ -1197,10 +1197,10 @@ one-armed {\cf if} expressions where appropriate.
 \proto{syntax-violation}{ who message form}{procedure}
 \rproto{syntax-violation}{ who message form subform}{procedure}}
 
-\domain{\var{Name} must be \schfalse{} or a string or a symbol.
-  \var{Message} must be a string.
-  \var{Form} must be a syntax object or a datum value.
-  \var{Subform} must be a syntax object or a datum value.}
+\domain{\var{Name} shall be \schfalse{} or a string or a symbol.
+  \var{Message} shall be a string.
+  \var{Form} shall be a syntax object or a datum value.
+  \var{Subform} shall be a syntax object or a datum value.}
 The {\cf syntax-violation} procedure raises an exception, reporting 
 a syntax violation.  
 The \var{who} argument should describe the macro transformer that
@@ -1261,7 +1261,7 @@ Uses of {\cf unsyntax} and {\cf unsyntax-splicing} are valid only within
 A {\cf quasisyntax} expression may be nested, with each {\cf quasisyntax}
 introducing a new level of syntax quotation and each {\cf unsyntax} or
 {\cf unsyntax-splicing} taking away a level of quotation.
-An expression nested within $n$ {\cf quasisyntax} expressions must
+An expression nested within $n$ {\cf quasisyntax} expressions shall
 be within $n$ {\cf unsyntax} or {\cf unsyntax-splicing} expressions to
 be evaluated.
 

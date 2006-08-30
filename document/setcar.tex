@@ -18,7 +18,7 @@ are described by this report.
 \begin{entry}{%
 \proto{set-car!}{ pair obj}{procedure}}
 
-\nodomain{\var{Pair} must be a pair.}  
+\nodomain{\var{Pair} shall be a pair.}  
 Stores \var{obj} in the car field of \var{pair}.
 Returns the unspecified value.
 
@@ -37,7 +37,7 @@ with condition type {\cf\&contract} should be raised.
 \begin{entry}{%
 \proto{set-cdr!}{ pair obj}{procedure}}
 
-\nodomain{\var{Pair} must be a pair.}
+\nodomain{\var{Pair} shall be a pair.}
 Stores \var{obj} in the cdr field of \var{pair}.
 Returns the unspecified value.
 
@@ -78,7 +78,7 @@ y                       \ev  (a . 4)
 \end{scheme}
 
 Any procedures defined in this
-report that are specified to accept a list argument must check if that
+report that are specified to accept a list argument shall check if that
 argument indeed appears to be a list.  This checking is complicated by
 the fact that some such procedures, e.g. {\cf map} and
 {\cf filter}, call arbitrary procedures that are passed as arguments.
@@ -91,7 +91,7 @@ that a list argument is a
 \textit{plausible list\index{plausible list}}.
 Informally, a plausible list is an object that appears to
 be a list during a sequential traversal, where that traversal
-must also attempt to detect a cycle.
+shall also attempt to detect a cycle.
 In particular, an immutable plausible list is always a list.
 A more formal definition follows.
 
@@ -198,10 +198,10 @@ concurrent execution.
 \begin{entry}{%
 \irproto{length}{ list \vr{k}}{procedure}}
 
-\domain{\var{list} must be a plausible list.}
+\domain{\var{list} shall be a plausible list.}
 
 \begin{note}
-In other words, an exception must be raised if \var{list}
+In other words, an exception shall be raised if \var{list}
 is not a plausible list.
 That \var{list} is a plausible list is not by
 itself sufficient to avoid the exception, however.
@@ -218,38 +218,38 @@ caused by concurrent modification of an argument.
 \begin{entry}{%
 \irproto{append}{ list \dotsfoo{} obj}{procedure}}
 
-\domain{All \var{list}s must be plausible lists.}
+\domain{All \var{list}s shall be plausible lists.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{reverse}{ list}{procedure}}
 
-\domain{\var{list} must be a plausible list.}
+\domain{\var{list} shall be a plausible list.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{list-tail}{ l \vr{k}}{procedure}}
 
-\domain{\var{l} must be a plausible list up to \var{k}.}
+\domain{\var{l} shall be a plausible list up to \var{k}.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{list-ref}{ l \vr{k}}{procedure}}
 
-\domain{\var{l} must be a plausible list up to and including \var{k}.}
+\domain{\var{l} shall be a plausible list up to and including \var{k}.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{\var{proc} must be a procedure; if any of the \varj{list}
-are nonempty, then \var{proc} must take as many arguments as there
+\domain{\var{proc} shall be a procedure; if any of the \varj{list}
+are nonempty, then \var{proc} shall take as many arguments as there
 are \varj{list}.
-A natural number $n$ must exist such
+A natural number $n$ shall exist such
 that all \varj{list} are plausible lists of length $n$.}
 
 \begin{note}
-In other words, an exception must be raised if no such $n$ exists.
+In other words, an exception shall be raised if no such $n$ exists.
 The existence of a natural number $n$ such that
 all of the \var{list}s are plausible lists of length $n$
 is not by itself sufficient to avoid the exception, however.
@@ -271,14 +271,14 @@ even in systems that do not allow concurrent execution.
 \begin{entry}{%
 \irproto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{A natural number $n$ must exist such
+\domain{A natural number $n$ shall exist such
 that all \varj{list} are plausible lists of length $n$.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{list->string}{ list}{procedure}}
 
-\domain{\var{list} must be a plausible list where, for every
+\domain{\var{list} shall be a plausible list where, for every
   natural number $n$ and for every plausible prefix $x_i$ of that argument
   of length $n$, there exists a time $t$ with $t_i < t <
   t_r$, where $t_r$ is the time of first return from {\cf
@@ -288,7 +288,7 @@ that all \varj{list} are plausible lists of length $n$.}
 \begin{entry}{%
 \irproto{apply}{ proc \vari{arg} $\ldots$ args}{procedure}}
 
-\domain{\var{proc} must be a procedure and \var{args} must be a
+\domain{\var{proc} shall be a procedure and \var{args} shall be a
   plausible list.}
 \end{entry}
 
@@ -301,7 +301,7 @@ library described in chapter~\ref{listutilities}:
 \begin{entry}{%
 \irproto{find}{ proc list}{procedure}}
 
-\domain{\var{proc} must be a procedure; it must take a single argument
+\domain{\var{proc} shall be a procedure; it shall take a single argument
     if \var{list} is non-empty.
     Either there exists a natural number $n$ such
     that \var{list} is a plausible list of length $n$
@@ -324,8 +324,8 @@ library described in chapter~\ref{listutilities}:
 \irproto{forall}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}
 \irproto{exists}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}}
 
-\domain{\var{proc} must be a procedure; if any \varj{l} is
-    nonempty, then \var{proc} must take as many arguments
+\domain{\var{proc} shall be a procedure; if any \varj{l} is
+    nonempty, then \var{proc} shall take as many arguments
     as there are \var{l}s.
     Either there exists a natural number $n$ such
     that every $l_i$ is a plausible list of length $n$
@@ -350,19 +350,19 @@ library described in chapter~\ref{listutilities}:
 \irproto{partition}{ proc list}{procedure}
 }
 
-\domain{\var{proc} must be a procedure; it must take a single argument
+\domain{\var{proc} shall be a procedure; it shall take a single argument
     if \var{list} is non-empty.
-    \var{list} must be a plausible list.}
+    \var{list} shall be a plausible list.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{fold-left}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}
 \irproto{fold-right}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{\var{kons} must be a
-  procedure; if the \var{list}s are non-empty, it must take one more
+\domain{\var{kons} shall be a
+  procedure; if the \var{list}s are non-empty, it shall take one more
   argument than there are {\it list}s.
-    There must exist a natural number $n$ such
+    There shall exist a natural number $n$ such
     that every \var{list} is a plausible list of length $n$
     between entry and some subsequent time before exit.}
 \end{entry}
@@ -373,9 +373,9 @@ library described in chapter~\ref{listutilities}:
 \irproto{remv}{ obj list}{procedure}
 \irproto{remq}{ obj list}{procedure}}
 
-\domain{\var{proc} must be a procedure; it must take a single argument
+\domain{\var{proc} shall be a procedure; it shall take a single argument
     if \var{list} is non-empty.
-    \var{list} must be a plausible list.}
+    \var{list} shall be a plausible list.}
 \end{entry}
 
 \begin{entry}{%
@@ -385,12 +385,12 @@ library described in chapter~\ref{listutilities}:
 \irproto{memq}{ obj l}{procedure}
 }
 
-\domain{\var{proc} must be a procedure;
-  if \var{l} is nonempty, then it must take a single argument.
-  \var{l} must be a plausible list or a value according to the
+\domain{\var{proc} shall be a procedure;
+  if \var{l} is nonempty, then it shall take a single argument.
+  \var{l} shall be a plausible list or a value according to the
   conditions specified below.}
 
-If \var{l} is not a plausible list, then it must be such that a
+If \var{l} is not a plausible list, then it shall be such that a
 natural number $n$ exists where \var{l} is the first Scheme value of a
 plausible prefix of length $n$ such that
 the car of the last value $x_n$ of that
@@ -404,12 +404,12 @@ the procedure returns.
 \irproto{assv}{ obj al}{procedure}
 \irproto{assq}{ obj al}{procedure}}
 
-\domain{\var{al} (for ``association list'') must be a a plausible
+\domain{\var{al} (for ``association list'') shall be a a plausible
   alist or a value according to the conditions specified below.
-  \var{proc} must be a procedure; if \var{al} is nonempty, then
-  \var{proc} must take a single argument.}
+  \var{proc} shall be a procedure; if \var{al} is nonempty, then
+  \var{proc} shall take a single argument.}
 
-If \var{al} is not a plausible alist, then a natural number $n$ must
+If \var{al} is not a plausible alist, then a natural number $n$ shall
 exist such that \var{al} is the first Scheme value of a plausible
 prefix of length $n$ such that every Scheme value $x_1$ through $x_n$
 of that prefix is a pair, and $x_n$ has a pair as its car at some time

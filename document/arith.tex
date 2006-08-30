@@ -18,7 +18,7 @@ with respect to these numbers in ways that are consistent with the
 IEEE 754 standard for binary floating point arithmetic.  
 An implementation of Scheme is not required to represent infinities and
 NaNs, however;
-an implementation must raise a continuable exception with
+an implementation shall raise a continuable exception with
 condition type {\cf\&no-infinities} or {\cf\&no-nans} (respectively;
 see section~\ref{flonumssection})
 whenever it is unable to represent an infinity or NaN as required by
@@ -45,7 +45,7 @@ $\mathrm{mod}_0$, that are defined as follows:
 
 $\mathrm{div}$, $\mathrm{mod}$, $\mathrm{div}_0$, and $\mathrm{mod}_0$
 each accept two real numbers $x_1$ and $x_2$ as operands, where
-$x_2$ must be nonzero.
+$x_2$ shall be nonzero.
 
 $\mathrm{div}$ returns an integer, and $\mathrm{mod}$ returns a real.
 Their results are specified by
@@ -174,7 +174,7 @@ these functions.
 \section{Fixnums}
 \label{fixnumssection}
 
-Every implementation must define its fixnum range as a closed
+Every implementation shall define its fixnum range as a closed
 interval
 %
 \begin{displaymath}
@@ -217,7 +217,7 @@ names are supplied.
 \end{rationale}
 
 This section uses \var{fx}, \vari{fx} and \varii{fx} as parameter
-names for arguments that must be fixnums.
+names for arguments that shall be fixnums.
 
 \subsection{Quotient-ring fixnum operations}
 
@@ -301,7 +301,7 @@ of its argument.
 \proto{fixnum-div0}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fixnum-mod0}{ \vari{fx} \varii{fx}}{procedure}}
 
-{\varii{Fx} must be nonzero.}
+{\varii{Fx} shall be nonzero.}
 These procedures implement number-theoretic integer division modulo
 $2^w$.  Each procedure returns the unique fixnum(s) congruent modulo
 $2^w$ to the result(s) specified in section~\ref{integerdivision}.
@@ -436,7 +436,7 @@ argument is $0$, then $-1$ is returned.
 \begin{entry}{%
 \proto{fixnum-bit-set?}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} must be non-negative.}  This procedure returns the
+\domain{\varii{fx} shall be non-negative.}  This procedure returns the
 fixnum result of the following computation:
 \begin{scheme}
 (not (fixnum-zero?
@@ -449,7 +449,7 @@ fixnum result of the following computation:
 \begin{entry}{%
 \proto{fixnum-copy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} must be non-negative.}  This procedure
+\domain{\varii{fx} shall be non-negative.}  This procedure
 returns the fixnum result of the following computation:
 \begin{scheme}
 (let* ((mask (fixnum-logical-shift-left 1 \varii{fx})))
@@ -462,7 +462,7 @@ returns the fixnum result of the following computation:
 \begin{entry}{%
 \proto{fixnum-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{Fx} and \variii{fx} must be non-negative.}  This procedure
+\domain{\varii{Fx} and \variii{fx} shall be non-negative.}  This procedure
 returns the fixnum result of the following computation:
 %
 \begin{scheme}
@@ -477,7 +477,7 @@ returns the fixnum result of the following computation:
 \begin{entry}{%
 \proto{fixnum-copy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-\domain{The second and third arguments must be non-negative.} This procedure
+\domain{The second and third arguments shall be non-negative.} This procedure
 returns the fixnum result of the following computation:
 \begin{scheme}
 (let* ((to    \vari{fx})
@@ -509,7 +509,7 @@ the following computation:
 \proto{fixnum-arithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fixnum-arithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{Fx} must be non-negative.}  {\cf
+\domain{\varii{Fx} shall be non-negative.}  {\cf
   Fixnum-arithmetic-shift-left} returns the same result as {\cf
   fixnum-arithmetic-shift}, and {\cf (fixnum-arithmetic-shift-right
 \vari{fx} \varii{fx})} returns the same result as
@@ -525,7 +525,7 @@ This procedure behaves the same as {\cf fixnum-arithmetic-shift-left}.
 \begin{entry}{%
 \proto{fixnum-logical-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{Fx} must be non-negative.}  This procedure returns
+\domain{\varii{Fx} shall be non-negative.}  This procedure returns
 the result of the following computation:
 \begin{scheme}
 (let* ((n       \vari{fx})
@@ -553,7 +553,7 @@ so they have no {\cf fx} equivalents.
 \begin{entry}{%
 \proto{fixnum-rotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-\domain{\varii{Fx}, \variii{fx}, and \variv{fx} must be non-negative.}
+\domain{\varii{Fx}, \variii{fx}, and \variv{fx} shall be non-negative.}
 This procedure returns the result of the following computation:
 \begin{scheme}
 (let* ((n     \vari{fx})
@@ -685,7 +685,7 @@ mathematically correct result of this procedure is not a fixnum.
 \proto{fxdiv0}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxmod0}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} must be nonzero.}
+\domain{\varii{fx} shall be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
 specified in the section~\ref{integerdivision}.  An exception with
@@ -744,7 +744,7 @@ This performs the same operation as {\cf fixnum-first-bit-set}.
 \begin{entry}{%
 \proto{fxbit-set?}{ \var{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} must be non-negative and less than {\cf
+\domain{\varii{fx} shall be non-negative and less than {\cf
   (fixnum-width)}.}  This procedure
 returns the same result returned by {\cf fixnum-bit-set?}.
 \end{entry}
@@ -752,8 +752,8 @@ returns the same result returned by {\cf fixnum-bit-set?}.
 \begin{entry}{%
 \proto{fxcopy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} must be non-negative and less than {\cf
-  (fixnum-width)}. \variii{fx} must be 0 or
+\domain{\varii{fx} shall be non-negative and less than {\cf
+  (fixnum-width)}. \variii{fx} shall be 0 or
 1.}  This procedure returns the same result returned by {\cf
   fixnum-copy-bit}.
 \end{entry}
@@ -761,7 +761,7 @@ returns the same result returned by {\cf fixnum-bit-set?}.
 \begin{entry}{%
 \proto{fxbit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} and \variii{fx} must be non-negative and less than
+\domain{\varii{fx} and \variii{fx} shall be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
     equal to \variii{fx}.}  This procedure returns the same result
   returned by {\cf fixnum-bit-field}.
@@ -770,8 +770,8 @@ returns the same result returned by {\cf fixnum-bit-set?}.
 \begin{entry}{%
 \proto{fxcopy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-\domain{\varii{fx} and \variii{fx} must be non-negative and less than
-  {\cf (fixnum-width)}.  Moreover, or \varii{fx} must be less than or
+\domain{\varii{fx} and \variii{fx} shall be non-negative and less than
+  {\cf (fixnum-width)}.  Moreover, or \varii{fx} shall be less than or
     equal to \variii{fx}.}  This procedure returns the same result
   returned by {\cf fixnum-copy-bit-field}.
 \end{entry}
@@ -779,7 +779,7 @@ returns the same result returned by {\cf fixnum-bit-set?}.
 \begin{entry}{%
 \proto{fxarithmetic-shift}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{The absolute value of the \varii{fx} must be less than 
+\domain{The absolute value of the \varii{fx} shall be less than 
 {\cf (fixnum-width)}.}  If
 %
 \begin{scheme}
@@ -795,7 +795,7 @@ raised.
 \proto{fxarithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxarithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} must be non-negative.} {\cf
+\domain{\varii{fx} shall be non-negative.} {\cf
   fxarithmetic-shift-left} behaves the same as {\cf
   fxarithmetic-shift}, and {\cf (fxarithmetic-shift-right \vari{fx}
   \varii{fx})} behaves the same as {\cf (fxarithmetic-shift \vari{fx}
@@ -805,8 +805,8 @@ raised.
 \begin{entry}{%
 \proto{fxrotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-\domain{\varii{fx}, \variii{fx}, and \variv{fx} must be non-negative
-  and less than {\cf (fixnum-width)}.  \variv{fx} must be less than
+\domain{\varii{fx}, \variii{fx}, and \variv{fx} shall be non-negative
+  and less than {\cf (fixnum-width)}.  \variv{fx} shall be less than
   the difference between \variii{fx} and \variii{fx}.}  This procedure
 returns the same result as the {\cf fixnum-rotate-bit-field}
 procedure.
@@ -815,8 +815,8 @@ procedure.
 \begin{entry}{%
 \proto{fxreverse-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} and \variii{fx} must be non-negative and less than
-  {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
+\domain{\varii{fx} and \variii{fx} shall be non-negative and less than
+  {\cf (fixnum-width)}.  Moreover, \varii{fx} shall be less than or
   equal to \variii{fx}.}  This procedure returns the same result as
 the {\cf fixnum-reverse-bit-field} procedure.
 \end{entry}
@@ -827,9 +827,9 @@ the {\cf fixnum-reverse-bit-field} procedure.
 This section describes the \deflibrary{r6rs arithmetic flonum} library.
 
 This section uses \var{fl}, \vari{fl} and \varii{fl} as
-parameter names for arguments that must be flonums, and \var{ifl},
+parameter names for arguments that shall be flonums, and \var{ifl},
 \vari{ifl} and \varii{ifl} as parameter names for arguments that 
-must be integer-valued flonums, i.e. flonums for which the
+shall be integer-valued flonums, i.e. flonums for which the
 {\cf integer-valued?} predicate is true.
 
 \begin{entry}{%
@@ -895,7 +895,7 @@ than zero, {\cf flodd?} tests if it is odd,
 \end{scheme}
 
 \begin{note}
-{\cf (flnegative? -0.0)} must return \schfalse{},
+{\cf (flnegative? -0.0)} shall return \schfalse{},
 else it would lose the correspondence with
 {\cf (fl< -0.0 0.0)}, which is \schfalse{}
 according to the IEEE standards.
@@ -1171,10 +1171,10 @@ type predicates are also false of that number.
 \end{entry}
 
 This section uses \var{ex}, \vari{ex}, \varii{ex}, and \variii{ex} as
-parameter names for arguments that must be exact complex numbers, \var{ef},
+parameter names for arguments that shall be exact complex numbers, \var{ef},
 \vari{ef}, \varii{ef}, and \variii{ef} as parameter names for arguments 
-that must be exact rational numbers, and \var{ei}, \vari{ei}, \varii{ei}, and
-\variii{ei} as parameter names that must be exact integers.
+that shall be exact rational numbers, and \var{ei}, \vari{ei}, \varii{ei}, and
+\variii{ei} as parameter names that shall be exact integers.
 
 \begin{entry}{%
 \proto{exact=?}{ \vari{ex} \varii{ex} \variii{ex} \dotsfoo}{procedure}
@@ -1246,7 +1246,7 @@ This procedure returns the absolute value of its argument.
 \proto{exact-div0}{ \vari{ef} \varii{ef}}{procedure}
 \proto{exact-mod0}{ \vari{ef} \varii{ef}}{procedure}}
 
-\domain{\varii{Ef} must be nonzero.}
+\domain{\varii{Ef} shall be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
 specified in section~\ref{integerdivision}.
@@ -1309,7 +1309,7 @@ this procedure raises an exception with condition type {\cf\&contract}.
 \proto{exact-real-part}{ ex}{procedure}
 \proto{exact-imag-part}{ ex}{procedure}}
 
-The arguments of {\cf exact-make-rectangular} must be exact
+The arguments of {\cf exact-make-rectangular} shall be exact
 rationals.  Suppose $z$ is a complex number such that
 %
 \begin{displaymath}
@@ -1327,7 +1327,7 @@ Then:
 \begin{entry}{%
 \proto{exact-sqrt}{ ei}{procedure}}
 
-\domain{\var{ei} must be a non-negative exact integer.}
+\domain{\var{ei} shall be a non-negative exact integer.}
 The {\cf exact-sqrt} procedure returns two non-negative exact
 integers $s$ and $r$ where $\var{ei} = s^2 +
 r$ and $\var{ei} < (s+1)^2$.
@@ -1405,7 +1405,7 @@ If the argument is $0$, then $-1$ is returned.
 \begin{entry}{%
 \proto{exact-bit-set?}{ \vari{ei} \varii{ei}}{procedure}}
 
-\domain{\varii{Ei} must be a non-negative exact integer.}
+\domain{\varii{Ei} shall be a non-negative exact integer.}
 
 Otherwise returns the result of the following computation:
 \begin{scheme}
@@ -1419,8 +1419,8 @@ Otherwise returns the result of the following computation:
 \begin{entry}{%
 \proto{exact-copy-bit}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-\domain{\varii{Ei} must be non-negative, and \variii{ei}
-must be either $0$ or $1$.}
+\domain{\varii{Ei} shall be non-negative, and \variii{ei}
+shall be either $0$ or $1$.}
 This procedure returns the result of the following computation:
 \begin{scheme}
 (let* ((mask (exact-arithmetic-shift-left 1 \varii{ei})))
@@ -1433,8 +1433,8 @@ This procedure returns the result of the following computation:
 \begin{entry}{%
 \proto{exact-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-\domain{\varii{Ei} and \variii{ei} must be non-negative, and
-  \varii{fx} must be less than or equal to \variii{fx}.}  This
+\domain{\varii{Ei} and \variii{ei} shall be non-negative, and
+  \varii{fx} shall be less than or equal to \variii{fx}.}  This
 procedure returns the result of the following computation:
 %
 \begin{scheme}
@@ -1450,8 +1450,8 @@ procedure returns the result of the following computation:
 \begin{entry}{%
 \proto{exact-copy-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
 
-\domain{\varii{Fx} and \variii{fx} must be non-negative,
-and \varii{fx} must be less than or equal to \variii{fx}.}
+\domain{\varii{Fx} and \variii{fx} shall be non-negative,
+and \varii{fx} shall be less than or equal to \variii{fx}.}
 This procedure returns the result of the following computation:
 %
 \begin{scheme}
@@ -1486,7 +1486,7 @@ Returns the exact integer result of the following computation:
 \proto{exact-arithmetic-shift-left}{ \vari{ei} \varii{ei}}{procedure}
 \proto{exact-arithmetic-shift-right}{ \vari{ei} \varii{ei}}{procedure}}
 
-\domain{\varii{ei} must be non-negative.}  {\cf
+\domain{\varii{ei} shall be non-negative.}  {\cf
   exact-arithmetic-shift-left} returns the same result as {\cf
   exact-arithmetic-shift}, and {\cf (exact-arithmetic-shift-right
   \vari{fx} \varii{fx})} returns the same result as {\cf
@@ -1496,8 +1496,8 @@ Returns the exact integer result of the following computation:
 \begin{entry}{%
 \proto{exact-rotate-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
 
-\domain{\varii{ei}, \variii{ei}, \variv{ei} must be non-negative, and \variv{ei}
-must be less than the difference between \varii{ei} and \variii{ei}.}
+\domain{\varii{ei}, \variii{ei}, \variv{ei} shall be non-negative, and \variv{ei}
+shall be less than the difference between \varii{ei} and \variii{ei}.}
 The procedure returns the result of the following computation:
 %
 \begin{scheme}
@@ -1524,8 +1524,8 @@ The procedure returns the result of the following computation:
 \begin{entry}{%
 \proto{exact-reverse-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-\domain{\varii{ei} and \variii{ei} must be non-negative, and
-  \varii{ei} must be less than or equal to \variii{ei}.}  This procedure returns
+\domain{\varii{ei} and \variii{ei} shall be non-negative, and
+  \varii{ei} shall be less than or equal to \variii{ei}.}  This procedure returns
 the result obtained from the first argument by reversing the bit field
 specified by the second and third arguments.
 \begin{scheme}
@@ -1563,13 +1563,13 @@ type predicates are also false of that number.
 \end{entry}
 
 We will use \var{in}, \vari{in}, \varii{in}, and
-\variii{in} as parameter names for arguments that must be inexact numbers,
+\variii{in} as parameter names for arguments that shall be inexact numbers,
 \var{ir}, \vari{ir}, \varii{ir}, and \variii{ir} as
-parameter names for arguments that must be inexact real numbers,
+parameter names for arguments that shall be inexact real numbers,
 \var{if}, \vari{if}, \varii{if}, and \variii{if} as
-parameter names for arguments that must be inexact rationals, and
+parameter names for arguments that shall be inexact rationals, and
 \var{ii}, \vari{ii}, \varii{ii}, and \variii{ii} as
-parameter names for arguments that must be the inexact integers.
+parameter names for arguments that shall be the inexact integers.
 
 \begin{entry}{%
 \proto{inexact=?}{ \vari{in} \varii{in} \variii{in} \dotsfoo}{procedure}
@@ -1648,7 +1648,7 @@ This procedure returns the absolute value of its argument.
 \proto{inexact-mod0}{ \vari{ir} \varii{ir}}{procedure}}
 
 \domain{\vari{ir}
-must be neither infinite nor a NaN, and \varii{ir} must be nonzero.}
+shall be neither infinite nor a NaN, and \varii{ir} shall be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
 specified in section~\ref{integerdivision}.  

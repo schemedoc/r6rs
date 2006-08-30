@@ -75,7 +75,7 @@ This returns a \defining{record-type descriptor}, or \defining{rtd},
 representing a record type distinct from all built-in types and
 other record types.
 
-The \var{name} argument must be a symbol naming the record type; it is
+The \var{name} argument shall be a symbol naming the record type; it is
 intended purely for informational purposes and may be used for printing by
 the underlying Scheme system.
 
@@ -102,7 +102,7 @@ made with the same arguments.
 
 If {\cf make-record-type-descriptor} is
 called twice with the same \var{uid} symbol, the parent
-arguments in the two calls must be {\cf eqv?}, the \var{fields}
+arguments in the two calls shall be {\cf eqv?}, the \var{fields}
 arguments {\cf equal?}, the \var{sealed?} arguments boolean-equivalent
 (both false or both non-false), and the \var{opaque?} arguments
 boolean-equivalent.
@@ -131,10 +131,10 @@ The record type is also opaque if an opaque parent is
 supplied.  If \var{opaque?} is false and an opaque parent is not
 supplied, the record is not opaque.
 
-The \var{fields} argument must be a list of field specifiers. Each
-field specifier must be a list of the form {\cf (mutable \var{name})}
+The \var{fields} argument shall be a list of field specifiers. Each
+field specifier shall be a list of the form {\cf (mutable \var{name})}
 or a list of the form {\cf (immutable \var{name})}.
-Each name must be a symbol and names the corresponding field of the record
+Each name shall be a symbol and names the corresponding field of the record
 type; the names need not be distinct.  A field identified as mutable may
 be modified, whereas an attempt to obtain a mutator for a field identified
 as immutable raises an exception with condition type {\cf\&contract}.
@@ -208,8 +208,8 @@ This returns \schtrue{} if the argument is a record-type descriptor,
 This returns a \defining{record-constructor descriptor} (or
 \defining{constructor descriptor} for short) that can be used to
 create record constructors (via {\cf record-constructor}; see below)
-or other constructor descriptors.  \var{Rtd} must be a record-type
-descriptor.  \defining{Protocol} must be a procedure or \schfalse.
+or other constructor descriptors.  \var{Rtd} shall be a record-type
+descriptor.  \defining{Protocol} shall be a procedure or \schfalse.
 If \schfalse, a default \var{protocol} procedure is supplied.
 If \var{protocol} is a procedure, it is called by {\cf record-constructor}
 with a single argument \var{p} and must return a procedure that creates
@@ -217,7 +217,7 @@ and returns an instance of the record type using \var{p} as described
 below.
 
 If \var{rtd} is not an extension of another record type, then
-\var{parent-constructor-descriptor} must be \schfalse.
+\var{parent-constructor-descriptor} shall be \schfalse.
 In this case, \var{protocol}'s argument \var{p} is a procedure \var{new}
 that expects one parameter for every field of \var{rtd} and returns a
 record instance with the fields of \var{rtd} initialized to its arguments.
@@ -237,7 +237,7 @@ The expression above is equivalent to
 {\cf (lambda (\var{new}) \var{new})}.
 
 If \var{rtd} is an extension of another record type \var{parent-rtd},
-\var{parent-constructor-descriptor} must be a constructor descriptor
+\var{parent-constructor-descriptor} shall be a constructor descriptor
 of \var{parent-rtd} or \schfalse.
 If \var{parent-constructor-descriptor} is \schfalse, a default
 constructor descriptor is supplied.
@@ -462,7 +462,7 @@ appears; hence, it is possible to refer to the bindings (except for
 that of the record type itself) recursively.
 
 The \hyper{name spec} specifies the names of the record type,
-construction procedure, and predicate. It must take the following
+construction procedure, and predicate. It shall take the following
 form.
 
 \begin{scheme}
@@ -470,7 +470,7 @@ form.
 \end{scheme}
 
 \hyper{Record name}, \hyper{constructor name}, and \hyper{predicate
-  name} must all be identifiers.
+  name} shall all be identifiers.
 
 \hyper{Record name}, taken as a symbol, becomes the name of the record
 type.  Additionally, it is bound by this definition to an expand-time
@@ -489,7 +489,7 @@ details, see the description of the {\cf protocol} clause below.
 \hyper{Predicate name} is defined by this definition to a predicate
 for the defined record type.
 
-Each \hyper{record clause} must take one of the following forms; it is
+Each \hyper{record clause} shall take one of the following forms; it is
 a syntax violation if multiple \hyper{record clause}s of the same kind appear in a
 {\cf define-record-type} form.
 
@@ -503,7 +503,7 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
   \null\qquad\hyper{mutator name})}
 
   \hyper{Field name}, \hyper{accessor name}, and \hyper{mutator name}
-  must all be identifiers. The first form declares an immutable field
+  shall all be identifiers. The first form declares an immutable field
   called \hyper{field name}, with the corresponding accessor named \hyper{acccessor
   name}. The second form declares a mutable field called \hyper{field name},
   with the corresponding accessor named \hyper{acccessor name}, and with the
@@ -555,10 +555,10 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
 \item {\tt (nongenerative \hyper{uid})}
    
   This specifies that the record type is nongenerative with uid
-  \hyper{uid}, which must be an \hyper{identifier}.
+  \hyper{uid}, which shall be an \hyper{identifier}.
   If two record-type definitions specify the same \var{uid}, the
   the implied arguments to {\cf make-record-type-descriptor}
-  must be equivalent as described under {\cf make-record-type-descriptor}.
+  shall be equivalent as described under {\cf make-record-type-descriptor}.
   If this condition is not met, it is either considered a syntax violation or
   an exception with condition type {\cf\&contract} is raised.
   If the condition is met, a single record type is generated for both
@@ -577,7 +577,7 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
 
 All bindings created by {\cf define-record-type} (for the record type,
 the construction procedure, the predicate, the accessors, and the
-mutators) must have names that are pairwise distinct.
+mutators) shall have names that are pairwise distinct.
 \end{entry}
 
 \begin{entry}{%

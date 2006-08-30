@@ -17,7 +17,7 @@ argument. Valid values for such a file name include strings that name a file
 using the native notation of filesystem paths on the implementation's underlying
 operating system.
 A \var{filename} parameter name means that the
-corresponding argument must be a file name.
+corresponding argument shall be a file name.
 
 Some implementations will provide a more
 abstract representation of file names. Indeed, most operating
@@ -35,12 +35,12 @@ the file is to be opened. A {\cf file-options} object is an enum-set
 (see section~\ref{enumerationssection}) over the symbols constituting
 valid file options.
 A \var{file-options} parameter name means that the
-corresponding argument must be a file-options object.
+corresponding argument shall be a file-options object.
 
 \begin{entry}{%
 \proto{file-options}{ \hyper{file-options name} \dotsfoo}{\exprtype}}
 
-Each \hyper{file-options name} must be an \meta{identifier}.
+Each \hyper{file-options name} shall be an \meta{identifier}.
 The {\cf file-options} syntax returns a file-options object that 
 encapsulates the
 specified options. The following options (all affecting output
@@ -60,7 +60,7 @@ they have implementation-specific meaning, if any.
 
 The file-options object returned by {\cf (file-options)} specifies,
 when supplied to an operation opening a file for output, that the file
-must exist (otherwise an exception with condition type
+shall exist (otherwise an exception with condition type
 {\cf\&i/o-file-exists-not} is raised) and its data is unchanged by the
 operation.
 
@@ -82,9 +82,9 @@ Although some
 reader and writer objects might conceivably have something to do with
 files or devices, programmers should never assume it.
 A \var{reader} parameter name means that the
-corresponding argument must be a reader.
+corresponding argument shall be a reader.
 A \var{writer} parameter name means that the
-corresponding argument must be a writer.
+corresponding argument shall be a writer.
 
 The \library{r6rs i/o primitive} library has one condition type
 specific to readers and writers:
@@ -113,7 +113,7 @@ condition, but they are not required to do so.
 \begin{entry}{%
 \proto{make-i/o-buffer}{ size}{procedure}}
 
-\domain{\var{Size} must be a non-negative exact integer.}
+\domain{\var{Size} shall be a non-negative exact integer.}
 Creates a bytes object of size \var{size} with undefined contents.
 Callers of the procedures from\library{r6rs i/o primitive}  are encouraged to use bytes
 objects created by {\cf make-i/o-buffer}, because they might have
@@ -139,14 +139,14 @@ Returns \schtrue{} if \var{obj} is a reader, otherwise returns \schfalse.
     \var{chunk-size} \var{read!} \var{available} \var{get-position}
     \var{set-position!} \var{end-position} \var{close})}
 
-Returns a reader object. \var{Id} must be a string naming the reader,
+Returns a reader object. \var{Id} shall be a string naming the reader,
 provided for informational purposes only. \var{Descriptor} may be any
 object; the procedures described in this section will not use it internally for any
 purpose, but \var{descriptor} can be extracted from the reader object via
 {\cf reader-descriptor}. Thus, \var{descriptor} can be used to keep the
 internal state of certain kinds of readers.
    
-\var{Chunk-size} must be a positive exact integer, and it represents a recommended
+\var{Chunk-size} shall be a positive exact integer, and it represents a recommended
 efficient size of the read operations on this reader. This is typically the
 block size of the buffers of the operating system. As such, it is only a
 hint for clients of the reader---calls to the \var{read!} procedure (see below)
@@ -165,15 +165,15 @@ exceptions with condition types as specified above when they encounter an
 exceptional situation. When they do not, the effects are unspecified.
 
 \var{Get-position}, \var{set-position!}, and \var{end-position} may be
-omitted, in which case the corresponding arguments must be \schfalse.
+omitted, in which case the corresponding arguments shall be \schfalse.
    
 \begin{itemize}
 \item {\cf (\var{read!} \var{bytes} \var{start} \var{count})}
        
-  \var{Start} and \var{count} must be non-negative exact integers.
+  \var{Start} and \var{count} shall be non-negative exact integers.
   Reads up to \var{count} bytes from the reader and writes them
-  into \var{bytes}, which must be a bytes object, starting at index
-  start. \var{Bytes} must have size at least $\var{start} +
+  into \var{bytes}, which shall be a bytes object, starting at index
+  start. \var{Bytes} shall have size at least $\var{start} +
   \var{count}$. This procedure returns the number of bytes read as an
   exact integer. It returns 0 if it encounters an end of file, or if
   count is 0. If count is positive, this procedure blocks until at
@@ -204,7 +204,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
 \item {\cf (\var{set-position!} \var{pos})}
        
   When present, moves to position \var{pos} (which
-  must be a non-negative exact integer) in the reader.
+  shall be a non-negative exact integer) in the reader.
        
 \item {\cf (\var{end-position})}
        
@@ -215,7 +215,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
        
   Marks the reader as closed, performs any necessary
   cleanup, and releases the resources associated with the reader.
-  Further operations on the reader must raise an exception with
+  Further operations on the reader shall raise an exception with
   condition type {\cf\&contract}.
 \end{itemize}
 
@@ -259,8 +259,8 @@ value that was supplied as the chunk-size argument to {\cf
 \begin{entry}{%
 \proto{reader-read!}{ reader bytes start count}{procedure}}
    
-\domain{\var{Start} and \var{count} must be non-negative exact
-  integers.  \var{Bytes} must have at least $\var{start} +
+\domain{\var{Start} and \var{count} shall be non-negative exact
+  integers.  \var{Bytes} shall have at least $\var{start} +
 \var{count}$ elements.}
 Reads up to \var{count} bytes from the reader and writes them into
 \var{bytes} starting at index
@@ -324,7 +324,7 @@ Returns \schtrue{} if reader supports the {\cf reader-set-position!} operation, 
 \begin{entry}{%
 \proto{reader-set-position!}{ reader pos}{procedure}}
 
-\domain{\var{Pos} must be a non-negative exact integer.}
+\domain{\var{Pos} shall be a non-negative exact integer.}
 When {\cf reader-has-set-position!?} returns \schtrue{} for
 \var{reader}, moves to position \var{pos} in the stream.
  
@@ -416,14 +416,14 @@ Returns \schtrue{} if \var{obj} is a writer, otherwise returns \schfalse.
     \var{chunk-size} \var{write!} \var{get-position} \var{set-position!}
     \var{end-position} \var{close})}
    
-Returns a writer object. \var{Id} must be a string naming the writer,
+Returns a writer object. \var{Id} shall be a string naming the writer,
 provided for informational purposes only. \var{Descriptor} may be any
 object; the procedures described in this section will not use it internally for any
 purpose, but \var{descriptor} can be extracted from the writer object via
 {\cf writer-descriptor}. Thus, \var{descriptor} can be used to keep the
 internal state of certain kinds of writers.
 
-\var{Chunk-size} must be a positive exact integer, and it is the
+\var{Chunk-size} shall be a positive exact integer, and it is the
 recommended efficient size of the write operations on this writer. As
 such, it is only a hint for clients of the reader---calls to the
 \var{write!} procedure (see below) may specify a different write
@@ -442,12 +442,12 @@ exceptions with condition types as specified above when they encounter an
 exceptional situation. When they do not, the effects are unspecified.
 
 \var{Get-position}, \var{set-position!}, and \var{end-position} may be
-omitted, in which case the corresponding arguments must be \schfalse.
+omitted, in which case the corresponding arguments shall be \schfalse.
 
 \begin{itemize}
 \item {\cf (\var{write!} \var{bytes} \var{start} \var{count})}
    
-  \var{Start} and \var{count} must be non-negative exact integers.
+  \var{Start} and \var{count} shall be non-negative exact integers.
   Writes up to \var{count} bytes in bytes object \var{bytes}
   starting at index \var{start}. Before writing any bytes, {\cf write!} blocks
   until it can write at least one byte. The result is the number of bytes
@@ -469,7 +469,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
    
 \item {\cf (\var{set-position!} \var{pos})}
    
-  When present, moves to position \var{pos} (which must be a
+  When present, moves to position \var{pos} (which shall be a
   non-negative exact integer) in the stream.
   
 \item {\cf (\var{end-position})}
@@ -522,8 +522,8 @@ For a writer created by {\cf make-simple-writer}, the result is the value of the
 \begin{entry}{%
 \proto{writer-write!}{ writer bytes start count}{procedure}}
    
-\domain{\var{Start} and \var{count} must be non-negative exact
-  integers. \var{Bytes} must have at least $\var{start} +
+\domain{\var{Start} and \var{count} shall be non-negative exact
+  integers. \var{Bytes} shall have at least $\var{start} +
 \var{count}$ elements.}
 Writes up to \var{count} bytes in bytes object \var{bytes}
 starting at index \var{start}. Before writing any bytes, {\cf write-write!} blocks
@@ -574,7 +574,7 @@ Returns \schtrue{} if writer supports the \var{writer-set-position!} operation, 
 \proto{writer-set-position!}{ writer pos}{procedure}}
    
 When {\cf writer-has-set-position!?} returns \schtrue{} for
-\var{writer}, moves to position \var{pos} (which must be a non-negative
+\var{writer}, moves to position \var{pos} (which shall be a non-negative
 exact integer) in the stream.
    
 For a writer created by {\cf make-simple-writer}, this procedure calls the
@@ -630,7 +630,7 @@ operations.
 \begin{entry}{%
 \proto{writer-bytes}{ writer}{procedure}}
    
-\domain{The \var{writer} argument must be a bytes writer.}
+\domain{The \var{writer} argument shall be a bytes writer.}
 Returns a bytes object containing the data written to
 writer in sequence. Doing this in no way invalidates the writer or
 change its store.
@@ -641,7 +641,7 @@ on \var{writer} is unspecified.
 \begin{entry}{%
 \proto{clear-writer-bytes!}{ writer}{procedure}}
 
-\domain{\var{Writer} must be a bytes writer.}
+\domain{\var{Writer} shall be a bytes writer.}
 The {\cf clear-writer-bytes!} 
 procedure clears the bytes object associated with \var{writer},
 associating it with an empty bytes object.

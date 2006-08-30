@@ -53,7 +53,7 @@ raised the exception, not as a crash.
 \begin{entry}{%
 \proto{with-exception-handler}{ \var{handler} \var{thunk}}{procedure}}
 
-Returns the result(s) of invoking \var{thunk}. \var{Handler} must be a
+Returns the result(s) of invoking \var{thunk}. \var{Handler} shall be a
 procedure that accepts one argument. It is installed as the current
 exception handler for the dynamic extent (as determined by {\tt
   dynamic-wind}) of the invocation of \var{thunk}.
@@ -269,13 +269,13 @@ separately.
 \begin{entry}{%
 \proto{make-condition-type}{ \var{id} \var{parent} \var{field-names}}{procedure}}
 
-The {\cf make-condition-type} procedure returns a new condition type. \var{Id} must
+The {\cf make-condition-type} procedure returns a new condition type. \var{Id} shall
 be a symbol that serves as a symbolic name for the condition type.
-\var{Parent} must itself be a condition type. \var{Field-names} must
+\var{Parent} shall itself be a condition type. \var{Field-names} shall
 be a list of symbols. It identifies the fields of the conditions
 associated with the condition type.
 
-\var{Field-names} must be disjoint from the field names of
+\var{Field-names} shall be disjoint from the field names of
 \var{parent} and its ancestors. 
 \end{entry}
 
@@ -290,7 +290,7 @@ otherwise
 \proto{make-condition}{ \var{type} \var{field-name} \var{obj} \dotsfoo}{procedure}}
 
 The {\cf make-condition} procedure creates a condition object belonging to condition
-type \var{type}. \var{Field-name} must be a field name. There must be
+type \var{type}. \var{Field-name} shall be a field name. There shall be
 a pair of a \var{field-name} and an \var{obj} for each field of
 \var{type} and its direct and indirect supertypes. {\cf
   Make-condition} returns the condition value, with the argument
@@ -316,10 +316,10 @@ an ancestor, and \schfalse{} otherwise.
 \begin{entry}{%
 \proto{condition-ref}{ \var{condition} \var{field-name}}{procedure}}
 
-\var{Field-name} must be a symbol.
-Moreover, \var{condition} must belong to a condition type which has a
+\var{Field-name} shall be a symbol.
+Moreover, \var{condition} shall belong to a condition type which has a
 field name called \var{field-name}, or one of its (direct or indirect)
-supertypes must have the field.  The {\cf condition-ref} procedure returns the value
+supertypes shall have the field.  The {\cf condition-ref} procedure returns the value
 associated with \var{field-name}.
 \end{entry}
 
@@ -336,7 +336,7 @@ the value from the first of the \var{condition}s that has such a field.
 \begin{entry}{%
 \proto{extract-condition}{ \var{condition} \var{condition-type}}{procedure}}
 
-\var{Condition} must be a condition belonging to \var{condition-type}.
+\var{Condition} shall be a condition belonging to \var{condition-type}.
 The {\cf extract-condition} procedure returns a condition of condition type
 \var{condition-type} with the field values specified by
 \var{condition}.
@@ -365,23 +365,23 @@ to return \schfalse.
   \hyperi{field-spec} \dotsfoo}
 
 This defines a new condition type. \hyper{Condition-type},
-\hyper{supertypes}, and \hyper{predicate} must all be identifiers.
+\hyper{supertypes}, and \hyper{predicate} shall all be identifiers.
 The {\cf define-condition-type} form defines an identifier
 \hyper{condition-type} to some value describing the condition type.
-\hyper{Supertype} must be the name of a previously defined condition
+\hyper{Supertype} shall be the name of a previously defined condition
 type.
 
 The {\cf define-condition-type} form also defines \hyper{predicate} to a
 predicate that identifies conditions associated with that type, or
 with any of its subtypes.
 
-Each \hyper{field-spec} must be of the form
+Each \hyper{field-spec} shall be of the form
 %
 \begin{scheme}
 (\hyper{field} \hyper{accessor})
 \end{scheme}
 %
-where both \hyper{field} and \hyper{accessor} must be identifiers.
+where both \hyper{field} and \hyper{accessor} shall be identifiers.
 The {\cf define-condition-type} form defines each \hyper{accessor} to a
 procedure which extracts the value of the named field from a condition
 associated with this condition type.  
@@ -390,7 +390,7 @@ associated with this condition type.
 \begin{entry}{%
 \proto{condition}{ \hyperi{type-field-binding} \dotsfoo}{\exprtype}}
 
-This creates a condition value. Each \hyper{type-field-binding} must be of
+This creates a condition value. Each \hyper{type-field-binding} shall be of
 the form
 %
 \begin{scheme}
@@ -398,7 +398,7 @@ the form
 \end{scheme}
 %
 Each \hyper{field-binding}
-must be of the form
+shall be of the form
 %
 \begin{scheme}
 (\hyper{field} \hyper{exp})  
@@ -423,7 +423,7 @@ with the condition types retaining their order from the {\cf
   condition} form.  The field names and values are duplicated as
 necessary as described below.
 
-Each \hyper{type-field-binding} must contain field bindings for all
+Each \hyper{type-field-binding} shall contain field bindings for all
 fields of \hyper{condition-type} without duplicates. There is an exception
 to this rule: if a field binding is missing, and the field belongs to
 a supertype shared with one of the other \hyper{type-field-binding}
