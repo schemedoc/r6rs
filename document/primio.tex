@@ -1,154 +1,3 @@
-\section{Condition types}
-
-In exceptional situations arising from ``I/O errors,'' the procedures
-described in the specification below will raise an exception with
-condition type {\cf\&i/o}.  Except where explicitly specified, there
-is no guarantee that the raised condition object will contain all the
-information that would be applicable. It is recommended, however, that
-an implementation provide all information about an exceptional
-situation in the condition object that is available at the place where
-it is detected.
-
-\begin{entry}{%
-\ctproto{i/o}
-\proto{i/o-error?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&i/o \&error
-  i/o-error?)
-\end{scheme}        
-
-This is a supertype for a set of more specific I/O errors.
-\end{entry}   
-
-\begin{entry}{%
-\ctproto{i/o-read}
-\proto{i/o-read-error?}{ obj}{procedure}}
-
-\begin{scheme}
-(define-condition-type \&i/o-read \&i/o
-  i/o-read-error?)
-\end{scheme}
-
-This condition type describes read errors that occurred during an I/O
-operation.
-\end{entry}   
-
-\begin{entry}{%
-\ctproto{i/o-write}
-\proto{i/o-write-error?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&i/o-write \&i/o
-  i/o-write-error?)
-\end{scheme}
-This condition type describes write errors that occurred during an I/O
-    operation.
-  \end{entry}   
-  
-\begin{entry}{%
-\ctproto{i/o-invalid-position}
-\proto{i/o-invalid-position-error?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&i/o-invalid-position \&i/o
-  i/o-invalid-position-error?
-  (position i/o-error-position))
-\end{scheme}
-
-This condition type describes attempts to set the file position to an
-invalid position. The value of the position field is the file position that
-the program intended to set. This condition describes a range error, but
-not a contract violation.
-\end{entry}   
-
-\begin{entry}{%
-\ctproto{i/o-filename}
-\proto{i/o-filename-error?}{ obj}{procedure}
-\proto{i/o-error-filename}{ condition}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&i/o-filename \&i/o
-  i/o-filename-error?
-  (filename i/o-error-filename))
-\end{scheme}
-
-This condition type describes an I/O error that occurred during an
-operation on a named file. Condition objects belonging to this type
-must specify a file name in the {\cf filename} field.
-\end{entry}
-
-\begin{entry}{%
-\ctproto{i/o-file-protection}
-\proto{i/o-file-protection-error?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&i/o-file-protection
-    \&i/o-filename
-  i/o-file-protection-error?)
-\end{scheme}
-
-A condition of this type specifies that an operation tried to operate on a
-named file with insufficient access rights.
-\end{entry}   
-
-\begin{entry}{%
-\ctproto{i/o-file-is-read-only}
-\proto{i/o-file-is-read-only-error?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&i/o-file-is-read-only
-    \&i/o-file-protection
-  i/o-file-is-read-only-error?)
-\end{scheme}
-
-A condition of this type specifies that an operation tried to operate on a
-named read-only file under the assumption that it is writeable.
-\end{entry}   
-
-\begin{entry}{%
-\ctproto{i/o-file-already-exists}
-\proto{i/o-file-already-exists-error?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&i/o-file-already-exists
-    \&i/o-filename
-  i/o-file-already-exists-error?)
-\end{scheme}
-A condition of this type specifies that an operation tried to operate on an
-existing named file under the assumption that it does not exist.
-\end{entry}   
-
-\begin{entry}{%
-\ctproto{i/o-file-exists-not}
-\proto{i/o-exists-not-error?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&i/o-file-exists-not
-    \&i/o-filename
-  i/o-file-exists-not-error?)
-\end{scheme}
-
-A condition of this type specifies that an operation tried to operate on an
-non-existent named file under the assumption that it exists.
-\end{entry}   
-
 \section{Primitive I/O}
 \label{primiosection}
 
@@ -157,10 +6,9 @@ simple, primitive I/O subsystem.  It provides unbuffered I/O, and is
 close to what a typical operating system offers. Thus, its interface
 is suitable for implementing high-throughput and zero-copy I/O.
 
-The Primitive I/O layer also allows clients to implement custom data
+This library also allows programs to implement custom data
 sources and sinks via a simple interface.
-
-The Primitive I/O layer handles only blocking-I/O.
+It handles only blocking-I/O.
 
 \subsection{File names}
 
@@ -256,7 +104,7 @@ This condition type could be defined by
 
 This condition type allows specifying the particular reader or writer
 with which an I/O error is associated. Conditions raised by the
-Primitive I/O procedures may include an {\cf\&i/o-reader/writer}
+procedures exported by the \library{r6rs i/o primitive} may include an {\cf\&i/o-reader/writer} 
 condition, but they are not required to do so.
 \end{entry}
 
@@ -267,7 +115,7 @@ condition, but they are not required to do so.
 
 \domain{\var{Size} must be a non-negative exact integer.}
 Creates a bytes object of size \var{size} with undefined contents.
-Callers of the Primitive I/O procedures are encouraged to use bytes
+Callers of the procedures from\library{r6rs i/o primitive}  are encouraged to use bytes
 objects created by {\cf make-i/o-buffer}, because they might have
 alignment and placement characteristics that {\cf make reader-read!}
 and {\cf writer-write!} more efficient.  (Those procedures are still
@@ -293,7 +141,7 @@ Returns \schtrue{} if \var{obj} is a reader, otherwise returns \schfalse.
 
 Returns a reader object. \var{Id} must be a string naming the reader,
 provided for informational purposes only. \var{Descriptor} may be any
-object; the Primitive I/O system will not use it internally for any
+object; the procedures described in this section will not use it internally for any
 purpose, but \var{descriptor} can be extracted from the reader object via
 {\cf reader-descriptor}. Thus, \var{descriptor} can be used to keep the
 internal state of certain kinds of readers.
@@ -568,7 +416,7 @@ Returns \schtrue{} if \var{obj} is a writer, otherwise returns \schfalse.
    
 Returns a writer object. \var{Id} must be a string naming the writer,
 provided for informational purposes only. \var{Descriptor} may be any
-object; the Primitive I/O system will not use it internally for any
+object; the procedures described in this section will not use it internally for any
 purpose, but \var{descriptor} can be extracted from the writer object via
 {\cf writer-descriptor}. Thus, \var{descriptor} can be used to keep the
 internal state of certain kinds of writers.
