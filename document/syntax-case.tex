@@ -225,13 +225,13 @@ form, and its output replaces the entire form.
 If the keyword is found in any other definition or expression context, the
 transformer receives a wrapped syntax object representing just the keyword
 reference, and its output replaces just the reference.
-An exception with condition type {\cf\&syntax} is signaled if the keyword appears on the
+An exception with condition type {\cf\&syntax} is raised if the keyword appears on the
 left-hand side of a {\cf set!} expression.
 
 Variable transformers are similar.
 If a keyword associated with a variable transformer appears on
-the left-hand side of a {\cf set!} expression, however, an error
-is not signaled.
+the left-hand side of a {\cf set!} expression, however, no 
+exception is raised.
 Instead, the transformer receives a wrapped syntax object representing the
 entire {\cf set!} expression as its argument, and its output
 replaces the entire {\cf set!} expression.
@@ -420,7 +420,7 @@ If the pattern matches the value and no
 value of the {\cf syntax-case} expression.
 If the pattern does not match the value, {\cf syntax-case} tries
 the second \hyper{clause}, then the third, and so on.
-An error is signaled if the value does not match any of the patterns.
+An exception with condition type {\cf\&syntax} is raised if the value does not match any of the patterns.
 
 If the optional \hyper{fender} is present, it serves as an additional
 constraint on acceptance of a clause.
