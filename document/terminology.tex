@@ -186,26 +186,6 @@ procedure.  (See section~\ref{unspecifiedvalue}.)  In this case, the
 return value is meaningless, and programmers are discouraged from
 relying on its specific nature.
 
-\section{Multiple return values}
-
-A Scheme expression can evaluate to an arbitrary finite number of
-values.  These values are passed to the expression's continuation.
-
-Not all continuations accept any number of values: A continuation that
-accepts the argument to a procedure call is guaranteed to accept
-exactly one value.  The effect of passing such a continuation a
-different number of values is unspecified.  The {\cf call-with-values}
-described in section~\ref{controlsection} allows creating
-continuations that specified numbers of return values.  If a number of
-return values is passed to a continuation created by {\cf
-  call-with-values} not accepted by its \var{consumer} an exception is
-raised.
-
-A number of forms in the base library have sequences of expressions
-as subforms that are evaluated sequentially, with the return values of
-all but the last expression being discarded.  The continuations
-discarding these values accept any number of values.
-
 \section{Exceptional situations}
 
 When speaking of an exceptional situation (see section~\ref{exceptionalsituationsection}), this

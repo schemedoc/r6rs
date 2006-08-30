@@ -4,23 +4,28 @@
 
 \section{Programs and libraries}
 
-A Scheme consists of a set of \textit{libraries\index{library}}, each
+A Scheme program consists of a \textit{script\index{script}}
+together with a set of \textit{libraries\index{library}}, each
 of which defines a part of the program connected to the others through
 explicitly specified exports and imports.  A library consists of a set
-of import and export FIXME specifications and a body, which contains
-the code defining the library.  Chapter~\ref{librarychapter} describes
-the syntax and semantics for libraries.  The subsequent chapters
+of export and import specifications and a body, which consists of
+declarations, definitions, and expressions;
+a script is similar to a library, but
+has no export specifications.
+Chapters~\ref{librarychapter} and \ref{scriptchapter}
+describe the syntax and semantics of libraries and scripts,
+respectively.  Subsequent chapters
 describe various standard libraries provided by a Scheme system.  In
 particular, chapter~\ref{baselibrarychapter} describes a base
-library defining most of the constructs traditionally associated with
+library that defines most of the constructs traditionally associated with
 Scheme programs.
 
 The division between the base library and other standard libraries is
 based on use, not on construction.  In particular, some facilities
 that are typically implemented as ``primitives'' by a compiler or
 run-time libraries rather than in terms of other standard procedures
- or syntactic forms are not part of the base library, but defined in
-separate libraries.  Examples include the fixnum and flonum libraries,
+ or syntactic forms are not part of the base library, but are defined in
+separate libraries.  Examples include the fixnums and flonums libraries,
 the exceptions and conditions libraries, and the libraries for
 records.
 
@@ -50,7 +55,7 @@ In programs without \ide{set!}, one can safely pretend that the
 variable is bound directly to the value. }
 
 \vest Certain expression types are used to create new kinds of syntax
-and bind syntactic keywords to those new syntaxes, while other
+and to bind syntactic keywords to those new syntaxes, while other
 expression types create new locations and bind variables to those
 locations.  These expression types are called {\em binding constructs}.
 \mainindex{binding construct}
@@ -90,13 +95,15 @@ values.  These values are passed to the expression's continuation.
 
 Not all continuations accept any number of values: A continuation that
 accepts the argument to a procedure call is guaranteed to accept
-exactly one value.  The effect of passing such a continuation a
-different number of values is unspecified.  The {\cf call-with-values}
-described in section~\ref{controlsection} allows creating
-continuations that specified numbers of return values.  If a number of
-return values is passed to a continuation created by {\cf
-  call-with-values} not accepted by its \var{consumer} an exception is
-raised.
+exactly one value.  The effect of passing some other number of values
+to such a continuation is unspecified.  The {\cf call-with-values}
+procedure
+described in section~\ref{controlsection} makes it possible to create
+continuations that accept other specified numbers of return values.
+If the number of
+return values passed to a continuation created by a call to
+{\cf call-with-values} is not accepted by the \var{consumer}
+that was passed in that call, then an exception is raised.
 
 A number of forms in the base library have sequences of expressions
 as subforms that are evaluated sequentially, with the return values of
@@ -115,45 +122,49 @@ describes the nature of the exceptional siutation.  The report uses
 the condition system described in section~\ref{conditionssection} to
 describe exceptional situations, classifying them by condition types.
 
-For most exceptional situations where an exception is raised, the
-program cannot continue at the place the situation was detected.  In
-that case, the exception handler invoked by the exception must not
-return.  In some cases, however, continuing is permissible; the
+For most of the exceptional situations described in this report,
+portable programs cannot rely upon the exception being continuable
+at the place where the situation was detected.
+For those exceptions, the exception handler that is invoked by the
+exception should not return.
+In some cases, however, continuing is permissible; the
 handler may return.  See~\ref{exceptionssection}.
 
-The above requirements for violations and implementation restrictions
-only apply in \textit{safe mode}.  Implementations may not raise
-exceptions in those situations in \textit{unsafe mode}.  The
-distinction is explained in section~\ref{safeunsafemodesection}.
-
-Implementation restrictions indicate circumstances under which an
-implementation is permitted to raise an exception if it is unable to
-continue execution of a correct program because of some restriction
-imposed by the implementation.
+An \defining{implementation restriction} is a limitation imposed
+by an implementation.  Implementations are required to raise an
+exception when they are unable to continue correct execution of
+a correct program due to some implementation restriction.
 
 Some possible implementation restrictions
 such as the lack of representations for NaNs and infinities (see
-section~\ref{infinitiesnanssection}) are covered by this report, and
-implementations must raise an exception of the appropriate condition
-type if it encounters such a situation.
+section~\ref{infinitiesnanssection}) are anticipated by this report,
+and implementations must raise an exception of the appropriate
+condition type if they encounter such a situation.
 
 Implementation restrictions not explicitly covered in this report are
-of course discouraged, but implementations are encouraged to report
-violations of implementation restrictions.\mainindex{implementation
-  restriction} For example, an implementation may raise an exception
+of course discouraged, but implementations are required to report
+violations of implementation restrictions.
+For example, an implementation may raise an exception
 with condition type {\cf\&implementation-restriction} if it does not
 have enough storage to run a program.
+
+The above requirements for violations and implementation restrictions
+apply only in scripts and libraries that are said to be \textit{safe}.
+In \textit{unsafe} code, implementations might not raise the
+exceptions that are normally raised in those situations.  The
+distinction between safe and unsafe code is explained in
+section~\ref{safeunsafemodesection}.
 
 
 \section{Safety}
 \label{safeunsafemodesection}
 
 The standard libraries whose exports are described by this document
-are said to be \defining{safe libraries}.  Libraries that import only
-from safe libraries, and do not contain any {\cf (safe 0)} or {\cf
-  unsafe} declarations (see section~\ref{declarationssection}, are
-also said to be safe libraries.  A script is said to be safe if and
-only if its library part is a safe library.
+are said to be \defining{safe libraries}.  Libraries and scripts
+that import only
+from safe libraries, and do not contain any {\cf (safe 0)} or
+{\cf unsafe} declarations (see section~\ref{declarationssection}),
+are also said to be safe.
 
 As defined by this document, the Scheme programming language
 is safe in the following sense:
