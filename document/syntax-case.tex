@@ -1187,6 +1187,81 @@ one-armed {\cf if} expressions where appropriate.
 \end{schemenoindent}
 \end{entry}
 
+\section{{\tt quasisyntax}}
+
+\begin{entry}{%
+\proto{quasisyntax}{ \hyper{template}}{\exprtype}}
+
+The {\cf quasisyntax} form is similar to {\cf syntax}, but it allows parts
+of the quoted text to be evaluated, in a manner similar to the operation
+of {\cf quasiquote} (section~\ref{quasiquotesection}).
+
+Within a {\cf quasisyntax} \var{template}, subforms of
+{\cf unsyntax} and {\cf unsyntax-splicing} forms are evaluated,
+and everything else is treated as ordinary template material, as
+with {\cf syntax}.
+The value of each {\cf unsyntax} subform is inserted into the output
+in place of the {\cf unsyntax} form, while the value of each
+{\cf unsyntax-splicing} subform is spliced into the surrounding list
+or vector structure.
+Uses of {\cf unsyntax} and {\cf unsyntax-splicing} are valid only within
+{\cf quasisyntax} expressions.
+
+A {\cf quasisyntax} expression may be nested, with each {\cf quasisyntax}
+introducing a new level of syntax quotation and each {\cf unsyntax} or
+{\cf unsyntax-splicing} taking away a level of quotation.
+An expression nested within $n$ {\cf quasisyntax} expressions must
+be within $n$ {\cf unsyntax} or {\cf unsyntax-splicing} expressions to
+be evaluated.
+
+The {\cf quasisyntax} keyword can be used in place of {\cf with-syntax} in many
+cases.
+For example, the definition of {\cf case} shown under the description
+of {\cf with-syntax} above can be rewritten using {\cf quasisyntax}
+as follows.
+
+\begin{schemenoindent}
+(define-syntax case
+  (lambda (x)
+    (syntax-case x ()
+      [(\_ e c1 c2 ...)
+       \#`(let ([t e])
+           \#,(let f ([c1 \#'c1] [cmore \#'(c2 ...)])
+               (if (null? cmore)
+                   (syntax-case c1 (else)
+                     [(else e1 e2 ...)
+                      \#'(begin e1 e2 ...)]
+                     [((k ...) e1 e2 ...)
+                      \#'(if (memv t '(k ...))
+                             (begin e1 e2 ...))])
+                   (syntax-case c1 ()
+                     [((k ...) e1 e2 ...)
+                      \#`(if (memv t '(k ...))
+                            (begin e1 e2 ...)
+                            \#,(f (car cmore)
+                                  (cdr cmore)))]))))])))
+\end{schemenoindent}
+                          
+Uses of {\cf unsyntax} and {\cf unsyntax-splicing} with zero or more than
+one subform are valid only in splicing (list or vector) contexts.
+{\cf (unsyntax \var{template} \dots)} is equivalent to
+{\cf (unsyntax \var{template}) \dots}, and
+{\cf (unsyntax-splicing \var{template} \dots)} is equivalent to
+{\cf (unsyntax-splicing \var{template}) \dots}.
+These forms are primarily useful as intermediate forms in the output
+of the {\cf quasisyntax} expander.
+
+\begin{note}
+Uses of {\cf unsyntax} and {\cf unsyntax-splicing} with 
+zero or more than one subform enable certain 
+idioms~\cite{bawdenquasiquote}, such as {\cf \#,@\#,@}, which has the
+effect of a doubly indirect splicing when used within a doubly nested
+and doubly evaluated {\cf quasisyntax} expression, as with the
+nested {\cf quasiquote} examples shown in
+section~\ref{quasiquotesection}.  FIXME: we don't have any yet
+\end{note}
+\end{entry}
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "r6rs"
