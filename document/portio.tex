@@ -661,11 +661,16 @@ port.
 
 \begin{entry}{%
 \proto{open-bytes-output-port}{ proc}{procedure}
-\rproto{open-bytes-output-port}{ proc transcoder}{procedure}}
+\rproto{open-bytes-output-port}{ proc transcoder}{procedure}
+\proto{open-string-output-port}{ proc}{procedure}
+\rproto{open-string-output-port}{ proc transcoder}{procedure}}
 
 This creates an output port that accumulates a bytes object from the
 output written to it.  If \var{transcoder} is specified, it becomes
 the transcoder associated with the returned port.
+
+The {\cf open-string-output-port} procedure is the same as {\cf
+  open-bytes-output-port}.
 \end{entry}
 
 \begin{entry}{%
@@ -689,13 +694,6 @@ argument. When \var{proc} returns for the first time, the port is
 closed and the bytes object associated with the port is returned.  If
 \var{transcoder} is specified, it becomes the transcoder associated
 with the port.
-\end{entry}
-
-\begin{entry}{%
-\proto{open-string-output-port}{ proc}{procedure}
-\rproto{open-string-output-port}{ proc transcoder}{procedure}}
-
-This is the same as {\cf open-bytes-output-port}.
 \end{entry}
 
 \begin{entry}{%
@@ -733,6 +731,18 @@ case, decoding errors are always handled analogously to the {\cf
 encoding is skipped and decoded as the U+FFFD replacement character.
 If \var{transcoder} is specified, it also becomes the transcoder
 associated with the port.
+\end{entry}
+
+\begin{entry}{%
+\proto{clear-bytes-output-port!}{ output-port}{procedure}
+\proto{clear-string-output-port!}{ output-port}{procedure}}
+
+\domain{\var{output-port} must be a port that accumulates a bytes
+  object from the output written to it, such as the ports created by
+  {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
+The {\cf clear-bytes-output-port!} and {\cf clear-string-output-port!}
+procedures clears the bytes object associated with \var{output-port},
+associating it with an empty bytes object.
 \end{entry}
 
 \begin{entry}{%
