@@ -43,7 +43,7 @@ syntactic sugar.  See section~\ref{proper tail recursion}.
 objects in their own right.  Procedures can be created dynamically,
 stored in data structures, returned as results of procedures, and so
 on.  Other languages with these properties include Common Lisp,
-Haskell, ML, Python, and Ruby.
+Haskell, ML, Smalltalk, and Ruby.
 
 \vest One distinguishing feature of Scheme is that continuations, which
 in most other languages only operate behind the scenes, also have
@@ -163,22 +163,21 @@ fundamental expressions are literal expressions:
 
 \begin{scheme}
 \schtrue{} \ev \schtrue
-23 \ev 23
-42 \ev 42
+23 \ev 23%
 \end{scheme}
 
 This notation means that the expression \schtrue{} evaluates to
 \schtrue{}, that is, the value for ``true,''  and that the expression
 {\cf 23} evaluates to the number 23.
 
-Compound expressions are formed by placing parantheses around their
+Compound expressions are formed by placing parentheses around their
 subexpressions.  The first subexpression is an
 \textit{operator}\mainindex{operator} and identifies an operation, the
 remaining subexpressions are \textit{operands}\mainindex{operand}:
 %
 \begin{scheme}
 (+ 23 42) \ev 65
-(+ 14 (* 23 42)) \ev 980
+(+ 14 (* 23 42)) \ev 980%
 \end{scheme}
 %
 In the first of these examples, {\cf +}, the operator, is the name of
@@ -208,7 +207,7 @@ proportion of Scheme code.)
 \begin{scheme}
 (let ((x 23)
       (y 42))
-  (+ x y)) \ev 65
+  (+ x y)) \ev 65%
 \end{scheme}
 
 In this case, the operator of the expression, {\cf let}, is a binding
@@ -229,7 +228,7 @@ identifiers as follows:
 \begin{scheme}
 (define x 23)
 (define y 42)
-(+ x y) \ev 65
+(+ x y) \ev 65%
 \end{scheme}
 
 The first two parenthesized structures are \textit{definitions}; they
@@ -293,7 +292,7 @@ In this example, the body of {\cf g} is evaluated with its {\cf p}
 variable bound to {\cf f} and {\cf x} bound to 23, which is equivalent
 to {\cf (f 23)}, which evaluates to 42.
 
-In fact, many seemingly ``built-in'' operations of Scheme are simply
+In fact, many predefined operations of Scheme are
 global bindings for procedures.  {\cf +}, for example, which receives
 special syntactic treatment in many other languages, is just a regular
 identifier in Scheme, bound to a procedure that adds numbers.  The
@@ -304,7 +303,7 @@ same holds for {\cf *} and many others:
   (op x y))
 
 (h + 23 42) \ev 65
-(h * 23 42) \ev 966
+(h * 23 42) \ev 966%
 \end{scheme}
 
 Procedure definitions are not the only way to create procedures.  A
@@ -327,7 +326,8 @@ Whereas {\cf (+ 23 42)}, {\cf (f 23)}, and {\cf ((lambda (x) (+ x 42))
 it is an identifier, is not a variable, but is instead a \textit{syntactic
   keyword}\mainindex{syntactic keyword}.  An expression that has a
 syntactic keyword as its operator obeys special rules determined by
-the keyword.
+the keyword.  The {\cf define} identifier in a definition is also a
+syntactic keyword.  Hence, definitions are also not procedure calls.
 
 In the case of {\cf lambda}, these rules specify that the first
 subform is a list of parameters, and the second subform the body of
@@ -336,8 +336,8 @@ of binding specifications, the and the second is a body of
 expressions.
 
 Procedure calls can be distinguished from these ``special forms'' by
-looking for a syntactic keyword in the operator position of an
-expression: if the operator is not a syntactic keyword, the expression
+looking for a syntactic keyword in the first position of an
+expression: if it is not a syntactic keyword, the expression
 is a procedure call.  The set of syntactic keywords of Scheme is
 fairly small, which usually makes this task fairly simple.  However,
 it is possible to create new bindings for syntactic keywords; see
@@ -355,15 +355,15 @@ via \textit{assignment}\mainindex{assignment}:
 \begin{scheme}
 (let ((x 23))
   (set! x 42)
-  x) \ev 42
+  x) \ev 42%
 \end{scheme}
 
 In this case, the body of the {\cf let} expression consists of two
 expressions which are evaluated sequentially, with the value of the
 final expression becoming the value of the entire {\cf let}
-expression.  The {\cf set! x 42} expression is an assignment, saying
+expression.  The {\cf (set! x 42)} expression is an assignment, saying
 ``replace the value in the location denoted by {\cf x} with 42.''
-Thus, the previous value of 23 is discarded and replaced by 42.
+Thus, the previous value of 23 is replaced by 42.
 
 \section{Derived forms and macros}
 
@@ -464,7 +464,7 @@ particular, symbols can be used to represent identifiers.
 
 \begin{scheme}
 '(+ 23 42) \ev (+ 23 42)
-'(define (f x) (+ x 42)) \lev (define (f x) (+ x 42))
+'(define (f x) (+ x 42)) \lev (define (f x) (+ x 42))%
 \end{scheme}
 
 This facilitates writing programs that operate on Scheme source code,
