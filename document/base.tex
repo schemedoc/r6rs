@@ -23,17 +23,18 @@ symbol?           number?
 char?             string?
 vector?           procedure?
 unspecified?      eof-object?
+null?%
 \end{scheme}
 
 These predicates define the base types {\em boolean}, {\em pair}, {\em
 symbol}, {\em number}, {\em char} (or {\em character}), {\em string}, {\em
-vector}, and {\em procedure}.  The empty list is a special
-object of its own type; it satisfies none of the above predicates.
-The same holds for the unspecified value, which is also distinct
-from the empty list.
+vector}, and {\em procedure}.  Moreover, the empty list is a special
+object of its own type, as are the unspecified value, and the end of
+file oject.
 \mainindex{type}\schindex{boolean?}\schindex{pair?}\schindex{symbol?}
 \schindex{number?}\schindex{char?}\schindex{string?}\schindex{vector?}
 \schindex{procedure?}\index{empty list}\index{unspecified value}
+\index{end of file value}\schindex{unspecified?}\schindex{eof-object?}\schindex{null?}
 
 Although there is a separate boolean type,
 any Scheme value can be used as a boolean value for the purpose of a
@@ -54,7 +55,7 @@ The {\cf define} forms described in this section are definitions for
 value bindings and may appear anywhere other definitions may appear.
 See section~\ref{librarybodysection}.
 
-A definition \hyper{definition} should have one of the following forms:\mainschindex{define}
+A \hyper{definition} shall have one of the following forms:\mainschindex{define}\mainindex{definition}
 
 \begin{itemize}
 
@@ -73,12 +74,12 @@ A definition \hyper{definition} should have one of the following forms:\mainschi
 
 This form is equivalent to
 \begin{scheme}
-(define \hyper{variable} (unspecified))
+(define \hyper{variable} (unspecified))%
 \end{scheme}
 
 \item{\tt(define (\hyper{variable} \hyper{formals}) \hyper{body})}
 
-\hyper{Formals} should be either a
+\hyper{Formals} shall be either a
 sequence of zero or more variables, or a sequence of one or more
 variables followed by a space-delimited period and another variable (as
 in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
@@ -89,7 +90,7 @@ in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
 
 \item{\tt(define (\hyper{variable} .\ \hyper{formal}) \hyper{body})}
 
-\hyper{Formal} should be a single
+\hyper{Formal} shall be a single
 variable.  This form is equivalent to
 \begin{scheme}
 (define \hyper{variable}
@@ -101,9 +102,7 @@ variable.  This form is equivalent to
 
 \section{Syntax definitions}
 
-Keyword bindings may be established with {\cf define-syntax},
-{\cf let-syntax}, or {\cf letrec-syntax}.
-
+Syntax definitions are established with {\cf define-syntax}.
 A {\cf define-syntax} form is a \hyper{definition} and may appear
 anywhere other definitions may appear.
 
@@ -133,7 +132,7 @@ For example, the expression
   (define-syntax odd?
     (syntax-rules ()
       ((odd?  x) (not (even? x)))))
-  (even? 10))
+  (even? 10))%
 \end{scheme}
 
 is valid and should return \schtrue{}.
@@ -150,7 +149,7 @@ the expression
     (syntax-rules ()
       ((bind-to-zero id) (define id 0))))
   (bind-to-zero x)
-  x) \ev 0
+  x) \ev 0%
 \end{scheme}
 
 This behavior is irrespective of any binding for
@@ -183,7 +182,7 @@ With \ide{lambda}, \ide{let}, \ide{let*}, \ide{let-values},
 \ide{let*-values}, \ide{letrec*}, and \ide{letrec},
 the variable defined by an internal
 definition is local to the \hyper{body}.  That is, \hyper{variable} is
-bound rather than assigned, and the region of the binding is the
+bound, and the region of the binding is the
 entire \hyper{body}.  For example,
 
 \begin{scheme}
@@ -215,7 +214,7 @@ is treated as if it were not actually present; see section~\ref{begin}.
 The entries in this section describe the expressions of the base
 language, which may occur in the position of the \hyper{expression}
 syntactic variable.  The expressions also include constant literals,
-variable references and procedure calls a described in
+variable references and procedure calls as described in
 section~\ref{primitiveexpressionsection}.
 
 \subsection{Literal expressions}\unsection
@@ -300,7 +299,7 @@ the result(s) of the procedure call.
 (add4 6)                        \ev  10%
 \end{scheme}
 
-\hyper{Formals} should have one of the following forms:
+\hyper{Formals} shall have one of the following forms:
 
 \begin{itemize}
 \item {\tt(\hyperi{variable} \dotsfoo)}:
@@ -326,14 +325,14 @@ list of the actual arguments left over after all the other actual
 arguments have been matched up against the other formal arguments.
 \end{itemize}
 
-It is a syntax violation for a \hyper{variable} to appear more than once in
-\hyper{formals}.
-
 \begin{scheme}
 ((lambda x x) 3 4 5 6)          \ev  (3 4 5 6)
 ((lambda (x y . z) z)
  3 4 5 6)                       \ev  (5 6)%
 \end{scheme}
+
+It is a syntax violation for a \hyper{variable} to appear more than once in
+\hyper{formals}.
 
 Each procedure created as the result of evaluating a \lambdaexp{} is
 (conceptually) tagged
@@ -350,7 +349,7 @@ with a storage location, in order to make \ide{eqv?} and
 \rproto{if}{ \hyper{test} \hyper{consequent}}{\exprtype}}  %\/ if hyper = italic
 
 \syntax
-\hyper{Test}, \hyper{consequent}, and \hyper{alternate} may be arbitrary
+\hyper{Test}, \hyper{consequent}, and \hyper{alternate} shall be 
 expressions.
 
 \semantics
@@ -387,10 +386,10 @@ or at the top level of a library body.  The result of the {\cf set!} expression 
 the unspecified value.
 
 \begin{scheme}
-(define x 2)
-(+ x 1)                 \ev  3
-(set! x 4)              \ev  \theunspecified
-(+ x 1)                 \ev  5%
+(let ((x 2))
+  (+ x 1)
+  (set! x 4)
+  (+ x 1)) \ev  5%
 \end{scheme}
 
 It is a syntax violation if \hyper{variable} refers to an
@@ -403,7 +402,7 @@ immutable binding.
 \proto{cond}{ \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
 
 \syntax
-Each \hyper{clause} should be of the form
+Each \hyper{clause} shall be of the form
 \begin{scheme}
 (\hyper{test} \hyperi{expression} \dotsfoo)%
 \end{scheme}
@@ -462,18 +461,17 @@ appendix~\ref{derivedformsappendix}.
 \proto{case}{ \hyper{key} \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
 
 \syntax
-\hyper{Key} may be any expression.  Each \hyper{clause} should have
-the form
+\hyper{Key} shall be any expression.  Each \hyper{clause} has one of
+the following forms:
 \begin{scheme}
-((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)\rm,%
-\end{scheme}
-where each \hyper{datum} is an external representation of some object.
-The datums denoted by the \hyper{datum}s must not be distinct.
-The last \hyper{clause} may be an ``else clause,'' which has the form
-\begin{scheme}
-(else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
+((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)
+(else \hyperi{expression} \hyperii{expression} \dotsfoo)%
 \end{scheme}
 \schindex{else}
+The second form, which specifies an ``else clause,''
+may only appear as the last \hyper{clause}.
+Each \hyper{datum} is an external representation of some object.
+The datums denoted by the \hyper{datum}s must not be distinct.
 
 \semantics
 A {\cf case} expression is evaluated as follows.  \hyper{Key} is
@@ -510,6 +508,8 @@ appendix~\ref{derivedformsappendix}.
 \begin{entry}{%
 \proto{and}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
+\syntax The \hyper{test}s shall be expressions.
+\semantics
 The \hyper{test} expressions are evaluated from left to right, and the
 value of the first expression that evaluates to a false value (see
 section~\ref{booleansection}) is returned.  Any remaining expressions
@@ -533,7 +533,7 @@ The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
     ((and) \sharpfoo{t})
     ((and test) test)
     ((and test1 test2 ...)
-     (if test1 (and test2 ...) \sharpfoo{f}))))
+     (if test1 (and test2 ...) \sharpfoo{f}))))%
 \end{scheme}
 \end{entry}
 
@@ -541,6 +541,8 @@ The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
 \begin{entry}{%
 \proto{or}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
+\syntax The \hyper{test}s shall be expressions.
+\semantics
 The \hyper{test} expressions are evaluated from left to right, and the value of the
 first expression that evaluates to a true value (see
 section~\ref{booleansection}) is returned.  Any remaining expressions
@@ -566,7 +568,7 @@ The {\cf or} keyword could be defined in terms of {\cf if} using {\cf
     ((or test) test)
     ((or test1 test2 ...)
      (let ((x test1))
-       (if x x (or test2 ...))))))
+       (if x x (or test2 ...))))))%
 \end{scheme}
 \end{entry}
 
@@ -600,12 +602,12 @@ sequentially.
 \proto{let}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Bindings} should have the form
+\hyper{Bindings} shall have the form
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-where each \hyper{init} is an expression, and \hyper{body} should be a
-sequence of one or more expressions.  It is
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.  It is a
 syntax violation for a \hyper{variable} to appear more than once in the list of variables
 being bound.
 
@@ -637,11 +639,11 @@ See also named {\cf let}, section \ref{namedlet}.
 
 \nobreak
 \syntax
-\hyper{Bindings} should have the form
+\hyper{Bindings} shall have the form
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} should be a sequence of
+and \hyper{body} shall be a sequence of
 one or more expressions.
 
 \semantics
@@ -670,7 +672,7 @@ The {\cf let*} keyword could be defined in terms of {\cf let} using {\cf
        body1 body2 ...)
      (let ((name1 expr1))
        (let* ((name2 expr2) ...)
-         body1 body2 ...)))))
+         body1 body2 ...)))))%
 \end{scheme}
 
 \end{entry}
@@ -679,11 +681,11 @@ The {\cf let*} keyword could be defined in terms of {\cf let} using {\cf
 \proto{letrec}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Bindings} should have the form
+\hyper{Bindings} shall have the form
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} should be a sequence of
+and \hyper{body} shall be a sequence of
 one or more expressions. It is a syntax violation for a \hyper{variable} to appear more
 than once in the list of variables being bound.
 
@@ -733,11 +735,11 @@ appendix~\ref{derivedformsappendix}.
 \proto{letrec*}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Bindings} should have the form
+\hyper{Bindings} shall have the form
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} should be a sequence of
+and \hyper{body} shall be a sequence of
 one or more expressions. It is a syntax violation for a \hyper{variable} to appear more
 than once in the list of variables being bound.
 
@@ -788,7 +790,7 @@ as follows:
      (let ((var1 <undefined>) ...)
        (set! var1 init1)
        ...
-       (let () body1 body2 ...)))))
+       (let () body1 body2 ...)))))%
 \end{scheme}
 
 The syntax {\cf <undefined>} represents an expression that
@@ -805,12 +807,12 @@ assignments generated by the {\cf letrec*} transformation take place.
 \proto{let-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Mv-bindings} should have the form
+\hyper{Mv-bindings} shall have the form
 \begin{scheme}
 ((\hyperi{formals} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} should be a sequence of
-one or more expressions. It is syntax violation for a variable to appear more
+and \hyper{body} is as described in section~\ref{bodiessection}. It is
+a syntax violation for a variable to appear more
 than once in the list of variables that appear as part of the formals.
 
 \semantics The \hyper{init}s are evaluated in the current environment
@@ -823,6 +825,8 @@ Then, the \hyper{body} is evaluated in the extended environment, and the
 value(s) of the last expression of \hyper{body} is(are) returned.
 Each binding of a variable has \hyper{body} as its
 region.\index{region}
+If no \hyper{formals} match, an exception with condition type
+{\cf\&contract} is raised.
 
 \begin{scheme}
 (let-values (((a b) (values 1 2))
@@ -835,7 +839,7 @@ region.\index{region}
 (let ((a 'a) (b 'b) (x 'x) (y 'y))
   (let-values (((a b) (values x y))
                ((x y) (values a b)))
-    (list a b x y)))       \ev (x y a b)
+    (list a b x y)))       \ev (x y a b)%
 \end{scheme}
 
 A sample definition of {\cf let-values} in terms of simpler forms is in
@@ -845,7 +849,7 @@ appendix~\ref{derivedformsappendix}.
 \begin{entry}{%
 \proto{let*-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
-The {\cf let*-values} form is similar to {\cf let-values}, but the bindings are
+The {\cf let*-values} form is the same as with {\cf let-values}, but the bindings are
 processed sequentially from left to right, and the
 region\index{region} of the bindings indicated by {\cf(\hyper{formals}
   \hyper{init})} is that part of the {\cf let*-values} expression to
@@ -857,7 +861,7 @@ on.
 (let ((a 'a) (b 'b) (x 'x) (y 'y))
   (let*-values (((a b) (values x y))
                 ((x y) (values a b)))
-    (list a b x y)))  \ev (x y x y)
+    (list a b x y)))  \ev (x y x y)%
 \end{scheme}
 
 The following macro defines {\cf let*-values} in terms of {\cf let}
@@ -872,7 +876,7 @@ and {\cf let-values}:
        body1 body2 ...)
      (let-values (binding1)
        (let*-values (binding2 ...)
-         body1 body2 ...)))))
+         body1 body2 ...)))))%
 \end{scheme}
 
 \end{entry}
@@ -903,7 +907,8 @@ context:
   specified in the second header line.  In this case, the
   \hyper{expression}s are evaluated sequentially from left to right,
   and the value(s) of the last \hyper{expression} is(are) returned.
-  This expression type is used to sequence side effects such as input
+  This expression type is used to sequence side effects such as
+  assignments or input
   and output.
 \end{itemize}
 
@@ -926,7 +931,7 @@ section~\ref{syntaxrulessection}), defines {\cf begin} in terms of {\cf
 (define-syntax \ide{begin}
   (syntax-rules ()
     ((begin exp ...)
-     ((lambda () exp ...)))))
+     ((lambda () exp ...)))))%
 \end{scheme}
 
 The following alternative expansion for {\cf begin} does not make use of
@@ -942,7 +947,7 @@ expression.  It, too, only covers the expression case of {\cf begin}.
      (call-with-values
          (lambda () exp1)
        (lambda ignored
-         (begin exp2 ...))))))
+         (begin exp2 ...))))))%
 \end{scheme}
 
 \end{entry}
@@ -970,12 +975,12 @@ normally be regarded as the same object.  This relation is left slightly
 open to interpretation, but the following partial specification of
 {\cf eqv?} holds for all implementations of Scheme.
 
-The {\cf eqv?} procedure returns \schtrue{} if:
+The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
 
 \begin{itemize}
-\item \vari{obj} and \varii{obj} are both \schtrue{} or both \schfalse.
+\item \vari{Obj} and \varii{obj} are both \schtrue{} or both \schfalse.
 
-\item \vari{obj} and \varii{obj} are both symbols and
+\item \vari{Obj} and \varii{obj} are both symbols and
 
 \begin{scheme}
 (string=? (symbol->string obj1)
@@ -983,47 +988,40 @@ The {\cf eqv?} procedure returns \schtrue{} if:
     \ev  \schtrue%
 \end{scheme}
 
-\begin{note} 
-This assumes that neither \vari{obj} nor \varii{obj} is an ``uninterned
-symbol'' as alluded to in section~\ref{symbolsection}.  This report does
-not presume to specify the behavior of {\cf eqv?} on implementation-dependent
-extensions.
-\end{note}
-
-\item \vari{obj} and \varii{obj} are both exact\index{exact} numbers,
+\item \vari{Obj} and \varii{obj} are both exact\index{exact} numbers,
   and are numerically equal (see {\cf =}, section see
-  section~\ref{genericarithmeticsection}),
+  section~\ref{genericarithmeticsection}).
 
-\item \vari{obj} and \varii{obj} are both inexact\index{inexact} numbers, are numerically
+\item \vari{Obj} and \varii{obj} are both inexact\index{inexact} numbers, are numerically
   equal (see {\cf =}, section see section~\ref{genericarithmeticsection}, and
   yield the same results (in the sense of {\cf eqv?}) when passed
   as arguments to any other procedure that can be defined
   as a finite composition of Scheme's standard arithmetic
   procedures.
 
-\item \vari{obj} and \varii{obj} are both characters and are the same
+\item \vari{Obj} and \varii{obj} are both characters and are the same
 character according to the {\cf char=?} procedure
 (section~\ref{charactersection}).
 
-\item both \vari{obj} and \varii{obj} are the empty list.
+\item both \vari{Obj} and \varii{obj} are the empty list.
 
-\item \vari{obj} and \varii{obj} are pairs, vectors, or strings that denote the
+\item \vari{Obj} and \varii{obj} are pairs, vectors, or strings that denote the
 same locations in the store (section~\ref{storagemodel}).
 
-\item \vari{obj} and \varii{obj} are procedures whose location tags are
+\item \vari{Obj} and \varii{obj} are procedures whose location tags are
 equal (section~\ref{lambda}).
 \end{itemize}
 
-The {\cf eqv?} procedure returns \schfalse{} if:
+The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 
 \begin{itemize}
-\item \vari{obj} and \varii{obj} are of different types
+\item \vari{Obj} and \varii{obj} are of different types
 (section~\ref{disjointness}).
 
-\item one of \vari{obj} and \varii{obj} is \schtrue{} but the other is
+\item One of \vari{obj} and \varii{obj} is \schtrue{} but the other is
 \schfalse{}.
 
-\item \vari{obj} and \varii{obj} are symbols but
+\item \vari{Obj} and \varii{obj} are symbols but
 
 \begin{scheme}
 (string=? (symbol->string \vari{obj})
@@ -1031,27 +1029,27 @@ The {\cf eqv?} procedure returns \schfalse{} if:
     \ev  \schfalse%
 \end{scheme}
 
-\item one of \vari{obj} and \varii{obj} is an exact number but the other is
-        an inexact number, or 
+\item One of \vari{obj} and \varii{obj} is an exact number but the other is
+        an inexact number.
 
-\item \vari{obj} and \varii{obj} are rational numbers for which the {\cf =} procedure
-  returns \schfalse{}, or 
+\item \vari{Obj} and \varii{obj} are rational numbers for which the {\cf =} procedure
+  returns \schfalse{}.
 
-\item \vari{obj} and \varii{obj} yield different results (in the sense of
+\item \vari{Obj} and \varii{obj} yield different results (in the sense of
   {\cf eqv?}) when passed as arguments to any other procedure
   that can be defined as a finite composition of Scheme's
   standard arithmetic procedures.
 
-\item \vari{obj} and \varii{obj} are characters for which the {\cf char=?}
+\item \vari{Obj} and \varii{obj} are characters for which the {\cf char=?}
   procedure returns \schfalse{}.
 
-\item one of \vari{obj} and \varii{obj} is the empty list but the other
+\item One of \vari{obj} and \varii{obj} is the empty list but the other
 is not.
 
-\item \vari{obj} and \varii{obj} are pairs, vectors, or strings that denote
+\item \vari{Obj} and \varii{obj} are pairs, vectors, or strings that denote
 distinct locations.
 
-\item \vari{obj} and \varii{obj} are procedures that would behave differently
+\item \vari{Obj} and \varii{obj} are procedures that would behave differently
 (return different value(s) or have different side effects) for some arguments.
 
 \end{itemize}
@@ -1256,7 +1254,7 @@ Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
 (procedure? (lambda (x) (* x x)))   
                             \ev  \schtrue
 (procedure? '(lambda (x) (* x x)))  
-                            \ev  \schfalse
+                            \ev  \schfalse%
 \end{scheme}
 
 \end{entry}
@@ -1272,7 +1270,8 @@ Returns the unspecified value.\index{unspecified value} (See section
 \end{entry}
 
 \begin{note}
-  The unspecified value has no external representation.
+  The unspecified value is not a datum value, and thus has no external
+  representation.
 \end{note}
 
 \begin{entry}{%
@@ -1295,7 +1294,8 @@ Returns the end of file object.
 \end{entry}
 
 \begin{note}
-  The end of file object has no external representation.
+  The end of file object  is not a datum value, and thus has no external
+  representation.
 \end{note}
 
 \begin{entry}{%
@@ -1346,7 +1346,7 @@ provided all their arguments are exact, and no divisors are zero:
 \begin{scheme}
 /
 div          mod           div+mod
-div0         mod0          div0+mod0
+div0         mod0          div0+mod0%
 \end{scheme}
 
 The general rule is that the generic operations return the correct
@@ -1406,13 +1406,13 @@ and only if {\cf (zero? (imag-part \var{z}))} and {\cf (exact?
   (imag-part \var{z}))} are both true.
 
 If \var{x} is a real number, then {\cf (rational? \var{x})} is true if
-and only if there exist exact integers \var{k1} and \var{k2} such that
-{\cf (= \var{x} (/ \var{k1} \var{k2}))} and {\cf (= (numerator
-  \var{x}) \var{k1})} and {\cf (= (denominator \var{x}) \var{k2})} are
+and only if there exist exact integers \vari{k} and \varii{k} such that
+{\cf (= \var{x} (/ \vari{k} \varii{k}))} and {\cf (= (numerator
+  \var{x}) \vari{k})} and {\cf (= (denominator \var{x}) \varii{k})} are
 all true.  Thus infinities and NaNs are not rational numbers.
 
 If \var{q} is a rational number, then {\cf (integer?
-\var{q})} is true if and only if {\cf`(= (denominator
+\var{q})} is true if and only if {\cf (= (denominator
 \var{q}) 1)} is true.  If \var{q} is not a rational number,
 then {\cf (integer? \var{q})} is false.
 
@@ -1438,7 +1438,7 @@ then {\cf (integer? \var{q})} is false.
 (complex? +inf.0)                      \ev  \schtrue{}
 (real? -inf.0)                         \ev  \schtrue{}
 (rational? -inf.0)                     \ev  \schfalse{}
-(integer? -inf.0)                      \ev  \schfalse{}
+(integer? -inf.0)                      \ev  \schfalse{}%
 \end{scheme}
 
 \begin{note}
@@ -1478,7 +1478,7 @@ named type, and otherwise they return \schfalse{}.
 (integer-valued? 3+0.0i)               \ev  \schtrue{}
 (integer-valued? 3.0)                  \ev  \schtrue{}
 (integer-valued? 3.0+0.0i)             \ev  \schtrue{}
-(integer-valued? 8/4)                  \ev  \schtrue{}
+(integer-valued? 8/4)                  \ev  \schtrue{}%
 \end{scheme}
 
 \begin{note}
@@ -1498,7 +1498,7 @@ true.
 
 \begin{scheme}
 (exact? 5)                   \ev  \schtrue{}
-(inexact? +inf.0)            \ev  \schtrue{}
+(inexact? +inf.0)            \ev  \schtrue{}%
 \end{scheme}
 \end{entry}
 
@@ -1534,8 +1534,8 @@ implementation-dependent range.
 \begin{entry}{%
 \proto{real->flonum}{ x}{procedure}}
 
-The {\cf real->flonum} procedure returns a flonum representation of
-\var{x}, which shall be a real number.
+Returns a flonum representation of
+\var{x}.
 
 The value returned is a flonum that is numerically closest to the
 argument.
@@ -1592,14 +1592,14 @@ nonincreasing \schfalse{} otherwise.
 \begin{scheme}
 (= +inf.0 +inf.0)           \ev  \schtrue{}
 (= -inf.0 +inf.0)           \ev  \schfalse{}
-(= -inf.0 -inf.0)           \ev  \schtrue{}
+(= -inf.0 -inf.0)           \ev  \schtrue{}%
 \end{scheme}
 
 For any real number \var{x} that is neither infinite nor NaN:
 
 \begin{scheme}
 (< -inf.0 \var{x} +inf.0))        \ev  \schtrue{}
-(> +inf.0 \var{x} -inf.0))        \ev  \schtrue{}
+(> +inf.0 \var{x} -inf.0))        \ev  \schtrue{}%
 \end{scheme}
 
 These predicates are required to be transitive.
@@ -1645,7 +1645,7 @@ NaN.
 (finite? 5)                   \ev  \schtrue{}
 (finite? 5.0)                 \ev  \schtrue{}
 (infinite? 5.0)               \ev  \schfalse{}
-(infinite? +inf.0)            \ev  \schtrue{}
+(infinite? +inf.0)            \ev  \schtrue{}%
 \end{scheme}
 \end{entry}
 
@@ -1657,14 +1657,14 @@ These procedures return the maximum or minimum of their arguments.
 
 \begin{scheme}
 (max 3 4)                              \ev  4    ; exact
-(max 3.9 4)                            \ev  4.0  ; inexact
+(max 3.9 4)                            \ev  4.0  ; inexact%
 \end{scheme}
 
 For any real number \var{x}:
 
 \begin{scheme}
 (max +inf.0 \var{x})                         \ev  +inf.0
-(min -inf.0 \var{x})                         \ev  -inf.0
+(min -inf.0 \var{x})                         \ev  -inf.0%
 \end{scheme}
 
 \begin{note}
@@ -1699,7 +1699,7 @@ These procedures return the sum or product of their arguments.
 (* +inf.0 +inf.0)                      \ev  +inf.0
 (* +inf.0 -inf.0)                      \ev  -inf.0
 (* 0 +inf.0)                           \ev  0 \textit{or} +nan.0
-(* 0 +nan.0)                           \ev  0 \textit{or} +nan.0
+(* 0 +nan.0)                           \ev  0 \textit{or} +nan.0%
 \end{scheme}
 
 For any real number \var{x} that is neither infinite nor NaN:
@@ -1707,14 +1707,14 @@ For any real number \var{x} that is neither infinite nor NaN:
 \begin{scheme}
 (+ +inf.0 \var{x})                           \ev  +inf.0
 (+ -inf.0 \var{x})                           \ev  -inf.0
-(+ +nan.0 \var{x})                           \ev  +nan.0
+(+ +nan.0 \var{x})                           \ev  +nan.0%
 \end{scheme}
 
 For any real number \var{x} that is neither
 infinite nor NaN nor an exact 0:
 
 \begin{scheme}
-(* +nan.0 \var{x})                           \ev  +nan.0
+(* +nan.0 \var{x})                           \ev  +nan.0%
 \end{scheme}
 
 If any of these procedures are applied to mixed non-rational real and
@@ -1749,7 +1749,7 @@ of their argument.
 (/ 0 3.5)                              \ev  0.0 ; inexact
 (/ 0 0.0)                              \ev  +nan.0
 (/ 0.0 0)                              \ev  +nan.0
-(/ 0.0 0.0)                            \ev  +nan.0
+(/ 0.0 0.0)                            \ev  +nan.0%
 \end{scheme}
 
 If any of these procedures are applied to mixed non-rational real and
@@ -1761,11 +1761,11 @@ unspecified number.
 \begin{entry}{%
 \proto{abs}{ x}{procedure}}
 
-The {\cf abs} procedure returns the absolute value of its argument.
+Returns the absolute value of its argument.
 
 \begin{scheme}
 (abs -7)                               \ev  7
-(abs -inf.0)                           \ev  +inf.0
+(abs -inf.0)                           \ev  +inf.0%
 \end{scheme}
 
 \end{entry}
@@ -1781,8 +1781,8 @@ The {\cf abs} procedure returns the absolute value of its argument.
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
 specified in section~\ref{integerdivision}.  In each case, \vari{x}
-shall be neither infinite nor a NaN, and \varii{x} must be nonzero;
-otherwise, an exception must be raised.
+shall be neither infinite nor a NaN, and \varii{x} shall be nonzero;
+otherwise, an exception with condition type {\cf\&contract} is raised.
 
 \begin{scheme}
 (div \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{div}~\varii{x}\)
@@ -1790,7 +1790,7 @@ otherwise, an exception must be raised.
 (div+mod \vari{x} \varii{x})     \ev \(\vari{x}~\mathrm{div}~\varii{x}, \vari{x}~\mathrm{mod}~\varii{x}\)\\\>\>\>; two return values
 (div0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{div}_0~\varii{x}\)
 (mod0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{mod}_0~\varii{x}\)
-(div0+mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; two return values
+(div0+mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; two return values%
 \end{scheme}
 
 \begin{entry}{%
@@ -1805,7 +1805,7 @@ multiple of their arguments.  The result is always non-negative.
 (gcd)                                  \ev  0
 (lcm 32 -36)                           \ev  288
 (lcm 32.0 -36)                         \ev  288.0 ; inexact
-(lcm)                                  \ev  1
+(lcm)                                  \ev  1%
 \end{scheme}
 \end{entry}
 
@@ -1822,7 +1822,7 @@ denominator of $0$ is defined to be $1$.
 (numerator (/ 6 4))                    \ev  3
 (denominator (/ 6 4))                  \ev  2
 (denominator
- (->inexact (/ 6 4)))                  \ev  2.0
+ (->inexact (/ 6 4)))                  \ev  2.0%
 \end{scheme}
 \end{entry}
 
@@ -1873,7 +1873,7 @@ given a NaN.
 
 (floor +inf.0)                         \ev  +inf.0
 (ceiling -inf.0)                       \ev  -inf.0
-(round +nan.0)                         \ev  +nan.0
+(round +nan.0)                         \ev  +nan.0%
 \end{scheme}
 
 \end{entry}
@@ -1899,7 +1899,7 @@ all.
 
 (rationalize +inf.0 3)                 \ev  +inf.0
 (rationalize +inf.0 +inf.0)            \ev  +nan.0
-(rationalize 3 +inf.0)                 \ev  0.0
+(rationalize 3 +inf.0)                 \ev  0.0%
 \end{scheme}
 
 \end{entry}
@@ -1917,9 +1917,11 @@ all.
 \rproto{atan}{ \vari{x} \varii{x}}{procedure}}
 
 These procedures compute the usual transcendental functions.  The {\cf
-  exp} procedure computes the base-$e$ exponential of \var{z}.  The {\cf log}
-procedure computes the natural logarithm of \var{z} (not the base ten
-logarithm).  The {\cf asin}, {\cf acos}, and {\cf atan} procedures compute arcsine,
+  exp} procedure computes the base-$e$ exponential of \var{z}. 
+The {\cf log} procedure with a single argument computes the natural logarithm of
+\var{z} (not the base ten logarithm); {\cf (log \vari{z}
+  \varii{z})} computes the base-\varii{z} logarithm of \vari{z}.
+The {\cf asin}, {\cf acos}, and {\cf atan} procedures compute arcsine,
 arccosine, and arctangent, respectively.  The two-argument variant of
 {\cf atan} computes {\cf (angle (make-rectangular \varii{x}
 \vari{x}))}.
@@ -1938,7 +1940,7 @@ even when given exact arguments.
 (atan -inf.0)                  \lev -1.5707963267948965 ; approximately
 (atan +inf.0)                  \lev 1.5707963267948965 ; approximately
 (log -1.0+0.0i)                \ev 0.0+\(\pi\)i
-(log -1.0-0.0i)                \ev 0.0-\(\pi\)i\\\>; if -0.0 is distinguished
+(log -1.0-0.0i)                \ev 0.0-\(\pi\)i\\\>; if -0.0 is distinguished%
 \end{scheme}
 \end{entry}
 
@@ -1961,7 +1963,7 @@ argument.
 \begin{scheme}
 (sqrt -5)                   \lev  0.0+2.23606797749979i ; approximately
 (sqrt +inf.0)               \ev  +inf.0
-(sqrt -inf.0)               \ev  +inf.0i
+(sqrt -inf.0)               \ev  +inf.0i%
 \end{scheme}
 \end{entry}
 
@@ -1985,7 +1987,7 @@ integer \varii{z}, {\cf (expt \vari{z}
 \varii{z})} shall return an exact result.  For all other
 values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
 \varii{z})} may return an inexact result, even when both
-\vari{z} and \var{z2} are exact.
+\vari{z} and \varii{z} are exact.
 
 \begin{scheme}
 (expt 5 3)                  \ev  125
@@ -1996,7 +1998,7 @@ values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
 (expt 0 -5)                 \ev  \unspecified
 (expt 0 -5+.0000312i)       \ev  \unspecified
 (expt 0 0)                  \ev  1
-(expt 0.0 0.0)              \ev  1.0
+(expt 0.0 0.0)              \ev  1.0%
 \end{scheme}
 \end{entry}
 
@@ -2023,7 +2025,7 @@ Then:
 (real-part \var{z})              \ev \vari{x}
 (imag-part \var{z})              \ev \varii{x}
 (magnitude \var{z})              \ev |\variii{x}|
-(angle \var{z})                  \ev \var{x}\(_{\mathrm{angle}}\)
+(angle \var{z})                  \ev \var{x}\(_{\mathrm{angle}}\)%
 \end{scheme}
 %
 where $-\pi \leq \var{x}_{\mathrm{angle}} \leq \pi$ with
@@ -2033,7 +2035,7 @@ some integer $n$.
 \begin{scheme}
 (angle -1.0)         \ev \(\pi\)
 (angle -1.0+0.0)     \ev \(\pi\)
-(angle -1.0-0.0)     \ev -\(\pi\)\\\>; if -0.0 is distinguished
+(angle -1.0-0.0)     \ev -\(\pi\)\\\>; if -0.0 is distinguished%
 \end{scheme}
 
 Moreover, suppose \vari{x}, \varii{x} are such that either \vari{x}
@@ -2041,7 +2043,7 @@ or \varii{x} is an infinity, then
 %
 \begin{scheme}
 (make-rectangular \vari{x} \varii{x}) \ev \var{z}
-(magnitude \var{z})              \ev +inf.0
+(magnitude \var{z})              \ev +inf.0%
 \end{scheme}
 \end{entry}
 
@@ -2054,7 +2056,7 @@ arguments.
 (angle +inf.0)                \ev 0.0
 (angle -inf.0)                \ev \(\pi\)
 (angle -1.0+0.0)              \ev \(\pi\)
-(angle -1.0-0.0)              \ev \(-\pi\)\\\>; if -0.0 is distinguished
+(angle -1.0-0.0)              \ev \(-\pi\)\\\>; if -0.0 is distinguished%
 \end{scheme}
 \end{entry}
 
@@ -2068,7 +2070,7 @@ arguments.
 \var{Radix} shall be an exact integer, either 2, 8, 10, or 16.  If
 omitted, \var{radix} defaults to 10.  If a \var{precision} is
 specified, then \var{z} shall be an inexact complex number,
-\var{precision} shall be an exact positive integer, and the \var{radix}
+\var{precision} shall be an exact positive integer, and \var{radix}
 shall be 10.  The {\cf number->string} procedure takes a number and a
 radix and returns as a string an external representation of the given
 number in the given radix such that
@@ -2079,7 +2081,7 @@ number in the given radix such that
   (eqv? number
         (string->number (number->string number
                                         radix)
-                        radix)))
+                        radix)))%
 \end{scheme}
 %
 is true.  If no possible result makes this expression
@@ -2136,7 +2138,7 @@ returns \schfalse{}.
 (string->number "15\sharpsign\sharpsign")                \ev  1500.0
 (string->number "+inf.0")              \ev  +inf.0
 (string->number "-inf.0")              \ev  -inf.0
-(string->number "+nan.0")              \ev  +nan.0
+(string->number "+nan.0")              \ev  +nan.0%
 \end{scheme}
 \end{entry}
 
@@ -2187,7 +2189,7 @@ from the symbol \ide{nil}.
 \begin{entry}{%
 \proto{not}{ obj}{procedure}}
 
-The {\cf not} procedure returns \schtrue{} if \var{obj} is false, and returns
+Returns \schtrue{} if \var{obj} is false, and returns
 \schfalse{} otherwise.
 
 \begin{scheme}
@@ -2319,10 +2321,7 @@ Returns a newly allocated pair whose car is \vari{obj} and whose cdr is
 \begin{entry}{%
 \proto{car}{ pair}{procedure}}
 
-\nodomain{\var{Pair} shall be a pair.}
-Returns the contents of the car field of \var{pair}.  Note that 
-taking the car of the empty list\index{empty list}
-causes an exception with condition type {\cf\&contract} to be raised.
+Returns the contents of the car field of \var{pair}.
 
 \begin{scheme}
 (car '(a b c))          \ev  a
@@ -2337,11 +2336,7 @@ causes an exception with condition type {\cf\&contract} to be raised.
 \begin{entry}{%
 \proto{cdr}{ pair}{procedure}}
 
-\nodomain{\var{Pair} shall be a pair.}
 Returns the contents of the cdr field of \var{pair}.
-  Note that 
-taking the cdr of the empty list\index{empty list}
-causes an exception with condition type {\cf\&contract} to be raised.
 
 \begin{scheme}
 (cdr '((a) b c d))      \ev  (b c d)
@@ -2401,7 +2396,7 @@ the empty list.
 \begin{scheme}
 (list? '(a b c))     \ev  \schtrue
 (list? '())          \ev  \schtrue
-(list? '(a . b))     \ev  \schfalse
+(list? '(a . b))     \ev  \schfalse%
 \end{scheme}
 \end{entry}
 
@@ -2435,7 +2430,7 @@ Returns the length of \var{list}.
 \begin{entry}{%
 \proto{append}{ list \dotsfoo{} obj}{procedure}}
 
-\nodomain{All \var{list}s should be lists.}
+\nodomain{All \var{list}s shall be lists.}
 Returns a possibly improper list consisting of the elements of the first \var{list}
 followed by the elements of the other \var{list}s, with \var{obj} as
 the cdr of the final pair.
@@ -2470,30 +2465,30 @@ in reverse order.
 
 
 \begin{entry}{%
-\proto{list-tail}{ l \vr{k}}{procedure}}
+\proto{list-tail}{ l k}{procedure}}
 
-\domain{\var{l} shall be a chain of pairs of size at least \var{k}, or, if
-  \var{k} is 0, the empty list.}
+\domain{If \var{k} is 0, \var{l} shall be the empty list or a pair.
+  Otherwise, \var{l} shall be a chain of pairs of size at least \var{k}.}
 
-Returns the subchain of pairs of \var{l} obtained by omitting the first \vr{k}
-elements.
+The {\cf list-tail} procedure returns the subchain of pairs of \var{l}
+obtained by omitting the first \var{k} elements.
 \begin{scheme}
 (list-tail '(a b c d) 2)                 \ev  (c d)
-(list-tail '(a b c . d) 2)                 \ev  (c . d)
+(list-tail '(a b c . d) 2)                 \ev  (c . d)%
 \end{scheme}
 \end{entry}
 
 
 \begin{entry}{%
-\proto{list-ref}{ l \vr{k}}{procedure}}
+\proto{list-ref}{ l k}{procedure}}
 
-\domain{\var{l} shall be a chain of pairs of size at least $\var{k}+1$.}
+\domain{\var{L} shall be a chain of pairs of size at least $\var{k}+1$.}
 
-Returns the \vr{k}th element of \var{l}.
+Returns the \var{k}th element of \var{l}.
 
 \begin{scheme}
-(list-ref '(a b c d) 2)                 \ev  c
-(list-ref '(a b c . d) 2) \ev c
+(list-ref '(a b c d) 2)                 \ev c
+(list-ref '(a b c . d) 2) \ev c%
 \end{scheme}
 \end{entry}
 
@@ -2540,7 +2535,7 @@ The dynamic order in which \var{proc} is applied to the elements of the
   (map (lambda (ignored)
          (set! count (+ count 1))
          count)
-       '(a b)))                 \ev  (1 2) \var{or} (2 1)
+       '(a b)))                 \ev  (1 2) \var{or} (2 1)%
 \end{scheme}
 
 \end{entry}
@@ -2604,7 +2599,7 @@ Hello \ev Hello
 \>; \textrm{(illegal use of backslash)}
 'a\backwhack{}x20 \>; \emph{syntax violation}
 \>; \textrm{(missing semi-colon to}
-\>; \textrm{terminate \backwhack{}x escape)}
+\>; \textrm{terminate \backwhack{}x escape)}%
 \end{scheme}
 
 \begin{entry}{%
@@ -2721,7 +2716,7 @@ returns its associated character.
 (integer->char 32) \ev \sharpsign\backwhack{}space
 (char->integer (integer->char 5000))
 \ev 5000
-(integer->char \sharpsign{}xD800) \ev \exception{\&contract}
+(integer->char \sharpsign{}xD800) \ev \exception{\&contract}%
 \end{scheme}
 \end{entry}
 
@@ -2739,7 +2734,7 @@ according to their scalar values.
 
 \begin{scheme}
 (char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}\ss) \ev \schtrue
-(char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schfalse
+(char<? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schfalse%
 \end{scheme}
 
 \end{entry}
@@ -2770,13 +2765,11 @@ Returns \schtrue{} if \var{obj} is a string, otherwise returns \schfalse.
 
 
 \begin{entry}{%
-\proto{make-string}{ \vr{k}}{procedure}
-\rproto{make-string}{ \vr{k} char}{procedure}}
+\proto{make-string}{ k}{procedure}
+\rproto{make-string}{ k char}{procedure}}
 
-%\domain{\vr{k} shall be a non-negative integer, and \var{char} shall be
-%a character.}  
-The {\cf make-string} procedure returns a newly allocated string of
-length \vr{k}.  If \var{char} is given, then all elements of the string
+Returns a newly allocated string of
+length \var{k}.  If \var{char} is given, then all elements of the string
 are initialized to \var{char}, otherwise the contents of the
 \var{string} are unspecified.
 
@@ -2797,9 +2790,9 @@ Returns the number of characters in the given \var{string}.
 
 
 \begin{entry}{%
-\proto{string-ref}{ string \vr{k}}{procedure}}
+\proto{string-ref}{ string k}{procedure}}
 
-\domain{\vr{k} shall be a valid index of \var{string}.}
+\domain{\var{K} shall be a valid index of \var{string}.}
 The {\cf string-ref} procedure returns character \vr{k} of \var{string} using zero-origin indexing.
 \end{entry}
 
@@ -2837,7 +2830,7 @@ Returns \schtrue{} if the strings are the same length and contain the same
 characters in the same positions, otherwise returns \schfalse.
 
 \begin{scheme}
-(string=? "Straße" "Strasse") \ev \schfalse
+(string=? "Straße" "Strasse") \ev \schfalse%
 \end{scheme}
 \end{entry}
 
@@ -2858,7 +2851,7 @@ is considered to be lexicographically less than the longer string.
 \begin{scheme}
 (string<? "z" "\ss") \ev \schtrue
 (string<? "z" "zz") \ev \schtrue
-(string<? "z" "Z") \ev \schfalse
+(string<? "z" "Z") \ev \schfalse%
 \end{scheme}
 \end{entry}
 
@@ -2892,7 +2885,7 @@ given strings.
 The {\cf string\coerce{}list} procedure returns a newly allocated list of the
 characters that make up the given string.  The {\cf
   list\coerce{}string} procedure
-returns a newly allocated string formed from the characters in the list
+returns a newly allocated string formed from the characters in 
 \var{list}. The {\cf string\coerce{}list}
 and {\cf list\coerce{}string} procedures are
 inverses so far as {\cf equal?}\ is concerned.  
@@ -2984,7 +2977,7 @@ Returns the number of elements in \var{vector} as an exact integer.
 \begin{entry}{%
 \proto{vector-ref}{ vector k}{procedure}}
 
-\domain{\vr{k} shall be a valid index of \var{vector}.}
+\domain{\var{K} shall be a valid index of \var{vector}.}
 The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 \var{vector}.
 
@@ -3003,7 +2996,7 @@ The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 \begin{entry}{%
 \proto{vector-set!}{ vector k obj}{procedure}}
 
-\domain{\vr{k} shall be a valid index of \var{vector}.}
+\domain{\var{K} shall be a valid index of \var{vector}.}
 The {\cf vector-set!} procedure stores \var{obj} in element \vr{k} of \var{vector}.
 The value returned by {\cf vector-set!}\ is the unspecified value.  % <!>
 
@@ -3017,7 +3010,7 @@ with condition type {\cf\&contract} to be raised.
 
 (vector-set! '\#(0 1 2) 1 "doe")  \lev  \unspecified
              ; constant vector
-             ; may raise \exception{\&contract}
+             ; may raise \exception{\&contract}%
 \end{scheme}
 
 \end{entry}
@@ -3062,7 +3055,8 @@ procedure means that an error has occurred, typically caused by
 something that has gone wrong in the interaction of the program with the
 external world or the user.  Calling the {\cf contract-violation} procedure
 means that an invalid call to a procedure was made, either passing an
-invalid number of arguments, or passing an argument of the wrong type.
+invalid number of arguments, or passing an argument that it is not
+specified to handle.
 
 The \var{who} argument should describe the procedure or operation that
 detected the exception.  The \var{message} argument should describe
@@ -3105,7 +3099,7 @@ condition type {\cf \&contract}.
 
 (fac 5) \ev 120
 (fac 4.5) \ev \exception{\&contract}
-(fac -3) \ev \exception{\&contract}
+(fac -3) \ev \exception{\&contract}%
 \end{scheme}
 
 \begin{rationale}
@@ -3245,11 +3239,11 @@ some people use the name \ide{call/cc} instead.
 \proto{values}{ obj $\ldots$}{procedure}}
 
 Delivers all of its arguments to its continuation.
-{\tt Values} might be defined as follows:
+The {\cf values} procedure might be defined as follows:
 \begin{scheme}
 (define (values . things)
   (call-with-current-continuation 
-    (lambda (cont) (apply cont things))))
+    (lambda (cont) (apply cont things))))%
 \end{scheme}
 
 The continuations of all non-final expressions within a sequence of
@@ -3279,7 +3273,7 @@ continuation of the call to {\tt call-with-values}.
                   (lambda (a b) b))
                                                    \ev  5
 
-(call-with-values * -)                             \ev  -1
+(call-with-values * -)                             \ev  -1%
 \end{scheme}
 
 If an inappropriate number of values is passed to a continuation
@@ -3305,7 +3299,7 @@ In the absense of any calls to escape procedures
       (lambda () (thunk))
       (lambda vals
         (after)
-        (apply values vals)))))
+        (apply values vals)))))%
 \end{scheme}
 
 That is, \var{before} is called without arguments.
@@ -3397,96 +3391,11 @@ the continuation packaged in the escape procedure.
               (k))))
         (lambda ()
           (set! n (+ n 4))))))
-  n) \ev 7
+  n) \ev 7%
 \end{scheme}
 \end{entry}
 
 \section{Iteration}%\unsection
-
-\noindent%
-\pproto{(do ((\hyperi{variable} \hyperi{init} \hyperi{step})}{\exprtype}
-\mainschindex{do}{\tt\obeyspaces%
-     \dotsfoo)\\
-    (\hyper{test} \hyper{expression} \dotsfoo)\\
-  \hyper{command} \dotsfoo)}
-
-The {\cf do} expression is an iteration construct.  It specifies a set of variables to
-be bound, how they are to be initialized at the start, and how they are
-to be updated on each iteration.  When a termination condition is met,
-the loop exits after evaluating the \hyper{expression}s.
-
-A {\cf do} expression are evaluated as follows:
-The \hyper{init} expressions are evaluated (in some unspecified order),
-the \hyper{variable}s are bound to fresh locations, the results of the
-\hyper{init} expressions are stored in the bindings of the
-\hyper{variable}s, and then the iteration phase begins.
-
-\vest Each iteration begins by evaluating \hyper{test}; if the result is
-false (see section~\ref{booleansection}), then the \hyper{command}
-expressions are evaluated in order for effect, the \hyper{step}
-expressions are evaluated in some unspecified order, the
-\hyper{variable}s are bound to fresh locations, the results of the
-\hyper{step}s are stored in the bindings of the
-\hyper{variable}s, and the next iteration begins.
-
-\vest If \hyper{test} evaluates to a true value, then the
-\hyper{expression}s are evaluated from left to right and the value(s) of
-the last \hyper{expression} is(are) returned.  If no \hyper{expression}s
-are present, then the value of the {\cf do} expression is the
-unspecified value.
-
-\vest The region\index{region} of the binding of a \hyper{variable}
-consists of the entire {\cf do} expression except for the \hyper{init}s.
-It is syntax violation for a \hyper{variable} to appear more than once in the
-list of {\cf do} variables.
-
-\vest A \hyper{step} may be omitted, in which case the effect is the
-same as if {\cf(\hyper{variable} \hyper{init} \hyper{variable})} had
-been written instead of {\cf(\hyper{variable} \hyper{init})}.
-
-\begin{scheme}
-(do ((vec (make-vector 5))
-     (i 0 (+ i 1)))
-    ((= i 5) vec)
-  (vector-set! vec i i))          \ev  \#(0 1 2 3 4)
-
-(let ((x '(1 3 5 7 9)))
-  (do ((x x (cdr x))
-       (sum 0 (+ sum (car x))))
-      ((null? x) sum)))             \ev  25%
-\end{scheme}
-
-The following definition
-of {\cf do} uses a trick to expand the variable clauses.
-As with {\cf letrec} above, an auxiliary macro would also work.
-
-\begin{scheme}
-(define-syntax \ide{do}
-  (syntax-rules ()
-    ((do ((var init step ...) ...)
-         (test expr ...)
-         command ...)
-     (letrec
-       ((loop
-         (lambda (var ...)
-           (if test
-               (begin
-                 (unspecified)
-                 expr ...)
-               (begin
-                 command
-                 ...
-                 (loop (do "step" var step ...)
-                       ...))))))
-       (loop init ...)))
-    ((do "step" x)
-     x)
-    ((do "step" x y)
-     y)))
-\end{scheme}
-
-%\end{entry}
-
 
 \begin{entry}{%
 \rproto{let}{ \hyper{variable} \hyper{bindings} \hyper{body}}{\exprtype}}
@@ -3532,12 +3441,101 @@ follows:
      ((letrec ((tag (lambda (name ...)
                       body1 body2 ...)))
         tag)
-      val ...))))
+      val ...))))%
 \end{scheme}
 
 \end{entry}
 
-\section{Quasiquotation}\unsection
+\noindent%
+\pproto{(do ((\hyperi{variable} \hyperi{init} \hyperi{step})}{\exprtype}
+\mainschindex{do}{\tt\obeyspaces%
+     \dotsfoo)\\
+    (\hyper{test} \hyper{expression} \dotsfoo)\\
+  \hyper{expressionx} \dotsfoo)}
+
+\syntax
+The \hyper{init}s, \hyper{step}s, and \hyper{test}s shall be
+expressions.  The \hyper{variable}s shall be pairwise distinct variables.
+
+\semantics
+The {\cf do} expression is an iteration construct.  It specifies a set of variables to
+be bound, how they are to be initialized at the start, and how they are
+to be updated on each iteration.  When a termination condition is met,
+the loop exits after evaluating the \hyper{expression}s.
+
+A {\cf do} expression are evaluated as follows:
+The \hyper{init} expressions are evaluated (in some unspecified order),
+the \hyper{variable}s are bound to fresh locations, the results of the
+\hyper{init} expressions are stored in the bindings of the
+\hyper{variable}s, and then the iteration phase begins.
+
+\vest Each iteration begins by evaluating \hyper{test}; if the result is
+false (see section~\ref{booleansection}), then the \hyper{command}
+expressions are evaluated in order for effect, the \hyper{step}
+expressions are evaluated in some unspecified order, the
+\hyper{variable}s are bound to fresh locations, the results of the
+\hyper{step}s are stored in the bindings of the
+\hyper{variable}s, and the next iteration begins.
+
+\vest If \hyper{test} evaluates to a true value, then the
+\hyper{expression}s are evaluated from left to right and the value(s) of
+the last \hyper{expression} is(are) returned.  If no \hyper{expression}s
+are present, then the value of the {\cf do} expression is the
+unspecified value.
+
+\vest The region\index{region} of the binding of a \hyper{variable}
+consists of the entire {\cf do} expression except for the \hyper{init}s.
+It is a syntax violation for a \hyper{variable} to appear more than once in the
+list of {\cf do} variables.
+
+\vest A \hyper{step} may be omitted, in which case the effect is the
+same as if {\cf(\hyper{variable} \hyper{init} \hyper{variable})} had
+been written instead of {\cf(\hyper{variable} \hyper{init})}.
+
+\begin{scheme}
+(do ((vec (make-vector 5))
+     (i 0 (+ i 1)))
+    ((= i 5) vec)
+  (vector-set! vec i i))          \ev  \#(0 1 2 3 4)
+
+(let ((x '(1 3 5 7 9)))
+  (do ((x x (cdr x))
+       (sum 0 (+ sum (car x))))
+      ((null? x) sum)))             \ev  25%
+\end{scheme}
+
+The following definition
+of {\cf do} uses a trick to expand the variable clauses.
+
+\begin{scheme}
+(define-syntax \ide{do}
+  (syntax-rules ()
+    ((do ((var init step ...) ...)
+         (test expr ...)
+         command ...)
+     (letrec
+       ((loop
+         (lambda (var ...)
+           (if test
+               (begin
+                 (unspecified)
+                 expr ...)
+               (begin
+                 command
+                 ...
+                 (loop (do "step" var step ...)
+                       ...))))))
+       (loop init ...)))
+    ((do "step" x)
+     x)
+    ((do "step" x y)
+     y)))%
+\end{scheme}
+
+%\end{entry}
+
+
+section{Quasiquotation}\unsection
 \label{quasiquotesection}
 
 \begin{entry}{%
@@ -3563,7 +3561,7 @@ evaluate to lists; the opening and closing parentheses of the list are
 then ``stripped away'' and the elements of the lists are inserted in
 place of the {\cf unquote-splicing} form.
 
-{\cf unquote-splicing} and multi-operand {\cf unquote} forms should
+{\cf unquote-splicing} and multi-operand {\cf unquote} forms shall
 appear only within a list or vector \hyper{qq template}.
 
 As noted in section~\ref{quotesection},
@@ -3596,7 +3594,7 @@ As noted in section~\ref{quotesection},
   ``(foo ,,@q)) \lev `(foo (unquote (append x y) (sqrt 9)))
 (let ((x '(2 3))
       (y '(4 5)))
-  `(foo (unquote (append x y) (sqrt 9)))) \lev (foo (2 3 4 5) 3)
+  `(foo (unquote (append x y) (sqrt 9)))) \lev (foo (2 3 4 5) 3)%
 \end{scheme}
 
 Quasiquote forms may be nested.  Substitutions are made only for
@@ -3626,23 +3624,20 @@ production rules.  Imagine a copy of the following rules for $D = 1, 2,
 \begin{grammar}%
 \meta{quasiquotation} \: \meta{quasiquotation 1}
 \meta{qq template 0} \: \meta{expression}
-\meta{quasiquotation $D$} \: `\meta{qq template $D$}
-\>    \| (quasiquote \meta{qq template $D$})
+\meta{quasiquotation $D$} \: (quasiquote \meta{qq template $D$})
 \meta{qq template $D$} \: \meta{simple datum}
 \>    \| \meta{list qq template $D$}
 \>    \| \meta{vector qq template $D$}
 \>    \| \meta{unquotation $D$}
 \meta{list qq template $D$} \: (\arbno{\meta{qq template or splice $D$}})
 \>    \| (\atleastone{\meta{qq template or splice $D$}} .\ \meta{qq template $D$})
-\>    \| '\meta{qq template $D$}
 \>    \| \meta{quasiquotation $D+1$}
 \meta{vector qq template $D$} \: \#(\arbno{\meta{qq template or splice $D$}})
-\meta{unquotation $D$} \: ,\meta{qq template $D-1$}
-\>    \| (unquote \meta{qq template $D-1$})
+\meta{unquotation $D$} \: (unquote \meta{qq template $D-1$})
 \meta{qq template or splice $D$} \: \meta{qq template $D$}
 \>    \| \meta{splicing unquotation $D$}
-\meta{splicing unquotation $D$} \: ,@\meta{qq template $D-1$}
-\>    \| (unquote-splicing \arbno{\meta{qq template $D-1$}})
+\meta{splicing unquotation $D$} \:
+\>\> (unquote-splicing \arbno{\meta{qq template $D-1$}})
 \>    \| (unquote \arbno{\meta{qq template $D-1$}}) %
 \end{grammar}
 
@@ -3657,7 +3652,7 @@ un\-quo\-ta\-tion $D$} takes precedence.
 \section{Binding constructs for syntactic keywords}
 \label{bindsyntax}
 
-{\cf let-syntax} and {\cf letrec-syntax} are analogous to {\cf let}
+The {\cf let-syntax} and {\cf letrec-syntax} forms are analogous to {\cf let}
 and {\cf letrec} but bind keywords rather than variables.
 Like {\cf begin}, a {\cf let-syntax} or {\cf letrec-syntax} form
 may appear in a definition context, in which case it is treated as a
@@ -3671,7 +3666,7 @@ expressions.
 \proto{let-syntax}{ \hyper{bindings} \hyper{form} \dotsfoo}{\exprtype}}
 
 \syntax
-\hyper{Bindings} should have the form
+\hyper{Bindings} shall have the form
 \begin{scheme}
 ((\hyper{keyword} \hyper{transformer spec}) \dotsfoo)%
 \end{scheme}
@@ -3688,8 +3683,7 @@ The \hyper{form}s or \hyper{definitions}s are expanded in the syntactic environm
 obtained by extending the syntactic environment of the
 {\cf let-syntax} form with macros whose keywords are
 the \hyper{keyword}s, bound to the specified transformers.
-Each binding of a \hyper{keyword} has the \hyper{expression}s or
-\hyper{definition}s as its region.
+Each binding of a \hyper{keyword} has the \hyper{form}s as its region.
 
 The \hyper{form}s of a {\cf let-syntax}
 form are treated, whether in definition or expression context, as if
@@ -3722,7 +3716,7 @@ the same region as any definition appearing in place of the {\cf
 
 (let ()
   (let-syntax ())
-  5) \ev 5
+  5) \ev 5%
 \end{scheme}
 
 \end{entry}
@@ -3789,7 +3783,7 @@ and {\cf letrec-syntax} differ.
                        ((f x) x)))
                   (g (syntax-rules ()
                        ((g x) (f x)))))
-    (list (f 1) (g 1)))) \lev (1 1)
+    (list (f 1) (g 1)))) \lev (1 1)%
 \end{scheme}
 
 The two expressions are identical except that the {\cf let-syntax} form
@@ -3814,7 +3808,7 @@ can be a {\cf syntax-rules} form:
 Each \hyper{syntax rule} shall take the following form:
 
 \begin{scheme}
-(\hyper{pattern} \hyper{template})
+(\hyper{pattern} \hyper{template})%
 \end{scheme}
 
 A \hyper{pattern} is an identifier, constant, or one of the following.
@@ -3841,7 +3835,7 @@ variable, a pattern datum, or one of the following.
 \begin{scheme}
 (\hyper{subtemplate} \ldots)
 (\hyper{subtemplate} \ldots . \hyper{template})
-\#(\hyper{subtemplate} \ldots)
+\#(\hyper{subtemplate} \ldots)%
 \end{scheme}
 
 A \hyper{subtemplate} is a \hyper{template} followed by zero or more ellipses.
@@ -3852,7 +3846,7 @@ of a macro whose keyword is associated with a transformer specified by
 {\cf syntax-rules} is matched against the patterns contained in the
 \hyper{syntax rule}s, beginning with the leftmost \hyper{syntax rule}.
 When a match is found, the macro use is transcribed hygienically
-according to the template.
+according to the template.  It is a syntax violation when no match is found.
 
 An identifier appearing within a \hyper{pattern} may be an underscore
 (~{\cf \_}~), a literal identifier listed in the list of literals
@@ -3906,19 +3900,19 @@ sense of {\cf free-identifier=?}
 (section~\ref{identifierpredicatessection}),
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots $P_n$)}
+{\cf ($P_1$ \dots{} $P_n$)}
 and $F$ is a list of $n$ elements that match $P_1$ through
 $P_n$,
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots $P_n$ . $P_x$)}
+{\cf ($P_1$ \dots{} $P_n$ . $P_x$)}
 and $F$ is a list or improper list of $n$ or more elements
 whose first $n$ elements match $P_1$ through $P_n$
 and
 whose $n$th cdr matches $P_x$,
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots $P_n$)},
+{\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
 and $F$ is a proper list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
@@ -3927,7 +3921,7 @@ and
 whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$,
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots $P_n$ . $P_x$)},
+{\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$ . $P_x$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
 and $F$ is a list or improper list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
@@ -3937,12 +3931,12 @@ and
 whose $n$th and final cdr matches $P_x$,
 
 \item $P$ is of the form
-{\cf \#($P_1$ \dots $P_n$)}
+{\cf \#($P_1$ \dots{} $P_n$)}
 and $F$ is a vector of $n$ elements that match $P_1$ through
 $P_n$,
 
 \item $P$ is of the form
-{\cf \#($P_1$ \dots $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots $P_n$)},
+{\cf \#($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
 and $F$ is a vector of $n$ or more elements
 whose first $k$ elements match $P_1$ through $P_k$,
@@ -4042,7 +4036,7 @@ A \hyper{declare spec} has one of the following forms:
 \begin{itemize}
 \item {\cf (\hyper{quality} \hyper{priority})}
 
-  \hyper{quality} has to be one of {\cf safe}, {\cf fast}, {\cf
+  \hyper{Quality} has to be one of {\cf safe}, {\cf fast}, {\cf
     small}, and {\cf debug}.  \hyper{priority} has to be one of {\cf
     0}, {\cf 1}, {\cf 2}, and {\cf 3}.
 
@@ -4225,7 +4219,7 @@ tail call.
   (if (g)
       (let ((x (h)))
         x)
-      (and (g) (f))))
+      (and (g) (f))))%
 \end{scheme}%
 
 \begin{note}
