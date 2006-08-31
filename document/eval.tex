@@ -1,18 +1,16 @@
 \section{\tt{Eval}}
 
-FIXME: name of the library, condition types, library syntax
-
-The {\cf eval} library allows a program to create Scheme expressions
-as data at run time and evaluate them.
+The \library{r6rs eval} library allows a program to create Scheme
+expressions as data at run time and evaluate them.
 
 \begin{entry}{%
 \proto{eval}{ expression environment-specifier}{procedure}}
 
 Evaluates \var{expression} in the specified environment and returns its value.
-\var{Expression} must be a valid Scheme expression represented as data,
-and \var{environment-specifier} must be a 
+\var{Expression} must be a valid Scheme expression represented as a
+datum value, and \var{environment-specifier} must be a 
 \defining{library specifier}, which can be created using the {\cf
-  the-library-environment} syntactic form described below.
+  environment} procedure described below.
 
 If the first argument to {\cf eval} is not a syntactically correct
 expression, then {\cf eval} must raise an exception with condition
@@ -22,40 +20,32 @@ type {\cf \&eval-definition}.
 \end{entry}
 
 \begin{entry}{%
-\proto{the-library-environment}{}{\exprtype}}
+\proto{environment}{ import-spec \dots}{procedure}}
 
-The {\cf (the-library-environment)} form evaluates to the specifier of
-an environment containing the set of bindings imported {\cf for eval}
-into the library it appears in.
-
-If {\cf (the-library-environment)} appears within an expression passed
-to {\cf eval}, it evaluates to the same library that was passed to
-{\cf eval}.
+\domain{\var{Import-spec} shall be a datum representing an
+  \hyper{import spec} (see section~\ref{librarysyntaxsection}).}
+The {\cf environment} procedure returns an environment corresponding
+to \var{import-spec}
 
 The bindings of the environment represented by the specifier are
 immutable: If {\cf eval} is applied to an expression that attempts to
 assign to one of the variables of the environment, {\cf eval} must
-raise an exception with a FIXME condition type.
-
-For details on the semantics of invoking and visiting a library {\cf
-  for eval}, refer to chapter~\ref{librarieschapter}.
-
-FIXME: write
+raise an exception with a condition type {\cf\&contract}.
 
 \begin{scheme}
-(library foo
-  (import (for r6rs run eval))
-  (write (eval '(let ((x 3)) x)))) \\\> {\it writes} 3
+(library (foo)
+  (export)
+  (import (r6rs))
+  (write (eval '(let ((x 3)) x) (environment '(r6rs))) \\\> {\it writes} 3
 
 (library foo
-  (import
-    (for r6rs expand run)
-    (for (add-prefix (only r6rs car cdr cons null?)
-                     "eval:")
-         eval))
+  (export)
+  (import (r6rs)
   (write
     (eval
-      '(eval:car (eval:cons 'foo 'bar))))) \\\> {\it writes} foo
+      '(eval:car (eval:cons 2 4))
+      '(add-prefix (only (r6rs) car cdr cons null?)
+                   "eval:")))) \\\> {\it writes} 2
 \end{scheme}
 \end{entry}
 

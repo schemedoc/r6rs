@@ -60,6 +60,7 @@ A library declaration contains the following elements:
 \end{itemize}
 
 \section{Syntax and Semantics}
+\label{librarysyntaxsection}
 
 A library definition is written with the library form:
 
@@ -579,45 +580,7 @@ bindings that may surround the use of the macro.
 
 \end{itemize}
 
-\section{Eval}
-\label{evalsection}
-
-FIXME: move to appropriate section
-
-\begin{entry}{%
-\proto{eval}{ expression environment}{procedure}}
-
-\domain{\var{Expression} shall be a datum value whose external
-  representation is a Scheme expression.  \var{Environment} shall be
-  an environment specifier.  (See below.)}
-
-Environments can be constructed with the {\cf environment} procedure,
-which accepts a set of import specifiers represented as datums.
-
-FIXME: what does it do
-\end{entry}
-
-\begin{entry}{%
-\proto{environment}{ import-spec \dots}{procedure}}
-
-\domain{\var{Import-spec} shall be a datum representing an
-  \hyper{import spec}.}
-The {\cf environment} procedure returns an environment corresponding
-to \var{import-spec}
-
-\begin{scheme}
-(eval '(+ 3 4) (environment '(r6rs base))) \lev 7%
-\end{scheme}
-
-An exception with condition type FIXME is raised if the expand-time or
-run-time information for a library named in one of the
-\var{import-spec}s is not \emph{available} when the call to {\cf
-  environment} occurs, in the sense of section~\ref{phasessection}.
-\end{entry}
-
 \section{Examples}
-
-FIXME need some eval examples
 
 Hello world:
 
