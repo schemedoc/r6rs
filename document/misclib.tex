@@ -9,6 +9,7 @@ This section describes the \deflibrary{r6rs when-unless} library.
 \proto{when}{ \hyper{test} \hyperi{expression} \hyperii{expression} \dotsfoo}{\exprtype}
 \proto{unless}{ \hyper{test} \hyperi{expression} \hyperii{expression} \dotsfoo}{\exprtype}}
 
+\syntax \hyper{Test} shall be an expression.
 \semantics A {\cf when} expression is evaluated by evaluating the
 \hyper{test} expression.  If \hyper{test} evaluates to a true value,
 the remaining \hyper{expression}s are evaluated in order, and the
@@ -30,7 +31,7 @@ evaluates to the unspecified value.
 \end{scheme}
 
 The {\cf when} and {\cf unless} expressions are derived forms.  They
-could be defined in terms of base library by the following macros:
+could be defined in terms of base library forms by the following macros:
 
 \begin{scheme}
 (define-syntax \ide{when}
@@ -59,8 +60,12 @@ This section describes the \deflibrary{r6rs case-lambda} library.
 Each \hyper{clause} should be of the form
 %
 \begin{scheme}
-(\hyper{formals} \hyperi{body})%
+(\hyper{formals} \hyper{body})%
 \end{scheme}
+
+\hyper{Formals} shall be as in a {\cf lambda} form
+(section~\ref{lambda}), \hyper{body} shall be a body according to
+section~\ref{bodiessection}.
 
 \semantics A {\cf case-lambda} expression evaluates to a procedure.
 This procedure, when applied, tries to match its arguments to the
