@@ -215,7 +215,7 @@ if the new name is already in \hyper{import~set}, an exception is raised.
 \end{itemize}
 
 An \hyper{export~set} names a set of imported and locally defined bindings to
-be exported fpr optionally specified phases, possibly with different
+be exported for optionally specified phases, possibly with different
 external names.  An \hyper{export spec} shall have one of the
 following forms:
 
@@ -282,17 +282,17 @@ into a library with different meanings, without affecting their
 use in the {\cf library} form.
 
 In the case of any ambiguities that arise from the use of one of
-these names as a library name when using the shorthand (single-identifier)
-\hyper{library~reference} syntax should be resolved in favor of the interpretation
-given to the name by the library syntax.
+these names as a shorthand (single-identifier) library name, the
+ambiguity should be resolved in favor of the interpretation
+of name as library syntax.
 For example, {\cf (import (for lib expand))} should be taken as
 importing library {\cf lib} for {\cf expand}, not as importing
 library {\cf (for lib expand)}.
 The user can always eliminate such ambiguities by avoiding the shorthand
 \hyper{library~reference} syntax when such an ambiguity might arise.
 
-Bindings defined with a library are not visible in code that appears
-outside of the library unless they are explicitly exported from the
+Bindings defined with a library are not visible in code
+outside of the library, unless the bindings are explicitly exported from the
 library. 
 An exported macro may, however, \emph{implicitly export} an identifier
 defined within or imported into the library.
@@ -324,13 +324,13 @@ which is equivalent to ``for {\cf (meta 0)}.''
 \item Bindings used in the body of a transformer (appearing on the
 right-hand-side of a transformer binding) in run-time code must be
 imported ``for {\cf expand},'' which is equivalent to
-``for {\cf (meta 1)},
+``for {\cf (meta 1)},''
 \item Bindings used in the body of a transformer appearing within the body of a
 transformer in run-time code must be imported ``for {\cf (meta 2)},''
 and so on.
 \end{itemize}
 
-The valid import phases of an imported binding are determined by the enclosing
+The valid phases for referencing an imported binding are determined by the enclosing
 {\cf for} form, if any, in the {\cf import} form of the importing
 library, in addition to the phase of the identifier in the exporting library.
 An \hyper{import~set} without an enclosing {\cf for} is equivalent to
@@ -423,17 +423,14 @@ expansions.
 
 \section{Primitive syntax}
 
-Apart
-from that, the concrete structure of the forms that constitute a
-library body depends on the libraries that are imported into
-the current library.  The syntactic keywords imported determine which
-of the forms occurring in a library body, and which of their
-subforms are actually expressions.  While a library can
-provide new means for forming expressions, a few expression types are
-always available, independently from the imported libraries.
-Moreover, a library might export and thus provide macros whose expand
-into other forms. The syntax of the primitive expressions as well as
-of macro uses are described in this section.
+After the {\cf import} form within a {\cf library} form, the forms
+that constitute a library body depend on the libraries that are
+imported. In particular, imported syntactic keywords determine most
+the the available forms, and whether each form is a declaration,
+definition, or expression. A few expression types are
+always available independent of imported libraries, however,
+including constant literals, variable references, procedure calls,
+ and macro uses.
 
 \subsection{Primitive expression types}
 \label{primitiveexpressionsection}
