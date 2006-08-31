@@ -1,0 +1,622 @@
+\documentclass{monograph}
+
+% look for FIXME
+\ifhtml\def\long{}\fi
+\long\def\FIXME#1{{\bf FIXME}: #1}
+
+\usepackage{scheme}
+
+\def\r#1rs{R#1RS}
+\iflatex
+\input{fullpage.sty}
+\fi
+
+\ifhtml
+\headerstuff{\raw{
+<style type="text/css">
+<!--
+ a:link, a:active, a:visited {color:blue}
+ a:hover {color:white; background:blue}
+ a.plain:link, a.plain:active, a.plain:visited {color:blue; text-decoration:none}
+ a.plain:hover {color:white; text-decoration:none; background:blue}
+ table.indent {margin-left: 20px}
+ h1 { font-size: 1.75em }
+ h2 { font-size: 1.25em }
+ h3 { font-size: 1.12em }
+ h4 { font-size: 1em }
+-->
+</style>
+}}
+\documenttitle{R6RS Library Syntax}
+\fi
+
+\iflatex
+\pagestyle{plain}
+\fi
+
+\ifhtml
+\renewcommand{\sectionstar}[1]{\raw{\raw{<h1>}}#1\raw{\raw{</h1>}}}
+\renewcommand{\subsectionstar}[1]{\raw{\raw{<h2>}}#1\raw{\raw{</h2>}}}
+\renewcommand{\subsubsectionstar}[1]{\raw{\raw{<h3>}}#1\raw{\raw{</h3>}}}
+\fi
+
+\begin{document}
+
+\iflatex
+% block paragraphs
+\schemeindent=0pt
+\parskip=4pt
+\parindent=0pt
+\fi
+
+\sectionstar{Title}
+
+R6RS Library Syntax
+
+\sectionstar{Authors}
+
+Matthew Flatt and Kent Dybvig
+
+\sectionstar{Status}
+
+This SRFI is being submitted by a member of the Scheme Language Editor's
+Committee as part of the {\r6rs} Scheme standardization process.  The purpose
+of such ``{\r6rs} SRFIs'' is to inform the Scheme community of features and
+design ideas under consideration by the editors and to allow the community
+to give the editors some direct feedback that will be considered during
+the design process.
+
+At the end of the discussion period, this SRFI will be withdrawn.  When
+the {\r6rs} specification is finalized, the SRFI may be revised to conform to
+the {\r6rs} specification and then resubmitted with the intent to finalize
+it.  This procedure aims to avoid the situation where this SRFI is
+inconsistent with {\r6rs}.  An inconsistency between {\r6rs} and this SRFI could
+confuse some users.  Moreover it could pose implementation problems for
+{\r6rs} compliant Scheme systems that aim to support this SRFI.  Note that
+departures from the SRFI specification by the Scheme Language Editor's
+Committee may occur due to other design constraints, such as design
+consistency with other features that are not under discussion as SRFIs.
+
+\ifhtml
+\sectionstar{Table of Contents}
+\tableofcontents
+\fi
+
+\section{Abstract}
+
+The library system presented here is designed to let programmers share
+libraries, i.e., code that is intended to be incorporated into larger
+programs, and especially into programs that use library code from multiple
+sources.  The library system supports macro definitions within libraries,
+allows macro exports, and distinguishes the phases in which definitions
+and imports are needed.  This SRFI defines a standard notation for
+libraries, a semantics for library expansion and execution, and a simple
+format for sharing libraries.
+
+\section{Rationale\label{sec:rationale}}
+
+This standard addresses the following specific goals:
+
+\begin{itemize}
+\item Separate compilation and analysis; no two libraries have to be compiled at the same time (i.e., the meanings of two libraries cannot depend on each other cyclically, and compilation of two different libraries cannot rely on state shared across compilations), and significant program analysis does not require a whole program.
+\item Independent compilation/analysis of unrelated libraries, where ``unrelated'' means that neither depends on the other through a transitive closure of imports.
+\item Explicit declaration of dependencies, so that the meaning of each identifier is clear at compile time, and so that there is no ambiguity about whether a library needs to be executed for another library's compile time and/or run time.
+\item Namespace management, so that different library producers are unlikely to define the same top-level name. 
+\end{itemize}
+
+It does not address the following:
+
+\begin{itemize}
+\item Mutually dependent libraries.
+\item Separation of library interface from library implementation.
+\item Code outside of a library (e.g., 5 by itself as a program).
+\item Local modules and local imports. 
+\end{itemize}
+
+
+\section{Specification\label{sec:specification}}
+
+\subsection{Library form}
+
+A library declaration contains the following elements:
+
+\begin{itemize}
+\item a name for the library (possibly compound, with versioning),
+\item a list of import dependencies, where each dependency specifies the
+      following:
+\begin{itemize}
+\item the imported library's name,
+\item the relevant phases, e.g., expand or run time, and
+\item the subset of the library's exports to make available within the
+      importing library, and the local names to use within the importing
+      library for each of the library's exports,
+\end{itemize}
+\item a list of exports, which name a subset of the library's imports and
+      definitions, and
+\item a library body, consisting of a sequence of definitions followed
+      by a sequence of expressions.
+\end{itemize}
+
+\subsection{Syntax and Semantics}
+
+A library definition is written with the library form:
+
+\schemedisplay
+(library \raw{\ang{library~name}}
+  (export \raw{\ang{export~spec}}\raw{\kstar})
+  (import \raw{\ang{import~spec}}\raw{\kstar})
+  \raw{\ang{library~body}})
+\endschemedisplay
+
+The \ang{library~name} specifies the name of the library, the
+\scheme{import} form specifies the imported bindings, and the
+\scheme{export} form specifies the exported bindings.
+The \ang{library~body} specifies the set of definitions, both for local
+(unexported) and exported bindings, and the set of initialization
+expressions (commands) to be evaluated for their effects.
+The exported bindings may be defined within the library or imported into
+the library.
+
+An identifier can be imported from two or more libraries only if the
+binding exported by each library is the same (i.e., the binding is
+defined in one library, and it arrives throgh the imports only by
+exporting and re-exporting).  Otherwise, no identifier can be imported
+multiple times, defined multiple times, or both defined and imported.
+
+Library names have the following syntax.
+
+\begin{grammar}
+\ang{library~name}\longis \ang{identifier} \bar\ \scheme{(\raw{\ang{identifier}}\raw{\kplus} \raw{\ang{version}})}
+\\
+\ang{version}\longis \ang{empty} \bar\ \scheme{(\raw{\ang{subversion}}\raw{\kplus})}\\
+\\
+\ang{subversion}\longis \ang{exact nonnegative integer}
+\end{grammar}
+
+where \ang{identifier} is shorthand for \scheme{(\ang{identifier})}.
+
+Each \ang{import~spec} specifies a set of bindings to be imported into
+the library, the phases in which they are to be available, and the local
+names by which they are to be known.
+
+\begin{grammar}
+\ang{import~spec}\longis \ang{import~set}\\
+  \orbar \scheme{(for \raw{\ang{import~set}} \raw{\ang{import~phase}}\raw{\kstar})}
+\end{grammar}
+
+Valid import phases are \scheme{run}, \scheme{expand}, and
+\scheme{(meta \var{n})}, where \scheme{run} is an abbreviation for
+\scheme{(meta 0)} and \scheme{expand} is an abbreviation for
+\scheme{(meta 1)}.
+
+\begin{grammar}
+\ang{import~phase}\longis \scheme{run} \bar\ \scheme{expand} \bar\ \scheme{(meta \raw{\ang{level}})}\\
+\\
+\ang{level}\longis \ang{exact nonnegative integer}
+\end{grammar}
+
+Phases are discussed in Section~\ref{sec:phases}.
+
+An \ang{import~set} names a set of bindings from another library, and
+possibly specifies local names for the imported bindings.
+
+\begin{grammar}
+\ang{import~set}\longis \ang{library~reference}\\
+  \orbar \scheme{(only \raw{\ang{import~set}} \raw{\ang{identifier}}\raw{\kstar})}\\
+  \orbar \scheme{(except \raw{\ang{import~set}} \raw{\ang{identifier}}\raw{\kstar})}\\
+  \orbar \scheme{(add-prefix \raw{\ang{import~set}} \raw{\ang{identifier}})}\\
+  \orbar \scheme{(rename \raw{\ang{import~set}} (\raw{\ang{identifier}} \raw{\ang{identifier}})\raw{\kstar})}
+\end{grammar}
+
+A \ang{library~reference} identifies a library by its (possibly compound)
+name and optionally by its version.
+
+\begin{grammar}
+\ang{library~reference}\longis \scheme{\raw{\ang{identifier}}} \bar\ \scheme{(\raw{\ang{identifier}}\raw{\kplus} \raw{\ang{version~reference}})}\\
+\\
+\ang{version~reference}\longis \ang{empty} \bar\ \scheme{(\raw{\ang{subversion~reference}}\raw{\kplus})}\\
+\\
+\ang{subversion~reference}\longis \ang{subversion} \bar\ \ang{subversion~condition}\\
+\\
+\ang{subversion~condition}\longis \scheme{(>= \raw{\ang{subversion}})}\\
+                           \orbar \scheme{(<= \raw{\ang{subversion}})}\\
+                           \orbar \scheme{(and \raw{\ang{subversion~condition}}\raw{\kplus})}\\
+                           \orbar \scheme{(or \raw{\ang{subversion~condition}}\raw{\kplus})}\\
+                           \orbar \scheme{(not \raw{\ang{subversion~condition}})}
+\end{grammar}
+
+where \ang{identifier} is shorthand for \scheme{(\ang{identifier})}.
+
+The sequence of identifiers in the importing library's
+\ang{library~reference} must match the sequence of identifiers in the
+imported library's \ang{library~name}.
+The importing library's \ang{version~reference} specifies a predicate on a
+prefix of the imported library's \ang{version}.
+Each integer must match exactly and each condition has the expected meaning.
+Everything beyond the prefix specified in the version reference matches
+unconditionally.
+When more than one library is identified by a library reference, the
+choice of libraries is determined in some implementation-dependent manner.
+
+To avoid problems such as incompatible types and replicated state, two
+libraries whose library names contain the same sequence of identifiers but
+whose versions do not match cannot co-exist in the same program.
+
+By default, all of an imported library's exported bindings are made
+visible within an importing library using the names given to the bindings
+by the imported library.
+The preceise set of bindings to be imported and the names of those
+bindings can be adjusted with the \scheme{only}, \scheme{except},
+\scheme{add-prefix}, and \scheme{rename} forms as described below.
+
+\begin{itemize}
+\item The \scheme{only} form produces a subset of the bindings from another
+\ang{import~set}, including only the listed
+\ang{identifier}s; if any of the included \ang{identifier}s is not in
+\ang{import~set}, an exception is raised.
+\item The \scheme{except} form produces a subset of the bindings from another
+\ang{import~set}, including all but the listed
+\ang{identifier}s; if any of the excluded \ang{identifier}s is not in
+\ang{import~set}, an exception is raised.
+\item The \scheme{add-prefix} adds a prefix to each
+name from another \ang{import~set}.
+\item The \scheme{rename} form, for each pair of identifiers (\ang{identifier}
+\ang{identifier}), removes a binding from the set from \ang{import~set},
+and adds it back with a different name. 
+The first identifier is the original name, and the
+second identifier is the new name. 
+If the original name is not in \ang{import~set}, or
+if the new name is already in \ang{import~set}, an exception is raised.
+\end{itemize}
+
+An \ang{export~set} names a set of imported and locally defined bindings to
+be exported fpr optionally specified phases, possibly with different
+external names.
+
+\begin{grammar}
+\ang{export~spec}\longis \ang{export~set}\\
+  \orbar \scheme{(for (\raw{\ang{export~set}}\raw{\kstar}) \raw{\ang{import~phase}}\raw{\kstar})}\\
+\\
+\ang{export~set}\longis \ang{identifier}\\
+  \orbar \scheme{(rename (\raw{\ang{identifier}} \raw{\ang{identifier}})\raw{\kstar})}
+\end{grammar}
+
+In an \ang{export~set}, an \ang{identifier} names a single binding defined
+within the library or imported, where the external name for the export is
+the same as the name of the binding within the library. 
+A \scheme{rename} set exports the binding named by the first
+\ang{identifier} in each pair, using the second \ang{identifier} as the
+external name.
+
+The \ang{library~body} of a \scheme{library} form contains definitions for
+local and exported bindings and initalization expressions to be evaluated
+when the library is invoked.
+
+A \ang{library~body} is like a \scheme{lambda} body (see below) except that
+\ang{library~bodies} need not include any expressions.
+
+\begin{grammar}
+\ang{library~body}\longis \ang{declaration}\kstar\ \ang{definition}\kstar\ \ang{command}\kstar
+\end{grammar}
+
+\FIXME{need to update syntax of {definition} to include {syntax definition}.}
+
+\FIXME{replace this to be consistent with bodiessection.
+Matthew and I have given up trying to produce a suitable grammar
+and suggest that the splicing behavior of \scheme{begin} be described
+in prose, something like: \textit{Any subsequence of zero or more body forms
+may be wrapped, possibly in nested fashion, in a \scheme{begin}
+form, provided that no empty \scheme{begin} form appears after the first
+\ang{expression}.  This allows macros to expand into such subsequences
+of body forms.  In this context, \scheme{begin} is treated as a
+splicing form, i.e., as if the \scheme{begin} wrapper were not
+actually present.}
+This note will have to be modified for the script syntax to leave out
+the prohibition of empty \scheme{begin} forms after the first
+\ang{expression}.}
+
+\FIXME{with the above, we no longer need \scheme{(begin <definition>*)} as
+a definition.}
+
+The definitions of a \ang{library~body} or \ang{body} are mutually
+recursive.
+The transformer expressions and transformer bindings are created
+from left to right, as described in Chapter~\label{expansionchapter}.
+The variable-definition right-hand-side expressions are evalated
+from left to right, as if in an implicit \scheme{letrec*},
+and the body expressions are also evaluated from left to right
+after the variable-definition right-hand-side expressions.
+The location of each exported variable is then initialized to the value
+of its local counterpart.
+The effect of returning twice to the continuation of the last body
+expression is unspecified.
+
+The names \scheme{library}, \scheme{export}, \scheme{import},
+\scheme{for}, \scheme{run}, \scheme{expand}, \scheme{meta},
+\scheme{import}, \scheme{export}, \scheme{only}, \scheme{except}, and
+\scheme{rename} appearing in the library syntax are part of the
+syntax and are not reserved, i.e, the same can be used for other
+purposes within the library or even exported from or imported 
+into a library with different meanings, without affecting their
+use in the \scheme{library} form.
+
+In the case of any ambiguities that arise from the use of one of
+these names as a library name when using the shorthand (single-identifier)
+\ang{library~reference} syntax should be resolved in favor of the interpretation
+given to the name by the library syntax.
+For example, \scheme{(import (for lib expand))} should be taken as
+importing library \scheme{lib} for \scheme{expand}, not as importing
+library \scheme{(for lib expand)}.
+The user can always eliminate such ambiguities by avoiding the shorthand
+\ang{library~reference} syntax when such an ambiguity might arise.
+
+Bindings defined with a library are not visible in code that appears
+outside of the library unless they are explicitly exported from the
+library. 
+An exported macro may, however, \emph{implicitly export} an identifier
+defined within or imported into the library.
+That is, it may insert a reference to that identifier into the output code
+it produces.
+
+All explicitly exported variables are immutable both in the exporting and
+importing libraries.
+All implicitly exported variables are mutable in the exporting library but
+immutable in the importing libraries.
+In consequence, any change after the initial assignment to the value of an
+implicitly exported variable is not reflected by the references inserted
+by an exported macro outside of the exporting library, and exported macros
+may not insert assignments to implicitly exported variables outside of the
+exporting library.
+
+\subsection{Import phases\label{sec:phases}}
+
+All bindings imported via a library's \scheme{import} form are
+\emph{visible} throughout the library's \ang{library~body}.
+An exception may be raised, however, if a binding is used out of its declared
+phase(s):
+
+\begin{itemize}
+\item Bindings used in run-time code must be imported ``for \scheme{run},''
+which is equivalent to ``for \scheme{(meta 0)}.''
+\item Bindings used in the body of a transformer (appearing on the
+right-hand-side of a transformer binding) in run-time code must be
+imported ``for \scheme{expand},'' which is equivalent to
+``for \scheme{(meta 1)},
+\item Bindings used in the body of a transformer appearing within the body of a
+transformer in run-time code must be imported ``for \scheme{(meta 2)},''
+and so on.
+\end{itemize}
+
+The valid import phases of an imported binding are determined by the enclosing
+\scheme{for} form, if any, in the \scheme{import} form of the importing
+library, in addition to the phase of the identifier in the exporting library.
+An \ang{import~set} without an enclosing \scheme{for} is equivalent to
+\scheme{(for \raw{\ang{import~set}} run)}.
+
+Import and export phases are combined by pairwise addition of all phase
+combinations.  For example, references to an imported identifier exported
+for phases $p_a$ and $p_b$ and imported for phases $q_a$, $q_b$, and $q_c$
+are valid at phases $p_a+q_q$, $p_a+q_b$, $p_a+q_c$, $p_b+q_q$, $p_b+q_b$,
+$nd p_b+q_c$.
+
+The import phases implicitly determine when information about a
+library must be available and also when the various forms contained within
+a library must be evaluated.
+
+Every library can be characterized by expand-time information (minimally,
+its imported libraries, a list of the exported keywords, a list of the
+exported variables, and code to evaluate the transformer expressions) and
+run-time information (minimally, code to evaluate the variable definition
+right-hand-side expressions, and code to evaluate the body expressions).
+The expand-time information must be available to expand references to
+any exported binding, and the run-time information must be available to
+evaluate references to any exported variable binding.
+
+If any of a library's bindings is imported by another library ``for
+\scheme{expand}'' (or for any meta level greater than 0), both expand-time and
+run-time information for the first library is made available when the second
+library is expanded.
+If any of a library's bindings is imported by another library ``for
+\scheme{run},'' the expand-time information for the first library is made available when
+the second library is expanded, and the run-time information for the first
+library is made available when the run-time information for the second library
+is made available.
+
+We must also consider when the code to evaluate a library's transformer
+expressions is executed and when the code to evaluate the library's
+variable-definition right-hand-side expressions and body expressions is
+executed.
+We refer to executing the transformer expressions as \emph{visiting}
+the library and to executing the variable-definition right-hand-side 
+expressions and body expressions as \emph{invoking} the library.
+A library must be visited before code that uses its bindings can be
+expanded, and it must be invoked before code that uses its bindings can be
+executed.
+Visiting or invoking a library may also trigger the visiting or
+invoking of other libraries.
+
+More precisely, visiting a library at phase $N$ causes the system to:
+
+\begin{itemize}
+\item Visit at phase $N$ any library that is imported by this library
+      ``for \scheme{run}'' and that is not yet visited at phase $N$.
+\item Visit at phase $N+M$ any library that is imported by this
+      library ``for \scheme{(meta \var{M})},'' $M>0$ and that is not yet
+      visited at phase $N+M$.
+\item Invoke at phase $N+M$ any library that is imported by this
+      library ``for \scheme{(meta \var{M})},'' $M>0$ and that is not yet
+      invoked at phase $N+M$.
+\item Evaluate the library's transformer expressions.
+\end{itemize}
+
+The order in which imported libraries are visited and invoked is not
+defined, but imported libraries must be visited and invoked before the
+library's transformer expressions are evaluated.
+
+Similarly, invoking a library at meta phase $N$ causes the system to:
+
+\begin{itemize}
+\item Invoke at phase $N$ any library that is imported by this library
+      ``for \scheme{run}'' and that is not yet invoked at phase $N$.
+\item Evaluate the library's variable-definition right-hand-side and body
+      expressions.
+\end{itemize}
+
+The order in which imported libraries are invoked is not defined, but
+imported libraries must be invoked before the library's variable-definition
+right-hand-side and body expressions are evaluated.
+
+An implementation is allowed to distinguish visits of a library across
+different phases or to treat a visit at any phase as a visit at all
+phases.
+Similarly, an implementation is allowed to distinguish invocations of a
+library across different phases or to treat an invocation at any phase as
+an invocation at all phases.
+An implementation is further allowed to start each expansion of a
+\scheme{library} form by removing all library bindings above phase 0.
+Thus, a portable library's meaning must not depend on whether the
+invocations are distinguished or preserved across phases or \scheme{library}
+expansions.
+
+\subsection{Eval\label{sec:eval}}
+
+The \scheme{eval} procedure accepts two arguments, an expression to
+evaluate, represented as an s-expression, and an environment:
+
+\schemedisplay
+(eval \var{expression} \var{environment})
+\endschemedisplay
+
+Environments can be constructed with the \scheme{environment} procedure,
+which accepts a set of import specifiers represented as datums.
+
+\schemedisplay
+(environment \var{import-spec} \dots) ;=> \var{environment}
+\endschemedisplay
+
+The s-expression syntax of an \var{import-spec} mirrors the external
+syntax of an \ang{import spec}.
+For example:
+
+\schemedisplay
+(eval '(+ 3 4) (environment '(r6rs base))) ;=> 7
+\endschemedisplay
+
+An exception is raised if the expand-time or run-time information for a
+library named in one of the \var{import-specs} is not \emph{available}
+when the call to \scheme{environment} occurs, in the sense of
+Section~\ref{sec:phases}.
+
+\section{Examples}
+
+\FIXME{compare examples with von Tonder macros.test file.}
+\FIXME{need some eval examples}
+
+Hello world:
+
+\schemedisplay
+(library hello
+  (import (r6rs))
+  (export)
+  (display "Hello World")
+  (newline))
+\endschemedisplay
+
+Examples for various \ang{import~spec}s and \ang{export~spec}s:
+
+\schemedisplay
+(library (stack)
+  (import (r6rs))
+  (export make push! pop! empty!)
+
+  (define (make) (list '()))
+  (define (push! s v) (set-car! s (cons v (car s))))
+  (define (pop! s) (let ([v (caar s)])
+                     (set-car! s (cdar s))
+                     v))
+  (define (empty! s) (set-car! s '())))
+
+(library (balloons)
+  (import (r6rs))
+  (export make push pop)
+
+  (define (make w h) (cons w h))
+  (define (push b amt) (cons (- (car b) amt) (+ (cdr b) amt)))
+  (define (pop b) (display "Boom! ") 
+                  (display (* (car b) (cdr b))) 
+                  (newline)))
+
+(library (party)
+  (import (r6rs)
+          (only (stack) make push! pop!) ; not empty!
+          (add-prefix (balloons) balloon:))
+  ;; Total exports: make, push, push!, make-party, pop!
+  (export (rename (balloon:make make)
+	          (balloon:push push))
+	  push!
+	  make-party
+	  (rename (party-pop! pop!)))
+
+  ;; Creates a party as a stack of balloons, starting with
+  ;;  two balloons
+  (define (make-party)
+    (let ([s (make)]) ; from stack
+      (push! s (balloon:make 10 10))
+      (push! s (balloon:make 12 9))
+      s))
+  (define (party-pop! p)
+    (balloon:pop (pop! p))))
+
+
+(library (main)
+  (import (r6rs) (party))
+
+  (define p (make-party))
+  (pop! p)        ; displays "Boom! 108"
+  (push! p (push (make 5 5) 1))
+  (pop! p))       ; displays "Boom! 24"
+\endschemedisplay
+
+Examples for macros and phases:
+
+\schemedisplay
+(library (id-stuff)
+  (import (r6rs))
+  (export find-dup)
+
+  (define (find-dup l)
+    (and (pair? l)
+         (let loop ((rest (cdr l)))
+           (cond
+            [(null? rest) (find-dup (cdr l))]
+            [(bound-identifier=? (car l) (car rest)) (car rest)]
+            [else (loop (cdr rest))])))))
+
+(library (values-stuff)
+  (import (r6rs) (import (for (id-stuff) expand)))
+  (export (for mvlet expand run))
+
+  (define-syntax mvlet
+    (lambda (stx)
+      (syntax-case stx ()
+        [(_ [(id ...) expr] body0 body ...)
+         (not (find-dup (syntax-object->list (syntax (id ...)))))
+         (syntax (call-with-values (lambda () expr) 
+                                   (lambda (id ...) body0 body ...)))]))))
+
+(library (let-div)
+  (import (r6rs) (mvlet))
+  (export let-div)
+
+  (define (quotient+remainder n d)
+    (let ([q (quotient n d)])
+      (values q (- n (* q d)))))
+  (define-syntax let-div
+    (syntax-rules ()
+     [(_ n d (q r) body0 body ...)
+      (mvlet [(q r) (quotient+remainder n d)]
+        body0 body ...)])))
+\endschemedisplay
+
+
+\end{document}
