@@ -3590,6 +3590,11 @@ As noted in section~\ref{quotesection},
 (let ((name '(foo)))
   `((unquote-splicing name name name)))%
           \lev (foo foo foo)
+(let ((q '((append x y) (sqrt 9))))
+  ``(foo ,,@q)) \lev `(foo (unquote (append x y) (sqrt 9)))
+(let ((x '(2 3))
+      (y '(4 5)))
+  `(foo (unquote (append x y) (sqrt 9)))) \lev (foo (2 3 4 5) 3)
 \end{scheme}
 
 Quasiquote forms may be nested.  Substitutions are made only for
