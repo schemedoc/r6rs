@@ -33,14 +33,16 @@ whereby a single record definition serves as a shorthand for the definition of
 several record creation and manipulation routines: a construction procedure, a
 predicate, field accessors, and field mutators. As the name suggests, the
 explicit-naming syntactic layer requires the programmer to name each of these
-products explicitly.
+procedures explicitly.
 
 The implicit-naming syntactic layer extends the explicit-naming syntactic layer
 by allowing the names for the construction procedure, predicate, accessors, and
 mutators to be determined automatically from the name of the record and names
 of the fields. This establishes a standard naming convention and allows
-record-type definitions to be more succinct, with the downside that the product
-definitions cannot easily be located via a simple search for the product name.
+record-type definitions to be more succinct, with the downside that the
+procedure
+definitions cannot easily be located via a simple search for the 
+procedure name.
 The programmer may override some or all of the default names by specifying them
 explicitly, as in the explicit-naming syntactic layer.
 
@@ -51,7 +53,7 @@ implicit-naming definitions reasonably natural while allowing a seamless
 transition between explicit and implicit naming.
 
 Each of these layers permits record types to be extended via single
-inheritence, allowing record types to model hierarchies that occur in
+inheritance, allowing record types to model hierarchies that occur in
 applications like algebraic data types as well as single-inheritance class
 systems.
 
@@ -157,7 +159,7 @@ The specified fields are added to the parent fields, if any, to determine
 the complete set of fields of the returned record type.
 
 A record type is considered immutable if each of its complete set of
-fields is immutable and mutable otherwise.
+fields is immutable, and is mutable otherwise.
 
 A generative record-type descriptor created by a call to {\cf
   make-record-type-descriptor} is not {\cf eqv?} to any record-type
@@ -188,7 +190,7 @@ uid arguments.
 \end{rationale}
 
 \begin{rationale}
-  Sealing a record type can help enforce abstration barriers by preventing
+  Sealing a record type can help to enforce abstraction barriers by preventing
   extensions that may expose implementation details of the parent type.
   Type extensions also make monomorphic code polymorphic and
   difficult to change the parent class at a later time, and also
@@ -218,8 +220,8 @@ Returns \schtrue{} if the argument is a record-type descriptor,
 This returns a \defining{record-constructor descriptor} (or
 \defining{constructor descriptor} for short) that can be used to
 create record constructors (via {\cf record-constructor}; see below)
-or other constructor descriptors.  \var{Rtd} shall be a record-type
-descriptor.  \defining{Protocol} shall be a procedure or \schfalse.
+or other constructor descriptors.  \var{rtd} shall be a record-type
+descriptor.  \defining{protocol} shall be a procedure or \schfalse.
 If it is \schfalse, a default \var{protocol} procedure is supplied.
 If \var{protocol} is a procedure, it is called by {\cf record-constructor}
 with a single argument \var{p} and must return a procedure that creates
@@ -279,7 +281,7 @@ associated record type.
 Child record constructors need not know the number or contents of parent
 fields, only the number of arguments required by the parent constructor.
 
-\var{Protocol} may be \schfalse, specifying a default, only
+\var{protocol} may be \schfalse, specifying a default, only
 if \var{rtd} is not an extension of another record
 type, or, if it is, if the parent constructor-descriptor
 encapsulates a default protocol. In the first case, the
@@ -315,12 +317,12 @@ constructor with default protocol is supplied.
   away from the actual number and contents of parent fields.
 
   The design allows the initial values of the fields to be specially
-  computed or default to constant values. It also allows for
+  computed or to default to constant values. It also allows for
   operations to be performed on or with the resulting record, such as
   the registration of a widget record for finalization. Moreover, the
   constructor-descriptor mechanism allows the creation of such
   initializers in a modular manner, separating the initialization
-  concerns of the parent types of those of the extensions.
+  concerns of the parent types from those of the extensions.
   
   The mechanism described here achieves complete generality without
   cluttering the syntactic layer, sacrificing a bit of
@@ -332,8 +334,8 @@ constructor with default protocol is supplied.
 \begin{entry}{%
 \proto{record-constructor}{ constructor-descriptor}{procedure}}
    
-Calls the \var{protocol} of \var{constructor-descriptor} as described in
-{\cf make-record-constructor-descriptor} and returns the resulting
+Calls the \var{protocol} of \var{constructor-descriptor} (as described for
+{\cf make-record-constructor-descriptor}) and returns the resulting
 construction procedure \var{constructor} for instances of the record type
 associated with \var{constructor-descriptor}.
 
@@ -353,7 +355,7 @@ the following holds:
 For mutable records, but not necessarily for immutable ones, the following
 hold.
 (A record of an mutable record type is mutable;
-a record of a immutable record type is immutable.)
+a record of an immutable record type is immutable.)
 
 \begin{scheme}
 (let ((r (\var{constructor} v \ldots)))
@@ -368,7 +370,8 @@ a record of a immutable record type is immutable.)
 \proto{record-predicate}{ rtd}{procedure}}
    
 Returns a procedure that, given an object \var{obj}, returns
-\schtrue{} iff \var{obj} is a record of the type represented by
+a boolean that is \schtrue{}
+iff \var{obj} is a record of the type represented by
 \var{rtd}.
 \end{entry}
 
@@ -490,7 +493,7 @@ descriptor and constructor descriptor (see {\cf
   record-type-descriptor} and {\cf record-constructor-descriptor}
 below).
 
-\hyper{Constructor name} is defined by this definition to a
+\hyper{Constructor name} is defined by this definition to be a
 constructor for the defined record type, with a protocol specified by
 the {\cf protocol} clause, or, in its absence, using a default protocol. For
 details, see the description of the {\cf protocol} clause below.
@@ -567,7 +570,7 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
    
   This specifies that the record type is nongenerative with uid
   \hyper{uid}, which shall be an \hyper{identifier}.
-  If two record-type definitions specify the same \var{uid}, the
+  If two record-type definitions specify the same \var{uid}, then
   the implied arguments to {\cf make-record-type-descriptor}
   shall be equivalent as described under {\cf make-record-type-descriptor}.
   If this condition is not met, it is either considered a syntax violation or
