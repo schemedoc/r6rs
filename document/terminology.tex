@@ -13,7 +13,7 @@ built-in procedure.  An entry begins with one or more header lines of the form
 \noindent\pproto{\var{template}}{\var{category}}\unpenalty
 
 If \var{category} is ``\exprtype'', the entry describes a 
-special syntactic form, and the template gives the syntax of form.  Even
+special syntactic form, and the template gives the syntax of the form.  Even
 though the template is written in a notation similar to a right-hand
 side of the BNF rules in chapter~\ref{readsyntaxchapter}, it describes
 the set of forms equivalent to the forms matching the
@@ -48,7 +48,7 @@ shape specified by a template---an exception with condition type
 Descriptions of syntax may express other restrictions on the
 components of a form.  Typically, such a restriction is formulated
 as a phrase of the form ``\hyper{x} shall be a \ldots'' (or otherwise
-using the word ``shall'')  As with
+using the word ``shall.'')  As with
 implicit restrictions, such a phrase means that an exception with
 condition type {\cf\&syntax} will be raised if the component does not
 meet the restriction.
@@ -72,9 +72,11 @@ indicate that the {\tt make-vector} procedure takes
 either one or two arguments.
 
 \label{typeconventions}
-An operation that is presented with an argument that it
-is not specified to handle will raise an exception with condition type
-{\cf\&contract}.
+An operation that is presented with an argument that it is not
+specified to handle will raise an exception with condition type
+{\cf\&contract}.  Also, if the number of arguments presented to an
+operation does not match any specified count, an exception with
+condition type {\cf\&contract} shall be raised.
 
 For succinctness, we follow the convention
 that if a parameter name is also the name of a type, then the corresponding argument must be of the named type.
@@ -97,7 +99,6 @@ $$
 \var{pair}&pair (see section~\ref{listsection})\\
 \var{list}&list (see section~\ref{listargumentssection})\\
 \var{vector}&vector (see section~\ref{vectorsection})\\
-\var{datum}&datum value (see section~\ref{readsyntaxsection})\\
 \var{string}&string (see section~\ref{stringsection})\\
 \var{condition}&condition (see section~\ref{conditionssection})\\
 \var{bytes}&bytes object (see chapter~\ref{byteschapter})\\
@@ -161,7 +162,7 @@ means that the expression {\tt(* 5 8)} evaluates to the object {\tt 40}.
 Or, more precisely:  the expression given by the sequence of characters
 ``{\tt(* 5 8)}'' evaluates, in the initial environment, to an object
 that may be represented externally by the sequence of characters ``{\tt
-40}''.  See chapter~\ref{readsyntaxchapter} for a discussion of external
+40}''.  See section~\ref{readsyntaxsection} for a discussion of external
 representations of objects.
 
 The ``\evalsto'' symbol is also used when the evaluation of an
@@ -213,14 +214,14 @@ are allowed, but discouraged, to detect the situation
 and to raise an exception.
 \end{itemize}
 
-This report uses the phrase ``an exception with condition type
-\meta{condition-type}'' to indicate that the object provided with the
+This report uses the phrase ``an exception with condition type \var{t}''
+to indicate that the object provided with the
 exception is a condition object of the specified type.
 
 The phrase ``a continuable exception is raised'' indicates
 an exceptional situation that permits the exception handler to return,
 thereby allowing program execution to continue at the place where the
-original exception occurred.  See~\ref{exceptionssection}.
+original exception occurred.  See sectionj~\ref{exceptionssection}.
 
 \vest For example, an exception with condition type {\cf\&contract}
 is raised if a procedure is passed an argument that the procedure
@@ -248,10 +249,9 @@ elements are the same as those of the list.
 \section{Syntax violations}
 
 Scheme implementations conformant with this report must detect
-violations of the syntax.  A \defining{syntax violation} may be an error with
-respect to the lexical syntax specified in
-section~\ref{lexicalsyntaxsection}, the read syntax specified in
-section~\ref{readsyntaxsection}, or the ``\exprtype'' entries in the
+violations of the syntax.  A \defining{syntax violation} is an error
+with respect to the syntax of library bodies, script bodies,
+or the ``\exprtype'' entries in the
 specification of the base library or the standard libraries.
 Moreover, attempting to assign to an immutable variable is also
 considered a syntax violation.  (The locations bound to variables
