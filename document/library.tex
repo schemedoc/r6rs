@@ -10,15 +10,15 @@ and imports are needed.  This chapter defines the notation for
 libraries, a semantics for library expansion and execution, and a simple
 format for sharing libraries.
 
-Libraries addresses the following specific goals:
+Libraries address the following specific goals:
 
 \begin{itemize}
 \item Separate compilation and analysis; no two libraries have to be
   compiled at the same time (i.e., the meanings of two libraries
   cannot depend on each other cyclically, and compilation of two
   different libraries cannot rely on state shared across
-  compilations), and significant program analysis does not require a
-  whole program.
+  compilations), and significant program analysis
+  can be performed without examining a whole program.
 \item Independent compilation/analysis of unrelated libraries, where
   ``unrelated'' means that neither depends on the other through a
   transitive closure of imports.
@@ -46,6 +46,8 @@ A library declaration contains the following elements:
 
 \begin{itemize}
 \item a name for the library (possibly compound, with versioning),
+\item a list of exports, which name a subset of the library's imports and
+      definitions, and
 \item a list of import dependencies, where each dependency specifies the
       following:
 \begin{itemize}
@@ -55,8 +57,6 @@ A library declaration contains the following elements:
       importing library, and the local names to use within the importing
       library for each of the library's exports,
 \end{itemize}
-\item a list of exports, which name a subset of the library's imports and
-      definitions, and
 \item a library body, consisting of a sequence of definitions followed
       by a sequence of expressions.
 \end{itemize}
@@ -71,8 +71,8 @@ A library definition shall have the following form:
 \end{scheme}
 
 The \hyper{library~name} specifies the name of the library, the
-{\cf import} form specifies the imported bindings, and the
-{\cf export} form specifies the exported bindings.
+{\cf export} form specifies the exported bindings, and the
+{\cf import} form specifies the imported bindings.
 The \hyper{library~body} specifies the set of definitions, both for local
 (unexported) and exported bindings, and the set of initialization
 expressions (commands) to be evaluated for their effects.
@@ -190,7 +190,7 @@ whose versions do not match cannot co-exist in the same program.
 By default, all of an imported library's exported bindings are made
 visible within an importing library using the names given to the bindings
 by the imported library.
-The preceise set of bindings to be imported and the names of those
+The precise set of bindings to be imported and the names of those
 bindings can be adjusted with the {\cf only}, {\cf except},
 {\cf add-prefix}, and {\cf rename} forms as described below.
 
@@ -263,7 +263,7 @@ body; see section~\ref{begin}.
 
 The transformer expressions and transformer bindings are created
 from left to right, as described in chapter~\ref{expansionchapter}.
-The variable-definition right-hand-side expressions are evualated
+The variable-definition right-hand-side expressions are evaluated
 from left to right, as if in an implicit {\cf letrec*},
 and the body expressions are also evaluated from left to right
 after the variable-definition right-hand-side expressions.
@@ -284,7 +284,7 @@ use in the {\cf library} form.
 In the case of any ambiguities that arise from the use of one of
 these names as a shorthand (single-identifier) library name, the
 ambiguity should be resolved in favor of the interpretation
-of name as library syntax.
+of the name as library syntax.
 For example, {\cf (import (for lib expand))} should be taken as
 importing library {\cf lib} for {\cf expand}, not as importing
 library {\cf (for lib expand)}.
@@ -300,7 +300,7 @@ That is, it may insert a reference to that identifier into the output code
 it produces.
 
 \label{importsareimmutablesection} 
-All explicitly exported variables are immutable both in the exporting and
+All explicitly exported variables are immutable in both the exporting and
 importing libraries.
 All implicitly exported variables are mutable in the exporting library but
 immutable in the importing libraries.
@@ -340,7 +340,7 @@ Import and export phases are combined by pairwise addition of all phase
 combinations.  For example, references to an imported identifier exported
 for phases $p_a$ and $p_b$ and imported for phases $q_a$, $q_b$, and $q_c$
 are valid at phases $p_a+q_q$, $p_a+q_b$, $p_a+q_c$, $p_b+q_q$, $p_b+q_b$,
-$nd p_b+q_c$.
+and $p_b+q_c$.
 
 The import phases implicitly determine when information about a
 library must be available and also when the various forms contained within
@@ -355,11 +355,11 @@ The expand-time information must be available to expand references to
 any exported binding, and the run-time information must be available to
 evaluate references to any exported variable binding.
 
-If any of a library's bindings is imported by another library ``for
+If any of a library's bindings are imported by another library ``for
 {\cf expand}'' (or for any meta level greater than 0), both expand-time and
 run-time information for the first library is made available when the second
 library is expanded.
-If any of a library's bindings is imported by another library ``for
+If any of a library's bindings are imported by another library ``for
 {\cf run},'' the expand-time information for the first library is made available when
 the second library is expanded, and the run-time information for the first
 library is made available when the run-time information for the second library
@@ -426,7 +426,7 @@ expansions.
 After the {\cf import} form within a {\cf library} form, the forms
 that constitute a library body depend on the libraries that are
 imported. In particular, imported syntactic keywords determine most
-the the available forms, and whether each form is a declaration,
+of the available forms, and whether each form is a declaration,
 definition, or expression. A few expression types are
 always available independent of imported libraries, however,
 including constant literals, variable references, procedure calls,
@@ -468,7 +468,8 @@ variable is bound.  It is a syntax violation to reference
 unbound\index{unbound} variable.
 
 \begin{scheme}
-(define x 28) ; in the base library
+; this example assumes the base library has been imported
+(define x 28)
 x   \ev  28%
 \end{scheme}
 \end{entry}
@@ -486,9 +487,9 @@ call if \hyper{operator} is not bound as a syntactic keyword.
 When an procedure call is evaluated, the operator and operand
 expressions are evaluated (in an unspecified order) and the resulting
 procedure is passed the resulting
-arguments.\mainindex{call}\mainindex{procedure call} In the base
-library:
+arguments.\mainindex{call}\mainindex{procedure call}.
 \begin{scheme}%
+; these examples assume the base library has been imported
 (+ 3 4)                          \ev  7
 ((if \schfalse + *) 3 4)         \ev  12%
 \end{scheme}
@@ -614,10 +615,10 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
   ;; Total exports:
   ;; make, push, push!, make-party, pop!
   (export (rename (balloon:make make)
-	          (balloon:push push))
-	  push!
-	  make-party
-	  (rename (party-pop! pop!)))
+                  (balloon:push push))
+          push!
+          make-party
+          (rename (party-pop! pop!)))
   (import (r6rs)
           (only (stack)
                 make push! pop!) ; not empty!
