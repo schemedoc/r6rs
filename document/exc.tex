@@ -220,7 +220,14 @@ returns become(s) the value(s) returned by the call to
     \ev (b . 23)%
 \end{scheme}
 
-% FIXME: examples for `raise-continuable'
+\begin{scheme}
+(with-exception-handler
+  (lambda (x)
+    42)
+  (lambda ()
+    (+ (raise-continuable \schfalse)
+       23))) \ev 65
+\end{scheme}
 
 \section{Conditions}
 \label{conditionssection}
