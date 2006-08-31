@@ -1,5 +1,5 @@
 % Lexical structure
-
+\hyphenation{white-space}
 %%\vfill\eject
 \chapter{Lexical syntax and read syntax}
 \label{readsyntaxchapter}
@@ -21,7 +21,9 @@ The syntax of Scheme programs is organized in three levels:
 %
 Syntactic datums (also called \textit{external
   representations\index{external representation}}) double
-as a notation for data, and Scheme's \library{r6rs i/o ports} library provides procedures
+as a notation for data, and Scheme's \library{r6rs i/o ports} library
+(section~\ref{portsiosection})
+provides the {\cf get-datum} and {\cf put-datum} procedures
 for reading and writing syntactic datums, converting between their
 textual representation and the corresponding values. 
 A
@@ -50,8 +52,8 @@ as forms of a program.
 
 Because of the close correspondence between syntactic datums and datum
 values, this report sometimes uses the term \defining{datum} to denote
-either a syntactic datum or a datum value when it is apparent from the
-context.
+either a syntactic datum or a datum value when the exact meaning
+is apparent from the context.
 
 This chapter gives overviews and formal accounts of the lexical
 syntax and the read syntax.
@@ -60,10 +62,12 @@ syntax and the read syntax.
 \label{BNF}
 
 The formal syntax for Scheme is written in an extended BNF.
+Non-terminals are written using angle brackets; case is insignificant
+for non-terminals.
 
 All spaces in the grammar are for legibility.  Case is significant
 except in hexadecimal numbers; for example, {\cf \#x1A} and {\cf
-  \#X1a} are equivalent.  \meta{empty} stands for the empty string.
+  \#X1a} are equivalent.  \meta{Empty} stands for the empty string.
 
 The following extensions to BNF are used to make the description more
 concise:  \arbno{\meta{thing}} means zero or more occurrences of
@@ -80,7 +84,7 @@ be text according to the Unicode standard~\cite{Unicode}.  Some of
 the lexemes, such as numbers, identifiers, strings etc.\ of the lexical
 syntax are syntactic datums in the read syntax, and thus represent data.
 Besides the formal account of the syntax, this section also describes
-what data objects are denoted by these syntactic datums.
+what datum values are denoted by these syntactic datums.
 
 Note that the lexical syntax, in the description of comments, contains
 a forward reference to \meta{datum}, which is described as part of the
@@ -338,7 +342,7 @@ syntactic keyword\index{syntactic keyword} (see
 sections~\ref{variablesection} and~\ref{macrosection}) in a Scheme
 program.
 
-Moreover, when viewed as data, an identifier denotes a {\em symbol\index{symbol}}
+Moreover, when viewed as a datum value, an identifier denotes a {\em symbol\index{symbol}}
 (see section~\ref{symbolsection}).
 
 \subsection{Booleans}
@@ -410,6 +414,9 @@ For example:
 \>\>; \textrm{in excluded range}
 \end{schemenoindent}
 
+(The notation \exception{\&lexical} means that the line in question is
+a lexical syntax violation.)
+
 Case is significant in \sharpsign\backwhack\hyper{character}, and in in
 \sharpsign\backwhack{\rm$\langle$character name$\rangle$}, % \hyper doesn't allow a linebreak
 but not in \sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}.  
@@ -462,14 +469,14 @@ Examples:
 
 \begin{schemenoindent}
 "abc" \ev  \textrm{U+0061, U+0062, U+0063}
-"\backwhack{}x41;bc" \ev  \textrm{``Abc'', U+0041, U+0062, U+0063}
-"\backwhack{}x41; bc" \ev  \textrm{``A bc''}
-\>\>\textrm{U+0041, U+0020, U+0062, U+0063}
+"\backwhack{}x41;bc" \ev  "Abc" ; \textrm{U+0041, U+0062, U+0063}
+"\backwhack{}x41; bc" \ev "A bc"
+\>\>; \textrm{U+0041, U+0020, U+0062, U+0063}
 "\backwhack{}x41bc;" \ev  \textrm{U+41BC}
 "\backwhack{}x41" \ev \exception{\&lexical}
 "\backwhack{}x;" \ev \exception{\&lexical}
 "\backwhack{}x41bx;" \ev \exception{\&lexical}
-"\backwhack{}x00000041;" \ev  \textrm{``A'', U+0041}
+"\backwhack{}x00000041;" \ev  "A" ; \textrm{U+0041}
 "\backwhack{}x0010FFFF;" \ev \textrm{U+10FFFF}
 "\backwhack{}x00110000;" \ev  \exception{\&lexical}
 \>\>; \textrm{out of range}
