@@ -9,7 +9,7 @@ blocks of binary data with multiple ways to access that data. It deals
 only with integers in various sizes with specified endianness, because
 these are the most frequent applications.
 
-Bytes objects\mainschindex{bytes objects} are objects of a disjoint
+Bytes objects\mainindex{bytes objects} are objects of a disjoint
 type. Conceptually, a bytes object represents a sequence of 8-bit
 bytes.  The description of bytes objects uses the term \defining{byte}
 for an exact integer in the interval $\{-128, \ldots, 127\}$ and the
@@ -90,12 +90,12 @@ Returns, as an exact integer, the number of bytes in \var{bytes}.
 \proto{bytes-u8-ref}{ bytes k}{procedure}
 \proto{bytes-s8-ref}{ bytes k}{procedure}}
    
-\domain{\var{k} shall be a valid index of bytes.}
+\domain{\var{K} shall be a valid index of bytes.}
    
-{\cf bytes-u8-ref} returns the byte at index \var{k} of \var{bytes},
+The {\cf bytes-u8-ref} procedure returns the byte at index \var{k} of \var{bytes},
 as an octet.
    
-{\cf bytes-s8-ref} returns the byte at index \var{k} of \var{bytes},
+The {\cf bytes-s8-ref} procedure returns the byte at index \var{k} of \var{bytes},
 as a (signed) byte.
 
 \begin{scheme}
@@ -113,12 +113,12 @@ as a (signed) byte.
 \proto{bytes-u8-set!}{ bytes k octet}{procedure}
 \proto{bytes-s8-set!}{ bytes k byte}{procedure}}
    
-\var{k} shall be a valid index of \var{bytes}.
+\domain{\var{K} shall be a valid index of \var{bytes}.}
    
-{\cf bytes-u8-set!} stores \var{octet} in element \var{k} of
+The {\cf bytes-u8-set!} procedure stores \var{octet} in element \var{k} of
 \var{bytes}.
    
-{\cf bytes-s8-set!} stores the two's complement representation of
+The {\cf bytes-s8-set!} procedure stores the two's complement representation of
 \var{byte} in element \var{k} of \var{bytes}.
    
 Both procedures return \unspecifiedreturn.
@@ -143,7 +143,7 @@ Both procedures return \unspecifiedreturn.
 \proto{bytes-uint-set!}{ bytes k n endianness size}{procedure}
 \proto{bytes-sint-set!}{ bytes k n endianness size}{procedure}}
    
-\domain{\var{size} shall be a positive exact integer. $\{\var{k}, \ldots,
+\domain{\var{Size} shall be a positive exact integer. $\{\var{k}, \ldots,
   \var{k} + \var{size} - 1\}$ shall be valid indices of \var{bytes}.}
    
 {\cf bytes-uint-ref} retrieves the exact integer corresponding to the
@@ -315,9 +315,9 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes=?}{ bytes-1 bytes-2}{procedure}}
+\proto{bytes=?}{ \vari{bytes} \varii{bytes}}{procedure}}
    
-Returns \schtrue{} if \var{bytes-1} and \var{bytes-2} are equal---that
+Returns \schtrue{} if \vari{bytes} and \varii{bytes} are equal---that
 is, if they have the same length and equal bytes at all valid indices.
 It returns \schfalse{} otherwise.
 \end{entry}
@@ -330,7 +330,7 @@ It returns \schfalse{} otherwise.
   \var{bytes}.  For {\cf bytes-ieee-single-native-ref}, \var{k} shall
   be a multiple of $4$.}
 
-Returns the inexact real that best represents the IEEE-754 single
+These procedures return the inexact real that best represents the IEEE-754 single
 precision number represented by the four bytes beginning at index
 \var{k}.
 \end{entry}
@@ -343,7 +343,7 @@ precision number represented by the four bytes beginning at index
   \var{bytes}.  For {\cf bytes-ieee-double-native-ref}, \var{k} shall
   be a multiple of $8$.}
 
-Returns the inexact real that best represents the IEEE-754 single
+These procedures return the inexact real that best represents the IEEE-754 single
 precision number represented by the eight bytes beginning at index
 \var{k}.
 \end{entry}
@@ -356,7 +356,7 @@ precision number represented by the eight bytes beginning at index
   \var{bytes}.  For {\cf bytes-ieee-single-native-set!}, \var{k} shall
   be a multiple of $4$.  \var{X} shall be a real number.}
 
-Stores an IEEE-754 single precision representation of \var{x} into
+These procedures store an IEEE-754 single precision representation of \var{x} into
 elements \var{k} through $\var{k}+3$ of \var{bytes}, and returns
 \unspecifiedreturn.
 \end{entry}
@@ -369,7 +369,7 @@ elements \var{k} through $\var{k}+3$ of \var{bytes}, and returns
   \var{bytes}.  For {\cf bytes-ieee-double-native-set!}, \var{k} shall
   be a multiple of $8$.}
 
-Stores an IEEE-754 double precision representation of \var{x} into
+These procedures store an IEEE-754 double precision representation of \var{x} into
 elements \var{k} through $\var{k}+7$ of \var{bytes}, and returns
 \unspecifiedreturn.
 \end{entry}
@@ -392,7 +392,7 @@ elements \var{k} through $\var{k}+7$ of \var{bytes}, and returns
   $l_{\var{target}}$ is the length of \var{target}.}
    
    
-  This copies the bytes from \var{source} at indices 
+  The {\cf bytes-copy!} procedure copies the bytes from \var{source} at indices 
   \begin{displaymath}
      \{ \var{source-start}, \ldots \var{source-start} + \var{n} - 1 \}
   \end{displaymath}
@@ -413,18 +413,20 @@ elements \var{k} through $\var{k}+7$ of \var{bytes}, and returns
 \begin{entry}{%
 \proto{bytes-copy}{ bytes}{procedure}}
    
-This returns a newly allocated copy of \var{bytes}.
+Returns a newly allocated copy of \var{bytes}.
 \end{entry}
 
 \begin{entry}{%
 \proto{bytes->u8-list}{ bytes}{procedure}
 \proto{u8-list->bytes}{ list}{procedure}}
    
-\ide{bytes->u8-list} returns a newly allocated list of the bytes of
+\domain{\var{List} shall be a list of octets.}
+
+The {\cf bytes->u8-list} procedure returns a newly allocated list of the bytes of
 \var{bytes} in the same order.
 
-{\cf u8-list->bytes} returns a newly allocated bytes object whose
-elements are the elements of list \var{list}, which shall all be octets, in
+The {\cf u8-list->bytes} procedure returns a newly allocated bytes object whose
+elements are the elements of list \var{list}, in
 the same order.  Analogous to {\cf list->vector}.
 \end{entry}
 
@@ -436,7 +438,7 @@ the same order.  Analogous to {\cf list->vector}.
    
 \domain{\var{Size} shall be a positive exact integer.}
    
-These convert between lists of integers and their consecutive
+These procedures convert between lists of integers and their consecutive
 representations according to \var{size} and \var{endianness} in the
 \var{bytes} objects in the same way as {\cf bytes->u8-list} and {\cf
   u8-list->bytes} do for one-byte representations.
