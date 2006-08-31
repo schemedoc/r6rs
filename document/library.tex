@@ -124,7 +124,7 @@ where \hyper{level} is an exact nonnegative integer.
 
 As an \hyper{import phase}, {\cf run} is an abbreviation for {\cf
   (meta 0)}, and {\cf expand} is an abbreviation for {\cf (meta 1)}.
-Phases are discussed in Section~\ref{phasessection}.
+Phases are discussed in section~\ref{phasessection}.
 
 An \hyper{import~set} names a set of bindings from another library, and
 possibly specifies local names for the imported bindings.  It shall be
@@ -242,38 +242,22 @@ The \hyper{library~body} of a {\cf library} form contains definitions for
 local and exported bindings and initalization expressions to be evaluated
 when the library is invoked.
 
-A \hyper{library~body} is like a {\cf lambda} body (see below) except that
-\hyper{library~bodies} need not include any expressions.  It shall
+A \hyper{library~body} is like a \hyper{body} (see section~\ref{bodiessection}) except that
+\hyper{library~body}s need not include any expressions.  It shall
 have the following form:
 
 \begin{scheme}
-\hyper{declaration} \ldots \hyper{definition} \ldots \hyper{command} \ldots%
+\hyper{declaration} \ldots \hyper{definition} \ldots \hyper{expression} \ldots%
 \end{scheme}
 
 FIXME need to update syntax of {definition} to include {syntax definition}.
 
-replace this to be consistent with bodiessection.
-Matthew and I have given up trying to produce a suitable grammar
-and suggest that the splicing behavior of {\cf begin} be described
-in prose, something like: \textit{Any subsequence of zero or more body forms
-may be wrapped, possibly in nested fashion, in a {\cf begin}
-form, provided that no empty {\cf begin} form appears after the first
-\hyper{expression}.  This allows macros to expand into such subsequences
-of body forms.  In this context, {\cf begin} is treated as a
-splicing form, i.e., as if the {\cf begin} wrapper were not
-actually present.}
-This note will have to be modified for the script syntax to leave out
-the prohibition of empty {\cf begin} forms after the first
-\hyper{expression}.
+Note that {\cf begin} forms occurring in a body are spliced into the
+body; see section~\ref{begin}.
 
-with the above, we no longer need {\cf (begin \arbno{\hyper{definition}})} as
-a definition.
-
-The definitions of a \hyper{library~body} or \hyper{body} are mutually
-recursive.
 The transformer expressions and transformer bindings are created
-from left to right, as described in Chapter~\label{expansionchapter}.
-The variable-definition right-hand-side expressions are evalated
+from left to right, as described in chapter~\ref{expansionchapter}.
+The variable-definition right-hand-side expressions are evualated
 from left to right, as if in an implicit {\cf letrec*},
 and the body expressions are also evaluated from left to right
 after the variable-definition right-hand-side expressions.
@@ -463,7 +447,7 @@ to \var{import-spec}
 An exception with condition type FIXME is raised if the expand-time or
 run-time information for a library named in one of the
 \var{import-spec}s is not \emph{available} when the call to {\cf
-  environment} occurs, in the sense of Section~\ref{phasessection}.
+  environment} occurs, in the sense of section~\ref{phasessection}.
 \end{entry}
 
 \section{Examples}
