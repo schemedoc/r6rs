@@ -237,9 +237,16 @@ A {\cf rename} set exports the binding named by the first
 \hyper{identifier} in each pair, using the second \hyper{identifier} as the
 external name.
 
-The \hyper{library~body} of a {\cf library} form contains definitions for
-local and exported bindings and initalization expressions to be evaluated
-when the library is invoked.
+The \hyper{library~body} of a {\cf library} form consists of forms
+that are classified into \textit{declarations}\mainindex{declaration},
+\textit{definitions}\mainindex{definition}, and
+\textit{expressions}\mainindex{expression}.  Which forms belong to
+which class depends on the imported libraries and the result of
+expansion---see chapter~\ref{expansionchapter}.  Generally, forms that
+are not declarations (see section~\ref{declarationssection} for
+declarations available through the base library) or
+definitions (see section~\ref{defines} for definitions available
+through the base library) are expressions.
 
 A \hyper{library~body} is like a \hyper{body} (see section~\ref{bodiessection}) except that
 \hyper{library~body}s need not include any expressions.  It shall
@@ -248,8 +255,6 @@ have the following form:
 \begin{scheme}
 \hyper{declaration} \ldots \hyper{definition} \ldots \hyper{expression} \ldots%
 \end{scheme}
-
-FIXME need to update syntax of {definition} to include {syntax definition}.
 
 Note that {\cf begin} forms occurring in a body are spliced into the
 body; see section~\ref{begin}.
