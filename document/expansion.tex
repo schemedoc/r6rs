@@ -1,10 +1,8 @@
 \chapter{Expansion Process}
 \label{expansionchapter}
 
-FIXME: this material has just been moved here from the syntax-case chapter
-
-Syntactic abstractions are expanded into core
-forms at the start of evaluation (before compilation or interpretation)
+Macro uses (see section~\ref{macrosection} are expanded into \textit{core
+forms}\mainindex{core form} at the start of evaluation (before compilation or interpretation)
 by a syntax \emph{expander}.
 (The set of core forms is implementation-dependent, as is the
 representation of these forms in the expander's output.)
@@ -18,53 +16,56 @@ expanded subforms.
 Information about identifier bindings is maintained during expansion
 to enforce lexical scoping for variables and keywords.
 
-To handle internal definitions, the expander
-processes the initial forms in a {\cf library} or {\cf lambda} body
-from left to right.
-How the expander processes each form encountered as it does so depends
-upon the kind of form.
+To handle internal definitions, the expander processes the initial
+forms in \hyper{body} (see section~\ref{bodiessection}),
+\hyper{library body} (see section~\ref{librarybodysection}), or
+\hyper{script body} (see chapter~\ref{scriptchapter}) from left to
+right.  How the expander processes each form encountered as it does so
+depends upon the kind of form.
 
 \begin{description}
-\item[syntactic abstraction:]
-The expander invokes the associated transformer to transform the syntactic abstraction,
-then recursively performs whichever of these actions are appropriate
+\item[macro use]
+The expander invokes the associated transformer to transform the macro
+use, then recursively performs whichever of these actions are appropriate
 for the resulting form.
 
-\item[{\cf define-syntax} form:]
+\item[{\cf define-syntax} form]
 The expander expands and evaluates the right-hand-side expression and binds the
 keyword to the resulting transformer.
 
-\item[{\cf define} form:]
+\item[{\cf define} form]
 The expander records the fact that the defined identifier is a variable but defers
 expansion of the right-hand-side expression until after all of the
 definitions have been processed.
 
-\item[{\cf begin} form:]
-The expander splices the subforms into the list of body forms it is processing.
+\item[{\cf begin} form]
+The expander splices the subforms into the list of body forms it is
+processing.  (See section~\ref{begin}.)
 
-\item[{\cf let-syntax} or {\cf letrec-syntax} form:]
+\item[{\cf let-syntax} or {\cf letrec-syntax} form]
 The expander splices the inner body forms into the list of (outer) body forms it is
 processing, arranging for the keywords bound by the {\cf let-syntax}
 and {\cf letrec-syntax} to be visible only in the inner body forms.
 
-\item[expression, i.e., nondefinition:]
+\item[expression, i.e., nondefinition]
 The expander completes the expansion of the deferred right-hand-side forms
 and the current and remaining expressions in the body, then
 constructs a residual {\cf letrec*} form from the defined variables,
 expanded right-hand-side expressions, and expanded body expressions.
 \end{description}
 
-An error is signaled if the keyword that identifies one of the body forms
+It is a syntax violation
+if the keyword that identifies one of the body forms
 as a definition (derived or core) is redefined by the same definition or a
 later definition in the same body.
-To catch this error, the expander records the identifying keyword for each
-syntactic abstraction, {\cf define-syntax} form, {\cf define}
+To detect this error, the expander records the identifying keyword for each
+macro use, {\cf define-syntax} form, {\cf define}
 form, {\cf begin} form, {\cf let-syntax} form, and {\cf letrec-syntax}
 form it encounters while processing the definitions and checks each
 newly defined identifier ({\cf define} or {\cf define-syntax}
 left-hand side) against the recorded keywords, as with
 {\cf bound-identifier=?} (section~\ref{identifierpredicatessection}).
-For example, the following forms result in an error.
+For example, the following forms are syntax violation.
 
 \begin{scheme}
 (let ()
