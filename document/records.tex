@@ -1,20 +1,24 @@
 \chapter{Records}
 \label{recordschapter}
-
+\mainindex{record}
 This section describes abstractions for creating new data types
 representing records---data structures with named fields. The record
-mechanism comes in four parts:
+mechanism comes in four libraries:
 
 \begin{itemize}
-\item a procedural layer for creating and manipulating record types and record
+\item the \library{r6rs records procedural} library,
+  a procedural layer for creating and manipulating record types and record
   instances,
-\item an explicit-naming syntactic layer for defining record types and
+\item the \library{r6rs records explicit} library,
+  an explicit-naming syntactic layer for defining record types and
   explicitly named bindings for various procedures to manipulate the record
   type,
-\item an implicit-naming syntactic layer that extends the explicit-naming
+\item the \library{r6rs records implicit} library,
+  an implicit-naming syntactic layer that extends the explicit-naming
   syntactic layer, allowing the names of the defined procedures to be
   determined implicitly from the names of the record type and fields, and
-\item a set of inspection procedures.
+\item the \library{r6rs records inspection} library,
+  a set of inspection procedures.
 \end{itemize}
 % 
 The procedural layer allows programs to construct new record types
@@ -85,7 +89,7 @@ The \var{name} argument shall be a symbol naming the record type; it is
 intended purely for informational purposes and may be used for printing by
 the underlying Scheme system.
 
-The \var{parent} argument is either \schfalse{} or an rtd. If it is an
+The \var{parent} argument shall be either \schfalse{} or an rtd. If it is an
 rtd, the returned record type, \var{t}, extends the record type
 \var{p} represented by \var{parent}. Each record of type \var{t} is also a
 record of type \var{p}, and all operations applicable to a record of
@@ -96,7 +100,7 @@ condition type {\cf\&contract} is raised if \var{parent} is sealed (see below).
 The extension relationship is transitive in the sense that a type extends
 its parent's parent, if any, and so on.
    
-The \var{uid} argument is either \schfalse{} or a symbol.
+The \var{uid} argument shall be either \schfalse{} or a symbol.
 If \var{uid} is a symbol, the record-creation operation is
 \emph{nongenerative} i.e., a new record type is created only
 if no previous call to {\cf make-record-type-descriptor}
@@ -124,10 +128,10 @@ record type, the same record-type descriptor
   record-type name as a prefix) for the uid argument.
 \end{note}
 
-The \var{sealed?} flag is a boolean. If true, the returned record type
+The \var{sealed?} flag shall be a boolean. If true, the returned record type
 is sealed, i.e., it cannot be extended.
 
-The \var{opaque?} flag is a boolean. If true, the record type
+The \var{opaque?} flag shall be a boolean. If true, the record type
 is opaque.
 If passed an instance of the record type,
 {\cf record?} returns
@@ -202,7 +206,7 @@ uid arguments.
 \begin{entry}{%
 \proto{record-type-descriptor?}{ obj}{procedure}}
    
-This returns \schtrue{} if the argument is a record-type descriptor,
+Returns \schtrue{} if the argument is a record-type descriptor,
 \schfalse{} otherwise.
 \end{entry}
 
@@ -216,7 +220,7 @@ This returns a \defining{record-constructor descriptor} (or
 create record constructors (via {\cf record-constructor}; see below)
 or other constructor descriptors.  \var{Rtd} shall be a record-type
 descriptor.  \defining{Protocol} shall be a procedure or \schfalse.
-If \schfalse, a default \var{protocol} procedure is supplied.
+If it is \schfalse, a default \var{protocol} procedure is supplied.
 If \var{protocol} is a procedure, it is called by {\cf record-constructor}
 with a single argument \var{p} and must return a procedure that creates
 and returns an instance of the record type using \var{p} as described
@@ -233,12 +237,12 @@ the resulting record instance, as shown in the simple example below.
 
 \begin{scheme}
 (lambda (\var{new})
-  (lambda (v \ldots)
-    (\var{new} v \ldots)))
+  (lambda (v1 \ldots)
+    (\var{new} v1 \ldots)))
 \end{scheme}
 
 Here, the call to \var{new} returns a record whose fields
-are simply initialized with the arguments {\tt v \ldots}.
+are simply initialized with the arguments {\tt v1 \ldots}.
 The expression above is equivalent to
 {\cf (lambda (\var{new}) \var{new})}.
 
@@ -259,14 +263,14 @@ A simple \var{protocol} in this case might be written as follows.
 
 \begin{scheme}
 (lambda (\var{p})
-  (lambda (x \ldots v \ldots)
-    (let ((new (\var{p} x \ldots)))
-      (\var{new} v \ldots))))
+  (lambda (x1 \ldots v1 \ldots)
+    (let ((\var{new} (\var{p} x \ldots)))
+      (\var{new} v1 \ldots))))
 \end{scheme}
 
-This passes some number of arguments {\tt x \ldots} to \var{p} for the
+This passes some number of arguments {\tt x1 \ldots} to \var{p} for the
 constructor of \var{parent-constructor-descriptor} and calls \var{new}
-with {\tt v \ldots} to initialize the child fields.
+with {\tt v1 \ldots} to initialize the child fields.
 
 The constructor descriptors for a record type form a chain of
 protocols exactly parallel to the chain of record-type parents. Each
@@ -302,7 +306,7 @@ Even if \var{rtd} extends another record type,
 constructor with default protocol is supplied.
 
 \begin{rationale}
-  The constructor-descriptor mechanism is an infrastructure for
+  The constructor-descriptor mechanism is an infra\-struc\-ture for
   creating specialized constructors, rather than just creating default
   constructors that accept the initial values of all the fields as
   arguments. This infrastructure achieves full generality while
@@ -319,7 +323,7 @@ constructor with default protocol is supplied.
   concerns of the parent types of those of the extensions.
   
   The mechanism described here achieves complete generality without
-  cluttering the syntactic layer, possibly sacrificing a bit of
+  cluttering the syntactic layer, sacrificing a bit of
   notational convenience in special cases.
 \end{rationale}
 
@@ -329,7 +333,7 @@ constructor with default protocol is supplied.
 \proto{record-constructor}{ constructor-descriptor}{procedure}}
    
 Calls the \var{protocol} of \var{constructor-descriptor} as described in
-{\cf make-record-constructor-descriptor}) and returns the resulting
+{\cf make-record-constructor-descriptor} and returns the resulting
 construction procedure \var{constructor} for instances of the record type
 associated with \var{constructor-descriptor}.
 
@@ -370,10 +374,9 @@ Returns a procedure that, given an object \var{obj}, returns
 
 \begin{entry}{%
 \proto{record-accessor}{ rtd k}{procedure}}
-   
-Given a record-type descriptor \var{rtd} and an exact non-negative
-integer \var{k} that specifies one of the fields of \var{rtd}, {\cf
-  record-accessor} returns a one-argument procedure that, given a
+
+\domain{\var{K} must be a valid field index  of \var{rtd}.}
+The {\cf record-accessor} procedure returns a one-argument procedure that, given a
 record of the type represented by \var{rtd}, returns the value of the
 selected field of that record.
 
@@ -392,9 +395,8 @@ the type represented by \var{rtd}.
 \begin{entry}{%
 \proto{record-mutator}{ rtd k}{procedure}}
    
-Given a record-type descriptor \var{rtd} and an exact non-negative
-integer \var{k} that specifies one of the mutable fields of \var{rtd},
-{\cf record-mutator} returns a two-argument procedure that, given a
+\domain{\var{K} must be a valid field index  of \var{rtd}.}
+The {\cf record-mutator} procedure returns a two-argument procedure that, given a
 record \var{r} of the type represented by \var{rtd} and an object
 \var{obj}, stores \var{obj} within the field of \var{r} specified by
 \var{k}. The \var{k} argument is as in {\cf record-accessor}. If
@@ -449,7 +451,7 @@ The mutator returns the unspecified value.
 (point2-yy p2) \ev 4
 \end{scheme}
 
-\section{Explicit-Naming Syntactic Layer}
+\section{Explicit-naming syntactic layer}
 \label{recordsexplicitnamingsection}
 
 The explicit-naming syntactic layer is provided by the
@@ -505,9 +507,11 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
    
   where each \hyper{field-spec} has one of the following forms
   
-  {\cf (immutable \hyper{field name} \hyper{accessor name})}\\
-  {\cf (mutable \hyper{field name} \hyper{accessor name}\\
-  \null\qquad\hyper{mutator name})}
+\begin{scheme}
+(immutable \hyper{field name} \hyper{accessor name})
+(mutable \hyper{field name}
+         \hyper{accessor name} \hyper{mutator name})
+\end{scheme}
 
   \hyper{Field name}, \hyper{accessor name}, and \hyper{mutator name}
   shall all be identifiers. The first form declares an immutable field
@@ -528,9 +532,9 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
       define-record-type}. The absence of a {\cf parent} clause implies a
     record type with no parent type.
    
-\item {\tt (protocol \hyper{exp})}
+\item {\tt (protocol \hyper{expression})}
    
-  \hyper{Exp} is evaluated in the same environment as the
+  \hyper{Expression} is evaluated in the same environment as the
   define-record-type form, and must evaluate to a protocol appropriate
   for the record type being defined (see the description of
   {\cf make-record-constructor-descriptor}). The protocol is used to
@@ -590,7 +594,7 @@ mutators) shall have names that are pairwise distinct.
 \begin{entry}{%
 \proto{record-type-descriptor}{ \hyper{record name}}{\exprtype}}
    
-This evaluates to the record-type descriptor associated with the type
+Evaluates to the record-type descriptor associated with the type
 specified by \hyper{record-name}.
    
 Note that {\cf record-type-descriptor} works on both opaque and non-opaque record
@@ -600,7 +604,7 @@ types.
 \begin{entry}{%
 \proto{record-constructor-descriptor}{ \hyper{record name}}{\exprtype}}
    
-This evaluates to the record-constructor descriptor associated with
+Evaluates to the record-constructor descriptor associated with
 \hyper{record name}.
 \end{entry}
 
@@ -677,7 +681,7 @@ Explicit-naming syntactic-layer examples:
           (immutable z unit-vector-z)))
 \end{scheme}
 
-\section{Implicit-Naming Syntactic Layer}
+\section{Implicit-naming syntactic layer}
 
 The implicit-naming syntactic layer is provided by the
 \deflibrary{r6rs records implicit} library.
@@ -709,7 +713,7 @@ the preceding section.
 
 \begin{scheme}
 (immutable \hyper{field name})
-(mutable \hyper{field name})
+(mutable \hyper{field name})%
 \end{scheme}
 
 If \hyper{field-spec} takes one of these forms, the accessor name
