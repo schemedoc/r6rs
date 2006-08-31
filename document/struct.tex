@@ -478,7 +478,12 @@ declarations, definitions and expressions.  It can import definitions
 from other libraries, and export definitions to other libraries:
 
 \begin{scheme}
-FIXME: example
+(library (hello)
+  (export)
+  (import (r6rs base)
+          (r6rs i/o simple))
+  (display "Hello World")
+  (newline))%
 \end{scheme}
 
 \section{Scripts}
@@ -490,7 +495,16 @@ script defines, via the transitive closure of the libraries it
 imports, a Scheme program.
 
 \begin{scheme}
-FIXME: example
+\#!/usr/bin/env scheme-script
+\#!r6rs
+(import (r6rs base)
+        (r6rs i/o ports))
+(put-bytes (standard-output-port)
+           (call-with-port
+               (open-file-input-port
+                 (cadr (command-line-arguments)))
+             get-bytes-all))
+0%
 \end{scheme}
 
 %%% Local Variables: 
