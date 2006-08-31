@@ -6,7 +6,7 @@ This chapter describes the \deflibrary{r6rs lists} library.
 \begin{entry}{%
 \proto{find}{ proc list}{procedure}}
 
-\domain{\var{Proc} shall be a procedure; it shall take a single argument
+\domain{\var{proc} shall be a procedure; it shall take a single argument
   if \var{list} is non-empty.}  The {\cf find} procedure applies
 \var{proc} to the elements of \var{list} in order.  If
 \var{proc} returns a true value for an element, {\cf find}
@@ -26,7 +26,7 @@ immediately returns that element.  If \var{proc} returns
 
 \domain{The \var{l}s shall all be the empty list, or chains of pairs of
   sizes according to the condition specified below.
-  \var{Proc} shall be a procedure; it shall take a single argument if
+  \var{proc} shall be a procedure; it shall take a single argument if
   the \var{l}s are non-empty.}
 
 The {\cf forall} procedure applies \var{proc} element-wise to the
@@ -69,7 +69,7 @@ the \var{l}s are all empty, {\cf exists} returns \schfalse.
 \proto{partition}{ proc list}{procedure}
 }
 
-\domain{\var{Proc} shall be a procedure; it shall take a single argument
+\domain{\var{proc} shall be a procedure; it shall take a single argument
   if \var{list} is non-empty.}  The {\cf filter} procedure successively applies
 \var{proc} to the elements of \var{list} and returns a list of
 the values of \var{list} for which \var{proc} returned a true
@@ -92,7 +92,7 @@ which \var{proc} returned \schfalse.
 
 \domain{If
   more than one \var{list} is given, then they shall all be the same
-  length.  \var{Kons} shall be a
+  length.  \var{kons} shall be a
   procedure; if the \var{list}s are non-empty, it shall take one more
   argument than there are {\it list}s.}
 The {\cf fold-left} procedure iterates the \var{kons} procedure over an
@@ -133,7 +133,7 @@ reached; then the accumulator value is returned.
 
 \domain{ If
   more than one \var{list} is given, then they shall all be the same
-  length.\var{Kons} shall be a
+  length.  \var{kons} shall be a
   procedure; if the \var{list}s are non-empty, it shall take one more
   argument than there are {\it list}s.}
 The {\cf fold-right} procedure iterates the \var{kons} procedure over
@@ -170,7 +170,7 @@ list is reached; then the accumulator value is returned.
 \proto{remv}{ obj list}{procedure}
 \proto{remq}{ obj list}{procedure}}
 
-\domain{\var{Proc} shall be a procedure; it shall take a single argument
+\domain{\var{proc} shall be a procedure; it shall take a single argument
   if \var{list} is non-empty.}
 Each of these procedures returns a list of the elements of \var{list}
 that do not satisfy a given condition.  The {\cf remp} procedure successively
@@ -199,9 +199,9 @@ uses {\cf eqv?}\ and {\cf remove} uses {\cf equal?}.
 \proto{memq}{ obj l}{procedure}
 }
 
-\domain{\var{Proc} shall be a procedure; it shall take a single argument
+\domain{\var{proc} shall be a procedure; it shall take a single argument
   if \var{l} is non-empty.
-  \var{L} shall be the empty list or a chain of pairs of size according
+  \var{l} shall be the empty list or a chain of pairs of size according
 to the conditions stated below.}
 
 These procedures return the first sublist of \var{l} whose car
@@ -211,11 +211,11 @@ chains of pairs returned by {\tt (list-tail \var{l} \var{k})} for
 \var{proc} to the cars of the sublists of \var{l} until it
 finds one for which \var{proc} returns a true value without traversing
 \var{l} further.  {\cf
-  Member}, {\cf memv}, and {\cf memq} look for the first occurrence of
+  member}, {\cf memv}, and {\cf memq} look for the first occurrence of
 \var{obj}.  If \var{l} does not contain an element satisfying the
 condition, then \schfalse{} (not the empty list) is returned; in that
 case, \var{l} shall be a list.  {\cf
-  Member} uses {\cf equal?}\ to compare \var{obj} with the elements of
+  member} uses {\cf equal?}\ to compare \var{obj} with the elements of
 \var{l}, while {\cf memv} uses {\cf eqv?}\ and {\cf memq} uses
 {\cf eq?}.
 
@@ -245,7 +245,7 @@ case, \var{l} shall be a list.  {\cf
 \proto{assv}{ obj al}{procedure}
 \proto{assq}{ obj al}{procedure}}
 
-\domain{\var{Al} (for ``association list'') shall be the empty list or
+\domain{\var{al} (for ``association list'') shall be the empty list or
   a chain of pairs where each car contains a pair of size according to
   the conditions specified below.  \var{Proc} shall be a procedure; it
   shall take a single argument if \var{al} is non-empty.}

@@ -232,11 +232,11 @@ on how to handle such an exception.
 \rproto{make-transcoder}{ codec eol-style}{procedure}
 \rproto{make-transcoder}{ codec}{procedure}}
 
-\domain{\var{Codec} shall be a codec, \var{eol-style}, if present, an
+\domain{\var{codec} shall be a codec, \var{eol-style}, if present, an
   eol-style symbol, and \var{handling-mode}, if present, an
-  error-handling-mode symbol.}  \var{Eol-style} may be omitted, in
+  error-handling-mode symbol.}  \var{eol-style} may be omitted, in
 which case it defaults to the native end-of-line style of the
-underlying platform.  \var{Handling-mode} may be omitted, in which
+underlying platform.  \var{handling-mode} may be omitted, in which
 case it defaults to {\cf raise}.  The result is a transcoder with the
 behavior specified by its arguments.
 
@@ -304,7 +304,7 @@ if the port does not support the operation.
 \proto{port-has-set-port-position!?}{ port}{procedure}
 \proto{set-port-position!}{ port pos}{procedure}}
 
-\domain{\var{Pos} shall be a non-negative exact integer.}
+\domain{\var{pos} shall be a non-negative exact integer.}
    
 The {\cf port-has-set-port-position?} procedure returns \schtrue{} if the port
 supports the {\cf set-port-position!} operation, and \schfalse{}
@@ -330,7 +330,7 @@ A closed port is still a port. The unspecified value is returned.
 \begin{entry}{%
 \proto{call-with-port}{ port proc}{procedure}}
    
-\domain{\var{Proc} shall be a procedure that accepts a single
+\domain{\var{proc} shall be a procedure that accepts a single
   argument.}  The {\cf call-with-prot} procedure
 calls \var{proc} with \var{port} as an argument. If
 \var{proc} returns, then the \var{port} is closed automatically and
@@ -459,8 +459,8 @@ any bytes are available, {\cf get-bytes-n} returns the end-of-file object.
 \begin{entry}{%
 \proto{get-bytes-n!}{ input-port bytes start count}{procedure}}
    
-\domain{\var{Count} shall be an exact, non-negative integer, specifying
-  the number of bytes to be read. \var{Bytes} shall be a bytes object with at
+\domain{\var{count} shall be an exact, non-negative integer, specifying
+  the number of bytes to be read. \var{bytes} shall be a bytes object with at
   least $\var{start} + \var{count}$ elements.}
    
 The {\cf get-bytes-n!} procedure reads from \var{input-port}, blocking as necessary, until
@@ -549,9 +549,9 @@ end of file, then the end-of-file object is returned.
 \proto{get-string-n!}{ input-port string start count}{procedure}
 \rproto{get-string-n!}{ input-port string start count transcoder}{procedure}}
 
-\domain{\var{Start} and \var{count} shall be an exact, non-negative
+\domain{\var{start} and \var{count} shall be an exact, non-negative
   integer, specifying the number of characters to be read.
-  \var{String} shall be a string with at least $\var{start} +
+  \var{string} shall be a string with at least $\var{start} +
   \var{count}$ characters.}
 
 Reads from \var{input-port} in the same manner as {\cf
@@ -696,7 +696,7 @@ the effect on \var{output-port} is unspecified.
 \proto{call-with-bytes-output-port}{ proc}{procedure}
 \rproto{call-with-bytes-output-port}{ proc transcoder}{procedure}}
 
-\domain{\var{Proc} shall be a procedure accepting one argument.}
+\domain{\var{proc} shall be a procedure accepting one argument.}
 Creates an output port that accumulates a bytes object from the output
 written to it, and calls \var{proc} with that output port as an
 argument. When \var{proc} returns for the first time, the port is
@@ -731,7 +731,7 @@ the effect on \var{output-port} is unspecified.
 \proto{call-with-string-output-port}{ proc}{procedure}
 \rproto{call-with-string-output-port}{ proc transcoder}{procedure}}
    
-\domain{\var{Proc} shall be a procedure accepting one argument.}
+\domain{\var{proc} shall be a procedure accepting one argument.}
 Creates an output port that accumulates a bytes object from the output
 written to it, and calls \var{proc} with that port as an argument.
 When \var{proc} returns for the first time, the port is closed and the
@@ -753,7 +753,7 @@ associated with the port.
 \proto{clear-bytes-output-port!}{ output-port}{procedure}
 \proto{clear-string-output-port!}{ output-port}{procedure}}
 
-\domain{\var{Output-port} shall be a port that accumulates a bytes
+\domain{\var{output-port} shall be a port that accumulates a bytes
   object from the output written to it, such as the ports created by
   {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
 The {\cf clear-bytes-output-port!} and {\cf clear-string-output-port!}
@@ -782,11 +782,11 @@ Writes \var{octet} to the output port and returns the unspecified value.
 \rproto{put-bytes}{ output-port bytes start}{procedure}
 \rproto{put-bytes}{ output-port bytes start count}{procedure}}
    
-\domain{\var{Start} and \var{count} shall be non-negative exact
+\domain{\var{start} and \var{count} shall be non-negative exact
   integers that default to 0 and $\texttt{(bytes-length \var{bytes})}
-  - \var{start}$, respectively. \var{Bytes} shall have a size of at
+  - \var{start}$, respectively. \var{bytes} shall have a size of at
   least $\var{start} + \var{count}$.}  The {\cf put-bytes} procedure writes
-\var{count} bytes of the bytes object\var{bytes}, starting at index
+\var{count} bytes of the bytes object \var{bytes}, starting at index
 \var{start}, to the output port. The unspecified value is returned.
 \end{entry}
 
@@ -812,9 +812,9 @@ returned.
 \rproto{put-string-n}{ output-port string start count}{procedure}
 \rproto{put-string-n}{ output-port string start count transcoder}{procedure}}
    
-\domain{\var{Start} and \var{count} shall be non-negative exact
-  integers.  \var{String} shall have a length of at least $\var{start} +
-  \var{count}$.}  \var{Start} defaults to 0.  \var{Count} defaults to
+\domain{\var{start} and \var{count} shall be non-negative exact
+  integers.  \var{string} shall have a length of at least $\var{start} +
+  \var{count}$.}  \var{start} defaults to 0.  \var{count} defaults to
 $\texttt{(string-length \var{bytes})} - \var{start}$. Writes the
 encoding of the \var{count} characters of \var{string}, starting at
 index \var{start}, to the port. The unspecified value is returned.
@@ -825,7 +825,7 @@ index \var{start}, to the port. The unspecified value is returned.
 \proto{put-datum}{ output-port datum}{procedure}
 \rproto{put-datum}{ output-port datum transcoder}{procedure}}
 
-\domain{\var{Datum} should be a datum value.}
+\domain{\var{datum} should be a datum value.}
 The {\cf put-datum} procedure writes an external representation of
 \var{datum} to \var{output-port}.
 The specific external representation is implementation-dependent.
@@ -851,7 +851,7 @@ The specific external representation is implementation-dependent.
    
 Returns a single port that is both an input port and an output
 port for the named file and options (which default to {\cf
-  (file-options)}).  \var{Buffer-mode} optionally specifies the buffer
+  (file-options)}).  \var{buffer-mode} optionally specifies the buffer
 mode of the port; it defaults to {\cf block}.
    
 The returned port supports the {\cf port-position} and {\cf
@@ -880,7 +880,7 @@ with the returned port.
 {\tt\hspace*{4em}\var{buffer-mode} \var{transcoder})}}
    
 Returns an output port connected to the writer \var{writer}.
-\var{Buffer-mode} optionally specifies the buffer mode of the port; it
+\var{buffer-mode} optionally specifies the buffer mode of the port; it
 defaults to {\cf block}.
 If \var{transcoder} is specified, it becomes the transcoder associated
 with the returned port.

@@ -10,7 +10,7 @@ I/O procedures of the previous version of this report~\cite{R5RS}.
 \proto{call-with-input-file}{ filename proc}{procedure}
 \proto{call-with-output-file}{ filename proc}{procedure}}
 
-\domain{\var{Proc} shall be a procedure accepting a single argument.}
+\domain{\var{proc} shall be a procedure accepting a single argument.}
 These procedures open the file named by \var{filename} for input or
 for output, with no specified file options, and call \var{proc} with
 the obtained port as an argument.  If \var{proc} returns, then the
@@ -43,7 +43,7 @@ described below.
 \proto{with-input-from-file}{ filename thunk}{procedure}
 \proto{with-output-to-file}{ filename thunk}{procedure}}
 
-\domain{\var{Thunk} shall be a procedure that takes no arguments.}  The
+\domain{\var{thunk} shall be a procedure that takes no arguments.}  The
 file is opened for input or output using empty file options, and
 \var{thunk} is called with no arguments.  During the dynamic extent of
 the call to \var{thunk}, the obtained port is made the value returned
@@ -133,7 +133,7 @@ If \var{output-port} is omitted, it defaults to the value returned by
 \proto{newline}{}{procedure}
 \rproto{newline}{ output-port}{procedure}}
 
-This is equivalent to using {\cf write-char} to write {\cf \#linefeed}
+This is equivalent to using {\cf write-char} to write {\cf \#\\linefeed}
 to \var{output-port} using the transcoder associated with \var{output-port}.
 
 If \var{output-port} is omitted, it defaults to the value returned by
@@ -149,7 +149,7 @@ transcoder associated with \var{output-port}.  Strings that appear in
 the written representation are not enclosed in doublequotes, and no
 characters are escaped within those strings.  Character objects appear
 in the representation as if written by {\cf write-char} instead of by
-{\cf write}.  {\cf Display} returns the unspecified value.  The
+{\cf write}.  {\cf display} returns the unspecified value.  The
 \var{output-port} argument may be omitted, in which case it defaults
 to the value returned by {\cf current-output-port}.
 \end{entry}
@@ -159,7 +159,7 @@ to the value returned by {\cf current-output-port}.
 \rproto{write}{ obj output-port}{procedure}}
 
 Writes the external representation of \var{obj} to \var{output-port}
-using the transcoder associated with \var{input-port}.  The {\cf write}
+using the transcoder associated with \var{output-port}.  The {\cf write}
 procedure operates in the same way as {\cf put-datum}, see
 section~\ref{put-datum}.
 
