@@ -68,7 +68,7 @@ type opaque. Thus, opacity as presented here can be used to enforce abstraction
 barriers.
 
 This section uses the \var{rtd} and \var{constructor-descriptor}
-parameter names for arguments that shall be record-type descriptors
+parameter names for arguments that must be record-type descriptors
 and constructor descriptors, respectively (see
 section~\ref{recordsproceduralsection}).
 
@@ -87,11 +87,11 @@ Returns a \defining{record-type descriptor}, or \defining{rtd},
 representing a record type distinct from all built-in types and
 other record types.
 
-The \var{name} argument shall be a symbol naming the record type; it is
+The \var{name} argument must be a symbol naming the record type; it is
 intended purely for informational purposes and may be used for printing by
 the underlying Scheme system.
 
-The \var{parent} argument shall be either \schfalse{} or an rtd. If it is an
+The \var{parent} argument must be either \schfalse{} or an rtd. If it is an
 rtd, the returned record type, \var{t}, extends the record type
 \var{p} represented by \var{parent}. Each record of type \var{t} is also a
 record of type \var{p}, and all operations applicable to a record of
@@ -102,7 +102,7 @@ condition type {\cf\&contract} is raised if \var{parent} is sealed (see below).
 The extension relationship is transitive in the sense that a type extends
 its parent's parent, if any, and so on.
    
-The \var{uid} argument shall be either \schfalse{} or a symbol.
+The \var{uid} argument must be either \schfalse{} or a symbol.
 If \var{uid} is a symbol, the record-creation operation is
 \emph{nongenerative} i.e., a new record type is created only
 if no previous call to {\cf make-record-type-descriptor}
@@ -114,7 +114,7 @@ made with the same arguments.
 
 If {\cf make-record-type-descriptor} is
 called twice with the same \var{uid} symbol, the parent
-arguments in the two calls shall be {\cf eqv?}, the \var{fields}
+arguments in the two calls must be {\cf eqv?}, the \var{fields}
 arguments {\cf equal?}, the \var{sealed?} arguments boolean-equivalent
 (both false or both non-false), and the \var{opaque?} arguments
 boolean-equivalent.
@@ -130,10 +130,10 @@ record type, the same record-type descriptor
   record-type name as a prefix) for the uid argument.
 \end{note}
 
-The \var{sealed?} flag shall be a boolean. If true, the returned record type
+The \var{sealed?} flag must be a boolean. If true, the returned record type
 is sealed, i.e., it cannot be extended.
 
-The \var{opaque?} flag shall be a boolean. If true, the record type
+The \var{opaque?} flag must be a boolean. If true, the record type
 is opaque.
 If passed an instance of the record type,
 {\cf record?} returns
@@ -143,10 +143,10 @@ The record type is also opaque if an opaque parent is
 supplied.  If \var{opaque?} is false and an opaque parent is not
 supplied, the record is not opaque.
 
-The \var{fields} argument shall be a list of field specifiers. Each
-field specifier shall be a list of the form {\cf (mutable \var{name})}
+The \var{fields} argument must be a list of field specifiers. Each
+field specifier must be a list of the form {\cf (mutable \var{name})}
 or a list of the form {\cf (immutable \var{name})}.
-Each name shall be a symbol and names the corresponding field of the record
+Each name must be a symbol and names the corresponding field of the record
 type; the names need not be distinct.  A field identified as mutable may
 be modified, whereas an attempt to obtain a mutator for a field identified
 as immutable raises an exception with condition type {\cf\&contract}.
@@ -220,8 +220,8 @@ Returns \schtrue{} if the argument is a record-type descriptor,
 Returns a \defining{record-constructor descriptor} (or
 \defining{constructor descriptor} for short) that can be used to
 create record constructors (via {\cf record-constructor}; see below)
-or other constructor descriptors.  \var{rtd} shall be a record-type
-descriptor.  \defining{protocol} shall be a procedure or \schfalse.
+or other constructor descriptors.  \var{rtd} must be a record-type
+descriptor.  \defining{protocol} must be a procedure or \schfalse.
 If it is \schfalse, a default \var{protocol} procedure is supplied.
 If \var{protocol} is a procedure, it is called by {\cf record-constructor}
 with a single argument \var{p} and must return a procedure that creates
@@ -229,7 +229,7 @@ and returns an instance of the record type using \var{p} as described
 below.
 
 If \var{rtd} is not an extension of another record type, then
-\var{parent-constructor-descriptor} shall be \schfalse.
+\var{parent-constructor-descriptor} must be \schfalse.
 In this case, \var{protocol}'s argument \var{p} is a procedure \var{new}
 that expects one parameter for every field of \var{rtd} and returns a
 record instance with the fields of \var{rtd} initialized to its arguments.
@@ -249,7 +249,7 @@ The expression above is equivalent to
 {\cf (lambda (\var{new}) \var{new})}.
 
 If \var{rtd} is an extension of another record type \var{parent-rtd},
-\var{parent-constructor-descriptor} shall be a constructor descriptor
+\var{parent-constructor-descriptor} must be a constructor descriptor
 of \var{parent-rtd} or \schfalse.
 If \var{parent-constructor-descriptor} is \schfalse, a default
 constructor descriptor is supplied.
@@ -474,7 +474,7 @@ appears; hence, it is possible to refer to the bindings (except for
 that of the record type itself) recursively.
 
 The \hyper{name spec} specifies the names of the record type,
-construction procedure, and predicate. It shall take the following
+construction procedure, and predicate. It must take the following
 form.
 
 \begin{scheme}
@@ -482,7 +482,7 @@ form.
 \end{scheme}
 
 \hyper{Record name}, \hyper{constructor name}, and \hyper{predicate
-  name} shall all be identifiers.
+  name} must all be identifiers.
 
 \hyper{Record name}, taken as a symbol, becomes the name of the record
 type.  Additionally, it is bound by this definition to an expand-time
@@ -501,7 +501,7 @@ details, see the description of the {\cf protocol} clause below.
 \hyper{Predicate name} is defined by this definition to a predicate
 for the defined record type.
 
-Each \hyper{record clause} shall take one of the following forms; it is
+Each \hyper{record clause} must take one of the following forms; it is
 a syntax violation if multiple \hyper{record clause}s of the same kind appear in a
 {\cf define-record-type} form.
 
@@ -517,7 +517,7 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
 \end{scheme}
 
   \hyper{Field name}, \hyper{accessor name}, and \hyper{mutator name}
-  shall all be identifiers. The first form declares an immutable field
+  must all be identifiers. The first form declares an immutable field
   called \hyper{field name}, with the corresponding accessor named \hyper{acccessor
   name}. The second form declares a mutable field called \hyper{field name},
   with the corresponding accessor named \hyper{acccessor name}, and with the
@@ -569,10 +569,10 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
 \item {\tt (nongenerative \hyper{uid})}
    
   This specifies that the record type is nongenerative with uid
-  \hyper{uid}, which shall be an \hyper{identifier}.
+  \hyper{uid}, which must be an \hyper{identifier}.
   If two record-type definitions specify the same \var{uid}, then
   the implied arguments to {\cf make-record-type-descriptor}
-  shall be equivalent as described under {\cf make-record-type-descriptor}.
+  must be equivalent as described under {\cf make-record-type-descriptor}.
   If this condition is not met, it is either considered a syntax violation or
   an exception with condition type {\cf\&contract} is raised.
   If the condition is met, a single record type is generated for both
@@ -591,7 +591,7 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
 
 All bindings created by {\cf define-record-type} (for the record type,
 the construction procedure, the predicate, the accessors, and the
-mutators) shall have names that are pairwise distinct.
+mutators) must have names that are pairwise distinct.
 \end{entry}
 
 \begin{entry}{%

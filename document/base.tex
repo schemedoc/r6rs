@@ -55,7 +55,7 @@ The {\cf define} forms described in this section are definitions for
 value bindings and may appear anywhere other definitions may appear.
 See section~\ref{librarybodysection}.
 
-A \hyper{definition} shall have one of the following forms:\mainschindex{define}\mainindex{definition}
+A \hyper{definition} must have one of the following forms:\mainschindex{define}\mainindex{definition}
 
 \begin{itemize}
 
@@ -79,7 +79,7 @@ This form is equivalent to
 
 \item{\tt(define (\hyper{variable} \hyper{formals}) \hyper{body})}
 
-\hyper{Formals} shall be either a
+\hyper{Formals} must be either a
 sequence of zero or more variables, or a sequence of one or more
 variables followed by a space-delimited period and another variable (as
 in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
@@ -90,7 +90,7 @@ in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
 
 \item{\tt(define (\hyper{variable} .\ \hyper{formal}) \hyper{body})}
 
-\hyper{Formal} shall be a single
+\hyper{Formal} must be a single
 variable.  This form is equivalent to
 \begin{scheme}
 (define \hyper{variable}
@@ -110,7 +110,7 @@ anywhere other definitions may appear.
 \proto{define-syntax}{ \hyper{variable} \hyper{transformer spec}}{\exprtype}}
 
 This binds the keyword \hyper{variable} to a transformer specification specified by
-\hyper{transformer spec}, which shall either be a {\cf syntax-rules}
+\hyper{transformer spec}, which must either be a {\cf syntax-rules}
 form (see section~\ref{syntax-rules}), or evaluate, at macro-expansion
 time, to a transformer.  (Section~\ref{transformerssection}).
 
@@ -262,8 +262,8 @@ expression may be immutable.
 \proto{lambda}{ \hyper{formals} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Formals} shall be a formal arguments list as described below,
-and \hyper{body} shall be according to section~\ref{bodiessection}.
+\hyper{Formals} must be a formal arguments list as described below,
+and \hyper{body} must be according to section~\ref{bodiessection}.
 
 \semantics
 \vest A \lambdaexp{} evaluates to a procedure.  The environment in
@@ -299,7 +299,7 @@ the result(s) of the procedure call.
 (add4 6)                        \ev  10%
 \end{scheme}
 
-\hyper{Formals} shall have one of the following forms:
+\hyper{Formals} must have one of the following forms:
 
 \begin{itemize}
 \item {\tt(\hyperi{variable} \dotsfoo)}:
@@ -317,7 +317,7 @@ allocated list, and the list is stored in the binding of the
 \hyper{variable$_{n+1}$})}:
 If a space-delimited period precedes the last variable, then
 the procedure takes $n$ or more arguments, where $n$ is the
-number of formal arguments before the period (there shall
+number of formal arguments before the period (there must
 be at least one).
 The value stored in the binding of the last variable will be a
 newly allocated
@@ -349,7 +349,7 @@ with a storage location, in order to make \ide{eqv?} and
 \rproto{if}{ \hyper{test} \hyper{consequent}}{\exprtype}}  %\/ if hyper = italic
 
 \syntax
-\hyper{Test}, \hyper{consequent}, and \hyper{alternate} shall be 
+\hyper{Test}, \hyper{consequent}, and \hyper{alternate} must be 
 expressions.
 
 \semantics
@@ -380,7 +380,7 @@ the unspecified value.
 \proto{set!}{ \hyper{variable} \hyper{expression}}{\exprtype}}
 
 \hyper{Expression} is evaluated, and the resulting value is stored in
-the location to which \hyper{variable} is bound.  \hyper{Variable} shall
+the location to which \hyper{variable} is bound.  \hyper{Variable} must
 be bound either in some region\index{region} enclosing the {\cf set!}\ expression
 or at the top level of a library body.  The result of the {\cf set!} expression is
 the unspecified value.
@@ -402,7 +402,7 @@ immutable binding.
 \proto{cond}{ \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
 
 \syntax
-Each \hyper{clause} shall be of the form
+Each \hyper{clause} must be of the form
 \begin{scheme}
 (\hyper{test} \hyperi{expression} \dotsfoo)%
 \end{scheme}
@@ -431,7 +431,7 @@ expression.  If the selected \hyper{clause} contains only the
 \hyper{test} and no \hyper{expression}s, then the value of the
 \hyper{test} is returned as the result.  If the selected \hyper{clause} uses the
 \ide{=>} alternate form, then the \hyper{expression} is evaluated.
-Its value shall be a procedure that accepts one argument; this procedure is then
+Its value must be a procedure that accepts one argument; this procedure is then
 called on the value of the \hyper{test} and the value(s) returned by this
 procedure is(are) returned by the {\cf cond} expression.
 If all \hyper{test}s evaluate
@@ -461,7 +461,7 @@ appendix~\ref{derivedformsappendix}.
 \proto{case}{ \hyper{key} \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
 
 \syntax
-\hyper{Key} shall be any expression.  Each \hyper{clause} has one of
+\hyper{Key} must be any expression.  Each \hyper{clause} has one of
 the following forms:
 \begin{scheme}
 ((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)
@@ -508,7 +508,7 @@ appendix~\ref{derivedformsappendix}.
 \begin{entry}{%
 \proto{and}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
-\syntax The \hyper{test}s shall be expressions.
+\syntax The \hyper{test}s must be expressions.
 \semantics
 The \hyper{test} expressions are evaluated from left to right, and the
 value of the first expression that evaluates to a false value (see
@@ -541,7 +541,7 @@ The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
 \begin{entry}{%
 \proto{or}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
-\syntax The \hyper{test}s shall be expressions.
+\syntax The \hyper{test}s must be expressions.
 \semantics
 The \hyper{test} expressions are evaluated from left to right, and the value of the
 first expression that evaluates to a true value (see
@@ -602,7 +602,7 @@ sequentially.
 \proto{let}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Bindings} shall have the form
+\hyper{Bindings} must have the form
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
@@ -639,11 +639,11 @@ See also named {\cf let}, section \ref{namedlet}.
 
 \nobreak
 \syntax
-\hyper{Bindings} shall have the form
+\hyper{Bindings} must have the form
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} shall be a sequence of
+and \hyper{body} must be a sequence of
 one or more expressions.
 
 \semantics
@@ -681,11 +681,11 @@ The {\cf let*} keyword could be defined in terms of {\cf let} using {\cf
 \proto{letrec}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Bindings} shall have the form
+\hyper{Bindings} must have the form
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} shall be a sequence of
+and \hyper{body} must be a sequence of
 one or more expressions. It is a syntax violation for a \hyper{variable} to appear more
 than once in the list of variables being bound.
 
@@ -735,11 +735,11 @@ appendix~\ref{derivedformsappendix}.
 \proto{letrec*}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Bindings} shall have the form
+\hyper{Bindings} must have the form
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} shall be a sequence of
+and \hyper{body} must be a sequence of
 one or more expressions. It is a syntax violation for a \hyper{variable} to appear more
 than once in the list of variables being bound.
 
@@ -807,7 +807,7 @@ assignments generated by the {\cf letrec*} transformation take place.
 \proto{let-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Mv-bindings} shall have the form
+\hyper{Mv-bindings} must have the form
 \begin{scheme}
 ((\hyperi{formals} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
@@ -900,10 +900,10 @@ context:
   the \hyper{body} are spliced intop the surrounding body, as if the
   {\cf begin} wrapper were not actually present.
   
-  A {\cf begin} form in a \hyper{body} or \hyper{library body} shall
+  A {\cf begin} form in a \hyper{body} or \hyper{library body} must
   be non-empty if it appears after the first \hyper{expression}
   within the body.
-\item It may appear as a regular expression and shall have the shape
+\item It may appear as a regular expression and must have the shape
   specified in the second header line.  In this case, the
   \hyper{expression}s are evaluated sequentially from left to right,
   and the value(s) of the last \hyper{expression} is(are) returned.
@@ -1070,7 +1070,7 @@ distinct locations.
 
 The following examples illustrate cases in which the above rules do
 not fully specify the behavior of {\cf eqv?}.  All that can be said
-about such cases is that the value returned by {\cf eqv?} shall be a
+about such cases is that the value returned by {\cf eqv?} must be a
 boolean.
 
 \begin{scheme}
@@ -1083,7 +1083,7 @@ boolean.
 \end{scheme}
 
 The next set of examples shows the use of {\cf eqv?}\ with procedures
-that have local state.  Calls to {\cf gen-counter} shall return a distinct
+that have local state.  Calls to {\cf gen-counter} must return a distinct
 procedure every time, since each procedure has its own internal counter.
 The {\cf gen-loser} procedure, however, returns equivalent procedures each time, since
 the local state does not affect the value or side effects of the
@@ -1118,7 +1118,7 @@ procedures.
                         \ev  \schfalse%
 \end{scheme}
 
-% Objects of distinct types shall never be regarded as the same object,
+% Objects of distinct types must never be regarded as the same object,
 % except that \schfalse{} and the empty list\index{empty list} are permitted to
 % be identical.
 %
@@ -1327,7 +1327,7 @@ libraries that define other numerical procedures.
 \subsection{Propagation of exactness and inexactness}
 \label{propagationsection}
 
-The procedures listed below shall return the correct exact result
+The procedures listed below must return the correct exact result
 provided all their arguments are exact:
 
 \begin{scheme}
@@ -1340,7 +1340,7 @@ expt         real-part    imag-part
 make-rectangular%
 \end{scheme}
 
-The procedures listed below shall return the correct exact result
+The procedures listed below must return the correct exact result
 provided all their arguments are exact, and no divisors are zero:
 
 \begin{scheme}
@@ -1781,7 +1781,7 @@ Returns the absolute value of its argument.
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
 specified in section~\ref{integerdivision}.  In each case, \vari{x}
-shall be neither infinite nor a NaN, and \varii{x} shall be nonzero;
+must be neither infinite nor a NaN, and \varii{x} must be nonzero;
 otherwise, an exception with condition type {\cf\&contract} is raised.
 
 \begin{scheme}
@@ -1984,7 +1984,7 @@ number is returned.
 
 For an exact \vari{z} and an exact
 integer \varii{z}, {\cf (expt \vari{z}
-\varii{z})} shall return an exact result.  For all other
+\varii{z})} must return an exact result.  For all other
 values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
 \varii{z})} may return an inexact result, even when both
 \vari{z} and \varii{z} are exact.
@@ -2067,11 +2067,11 @@ arguments.
 \rproto{number->string}{ z radix}{procedure}
 \rproto{number->string}{ z radix precision}{procedure}}
 
-\var{Radix} shall be an exact integer, either 2, 8, 10, or 16.  If
+\var{Radix} must be an exact integer, either 2, 8, 10, or 16.  If
 omitted, \var{radix} defaults to 10.  If a \var{precision} is
-specified, then \var{z} shall be an inexact complex number,
-\var{precision} shall be an exact positive integer, and \var{radix}
-shall be 10.  The {\cf number->string} procedure takes a number and a
+specified, then \var{z} must be an inexact complex number,
+\var{precision} must be an exact positive integer, and \var{radix}
+must be 10.  The {\cf number->string} procedure takes a number and a
 radix and returns as a string an external representation of the given
 number in the given radix such that
 %
@@ -2124,7 +2124,7 @@ floating point.
 \rproto{string->number}{ string radix}{procedure}}
 
 Returns a number of the maximally precise representation expressed by the
-given \var{string}.  \var{Radix} shall be an exact integer, either 2, 8, 10,
+given \var{string}.  \var{Radix} must be an exact integer, either 2, 8, 10,
 or 16.  If supplied, \var{radix} is a default radix that may be overridden
 by an explicit radix prefix in \var{string} (e.g. {\tt "\#o177"}).  If \var{radix}
 is not supplied, then the default radix is 10.  If \var{string} is not
@@ -2416,7 +2416,7 @@ Returns a newly allocated list of its arguments.
 \begin{entry}{%
 \proto{length}{ list}{procedure}}
 
-\nodomain{\var{List} shall be a list.}
+\nodomain{\var{List} must be a list.}
 Returns the length of \var{list}.
 
 \begin{scheme}
@@ -2430,7 +2430,7 @@ Returns the length of \var{list}.
 \begin{entry}{%
 \proto{append}{ list \dotsfoo{} obj}{procedure}}
 
-\nodomain{All \var{list}s shall be lists.}
+\nodomain{All \var{list}s must be lists.}
 Returns a possibly improper list consisting of the elements of the first \var{list}
 followed by the elements of the other \var{list}s, with \var{obj} as
 the cdr of the final pair.
@@ -2453,7 +2453,7 @@ structure with the \var{obj} argument.
 \begin{entry}{%
 \proto{reverse}{ list}{procedure}}
 
-\nodomain{\var{List} shall be a list.}
+\nodomain{\var{List} must be a list.}
 Returns a newly allocated list consisting of the elements of \var{list}
 in reverse order.
 
@@ -2467,8 +2467,8 @@ in reverse order.
 \begin{entry}{%
 \proto{list-tail}{ l k}{procedure}}
 
-\domain{If \var{k} is 0, \var{l} shall be the empty list or a pair.
-  Otherwise, \var{l} shall be a chain of pairs of size at least \var{k}.}
+\domain{If \var{k} is 0, \var{l} must be the empty list or a pair.
+  Otherwise, \var{l} must be a chain of pairs of size at least \var{k}.}
 
 The {\cf list-tail} procedure returns the subchain of pairs of \var{l}
 obtained by omitting the first \var{k} elements.
@@ -2482,7 +2482,7 @@ obtained by omitting the first \var{k} elements.
 \begin{entry}{%
 \proto{list-ref}{ l k}{procedure}}
 
-\domain{\var{L} shall be a chain of pairs of size at least $\var{k}+1$.}
+\domain{\var{L} must be a chain of pairs of size at least $\var{k}+1$.}
 
 Returns the \var{k}th element of \var{l}.
 
@@ -2512,10 +2512,10 @@ Returns the \var{k}th element of \var{l}.
 \begin{entry}{%
 \proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s shall all have the same length.  \var{proc}
-  shall be a procedure.  If the \var{list}s are non-empty,
-  \var{proc} shall
-  take as many arguments as there are {\it list}s and shall return a
+\domain{The \var{list}s must all have the same length.  \var{proc}
+  must be a procedure.  If the \var{list}s are non-empty,
+  \var{proc} must
+  take as many arguments as there are {\it list}s and must return a
   single value.}
 
 The {\cf map} procedure applies \var{proc} element-wise to the elements of the
@@ -2544,9 +2544,9 @@ The dynamic order in which \var{proc} is applied to the elements of the
 \begin{entry}{%
 \proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s shall all have the same length.  \var{proc}
-  shall be a procedure.  If the \var{list}s are non-empty,
-  \var{proc} shall
+\domain{The \var{list}s must all have the same length.  \var{proc}
+  must be a procedure.  If the \var{list}s are non-empty,
+  \var{proc} must
   take as many arguments as there are {\it list}s.}
 The {\cf for-each} procedure applies \var{proc}
 element-wise to the elements of the
@@ -2703,7 +2703,7 @@ Returns \schtrue{} if \var{obj} is a character, otherwise returns \schfalse.
 \proto{char->integer}{ char}{procedure}
 \proto{integer->char}{ \vr{sv}}{procedure}}
 
-\domain{\var{Sv} shall be a scalar value, i.e.\ a non-negative exact
+\domain{\var{Sv} must be a scalar value, i.e.\ a non-negative exact
   integer in $\left[0, \#x\textrm{D7FF}\right] \cup
   \left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]$.}
 
@@ -2792,7 +2792,7 @@ Returns the number of characters in the given \var{string}.
 \begin{entry}{%
 \proto{string-ref}{ string k}{procedure}}
 
-\domain{\var{K} shall be a valid index of \var{string}.}
+\domain{\var{K} must be a valid index of \var{string}.}
 The {\cf string-ref} procedure returns character \vr{k} of \var{string} using zero-origin indexing.
 \end{entry}
 
@@ -2800,8 +2800,8 @@ The {\cf string-ref} procedure returns character \vr{k} of \var{string} using ze
 \begin{entry}{%
 \proto{string-set!}{ string k char}{procedure}}
 
-\domain{%\var{string} shall be a string, 
-\vr{k} shall be a valid index of \var{string}%, and \var{char} shall be a character
+\domain{%\var{string} must be a string, 
+\vr{k} must be a valid index of \var{string}%, and \var{char} must be a character
 .}
 The {\cf string-set!} procedure stores \var{char} in element \vr{k} of \var{string}
 and returns the unspecified value.  % <!>
@@ -2859,8 +2859,8 @@ is considered to be lexicographically less than the longer string.
 \begin{entry}{%
 \proto{substring}{ string start end}{procedure}}
 
-\domain{\var{String} shall be a string, and \var{start} and \var{end}
-shall be exact integers satisfying
+\domain{\var{String} must be a string, and \var{start} and \var{end}
+must be exact integers satisfying
 $$0 \leq \var{start} \leq \var{end} \leq \hbox{\tt(string-length \var{string})\rm.}$$}
 The {\cf substring} procedure returns a newly allocated string formed from the characters of
 \var{string} beginning with index \var{start} (inclusive) and ending with index
@@ -2881,7 +2881,7 @@ given strings.
 \proto{string->list}{ string}{procedure}
 \proto{list->string}{ list}{procedure}}
 
-\domain{\var{List} shall be a list of characters.}
+\domain{\var{List} must be a list of characters.}
 The {\cf string\coerce{}list} procedure returns a newly allocated list of the
 characters that make up the given string.  The {\cf
   list\coerce{}string} procedure
@@ -2977,7 +2977,7 @@ Returns the number of elements in \var{vector} as an exact integer.
 \begin{entry}{%
 \proto{vector-ref}{ vector k}{procedure}}
 
-\domain{\var{K} shall be a valid index of \var{vector}.}
+\domain{\var{K} must be a valid index of \var{vector}.}
 The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 \var{vector}.
 
@@ -2996,7 +2996,7 @@ The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 \begin{entry}{%
 \proto{vector-set!}{ vector k obj}{procedure}}
 
-\domain{\var{K} shall be a valid index of \var{vector}.}
+\domain{\var{K} must be a valid index of \var{vector}.}
 The {\cf vector-set!} procedure stores \var{obj} in element \vr{k} of \var{vector}.
 The value returned by {\cf vector-set!}\ is the unspecified value.  % <!>
 
@@ -3046,8 +3046,8 @@ and returns the unspecified value.  % <!>
 \proto{error}{ who message \vari{irritant} \dotsfoo}{procedure}
 \proto{contract-violation}{ who message \vari{irritant} \dotsfoo}{procedure}}
 
-\domain{\var{Who} shall be a string or a symbol or \schfalse{}.
-  \var{message} shall be a string.
+\domain{\var{Who} must be a string or a symbol or \schfalse{}.
+  \var{message} must be a string.
   The \var{irritant}s are arbitrary objects.}
 
 These procedures raise an exception.  Calling the {\cf error}
@@ -3120,7 +3120,7 @@ flow of program execution in special ways.
 \begin{entry}{%
 \proto{apply}{ proc \vari{arg} $\ldots$ args}{procedure}}
 
-\domain{\var{Proc} shall be a procedure and \var{args} shall be a
+\domain{\var{Proc} must be a procedure and \var{args} must be a
   list.}
 Calls \var{proc} with the elements of the list
 {\cf(append (list \vari{arg} \dotsfoo) \var{args})} as the actual
@@ -3143,7 +3143,7 @@ arguments.
 \proto{call-with-current-continuation}{ proc}{procedure}
 \proto{call/cc}{ proc}{procedure}}
 
-\label{continuations} \domain{\var{Proc} shall be a procedure of one
+\label{continuations} \domain{\var{Proc} must be a procedure of one
 argument.} The procedure {\cf call-with-current-continuation} 
 (which is the same as the procedure {\cf call/cc}) packages
 up the current continuation (see the rationale below) as an ``escape
@@ -3284,7 +3284,7 @@ created by {\cf call-with-values}, an exception with condition type
 \begin{entry}{%
 \proto{dynamic-wind}{ before thunk after}{procedure}}
 
-\domain{\var{Before}, \var{thunk}, and \var{after} shall be procedures
+\domain{\var{Before}, \var{thunk}, and \var{after} must be procedures
 accepting zero arguments and returning any number of values.}
 
 In the absense of any calls to escape procedures
@@ -3454,8 +3454,8 @@ follows:
   \hyper{expressionx} \dotsfoo)}
 
 \syntax
-The \hyper{init}s, \hyper{step}s, and \hyper{test}s shall be
-expressions.  The \hyper{variable}s shall be pairwise distinct variables.
+The \hyper{init}s, \hyper{step}s, and \hyper{test}s must be
+expressions.  The \hyper{variable}s must be pairwise distinct variables.
 
 \semantics
 The {\cf do} expression is an iteration construct.  It specifies a set of variables to
@@ -3556,12 +3556,12 @@ If an {\cf (unquote \hyper{expression} \dotsfoo)} form appears inside a
 of the {\cf unquote} form.
 
 If an {\cf (unquote-splicing \hyper{expression} \dotsfoo)} form
-appears inside a \hyper{qq template}, then the \hyper{expression}s shall
+appears inside a \hyper{qq template}, then the \hyper{expression}s must
 evaluate to lists; the opening and closing parentheses of the list are
 then ``stripped away'' and the elements of the lists are inserted in
 place of the {\cf unquote-splicing} form.
 
-{\cf unquote-splicing} and multi-operand {\cf unquote} forms shall
+{\cf unquote-splicing} and multi-operand {\cf unquote} forms must
 appear only within a list or vector \hyper{qq template}.
 
 As noted in section~\ref{quotesection},
@@ -3656,17 +3656,17 @@ The {\cf let-syntax} and {\cf letrec-syntax} forms are analogous to {\cf let}
 and {\cf letrec} but bind keywords rather than variables.
 Like {\cf begin}, a {\cf let-syntax} or {\cf letrec-syntax} form
 may appear in a definition context, in which case it is treated as a
-definition, and the forms in the body of the form shall also be
+definition, and the forms in the body of the form must also be
 definitions.
 A {\cf let-syntax} or {\cf letrec-syntax} form may also appear in an
-expression context, in which case the forms within their bodies shall be
+expression context, in which case the forms within their bodies must be
 expressions.
 
 \begin{entry}{%
 \proto{let-syntax}{ \hyper{bindings} \hyper{form} \dotsfoo}{\exprtype}}
 
 \syntax
-\hyper{Bindings} shall have the form
+\hyper{Bindings} must have the form
 \begin{scheme}
 ((\hyper{keyword} \hyper{transformer spec}) \dotsfoo)%
 \end{scheme}
@@ -3804,8 +3804,8 @@ can be a {\cf syntax-rules} form:
 \pproto{(syntax-rules (\hyper{literal} \dots) \hyper{syntax rule} \dots)}{\exprtype}}
 \mainschindex{syntax-rules}
 
-\syntax Each \hyper{literal} shall be an identifier.
-Each \hyper{syntax rule} shall take the following form:
+\syntax Each \hyper{literal} must be an identifier.
+Each \hyper{syntax rule} must take the following form:
 
 \begin{scheme}
 (\hyper{pattern} \hyper{template})%
@@ -3959,7 +3959,7 @@ are copied directly into the output.
 A subtemplate followed by an ellipsis expands
 into zero or more occurrences of the subtemplate.
 The subtemplate
-shall contain at least one pattern variable from a subpattern
+must contain at least one pattern variable from a subpattern
 followed by an ellipsis.
 (Otherwise, the expander would not be able to determine how many times the
 subform should be repeated in the output.)
@@ -4055,7 +4055,7 @@ A \hyper{declare spec} has one of the following forms:
 \end{itemize}
 
 For {\cf safe}, the default priority must be 1 or higher.  When the
-priority for {\cf safe} is 1 or higher, implementations shall raise all
+priority for {\cf safe} is 1 or higher, implementations must raise all
 required exceptions and let them be handled by the exception mechanism
 (see chapter~\ref{exceptionsconditionschapter}).
 
@@ -4086,7 +4086,7 @@ run-time data structures in ways that cause unexpected and mysterious
 misbehavior even in code that comes within the scope of a safe
 declaration.  All bets are off.
 
-At priority 1 and higher, an implementation shall raise all exceptions
+At priority 1 and higher, an implementation must raise all exceptions
 required by this report, handle those exceptions using the exception
 mechanism described in chapter~\ref{exceptionsconditionschapter}, and
 use the default exception handlers described in that chapter.  See
@@ -4208,7 +4208,7 @@ tail context.  \hyperii{expression} itself is not in a tail context.
 Certain built-in procedures are also required to perform tail calls.
 The first argument passed to \ide{apply} and to
 \ide{call-with-current-continuation}, and the second argument passed to
-\ide{call-with-values}, shall be called via a tail call.
+\ide{call-with-values}, must be called via a tail call.
 
 In the following example the only tail call is the call to {\cf f}.
 None of the calls to {\cf g} or {\cf h} are tail calls.  The reference to

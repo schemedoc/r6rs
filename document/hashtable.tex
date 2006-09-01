@@ -14,8 +14,8 @@ Standard hash tables for arbitrary objects based on the {\cf eq?} and
 Also, standard hash functions for several types are provided.
 
 This section uses the \var{hash-table} parameter name for arguments
-that shall be hash tables, and the \var{key} parameter name for
-arguments that shall be hash-table keys.
+that must be hash tables, and the \var{key} parameter name for
+arguments that must be hash-table keys.
 
 \section{Constructors}
 
@@ -48,12 +48,12 @@ capacity of the hash table is set to approximately \var{k} elements.
 \proto{make-hash-table}{ \var{hash-function} \var{comparator}}{procedure}
 \rproto{make-hash-table}{ \var{hash-function} \var{comparator} \var{k}}{procedure}}
 
-\domain{\var{Hash-function} and \var{comparator} shall be procedures.
+\domain{\var{Hash-function} and \var{comparator} must be procedures.
 \var{Hash-function} will be called by other procedures described in
-this chapter with a key as argument, and shall returns a 
+this chapter with a key as argument, and must returns a 
 non-negative exact integer.
 \var{Comparator} will be called by other procedures described in
-this chapter with two keys as arguments, and shall return a 
+this chapter with two keys as arguments, and must return a 
 boolean.}
 The {\cf make-hash-table} procedure returns a newly allocated mutable
 hash table using \var{hash-function} 
@@ -134,7 +134,7 @@ for \var{key}, otherwise returns \schfalse{}.
 \begin{entry}{%
 \proto{hash-table-update!}{ \var{hash-table} \var{key} \var{proc} \var{default}}{procedure}}
 
-\domain{\var{Proc} shall be a procedure that takes a single argument.}
+\domain{\var{Proc} must be a procedure that takes a single argument.}
 The {\cf hash-table-update!} procedure applies \var{proc} to the value in \var{hash-table}
 associated with \var{key}, 
 or to \var{default} if \var{hash-table} does not contain an
@@ -156,7 +156,7 @@ avoid looking up the same key twice:
 
 \begin{entry}{\proto{hash-table-fold}{ \var{proc} \var{hash-table} \var{init}}{procedure}}
 
-\domain{\var{Proc} shall be a procedure that takes three arguments.}
+\domain{\var{Proc} must be a procedure that takes three arguments.}
 For every association in \var{hash-table}, calls
 \var{proc} with the association
 key, the association value, and an accumulated value as arguments.

@@ -6,7 +6,7 @@ This chapter describes the \deflibrary{r6rs lists} library.
 \begin{entry}{%
 \proto{find}{ proc list}{procedure}}
 
-\domain{\var{Proc} shall be a procedure; it shall take a single argument
+\domain{\var{Proc} must be a procedure; it must take a single argument
   if \var{list} is non-empty.}  The {\cf find} procedure applies
 \var{proc} to the elements of \var{list} in order.  If
 \var{proc} returns a true value for an element, {\cf find}
@@ -24,16 +24,16 @@ immediately returns that element.  If \var{proc} returns
 \proto{forall}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}
 \proto{exists}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}}
 
-\domain{The \var{l}s shall all be the empty list, or chains of pairs of
+\domain{The \var{l}s must all be the empty list, or chains of pairs of
   sizes according to the condition specified below.
-  \var{proc} shall be a procedure; it shall take a single argument if
+  \var{proc} must be a procedure; it must take a single argument if
   the \var{l}s are non-empty.}
 
 The {\cf forall} procedure applies \var{proc} element-wise to the
 elements of the \var{l}s.  If \var{proc} returns \schtrue{}
 for all but the last elements of the \var{l}s, \var{forall} performs a
 tail call of \var{proc} on the last elements---in this case, the
-\var{l}s shall all be lists.  If \var{proc}
+\var{l}s must all be lists.  If \var{proc}
 returns \schfalse{} on any set of elements, {\cf forall} returns
 \schfalse{} after the first such application of \var{proc} without
 further traversing the \var{l}s.  If
@@ -43,7 +43,7 @@ The {\cf exists} procedure applies \var{proc} element-wise to the
 elements of the \var{l}s.  If \var{proc} returns \schfalse{}
 for all but the last elements of the \var{l}s, \var{exists} performs a
 tail call of \var{proc} on the last elements---in this case, the
-\var{l}s shall all be lists.  If \var{proc}
+\var{l}s must all be lists.  If \var{proc}
 returns a true value on any set of elements, {\cf exists} returns
 that value after the first such application of \var{proc} without
 further traversing the \var{l}s.  If
@@ -69,7 +69,7 @@ the \var{l}s are all empty, {\cf exists} returns \schfalse.
 \proto{partition}{ proc list}{procedure}
 }
 
-\domain{\var{Proc} shall be a procedure; it shall take a single argument
+\domain{\var{Proc} must be a procedure; it must take a single argument
   if \var{list} is non-empty.}  The {\cf filter} procedure successively applies
 \var{proc} to the elements of \var{list} and returns a list of
 the values of \var{list} for which \var{proc} returned a true
@@ -91,9 +91,9 @@ which \var{proc} returned \schfalse.
 \proto{fold-left}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
 \domain{If
-  more than one \var{list} is given, then they shall all be the same
-  length.  \var{kons} shall be a
-  procedure; if the \var{list}s are non-empty, it shall take one more
+  more than one \var{list} is given, then they must all be the same
+  length.  \var{kons} must be a
+  procedure; if the \var{list}s are non-empty, it must take one more
   argument than there are {\it list}s.}
 The {\cf fold-left} procedure iterates the \var{kons} procedure over an
 accumulator value and the values of the {\it list}s from left to
@@ -132,9 +132,9 @@ reached; then the accumulator value is returned.
 \proto{fold-right}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
 \domain{ If
-  more than one \var{list} is given, then they shall all be the same
-  length.  \var{kons} shall be a
-  procedure; if the \var{list}s are non-empty, it shall take one more
+  more than one \var{list} is given, then they must all be the same
+  length.  \var{kons} must be a
+  procedure; if the \var{list}s are non-empty, it must take one more
   argument than there are {\it list}s.}
 The {\cf fold-right} procedure iterates the \var{kons} procedure over
 the values of the {\it list}s from right to left and an accumulator
@@ -170,7 +170,7 @@ list is reached; then the accumulator value is returned.
 \proto{remv}{ obj list}{procedure}
 \proto{remq}{ obj list}{procedure}}
 
-\domain{\var{Proc} shall be a procedure; it shall take a single argument
+\domain{\var{Proc} must be a procedure; it must take a single argument
   if \var{list} is non-empty.}
 Each of these procedures returns a list of the elements of \var{list}
 that do not satisfy a given condition.  The {\cf remp} procedure successively
@@ -199,9 +199,9 @@ uses {\cf eqv?}\ and {\cf remove} uses {\cf equal?}.
 \proto{memq}{ obj l}{procedure}
 }
 
-\domain{\var{Proc} shall be a procedure; it shall take a single argument
+\domain{\var{Proc} must be a procedure; it must take a single argument
   if \var{l} is non-empty.
-  \var{l} shall be the empty list or a chain of pairs of size according
+  \var{l} must be the empty list or a chain of pairs of size according
 to the conditions stated below.}
 
 These procedures return the first sublist of \var{l} whose car
@@ -214,7 +214,7 @@ finds one for which \var{proc} returns a true value without traversing
   member}, {\cf memv}, and {\cf memq} procedures look for the first occurrence of
 \var{obj}.  If \var{l} does not contain an element satisfying the
 condition, then \schfalse{} (not the empty list) is returned; in that
-case, \var{l} shall be a list.  The {\cf
+case, \var{l} must be a list.  The {\cf
   member} procedure uses {\cf equal?}\ to compare \var{obj} with the elements of
 \var{l}, while {\cf memv} uses {\cf eqv?}\ and {\cf memq} uses
 {\cf eq?}.
@@ -245,16 +245,16 @@ case, \var{l} shall be a list.  The {\cf
 \proto{assv}{ obj al}{procedure}
 \proto{assq}{ obj al}{procedure}}
 
-\domain{\var{Al} (for ``association list'') shall be the empty list or
+\domain{\var{Al} (for ``association list'') must be the empty list or
   a chain of pairs where each car contains a pair of size according to
-  the conditions specified below.  \var{Proc} shall be a procedure; it
-  shall take a single argument if \var{al} is non-empty.}
+  the conditions specified below.  \var{Proc} must be a procedure; it
+  must take a single argument if \var{al} is non-empty.}
 
 These procedures find the first pair in \var{al}
 whose car field satisfies a given condition, and returns that pair
 without traversing \var{al} further.
 If no pair in \var{al} satisfies the condition, then \schfalse{}
-is returned; in that case, \var{al} shall be a
+is returned; in that case, \var{al} must be a
 list.  The {\cf assp} procedure successively applies
 \var{proc} to the car fields of \var{al} and looks for a pair
 for which it returns a true value.  The {\cf assoc}, {\cf assv}, and {\cf

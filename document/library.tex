@@ -61,7 +61,7 @@ A library declaration contains the following elements:
       by a sequence of expressions.
 \end{itemize}
 
-A library definition shall have the following form:\mainschindex{library}\mainschindex{import}\mainschindex{export}
+A library definition must have the following form:\mainschindex{library}\mainschindex{import}\mainschindex{export}
 
 \begin{scheme}
 (library \hyper{library~name}
@@ -85,7 +85,7 @@ defined in one library, and it arrives through the imports only by
 exporting and re-exporting).  Otherwise, no identifier can be imported
 multiple times, defined multiple times, or both defined and imported.
 
-A \hyper{library name} shall be one of the following:
+A \hyper{library name} must be one of the following:
 
 \begin{scheme}
 \hyper{identifier}
@@ -98,14 +98,14 @@ where \hyper{version} is empty or has the following form:
 (\hyperi{subversion} \hyperii{subversion} \ldots)%
 \end{scheme}
 
-Each \hyper{subversion} shall be an exact nonnegative integer.
+Each \hyper{subversion} must be an exact nonnegative integer.
 
 As a \hyper{library name}, \hyper{identifier} is shorthand for {\cf
   (\hyper{identifier})}.
 
 Each \hyper{import~spec} specifies a set of bindings to be imported into
 the library, the phases in which they are to be available, and the local
-names by which they are to be known.  A \hyper{import spec} shall
+names by which they are to be known.  A \hyper{import spec} must
 be one of the following:
 %
 \begin{scheme}
@@ -127,7 +127,7 @@ As an \hyper{import phase}, {\cf run} is an abbreviation for {\cf
 Phases are discussed in section~\ref{phasessection}.
 
 An \hyper{import~set} names a set of bindings from another library, and
-possibly specifies local names for the imported bindings.  It shall be
+possibly specifies local names for the imported bindings.  It must be
 one of the following:
 
 \begin{scheme}
@@ -139,7 +139,7 @@ one of the following:
 \end{scheme}
 
 A \hyper{library~reference} identifies a library by its (possibly compound)
-name and optionally by its version.  It shall have one the following forms:
+name and optionally by its version.  It must have one the following forms:
 
 \begin{scheme}
 \hyper{identifier}
@@ -147,21 +147,21 @@ name and optionally by its version.  It shall have one the following forms:
 \end{scheme}
 
 \hyper{Identifier} is shorthand for {\cf (\hyper{identifier})}.
-A \hyper{version reference} shall have one of the following forms:
+A \hyper{version reference} must have one of the following forms:
 
 \begin{scheme}
 \hyper{empty}
 (\hyperi{subversion~reference} \hyperii{subversion~reference} \ldots)%
 \end{scheme}
 
-A \hyper{subversion reference} shall have one of the following forms:
+A \hyper{subversion reference} must have one of the following forms:
 
 \begin{scheme}
 \hyper{subversion}
 \hyper{subversion~condition}%
 \end{scheme}
 
-where a \hyper{subversion condition} shall have one of these forms:
+where a \hyper{subversion condition} must have one of these forms:
 
 \begin{scheme}
 (>= \hyper{subversion})
@@ -216,7 +216,7 @@ if the new name is already in \hyper{import~set}, an exception is raised.
 
 An \hyper{export~set} names a set of imported and locally defined bindings to
 be exported for optionally specified phases, possibly with different
-external names.  An \hyper{export spec} shall have one of the
+external names.  An \hyper{export spec} must have one of the
 following forms:
 
 \begin{scheme}
@@ -224,7 +224,7 @@ following forms:
 (for (\hyper{export~set} \ldots) \hyper{import~phase} \ldots)%
 \end{scheme}
 
-where an \hyper{export set} shall have one of these forms:
+where an \hyper{export set} must have one of these forms:
 
 \begin{scheme}
 \hyper{identifier}
@@ -251,7 +251,7 @@ definitions (see section~\ref{defines} for definitions available
 through the base library) are expressions.
 
 A \hyper{library~body} is like a \hyper{body} (see section~\ref{bodiessection}) except that
-\hyper{library~body}s need not include any expressions.  It shall
+\hyper{library~body}s need not include any expressions.  It must
 have the following form:
 
 \begin{scheme}
@@ -514,7 +514,7 @@ The order of evaluation may be chosen differently for each procedure call.
 
 \begin{note} In many dialects of Lisp, the form {\tt
 ()} is a legitimate expression.  In Scheme, expressions written as
-list/pair forms shall have at
+list/pair forms must have at
 least one subexpression, so {\tt ()} is not a syntactically valid
 expression.
 \end{note}
