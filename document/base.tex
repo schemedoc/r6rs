@@ -60,7 +60,7 @@ A \hyper{definition} must have one of the following forms:\mainschindex{define}\
 \begin{itemize}
 
 \item{\tt(define \hyper{variable} \hyper{expression})}
-  This will bind \hyper{variable} to a new
+  This binds \hyper{variable} to a new
   location before assigning the value of \hyper{expression} to it.
 \begin{scheme}
 (define add3
@@ -121,8 +121,7 @@ by {\cf define}.
 All bindings established by a set of internal definitions, whether
 keyword or variable definitions, are visible within the definitions
 themselves.
-
-For example, the expression
+For example:
 
 \begin{scheme}
 (let ()
@@ -132,11 +131,8 @@ For example, the expression
   (define-syntax odd?
     (syntax-rules ()
       ((odd?  x) (not (even? x)))))
-  (even? 10))%
+  (even? 10))                       \ev \schtrue{}%
 \end{scheme}
-
-is valid and should return \schtrue{}.
-FIXME: Kent: what do you mean ``should''?
 
 An implication of the left-to-right processing order
 (section~\ref{expansionchapter}) is that one internal definition can
@@ -271,7 +267,7 @@ effect when the \lambdaexp{} was evaluated is remembered as part of the
 procedure.  When the procedure is later called with some actual
 arguments, the environment in which the \lambdaexp{} was evaluated will
 be extended by binding the variables in the formal argument list to
-fresh locations, the corresponding actual argument values will be stored
+fresh locations, and the resulting actual argument values will be stored
 in those locations.  Then, the expressions in the body of the \lambdaexp{}
 (which may contain internal definitions and thus represent a {\cf
   letrec*} form, see section~\ref{bodiessection}) will be evaluated
