@@ -63,11 +63,10 @@ syntax and the read syntax.
 
 The formal syntax for Scheme is written in an extended BNF.
 Non-terminals are written using angle brackets; case is insignificant
-for non-terminals.
+for non-terminal names.
 
-All spaces in the grammar are for legibility.  Case is significant
-except in hexadecimal numbers; for example, {\cf \#x1A} and {\cf
-  \#X1a} are equivalent.  \meta{Empty} stands for the empty string.
+All spaces in the grammar are for legibility.
+\meta{Empty} stands for the empty string.
 
 The following extensions to BNF are used to make the description more
 concise:  \arbno{\meta{thing}} means zero or more occurrences of
@@ -91,10 +90,10 @@ a forward reference to \meta{datum}, which is described as part of the
 read syntax.  However, being comments, these \meta{datum}s do not play
 a significant role in the syntax.
 
-Generally, upper and lower case forms of a letter are distinguished,
-except in literals specifying hexadecimal numbers.  For example, {\cf
-  Foo} is an identifier different from {\cf FOO}.  However,
-{\tt\#x1AB} is the same number as {\tt\#X1ab}.
+Case is significant except in boolean and number datums, as well as
+hexadecimal numbers denoting scalar values.  For example, {\cf \#x1A}
+and {\cf \#X1a} are equivalent.  However, {\cf Foo} is an identifier
+different from {\cf FOO}.
 
 \subsection{Formal account}
 \label{lexicalgrammarsection}
@@ -166,7 +165,7 @@ language: {\tt \verb"{" \verb"}"}
  \> {\rm with at most 8 digits}
  \meta{peculiar identifier} \: + \| - \| ... \| -> \arbno{\meta{subsequent}}
 %\| 1+ \| -1+
-\meta{boolean} \: \schtrue{} \| \schfalse{}
+\meta{boolean} \: \schtrue{} \| \#T \| \schfalse{} \| \#F
 \meta{character} \: \#\backwhack{}\meta{any character}
  \>  \| \#\backwhack{}\meta{character name}
  \>  \| \#\backwhack{}x\meta{hex scalar value}
@@ -234,15 +233,17 @@ In the these rules, case is insignificant.
 \begin{grammar}%
 \meta{suffix} \: \meta{empty} 
    \> \| \meta{exponent marker} \meta{sign} \atleastone{\meta{digit $10$}}
-\meta{exponent marker} \: e \| s \| f \| d \| l
+\meta{exponent marker} \: e \| E \| s \| \| S \| f \| F
+   \> \| d \| \| D  \| l \| L
 \meta{mantissa width} \: \meta{empty}
    \> \| | \atleastone{\meta{digit 10}}
 \meta{sign} \: \meta{empty}  \| + \|  -
-\meta{exactness} \: \meta{empty} \| \#i\sharpindex{i} \| \#e\sharpindex{e}
-\meta{radix 2} \: \#b\sharpindex{b}
-\meta{radix 8} \: \#o\sharpindex{o}
-\meta{radix 10} \: \meta{empty} \| \#d
-\meta{radix 16} \: \#x\sharpindex{x}
+\meta{exactness} \: \meta{empty}
+   \> \| \#i\sharpindex{i} \| \#I \| \#e\sharpindex{e} \| \#E
+\meta{radix 2} \: \#b\sharpindex{b} \| #B\sharpindex
+\meta{radix 8} \: \#o\sharpindex{o} \| #O
+\meta{radix 10} \: \meta{empty} \| \#d \| \#D
+\meta{radix 16} \: \#x\sharpindex{x} \| #X
 \meta{digit 2} \: 0 \| 1
 \meta{digit 8} \: 0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7
 \meta{digit 10} \: \meta{digit}
