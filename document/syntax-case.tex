@@ -29,16 +29,10 @@ support for writing low-level macros
 in a high-level style, with automatic syntax checking, input
 destructuring, output restructuring, maintenance of lexical scoping
 and referential transparency (hygiene), and support for controlled
-identifier capture, with constant expansion overhead.  Because it does
-not require literals, including quoted lists or vectors, to be copied
-or even traversed, it preserves sharing and cycles within and among
-the constants of a program.  It also supports source-object
-correlation, i.e., the maintenance of ties between the original source
-code and expanded output, allowing implementations to provide
-source-level support for debuggers and other tools.
+identifier capture.
 
 \begin{rationale}
-While many syntactic abstractions are succinctly expressed using the
+While many syntax transformers are succinctly expressed using the
 high-level {\cf syntax-rules} form, others are difficult or impossible
 to write, including some that introduce visible bindings for or references
 to identifiers that do not appear explicitly in the input form, ones that
@@ -49,25 +43,16 @@ allows the programmer to write transformers that perform these sorts of
 transformations, and arbitrary additional transformations, without
 sacrificing the default enforcement of hygiene or the high-level
 pattern-based syntax matching and template-based output construction
-provided by {\r6rs} {\cf syntax-rules}.
+provided by {\cf syntax-rules} (section~\ref{syntax-rules}).
+
+Because {\cf syntax-case} does not require literals, including quoted
+lists or vectors, to be copied or even traversed, it preserves sharing
+and cycles within and among the constants of a program.  It also
+supports source-object correlation, i.e., the maintenance of ties
+between the original source code and expanded output, allowing
+implementations to provide source-level support for debuggers and
+other tools.
 \end{rationale}
-
-A syntactic abstraction typically takes the form
-{\cf (\hyper{keyword} \hyper{subform} \dots)}, where \hyper{keyword} is the
-identifier that names the syntactic abstraction.
-The syntax of each \hyper{subform} varies from one syntactic abstraction to
-another.
-Syntactic abstractions can also take the form of improper lists (or even
-singleton identifiers; see section~\ref{transformerssection}), although this is
-less common.
-
-New syntactic abstractions are defined by associating keywords with
-\emph{transformers}.
-Keyword bindings are created using {\cf define-syntax},
-{\cf let-syntax}, or {\cf letrec-syntax}.
-Transformers are created using {\cf syntax-rules} or
-{\cf syntax-case} and {\cf syntax}, which allow transformations to
-be specified via pattern matching and template reconstruction.
 
 \section{Hygiene}
 \label{hygienesection}
@@ -133,7 +118,7 @@ introduced at different times (either present in the source or introduced
 into the output of a particular transformer call), and substitutions are
 used to map identifiers to their expand-time values.
 
-Each time the expander encounters a syntactic abstraction, it applies an
+Each time the expander encounters a macro use, it applies an
 \defining{antimark} to the input form, invokes the associated transformer,
 then applies a fresh mark to the output.
 Marks and antimarks cancel, so the portions of the input that appear in
@@ -177,9 +162,50 @@ substitution.
 Marks applied after a substitution, i.e., appear over the substitution in
 the wrap, are not relevant and are ignored.
 
-FIXME
 An algebra that defines how marks and substitutions work more precisely is
 given in section~2.4 of Oscar Waddell's PhD thesis~\cite{Waddellphd}.
+
+\section{Syntax objects}
+\label{syntaxobjectssection}
+
+A \defining{syntax object} is a representation of a Scheme form that contains
+contextual information about the form in addition to its structure.
+This contextual information is used by the expander to maintain
+lexical scoping and may also be used by an implementation to maintain
+source-object correlation.
+
+Syntax objects may be wrapped or unwrapped.
+A wrapped syntax object (section~\ref{hygienesection}), consists of a
+\textit{wrap} (section~\ref{hygienesection}) and some internal representation
+of a Scheme form.
+(The internal representation is unspecified, but is typically a 
+datum value or datum value annotated with source information.)
+A wrapped syntax object representing an identifier is itself referred to as
+an identifier; thus, the term \textit{identifier\mainindex{identifier}} may refer either to
+the syntactic entity (symbol, variable, or keyword) or to the
+concrete representation of the syntactic entity as a syntax object.
+Wrapped syntax objects are distinct from other types of values.
+
+An unwrapped syntax object is one that is unwrapped, fully or partially,
+i.e., whose outer layers consist of lists and vectors and whose leaves are
+either wrapped syntax objects or nonsymbol values.
+
+The term syntax object is used in this document to refer to
+a syntax object that is either wrapped or unwrapped.
+More formally, a syntax object is:
+
+\begin{itemize}
+\item a pair or list of syntax objects,
+\item a vector of syntax objects,
+\item a nonlist, nonvector, nonsymbol value, or
+\item a wrapped syntax object.
+\end{itemize}
+
+The distinction between the terms ``syntax object'' and ``wrapped syntax
+object'' is important.
+For example, when invoked by the expander, a transformer
+(section~\ref{transformerssection}) shall accept a wrapped syntax object but
+may return any syntax object, including an unwrapped syntax object.
 
 \section{Transformers}
 \label{transformerssection}
@@ -207,67 +233,24 @@ reference, and its output replaces just the reference.
 An exception with condition type {\cf\&syntax} is raised if the keyword appears on the
 left-hand side of a {\cf set!} expression.
 
-Variable transformers are similar.
-If a keyword associated with a variable transformer appears on
-the left-hand side of a {\cf set!} expression, however, no 
-exception is raised.
-Instead, the transformer receives a wrapped syntax object representing the
-entire {\cf set!} expression as its argument, and its output
-replaces the entire {\cf set!} expression.
-A variable transformer is created by passing a transformation
-procedure to {\cf make-variable-transformer}
-
 \begin{entry}{%
 \proto{make-variable-transformer}{ proc}{procedure}}
 
 \domain{\var{Proc} shall be a procedure that accepts one argument,
-a wrapped syntax object representing the input, and return a syntax
-object representing the output.}
+a wrapped syntax object.}
 
-{\cf make-variable-transformer} returns a variable transformer.
+The {\cf make-variable-transformer} procedure creates a
+\defining{variable transformer}.
+In a macro use that consists only of a keyword, \var{proc} is called
+with a wrapped syntax object representing just the keyword
+reference, and its return value replaces just the reference.
+
+If a keyword associated with a variable transformer appears on the
+left-hand side of a {\cf set!} expression, \var{proc} is called with a
+wrapped syntax object representing the entire {\cf set!} expression as
+its argument, and its return value replaces the entire {\cf set!}
+expression.
 \end{entry}
-
-\section{Syntax objects}
-\label{syntaxobjectssection}
-
-A syntax object is a representation of a Scheme form that contains
-contextual information about the form in addition to its structure.
-This contextual information is used by the expander to maintain
-lexical scoping and may also be used by an implementation to maintain
-source-object correlation.
-
-Syntax objects may be wrapped or unwrapped.
-A wrapped syntax object (section~\ref{hygienesection}), consists of a
-\textit{wrap} (section~\ref{hygienesection}) and some internal representation
-of a Scheme form.
-(The internal representation is unspecified, but is typically a 
-datum value or datum value annotated with source information.)
-A wrapped syntax object representing an identifier is itself referred to as
-an identifier; thus, the term \textit{identifier\mainindex{identifier}} may refer either to
-the syntactic entity (symbol, variable, or keyword) or to the
-concrete representation of the syntactic entity as a syntax object.
-Wrapped syntax objects are distinct from other types of values.
-
-An unwrapped syntax object is one that is unwrapped, fully or partially,
-i.e., whose outer layers consist of lists and vectors and whose leaves are
-either wrapped syntax objects or nonsymbol values.
-
-The term \defining{syntax object} is used in this document to refer to
-a syntax object that is either wrapped or unwrapped.
-More formally, a syntax object is:
-
-\begin{itemize}
-\item a pair or list of syntax objects,
-\item a vector of syntax objects,
-\item a nonlist, nonvector, nonsymbol value, or
-\item a wrapped syntax object.
-\end{itemize}
-
-The distinction between the terms ``syntax object'' and ``wrapped syntax
-object'' is important.
-For example, when invoked by the expander, a transformer
-(section~\ref{transformerssection}) shall accept a wrapped syntax object but
-may return any syntax object, including an unwrapped syntax object.
 
 \section{Parsing input and producing output}
 \label{syntaxcasesection}
@@ -287,7 +270,7 @@ Each \hyper{clause} shall take one of the following two forms.
 (\hyper{pattern} \hyper{fender} \hyper{output expression})
 \end{scheme}
 
-\hyper{Fender} shall and \hyper{output expression} shall be
+\hyper{Fender} and \hyper{output expression} shall be
 \hyper{expression}s.
 
 A \hyper{pattern} is an identifier, constant, or one of the following.
@@ -330,28 +313,29 @@ A subpattern followed by an ellipsis can match zero or more elements of
 the input.
 
 More formally, an input form $F$ matches a pattern $P$ if and only if
+one of the following holds:
 
 \begin{itemize}
-\item $P$ is an underscore (~{\cf \_}~),
+\item $P$ is an underscore (~{\cf \_}~).
 
-\item $P$ is a pattern variable,
+\item $P$ is a pattern variable.
 
 \item $P$ is a literal identifier
 and $F$ is an equivalent identifier in the
 sense of {\cf free-identifier=?}
-(section~\ref{identifierpredicatessection}),
+(section~\ref{identifierpredicatessection}).
 
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_n$)}
 and $F$ is a list of $n$ elements that match $P_1$ through
-$P_n$,
+$P_n$.
 
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_n$ . $P_x$)}
 and $F$ is a list or improper list of $n$ or more elements
 whose first $n$ elements match $P_1$ through $P_n$
 and
-whose $n$th cdr matches $P_x$,
+whose $n$th cdr matches $P_x$.
 
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
@@ -360,7 +344,7 @@ and $F$ is a proper list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
 whose next $m-k$ elements each match $P_e$,
 and
-whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$,
+whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
 
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$ . $P_x$)},
@@ -370,12 +354,12 @@ elements whose first $k$ elements match $P_1$ through $P_k$,
 whose next $m-k$ elements each match $P_e$,
 whose next $n-m$ elements match $P_{m+1}$ through $P_n$,
 and 
-whose $n$th and final cdr matches $P_x$,
+whose $n$th and final cdr matches $P_x$.
 
 \item $P$ is of the form
 {\cf \#($P_1$ \dots{} $P_n$)}
 and $F$ is a vector of $n$ elements that match $P_1$ through
-$P_n$,
+$P_n$.
 
 \item $P$ is of the form
 {\cf \#($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
@@ -384,8 +368,7 @@ and $F$ is a vector of $n$ or more elements
 whose first $k$ elements match $P_1$ through $P_k$,
 whose next $m-k$ elements each match $P_e$,
 and
-whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$,
-or
+whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
 
 \item $P$ is a pattern datum (any nonlist, nonvector, nonsymbol
 object) and $F$ is equal to $P$ in the sense of the
@@ -403,7 +386,7 @@ If the pattern matches the value and no
 value of the {\cf syntax-case} expression.
 If the pattern does not match the value, {\cf syntax-case} tries
 the second \hyper{clause}, then the third, and so on.
-An exception with condition type {\cf\&syntax} is raised if the value does not match any of the patterns.
+It is a syntax violation if the value does not match any of the patterns.
 
 If the optional \hyper{fender} is present, it serves as an additional
 constraint on acceptance of a clause.
@@ -481,8 +464,8 @@ ellipses within the template have no special meaning.
 That is, any ellipses contained within \hyper{template} are
 treated as ordinary identifiers.
 In particular, the template {\cf (... ...)} produces a single
-ellipsis, {\cf ...}.
-This allows syntactic abstractions to expand into forms containing
+ellipsis.
+This allows macro uses to expand into forms containing
 ellipses.
 
 \label{wrappingrules}
@@ -548,7 +531,7 @@ prefix instead of the full {\cf syntax} form.
 \end{schemenoindent}
 
 The examples below define \emph{identifier macros\mainindex{identifier
-  macro}}, syntactic abstractions
+  macro}}, macro uses
 supporting keyword references that do not necessarily appear in the first
 position of a list-structured form.
 The second example uses {\cf make-variable-transformer} to handle the case
@@ -637,7 +620,7 @@ Operationally, two identifiers are
 considered equivalent by {\cf bound-identifier=?} if and only if they
 have the same name and same marks (section~\ref{hygienesection}).
 
-{\cf bound-identifier=?} can be used for detecting
+The {\cf bound-identifier=?} procedure can be used for detecting
 duplicate identifiers in a binding construct or for other
 preprocessing of a binding construct that requires detecting instances
 of the bound identifiers.
@@ -647,7 +630,7 @@ of the bound identifiers.
 \proto{free-identifier=?}{ \vari{id} \varii{id}}{procedure}}
 
 \domain{\vari{Id} and \varii{id} shall be identifiers.}
-The procedure {\cf free-identifier=?} returns \schtrue{} if and
+The {\cf free-identifier=?} procedure returns \schtrue{} if and
 only if the two identifiers would resolve to the same binding if both were
 to appear in the output of a transformer outside of any bindings inserted
 by the transformer.
@@ -787,7 +770,7 @@ Thus, a predicate {\cf symbolic-identifier=?} might be defined as follows.
 \end{entry}
 
 \domain{\var{Template-id} shall be a
-template identifier and \var{datum} shall be a datum value.}
+template identifier and \var{datum} should be a datum value.}
 This returns a syntax object representation of \var{datum} that
 contains the same contextual information as
 \var{template-id}, with the effect that the
@@ -799,8 +782,8 @@ The {\cf datum\coerce{}syntax} procedure allows a transformer to ``bend'' lexica
 scoping rules by creating \textit{implicit
   identifiers\mainindex{implicit identifier}}
 that behave as if they were present in the input form,
-thus permitting the definition of syntactic
-abstractions that introduce visible bindings for or references to
+thus permitting the definition of macros
+that introduce visible bindings for or references to
 identifiers that do not appear explicitly in the input form.
 For example, the following defines a {\cf loop} expression that
 uses this controlled form of identifier capture to
@@ -950,7 +933,8 @@ Any transformer that uses {\cf generate-temporaries} in this fashion can
 be rewritten to avoid using it, albeit with a loss of clarity.
 The trick is to use a recursively defined intermediate form that
 generates one temporary per expansion step and completes the
-expansion after enough temporaries have been generated.
+expansion after enough temporaries have been generated. See the
+definition for {\cf letrec} in appendix~\ref{derivedformsappendix}.
 \end{entry}
 
 \section{Derived forms and procedures}
@@ -959,91 +943,6 @@ expansion after enough temporaries have been generated.
 The forms and procedures described in this section are \emph{derived},
 i.e., they can defined in terms of the forms and procedures described
 in earlier sections of this document.
-
-The {\cf syntax-rules} form (section~\ref{syntax-rules}) could be
-implemented as a derived form, with the following extensions:
-
-\begin{itemize}
- \item Patterns are generalized slightly to allow a fixed number of   
-   subpatterns to appear after an ellipsis, e.g.,
-   {\cf (\hyperi{p} ... \hyperii{p} \hyperiii{p})}.
-
- \item Underscores (~{\cf \_}~) may appear within the pattern
-   and match any input, but are not pattern variables and so
-   are not bound in the output \hyper{template}.
-
- \item The first position of a syntax-rules pattern may be any
-   identifier, including an underscore, i.e., it need not be the name
-   of the macro being defined.
-   This position is always ignored.
-
- \item An optional fender may appear between the pattern and
-   template of any clause and has the same meaning as a
-   {\cf syntax-case} fender.
-\end{itemize}
-
-\begin{entry}{%
-\rproto{syntax-rules}{ (\hyper{literal} \dotsfoo) \hyper{clause} \dotsfoo}{\exprtype}}
-
-\syntax
-Each \hyper{literal} shall be an identifier.
-Each \hyper{clause} shall take one of the following two forms.
-
-\begin{scheme}
-(\hyper{pattern} \hyper{template})
-(\hyper{pattern} \hyper{fender} \hyper{template})
-\end{scheme}
-
-Each \hyper{pattern} and \hyper{fender} are as in {\cf syntax-case},
-and each \hyper{template}
-is as in {\cf syntax}.
-(See section~\ref{syntaxcasesection}.)
-
-\semantics
-Any {\cf syntax-rules} form can be expressed with
-{\cf syntax-case} by making the {\cf lambda} expression and
-{\cf syntax} expressions explicit, and
-{\cf syntax-rules} may be defined in terms of {\cf syntax-case}
-as follows.
-
-\begin{scheme}
-(define-syntax syntax-rules
-  (lambda (x)
-    (syntax-case x ()
-      [(\_ (k ...) [(\_ . p) f ... t] ...)
-       \#'(lambda (x)
-           (syntax-case x (k ...)
-             [(\_ . p) f ... \#'t] ...))])))
-\end{scheme}
-
-A more robust implementation would verify that the literals
-{\cf \hyper{literal} \dots} are all identifiers, that the first position
-of each pattern is an identifier, and that at most one fender
-is present in each clause.
-
-Since the {\cf lambda} and {\cf syntax} expressions are implicit in
-a {\cf syntax-rules} form, definitions expressed with
-{\cf syntax-rules} are shorter than the equivalent definitions
-expressed with {\cf syntax-case}.
-The choice of which to use when either suffices is a matter of taste, but
-some transformers that can be written easily with {\cf syntax-case}
-cannot be written easily or at all with {\cf syntax-rules}.
-
-The definition of {\cf or} below is like the ones given in
-section~\ref{syntaxcasesection}, except
-that {\cf syntax-rules} is used in place of {\cf syntax-case}
-and {\cf syntax}.
-
-\begin{scheme}
-(define-syntax or
-  (syntax-rules ()
-    [(\_) \schfalse{}]
-    [(\_ e) e]
-    [(\_ e1 e2 e3 ...)
-     (let ([t e1])
-       (if t t (or e2 e3 ...)))]))
-\end{scheme}
-\end{entry}
 
 The definitions of {\cf p.car} in section~\ref{syntaxcasesection}
 demonstrated how identifier macros might be written using
@@ -1169,6 +1068,51 @@ one-armed {\cf if} expressions where appropriate.
 \end{schemenoindent}
 \end{entry}
 
+\begin{note}
+The {\cf syntax-rules} form (section~\ref{syntax-rules}) could be
+implemented as a derived form, with the following extensions:
+
+\begin{itemize}
+ \item Patterns are generalized slightly to allow a fixed number of   
+   subpatterns to appear after an ellipsis, e.g.,
+   {\cf (\hyperi{p} ... \hyperii{p} \hyperiii{p})}.
+
+ \item Underscores (~{\cf \_}~) may appear within the pattern
+   and match any input, but are not pattern variables and so
+   are not bound in the output \hyper{template}.
+
+ \item The first position of a syntax-rules pattern may be any
+   identifier, including an underscore, i.e., it need not be the name
+   of the macro being defined.
+   This position is always ignored.
+
+ \item An optional fender may appear between the pattern and
+   template of any clause and has the same meaning as a
+   {\cf syntax-case} fender.
+\end{itemize}
+
+Any {\cf syntax-rules} form can be expressed with
+{\cf syntax-case} by making the {\cf lambda} expression and
+{\cf syntax} expressions explicit, and
+{\cf syntax-rules} may be defined in terms of {\cf syntax-case}
+as follows.
+
+\begin{scheme}
+(define-syntax syntax-rules
+  (lambda (x)
+    (syntax-case x ()
+      [(\_ (k ...) [(\_ . p) f ... t] ...)
+       \#'(lambda (x)
+           (syntax-case x (k ...)
+             [(\_ . p) f ... \#'t] ...))])))
+\end{scheme}
+
+A more robust implementation would verify that the literals
+{\cf \hyper{literal} \dots} are all identifiers, that the first position
+of each pattern is an identifier, and that at most one fender
+is present in each clause.
+\end{note}
+
 \section{Syntax violations}
 
 \begin{entry}{%
@@ -1220,6 +1164,13 @@ chapter~\ref{exceptionsconditionschapter}) has the following condition types:
 
 \begin{entry}{%
 \proto{quasisyntax}{ \hyper{template}}{\exprtype}}
+
+\begin{note}
+{\cf \#`\hyper{template}} is equivalent to {\cf (quasisyntax
+  \hyper{template})}, {\cf \#,\hyper{template}} is equivalent to {\cf (unsyntax
+  \hyper{template})}, and {\cf \#,@\hyper{template}} is equivalent to {\cf (unsyntax-splicing
+  \hyper{template})}.
+\end{note}
 
 The {\cf quasisyntax} form is similar to {\cf syntax}, but it allows parts
 of the quoted text to be evaluated, in a manner similar to the operation

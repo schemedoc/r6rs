@@ -3888,28 +3888,29 @@ A subpattern followed by an ellipsis can match zero or more elements of
 the input.
 
 More formally, an input form $F$ matches a pattern $P$ if and only if
+one of the following holds:
 
 \begin{itemize}
-\item $P$ is an underscore (~{\cf \_}~),
+\item $P$ is an underscore (~{\cf \_}~).
 
-\item $P$ is a pattern variable,
+\item $P$ is a pattern variable.
 
 \item $P$ is a literal identifier
 and $F$ is an equivalent identifier in the
 sense of {\cf free-identifier=?}
-(section~\ref{identifierpredicatessection}),
+(section~\ref{identifierpredicatessection}).
 
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_n$)}
 and $F$ is a list of $n$ elements that match $P_1$ through
-$P_n$,
+$P_n$.
 
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_n$ . $P_x$)}
 and $F$ is a list or improper list of $n$ or more elements
 whose first $n$ elements match $P_1$ through $P_n$
 and
-whose $n$th cdr matches $P_x$,
+whose $n$th cdr matches $P_x$.
 
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
@@ -3918,7 +3919,7 @@ and $F$ is a proper list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
 whose next $m-k$ elements each match $P_e$,
 and
-whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$,
+whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
 
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$ . $P_x$)},
@@ -3928,12 +3929,12 @@ elements whose first $k$ elements match $P_1$ through $P_k$,
 whose next $m-k$ elements each match $P_e$,
 whose next $n-m$ elements match $P_{m+1}$ through $P_n$,
 and 
-whose $n$th and final cdr matches $P_x$,
+whose $n$th and final cdr matches $P_x$.
 
 \item $P$ is of the form
 {\cf \#($P_1$ \dots{} $P_n$)}
 and $F$ is a vector of $n$ elements that match $P_1$ through
-$P_n$,
+$P_n$.
 
 \item $P$ is of the form
 {\cf \#($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
@@ -3942,8 +3943,7 @@ and $F$ is a vector of $n$ or more elements
 whose first $k$ elements match $P_1$ through $P_k$,
 whose next $m-k$ elements each match $P_e$,
 and
-whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$,
-or
+whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
 
 \item $P$ is a pattern datum (any nonlist, nonvector, nonsymbol
 object) and $F$ is equal to $P$ in the sense of the

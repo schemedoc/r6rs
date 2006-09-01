@@ -530,7 +530,7 @@ Scheme programs can define and use new derived expression or
 definition types, called {\em macros}.\mainindex{macro}
 Program-defined expression or definition types have the syntax
 \begin{scheme}
-(\hyper{keyword} {\hyper{datum}} ...)%
+(\hyper{keyword} \hyper{datum} \dotsfoo)%
 \end{scheme}%
 where \hyper{keyword} is an identifier that uniquely determines the
 expression type.  This identifier is called the {\em syntactic
@@ -545,6 +545,19 @@ The set of rules that specifies
 how a use of a macro is transcribed into a more primitive expression
 is called the {\em transformer}\index{macro transformer}
 of the macro.
+
+Macro uses can also take the form of improper lists
+\begin{scheme}
+(\hyper{keyword} \hyper{datum} \dotsfoo . \hyper{datum})%
+\end{scheme}
+It is also possible that the keyword reference appears an
+\hyper{identifier}s (section~\ref{transformerssection}), or as the
+second subform of a {\cf set!} form (see
+section~\ref{make-variable-transformer}:
+
+\begin{scheme}
+(set! \hyper{keyword} \hyper{datum} \dotsfoo . \hyper{datum})%
+\end{scheme}
 
 The macro definition facility consists of two parts:
 
