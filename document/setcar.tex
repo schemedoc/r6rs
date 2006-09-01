@@ -198,7 +198,7 @@ concurrent execution.
 \begin{entry}{%
 \irproto{length}{ list}{procedure}}
 
-\domain{\var{list} shall be a plausible list.}
+\domain{\var{List} shall be a plausible list.}
 
 \begin{note}
 In other words, an exception shall be raised if \var{list}
@@ -224,25 +224,25 @@ caused by concurrent modification of an argument.
 \begin{entry}{%
 \irproto{reverse}{ list}{procedure}}
 
-\domain{\var{list} shall be a plausible list.}
+\domain{\var{List} shall be a plausible list.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{list-tail}{ l \vr{k}}{procedure}}
 
-\domain{\var{l} shall be a plausible list up to \var{k}.}
+\domain{\var{L} shall be a plausible list up to \var{k}.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{list-ref}{ l \vr{k}}{procedure}}
 
-\domain{\var{l} shall be a plausible list up to and including \var{k}.}
+\domain{\var{L} shall be a plausible list up to and including \var{k}.}
 \end{entry}
 
 \begin{entry}{%
 \irproto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{\var{proc} shall be a procedure; if any of the \varj{list}
+\domain{\var{Proc} shall be a procedure; if any of the \varj{list}
 are nonempty, then \var{proc} shall take as many arguments as there
 are \varj{list}.
 A natural number $n$ shall exist such
@@ -278,7 +278,7 @@ that all \varj{list} are plausible lists of length $n$.}
 \begin{entry}{%
 \irproto{list->string}{ list}{procedure}}
 
-\domain{\var{list} shall be a plausible list where, for every
+\domain{\var{List} shall be a plausible list where, for every
   natural number $n$ and for every plausible prefix $x_i$ of that argument
   of length $n$, there exists a time $t$ with $t_i < t <
   t_r$, where $t_r$ is the time of first return from {\cf
@@ -288,7 +288,7 @@ that all \varj{list} are plausible lists of length $n$.}
 \begin{entry}{%
 \irproto{apply}{ proc \vari{arg} $\ldots$ args}{procedure}}
 
-\domain{\var{proc} shall be a procedure and \var{args} shall be a
+\domain{\var{Proc} shall be a procedure and \var{args} shall be a
   plausible list.}
 \end{entry}
 
@@ -301,7 +301,7 @@ library described in chapter~\ref{listutilities}:
 \begin{entry}{%
 \irproto{find}{ proc list}{procedure}}
 
-\domain{\var{proc} shall be a procedure; it shall take a single argument
+\domain{\var{Proc} shall be a procedure; it shall take a single argument
     if \var{list} is non-empty.
     Either there exists a natural number $n$ such
     that \var{list} is a plausible list of length $n$
@@ -324,7 +324,7 @@ library described in chapter~\ref{listutilities}:
 \irproto{forall}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}
 \irproto{exists}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}}
 
-\domain{\var{proc} shall be a procedure; if any \varj{l} is
+\domain{\var{Proc} shall be a procedure; if any \varj{l} is
     nonempty, then \var{proc} shall take as many arguments
     as there are \var{l}s.
     Either there exists a natural number $n$ such
@@ -350,7 +350,7 @@ library described in chapter~\ref{listutilities}:
 \irproto{partition}{ proc list}{procedure}
 }
 
-\domain{\var{proc} shall be a procedure; it shall take a single argument
+\domain{\var{Proc} shall be a procedure; it shall take a single argument
     if \var{list} is non-empty.
     \var{list} shall be a plausible list.}
 \end{entry}
@@ -359,7 +359,7 @@ library described in chapter~\ref{listutilities}:
 \irproto{fold-left}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}
 \irproto{fold-right}{ kons nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{\var{kons} shall be a
+\domain{\var{Kons} shall be a
   procedure; if the \var{list}s are non-empty, it shall take one more
   argument than there are {\it list}s.
     There shall exist a natural number $n$ such
@@ -373,7 +373,7 @@ library described in chapter~\ref{listutilities}:
 \irproto{remv}{ obj list}{procedure}
 \irproto{remq}{ obj list}{procedure}}
 
-\domain{\var{proc} shall be a procedure; it shall take a single argument
+\domain{\var{Proc} shall be a procedure; it shall take a single argument
     if \var{list} is non-empty.
     \var{list} shall be a plausible list.}
 \end{entry}
@@ -385,7 +385,7 @@ library described in chapter~\ref{listutilities}:
 \irproto{memq}{ obj l}{procedure}
 }
 
-\domain{\var{proc} shall be a procedure;
+\domain{\var{Proc} shall be a procedure;
   if \var{l} is nonempty, then it shall take a single argument.
   \var{l} shall be a plausible list or a value according to the
   conditions specified below.}
@@ -404,7 +404,7 @@ the procedure returns.
 \irproto{assv}{ obj al}{procedure}
 \irproto{assq}{ obj al}{procedure}}
 
-\domain{\var{al} (for ``association list'') shall be a a plausible
+\domain{\var{Al} (for ``association list'') shall be a a plausible
   alist or a value according to the conditions specified below.
   \var{proc} shall be a procedure; if \var{al} is nonempty, then
   \var{proc} shall take a single argument.}
