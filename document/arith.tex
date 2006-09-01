@@ -166,8 +166,8 @@ $\ast$& $y = -0.0$ & $x = 0$    & $-\frac{\pi}{2}$
 \end{tabular}
 \end{center}
 
-The above specification follows~\cite{CLtL}, which in turn
-cites~\cite{Penfield81}; refer to these sources for more detailed
+The above specification follows Steele~\cite{CLtL}, which in turn
+cites Penfield~\cite{Penfield81}; refer to these sources for more detailed
 discussion of branch cuts, boundary conditions, and implementation of
 these functions.
 
@@ -226,7 +226,7 @@ This section describes the \deflibrary{r6rs arithmetic fixnum} library.
 \begin{entry}{%
 \proto{fixnum?}{ obj}{procedure}}
 
-This returns \schtrue{} if \var{obj} is an exact
+Returns \schtrue{} if \var{obj} is an exact
 integer within the fixnum range, and
 otherwise returns \schfalse{}.
 \end{entry}
@@ -312,7 +312,7 @@ $2^w$ to the result(s) specified in section~\ref{integerdivision}.
 (fixnum-div+mod \vari{ex} \varii{ex})     \lev \(\vari{ex}~\mathrm{div}~\varii{ex}, \vari{ex}~\mathrm{mod}~\varii{ex}\)\\\>\>; two return values
 (fixnum-div0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{div}\sb{0}~\varii{ex}\)
 (fixnum-mod0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)
-(fixnum-div0+mod0 \vari{ex} \varii{ex})   \lev \(\vari{ex} \vari{ex}~\mathrm{div}\sb{0}~\varii{ex}, \vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)\\\>\>; two return values
+(fixnum-div0+mod0 \vari{ex} \varii{ex})   \lev \(\vari{ex} \vari{ex}~\mathrm{div}\sb{0}~\varii{ex}, \vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)\\\>\>; two return values%
 \end{scheme}
 \end{entry}
 
@@ -325,7 +325,7 @@ Returns the two fixnum results of the following computation:
 (let* ((s (+ \vari{fx} \varii{fx} \variii{fx}))
        (s0 (mod0 s (expt 2 (fixnum-width))))
        (s1 (div0 s (expt 2 (fixnum-width)))))
-  (values s0 s1))
+  (values s0 s1))%
 \end{scheme}
 
 \begin{note}
@@ -347,7 +347,7 @@ Returns the two fixnum results of the following computation:
 (let* ((d (- \vari{fx} \varii{fx} \variii{fx}))
        (d0 (mod0 d (expt 2 (fixnum-width))))
        (d1 (div0 d (expt 2 (fixnum-width)))))
-  (values d0 d1))
+  (values d0 d1))%
 \end{scheme}
 \end{entry}
 
@@ -359,7 +359,7 @@ Returns the two fixnum results of the following computation:
 (let* ((s (+ (* \vari{fx} \varii{fx}) \variii{fx}))
        (s0 (mod0 s (expt 2 (fixnum-width))))
        (s1 (div0 s (expt 2 (fixnum-width)))))
-  (values s0 s1))
+  (values s0 s1))%
 \end{scheme}
 \end{entry}
 
@@ -367,7 +367,7 @@ Returns the two fixnum results of the following computation:
 \proto{fixnum-not}{ \var{fx}}{procedure}}
 
 Returns the unique fixnum that is congruent
-mod $2^w$ to the one's-complement of its argument.
+mod $2^w$ to the one's-complement of \var{fx}.
 \end{entry}
 
 \begin{entry}{%
@@ -390,14 +390,14 @@ Returns the fixnum result of the following
 computation:
 \begin{scheme}
 (fixnum-ior (fixnum-and \vari{fx} \varii{fx})
-            (fixnum-and (fixnum-not \vari{fx}) \variii{fx}))
+            (fixnum-and (fixnum-not \vari{fx}) \variii{fx}))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{fixnum-bit-count}{ \var{fx}}{procedure}}
 
-If the argument \var{fx} is non-negative, this procedure return the
+If \var{fx} is non-negative, this procedure returns the
 number of 1 bits in the two's complement representation of \var{fx}.
 Otherwise it returns the number of 0 bits in the two's complement
 representation of \var{fx}.
@@ -415,7 +415,7 @@ computation:
                \var{fx})
            (fixnum-logical-shift-right bits 1)))
     ((fixnum-zero? bits)
-     result))
+     result))%
 \end{scheme}
 \end{entry}
 
@@ -423,25 +423,26 @@ computation:
 \proto{fixnum-first-bit-set}{ \var{fx}}{procedure}}
 
 Returns the index of the least significant $1$ bit in
-the two's complement representation of their argument.  If the
-argument is $0$, then $-1$ is returned.
+the two's complement representation of \var{fx}.  If 
+\var{fx} is $0$, then $-1$ is returned.
 %
 \begin{scheme}
 (fixnum-first-bit-set 0)        \ev  -1
 (fixnum-first-bit-set 1)        \ev  0
-(fixnum-first-bit-set -4)       \ev  2
+(fixnum-first-bit-set -4)       \ev  2%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{fixnum-bit-set?}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be non-negative.}  The {\cf fixnum-bit-set?} procedure returns the
+\domain{\varii{Fx} shall be non-negative.}  The {\cf fixnum-bit-set?} procedure returns the
 fixnum result of the following computation:
 \begin{scheme}
-(not (fixnum-zero?
-      (fixnum-and \vari{fx}
-                  (fixnum-logical-shift-left 1 \varii{fx}))))
+(not
+  (fixnum-zero?
+    (fixnum-and \vari{fx}
+                (fixnum-logical-shift-left 1 \varii{fx}))))%
 \end{scheme}
 %
 \end{entry}
@@ -449,27 +450,27 @@ fixnum result of the following computation:
 \begin{entry}{%
 \proto{fixnum-copy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be non-negative.}  The {\cf fixnum-copy-bit} procedure
+\domain{\varii{Fx} shall be non-negative.}  The {\cf fixnum-copy-bit} procedure
 returns the fixnum result of the following computation:
 \begin{scheme}
 (let* ((mask (fixnum-logical-shift-left 1 \varii{fx})))
   (fixnum-if mask
              (fixnum-logical-shift-left \variii{fx} \varii{fx})
-             \vari{fx}))
+             \vari{fx}))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{fixnum-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} and \variii{fx} shall be non-negative.}  The {\cf fixnum-bit-field} procedure
+\domain{\varii{Fx} and \variii{fx} shall be non-negative.}  The {\cf fixnum-bit-field} procedure
 returns the fixnum result of the following computation:
 %
 \begin{scheme}
 (let* ((mask (fixnum-not
               (fixnum-logical-shift-left -1 \variii{fx}))))
   (fixnum-logical-shift-right (fixnum-and \vari{fx} mask)
-                              \varii{fx}))
+                              \varii{fx}))%
 \end{scheme}
 %
 \end{entry}
@@ -477,7 +478,7 @@ returns the fixnum result of the following computation:
 \begin{entry}{%
 \proto{fixnum-copy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-\domain{The second and third arguments shall be non-negative.} The
+\domain{\varii{Fx} and \variii{fx} shall be non-negative.} The
 {\cf fixnum-copy-bit-field} procedure
 returns the fixnum result of the following computation:
 \begin{scheme}
@@ -491,7 +492,7 @@ returns the fixnum result of the following computation:
        (mask (fixnum-and mask1 mask2)))
   (fixnum-if mask
              (fixnum-logical-shift-left from start)
-             to))
+             to))%
 \end{scheme}
 \end{entry}
 
@@ -502,7 +503,7 @@ Returns the unique fixnum that is congruent mod $2^w$ to the result of
 the following computation:
 %
 \begin{scheme}
-(exact-floor (* \vari{fx} (expt 2 \varii{fx})))
+(exact-floor (* \vari{fx} (expt 2 \varii{fx})))%
 \end{scheme}
 \end{entry}
 
@@ -510,7 +511,7 @@ the following computation:
 \proto{fixnum-arithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fixnum-arithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be non-negative.}  {\cf
+\domain{\varii{Fx} shall be non-negative.}  {\cf
   fixnum-arithmetic-shift-left} returns the same result as {\cf
   fixnum-arithmetic-shift}, and {\cf (fixnum-arithmetic-shift-right
 \vari{fx} \varii{fx})} returns the same result as
@@ -526,7 +527,7 @@ Behaves the same as {\cf fixnum-arithmetic-shift-left}.
 \begin{entry}{%
 \proto{fixnum-logical-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be non-negative.}  The {\cf fixnum-logical-shift-right} procedure returns
+\domain{\varii{Fx} shall be non-negative.}  The {\cf fixnum-logical-shift-right} procedure returns
 the result of the following computation:
 \begin{scheme}
 (let* ((n       \vari{fx})
@@ -540,7 +541,7 @@ the result of the following computation:
          (mask (fixnum-not
                 (fixnum-logical-shift-left
                   -1 mask-width))))
-    (fixnum-and shifted mask)))
+    (fixnum-and shifted mask)))%
 \end{scheme}
 %
 \begin{note}
@@ -554,7 +555,7 @@ so they have no {\cf fx} equivalents.
 \begin{entry}{%
 \proto{fixnum-rotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-\domain{\varii{fx}, \variii{fx}, and \variv{fx} shall be non-negative.}
+\domain{\varii{Fx}, \variii{fx}, and \variv{fx} shall be non-negative.}
 The {\cf fixnum-rotate-bit-field} procedure returns the result of the following computation:
 \begin{scheme}
 (let* ((n     \vari{fx})
@@ -574,18 +575,18 @@ The {\cf fixnum-rotate-bit-field} procedure returns the result of the following 
                  field0 (fixnum- width count)))
              (field (fixnum-ior field1 field2)))
         (fixnum-copy-bit-field n start end field))
-      n))
+      n))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{fixnum-reverse-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-Returns the fixnum obtained from the first argument by reversing the
-bit field specified by the second and third arguments.
+Returns the fixnum obtained from \vari{fx} by reversing the
+bit field specified by \varii{fx} and \variii{fx}.
 \begin{scheme}
 (fixnum-reverse-bit-field \sharpsign{}b1010010 1 4)    \lev  88 ; \sharpsign{}b1011000
-(fixnum-reverse-bit-field \sharpsign{}b1010010 91 -4)  \lev  82 ; \sharpsign{}b1010010
+(fixnum-reverse-bit-field \sharpsign{}b1010010 91 -4)  \lev  82 ; \sharpsign{}b1010010%
 \end{scheme}
 \end{entry}
 
@@ -674,7 +675,7 @@ An exception with condition type {\cf\&contract} is raised if the
 mathematically correct result of this procedure is not a fixnum.
 
 \begin{scheme}
-(fx- (least-fixnum))  \lev  \exception{\&contract}
+(fx- (least-fixnum))  \lev  \exception{\&contract}%
 \end{scheme}
 \end{entry}
 
@@ -686,7 +687,7 @@ mathematically correct result of this procedure is not a fixnum.
 \proto{fxdiv0}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxmod0}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be nonzero.}
+\domain{\varii{Fx} shall be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
 specified in the section~\ref{integerdivision}.  An exception with
@@ -699,7 +700,7 @@ specified by that section is not a fixnum.
 (fxdiv+mod \vari{ex} \varii{ex})     \lev \(\vari{ex}~\mathrm{div}~\varii{ex}, \vari{ex}~\mathrm{mod}~\varii{ex}\)\\\>\>; two return values
 (fxdiv0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{div}\sb{0}~\varii{ex}\)
 (fxmod0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)
-(fxdiv0+mod0 \vari{ex} \varii{ex})   \lev \(\vari{ex} \vari{ex}~\mathrm{div}\sb{0}~\varii{ex}, \vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)\\\>\>; two return values
+(fxdiv0+mod0 \vari{ex} \varii{ex})   \lev \(\vari{ex} \vari{ex}~\mathrm{div}\sb{0}~\varii{ex}, \vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)\\\>\>; two return values%
 \end{scheme}
 \end{entry}
 
@@ -745,24 +746,24 @@ This performs the same operation as {\cf fixnum-first-bit-set}.
 \begin{entry}{%
 \proto{fxbit-set?}{ \var{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be non-negative and less than {\cf
+\domain{\varii{Fx} shall be non-negative and less than {\cf
   (fixnum-width)}.}  The {\cf fxbit-set?} procedure
-returns the same result returned by {\cf fixnum-bit-set?}.
+returns the same result as {\cf fixnum-bit-set?}.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxcopy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be non-negative and less than {\cf
-  (fixnum-width)}. \variii{fx} shall be 0 or
-1.}  The {\cf fxcopy-bit} procedure returns the same result returned by {\cf
+\domain{\varii{Fx} shall be non-negative and less than {\cf
+  (fixnum-width)}. \variii{Fx} shall be 0 or
+1.}  The {\cf fxcopy-bit} procedure returns the same result as {\cf
   fixnum-copy-bit}.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxbit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} and \variii{fx} shall be non-negative and less than
+\domain{\varii{Fx} and \variii{fx} shall be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} shall be less than or
     equal to \variii{fx}.}  The {\cf fxbit-field} procedure returns the same result
   returned by {\cf fixnum-bit-field}.
@@ -771,7 +772,7 @@ returns the same result returned by {\cf fixnum-bit-set?}.
 \begin{entry}{%
 \proto{fxcopy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-\domain{\varii{fx} and \variii{fx} shall be non-negative and less than
+\domain{\varii{Fx} and \variii{fx} shall be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, or \varii{fx} shall be less than or
     equal to \variii{fx}.}  The {\cf fxcopy-bit-field} procedure returns the same result
   returned by {\cf fixnum-copy-bit-field}.
@@ -784,7 +785,7 @@ returns the same result returned by {\cf fixnum-bit-set?}.
 {\cf (fixnum-width)}.}  If
 %
 \begin{scheme}
-(exact-floor (* \vari{fx} (expt 2 \varii{fx})))
+(exact-floor (* \vari{fx} (expt 2 \varii{fx})))%
 \end{scheme}
 %
 is a fixnum, then that fixnum is returned.  Otherwise an exception
@@ -796,7 +797,7 @@ raised.
 \proto{fxarithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxarithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{fx} shall be non-negative.} {\cf
+\domain{\varii{Fx} shall be non-negative.} {\cf
   fxarithmetic-shift-left} behaves the same as {\cf
   fxarithmetic-shift}, and {\cf (fxarithmetic-shift-right \vari{fx}
   \varii{fx})} behaves the same as {\cf (fxarithmetic-shift \vari{fx}
@@ -806,8 +807,8 @@ raised.
 \begin{entry}{%
 \proto{fxrotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
-\domain{\varii{fx}, \variii{fx}, and \variv{fx} shall be non-negative
-  and less than {\cf (fixnum-width)}.  \variv{fx} shall be less than
+\domain{\varii{Fx}, \variii{fx}, and \variv{fx} shall be non-negative
+  and less than {\cf (fixnum-width)}.  \variv{Fx} shall be less than
   the difference between \variii{fx} and \variii{fx}.}  The {\cf fxrotate-bit-field} procedure
 returns the same result as the {\cf fixnum-rotate-bit-field}
 procedure.
@@ -816,7 +817,7 @@ procedure.
 \begin{entry}{%
 \proto{fxreverse-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-\domain{\varii{fx} and \variii{fx} shall be non-negative and less than
+\domain{\varii{Fx} and \variii{fx} shall be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} shall be less than or
   equal to \variii{fx}.}  The {\cf fxreverse-bit-field} procedure returns the same result as
 the {\cf fixnum-reverse-bit-field} procedure.
@@ -831,12 +832,12 @@ This section uses \var{fl}, \vari{fl} and \varii{fl} as
 parameter names for arguments that shall be flonums, and \var{ifl},
 \vari{ifl} and \varii{ifl} as parameter names for arguments that 
 shall be integer-valued flonums, i.e. flonums for which the
-{\cf integer-valued?} predicate is true.
+{\cf integer-valued?} predicate returns true.
 
 \begin{entry}{%
 \proto{flonum?}{ obj}{procedure}}
 
-This returns \schtrue{} if \var{obj} is a flonum, and
+Returns \schtrue{} if \var{obj} is a flonum, and
 otherwise returns \schfalse{}.
 \end{entry}
 
@@ -860,7 +861,7 @@ predicates are required to be transitive.
 (fl= 0.0 -0.0)                \ev  \schtrue{}
 (fl< 0.0 -0.0)                \ev  \schfalse{}
 (fl= +nan.0 \var{fl})               \ev  \schfalse{}
-(fl< +nan.0 \var{fl})               \ev  \schfalse{}
+(fl< +nan.0 \var{fl})               \ev  \schfalse{}%
 \end{scheme}
 \end{entry}
 
@@ -892,7 +893,7 @@ than zero, {\cf flodd?} tests if it is odd,
 (flfinite? +inf.0)   \ev \schfalse{}
 (flfinite? 5.0)      \ev \schtrue{}
 (flinfinite? 5.0)    \ev \schfalse{}
-(flinfinite? +inf.0) \ev \schtrue{}
+(flinfinite? +inf.0) \ev \schtrue{}%
 \end{scheme}
 
 \begin{note}
@@ -923,7 +924,7 @@ meaning of ``best'' is reasonably well-defined by the IEEE standards.)
 \begin{scheme}
 (fl+ +inf.0 -inf.0)      \ev  +nan.0
 (fl+ +nan.0 \var{fl})          \ev  +nan.0
-(fl* +nan.0 \var{fl})          \ev  +nan.0
+(fl* +nan.0 \var{fl})          \ev  +nan.0%
 \end{scheme}
 \end{entry}
 
@@ -943,7 +944,7 @@ as IEEE binary floating point numbers, the meaning of ``best'' is
 reasonably well-defined by the IEEE standards.)
 
 \begin{scheme}
-(fl- +inf.0 +inf.0)      \ev  +nan.0
+(fl- +inf.0 +inf.0)      \ev  +nan.0%
 \end{scheme}
 
 For undefined quotients, {\cf fl/} behaves as specified by the
@@ -952,14 +953,14 @@ IEEE standards:
 \begin{scheme}
 (fl/ 1.0 0.0)  \ev +inf.0
 (fl/ -1.0 0.0) \ev -inf.0
-(fl/ 0.0 0.0)  \ev +nan.0
+(fl/ 0.0 0.0)  \ev +nan.0%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{flabs}{ fl}{procedure}}
 
-This returns the absolute value of its argument.
+Returns the absolute value of \var{fl}.
 \end{entry}
 
 \begin{entry}{%
@@ -981,7 +982,7 @@ procedures may return a NaN or some meaningless flonum.
 (fldiv+mod \vari{fl} \varii{fl})     \lev \(\vari{fl}~\mathrm{div}~\varii{fl}, \vari{fl}~\mathrm{mod}~\varii{fl}\)\\\>\>; two return values
 (fldiv0 \vari{fl} \varii{fl})        \ev \(\vari{fl}~\mathrm{div}_0~\varii{fl}\)
 (flmod0 \vari{fl} \varii{fl})        \ev \(\vari{fl}~\mathrm{mod}_0~\varii{fl}\)
-(fldiv0+mod0 \vari{fl} \varii{fl})   \lev \(\vari{fl}~\mathrm{div}_0~\varii{fl}, \vari{fl}~\mathrm{mod}_0~\varii{fl}\)\\\>\>; two return values
+(fldiv0+mod0 \vari{fl} \varii{fl})   \lev \(\vari{fl}~\mathrm{div}_0~\varii{fl}, \vari{fl}~\mathrm{mod}_0~\varii{fl}\)\\\>\>; two return values%
 \end{scheme}
 
 \end{entry}
@@ -990,8 +991,8 @@ procedures may return a NaN or some meaningless flonum.
 \proto{flnumerator}{ fl}{procedure}
 \proto{fldenominator}{ fl}{procedure}}
 
-These procedures return the numerator or denominator of their
-argument as a flonum; the result is computed as if the argument was represented as
+These procedures return the numerator or denominator of \var{fl}
+as a flonum; the result is computed as if \var{fl} was represented as
 a fraction in lowest terms.  The denominator is always positive.  The
 denominator of 0.0 is defined to be 1.0.
 %
@@ -1001,13 +1002,13 @@ denominator of 0.0 is defined to be 1.0.
 (fldenominator +inf.0)         \ev  1.0
 (fldenominator -inf.0)         \ev  1.0
 (flnumerator 0.75)             \ev  3.0 ; example
-(fldenominator 0.75)           \ev  4.0 ; example
+(fldenominator 0.75)           \ev  4.0 ; example%
 \end{scheme}
 
 The following behavior is strongly recommended but not required:
 
 \begin{scheme}
-(flnumerator -0.0)             \ev -0.0
+(flnumerator -0.0)             \ev -0.0%
 \end{scheme}
 \end{entry}
 
@@ -1022,7 +1023,7 @@ not infinities or NaNs.  For such arguments, {\cf flfloor} returns the
 largest integral flonum not larger than \var{fl}.  The {\cf flceiling}
 procedure
 returns the smallest integral flonum not smaller than \var{fl}.
-{\cf fltruncate} returns the integral flonum closest to \var{fl} whose
+The {\cf fltruncate} procedure returns the integral flonum closest to \var{fl} whose
 absolute value is not larger than the absolute value of \var{fl}.
 The {\cf flround} procedure returns the closest integral flonum to \var{fl},
 rounding to even when \var{fl} is halfway between two integers.
@@ -1039,7 +1040,7 @@ given a NaN:
 \begin{scheme}
 (flfloor +inf.0)                       \ev  +inf.0
 (flceiling -inf.0)                     \ev  -inf.0
-(fltruncate +nan.0)                    \ev  +nan.0
+(fltruncate +nan.0)                    \ev  +nan.0%
 \end{scheme}
 \end{entry}
 
@@ -1056,7 +1057,7 @@ given a NaN:
 
 These procedures compute the usual transcendental functions.  
 The {\cf flexp} procedure computes the base-$e$ exponential of \var{fl}.
-{\cf fllog} with a single argument computes the natural logarithm of
+The {\cf fllog} procedure with a single argument computes the natural logarithm of
 \var{fl} (not the base ten logarithm); {\cf (fllog \vari{fl}
   \varii{fl})} computes the base-\varii{fl} logarithm of \vari{fl}.
 The {\cf flasin}, {\cf flacos}, and {\cf flatan} procedures compute arcsine,
@@ -1079,7 +1080,7 @@ encouraged to follow the relevant standards for these procedures.
 (fllog -0.0)                  \ev \unspecified\\\>; if -0.0 is distinguished
 (fllog -inf.0)                \ev +nan.0
 (flatan -inf.0)               \lev -1.5707963267948965\\\>; approximately
-(flatan +inf.0)               \lev 1.5707963267948965\\\>; approximately
+(flatan +inf.0)               \lev 1.5707963267948965\\\>; approximately%
 \end{scheme}
 \end{entry}
 
@@ -1090,7 +1091,7 @@ Returns the principal square root of \var{fl}. For a negative argument,
 the result may be a NaN, or may be some meaningless flonum.
 
 \begin{scheme}
-(flsqrt +inf.0)               \ev  +inf.0
+(flsqrt +inf.0)               \ev  +inf.0%
 \end{scheme}
 \end{entry}
 
@@ -1122,7 +1123,7 @@ These condition types could be defined by the following code:
 
 (define-condition-type \&no-nans
     \&implementation-restriction
-  no-nans?)
+  no-nans?)%
 \end{scheme}
 
 These types describe that a program has executed an arithmetic
@@ -1134,11 +1135,11 @@ the infinity or NaN.  (See section~\ref{infinitiesnanssection}.)
 \begin{entry}{%
 \proto{fixnum->flonum}{ fx}{procedure}}
 
-Returns a flonum that is numerically closest to its argument.
+Returns a flonum that is numerically closest to \var{fx}.
 
 \begin{note}
 The result of this procedure may not be
-numerically equal to its argument, because the fixnum precision
+numerically equal to \var{fx}, because the fixnum precision
 may be greater than the flonum precision.
 \end{note}
 \end{entry}
@@ -1236,7 +1237,7 @@ type {\cf\&contract} if a divisor is $0$.
 \begin{entry}{%
 \proto{exact-abs}{ ef}{procedure}}
 
-Returns the absolute value of its argument.
+Returns the absolute value of \var{ef}.
 \end{entry}
 
 \begin{entry}{%
@@ -1247,7 +1248,7 @@ Returns the absolute value of its argument.
 \proto{exact-div0}{ \vari{ef} \varii{ef}}{procedure}
 \proto{exact-mod0}{ \vari{ef} \varii{ef}}{procedure}}
 
-\domain{\varii{ef} shall be nonzero.}
+\domain{\varii{Ef} shall be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
 specified in section~\ref{integerdivision}.
@@ -1258,7 +1259,7 @@ specified in section~\ref{integerdivision}.
 (exact-div+mod \vari{ef} \varii{ef})     \lev \(\vari{ef}~\mathrm{div}~\varii{ef}, \vari{ef}~\mathrm{mod}~\varii{ef}\)\\\>\>; two return values
 (exact-div0 \vari{ef} \varii{ef})        \ev \(\vari{ef}~\mathrm{div}_0~\varii{ef}\)
 (exact-mod0 \vari{ef} \varii{ef})        \ev \(\vari{ef}~\mathrm{mod}_0~\varii{ef}\)
-(exact-div0+mod0 \vari{ef} \varii{ef})   \lev \(\vari{ef}~\mathrm{div}_0~\varii{ef}, \vari{ef}~\mathrm{mod}_0~\varii{ef}\)\\\>\>; two return values
+(exact-div0+mod0 \vari{ef} \varii{ef})   \lev \(\vari{ef}~\mathrm{div}_0~\varii{ef}, \vari{ef}~\mathrm{mod}_0~\varii{ef}\)\\\>\>; two return values%
 \end{scheme}
 \end{entry}
 
@@ -1311,24 +1312,24 @@ this procedure raises an exception with condition type {\cf\&contract}.
 \proto{exact-imag-part}{ ex}{procedure}}
 
 The arguments of {\cf exact-make-rectangular} shall be exact
-rationals.  Suppose $z$ is a complex number such that
+rationals.  Suppose \var{ex} is a complex number such that
 %
 \begin{displaymath}
-z = \vari{ef} + \varii{ef}i\mathrm{.}
+\var{ex} = \vari{ef} + \varii{ef}i\mathrm{.}
 \end{displaymath}
 %
 Then:
 \begin{scheme}
-(exact-make-rectangular \vari{ef} \varii{ef}) \lev \var{z}
-(exact-real-part \var{z})              \ev \vari{ef}
-(exact-imag-part \var{z})              \ev \varii{ef}
+(exact-make-rectangular \vari{ef} \varii{ef}) \lev \var{ex}
+(exact-real-part \var{ex})              \ev \vari{ef}
+(exact-imag-part \var{ex})              \ev \varii{ef}%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{exact-sqrt}{ ei}{procedure}}
 
-\domain{\var{ei} shall be a non-negative exact integer.}
+\domain{\var{Ei} shall be non-negative.}
 The {\cf exact-sqrt} procedure returns two non-negative exact
 integers $s$ and $r$ where $\var{ei} = s^2 +
 r$ and $\var{ei} < (s+1)^2$.
@@ -1338,8 +1339,7 @@ r$ and $\var{ei} < (s+1)^2$.
 \proto{exact-not}{ ei}{procedure}}
 
 Returns the exact integer whose two's complement representation is the
-one's complement of the two's complement representation of its
-argument.
+one's complement of the two's complement representation of \var{ei}.
 \end{entry}
 
 \begin{entry}{%
@@ -1361,17 +1361,17 @@ the operation.
 Returns the exact integer that is the result of the following computation:
 \begin{scheme}
 (exact-ior (exact-and \vari{ei} \varii{ei})
-           (exact-and (exact-not \vari{ei}) \variii{ei}))
+           (exact-and (exact-not \vari{ei}) \variii{ei}))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{exact-bit-count}{ ei}{procedure}}
  
-If the argument is non-negative, this procedure returns the number of
-1 bits in the two's complement representation of its argument.
+If \var{ei} is non-negative, this procedure returns the number of
+1 bits in the two's complement representation of \var{ei}.
 Otherwise it returns the number of 0 bits in the two's complement
-representation of its argument.
+representation of \var{ei}.
 \end{entry}
 
 \begin{entry}{%
@@ -1386,7 +1386,7 @@ computation:
                \var{ei})
            (exact-arithmetic-shift bits -1)))
     ((exact-zero? bits)
-     result))
+     result))%
 \end{scheme}
 \end{entry}
 
@@ -1394,47 +1394,47 @@ computation:
 \proto{exact-first-bit-set}{ ei}{procedure}}
 
 Returns the index of the least significant $1$
-bit in the two's complement representation of its argument.
-If the argument is $0$, then $-1$ is returned.
+bit in the two's complement representation of \var{ei}.
+If \var{ei} is $0$, then $-1$ is returned.
 \begin{scheme}
 (exact-first-bit-set 0)        \ev  -1
 (exact-first-bit-set 1)        \ev  0
-(exact-first-bit-set -4)       \ev  2
+(exact-first-bit-set -4)       \ev  2%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{exact-bit-set?}{ \vari{ei} \varii{ei}}{procedure}}
 
-\domain{\varii{ei} shall be a non-negative exact integer.}
+\domain{\varii{Ei} shall be non-negative.}
 
 Otherwise returns the result of the following computation:
 \begin{scheme}
 (not (exact-zero?
       (exact-and
        (exact-arithmetic-shift-left 1 \varii{ei})
-       \vari{ei})))
+       \vari{ei})))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{exact-copy-bit}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-\domain{\varii{ei} shall be non-negative, and \variii{ei}
+\domain{\varii{Ei} shall be non-negative, and \variii{ei}
 shall be either $0$ or $1$.}
 The {\cf exact-copy-bit} procedure returns the result of the following computation:
 \begin{scheme}
 (let* ((mask (exact-arithmetic-shift-left 1 \varii{ei})))
   (exact-if mask
             (exact-arithmetic-shift-left \variii{ei} \varii{ei})
-            \vari{ei}))
+            \vari{ei}))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{exact-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-\domain{\varii{ei} and \variii{ei} shall be non-negative, and
+\domain{\varii{Ei} and \variii{ei} shall be non-negative, and
   \varii{ei} shall be less than or equal to \variii{ei}.}  This
 procedure returns the result of the following computation:
 %
@@ -1444,14 +1444,14 @@ procedure returns the result of the following computation:
          (exact-arithmetic-shift-left -1 \variii{ei}))))
   (exact-arithmetic-shift-right
    (exact-and \vari{ei} mask)
-   \varii{ei}))
+   \varii{ei}))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{exact-copy-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
 
-\domain{\varii{ei} and \variii{ei} shall be non-negative,
+\domain{\varii{Ei} and \variii{ei} shall be non-negative,
 and \varii{ei} shall be less than or equal to \variii{ei}.}
 The {\cf exact-copy-bit-field} procedure returns the result of the following computation:
 %
@@ -1469,7 +1469,7 @@ The {\cf exact-copy-bit-field} procedure returns the result of the following com
   (exact-if mask
             (exact-arithmetic-shift-left from
                                          start)
-            to))
+            to))%
 \end{scheme}
 \end{entry}
 
@@ -1479,7 +1479,7 @@ The {\cf exact-copy-bit-field} procedure returns the result of the following com
 Returns the exact integer result of the following computation:
 %
 \begin{scheme}
-(exact-floor (* \vari{ei} (expt 2 \varii{ei})))
+(exact-floor (* \vari{ei} (expt 2 \varii{ei})))%
 \end{scheme}
 \end{entry}
 
@@ -1487,7 +1487,7 @@ Returns the exact integer result of the following computation:
 \proto{exact-arithmetic-shift-left}{ \vari{ei} \varii{ei}}{procedure}
 \proto{exact-arithmetic-shift-right}{ \vari{ei} \varii{ei}}{procedure}}
 
-\domain{\varii{ei} shall be non-negative.}  {\cf
+\domain{\varii{Ei} shall be non-negative.}  {\cf
   exact-arithmetic-shift-left} returns the same result as {\cf
   exact-arithmetic-shift}, and {\cf (exact-arithmetic-shift-right
   \vari{ei} \varii{ei})} returns the same result as {\cf
@@ -1497,7 +1497,7 @@ Returns the exact integer result of the following computation:
 \begin{entry}{%
 \proto{exact-rotate-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
 
-\domain{\varii{ei}, \variii{ei}, \variv{ei} shall be non-negative, and \variv{ei}
+\domain{\varii{Ei}, \variii{ei}, \variv{ei} shall be non-negative, and \variv{ei}
 shall be less than the difference between \varii{ei} and \variii{ei}.}
 The procedure returns the result of the following computation:
 %
@@ -1518,20 +1518,20 @@ The procedure returns the result of the following computation:
                        (exact- width count)))
              (field (exact-ior field1 field2)))
         (exact-copy-bit-field n start end field))
-      n))
+      n))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{exact-reverse-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-\domain{\varii{ei} and \variii{ei} shall be non-negative, and
+\domain{\varii{Ei} and \variii{ei} shall be non-negative, and
   \varii{ei} shall be less than or equal to \variii{ei}.}  The {\cf exact-reverse-bit-field} procedure returns
-the result obtained from the first argument by reversing the bit field
-specified by the second and third arguments.
+the result obtained from the \vari{ei} by reversing the bit field
+specified by \varii{ei} and \variii{ei}.
 \begin{scheme}
 (exact-reverse-bit-field \sharpsign{}b1010010 1 4)   \lev  88 ; \sharpsign{}b1011000
-(exact-reverse-bit-field \sharpsign{}1010010 91 -4)  \lev  \exception{\&contract}
+(exact-reverse-bit-field \sharpsign{}1010010 91 -4)  \lev  \exception{\&contract}%
 \end{scheme}
 \end{entry}
 
@@ -1563,7 +1563,7 @@ Consequently, if a type predicate is false of a number, then all lower
 type predicates are also false of that number.
 \end{entry}
 
-We will use \var{in}, \vari{in}, \varii{in}, and
+This section uses \var{in}, \vari{in}, \varii{in}, and
 \variii{in} as parameter names for arguments that shall be inexact numbers,
 \var{ir}, \vari{ir}, \varii{ir}, and \variii{ir} as
 parameter names for arguments that shall be inexact real numbers,
@@ -1648,7 +1648,7 @@ Returns the absolute value of its argument.
 \proto{inexact-div0}{ \vari{ir} \varii{ir}}{procedure}
 \proto{inexact-mod0}{ \vari{ir} \varii{ir}}{procedure}}
 
-\domain{\vari{ir}
+\domain{\vari{Ir}
 shall be neither infinite nor a NaN, and \varii{ir} shall be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
@@ -1660,7 +1660,7 @@ specified in section~\ref{integerdivision}.
 (inexact-div+mod \vari{ir} \varii{ir})     \lev \(\vari{ir}~\mathrm{div}~\varii{ir}, \vari{ir}~\mathrm{mod}~\varii{ir}\)\\\>\>; two return values
 (inexact-div0 \vari{ir} \varii{ir})        \ev \(\vari{ir}~\mathrm{div}_0~\varii{ir}\)
 (inexact-mod0 \vari{ir} \varii{ir})        \ev \(\vari{ir}~\mathrm{mod}_0~\varii{ir}\)
-(inexact-div0+mod0 \vari{ir} \varii{ir})   \lev \(\vari{ir}~\mathrm{div}_0~\varii{ir}, \vari{ir}~\mathrm{mod}_0~\varii{ir}\)\\\>\>; two return values
+(inexact-div0+mod0 \vari{ir} \varii{ir})   \lev \(\vari{ir}~\mathrm{div}_0~\varii{ir}, \vari{ir}~\mathrm{mod}_0~\varii{ir}\)\\\>\>; two return values%
 \end{scheme}
 \end{entry}
 
@@ -1676,8 +1676,8 @@ multiple of their arguments.
 \proto{inexact-numerator}{ if}{procedure}
 \proto{inexact-denominator}{ if}{procedure}}
 
-These procedures return the numerator or denominator of their
-argument.  The result is computed as if the argument was represented
+These procedures return the numerator or denominator of 
+\var{if}.  The result is computed as if \var{if} was represented
 as a fraction in lowest terms.  The denominator is always positive.
 The denominator of $0.0$ is defined to be $1.0$.
 \end{entry}
@@ -1690,8 +1690,8 @@ The denominator of $0.0$ is defined to be $1.0$.
 
 These procedures return inexact integers for real arguments that are
 not infinities or NaNs.  For such arguments, {\cf inexact-floor}
-returns the largest integer not larger than \var{ir}.  {\cf
-  inexact-ceiling} returns the smallest integer not smaller than
+returns the largest integer not larger than \var{ir}.  The {\cf
+  inexact-ceiling} procedure returns the smallest integer not smaller than
 \var{ir}.  The {\cf inexact-truncate} procedure returns the integer closest to
 \var{in} whose absolute value is not larger than the absolute value of
 \var{in}.  The {\cf inexact-round} procedure returns the closest integer to
@@ -1719,9 +1719,9 @@ given a NaN.
 \proto{inexact-atan}{ in}{procedure}
 \rproto{inexact-atan}{ \vari{ir} \varii{ir}}{procedure}}
 
-These procedures compute the usual transcendental functions.  {\cf
-  inexact-exp} computes the base-$e$ exponential of \var{in}.  {\cf
-  inexact-log} with a single argument computes the natural logarithm
+These procedures compute the usual transcendental functions.  The {\cf
+  inexact-exp} procedure computes the base-$e$ exponential of
+\var{in}.  The {\cf inexact-log} procedure with a single argument computes the natural logarithm
 of \var{in} (not the base ten logarithm); {\cf (inexact-log \vari{in}
   \varii{in})} computes the base-\varii{in} logarithm of \vari{in}.
 The {\cf inexact-asin}, {\cf inexact-acos}, and {\cf inexact-atan} procedures compute
@@ -1738,7 +1738,7 @@ yield a real result for the given arguments, the result may be {\cf
 \begin{entry}{%
 \proto{inexact-sqrt}{ in}{procedure}}
 
-Returns the principal square root of \var{z}. For a negative argument,
+Returns the principal square root of \var{in}. For a negative argument,
 the result may be {\cf +nan.0}, or may be some meaningless inexact
 number.  With $\log$ defined as in
 section~\ref{transcendentalfunctions}, the value of {\cf (inexact-sqrt
@@ -1762,7 +1762,7 @@ Returns \vari{in} raised to the power \varii{in}.  For nonzero
 $0.0^{\var{in}}$ is $1$ if $\var{in} = 0.0$, and $0.0$ if {\cf
   (inexact-real-part \var{in})} is positive.  Otherwise,
 for nonzero \vari{in}, this
-procedure reports a violation of an implementation restriction or
+procedure raises an exception with condition type {\cf\&implementation-restriction} or
 returns an unspecified number.
 \end{entry}
 
@@ -1775,21 +1775,21 @@ returns an unspecified number.
 \proto{inexact-angle}{ in}{procedure}}
 
 Suppose \vari{ir}, \varii{ir}, \variii{ir}, and \variv{ir} are inexact
-real numbers, and \var{z} is a complex number, such that
+real numbers, and \var{ir} is a complex number, such that
 %
 \begin{displaymath}
-\var{z} = \vari{ir} + \varii{ir}i = \variii{ir} e^{i\variv{ir}}.
+\var{ir} = \vari{ir} + \varii{ir}i = \variii{ir} e^{i\variv{ir}}.
 \end{displaymath}
 %
 Then (inexactly):
 %
 \begin{scheme}
-(inexact-make-rectangular \vari{ir} \varii{ir}) \lev \var{z}
-(inexact-make-rectangular \variii{ir} \variv{ir}) \lev \var{z}
-(inexact-real-part \var{z})              \ev \vari{ir}
-(inexact-imag-part \var{z})              \ev \varii{ir}
-(inexact-magnitude \var{z})              \ev |\variii{ir}|
-(inexact-angle \var{z})                  \ev \var{ir}\(_{\mathrm{angle}}\)
+(inexact-make-rectangular \vari{ir} \varii{ir}) \lev \var{ir}
+(inexact-make-rectangular \variii{ir} \variv{ir}) \lev \var{ir}
+(inexact-real-part \var{ir})              \ev \vari{ir}
+(inexact-imag-part \var{ir})              \ev \varii{ir}
+(inexact-magnitude \var{ir})              \ev |\variii{ir}|
+(inexact-angle \var{ir})                  \ev \var{ir}\(_{\mathrm{angle}}\)%
 \end{scheme}
 %
 where $-\pi \leq \var{ir}_{\mathrm{angle}} \leq \pi$ with
@@ -1799,15 +1799,15 @@ some integer $n$.
 \begin{scheme}
 (inexact-angle -1.0)         \ev \(\pi\)
 (inexact-angle -1.0+0.0)     \ev \(\pi\)
-(inexact-angle -1.0-0.0)     \ev -\(\pi\)\\\>; if -0.0 is distinguished
+(inexact-angle -1.0-0.0)     \ev -\(\pi\)\\\>; if -0.0 is distinguished%
 \end{scheme}
 
 Moreover, suppose \vari{ir}, \varii{ir} are such that either \vari{ir}
 or \varii{ir} is an infinity, then
 %
 \begin{scheme}
-(inexact-make-rectangular \vari{ir} \varii{ir}) \lev \var{z}
-(inexact-magnitude \var{z})              \ev +inf.0
+(inexact-make-rectangular \vari{ir} \varii{ir}) \lev \var{ir}
+(inexact-magnitude \var{ir})              \ev +inf.0%
 \end{scheme}
 \end{entry}
 
