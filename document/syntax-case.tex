@@ -267,7 +267,7 @@ Each \hyper{clause} shall take one of the following two forms.
 
 \begin{scheme}
 (\hyper{pattern} \hyper{output expression})
-(\hyper{pattern} \hyper{fender} \hyper{output expression})
+(\hyper{pattern} \hyper{fender} \hyper{output expression})%
 \end{scheme}
 
 \hyper{Fender} and \hyper{output expression} shall be
@@ -431,7 +431,7 @@ variable, a pattern datum, or one of the following.
 \begin{scheme}
 (\hyper{subtemplate} \ldots)
 (\hyper{subtemplate} \ldots . \hyper{template})
-\#(\hyper{subtemplate} \ldots)
+\#(\hyper{subtemplate} \ldots)%
 \end{scheme}
 
 A \hyper{subtemplate} is a \hyper{template} followed by zero or more ellipses.
@@ -558,7 +558,7 @@ p.car \ev 4
         [\_  \#'(car p)]))))
 (set! p.car 15)
 p.car           \ev 15
-p               \ev (15 5)
+p               \ev (15 5)%
 \end{scheme}
 
 A derived {\cf identifier-syntax} form that simplifies the definition
@@ -593,7 +593,7 @@ recursive objects, below.
              (* n (fact (- n 1))))))
      '(1 2 3 4 5)) \lev (1 2 6 24 120)
  
-(rec 5 (lambda (x) x)) \ev \exception{\&syntax}
+(rec 5 (lambda (x) x)) \ev \exception{\&syntax}%
 \end{scheme}
 \end{entry}
 
@@ -674,7 +674,7 @@ above.
 With this definition of {\cf let}:
 
 \begin{scheme}
-(let ([a 3] [a 4]) (+ a a)) \lev \exception{\&syntax}
+(let ([a 3] [a 4]) (+ a a)) \lev \exception{\&syntax}%
 \end{scheme}
 
 However,
@@ -685,7 +685,7 @@ However,
             (syntax-case x ()
               [(\_ b)
                \#'(let ([a 3] [b 4]) (+ a b))]))])
-  (dolet a)) \lev 7
+  (dolet a)) \lev 7%
 \end{scheme}
 
 since the identifier {\cf a} introduced by {\cf dolet}
@@ -727,7 +727,7 @@ For example,
 
 \begin{scheme}
 (let ([else \schfalse{}])
-  (case 0 [else (write "oops")])) \lev \exception{\&syntax}
+  (case 0 [else (write "oops")])) \lev \exception{\&syntax}%
 \end{scheme}
 
 since {\cf else} is bound
@@ -755,7 +755,7 @@ Thus, a predicate {\cf symbolic-identifier=?} might be defined as follows.
 (define symbolic-identifier=?
   (lambda (x y)
     (eq? (syntax->datum x)
-         (syntax->datum y))))
+         (syntax->datum y))))%
 \end{scheme}
 
 % not be true with import alias and rename
@@ -807,7 +807,7 @@ pattern variables---see section~\ref{derivedsection}.)
   (loop
     (if (= n 0) (break ls))
     (set! ls (cons 'a ls))
-    (set! n (- n 1)))) \lev (a a a)
+    (set! n (- n 1)))) \lev (a a a)%
 \end{scheme}
 
 Were {\cf loop} to be defined as
@@ -819,7 +819,7 @@ Were {\cf loop} to be defined as
       [(\_ e ...)
        \#'(call-with-current-continuation
            (lambda (break)
-             (let f () e ... (f))))])))
+             (let f () e ... (f))))])))%
 \end{scheme}
 
 the variable {\cf break} would not be visible in {\cf e \dots}.
@@ -844,7 +844,7 @@ Scheme form, as demonstrated by the following definition of
        (let ([fn (syntax->datum \#'filename)])
          (with-syntax ([(exp ...)
                         (read-file fn \#'k)])
-           \#'(begin exp ...)))])))
+           \#'(begin exp ...)))])))%
 \end{scheme}
 
 {\cf (include "filename")} expands into a {\cf begin} expression
@@ -860,7 +860,7 @@ the expression
 (let ()
   (include "flib.ss")
   (include "glib.ss")
-  (f 5))
+  (f 5))%
 \end{scheme}
 
 evaluates to {\cf 50}.
@@ -883,7 +883,7 @@ scoped at top level (or, more accurately, wherever
   (lambda (p)
     (lambda (x)
       (datum\coerce{}syntax \#'lisp-transformer
-        (p (syntax\coerce{}datum x))))))
+        (p (syntax\coerce{}datum x))))))%
 \end{scheme}
 
 Using {\cf lisp-transformer}, defining a basic version of Common Lisp's
@@ -968,11 +968,14 @@ of the binding are replaced by \hyper{template}.
 (define p (cons 4 5))
 (define-syntax p.car (identifier-syntax (car p)))
 p.car \ev 4
-(set! p.car 15) \ev \exception{\&syntax}
+(set! p.car 15) \ev \exception{\&syntax}%
 \end{scheme}
 
 The second, more general, form of {\cf identifier-syntax} permits
 the transformer to determine what happens when {\cf set!} is used.
+In this case, uses of the identifier by itself will be replaced by
+\hyperi{template}, and uses of {\cf set!} with the identifier will be
+replaced by \hyperii{template}.
 
 \begin{scheme}
 (define p (cons 4 5))
@@ -982,7 +985,7 @@ the transformer to determine what happens when {\cf set!} is used.
     [(set! \_ e) (set-car! p e)]))
 (set! p.car 15)
 p.car           \ev 15
-p               \ev (15 5)
+p               \ev (15 5)%
 \end{scheme}
 
 The {\cf identifier-syntax} form may be defined in terms of {\cf syntax-case},
@@ -1031,7 +1034,7 @@ follows.
     (syntax-case x ()
       ((\_ ((p e0) ...) e1 e2 ...)
        (syntax (syntax-case (list e0 ...) ()
-                 ((p ...) (let () e1 e2 ...))))))))
+                 ((p ...) (let () e1 e2 ...))))))))%
 \end{scheme}
 
 The following definition of {\cf cond} demonstrates the use of
@@ -1104,7 +1107,7 @@ as follows.
       [(\_ (k ...) [(\_ . p) f ... t] ...)
        \#'(lambda (x)
            (syntax-case x (k ...)
-             [(\_ . p) f ... \#'t] ...))])))
+             [(\_ . p) f ... \#'t] ...))])))%
 \end{scheme}
 
 A more robust implementation would verify that the literals
