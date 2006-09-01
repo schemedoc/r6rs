@@ -29,19 +29,21 @@ the following syntax:
 \> \| \meta{definition}
 \> \| \meta{expression}
 \end{grammar}
+
 \subsection{Script header}
 
 The syntax given for \meta{script header} is the recommended syntax for 
-portable scripts.  For maximum portability between Scheme implementations
+portable scripts.  For maximum portability among Scheme implementations
 and operating systems, the first line of a script should contain exactly 
 the characters specified in the rule.  However, this line is only for use 
 by operating systems.  Implementations are required to ignore the first 
-line of a script if it starts with ``{\cf \#!}''.  The use of alternative 
-platform-specific script headers is therefore allowed, possibly at the 
-expense of portability.
+line of a script if it starts with ``{\cf \#!\hyper{space character}}''
+or ``{\cf \#!/}''.  This allows script
+headers to be customized locally by altering the script header from its
+default portable form.
 
 Implementations should provide an executable program named {\cf scheme-script}
-which is capable of executing scripts on platforms where this makes
+that is capable of executing scripts on platforms where this makes
 sense.  On most Unix-like systems, due to the 
 use of the {\cf /usr/bin/env} trampoline, this program may itself be a shell 
 script.
@@ -74,12 +76,18 @@ operands.
 \section{Script semantics}
 
 A script is executed by treating the script similarly to a library, and
-invoking it.  The semantics of a script body is explained by
-translating it to a library body: All declarations at the script top
-level are moved to the front, and apply to the entire script body.
-Each expression \hyper{expression} that appears before definitions in
-the script body is converted into a definition {\cf (define \hyper{identifier}
-  \hyper{expression})} by choosing a fresh \hyper{identifier}.
+invoking it.  The semantics of a script body may be roughly explained by
+a simple translation into a library body: All declarations at the script top
+level are moved to the front, and
+each \hyper{expression} that appears before a
+variable definition in
+the script body is converted into a dummy definition 
+{\cf (define \hyper{variable} \hyper{expression})},
+where \hyper{variable} is fresh identifier.
+(It is generally impossible to determine which forms are declarations,
+definitions, and expressions without concurrently expanding the body, so
+the actual translation is somewhat more complicated; see
+\label{expansionchapter}.)
 
 A script may access its command-line arguments by calling the {\cf
   command-line-arguments} procedure (see
