@@ -220,9 +220,9 @@ available in the \textit{body} of the {\cf let} expression, {\cf (+ x
 
 \section{Definitions}
 
-\mainindex{definition}The variables bound by a {\cf let} expression
+\index{definition}The variables bound by a {\cf let} expression
 are \textit{local}, because their bindings are only visible in the
-{\cf let}'s body.  Scheme also allows creating global bindings for
+{\cf let}'s body.  Scheme also allows creating top-level bindings for
 identifiers as follows:
 
 \begin{scheme}
@@ -231,15 +231,18 @@ identifiers as follows:
 (+ x y) \ev 65%
 \end{scheme}
 
+(These are actually ``top-level'' in the body of a library or script;
+see section~\ref{librariesintrosection} below.)
+
 The first two parenthesized structures are \textit{definitions}; they
-create global bindings, binding {\cf x} to 23 and {\cf y} to 42.
+create top-level bindings, binding {\cf x} to 23 and {\cf y} to 42.
 Definitions are not expressions, and cannot appear in all places
 where an expression can occur.  Moreover, a definition has no value.
 
 Bindings follow the lexical structure of the program:  When several
 bindings with the same name exist, a variable refers to the binding
 that is closest to it, starting with its occurrence in the program
-and going from inside to outside, going all the way to a global
+and going from inside to outside, going all the way to a top-level
 binding only if no
 local binding can be found along the way:
 
@@ -257,7 +260,7 @@ local binding can be found along the way:
 \section{Procedures}
 \label{proceduressection}
 
-\mainindex{procedure}Definitions can also be used to define
+\index{procedure}Definitions can also be used to define
 procedures:
 
 \begin{scheme}
@@ -271,7 +274,7 @@ A procedure is, slightly simplified, an abstraction over an
 expression.  In the example, the first definition defines a procedure
 called {\cf f}.  (Note the parentheses around {\cf f x}, which
 indicate that this is a procedure definition.)  The expression {\cf (f
-  23)} is a \mainindex{procedure call}procedure call, meaning,
+  23)} is a \index{procedure call}procedure call, meaning,
 roughly, ``evaluate {\cf (+ x 42)} (the body of the procedure) with
 {\cf x} bound to 23.''
 
@@ -293,7 +296,7 @@ variable bound to {\cf f} and {\cf x} bound to 23, which is equivalent
 to {\cf (f 23)}, which evaluates to 42.
 
 In fact, many predefined operations of Scheme are
-global bindings for procedures.  {\cf +}, for example, which receives
+bindings for procedures.  {\cf +}, for example, which receives
 special syntactic treatment in many other languages, is just a regular
 identifier in Scheme, bound to a procedure that adds numbers.  The
 same holds for {\cf *} and many others:
@@ -324,7 +327,7 @@ Whereas {\cf (+ 23 42)}, {\cf (f 23)}, and {\cf ((lambda (x) (+ x 42))
   23)} are all examples of procedure calls, {\cf lambda} and {\cf
   let} expressions are not.  This is because {\cf let}, even though
 it is an identifier, is not a variable, but is instead a \textit{syntactic
-  keyword}\mainindex{syntactic keyword}.  An expression that has a
+  keyword}\index{syntactic keyword}.  An expression that has a
 syntactic keyword as its operator obeys special rules determined by
 the keyword.  The {\cf define} identifier in a definition is also a
 syntactic keyword.  Hence, definitions are also not procedure calls.
@@ -349,7 +352,7 @@ Scheme variables bound by definitions or {\cf let} or {\cf lambda}
 forms are not actually bound to the values specified in the
 respective bindings, but to locations containing these values.  The
 contents of these locations can subsequently be modified destructively
-via \textit{assignment}\mainindex{assignment}:
+via \textit{assignment}\index{assignment}:
 
 %
 \begin{scheme}
@@ -383,7 +386,7 @@ expressions are equivalent:
 \end{scheme}
 
 Special forms like {\cf let} expressions are called \textit{derived
-  forms}\mainindex{derived form} because their semantics can be
+  forms}\index{derived form} because their semantics can be
 derived from that of other kinds of forms by a syntactic
 transformation.  Procedure definitions are also derived forms.  The
 following two definitions are equivalent:
@@ -398,7 +401,7 @@ following two definitions are equivalent:
 \end{scheme}
 
 In Scheme, it is possible for a program to create its own derived
-forms by binding syntactic keywords to macros\mainindex{macro}:
+forms by binding syntactic keywords to macros\index{macro}:
 
 \begin{scheme}
 (define-syntax def
@@ -429,7 +432,7 @@ built-in to other languages as derived forms.
 \section{Syntactic datums and datum values}
 
 A subset of the Scheme values called \textit{datum
-  values}\mainindex{datum value} have a special
+  values}\index{datum value} have a special
 status in the language.  These include booleans, numbers, characters,
 strings, and lists and vectors with other datums as elements.  Each
 datum value has a representation as text called
@@ -471,9 +474,10 @@ This facilitates writing programs that operate on Scheme source code,
 in particular intpreters and program transformations.
 
 \section{Libraries}
+\label{librariesintrosection}
 
 Scheme code is organized in components called
-\textit{libraries}\mainindex{library}.  Each library contains 
+\textit{libraries}\index{library}.  Each library contains 
 declarations, definitions and expressions.  It can import definitions
 from other libraries, and export definitions to other libraries:
 
@@ -488,7 +492,7 @@ from other libraries, and export definitions to other libraries:
 
 \section{Scripts}
 
-A Scheme program is invoked via a \textit{script}\mainindex{script}.
+A Scheme program is invoked via a \textit{script}\index{script}.
 Like a library, a script contains declarations, definitions and
 expressions, but specifies an entry point for execution.  Thus, a
 script defines, via the transitive closure of the libraries it
