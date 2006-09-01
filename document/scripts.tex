@@ -12,6 +12,8 @@ list of string \defining{command-line arguments} that may be used to
 pass data to the script.  Moreover, a script can return an exact
 integer specifying the script's \defining{exit value}.
 
+\section{Script syntax}
+
 A script is a delimited piece of text, typically a file, that follows
 the following syntax:
 
@@ -28,13 +30,28 @@ the following syntax:
 \> \| \meta{expression}
 \end{grammar}
 
+\subsection{Script header}
+
 The syntax given for \meta{script header} is the recommended syntax for 
 portable scripts.  For maximum portability amongst Scheme implementations
 and operating systems, the first line of a script should contain exactly 
 the characters specified in the rule.  However, this line is only for use 
-by operating systems, and implementations are required to ignore it. 
-Alternative platform-specific script headers are therefore allowed, 
-possibly at the expense of portability.
+by operating systems, and implementations are required to ignore it.  
+The use of alternative platform-specific script headers is therefore 
+allowed, possibly at the expense of portability.
+
+Implementations must provide an executable program named {\cf scheme-script}
+which is capable of executing scripts.  On most Unix-like systems, due to the 
+use of the {\cf /usr/bin/env} trampoline, this program may itself be a shell 
+script.
+
+Most platforms require that scripts be marked as executable files, the 
+details of which vary by platform and are beyond the scope of this report. 
+Platforms which do not support the Unix-like script header syntax may need 
+to use other mechanisms such as a file extension in order to associate a 
+script with the {\cf scheme-script} executable.
+
+\subsection{Script substance}
 
 The remaining rules specify syntax at the form level.
 
@@ -52,6 +69,8 @@ As with \hyper{library body}, a {\cf begin} form appearing in a
 \hyper{script body} acts as a splicing form; see section~\ref{begin}.
 In a \hyper{script body}, a {\cf begin} form may always appear without
 operands.
+
+\section{Script semantics}
 
 A script is executed by treating the script similarly to a library, and
 invoking it.  The semantics of a script body is explained by
