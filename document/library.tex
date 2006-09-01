@@ -84,6 +84,8 @@ binding exported by each library is the same (i.e., the binding is
 defined in one library, and it arrives through the imports only by
 exporting and re-exporting).  Otherwise, no identifier can be imported
 multiple times, defined multiple times, or both defined and imported.
+No identifiers are visible within a library except for those explicitly
+imported into the library or defined within the library.
 
 A \hyper{library name} must be one of the following:
 
@@ -532,36 +534,33 @@ for leaving the order unspecified.}
 \subsection{Macros}
 \label{macrosection}
 
-Scheme programs can define and use new derived expression or
-definition types, called {\em macros}.\mainindex{macro}
-Program-defined expression or definition types have the syntax
+Scheme programs can define and use new derived expressions or
+definitions, called {\em syntactic abstractions} or
+{\em macros}.\mainindex{syntactic abstraction}\mainindex{macro}
+A syntactic abstraction is created by binding a keyword to a
+{\em macro transformer} or, simply, {\em transformer}.
+\index{macro transformer}\index{transformer}.
+The transformer determines
+how a use of the macro is transcribed into a more primitive
+forms.
+
+Derived expressions and definitions typically have the form:
 \begin{scheme}
 (\hyper{keyword} \hyper{datum} \dotsfoo)%
 \end{scheme}%
 where \hyper{keyword} is an identifier that uniquely determines the
-expression type.  This identifier is called the {\em syntactic
+type of expression or definition.  This identifier is called the {\em syntactic
 keyword}\index{syntactic keyword}, or simply {\em
-keyword}\index{keyword}, of the macro\index{macro keyword}.  The
-number of the \hyper{datum}s, and their syntax, depends on the
-expression type.
-
-Each instance of a macro is called a {\em use}\index{macro use}
-of the macro.
-The set of rules that specifies
-how a use of a macro is transcribed into a more primitive expression
-is called the {\em transformer}\index{macro transformer}
-of the macro.
-
-Macro uses can also take the form of improper lists
+keyword}\index{keyword}, of the macro\index{macro keyword}.
+The number of \hyper{datum}s and the syntax
+of each depends on the syntactic abstraction.
+Macro uses can also take the form of improper lists, singleton
+identifiers, or {\cf set!} forms, where the second subform of the
+{\cf set!} is the keyword (see
+section~\ref{make-variable-transformer}:
 \begin{scheme}
 (\hyper{keyword} \hyper{datum} \dotsfoo . \hyper{datum})%
-\end{scheme}
-It is also possible that the keyword reference appears as an
-\hyper{identifier}s (section~\ref{transformerssection}), or as the
-second subform of a {\cf set!} form (see
-section~\ref{make-variable-transformer}:
-
-\begin{scheme}
+\hyper{keyword}
 (set! \hyper{keyword} \hyper{datum})%
 \end{scheme}
 
@@ -570,30 +569,32 @@ The macro definition facility consists of two parts:
 \begin{itemize}
 \item A set of forms ({\cf define-syntax},
   section~\ref{define-syntax}, {\cf let-syntax} and {\cf
-    letrec-syntax}, section~\ref{let-syntax}) used to establish that certain identifiers
-are macro keywords, associate them with macro transformers, and control
-the scope within which a macro is defined, and
+    letrec-syntax}; see section~\ref{let-syntax}) used to create bindings
+for keywords, associate them with macro transformers, and control
+the scope within which they are visible, and
 
-\item a facility (called {\cf syntax-case}; see
-  chapter~\ref{syntaxcasechapter}) for defining macro transformers as
-  Scheme code, and a derived facility (called {\cf syntax-rules}; see
-  section~\ref{syntaxrulessection}) providing a pattern language for
-  specifying macro transformers.
+\item a facility ({\cf syntax-case}; see
+  chapter~\ref{syntaxcasechapter}) for creating transformers
+  via a pattern language that permits the use of arbitrary
+  Scheme code,
+  and a derived facility ({\cf syntax-rules}; see
+  section~\ref{syntaxrulessection}) for creating transformers
+  via the pattern language only.
 \end{itemize}
 
-Keywords occupy the same name space as variables, i.e., within the same
+Keywords occupy the same name space as variables.
+That is, within the same
 scope, an identifier can be bound as a variable or keyword, or neither, but
-not both.
-The syntactic keyword of a macro may shadow variable bindings, and local
-variable bindings may shadow keyword bindings.  \index{keyword}  All macros
-defined using {\cf syntax-rules} are ``hygienic'' and ``referentially
+not both, and local bindings of either kind may shadow other bindings of
+either kind.
+
+Macros defined using {\cf syntax-rules} are ``hygienic'' and ``referentially
 transparent'' and thus preserve Scheme's lexical scoping~\cite{Kohlbecker86,
 hygienic,Bawden88,macrosthatwork,syntacticabstraction}:
 \mainindex{hygienic}
 \mainindex{referentially transparent}
 
 \begin{itemize}
-
 \item If a macro transformer inserts a binding for an identifier
 (variable or keyword), the identifier is in effect renamed
 throughout its scope to avoid conflicts with other identifiers.
@@ -602,17 +603,20 @@ throughout its scope to avoid conflicts with other identifiers.
 identifier, the reference refers to the binding that was visible
 where the transformer was specified, regardless of any local
 bindings that may surround the use of the macro.
-
 \end{itemize}
+
+Macros defined using the {\cf syntax-case} facility are also
+hygienic unless {\cf datum\coerce{}syntax}
+(see section~\ref{conversionssection}) is used.
 
 \section{Examples}
 
 Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 
 \begin{scheme}
-(library (stack)
+(library stack
   (export make push! pop! empty!)
-  (import (r6rs))
+  (import r6rs)
 
   (define (make) (list '()))
   (define (push! s v) (set-car! s (cons v (car s))))
@@ -621,9 +625,9 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
                      v))
   (define (empty! s) (set-car! s '())))
 
-(library (balloons)
+(library balloons
   (export make push pop)
-  (import (r6rs))
+  (import r6rs)
 
   (define (make w h) (cons w h))
   (define (push b amt)
@@ -632,7 +636,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
                   (display (* (car b) (cdr b))) 
                   (newline)))
 
-(library (party)
+(library party
   ;; Total exports:
   ;; make, push, push!, make-party, pop!
   (export (rename (balloon:make make)
@@ -640,10 +644,9 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
           push!
           make-party
           (rename (party-pop! pop!)))
-  (import (r6rs)
-          (only (stack)
-                make push! pop!) ; not empty!
-          (add-prefix (balloons) balloon:))
+  (import r6rs
+          (only stack make push! pop!) ; not empty!
+          (add-prefix balloons balloon:))
 
   ;; Creates a party as a stack of balloons,
   ;; starting with two balloons
@@ -656,9 +659,9 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
     (balloon:pop (pop! p))))
 
 
-(library (main)
+(library main
   (export)
-  (import (r6rs) (party))
+  (import r6rs party)
 
   (define p (make-party))
   (pop! p)        ; displays "Boom! 108"
@@ -669,9 +672,9 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 Examples for macros and phases:
 
 \begin{schemenoindent}
-(library (id-stuff)
+(library (my-helpers id-stuff)
   (export find-dup)
-  (import (r6rs))
+  (import r6rs)
 
   (define (find-dup l)
     (and (pair? l)
@@ -682,9 +685,9 @@ Examples for macros and phases:
                                  (car rest)]
             [else (loop (cdr rest))])))))
 
-(library (values-stuff)
+(library (my-helpers values-stuff)
   (export (for mvlet expand run))
-  (import (r6rs) (import (for (id-stuff) expand)))
+  (import r6rs (import (for (my-helpers id-stuff) expand)))
 
   (define-syntax mvlet
     (lambda (stx)
@@ -698,9 +701,9 @@ Examples for macros and phases:
                (lambda () expr) 
              (lambda (id ...) body0 body ...)))]))))
 
-(library (let-div)
+(library let-div
   (export let-div)
-  (import (r6rs) (mvlet))
+  (import r6rs (my-helpers values-stuff))
 
   (define (quotient+remainder n d)
     (let ([q (quotient n d)])
