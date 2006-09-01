@@ -40,8 +40,9 @@ by operating systems, and implementations are required to ignore it.
 The use of alternative platform-specific script headers is therefore 
 allowed, possibly at the expense of portability.
 
-Implementations must provide an executable program named {\cf scheme-script}
-which is capable of executing scripts.  On most Unix-like systems, due to the 
+Implementations should provide an executable program named {\cf scheme-script}
+which is capable of executing scripts on platforms where this makes
+sense.  On most Unix-like systems, due to the 
 use of the {\cf /usr/bin/env} trampoline, this program may itself be a shell 
 script.
 
@@ -53,7 +54,7 @@ script with the {\cf scheme-script} executable.
 
 \subsection{Script substance}
 
-The remaining rules specify syntax at the form level.
+The rules for \meta{script substance} specify syntax at the form level.
 
 The \meta{import form} is identical to the import clause in
 libraries (see section~\ref{librarysyntaxsection}), 
@@ -77,8 +78,8 @@ invoking it.  The semantics of a script body is explained by
 translating it to a library body: All declarations at the script top
 level are moved to the front, and apply to the entire script body.
 Each expression \hyper{expression} that appears before definitions in
-the script body is converted into a definition {\cf (define \hyper{id}
-  \hyper{expression})} by choosing a fresh identifier \hyper{id}.
+the script body is converted into a definition {\cf (define \hyper{identifier}
+  \hyper{expression})} by choosing a fresh \hyper{identifier}.
 
 A script may access its command-line arguments by calling the {\cf
   command-line-arguments} procedure (see
