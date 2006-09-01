@@ -6,7 +6,6 @@ forms}\mainindex{core form} at the start of evaluation (before compilation or in
 by a syntax \emph{expander}.
 (The set of core forms is implementation-dependent, as is the
 representation of these forms in the expander's output.)
-The expander is invoked once for each top-level form in a program.
 If the expander encounters a syntactic abstraction, it invokes
 the associated transformer to expand the syntactic abstraction, then
 repeats the expansion process for the form returned by the transformer.
@@ -17,9 +16,9 @@ Information about identifier bindings is maintained during expansion
 to enforce lexical scoping for variables and keywords.
 
 To handle internal definitions, the expander processes the initial
-forms in \hyper{body} (see section~\ref{bodiessection}),
-\hyper{library body} (see section~\ref{librarybodysection}), or
-\hyper{script body} (see chapter~\ref{scriptchapter}) from left to
+forms in a \hyper{body} (see section~\ref{bodiessection}) or
+\hyper{library body} (see section~\ref{librarybodysection})
+from left to
 right.  How the expander processes each form encountered as it does so
 depends upon the kind of form.
 
@@ -28,6 +27,11 @@ depends upon the kind of form.
 The expander invokes the associated transformer to transform the macro
 use, then recursively performs whichever of these actions are appropriate
 for the resulting form.
+
+\item[{\cf declaration} form]
+If none of the body forms processed so far is a definition, the
+declaration is handled in some implementation-dependent fashion.
+It is a syntax violation for a declaration to appear after a definition.
 
 \item[{\cf define-syntax} form]
 The expander expands and evaluates the right-hand-side expression and binds the
@@ -132,6 +136,27 @@ The final output is the equivalent of
 \end{scheme}
 
 although the structure of the output is implementation dependent.
+
+Because definitions and expressions can be interleaved in a
+\hyper{script body} (see chapter~\ref{scriptchapter}),
+the expander's processing of a \hyper{script body} is somewhat
+more complicated.
+It behaves as described above for a \hyper{body} or
+\hyper{library body} with the following exceptions.
+First, it treats declarations that appear after any definitions or
+expressions as if they appeared before all of the definitions and
+expressions.
+Second, when the expander finds a nondefinition,
+it defers its expansion and continues scanning for definitions.
+Once it reaches the end of set of forms, it processes the
+deferred right-hand-side and body expressions, then
+constructs a residual {\cf letrec*} form from the defined variables,
+expanded right-hand-side expressions, and expanded body expressions.
+For each body expression that appears before a variable definition
+in the body, a dummy binding is created at the corresponding place within
+the set of {\cf letrec*} bindings, with a fresh temporary variable on the
+left-hand side and the expression on the right-hand side, so that
+left-to-right evaluation order is preserved.
 
 %%% Local Variables: 
 %%% mode: latex
