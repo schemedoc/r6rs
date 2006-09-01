@@ -29,16 +29,16 @@ the following syntax:
 \> \| \meta{definition}
 \> \| \meta{expression}
 \end{grammar}
-
 \subsection{Script header}
 
 The syntax given for \meta{script header} is the recommended syntax for 
-portable scripts.  For maximum portability amongst Scheme implementations
+portable scripts.  For maximum portability between Scheme implementations
 and operating systems, the first line of a script should contain exactly 
 the characters specified in the rule.  However, this line is only for use 
-by operating systems, and implementations are required to ignore it.  
-The use of alternative platform-specific script headers is therefore 
-allowed, possibly at the expense of portability.
+by operating systems.  Implementations are required to ignore the first 
+line of a script if it starts with {\cf \#!}.  The use of alternative 
+platform-specific script headers is therefore allowed, possibly at the 
+expense of portability.
 
 Implementations should provide an executable program named {\cf scheme-script}
 which is capable of executing scripts on platforms where this makes
@@ -46,11 +46,11 @@ sense.  On most Unix-like systems, due to the
 use of the {\cf /usr/bin/env} trampoline, this program may itself be a shell 
 script.
 
-Most platforms require that scripts be marked as executable files, the 
-details of which vary by platform and are beyond the scope of this report. 
-Platforms which do not support the Unix-like script header syntax may need 
-to use other mechanisms such as a file extension in order to associate a 
-script with the {\cf scheme-script} executable.
+Most platforms require that scripts be marked as executable in some way, 
+the details of which vary by platform and are beyond the scope of this 
+report. Platforms which do not support the Unix-like script header syntax 
+may need to use other mechanisms, such as a registered filename extension, 
+in order to associate a script with the {\cf scheme-script} executable.
 
 \subsection{Script substance}
 
