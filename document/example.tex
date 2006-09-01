@@ -2,9 +2,27 @@
 \extrapart{Example} % -*- Mode: Lisp; Package: SCHEME; Syntax: Common-lisp -*-
 
 \nobreak
-The {\cf integrate-system} procedure integrates the system 
+This section describes an example consisting of the
+\library{runge-kutta} library, which provides an {\cf integrate-system}
+procedure that integrates the system 
 $$y_k^\prime = f_k(y_1, y_2, \ldots, y_n), \; k = 1, \ldots, n$$
 of differential equations with the method of Runge-Kutta.
+
+As the \library{runge-kutta} library makes use of the \library{r6rs
+  base} and the \library{r6rs promises} libraries, the library
+skeleton looks as follows:
+
+\begin{scheme}
+\#!r6rs
+(library (runge-kutta)
+  (export integrate-system)
+  (import (r6rs base)
+          (r6rs promises))
+  \hyper{library body})
+\end{scheme}
+
+The procedure definitions go in the place of \hyper{library body}
+described below:
 
 The parameter {\tt system-derivative} is a function that takes a system
 state (a vector of values for the state variables $y_1, \ldots, y_n$)
