@@ -16,7 +16,7 @@ A script is a delimited piece of text, typically a file, that follows
 the following syntax:
 
 \begin{grammar}
-\meta{script header} \: \#!/usr/bin/env scheme-script
+\meta{script header} \: \#! /usr/bin/env scheme-script
   \> \meta{linefeed}
   \> \meta{script substance}
 \meta{script substance} \: \#!r6rs \meta{import form} \meta{script body}
@@ -28,9 +28,15 @@ the following syntax:
 \> \| \meta{expression}
 \end{grammar}
 
-The syntax of \meta{script header} is literal: the first line of a
-script must contain exactly the characters specified in the rule.  The
-remaining rules specify syntax at the form level.  
+The syntax given for \meta{script header} is the recommended syntax for 
+portable scripts.  For maximum portability amongst Scheme implementations
+and operating systems, the first line of a script should contain exactly 
+the characters specified in the rule.  However, this line is only for use 
+by operating systems, and implementations are required to ignore it. 
+Alternative platform-specific script headers are therefore allowed, 
+possibly at the expense of portability.
+
+The remaining rules specify syntax at the form level.
 
 The \meta{import form} is identical to the import clause in
 libraries (see section~\ref{librarysyntaxsection}), 
