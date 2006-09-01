@@ -1,6 +1,6 @@
 \chapter{Libraries}
 \label{librarychapter}
-
+\mainindex{library}
 The library system presented here is designed to let programmers share
 libraries, i.e., code that is intended to be incorporated into larger
 programs, and especially into programs that use library code from multiple
@@ -61,7 +61,7 @@ A library declaration contains the following elements:
       by a sequence of expressions.
 \end{itemize}
 
-A library definition shall have the following form:
+A library definition shall have the following form:\mainschindex{library}\mainschindex{import}\mainschindex{export}
 
 \begin{scheme}
 (library \hyper{library~name}
@@ -81,7 +81,7 @@ the library.
 
 An identifier can be imported from two or more libraries only if the
 binding exported by each library is the same (i.e., the binding is
-defined in one library, and it arrives throgh the imports only by
+defined in one library, and it arrives through the imports only by
 exporting and re-exporting).  Otherwise, no identifier can be imported
 multiple times, defined multiple times, or both defined and imported.
 
@@ -135,7 +135,7 @@ one of the following:
 (only \hyper{import~set} \hyper{identifier} \ldots)
 (except \hyper{import~set} \hyper{identifier} \ldots)
 (add-prefix \hyper{import~set} \hyper{identifier})
-(rename \hyper{import~set} (\hyper{identifier} \hyper{identifier} \ldots))%
+(rename \hyper{import~set} (\hyper{identifier} \hyper{identifier}) \ldots)%
 \end{scheme}
 
 A \hyper{library~reference} identifies a library by its (possibly compound)
@@ -205,8 +205,8 @@ bindings can be adjusted with the {\cf only}, {\cf except},
 \hyper{import~set}, an exception is raised.
 \item The {\cf add-prefix} adds the \hyper{identifier} prefix to each
 name from another \hyper{import~set}.
-\item The {\cf rename} form, for each pair of identifiers (\hyper{identifier}
-\hyper{identifier}), removes a binding from the set from \hyper{import~set},
+\item The {\cf rename} form, for each pair of identifiers {\cf (\hyper{identifier}
+\hyper{identifier})}, removes a binding from the set from \hyper{import~set},
 and adds it back with a different name. 
 The first identifier is the original name, and the
 second identifier is the new name. 
@@ -287,7 +287,7 @@ ambiguity should be resolved in favor of the interpretation
 of the name as library syntax.
 For example, {\cf (import (for lib expand))} should be taken as
 importing library {\cf lib} for {\cf expand}, not as importing
-library {\cf (for lib expand)}.
+a library named {\cf (for lib expand)}.
 The user can always eliminate such ambiguities by avoiding the shorthand
 \hyper{library~reference} syntax when such an ambiguity might arise.
 
@@ -313,12 +313,13 @@ exporting library.
 \section{Import phases}
 \label{phasessection}
 
+\mainindex{phase}\mainindex{import phase}
 All bindings imported via a library's {\cf import} form are
 \emph{visible} throughout the library's \hyper{library~body}.
 An exception may be raised, however, if a binding is used out of its declared
 phase(s):
 
-\begin{itemize}
+\begin{itemize}\mainindex{meta level}
 \item Bindings used in run-time code must be imported ``for {\cf run},''
 which is equivalent to ``for {\cf (meta 0)}.''
 \item Bindings used in the body of a transformer (appearing on the
@@ -365,13 +366,13 @@ the second library is expanded, and the run-time information for the first
 library is made available when the run-time information for the second library
 is made available.
 
-We must also consider when the code to evaluate a library's transformer
+It is also relevant when the code to evaluate a library's transformer
 expressions is executed and when the code to evaluate the library's
 variable-definition right-hand-side expressions and body expressions is
 executed.
-We refer to executing the transformer expressions as \emph{visiting}
+Executing the transformer expressions is also said to be \emph{visiting}\mainindex{visiting}
 the library and to executing the variable-definition right-hand-side 
-expressions and body expressions as \emph{invoking} the library.
+expressions and body expressions as \emph{invoking}\mainindex{invoking} the library.
 A library must be visited before code that uses its bindings can be
 expanded, and it must be invoked before code that uses its bindings can be
 executed.
@@ -427,7 +428,7 @@ After the {\cf import} form within a {\cf library} form, the forms
 that constitute a library body depend on the libraries that are
 imported. In particular, imported syntactic keywords determine most
 of the available forms, and whether each form is a declaration,
-definition, or expression. A few expression types are
+definition, or expression. A few form types are
 always available independent of imported libraries, however,
 including constant literals, variable references, procedure calls,
  and macro uses.
@@ -442,7 +443,7 @@ also section~\ref{expressionsection}
 \subsubsection*{Constant literals}\unsection
 
 \begin{entry}{%
-\pproto{\hyper{constant}}{\exprtype}}
+\pproto{\hyper{constant}}{\exprtype}}\mainindex{literal}
 
 Numerical constants, string constants, character constants, and
 boolean constants evaluate ``to themselves.''
@@ -465,10 +466,11 @@ An expression consisting of a variable\index{variable}
 (section~\ref{variablesection}) is a variable reference.  The value of
 the variable reference is the value stored in the location to which the
 variable is bound.  It is a syntax violation to reference
-unbound\index{unbound} variable.
+an unbound\index{unbound} variable.
 
 \begin{scheme}
-; this example assumes the base library has been imported
+; these examples assume the base library
+; has been imported
 (define x 28)
 x   \ev  28%
 \end{scheme}
@@ -482,14 +484,15 @@ x   \ev  28%
 A procedure call is written by simply enclosing in parentheses
 expressions for the procedure to be called and the arguments to be
 passed to it.  A form in an expression context is a procedure
-call if \hyper{operator} is not bound as a syntactic keyword.
+call if \hyper{operator} is not an identifier bound as a syntactic keyword.
 
 When an procedure call is evaluated, the operator and operand
 expressions are evaluated (in an unspecified order) and the resulting
 procedure is passed the resulting
 arguments.\mainindex{call}\mainindex{procedure call}.
 \begin{scheme}%
-; these examples assume the base library has been imported
+; these examples assume the base library
+; has been imported
 (+ 3 4)                          \ev  7
 ((if \schfalse + *) 3 4)         \ev  12%
 \end{scheme}
@@ -553,19 +556,21 @@ Macro uses can also take the form of improper lists
 \begin{scheme}
 (\hyper{keyword} \hyper{datum} \dotsfoo . \hyper{datum})%
 \end{scheme}
-It is also possible that the keyword reference appears an
+It is also possible that the keyword reference appears as an
 \hyper{identifier}s (section~\ref{transformerssection}), or as the
 second subform of a {\cf set!} form (see
 section~\ref{make-variable-transformer}:
 
 \begin{scheme}
-(set! \hyper{keyword} \hyper{datum} \dotsfoo . \hyper{datum})%
+(set! \hyper{keyword} \hyper{datum})%
 \end{scheme}
 
 The macro definition facility consists of two parts:
 
 \begin{itemize}
-\item A set of expressions used to establish that certain identifiers
+\item A set of forms ({\cf define-syntax},
+  section~\ref{define-syntax}, {\cf let-syntax} and {\cf
+    letrec-syntax}, section~\ref{let-syntax}) used to establish that certain identifiers
 are macro keywords, associate them with macro transformers, and control
 the scope within which a macro is defined, and
 
