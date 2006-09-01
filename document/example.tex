@@ -121,13 +121,19 @@ of the stream.
 \end{schemenoindent}
 
 \bigskip
-The following illustrates the use of {\cf integrate-system} in
+The following script illustrates the use of {\cf integrate-system} in
 integrating the system
 $$ C {dv_C \over dt} = -i_L - {v_C \over R}$$\nobreak
 $$ L {di_L \over dt} = v_C$$
 which models a damped oscillator.
 
 \begin{schemenoindent}
+\#!/usr/bin/env scheme-script
+\#!r6rs
+(import (r6rs base)
+        (r6rs i/o simple)
+        (runge-kutta))
+
 (define damped-oscillator
   (lambda (R L C)
     (lambda (state)
@@ -140,27 +146,31 @@ which models a damped oscillator.
   (integrate-system
      (damped-oscillator 10000 1000 .001)
      '\#(1 0)
-     .01))%
+     .01)))
+
+(letrec ((loop (lambda (s)
+               (newline)
+               (write (head s))
+               (loop (tail s)))))
+  (loop the-states))
+
+0%
 \end{schemenoindent}
 
-\todo{Show some output?}
+This prints output like the following:
 
-% (letrec ((loop (lambda (s)
-%                (newline)
-%                (write (head s))
-%                (loop (tail s)))))
-%   (loop the-states))
-
-% #(1 0)
-% #(0.99895054 9.994835e-6)
-% #(0.99780226 1.9978681e-5)
-% #(0.9965554 2.9950552e-5)
-% #(0.9952102 3.990946e-5)
-% #(0.99376684 4.985443e-5)
-% #(0.99222565 5.9784474e-5)
-% #(0.9905868 6.969862e-5)
-% #(0.9888506 7.9595884e-5)
-% #(0.9870173 8.94753e-5)
+\begin{scheme}
+\#(1 0)
+\#(0.99895054 9.994835e-6)
+\#(0.99780226 1.9978681e-5)
+\#(0.9965554 2.9950552e-5)
+\#(0.9952102 3.990946e-5)
+\#(0.99376684 4.985443e-5)
+\#(0.99222565 5.9784474e-5)
+\#(0.9905868 6.969862e-5)
+\#(0.9888506 7.9595884e-5)
+\#(0.9870173 8.94753e-5)
+\end{scheme}
 
 %%% Local Variables: 
 %%% mode: latex
