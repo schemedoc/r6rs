@@ -49,7 +49,7 @@ only) have predefined meaning:
 \begin{itemize}   
 \item {\cf create} create file if it does not already exist
 \item {\cf exclusive} an exception with condition type
-  {\cf\&i/o-file-already-exists} will be raised if this
+  {\cf\&i/o-file-already-exists} is raised if this
   option and {\cf create} are both set and the file already exists
 \item {\cf truncate}
   file is truncated
@@ -141,7 +141,7 @@ Returns \schtrue{} if \var{obj} is a reader, otherwise returns \schfalse.
 
 Returns a reader object. \var{Id} must be a string naming the reader,
 provided for informational purposes only. \var{Descriptor} may be any
-object; the procedures described in this section will not use it internally for any
+object; the procedures described in this section do not use it internally for any
 purpose, but \var{descriptor} can be extracted from the reader object via
 {\cf reader-descriptor}. Thus, \var{descriptor} can be used to keep the
 internal state of certain kinds of readers.
@@ -153,11 +153,11 @@ hint for clients of the reader---calls to the \var{read!} procedure (see below)
 may specify a different read count.
 
 The remaining arguments are procedures.  For each such procedure, an
-operation exists that will call that procedure.  For example, the {\cf
-  reader-read!} operation, when called on a simple reader, will call
+operation exists that calls that procedure.  For example, the {\cf
+  reader-read!} operation, when called on a simple reader, calls
 its \var{read!} procedure.
 It is encouraged that these procedures check that their arguments are
-of the appropriate types.  The operations that call them will perform
+of the appropriate types.  The operations that call them perform
 no checking beyond ensuring that their \var{reader} arguments are
 simple readers, and, if applicable, that the reader supports the operation.
 These procedures must raise
@@ -191,7 +191,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
   Returns an estimate of the total number of bytes left in the
   reader. The result is either an exact integer, or
   \schfalse{} if no such estimate is possible. There is no guarantee
-  that this estimate will have any specific relationship to the true
+  that this estimate has any specific relationship to the true
   number of available bytes.
 
 \item {\cf (\var{get-position})}
@@ -226,7 +226,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
    
 Returns a string naming the reader, provided for informational
 purposes only. For a file reader returned by {\cf open-file-reader} or
-{\cf open-file-reader+writer}, the result will be a string representation of the file
+{\cf open-file-reader+writer}, the result is a string representation of the file
 name.
   
 For a reader created by {\cf make-simple-reader}, the result is the value that was
@@ -288,7 +288,7 @@ arguments.
    
 Returns an estimate of the total number of available bytes left in the
 stream. The result is either an exact integer, or \schfalse{} if no such
-estimate is possible. There is no guarantee that this estimate will have
+estimate is possible. There is no guarantee that this estimate has
 any specific relationship to the true number of available bytes.
    
 For a reader created by {\cf make-simple-reader}, {\cf reader-available}
@@ -419,7 +419,7 @@ Returns \schtrue{} if \var{obj} is a writer, otherwise returns \schfalse.
    
 Returns a writer object. \var{Id} must be a string naming the writer,
 provided for informational purposes only. \var{Descriptor} may be any
-object; the procedures described in this section will not use it internally for any
+object; the procedures described in this section do not use it internally for any
 purpose, but \var{descriptor} can be extracted from the writer object via
 {\cf writer-descriptor}. Thus, \var{descriptor} can be used to keep the
 internal state of certain kinds of writers.
@@ -431,11 +431,11 @@ such, it is only a hint for clients of the writer---calls to the
 count.
 
 The remaining arguments are procedures.  For each such procedure, an
-operation exists that will call that procedure.  For example, the {\cf
-  writer-write!} operation, when called on a simple writer, will call
+operation exists that calls that procedure.  For example, the {\cf
+  writer-write!} operation, when called on a simple writer, calls
 its \var{write!} procedure.
 It is encouraged that these procedures check that their arguments are
-of the appropriate types.  The operations that call them will perform
+of the appropriate types.  The operations that call them perform
 no checking beyond ensuring that their \var{writer} arguments are
 indeed writers, and, if applicable, that the writer supports the operation.
 These procedures must raise

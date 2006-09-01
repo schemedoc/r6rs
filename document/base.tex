@@ -263,16 +263,16 @@ and \hyper{body} must be according to section~\ref{bodiessection}.
 
 \semantics
 \vest A \lambdaexp{} evaluates to a procedure.  The environment in
-effect when the \lambdaexp{} was evaluated is remembered as part of the
+effect when the \lambdaexp{} is evaluated is remembered as part of the
 procedure.  When the procedure is later called with some actual
-arguments, the environment in which the \lambdaexp{} was evaluated will
+arguments, the environment in which the \lambdaexp{} was evaluated is
 be extended by binding the variables in the formal argument list to
-fresh locations, and the resulting actual argument values will be stored
+fresh locations, and the resulting actual argument values are stored
 in those locations.  Then, the expressions in the body of the \lambdaexp{}
 (which may contain internal definitions and thus represent a {\cf
-  letrec*} form, see section~\ref{bodiessection}) will be evaluated
+  letrec*} form, see section~\ref{bodiessection}) are evaluated
 sequentially in the extended environment.
-The result(s) of the last expression in the body will be returned as
+The result(s) of the last expression in the body is(are) returned as
 the result(s) of the procedure call.
 
 \begin{scheme}
@@ -300,7 +300,7 @@ the result(s) of the procedure call.
 \begin{itemize}
 \item {\tt(\hyperi{variable} \dotsfoo)}:
 The procedure takes a fixed number of arguments; when the procedure is
-called, the arguments will be stored in the bindings of the
+called, the arguments are stored in the bindings of the
 corresponding variables.
 
 \item \hyper{variable}:
@@ -315,7 +315,7 @@ If a space-delimited period precedes the last variable, then
 the procedure takes $n$ or more arguments, where $n$ is the
 number of formal arguments before the period (there must
 be at least one).
-The value stored in the binding of the last variable will be a
+The value stored in the binding of the last variable is a
 newly allocated
 list of the actual arguments left over after all the other actual
 arguments have been matched up against the other formal arguments.
@@ -1158,8 +1158,8 @@ The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the same
 behavior on symbols, booleans, the empty list, pairs, procedures,
 and non-empty
 strings and vectors.  The behavior of {\cf eq?} on numbers and characters is
-implementation-dependent, but it will always return either true or
-false, and will return true only when {\cf eqv?}\ would also return
+implementation-dependent, but it always returns either true or
+false, and returns true only when {\cf eqv?}\ would also return
 true.  The {\cf eq?} predicate may also behave differently from {\cf eqv?} on empty
 vectors and empty strings.
 
@@ -1186,7 +1186,7 @@ vectors and empty strings.
 \todo{Needs to be explained better above.  How can this be made to be
 not confusing?  A table maybe?}
 
-\begin{rationale} It will usually be possible to implement {\cf eq?}\ much
+\begin{rationale} It is usually be possible to implement {\cf eq?}\ much
 more efficiently than {\cf eqv?}, for example, as a simple pointer
 comparison instead of as some more complicated operation.  One reason is
 that it may not be possible to compute {\cf eqv?}\ of two numbers in
@@ -1656,7 +1656,7 @@ For any real number \var{x}:
 \end{scheme}
 
 \begin{note}
-If any argument is inexact, then the result will also be inexact (unless
+If any argument is inexact, then the result is also inexact (unless
 the procedure can prove that the inaccuracy is not large enough to affect the
 result, which is possible only in unusual implementations).  If {\cf min} or
 {\cf max} is used to compare numbers of mixed exactness, and the numerical
@@ -1837,7 +1837,7 @@ mode specified by the IEEE floating point standard.
 
 \begin{note}
 If the argument to one of these procedures is inexact, then the result
-will also be inexact.  If an exact value is needed, the
+is also inexact.  If an exact value is needed, the
 result should be passed to the {\cf ->exact} procedure.
 \end{note}
 
@@ -1936,7 +1936,7 @@ even when given exact arguments.
 \proto{sqrt}{ z}{procedure}}
 
 Returns the principal square root of \var{z}.  For rational \var{z},
-the result will have either positive real part, or zero real part and
+the result has either positive real part, or zero real part and
 non-negative imaginary part.  With $\log$ defined as in
 section~\ref{transcendentalfunctions}, the value of {\cf (sqrt
   \var{z})} could be expressed as
@@ -2368,7 +2368,7 @@ otherwise returns \schfalse.
 
 % \begin{note}
 % In implementations in which the empty
-% list is the same as \schfalse{}, {\cf null?} will return \schtrue{}
+% list is the same as \schfalse{}, {\cf null?} returns \schtrue{}
 % if \var{obj} is \schfalse{}.
 % \end{note}
  
@@ -4061,7 +4061,7 @@ for programmers and implementors.
 This quality's priority influences the degree of checking for
 exceptional situations, and the raising and handling of exceptions in
 response to those situations.  The higher the priority, the more
-likely an exception will be raised.
+likely an exception is raised.
 
 At priority 0, an implementation is allowed to ignore any requirements
 for raising an exception with condition type {\cf\&violation} (or one

@@ -48,7 +48,7 @@ so.
 \subsection{Buffer modes}
 
 Each output port has an associated buffer mode that defines when an
-output operation will flush the buffer associated with the output
+output operation flushes the buffer associated with the output
 port. The possible buffer modes are the symbols {\cf none} for no buffering,
 {\cf line} for flushing upon line feeds and line separators (U+2028), and
 {\cf block} for arbitrary buffering.  This section uses the parameter name
@@ -181,8 +181,8 @@ specified with the operation.
 Exceptions of this type raised by the operations described in this
 section are continuable.  The handler, if it returns, is expected to
 output to the port an appropriate encoding for the character that
-caused the error.  The operation that raised the exception will then
-continue after that character.
+caused the error.  The operation that raised the exception 
+continues after that character.
 \end{entry}
 
 \begin{entry}{%
@@ -203,21 +203,21 @@ of a text I/O operation in the presence of an encoding or decoding
 error:
 
 If a codec for an input port encounters an invalid or incomplete
-character encoding, it will behave according to the specified
+character encoding, it behaves according to the specified
 error-handling mode. If it is {\cf ignore}, the first byte of the
-invalid encoding will be ignored and decoding continues with the next
-byte.  If it is {\cf replace}, the replacement character U+FFFD will
-be injected into the data stream.  Decoding subsequently continues
+invalid encoding is ignored and decoding continues with the next
+byte.  If it is {\cf replace}, the replacement character U+FFFD is
+injected into the data stream.  Decoding subsequently continues
 with the next byte. If it is {\cf raise}, a continuable exception with
 condition type {\cf\&i/o-decoding} is raised.  See the description of
 {\cf\&i/o-decoding} for details
 on how to handle such an exception.
 
 If a codec for an output port encounters a character it cannot encode,
-it will behave according to the specified error-handling mode. If it
+it behaves according to the specified error-handling mode. If it
 is {\cf ignore}, the character is ignored and encoding continues after
 the encoding. If it is {\cf replace}, an encoding-specific replacement
-character will be emitted by the transcoder, and decoding continues
+character is emitted by the transcoder, and decoding continues
 after the encoding. This replacement character is U+FFFD for the
 Unicode encodings capable of representing it, and the {\cf ?}
 character for the Latin-1 encoding. If the mode is {\cf raise}, an
@@ -315,7 +315,7 @@ otherwise.
    
 The {\cf set-port-position!} procedure sets the current byte position
 of the port to \var{pos}.  If \var{port} is an output or combined
-input and output port, this will first flush \var{port}.  (See {\cf
+input and output port, this first flushes \var{port}.  (See {\cf
   flush-output-port}, section~\ref{flush-output-port}.)
 This procedure raises an exception with condition type {\cf\&contract}
 if the port does not support the operation.
@@ -338,7 +338,7 @@ A closed port is still a port. The unspecified value is returned.
 calls \var{proc} with \var{port} as an argument. If
 \var{proc} returns, then the \var{port} is closed automatically and
 the values returned by \var{proc} are returned. If \var{proc} does not
-return, then the port will not be closed automatically, unless it is
+return, then the port is not closed automatically, unless it is
 possible to prove that the port will never again be used for a
 {\cf lookahead}, {\cf get}, or {\cf put} operation.
 \end{entry}
@@ -636,7 +636,7 @@ external devices, or may produce files and other objects that may
 subsequently be opened for input.  The procedures in this section
 that perform
 textual output accept a transcoder as an optional argument.  If no
-transcoder is supplied, the character(s) output will be translated to
+transcoder is supplied, the character(s) output is translated to
 UTF-8 with a platform-specific end-of-line convention.
 
 \begin{entry}{%
