@@ -54,12 +54,12 @@ the \var{l}s are all empty, {\cf exists} returns \schfalse.
 (forall even? '(3 1 4 1 5 9)) \ev \schfalse{}
 (forall even? '(3 1 4 1 5 9 . 2)) \ev \schfalse{}
 (forall even? '(2 1 4 14)) \ev \schtrue{}
-(forall even? '(2 1 4 14 . 9)) \ev \exception{\cf\&contract}
+(forall even? '(2 1 4 14 . 9)) \lev \exception{\cf\&contract}
 (forall (lambda (n) (and (even? n) n)) '(2 1 4 14) \lev 14
 
 (exists even? '(3 1 4 1 5 9)) \ev \schtrue{}
 (exists even? '(3 1 1 5 9)) \ev \schfalse{}
-(exists even? '(3 1 1 5 9 . 2)) \ev \exception{\cf\&contract}
+(exists even? '(3 1 1 5 9 . 2)) \lev \exception{\cf\&contract}
 (exists (lambda (n) (and (even? n) n)) '(2 1 4 14) \lev 2
 \end{scheme}
 \end{entry}
@@ -80,7 +80,7 @@ true value, and the second a list of the values of \var{list} for
 which \var{proc} returned \schfalse.
 
 \begin{scheme}
-(filter even? '(3 1 4 1 5 9 2 6)) \ev (4 2 6)
+(filter even? '(3 1 4 1 5 9 2 6)) \lev (4 2 6)
 
 (partition even? '(3 1 4 1 5 9 2 6)) \lev (4 2 6) (3 1 1 5 9) ; two values
 \end{scheme}
@@ -210,12 +210,12 @@ chains of pairs returned by {\tt (list-tail \var{l} \var{k})} for
 \var{k} less than the length of \var{l}.  The {\cf memp} procedure applies
 \var{proc} to the cars of the sublists of \var{l} until it
 finds one for which \var{proc} returns a true value without traversing
-\var{l} further.  {\cf
-  member}, {\cf memv}, and {\cf memq} look for the first occurrence of
+\var{l} further.  The {\cf
+  member}, {\cf memv}, and {\cf memq} procedures look for the first occurrence of
 \var{obj}.  If \var{l} does not contain an element satisfying the
 condition, then \schfalse{} (not the empty list) is returned; in that
-case, \var{l} shall be a list.  {\cf
-  member} uses {\cf equal?}\ to compare \var{obj} with the elements of
+case, \var{l} shall be a list.  The {\cf
+  member} procedure uses {\cf equal?}\ to compare \var{obj} with the elements of
 \var{l}, while {\cf memv} uses {\cf eqv?}\ and {\cf memq} uses
 {\cf eq?}.
 
@@ -254,7 +254,7 @@ These procedures find the first pair in \var{al}
 whose car field satisfies a given condition, and returns that pair
 without traversing \var{al} further.
 If no pair in \var{al} satisfies the condition, then \schfalse{}
-(not the empty list) is returned; in that case, \var{al} shall be a
+is returned; in that case, \var{al} shall be a
 list.  The {\cf assp} procedure successively applies
 \var{proc} to the car fields of \var{al} and looks for a pair
 for which it returns a true value.  The {\cf assoc}, {\cf assv}, and {\cf
