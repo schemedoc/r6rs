@@ -82,7 +82,8 @@ in all respects.
 
 \section{Basic types}
 
-Scheme programs manipulate \textit{objects} or \textit{values}.
+Scheme programs manipulate \textit{values}, which are also referred
+to as \textit{objects}.
 Scheme values are organized into sets of values called \textit{types}.
 This gives an overview of the fundamentally important types of the
 Scheme language.  More types are described in later chapters.
@@ -97,8 +98,8 @@ Scheme language.  More types are described in later chapters.
 
 \mainindex{boolean}A boolean value denotes a truth value, and can either be
 true or false.  In Scheme, the value for ``false'' is written
-\schfalse{}.  The value ``true'' is written \schtrue{}.  However, in
-most places where a truth value is expected, any value different from
+\schfalse{}.  The value ``true'' is written \schtrue{}.  In
+most places where a truth value is expected, however, any value different from
 \schfalse{} counts as true.
 
 \paragraph{Numbers}
@@ -124,14 +125,14 @@ represent arbitrary Unicode texts.
 \mainindex{symbol}A symbol is an object representing a string that
 cannot be modified.  This string is called the symbol's \textit{name}.
 Unlike strings, two symbols whose names are spelled the same
-way are equivalent.  Symbols are useful for many other applications;
+way are indistinguishable.  Symbols are useful for many applications;
 for instance, they may be used the way enumerated values are used in
 other languages.
 
 \paragraph{Pairs and lists}
 
 \mainindex{pair}\mainindex{list}
-A pair is a data structure with two components.  The most popular use
+A pair is a data structure with two components.  The most common use
 of pairs is to represent (singly linked) lists, where the first
 component (the ``car'') represents the first element of the list, and
 the second component (the ``cdr'') the rest of the list.  Scheme also
@@ -172,7 +173,7 @@ This notation means that the expression \schtrue{} evaluates to
 
 Compound expressions are formed by placing parentheses around their
 subexpressions.  The first subexpression is an
-\textit{operator}\mainindex{operator} and identifies an operation, the
+\textit{operator}\mainindex{operator} and identifies an operation; the
 remaining subexpressions are \textit{operands}\mainindex{operand}:
 %
 \begin{scheme}
@@ -190,7 +191,7 @@ As these examples indicate, compound expressions in Scheme are always
 written using the same prefix notation\mainindex{prefix notation}.  As
 a consequence, the parentheses are needed to indicate structure, and
 ``superfluous'' parentheses, which are permissible in mathematics and
-many other programming languages, are not allowed in Scheme.
+many programming languages, are not allowed in Scheme.
 
 As in many other languages, whitespace and newlines are not
 significant when they separate subexpressions of an expression, and
@@ -201,7 +202,7 @@ can be used to indicate structure.
 \mainindex{variable}\mainindex{binding}\mainindex{identifier}Scheme
 allows identifiers to denote values.  These
 identifiers are called variables. (More precisely, variables denote
-locations.  However, this distinction is not important for a large
+locations.  This distinction is not important, however, for a large
 proportion of Scheme code.)
 
 \begin{scheme}
@@ -211,7 +212,7 @@ proportion of Scheme code.)
 \end{scheme}
 
 In this case, the operator of the expression, {\cf let}, is a binding
-construct---the parenthesized structure following the {\cf let} lists
+construct.  The parenthesized structure following the {\cf let} lists
 variables alongside expressions: the variable {\cf x} alongside {\cf
   23}, and the variable {\cf y} alongside {\cf 42}.  The {\cf let}
 expression binds {\cf x} to 23, and {\cf y} to 42.  These bindings are
@@ -221,7 +222,7 @@ available in the \textit{body} of the {\cf let} expression, {\cf (+ x
 \section{Definitions}
 
 \index{definition}The variables bound by a {\cf let} expression
-are \textit{local}, because their bindings are only visible in the
+are \textit{local}, because their bindings are visible only in the
 {\cf let}'s body.  Scheme also allows creating top-level bindings for
 identifiers as follows:
 
@@ -291,8 +292,8 @@ procedures:
 (g f 23) \ev 65%
 \end{scheme}
 
-In this example, the body of {\cf g} is evaluated with its {\cf p}
-variable bound to {\cf f} and {\cf x} bound to 23, which is equivalent
+In this example, the body of {\cf g} is evaluated with {\cf p}
+bound to {\cf f} and {\cf x} bound to 23, which is equivalent
 to {\cf (f 23)}, which evaluates to 42.
 
 In fact, many predefined operations of Scheme are
@@ -333,23 +334,23 @@ the keyword.  The {\cf define} identifier in a definition is also a
 syntactic keyword.  Hence, definitions are also not procedure calls.
 
 In the case of {\cf lambda}, these rules specify that the first
-subform is a list of parameters, and the second subform the body of
+subform is a list of parameters, and the second subform is the body of
 the procedure.  In {\cf let} expressions, the first subform is a list
-of binding specifications, the and the second is a body of
+of binding specifications, and the second is a body of
 expressions.
 
 Procedure calls can be distinguished from these ``special forms'' by
 looking for a syntactic keyword in the first position of an
 expression: if it is not a syntactic keyword, the expression
 is a procedure call.  The set of syntactic keywords of Scheme is
-fairly small, which usually makes this task fairly simple.  However,
-it is possible to create new bindings for syntactic keywords; see
+fairly small, which usually makes this task fairly simple.
+It is possible, however, to create new bindings for syntactic keywords; see
 below.
 
 \section{Assignment}
 
 Scheme variables bound by definitions or {\cf let} or {\cf lambda}
-forms are not actually bound to the values specified in the
+forms are not actually bound directly to the values specified in the
 respective bindings, but to locations containing these values.  The
 contents of these locations can subsequently be modified destructively
 via \textit{assignment}\index{assignment}:
@@ -364,16 +365,15 @@ via \textit{assignment}\index{assignment}:
 In this case, the body of the {\cf let} expression consists of two
 expressions which are evaluated sequentially, with the value of the
 final expression becoming the value of the entire {\cf let}
-expression.  The {\cf (set! x 42)} expression is an assignment, saying
+expression.  The expression {\cf (set! x 42)} is an assignment, saying
 ``replace the value in the location denoted by {\cf x} with 42.''
 Thus, the previous value of 23 is replaced by 42.
 
 \section{Derived forms and macros}
 
-Many syntactic keywords specified in this report do not actually
-contribute to the power of the language because special forms that
-use them can be translated into special forms that use simpler syntactic
-keywords.  For example, the {\cf let} expressions can be translated
+Many of the special forms specified in this report
+can be translated into more basic special forms.
+For example, {\cf let} expressions can be translated
 into procedure calls and {\cf lambda} expressions.  The following two
 expressions are equivalent:
 %
@@ -426,20 +426,20 @@ the example gets translated to:
 \end{scheme}
 
 The ability to create new syntactic keywords makes Scheme extremely
-flexible and expressive, and enables the formulation of many features
-built-in to other languages as derived forms.
+flexible and expressive, enabling the formulation of many features
+built into other languages as derived forms.
 
 \section{Syntactic datums and datum values}
 
 A subset of the Scheme values called \textit{datum
   values}\index{datum value} have a special
 status in the language.  These include booleans, numbers, characters,
-strings, and lists and vectors with other datums as elements.  Each
-datum value has a representation as text called
+and strings as well as lists and vectors whose elements are datums.  Each
+datum value may be represented in textual form as a
 \textit{syntactic datum}\index{syntactic datum}, which can be written out
 and read back in without loss of information.  
-(Several syntactic datums can represent the same datum value,
-but the datum value corresponding to a syntactic datum is uniquely determined.)
+Several syntactic datums can represent the same datum value,
+but the datum value corresponding to a syntactic datum is uniquely determined.
 Moreover, each datum value
 can be trivially translated to a literal expression in a program by
 prepending a {\cf\singlequote} to a corresponding syntactic datum:
@@ -452,13 +452,14 @@ prepending a {\cf\singlequote} to a corresponding syntactic datum:
 '\#(1 2 3) \ev \#(1 2 3)%
 \end{scheme}
 
-The {\cf\singlequote} clearly is not needed for number or boolean
-literals.  However, {\cf foo} is a syntactic datum representing a symbol with
-name ``foo,'' and {\cf 'foo} is therefore a literal expression with
-that symbol as its value.  {\cf (1 2 3)} is a syntactic datum representing a
-list with elements 1, 2, and 3, and thus {\cf '(1 2 3)} is a literal
-expression with such a list as its value.  Moreover, {\cf \#(1 2 3)}
-is a syntactic datum representing a vector with elements 1, 2 and 3, and thus
+The {\cf\singlequote} is, of course, not needed for number or boolean
+literals.
+The identifier {\cf foo} is a syntactic datum that can represent a
+symbol with name ``foo,'' and {\cf 'foo} is a literal expression with
+that symbol as its value.  {\cf (1 2 3)} is a syntactic datum that can
+represent a list with elements 1, 2, and 3, and {\cf '(1 2 3)} is a literal
+expression with this list as its value.  Likewise, {\cf \#(1 2 3)}
+is a syntactic datum that can represent a vector with elements 1, 2 and 3, and
 {\cf '\#(1 2 3)} is the corresponding literal.
 
 The syntactic datums form a superset of the Scheme forms.  Thus, datums
@@ -471,7 +472,7 @@ particular, symbols can be used to represent identifiers.
 \end{scheme}
 
 This facilitates writing programs that operate on Scheme source code,
-in particular intpreters and program transformations.
+in particular intpreters and program transformers.
 
 \section{Libraries}
 \label{librariesintrosection}

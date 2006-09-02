@@ -55,7 +55,18 @@ values, this report sometimes uses the term \defining{datum} to denote
 either a syntactic datum or a datum value when the exact meaning
 is apparent from the context.
 
-This chapter gives overviews and formal accounts of the lexical
+An implementation is not permitted to extend the lexical or read syntax in
+any way, with one exception: it need not treat the syntax
+{\cf \sharpsign{}!\meta{identifier}}, for any \meta{identifier} (see
+section~\ref{identifiersection}) that is not {\cf r6rs}, as a syntax
+violation, and it may use specific {\cf \sharpsign{}!}-prefixed
+identifiers as flags indicating that subsequent input contains extensions
+to the standard lexical syntax. 
+(The comment syntax {\cf \sharpsign{}!r6rs} may be used to signify that
+the input which follows is written purely in the language described by
+this report; see section~\ref{whitespaceandcomments}.)
+
+This chapter overviews and provides formal accounts of the lexical
 syntax and the read syntax.
 
 \section{Notation}
@@ -90,10 +101,10 @@ a forward reference to \meta{datum}, which is described as part of the
 read syntax.  However, being comments, these \meta{datum}s do not play
 a significant role in the syntax.
 
-Case is significant except in boolean and number datums, as well as
+Case is significant except in boolean datums, number datums, and
 hexadecimal numbers denoting scalar values.  For example, {\cf \#x1A}
-and {\cf \#X1a} are equivalent.  However, {\cf Foo} is an identifier
-different from {\cf FOO}.
+and {\cf \#X1a} are equivalent.  The identifier {\cf Foo} is, however,
+distinct from the identifier {\cf FOO}.
 
 \subsection{Formal account}
 \label{lexicalgrammarsection}
@@ -251,6 +262,7 @@ decimal points or exponents must be in decimal radix.
 \todo{Mark Meyer of TI sez, shouldn't we allow {\tt 1e3/2}?}
 
 \subsection{Whitespace and comments}
+\label{whitespaceandcomments}
 
 \defining{Whitespace} characters are spaces, linefeeds,
 carriage returns, horizontal tabs, form feeds, vertical tabs,
@@ -293,14 +305,10 @@ Block comments may be indicated with properly nested {\tt
         (* n (fact (- n 1))))))%
 \end{scheme}
 
-The lexemes {\cf \sharpsign{}!r6rs} and {\cf \sharpsign{}!/usr/bin/env}
-are also comments.  The {\cf \sharpsign{}!r6rs} lexeme occurring in
-program text identifies that program text to be written purely in the
+The lexeme {\cf \sharpsign{}!r6rs} is also a comment.  When it occurs in
+program text, it signifies that program text to be written purely in the
 language described by this report (see
-section~\ref{librarysyntaxsection}).  The {\cf
-  \sharpsign{}!/usr/bin/env} lexeme occurs at the beginning of scripts
-and enables their direct execution on Unix-like systems (see
-chapter~\ref{scriptchapter}).
+section~\ref{librarysyntaxsection}).
 
 \subsection{Identifiers}
 \label{identifiersection}
@@ -736,23 +744,42 @@ expression that evaluates to a bytes object.
 \pproto{\#,@\hyper{datum}}{}
 }
 
-\mainschindex{'}\singlequote\hyper{datum} is an abbreviation
-for {\cf (quote \hyper{datum})}.
-\mainschindex{`}\backquote\hyper{datum} is an abbreviation
-for {\cf (quasiquote \hyper{datum})}.
-\mainschindex{,}{\cf,}\hyper{datum} is an abbreviation
-for {\cf (unquote \hyper{datum})}.
-\mainschindex{,@}{\cf,}\atsign\hyper{datum} is an abbreviation
-for {\cf (unquote-splicing \hyper{datum})}.
-\sharpindex{'}{\cf\#'}\hyper{datum} is an abbreviation
-for {\cf (syntax \hyper{datum})}.
-\sharpindex{`}{\cf\#`}\hyper{datum} is an abbreviation
-for {\cf (quasisyntax \hyper{datum})}.
-\sharpindex{,}{\cf\#,}\hyper{datum} is an abbreviation
-for {\cf (unsyntax \hyper{datum})}.
-\sharpindex{,}{\cf\#,@}\hyper{datum} is an abbreviation
+Each of these is an abbreviation:
+\\\quad\mainschindex{'}\singlequote\hyper{datum}
+for {\cf (quote \hyper{datum})},
+\\\quad\mainschindex{`}\backquote\hyper{datum}
+for {\cf (quasiquote \hyper{datum})},
+\\\quad\mainschindex{,}{\cf,}\hyper{datum}
+for {\cf (unquote \hyper{datum})},
+\\\quad\mainschindex{,@}{\cf,}\atsign\hyper{datum}
+for {\cf (unquote-splicing \hyper{datum})},
+\\\quad\sharpindex{'}{\cf\#'}\hyper{datum}
+for {\cf (syntax \hyper{datum})},
+\\\quad\sharpindex{`}{\cf\#`}\hyper{datum}
+for {\cf (quasisyntax \hyper{datum})},
+\\\quad\sharpindex{,}{\cf\#,}\hyper{datum}
+for {\cf (unsyntax \hyper{datum})}, and
+\\\quad\sharpindex{,}{\cf\#,@}\hyper{datum}
 for {\cf (unsyntax-splicing \hyper{datum})}.
 \end{entry}
+
+% was:
+% \mainschindex{'}\singlequote\hyper{datum} is an abbreviation
+% for {\cf (quote \hyper{datum})}.
+% \mainschindex{`}\backquote\hyper{datum} is an abbreviation
+% for {\cf (quasiquote \hyper{datum})}.
+% \mainschindex{,}{\cf,}\hyper{datum} is an abbreviation
+% for {\cf (unquote \hyper{datum})}.
+% \mainschindex{,@}{\cf,}\atsign\hyper{datum} is an abbreviation
+% for {\cf (unquote-splicing \hyper{datum})}.
+% \sharpindex{'}{\cf\#'}\hyper{datum} is an abbreviation
+% for {\cf (syntax \hyper{datum})}.
+% \sharpindex{`}{\cf\#`}\hyper{datum} is an abbreviation
+% for {\cf (quasisyntax \hyper{datum})}.
+% \sharpindex{,}{\cf\#,}\hyper{datum} is an abbreviation
+% for {\cf (unsyntax \hyper{datum})}.
+% \sharpindex{,}{\cf\#,@}\hyper{datum} is an abbreviation
+% for {\cf (unsyntax-splicing \hyper{datum})}.
 
 %%% Local Variables: 
 %%% mode: latex
