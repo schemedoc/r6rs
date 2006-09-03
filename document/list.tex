@@ -107,21 +107,22 @@ of the {\it list}.  This step is repeated until the end of the list is
 reached; then the accumulator value is returned.
 
 \begin{scheme}
-(fold-left + 0 '(1 2 3 4 5) \ev 15
+(fold-left + 0 '(1 2 3 4 5)) \ev 15
 
-(fold-left cons '() '(1 2 3 4 5) \lev (5 4 3 2 1)
+(fold-left (lambda (a e) (cons e a)) '()
+           '(1 2 3 4 5)) \lev (5 4 3 2 1)
 
 (fold-left (lambda (x count)
              (if (odd? x) (+ count 1) count))
            0
-           '(3 1 4 1 5 9 2 6 5) \lev 6
+           '(3 1 4 1 5 9 2 6 5)) \lev 6
 
-(fold-left (lambda (s max-len)
+(fold-left (lambda (max-len s)
              (max max-len (string-length s)))
            0
            '("longest" "long" "longer")) \lev 7
 
-(fold-left cons '(q) '(a b c) \lev ((((q) . a) . b) . c)
+(fold-left cons '(q) '(a b c)) \lev ((((q) . a) . b) . c)
 
 (fold-left + 0 '(1 2 3) '(4 5 6)) \lev 21
 \end{scheme}
@@ -148,19 +149,19 @@ new accumulator value.  This step is repeated until the beginning of the
 list is reached; then the accumulator value is returned.
 
 \begin{scheme}
-(fold-right + 0 '(1 2 3 4 5) \ev 15
+(fold-right + 0 '(1 2 3 4 5)) \ev 15
 
 (fold-right cons '() '(1 2 3 4 5)) \lev (1 2 3 4 5)
 
 (fold-right (lambda (x l)
               (if (odd? x) (cons x l) l))
             '()
-            '(3 1 4 1 5 9 2 6 5)
+            '(3 1 4 1 5 9 2 6 5))
 \ev (3 1 1 5 9 5)
 
 (fold-right cons '(q) '(a b c)) \lev (a b c q)
 
-(fold-right + 0 '(1 2 3) (4 5 6)) \lev 21
+(fold-right + 0 '(1 2 3) '(4 5 6)) \lev 21
 \end{scheme}
 \end{entry}
 
