@@ -69,7 +69,7 @@ and {\cf string=?} procedures are permissible only if all
 keys are strings and the contents of those strings are never
 changed so long as any of them continue to serve as a key in
 the hash table.  Furthermore any pair of values for which
-the equivalence predicate \var{equiv?} returns true should
+the equivalence predicate \var{equiv?} returns \schtrue{} should
 be hashed to the same exact integers by 
 \var{hash-function}.
 
@@ -96,7 +96,7 @@ in many calls to the hash function.
 \proto{hash-table?}{ \var{hash-table}}{procedure}}
 
 Returns \schtrue{} if \var{hash-table} is a hash table,
-otherwise returns \schfalse.
+otherwise returns \schfalse{}.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-size}{ \var{hash-table}}{procedure}}
@@ -107,4 +107,182 @@ Returns the number of keys contained in \var{hash-table} as an exact integer.
 \begin{entry}{%
 \proto{hash-table-ref}{ \var{hash-table} \var{key} \var{default}}{procedure}}
 
-Returns the value in \var{hash-table} associat
+Returns the value in \var{hash-table} associated with \var{key}.
+If \var{hash-table} does not contain an association for \var{key},
+then \var{default} is returned.
+\end{entry}
+
+\begin{entry}{\proto{hash-table-set!}{ \var{hash-table} \var{key} \var{obj}}{procedure}}
+
+Changes \var{hash-table} to associate \var{key} with \var{obj},
+adding a new association or replacing any existing association for \var{key}.
+Returns the unspecified value.
+\end{entry}
+
+\begin{entry}{\proto{hash-table-delete!}{ \var{hash-table} \var{key}}{procedure}}
+
+Removes any association for \var{key} within \var{hash-table}.
+Returns the unspecified value.
+\end{entry}
+
+\begin{entry}{\proto{hash-table-contains?}{ \var{hash-table} \var{key}}{procedure}}
+
+Returns \schtrue{} if \var{hash-table} contains an association
+for \var{key}, otherwise returns \schfalse{}.
+\end{entry}
+
+\begin{entry}{%
+\proto{hash-table-update!}{ \var{hash-table} \var{key} \var{proc} \var{default}}{procedure}}
+
+\domain{\var{Proc} must be a procedure that takes a single argument.}
+The {\cf hash-table-update!} procedure applies \var{proc} to the value in \var{hash-table}
+associated with \var{key}, 
+or to \var{default} if \var{hash-table} does not contain an
+association for \var{key}.
+The \var{hash-table} is then changed to associate \var{key}
+with the result of \var{proc}.
+
+The behavior of {\cf hash-table-update!} is equivalent to the
+following code, but may be implemented 
+more efficiently in cases where the implementation can
+avoid multiple lookups of the same key:
+\begin{scheme}
+(hash-table-set!
+ hash-table key
+ (proc (hash-table-ref
+        hash-table key default)))
+\end{scheme}
+\end{entry}
+
+\begin{entry}{\proto{hash-table-fold}{ \var{proc} \var{hash-table} \var{init}}{procedure}}
+
+\domain{\var{Proc} must be a procedure that takes three arguments.}
+For every association in \var{hash-table}, calls
+\var{proc} with the association
+key, the association value, and an accumulated value as arguments.
+The accumulated value is \var{init} for the first
+invocation of \var{proc}, and for subsequent
+invocations of \var{proc}, it is the return value
+of the previous invocation of \var{proc}. The order
+of the calls to \var{proc} is indeterminate. The
+return value of {\cf hash-table-fold} is the value of
+the last invocation of \var{proc}. If any side
+effect is performed on the hash table while a
+{\cf hash-table-fold} operation is in progress, then the
+behavior of {\cf hash-table-fold} is unspecified.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{hash-table-copy}{ \var{hash-table}}{procedure}
+\rproto{hash-table-copy}{ \var{hash-table} \var{immutable}}{procedure}}
+
+Returns a copy of \var{hash-table}.  If the
+\var{immutable} argument is provided and is true, the returned hash table is immutable;
+otherwise it is mutable.
+
+\begin{rationale}
+Hash table references may be less expensive with immutable hash tables.
+Also, a library may choose to export a hash table which
+cannot be changed by clients.
+\end{rationale}
+
+\end{entry}
+\begin{entry}{%
+\proto{hash-table-clear!}{ \var{hash-table}}{procedure}
+\rproto{hash-table-clear!}{ \var{hash-table} \var{k}}{procedure}}
+
+Removes all associations from \var{hash-table}.  Returns the unspecified value.
+
+If a second argument is given, the current
+capacity of the hash table is reset to approximately \var{k} elements.
+\end{entry}
+
+\begin{entry}{\proto{hash-table-keys}{ \var{hash-table}}{procedure}}
+
+Returns a list of all keys in \var{hash-table}.
+The order of the list is unspecified.
+Equivalent to:
+\begin{scheme}
+(hash-table-fold (lambda (k v a) (cons k a)) 
+                 hash-table
+                 '())
+\end{scheme}
+\end{entry}
+
+\begin{entry}{\proto{hash-table-values}{ \var{hash-table}}{procedure}}
+
+Returns a list of all values in \var{hash-table}.
+The order of the list is unspecified.
+Equivalent to:
+\begin{scheme}
+(hash-table-fold (lambda (k v a) (cons v a)) 
+                 hash-table
+                 '())
+\end{scheme}
+\end{entry}
+
+\section{Inspection}
+
+\begin{entry}{\proto{hash-table-equivalence-predicate}{ \var{hash-table}}{procedure}}
+
+Returns the equivalence predicate used by
+\var{hash-table} to compare keys.  For hash tables
+created with {\cf make-eq-hash-table} and {\cf make-eqv-hash-table},
+returns {\cf eq?} and {\cf eqv?} respectively.
+\end{entry}
+
+\begin{entry}{\proto{hash-table-hash-function}{ \var{hash-table}}{procedure}}
+
+Returns the hash function used by \var{hash-table}.
+For hash tables created by {\cf make-eq-hash-table} 
+or {\cf make-eqv-hash-table}, \schfalse{} is returned.
+
+\begin{rationale}
+The {\cf make-eq-hash-table} and {\cf make-eqv-hash-table} constructors
+are designed to hide their hash function.  This allows implementations
+to use the machine address of an object as its hash value, rehashing
+parts of the table as necessary whenever the garbage collector moves
+objects to a different address.
+\end{rationale}
+\end{entry}
+
+\begin{entry}{\proto{hash-table-mutable?}{ \var{hash-table}}{procedure}}
+
+Returns \schtrue{} if \var{hash-table} is mutable, otherwise returns \schfalse{}.
+\end{entry}
+
+\section{Hash functions}
+
+The {\cf equal-hash}, {\cf string-hash}, and {\cf string-ci-hash}
+procedures of this section are acceptable as hash functions only
+if the keys on which they are called do not suffer side effects
+while the hash table remains in use.
+
+\begin{entry}{\proto{equal-hash}{ \var{obj}}{procedure}}
+
+Returns an integer hash value for \var{obj}, based on
+its structure and current contents.
+\end{entry}
+
+\begin{entry}{\proto{string-hash}{ \var{string}}{procedure}}
+
+Returns an integer hash value for \var{string}, based on
+its current contents.
+\end{entry}
+
+\begin{entry}{\proto{string-ci-hash}{ \var{string}}{procedure}}
+
+Returns an integer hash value for \var{string} based on
+its current contents, ignoring case.
+\end{entry}
+
+\begin{entry}{\proto{symbol-hash}{ \var{symbol}}{procedure}}
+
+Returns an integer hash value for \var{symbol}.
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
