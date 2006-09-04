@@ -259,8 +259,11 @@ have the following form:
 \hyper{declaration} \ldots \hyper{definition} \ldots \hyper{expression} \ldots%
 \end{scheme}
 
-Note that when base-library {\cf begin} forms occur in a body, they are spliced into the
-body; see section~\ref{begin}.
+When base-library {\cf begin} forms occur in a library body prior to the
+first expression, they are spliced into the body; see section~\ref{begin}.
+Some or all of the library body, including portions wrapped in {\cf begin}
+forms, may be specified by a syntactic abstraction
+(see section~\ref{macrosection}).
 
 The transformer expressions and transformer bindings are created
 from left to right, as described in chapter~\ref{expansionchapter}.
@@ -533,8 +536,8 @@ for leaving the order unspecified.}
 \subsection{Macros}
 \label{macrosection}
 
-Scheme programs can define and use new derived expressions or
-definitions, called {\em syntactic abstractions} or
+Scheme programs can define and use new derived expressions,
+definitions, and declarations, called {\em syntactic abstractions} or
 {\em macros}.\mainindex{syntactic abstraction}\mainindex{macro}
 A syntactic abstraction is created by binding a keyword to a
 {\em macro transformer} or, simply, {\em transformer}.
@@ -543,12 +546,12 @@ The transformer determines
 how a use of the macro is transcribed into a more primitive
 forms.
 
-Derived expressions and definitions typically have the form:
+Macro uses typically have the form:
 \begin{scheme}
 (\hyper{keyword} \hyper{datum} \dotsfoo)%
 \end{scheme}%
 where \hyper{keyword} is an identifier that uniquely determines the
-type of expression or definition.  This identifier is called the {\em syntactic
+type of form.  This identifier is called the {\em syntactic
 keyword}\index{syntactic keyword}, or simply {\em
 keyword}\index{keyword}, of the macro\index{macro keyword}.
 The number of \hyper{datum}s and the syntax

@@ -176,8 +176,8 @@ definitions.
 
 With \ide{lambda}, \ide{let}, \ide{let*}, \ide{let-values},
 \ide{let*-values}, \ide{letrec*}, and \ide{letrec},
-the variable defined by an internal
-definition is local to the \hyper{body}.  That is, \hyper{variable} is
+the identifier defined by an internal
+definition is local to the \hyper{body}.  That is, the identifier is
 bound, and the region of the binding is the
 entire \hyper{body}.  For example,
 
@@ -188,8 +188,14 @@ entire \hyper{body}.  For example,
   (foo (+ x 3)))                \ev  45%
 \end{scheme}
 
-An expanded \hyper{body} containing internal definitions, where the
-declarations and original syntax definitions have been elided, can
+When base-library {\cf begin} forms occur in a body prior to the first
+expression, they are spliced into the body; see section~\ref{begin}.
+Some or all of the body, including portions wrapped in {\cf begin}
+forms, may be specified by a syntactic abstraction
+(see section~\ref{macrosection}).
+
+An expanded \hyper{body} (see chapter~\ref{expansionchapter})
+containing internal definitions can
 always be converted into a completely equivalent {\cf letrec*}
 expression.  For example, the {\cf let} expression in the above
 example is equivalent to
@@ -200,9 +206,6 @@ example is equivalent to
             (bar (lambda (a b) (+ (* a b) a))))
     (foo (+ x 3))))%
 \end{scheme}
-
-As a subform of a body, a {\cf begin} form acts as a splicing form and
-is treated as if it were not actually present; see section~\ref{begin}.
 
 \section{Expressions}
 \label{expressionsection}
@@ -877,6 +880,7 @@ and {\cf let-values}:
 \end{entry}
 
 \subsection{Sequencing}\unsection
+\label{begin}
 
 \begin{entry}{%
 \proto{begin}{ \hyper{form} \dotsfoo}{\exprtype}
@@ -3667,7 +3671,7 @@ being bound.
 The \hyper{form}s are arbitrary forms.
 
 \semantics
-The \hyper{form}s or \hyper{definitions}s are expanded in the syntactic environment
+The \hyper{form}s are expanded in the syntactic environment
 obtained by extending the syntactic environment of the
 {\cf let-syntax} form with macros whose keywords are
 the \hyper{keyword}s, bound to the specified transformers.
@@ -3676,7 +3680,7 @@ Each binding of a \hyper{keyword} has the \hyper{form}s as its region.
 The \hyper{form}s of a {\cf let-syntax}
 form are treated, whether in definition or expression context, as if
 wrapped in an implicit {\cf begin}, see section~\ref{begin}.
-Thus, internal definition in the result of expanding the \hyper{definition}s have
+Thus, internal definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   let-syntax} form would have.
 
@@ -3722,7 +3726,7 @@ extending the syntactic environment of the {\cf letrec-syntax}
 form with macros whose keywords are the
 \hyper{keyword}s, bound to the specified transformers.
 Each binding of a \hyper{keyword} has the \hyper{bindings}
-as well as the \hyper{expression}s or \hyper{definition}s within its region,
+as well as the \hyper{form}s within its region,
 so the transformers can
 transcribe forms into uses of the macros
 introduced by the {\cf letrec-syntax} form.
@@ -3730,9 +3734,9 @@ introduced by the {\cf letrec-syntax} form.
 The \hyper{form}s of a {\cf letrec-syntax}
 form are treated, whether in definition or expression context, as if
 wrapped in an implicit {\cf begin}, see section~\ref{begin}.
-Thus, internal definitions in the result of expanding the \hyper{definition}s have
+Thus, internal definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
-  let-syntax} form would have.
+  letrec-syntax} form would have.
 
 \begin{scheme}
 (letrec-syntax
@@ -4005,14 +4009,14 @@ which would result in a contract violation.
 \label{declarationssection}
 
 \schindex{declarations}
-A declaration affects a range of code, and indicates that the code
+A declaration affects a range of code and indicates that the code
 within that range should be compiled or executed to have certain
 qualities.  A declaration appears at the beginning of a \hyper{body}
-(see section~\ref{bodiessection}), and its range is the library in which it
-appears, the expression that immediately surrounds the \hyper{body} at
-whose head it appears, or the group of definitions at whose head it
-appears, possibly including code inserted into the range
-by macro expansion.
+(see section~\ref{bodiessection}), at the beginning of a \hyper{library body}
+(see chapter~\ref{librarychapter}), or within a 
+\hyper{script body} (see chapter~\ref{scriptchapter}),
+and its range is the body in which it appears, possibly but not
+necessarily including code inserted into the range by macro expansion.
 
 A \hyper{declaration} is always a {\cf declare} form.
 
