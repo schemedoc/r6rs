@@ -1,0 +1,149 @@
+August 29 2006 8:00am-10:00am EDT 812-856-3600, PIN 001386#
+All present by about 8:06am EDT:
+Mike, Will, Kent, Anton, Matthew
+
+0. finalize agenda (1 minute)
+    move core/library split up
+
+1. action items from 8/24/2006 (5 minutes)
+   - propose a new procedure to clear the output
+        not done, but see below
+   - 
+   - note: reserve last week of August (THIS WEEK) for proofreading
+
+2. Report status (5 minutes)
+   - items ready for review
+     <item>                    <editor>   <to be completed by>   <done?>
+     unicode                   Matthew    Aug. 03                done.
+     quasiquote                Kent       Aug. 08                done.
+     letrec*                   Kent       Aug. 08                done.
+     let-values & let*-values  Kent       Aug. 08                done.
+     records                   Kent       Aug. 24                done.
+     enumerations              Will       Jul. 12                done.
+     bytes                     Will       Aug. 03                done.
+     equal?                    Will       Aug. 01                done.
+     list-library              Anton      Aug. 21                done.
+     case-lambda               Anton      Aug. 21                done.
+     when & unless             Anton      Aug. 08                done.
+     arithmetic                Will       Aug. 22                done.
+     set-car!, set-cdr!        Anton      Aug. 21                done.
+     condition-type details    Anton      Aug. 21
+     dynamic-wind              Kent       Aug. 15                done.
+     read-syntax, syn. forms   Matthew    Aug. 20                done.
+     hash tables               Anton      Aug. 24                done.
+     safe/unsafe mode          Kent       Aug. 28
+     exceptions & conditions   Matthew    Aug. 03                done.
+   - items not ready for review
+     core/library split
+     eval                      Kent
+     I/O                       Will                              done.
+     hash tables               Will
+     syntax-case               Kent, Matthew
+     library system            Kent, Matthew
+     scripts                   Anton
+     r5rs compat. library      Anton
+     operational semantics     unavailable
+
+3. R6RS release date (10 minutes)
+   - can we make September 1?
+   - should we push back by a week or so?
+        could send draft to steering committee on Friday,
+        asking them to delay public release until Tuesday
+        so we can produce a cleaner draft over weekend
+
+4. Core/library split (20 minutes)
+   - number and size of libraries to be described by R6RS
+   - size of "mimimal language" presented by document
+        base library is a base for constructing libraries,
+            not intended to be all that useful by itself
+        base library includes:
+            call-with-current-continuation, dynamic-wind
+            multiple values, etc
+            syntax-rules
+            no i/o at all
+            no records
+   - congruence between R6RS document and R6RS libraries
+   - hierarchies and something like Java's wild card syntax?
+        Will moved we leave out wild cards; Anton seconded.
+        Motion carried with no objections.
+   - do wildcards apply outside of r6rs hierarchy?
+   - allow single identifier id as a library name to abbreviate (id)?
+        Kent so moved, Anton seconded.
+        Motion carried with no objections.
+
+5. S-expression, datum terminology (10 minutes)
+   - see https://r6rs.scheming.org/node/390
+        syntactic datum
+        datum value
+        by the way, "datums" is a legitimate plural
+
+Noise on line.  By the time we could hear each other
+again, Matthew was no longer on the line.  He returned
+later.
+
+6. I/O (20 minutes)
+   - add clear-output-port ?
+        eliminates any buffered output that has not been written
+            (or obtained)
+        does not affect bytes that have been written to a file
+        important mainly for bytes output ports
+        clear-bytes-output-port
+            no clear-output-port
+            let's ignore next item
+            probably should have clear-string-output-port also,
+                even though it's the same
+   - add clear-input-port ?
+        eliminates any buffered input that has not been read
+   - must open-bytes-output-port copy its argument?
+        Kent moved it doesn't have to copy; Mike seconded.
+        Motion passed with no objections.
+        But it is allowed to copy.
+
+7. Library and syntax-case changes (10 minutes)
+   - see https://r6rs.scheming.org/node/399
+        Kent moved that those changes be made; Matthew seconded.
+        Motion carried with no objections.
+        This includes flushing indirect-exports.
+   - also https://r6rs.scheming.org/node/383#comment-1809
+        (Changing the semantics of "for" so a "for" for
+        import adds to rather than replaces a "for" for
+        export.)
+        Negative meta-levels?
+            Matthew thinks it complicates things.
+            Let's not go there.
+        Changes accepted.
+
+8. Body syntax (10 minutes)
+   - let-syntax, letrec-syntax again
+        Should be begin-like everywhere or nowhere.
+        We have already agreed on everywhere.
+        (Note that node/399 gets rid of declarations
+            at the head of a begin.)
+   - body begin splicing syntax/expansion algorithm
+        The natural algorithm allows a begin that
+            includes definitions followed by expressions.
+        Option A:
+            as in R5RS
+            begin definitions, begin declarations, begin expressions
+        Option B:
+            allow a begin to contain definitions followed by
+                expressions, provided the begin is on the
+                boundary between definitions and expressions
+        Option C:
+            at the top level of a library,
+                treat begin as a splicing construct everywhere
+        Option D:
+            at the top level of a library,
+                treat begin as a splicing construct everywhere
+            also allow (begin) as an expression, evaluating to
+                the undefined value
+        Consensus: B
+        Might as well allow a begin to contain declarations
+            followed by definitions, provided the begin is on
+            the boundary between declarations and expressions.
+            Could even have a begin that contains all three,
+            provided there are no other definitions in the
+            body.
+        Matthew volunteered to try to fix the formal syntax.
+
+9. adjourned about 9:55am EDT
