@@ -18,9 +18,9 @@ A script is a delimited piece of text, typically a file, that follows
 the following syntax:
 
 \begin{grammar}
-\meta{script header} \: \#!\meta{space}/usr/bin/env\meta{space}
+\meta{script} \: \meta{script header} \meta{script substance}
+\meta{script header} \: \#! \meta{space} /usr/bin/env \meta{space}
   \> scheme-script \meta{linefeed}
-  \> \meta{script substance}
 \meta{script substance} \: \#!r6rs \meta{import form} \meta{script body}
   \> \| \meta{import form} \meta{script body}
 \meta{import form} \: (import \arbno{\meta{import spec}})
@@ -32,14 +32,16 @@ the following syntax:
 
 \subsection{Script header}
 
-The syntax given for \meta{script header} is the recommended syntax for 
-portable scripts.  A script has as its first line:
+The first line of a script is:
 \begin{verbatim}
 #! /usr/bin/env scheme-script
 \end{verbatim}
 %
 Implementations are required to ignore the first 
-line of a script, even if it is not the above.
+line of a script, however, even if it is not the above.
+This allows script
+headers to be customized locally by altering the script header from its
+default portable form.
 
 Implementations should provide an executable program named {\cf scheme-script}
 that is capable of executing scripts on platforms where this makes
