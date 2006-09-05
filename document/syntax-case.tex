@@ -284,8 +284,7 @@ A \hyper{pattern} is an identifier, constant, or one of the following.
 \#(\hyper{pattern} \ldots \hyper{pattern} \hyper{ellipsis} \hyper{pattern} \ldots)%
 \end{schemenoindent}
 
-An \hyper{ellipsis} is the identifier ``{\cf ...}'' (which cannot be used as
-an identifier in either a template or a pattern).\schindex{...}
+An \hyper{ellipsis} is the identifier ``{\cf ...}'' (three periods).\schindex{...}
 
 An identifier appearing within a \hyper{pattern} may be an underscore
 (~{\cf \_}~), a literal identifier listed in the list of literals
@@ -371,7 +370,7 @@ and
 whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
 
 \item $P$ is a pattern datum (any nonlist, nonvector, nonsymbol
-object) and $F$ is equal to $P$ in the sense of the
+datum) and $F$ is equal to $P$ in the sense of the
 {\cf equal?} procedure.
 \end{itemize}
 
@@ -440,23 +439,24 @@ The value of a {\cf syntax} form is a copy of \hyper{template} in which
 the pattern variables appearing within the template are replaced with
 the input subforms to which they are bound.
 Pattern data and identifiers that are not pattern variables
-are copied directly into the output.
+or ellipses are copied directly into the output.
 A subtemplate followed by an ellipsis expands
 into zero or more occurrences of the subtemplate.
-The subtemplate
-must contain at least one pattern variable from a subpattern
-followed by an ellipsis.
-(Otherwise, the expander would not be able to determine how many times the
-subform should be repeated in the output.)
 Pattern variables that occur in subpatterns followed by one or more
 ellipses may occur only in subtemplates that are
-followed by (at least) as many ellipses.  It is a syntax violation
-if the pattern variable occurs outside of such a context.
+followed by (at least) as many ellipses.
 These pattern variables are replaced in the output by the input
 subforms to which they are bound, distributed as specified.
-If a pattern variable is followed by more ellipses in the template
-than in the associated pattern, the input form is replicated as
+If a pattern variable is followed by more ellipses in the subtemplate
+than in the associated subpattern, the input form is replicated as
 necessary.
+The subtemplate must contain at least one pattern variable from a
+subpattern followed by an ellipsis, and for at least one such pattern
+variable, the subtemplate must be followed by exactly as many ellipses as
+the subpattern in which the pattern variable appears.
+(Otherwise, the expander would not be able to determine how many times the
+subform should be repeated in the output.)
+It is a syntax violation if the consraints of this paragraph are not met.
 
 A template of the form
 {\cf (\hyper{ellipsis} \hyper{template})} is identical to \hyper{template}, except that

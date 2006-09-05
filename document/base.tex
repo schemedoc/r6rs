@@ -3789,20 +3789,24 @@ to the keyword {\cf f} whose binding is established by the
 \section{{\tt syntax-rules}}
 \label{syntaxrulessection}
 
-A \hyper{transformer spec} in a syntax definition or keyword binding
-can be a {\cf syntax-rules} form:
+A \hyper{transformer spec} in a syntax definition, {\cf let-syntax},
+or {\cf letrec-syntax} can be a {\cf syntax-rules} form:
 
 \begin{entry}{%
 \pproto{(syntax-rules (\hyper{literal} \dots) \hyper{syntax rule} \dots)}{\exprtype}}
 \mainschindex{syntax-rules}
 
 \syntax Each \hyper{literal} must be an identifier.
-Each \hyper{syntax rule} must take the following form:
+Each \hyper{syntax rule} must take one of the the following forms:
 
 \begin{scheme}
-(\hyper{pattern} \hyper{template})%
+(\hyper{srpattern} \hyper{template})
+(\hyper{srpattern} \hyper{fender} \hyper{template})%
 \end{scheme}
 
+An \hyper{srpattern} is a restricted form of \hyper{pattern},
+namely, a nonempty \hyper{pattern} in one of four parenthesized forms below
+whose first subform is an identifier or an underscore {\cf \_}.
 A \hyper{pattern} is an identifier, constant, or one of the following.
 
 \begin{schemenoindent}
@@ -3814,11 +3818,7 @@ A \hyper{pattern} is an identifier, constant, or one of the following.
 \#(\hyper{pattern} \ldots \hyper{pattern} \hyper{ellipsis} \hyper{pattern} \ldots)%
 \end{schemenoindent}
 
-The \hyper{pattern} in a \hyper{syntax rule} is a list \hyper{pattern}
-that begins with the keyword for the macro, or an underscore {\cf \_}.
-
-An \hyper{ellipsis} is the identifier ``{\cf ...}'' (which cannot be used as
-an identifier in either a template or a pattern).\schindex{...}
+An \hyper{ellipsis} is the identifier ``{\cf ...}'' (three periods).\schindex{...}
 
 A \hyper{template} is a pattern variable, an identifier that
 is not a pattern
@@ -3831,6 +3831,10 @@ variable, a pattern datum, or one of the following.
 \end{scheme}
 
 A \hyper{subtemplate} is a \hyper{template} followed by zero or more ellipses.
+
+\hyper{Fender}, if present, is an expression.
+The \hyper{fender} is generally useful only if the {\cf (r6rs syntax-case)}
+library has been imported; see chapter~\ref{syntaxcasechapter}.
 
 \semantics An instance of {\cf syntax-rules} produces a new macro
 transformer by specifying a sequence of hygienic rewrite rules.  A use
@@ -3847,18 +3851,19 @@ All other identifiers appearing within a \hyper{pattern} are
 \textit{pattern variables\mainindex{pattern variable}}.
 It is a syntax violation if an ellipsis or underscore appears in {\cf (\hyper{literal} \dots)}.
 
-The keyword at the beginning of the pattern in a
-\hyper{syntax rule} is not involved in the matching and
+While the first subform of \hyper{srpattern} may be an identifier, the
+identifier is not involved in the matching and
 is not considered a pattern variable or literal identifier.
 
 \begin{rationale}
-The scope of the keyword is determined by the expression or syntax
+The identifier is most often the keyword used to identify the macro.
+The scope of the keyword is determined by the binding form or syntax
 definition that binds it to the associated macro transformer.
 If the keyword were a pattern variable or literal
 identifier, then
 the template that follows the pattern would be within its scope
-regardless of whether the keyword were bound by {\cf let-syntax}
-or by {\cf letrec-syntax}.
+regardless of whether the keyword were bound by {\cf let-syntax},
+{\cf letrec-syntax}, or {\cf define-syntax}.
 \end{rationale}
 
 Pattern variables match arbitrary input subforms and
@@ -3888,9 +3893,11 @@ one of the following holds:
 \item $P$ is a pattern variable.
 
 \item $P$ is a literal identifier
-and $F$ is an equivalent identifier in the
-sense of {\cf free-identifier=?}
-(section~\ref{identifierpredicatessection}).
+and $F$ is an identifier such that both $P$ and $F$ would refer to the
+same binding if both were to appear in the output of the macro outside
+of any bindings inserted into the output of the macro.
+(If neither of two like-named identifiers refers to any binding, i.e., both
+are undefined, they are considered to refer to the same binding.)
 
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_n$)}
@@ -3938,7 +3945,7 @@ and
 whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
 
 \item $P$ is a pattern datum (any nonlist, nonvector, nonsymbol
-object) and $F$ is equal to $P$ in the sense of the
+datum) and $F$ is equal to $P$ in the sense of the
 {\cf equal?} procedure.
 \end{itemize}
 
@@ -3947,22 +3954,24 @@ matching \hyper{syntax rule}, pattern variables that occur in the
 template are replaced by the subforms they match in the input.
 
 Pattern data and identifiers that are not pattern variables
-are copied directly into the output.
+or ellipses are copied directly into the output.
 A subtemplate followed by an ellipsis expands
 into zero or more occurrences of the subtemplate.
-The subtemplate
-must contain at least one pattern variable from a subpattern
-followed by an ellipsis.
-(Otherwise, the expander would not be able to determine how many times the
-subform should be repeated in the output.)
 Pattern variables that occur in subpatterns followed by one or more
 ellipses may occur only in subtemplates that are
 followed by (at least) as many ellipses.
 These pattern variables are replaced in the output by the input
 subforms to which they are bound, distributed as specified.
-If a pattern variable is followed by more ellipses in the template
-than in the associated pattern, the input form is replicated as
+If a pattern variable is followed by more ellipses in the subtemplate
+than in the associated subpattern, the input form is replicated as
 necessary.
+The subtemplate must contain at least one pattern variable from a
+subpattern followed by an ellipsis, and for at least one such pattern
+variable, the subtemplate must be followed by exactly as many ellipses as
+the subpattern in which the pattern variable appears.
+(Otherwise, the expander would not be able to determine how many times the
+subform should be repeated in the output.)
+It is a syntax violation if the consraints of this paragraph are not met.
 
 A template of the form
 {\cf (\hyper{ellipsis} \hyper{template})} is identical to \hyper{template}, except that
