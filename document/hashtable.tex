@@ -4,10 +4,10 @@
 The \deflibrary{r6rs hash-tables} library provides hash tables.
 A \defining{hash table} is a data structure that associates keys with values.
 Any object can be used as a key, provided a \defining{hash function}
-and a suitable equivalence predicate is available.  A hash function is a
+and a suitable \defining{equivalence function} is available.  A hash function is a
 procedure that maps
-keys to integers, and must be compatible with the equivalence predicate,
-which is a procedure that accepts two keys and returns \schtrue{} if they
+keys to integers, and must be compatible with the equivalence function,
+which is a procedure that accepts two keys and returns true if they
 are equivalent, otherwise returns \schfalse{}.
 Standard hash tables for arbitrary objects based on the {\cf eq?} and 
 {\cf eqv?} predicates (see section~\ref{equivalencesection}) are provided.  
@@ -45,44 +45,43 @@ capacity of the hash table is set to approximately \var{k} elements.
 \end{entry}
 
 \begin{entry}{%
-\proto{make-hash-table}{ \var{hash-function} \var{equiv?}}{procedure}
-\rproto{make-hash-table}{ \var{hash-function} \var{equiv?} \var{k}}{procedure}}
+\proto{make-hash-table}{ \var{hash-function} \var{equiv}}{procedure}
+\rproto{make-hash-table}{ \var{hash-function} \var{equiv} \var{k}}{procedure}}
 
-\domain{\var{Hash-function} and \var{equiv?} must be procedures.
+\domain{\var{Hash-function} and \var{equiv} must be procedures.
 \var{Hash-function} will be called by other procedures described in
 this chapter with a key as argument, and must return a 
 non-negative exact integer.
-\var{Equiv?} will be called by other procedures described in
-this chapter with two keys as arguments, and must return a 
-boolean.}
+\var{Equiv} will be called by other procedures described in
+this chapter with two keys as arguments.}
 The {\cf make-hash-table} procedure returns a newly allocated mutable
 hash table using \var{hash-function} 
-as the hash function and \var{equiv?} as the equivalence predicate used to 
+as the hash function and \var{equiv} as the equivalence function used to 
 compare keys.
 If a third argument is given, the 
 initial capacity of the hash table is set to approximately \var{k} elements.
 
 Both the hash function \var{hash-function} and the equivalence
-predicate \var{equiv?} should behave like pure functions
+function \var{equiv} should behave like pure functions
 on the domain of keys.  For example, the {\cf string-hash}
 and {\cf string=?} procedures are permissible only if all
 keys are strings and the contents of those strings are never
 changed so long as any of them continue to serve as a key in
 the hash table.  Furthermore any pair of values for which
-the equivalence predicate \var{equiv?} returns \schtrue{} should
+the equivalence function \var{equiv} returns true should
 be hashed to the same exact integers by 
 \var{hash-function}.
 
 \begin{note}
 Hash tables are allowed to cache the results of calling the
-hash function and equivalence predicate, so programs cannot
+hash function and equivalence function, so programs cannot
 rely on the hash function being called for every lookup or
-update.  Furthermore any hash table operation may call the
+update.  Furthermore any hash-table operation may call the
 hash function more than once.
 \end{note}
 
 \begin{rationale}
-Hash table lookups are often followed by updates, so caching
+Hash-table lookups are often followed by updates, so caching
 may improve performance.  Hash tables are free to change
 their internal representation at any time, which may result
 in many calls to the hash function.
@@ -115,14 +114,14 @@ then \var{default} is returned.
 \begin{entry}{\proto{hash-table-set!}{ \var{hash-table} \var{key} \var{obj}}{procedure}}
 
 Changes \var{hash-table} to associate \var{key} with \var{obj},
-adding a new association or replacing any existing association for \var{key}.
-Returns the unspecified value.
+adding a new association or replacing any existing association for \var{key},
+and returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-delete!}{ \var{hash-table} \var{key}}{procedure}}
 
-Removes any association for \var{key} within \var{hash-table}.
-Returns the unspecified value.
+Removes any association for \var{key} within \var{hash-table}, and
+returns the unspecified value.
 \end{entry}
 
 \begin{entry}{\proto{hash-table-contains?}{ \var{hash-table} \var{key}}{procedure}}
@@ -157,7 +156,7 @@ avoid multiple lookups of the same key:
 \begin{entry}{\proto{hash-table-fold}{ \var{proc} \var{hash-table} \var{init}}{procedure}}
 
 \domain{\var{Proc} must be a procedure that takes three arguments.}
-For every association in \var{hash-table}, calls
+For every association in \var{hash-table}, {\cf hash-table-fold} calls
 \var{proc} with the association
 key, the association value, and an accumulated value as arguments.
 The accumulated value is \var{init} for the first
@@ -192,7 +191,7 @@ cannot be changed by clients.
 \proto{hash-table-clear!}{ \var{hash-table}}{procedure}
 \rproto{hash-table-clear!}{ \var{hash-table} \var{k}}{procedure}}
 
-Removes all associations from \var{hash-table}.  Returns the unspecified value.
+Removes all associations from \var{hash-table} and returns the unspecified value.
 
 If a second argument is given, the current
 capacity of the hash table is reset to approximately \var{k} elements.
@@ -224,9 +223,9 @@ Equivalent to:
 
 \section{Inspection}
 
-\begin{entry}{\proto{hash-table-equivalence-predicate}{ \var{hash-table}}{procedure}}
+\begin{entry}{\proto{hash-table-equivalence-function}{ \var{hash-table}}{procedure}}
 
-Returns the equivalence predicate used by
+Returns the equivalence function used by
 \var{hash-table} to compare keys.  For hash tables
 created with {\cf make-eq-hash-table} and {\cf make-eqv-hash-table},
 returns {\cf eq?} and {\cf eqv?} respectively.
@@ -262,19 +261,24 @@ while the hash table remains in use.
 \begin{entry}{\proto{equal-hash}{ \var{obj}}{procedure}}
 
 Returns an integer hash value for \var{obj}, based on
-its structure and current contents.
+its structure and current contents.  This hash function is suitable
+for use with {\cf equal?} as an equivalence function.
 \end{entry}
 
 \begin{entry}{\proto{string-hash}{ \var{string}}{procedure}}
 
 Returns an integer hash value for \var{string}, based on
 its current contents.
+This hash function is suitable
+for use with {\cf string=?} as an equivalence function.
 \end{entry}
 
 \begin{entry}{\proto{string-ci-hash}{ \var{string}}{procedure}}
 
 Returns an integer hash value for \var{string} based on
 its current contents, ignoring case.
+This hash function is suitable
+for use with {\cf string-ci=?} as an equivalence function.
 \end{entry}
 
 \begin{entry}{\proto{symbol-hash}{ \var{symbol}}{procedure}}
