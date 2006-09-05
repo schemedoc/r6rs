@@ -1,0 +1,130 @@
+Conference call September 5 2006 8:00am-10:00am EDT
+All present by about 8:02am EDT:
+Kent, Anton, Matthew, Mike, Will
+
+Thanks to Kent and Mike for all the work they've done...
+so far...
+
+0. finalize agenda (1 minute)
+
+1. action items from 8/29/2006 (5 minutes)
+   - publish the not-for-public-release r6rs
+        done
+
+2. termination language for identifiers, characters, etc. (5 minutes)
+   - are termination requirements the same for all of these?
+   - who will fix the language?
+        Second paragraph of 3.2.1 should become something like:
+        Lexemes that require implicit termination (identifiers,
+        numbers, characters, booleans, and dot) are terminated
+        by any <delimiter> or by end of file, but not necessarily
+        by anything else.
+
+3. export "for" syntax" (10 minutes)
+   - there are different interpretations about the semantics and
+     disagreement about the proper interpretation mong current
+     designers/implementors (Flatt, Dybvig, van Tonder, Ghuloum)
+   - the export "for" syntax turns out also to be essentially redundant
+   - recommendation: flush export "for" syntax and state that
+     exported bindings within a library are exported for run, and
+     reexported identifiers are exported into their import phases
+        Matthew so moved; Kent seconded.
+        Vote:
+            yes: Kent, Matthew
+            no:
+            abstain: Will, Anton, Mike
+        Motion passed.
+    At what phases should the standard libraries be exported?
+        Matthew suggested that (r6rs base) export everything
+            for run only, and that (r6rs) export everything
+            for both run and for export.
+    Why is eval in the (r6rs) library?
+        Will moved that eval be removed from (r6rs) library;
+        Kent seconded.  Motion carried by unanimous vote.
+
+4. script syntax
+   - ignore first line iff it starts with "#!<space>" or "#!/"?
+   - ignore first line regardless?
+        An R6RS script has <blah> as its first line.
+        Implementations are required to ignore the first line
+            of a script, even if it is not <blah>.
+        No objections.
+
+5. perceived r6rs size (10 minutes)
+   - should we make use of headers, page breaks, Part numbers, etc. to
+     make clear distinction between base and libraries?
+   - should we add a rationale for the size and explain that the base
+     is approximately the size of r5rs?
+   - should we mention that r6rs is the first Scheme standard that a
+     reasonable Scheme implementor might choose *not* to extend?
+        No.
+
+6. six-month public comment process (15 minutes)
+   - expectations for editor participation
+        editors are expected to participate
+        we don't have to present a unified front
+        editors may make public comments
+        editors will also deliberate in private
+   - tracking public comments
+   - tracking our own deliberations
+   - trac wiki?
+
+Mitch suggested we set up two mailing lists.
+    Anyone could submit to one, but only Kent could read it.
+    Kent would verify that it is sent in the proper form.
+    Then Kent would resubmit the comment to the second list,
+    where everyone could participate.
+    Kent didn't want to do that task manually.
+Kent suggested they delay public comments for a week
+    so we can put together a web form that would enforce
+    the correct form.  Those comments would be sent to
+    Kent.  The editors would be obliged to respond to
+    those comments, but not to comments sent to the
+    second list.
+Kent volunteered to do the web form.
+Will volunteered to set up a Trac system for the editors.
+    Only the editors will have access.
+Anton volunteered to look into other systems that might
+    have a more automated submission process.
+Mailing list will probably be at r6rs.org.
+    The editors should not be managing that mailing list.
+
+7. publishing discussion archives
+   - where and when
+        Kent feels the archive should not be published
+            until after the R6RS is accepted.
+        Let's think about this for a week.
+
+8. publishing reference implementations
+   - where and when
+        when: some (possibly preliminary) version by next Wednesday
+            except as noted below
+        libraries and syntax-case
+            Kent, maybe another from van Tonder
+        arithmetic
+            Will
+        records
+            Matthew
+        Unicode library
+            Will
+        Unicode reader (as part of i/o, probably by next Wednesday)
+            Mike
+        hash tables (maybe by next Wednesday)
+            Anton
+        exceptions and conditions
+            Mike
+        list utilities (don't forget tortoise and hare)
+            Anton
+        enumerations
+            Will
+        bytes
+            Will
+        i/o (in October)
+            Mike
+
+Meet again next Tuesday, same time.
+The week after that is ICFP.
+
+9. adjourned about 9:45am EDT
+
+Will
