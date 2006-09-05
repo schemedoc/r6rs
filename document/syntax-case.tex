@@ -227,11 +227,12 @@ a keyword with which it has been associated is found.
 If the keyword appears in the first position of a list-structured
 input form, the transformer receives the entire list-structured
 form, and its output replaces the entire form.
-If the keyword is found in any other definition or expression context, the
-transformer receives a wrapped syntax object representing just the keyword
-reference, and its output replaces just the reference.
-An exception with condition type {\cf\&syntax} is raised if the keyword appears on the
-left-hand side of a {\cf set!} expression.
+If the keyword is found in any other declaration, definition or expression
+context, the transformer receives a wrapped syntax object representing
+just the keyword reference, and its output replaces just the reference.
+Except with variable transformers (see below), an exception with condition
+type {\cf\&syntax} is raised if the keyword appears on the left-hand side
+of a {\cf set!} expression.
 
 \begin{entry}{%
 \proto{make-variable-transformer}{ proc}{procedure}}
@@ -241,12 +242,11 @@ a wrapped syntax object.}
 
 The {\cf make-variable-transformer} procedure creates a
 \defining{variable transformer}.
-In a macro use that consists only of a keyword, \var{proc} is called
-with a wrapped syntax object representing just the keyword
-reference, and its return value replaces just the reference.
-
-If a keyword associated with a variable transformer appears on the
-left-hand side of a {\cf set!} expression, \var{proc} is called with a
+A variable transformer is like an ordinary transformer except
+that, if a keyword associated with a variable transformer appears on
+the left-hand side of a \scheme{set!} expression, an exception is
+not raised.
+Instead, \var{proc} is called with a
 wrapped syntax object representing the entire {\cf set!} expression as
 its argument, and its return value replaces the entire {\cf set!}
 expression.
@@ -826,7 +826,7 @@ the variable {\cf break} would not be visible in {\cf e \dots}.
 
 The datum argument \var{datum} may also represent an arbitrary
 Scheme form, as demonstrated by the following definition of
-{\cf include}, an expand-time version of {\cf load}.
+{\cf include}.
 
 \begin{scheme}
 (define-syntax include
