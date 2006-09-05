@@ -84,6 +84,11 @@ concise:  \arbno{\meta{thing}} means zero or more occurrences of
 \meta{thing}; and \atleastone{\meta{thing}} means at least one
 \meta{thing}.
 
+Some non-terminal names refer to the Unicode scalar values of the
+same name: \meta{character tabulation} (U+0009), \meta{linefeed}
+(U+000A), \meta{line tabulation} (U+000B), \meta{form feed} (U+000C),
+\meta{carriage return} (U+000D), and \meta{space} (U+0020).
+
 \section{Lexical syntax}
 \label{lexicalsyntaxsection}
 
@@ -125,8 +130,8 @@ language: {\tt \verb"{" \verb"}"}
 \>  \| \meta{character} \| \meta{string}
 \>  \| ( \| ) \| \openbracket{} \| \closedbracket{} \| \sharpsign( \| \singlequote{} \| \backquote{} \| , \| ,@ \| {\bf.}
 \meta{delimiter} \: \meta{whitespace} \| ( \| ) \| \openbracket{} \| \closedbracket{} \| " \| ;
-\meta{whitespace} \: \meta{horizontal tab} \| \meta{linefeed}
-\> \| \meta{vertical tab} \| \meta{form feed} \meta{carriage return}
+\meta{whitespace} \: \meta{character tabulation} \| \meta{linefeed}
+\> \| \meta{line tabulation} \| \meta{form feed} \meta{carriage return}
 \> \| \meta{any character whose category is Zs, Zl, or Zp}
 \meta{intra-line whitespace} \: $\langle${\rm any \meta{whitespace}}
 \> \quad {\rm that is not \meta{linefeed}}
@@ -166,12 +171,12 @@ language: {\tt \verb"{" \verb"}"}
  \>  \| > \| ? \| \verb"^" \| \verb"_" \| \verb"~"
 \meta{subsequent} \: \meta{initial} \| \meta{digit}
  \>  \| \meta{special subsequent}
- \> \| \meta{symbol escape}
+ \> \| \meta{inline hex escape}
 \meta{digit} \: 0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 7 \| 8 \| 9
 \meta{hex digit} \: \meta{digit}
  \> \| a \| A \| b \| B \| c \| C \| d \| D \| e \| E \| f \| F
 \meta{special subsequent} \: + \| - \| .\ \| @
-\meta{symbol escape} \: \backwhack{}x\meta{hex scalar value};
+\meta{inline hex escape} \: \backwhack{}x\meta{hex scalar value};
 \meta{hex scalar value} \: \atleastone{\meta{hex digit}}
  \> {\rm with at most 8 digits}
  \meta{peculiar identifier} \: + \| - \| ... \| -> \arbno{\meta{subsequent}}
@@ -188,7 +193,8 @@ language: {\tt \verb"{" \verb"}"}
 \meta{string element} \: \meta{any character other than \doublequote{} or \backwhack}
  \> \| \backwhack{}a \| \backwhack{}b \| \backwhack{}t \| \backwhack{}n \| \backwhack{}v \| \backwhack{}f \| \backwhack{}r
  \>  \| \backwhack\doublequote{} \| \backwhack\backwhack 
- \>  \| \meta{linefeed} \meta{intra-line whitespace}
+ \>  \| \backwhack\meta{linefeed} \| \backwhack\meta{space}
+ \>  \| \meta{inline hex escape}
 \end{grammar}
 
 
@@ -263,7 +269,7 @@ decimal points or exponents must be in decimal radix.
 \label{whitespaceandcomments}
 
 \defining{Whitespace} characters are spaces, linefeeds,
-carriage returns, horizontal tabs, form feeds, vertical tabs,
+carriage returns, character tabulations, form feeds, line tabulations,
 and any other character whose category is Zs, Zl, or Zp.
 Whitespace is used for improved readability and
 as necessary to separate lexemes from each other.  Whitespace may
@@ -443,15 +449,15 @@ themselves.  Escape sequences always start with a backslash (\backwhack{}):
 \begin{itemize}
 \item{\tt \backwhack{}a} : alarm, U+0007
 \item{\tt \backwhack{}b} : backspace, U+0008 
-\item{\tt \backwhack{}t} : tab, U+0009 
+\item{\tt \backwhack{}t} : character tabulation, U+0009 
 \item{\tt \backwhack{}n} : linefeed, U+000A 
-\item{\tt \backwhack{}v} : vertical tab, U+000B 
+\item{\tt \backwhack{}v} : line tabulation, U+000B 
 \item{\tt \backwhack{}f} : formfeed, U+000C 
 \item{\tt \backwhack{}r} : return, U+000D 
 \item{\tt \backwhack{}}\verb|"| : doublequote, U+0022 
 \item{\tt \backwhack{}\backwhack{}} : backslash, U+005C 
 \item{\tt \backwhack{}\hyper{linefeed}\hyper{intraline whitespace}} : nothing
-\item{\tt \backwhack{}\ } : space, U+0020 (useful for terminating the
+\item{\tt \backwhack{}\hyper{space}} : space, U+0020 (useful for terminating the
   previous escape sequence before continuing with whitespace)
 \item{\tt \backwhack{}x\atleastone{\hyper{digit 16}};} : (note the
   terminating semi-colon) where no more than eight \hyper{digit 16}s
