@@ -1071,100 +1071,6 @@ one-armed {\cf if} expressions where appropriate.
 \end{schemenoindent}
 \end{entry}
 
-\begin{note}
-The {\cf syntax-rules} form (section~\ref{syntax-rules}) could be
-implemented as a derived form, with the following extensions:
-
-\begin{itemize}
- \item Patterns are generalized slightly to allow a fixed number of   
-   subpatterns to appear after an ellipsis, e.g.,
-   {\cf (\hyperi{p} ... \hyperii{p} \hyperiii{p})}.
-
- \item Underscores (~{\cf \_}~) may appear within the pattern
-   and match any input, but are not pattern variables and so
-   are not bound in the output \hyper{template}.
-
- \item The first position of a syntax-rules pattern may be any
-   identifier, including an underscore, i.e., it need not be the name
-   of the macro being defined.
-   This position is always ignored.
-
- \item An optional fender may appear between the pattern and
-   template of any clause and has the same meaning as a
-   {\cf syntax-case} fender.
-\end{itemize}
-
-Any {\cf syntax-rules} form can be expressed with
-{\cf syntax-case} by making the {\cf lambda} expression and
-{\cf syntax} expressions explicit, and
-{\cf syntax-rules} may be defined in terms of {\cf syntax-case}
-as follows.
-
-\begin{scheme}
-(define-syntax syntax-rules
-  (lambda (x)
-    (syntax-case x ()
-      [(\_ (k ...) [(\_ . p) f ... t] ...)
-       \#'(lambda (x)
-           (syntax-case x (k ...)
-             [(\_ . p) f ... \#'t] ...))])))%
-\end{scheme}
-
-A more robust implementation would verify that the literals
-{\cf \hyper{literal} \dots} are all identifiers, that the first position
-of each pattern is an identifier, and that at most one fender
-is present in each clause.
-\end{note}
-
-\section{Syntax violations}
-
-\begin{entry}{%
-\proto{syntax-violation}{ who message form}{procedure}
-\rproto{syntax-violation}{ who message form subform}{procedure}}
-
-\domain{\var{Name} must be \schfalse{} or a string or a symbol.
-  \var{Message} must be a string.
-  \var{Form} must be a syntax object or a datum value.
-  \var{Subform} must be a syntax object or a datum value.}
-The {\cf syntax-violation} procedure raises an exception, reporting 
-a syntax violation.  
-The \var{who} argument should describe the macro transformer that
-detected the exception.  The \var{message} argument should describe
-the violation.
-The \var{form} argument is the erroneous source syntax
-object or a datum value representing a form. The optional \var{subform} argument is a syntax
-object or datum value representing a form that more precisely locates the
-violation.
-
-If \var{who} is \schfalse{}, {\cf syntax-violation} attempts to
-infer an appropriate value for the condition object (see below) as
-follows:  When \var{form} is either an identifier or a
-list-structured syntax object containing an identifier as its first element, then
-the inferred value is the identifier's symbol.
-Otherwise, no value for \var{who} is provided as part of the
-condition object.
-
-The condition object provided with the exception (see
-chapter~\ref{exceptionsconditionschapter}) has the following condition types:
-%
-\begin{itemize}
-\item If \var{who} is not \schfalse{} or can be inferred, the condition has condition type
-  {\cf \&who}, with \var{who} as the value of the {\cf who} field.  In
-  that case, \var{who} should identify the procedure or entity that
-  detected the exception.  If it is \schfalse, the condition does not
-  have condition type {\cf \&who}.
-\item The condition has condition type {\cf \&message}, with
-  \var{message} as the value of the {\cf message} field.
-\item The condition has condition type {\cf \&syntax} 
-  with \var{form} as the value of the {\cf form} field,
-  and \var{subform} as the value of the {\cf subform} field.
-  If \var{subform} is not provided, the value of the {\cf subform}
-  field is \schfalse.
-\end{itemize}
-\end{entry}
-
-\section{{\tt quasisyntax}}
-
 \begin{entry}{%
 \proto{quasisyntax}{ \hyper{template}}{\exprtype}}
 
@@ -1243,6 +1149,76 @@ and doubly evaluated {\cf quasisyntax} expression, as with the
 nested {\cf quasiquote} examples shown in
 section~\ref{quasiquotesection}.
 \end{note}
+\end{entry}
+
+\begin{note}
+Any {\cf syntax-rules} form can be expressed with
+{\cf syntax-case} by making the {\cf lambda} expression and
+{\cf syntax} expressions explicit, and
+{\cf syntax-rules} may be defined in terms of {\cf syntax-case}
+as follows.
+
+\begin{scheme}
+(define-syntax syntax-rules
+  (lambda (x)
+    (syntax-case x ()
+      [(\_ (k ...) [(\_ . p) f ... t] ...)
+       \#'(lambda (x)
+           (syntax-case x (k ...)
+             [(\_ . p) f ... \#'t] ...))])))%
+\end{scheme}
+
+A more robust implementation would verify that the literals
+{\cf \hyper{literal} \dots} are all identifiers, that the first position
+of each pattern is an identifier, and that at most one fender
+is present in each clause.
+\end{note}
+
+\section{Syntax violations}
+
+\begin{entry}{%
+\proto{syntax-violation}{ who message form}{procedure}
+\rproto{syntax-violation}{ who message form subform}{procedure}}
+
+\domain{\var{Name} must be \schfalse{} or a string or a symbol.
+  \var{Message} must be a string.
+  \var{Form} must be a syntax object or a datum value.
+  \var{Subform} must be a syntax object or a datum value.}
+The {\cf syntax-violation} procedure raises an exception, reporting 
+a syntax violation.  
+The \var{who} argument should describe the macro transformer that
+detected the exception.  The \var{message} argument should describe
+the violation.
+The \var{form} argument is the erroneous source syntax
+object or a datum value representing a form. The optional \var{subform} argument is a syntax
+object or datum value representing a form that more precisely locates the
+violation.
+
+If \var{who} is \schfalse{}, {\cf syntax-violation} attempts to
+infer an appropriate value for the condition object (see below) as
+follows:  When \var{form} is either an identifier or a
+list-structured syntax object containing an identifier as its first element, then
+the inferred value is the identifier's symbol.
+Otherwise, no value for \var{who} is provided as part of the
+condition object.
+
+The condition object provided with the exception (see
+chapter~\ref{exceptionsconditionschapter}) has the following condition types:
+%
+\begin{itemize}
+\item If \var{who} is not \schfalse{} or can be inferred, the condition has condition type
+  {\cf \&who}, with \var{who} as the value of the {\cf who} field.  In
+  that case, \var{who} should identify the procedure or entity that
+  detected the exception.  If it is \schfalse, the condition does not
+  have condition type {\cf \&who}.
+\item The condition has condition type {\cf \&message}, with
+  \var{message} as the value of the {\cf message} field.
+\item The condition has condition type {\cf \&syntax} 
+  with \var{form} as the value of the {\cf form} field,
+  and \var{subform} as the value of the {\cf subform} field.
+  If \var{subform} is not provided, the value of the {\cf subform}
+  field is \schfalse.
+\end{itemize}
 \end{entry}
 
 %%% Local Variables: 
