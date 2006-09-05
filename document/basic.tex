@@ -132,29 +132,6 @@ exceptions that are normally raised in those situations.  The
 distinction between safe and unsafe code is explained in
 section~\ref{safeunsafemodesection}.
 
-\section{Multiple return values}
-\label{multiplereturnvaluessection}
-
-A Scheme expression can evaluate to an arbitrary finite number of
-values.  These values are passed to the expression's continuation.
-
-Not all continuations accept any number of values: A continuation that
-accepts the argument to a procedure call is guaranteed to accept
-exactly one value.  The effect of passing some other number of values
-to such a continuation is unspecified.  The {\cf call-with-values}
-procedure
-described in section~\ref{controlsection} makes it possible to create
-continuations that accept specified numbers of return values.
-If the number of
-return values passed to a continuation created by a call to
-{\cf call-with-values} is not accepted by its consumer
-that was passed in that call, then an exception is raised.
-
-A number of forms in the base library have sequences of expressions
-as subforms that are evaluated sequentially, with the return values of
-all but the last expression being discarded.  The continuations
-discarding these values accept any number of values.
-
 \section{Safety}
 \label{safeunsafemodesection}
 
@@ -188,6 +165,28 @@ may provide access to unsafe libraries, and may interpret
 {\cf (safe 0)} and {\cf unsafe} declarations in ways that
 cannot guarantee safety.
 
+\section{Multiple return values}
+\label{multiplereturnvaluessection}
+
+A Scheme expression can evaluate to an arbitrary finite number of
+values.  These values are passed to the expression's continuation.
+
+Not all continuations accept any number of values: A continuation that
+accepts the argument to a procedure call is guaranteed to accept
+exactly one value.  The effect of passing some other number of values
+to such a continuation is unspecified.  The {\cf call-with-values}
+procedure
+described in section~\ref{controlsection} makes it possible to create
+continuations that accept specified numbers of return values.
+If the number of
+return values passed to a continuation created by a call to
+{\cf call-with-values} is not accepted by its consumer
+that was passed in that call, then an exception is raised.
+
+A number of forms in the base library have sequences of expressions
+as subforms that are evaluated sequentially, with the return values of
+all but the last expression being discarded.  The continuations
+discarding these values accept any number of values.
 
 \section{Storage model}
 \label{storagemodel}
