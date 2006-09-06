@@ -45,19 +45,19 @@ A library declaration contains the following elements:
 
 \begin{itemize}
 \item a name for the library (possibly compound, with versioning),
-\item a list of exports, which name a subset of the library's imports and
-      definitions, and
-\item a list of import dependencies, where each dependency specifies the
-      following:
+\item a list of exports, which name a subset of the bindings defined
+      within or imported into the library,
+\item a list of import dependencies, where each dependency specifies:
 \begin{itemize}
 \item the imported library's name,
 \item the relevant phases, e.g., expand or run time, and
 \item the subset of the library's exports to make available within the
       importing library, and the local names to use within the importing
-      library for each of the library's exports,
+      library for each of the library's exports, and
 \end{itemize}
-\item a library body, consisting of a sequence of definitions followed
-      by a sequence of expressions.
+\item a library body, consisting of a sequence of definitions preceded
+      by a sequence of declarations and followed by a sequence of
+      expressions.
 \end{itemize}
 
 A library definition must have the following form:\mainschindex{library}\mainschindex{import}\mainschindex{export}
@@ -78,7 +78,8 @@ expressions (commands) to be evaluated for their effects.
 The exported bindings may be defined within the library or imported into
 the library.
 
-An identifier can be imported from two or more libraries only if the
+An identifier can be imported from two or more libraries or for two
+phases from the same library only if the
 binding exported by each library is the same (i.e., the binding is
 defined in one library, and it arrives through the imports only by
 exporting and re-exporting).  Otherwise, no identifier can be imported
@@ -215,27 +216,20 @@ If the original name is not in \hyper{import~set}, or
 if the new name is already in \hyper{import~set}, an exception is raised.
 \end{itemize}
 
-An \hyper{export~set} names a set of imported and locally defined bindings to
-be exported for optionally specified phases, possibly with different
-external names.  An \hyper{export spec} must have one of the
+An \hyper{export~spec} names a set of imported and locally defined bindings to
+be exported, possibly with different
+external names.  An \hyper{export~spec} must have one of the
 following forms:
-
-\begin{scheme}
-\hyper{export~set}
-(for (\hyper{export~set} \ldots) \hyper{import~phase} \ldots)%
-\end{scheme}
-
-where an \hyper{export set} must have one of these forms:
 
 \begin{scheme}
 \hyper{identifier}
 (rename (\hyper{identifier} \hyper{identifier}) \ldots)%
 \end{scheme}
 
-In an \hyper{export~set}, an \hyper{identifier} names a single binding defined
-within the library or imported, where the external name for the export is
+In an \hyper{export~spec}, an \hyper{identifier} names a single binding defined
+within or imported into the library, where the external name for the export is
 the same as the name of the binding within the library. 
-A {\cf rename} set exports the binding named by the first
+A {\cf rename} spec exports the binding named by the first
 \hyper{identifier} in each pair, using the second \hyper{identifier} as the
 external name.
 
@@ -298,23 +292,41 @@ The user can always eliminate such ambiguities by avoiding the shorthand
 Bindings defined with a library are not visible in code
 outside of the library, unless the bindings are explicitly exported from the
 library. 
-An exported macro may, however, \emph{implicitly export} an identifier
-defined within or imported into the library.
+An exported macro may, however, \emph{implicitly export} an otherwise
+unexported identifier defined within or imported into the library.
 That is, it may insert a reference to that identifier into the output code
 it produces.
 
 \label{importsareimmutablesection} 
 All explicitly exported variables are immutable in both the exporting and
 importing libraries.
-All implicitly exported variables are mutable in the exporting library but
-immutable in the importing libraries.
-In consequence, any change after the initial assignment to the value of an
+All other variables defined within a library are mutable within the library,
+but implicitly exported variables are immutable in the importing libraries.
+That is, any change after the initial assignment to the value of an
 implicitly exported variable is not reflected by the references inserted
-by an exported macro outside of the exporting library, and exported macros
-may not insert assignments to implicitly exported variables outside of the
-exporting library.
+by an exported macro outside of the exporting library, and 
+an exception with condition type {\cf\&syntax} is raised if an implicitly
+exported variable appears on the left-hand side of a {\cf set!} expression
+in any code produced by an exported macro outside of the library in which
+the variable is defined.
 
-\section{Import phases}
+\begin{rationale} 
+Determining the set of implicit exports is generally impossible without
+expanding all uses of an exported macro in all importing libraries, i.e.,
+not until after the exporting library has been expanded, possibly
+during a separate compilation step.
+Allowing implicit exports to be mutable everywhere would therefore be generally
+equivalent to making all library bindings mutable, if any macros are
+exported, and making all implicit exports immutable even within the
+exporting library would be generally equivalent to making all library
+bindings immutable.
+Making such bindings mutable inside but immutable outside of the library
+is a compromise between these two extremes that permits both
+programmers and compilers to locate the points at which all variables are
+assigned while allowing a programmer to make use of mutable local variables.
+\end{rationale}
+
+\section{Import and export phases}
 \label{phasessection}
 
 \mainindex{phase}\mainindex{import phase}
@@ -335,19 +347,37 @@ transformer in run-time code must be imported ``for {\cf (meta 2)},''
 and so on.
 \end{itemize}
 
-The valid phases for referencing an imported binding are determined by the enclosing
+The effective import phases of an imported binding are determined by the enclosing
 {\cf for} form, if any, in the {\cf import} form of the importing
 library, in addition to the phase of the identifier in the exporting library.
 An \hyper{import~set} without an enclosing {\cf for} is equivalent to
 {\cf (for \hyper{import~set} run)}.
-
 Import and export phases are combined by pairwise addition of all phase
 combinations.  For example, references to an imported identifier exported
 for phases $p_a$ and $p_b$ and imported for phases $q_a$, $q_b$, and $q_c$
 are valid at phases $p_a+q_q$, $p_a+q_b$, $p_a+q_c$, $p_b+q_q$, $p_b+q_b$,
 and $p_b+q_c$.
 
-The import phases implicitly determine when information about a
+The export phase of an exported binding is {\cf run} for all bindings
+defined within the exporting library, and the export phases of a
+reexported binding, i.e., an export imported from another library, are the
+same as the effective import phases of that binding within the reexporting
+library.
+
+The export phase of all bindings exported by the libraries defined in this
+report, except for the composite {\cf r6rs} library
+(see chapter~\ref{complibchapter}), is {\cf run}, while
+the export phases for all bindings exported by {\cf r6rs} are {\cf run}
+and {\cf expand}.
+
+\begin{rationale} 
+The {\cf r6rs} library is intended as a convenience when finer control
+over the precise set of visible standard bindings and their phases is not
+required, and it is most convenient for the purposes of writing macros for
+its bindings to be exported for {\cf expand} as well as for {\cf run}.
+\end{rationale}
+
+The effective import phases implicitly determine when information about a
 library must be available and also when the various forms contained within
 a library must be evaluated.
 
@@ -688,9 +718,8 @@ Examples for macros and phases:
             [else (loop (cdr rest))])))))
 
 (library (my-helpers values-stuff)
-  (export (for mvlet expand run))
-  (import r6rs 
-          (for (my-helpers id-stuff) expand))
+  (export mvlet)
+  (import r6rs (for (my-helpers id-stuff) expand))
 
   (define-syntax mvlet
     (lambda (stx)
