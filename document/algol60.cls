@@ -612,6 +612,10 @@
          \everypar{\global\@nobreakfalse\everypar{}}%
     \endgroup
   \fi}
+\newcommand*\l@chaptergroup[2]{%
+  \begingroup \parfillskip -\@pnumwidth
+  {\leavevmode\bfseries #1\hfil\null}\par\addvspace{2pt}
+  \endgroup}
 %!! \tocshrink added as the only way I can find that will arbitrarily reduce
 %!! the baseline spacing in the TOC.
 \newcommand{\tocshrink}[0]{0em}
