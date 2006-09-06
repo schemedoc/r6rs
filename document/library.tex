@@ -298,33 +298,31 @@ That is, it may insert a reference to that identifier into the output code
 it produces.
 
 \label{importsareimmutablesection} 
-All explicitly exported variables are immutable in both the exporting and
-importing libraries.
-All other variables defined within a library are mutable within the library,
-but implicitly exported variables are immutable in the importing libraries.
-That is, any change after the initial assignment to the value of an
-implicitly exported variable is not reflected by the references inserted
-by an exported macro outside of the exporting library, and 
-an exception with condition type {\cf\&syntax} is raised if an implicitly
-exported variable appears on the left-hand side of a {\cf set!} expression
-in any code produced by an exported macro outside of the library in which
-the variable is defined.
+All explicitly exported variables are immutable in both the
+exporting and importing libraries. 
+An exception with condition type {\cf\&syntax} is thus raised if an
+explicitly exported variable appears on the left-hand side of a {\cf set!}
+expression, either in the exporting or importing libraries.
+All other variables defined within a library are mutable.
 
-\begin{rationale} 
-Determining the set of implicit exports is generally impossible without
-expanding all uses of an exported macro in all importing libraries, i.e.,
-not until after the exporting library has been expanded, possibly
-during a separate compilation step.
-Allowing implicit exports to be mutable everywhere would therefore be generally
-equivalent to making all library bindings mutable, if any macros are
-exported, and making all implicit exports immutable even within the
-exporting library would be generally equivalent to making all library
-bindings immutable.
-Making such bindings mutable inside but immutable outside of the library
-is a compromise between these two extremes that permits both
-programmers and compilers to locate the points at which all variables are
-assigned while allowing a programmer to make use of mutable local variables.
-\end{rationale}
+All implicitly exported variables are also immutable in both the
+exporting and importing libraries.
+An exception with condition type {\cf\&syntax} is thus raised if a
+variable appears on the left-hand side of a {\cf set!}
+expression in any code produced by an exported macro outside of the
+library in which the variable is defined.
+An exception with condition type {\cf\&syntax} is also raised if a
+reference to an assigned variable appears in any code produced by
+an exported macro outside of the library in which the variable is defined,
+where an assigned variable is one that appears on the left-hand
+side of a {\cf set!} expression in the exporting library.
+
+\begin{note}
+The asymmetry in the exception-raising requirements for attempts to assign
+explicitly and implicitly exported variables reflects the fact that the
+error can be determined for implicitly exported variables only when the
+importing library is expanded.
+\end{note}
 
 \section{Import and export phases}
 \label{phasessection}
@@ -372,7 +370,7 @@ and {\cf expand}.
 
 \begin{rationale} 
 The {\cf r6rs} library is intended as a convenient import for libraries where fine
-control over imported bindings is not necessary or desirable. The {\cf r6rs} module
+control over imported bindings is not necessary or desirable. The {\cf r6rs} library
 exports all bindings for {\cf expand} as well as {\cf run} so that it is convenient
 for writing macros as well as run-time code.
 \end{rationale}
