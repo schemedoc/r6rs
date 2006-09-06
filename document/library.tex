@@ -359,7 +359,7 @@ are valid at phases $p_a+q_q$, $p_a+q_b$, $p_a+q_c$, $p_b+q_q$, $p_b+q_b$,
 and $p_b+q_c$.
 
 The export phase of an exported binding is {\cf run} for all bindings
-defined within the exporting library, and the export phases of a
+that are defined within the exporting library. The export phases of a
 reexported binding, i.e., an export imported from another library, are the
 same as the effective import phases of that binding within the reexporting
 library.
@@ -371,10 +371,10 @@ the export phases for all bindings exported by {\cf r6rs} are {\cf run}
 and {\cf expand}.
 
 \begin{rationale} 
-The {\cf r6rs} library is intended as a convenience when finer control
-over the precise set of visible standard bindings and their phases is not
-required, and it is most convenient for the purposes of writing macros for
-its bindings to be exported for {\cf expand} as well as for {\cf run}.
+The {\cf r6rs} library is intended as a convenient import for libraries where fine
+control over imported bindings is not necessary or desireable. The {\cf r6rs} module
+exports all bindings for {\cf expand} as well as {\cf run} so that it is convenient
+for writing macros as well as run-time code.
 \end{rationale}
 
 The effective import phases implicitly determine when information about a
