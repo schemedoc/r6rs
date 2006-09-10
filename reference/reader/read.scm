@@ -320,6 +320,37 @@
       (list keyword
             (sub-read-carefully port)))))
 
+(define-sharp-macro #\|
+  (lambda (c port)
+    (read-char port)
+    (let recur ()
+      (let ((next (read-char port)))
+	(cond
+	 ((eof-object? next)
+	  (reading-error port "end of file in #| comment"))
+	 ((char=? next #\|)
+	  (let ((next (peek-char port)))
+	    (cond
+	     ((eof-object? next)
+	      (reading-error port "end of file in #| comment"))
+	     ((char=? next #\#)
+	      (read-char port))
+	     (else
+	      (read-char port)
+	      (recur)))))
+	 ((char=? next #\#)
+	  (let ((next (peek-char port)))
+	    (cond
+	     ((eof-object? next)
+	      (reading-error port "end of file in #| comment"))
+	     ((char=? next #\|)
+	      (read-char port)
+	      (recur)
+	      (recur)))))
+	 (else
+	  (recur)))))
+    (sub-read port)))
+
 ; These are from Matthew Flatt's Unicode proposal for R6RS
 ; See write.scm.
 
