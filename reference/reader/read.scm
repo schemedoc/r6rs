@@ -295,6 +295,31 @@
 (define-sharp-macro #\t
   (lambda (c port) (read-char port) #t))
 
+(define-sharp-macro #\'
+  (lambda (c port)
+    (read-char port)
+    (list 'syntax
+	  (sub-read-carefully port))))
+
+(define-sharp-macro #\`
+  (lambda (c port)
+    (read-char port)
+    (list 'quasisyntax
+	  (sub-read-carefully port))))
+
+(define-sharp-macro #\,
+  (lambda (c port)
+    (read-char port)
+    (let* ((next (peek-char port))
+	   (keyword (cond ((eof-object? next)
+			   (reading-error port "end of file after ,"))
+			  ((char=? next #\@)
+			   (read-char port)
+			   'unsyntax-splicing)
+			  (else 'unsyntax))))
+      (list keyword
+            (sub-read-carefully port)))))
+
 ; These are from Matthew Flatt's Unicode proposal for R6RS
 ; See write.scm.
 

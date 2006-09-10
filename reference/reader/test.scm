@@ -37,6 +37,14 @@
  (get-datum (open-input-string "[1 2 3]")) => '(1 2 3))
 (check
  (get-datum (open-input-string "#\\linefeed")) => (integer->char 10))
+(check
+ (get-datum (open-input-string "#'foo")) => '(syntax foo))
+(check
+ (get-datum (open-input-string "#`foo")) => '(quasisyntax foo))
+(check
+ (get-datum (open-input-string "#,foo")) => '(unsyntax foo))
+(check
+ (get-datum (open-input-string "#,@foo")) => '(unsyntax-splicing foo))
 
 (newline)
 (display "correct tests: ")
