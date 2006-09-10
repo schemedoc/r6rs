@@ -35,6 +35,7 @@
 	  (r6rs unicode)
 	  (r6rs exceptions)
 	  (r6rs conditions)
+	  ;; imaginary library, (r6rs i/o port) without read-datum
 	  (r6rs i/o port basic)
 	  (r6rs bytes))
 
