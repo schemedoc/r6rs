@@ -320,6 +320,56 @@
       (list keyword
             (sub-read-carefully port)))))
 
+(define-sharp-macro #\v
+  (lambda (c port)
+    (read-char port)
+    (let ((next (peek-char port)))
+      (cond
+       ((eof-object? next)
+	(reading-error port "end of file after #v"))
+       ((not (char=? next #\u))
+	(reading-error port "invalid char after #v"))
+       (else
+	(read-char port)
+	(let ((next (peek-char port)))
+	  (cond
+	   ((eof-object? next)
+	    (reading-error port "end of file after #vu"))
+	   ((not (char=? next #\8))
+	    (reading-error port "invalid char after #vu"))
+	   (else
+	    (read-char port)
+	    (let ((next (peek-char port)))
+	      (cond
+	       ((eof-object? next)
+		(reading-error port "end of file after #vu8"))
+	       ((not (char=? next #\())
+		(reading-error port "invalid char after #vu8"))
+	       (else
+		(read-char port)
+		(let ((elts (sub-read-list-paren next port)))
+		  (if (not (proper-list? elts))
+		      (reading-error port "dot in #vu8(...)")
+		      (cond
+		       ((not-u8-list elts)
+			=> (lambda (non-u8)
+			     (reading-error port "non-octet in #vu8(...)" non-u8)))
+		       (else
+			(u8-list->bytes elts))))))))))))))))
+
+(define (not-u8-list l)
+  (if (null? l)
+      #f
+      (if (u8? (car l))
+	  (not-u8-list (cdr l))
+	  (car l))))
+
+(define (u8? n)
+  (and (exact? n)
+       (integer? n)
+       (not (negative? n))
+       (<= n 255)))
+
 (define-sharp-macro #\|
   (lambda (c port)
     (read-char port)

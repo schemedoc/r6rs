@@ -53,6 +53,8 @@
  (get-datum (open-input-string "(1 #;(foo bar baz) 2 3)")) => '(1 2 3))
 (check
  (get-datum (open-input-string "->foo")) => (string->symbol "->foo"))
+(check
+ (get-datum (open-input-string "#vu8(1 2 3 4 5)")) => (blob=?) (u8-list->bytes '(1 2 3 4 5)))
 
 (newline)
 (display "correct tests: ")
