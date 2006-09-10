@@ -54,7 +54,7 @@
 (check
  (get-datum (open-input-string "->foo")) => (string->symbol "->foo"))
 (check
- (get-datum (open-input-string "#vu8(1 2 3 4 5)")) => (blob=?) (u8-list->bytes '(1 2 3 4 5)))
+ (get-datum (open-input-string "#vu8(1 2 3 4 5)")) => (bytes=?) (u8-list->bytes '(1 2 3 4 5)))
 
 (newline)
 (display "correct tests: ")

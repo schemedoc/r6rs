@@ -4,9 +4,6 @@
 
 ; A little Scheme reader.
 
-; Nonstandard things used:
-;  signal (only for use by reading-error; easily excised)
-
 (define (get-datum port)
   (let loop ()
     (let ((form (sub-read port)))
@@ -14,12 +11,10 @@
 	     form)
 	    ((eq? form close-paren)
 	     ;; Too many right parens.
-	     (warn "discarding extraneous right parenthesis" port)
-	     (loop))
+	     (reading-error port "extraneous right parenthesis"))
 	    ((eq? form close-bracket)
-	     ;; Too many right parens.
-	     (warn "discarding extraneous right bracket" port)
-	     (loop))
+	     ;; Too many right brackets.
+	     (reading-error port "discarding extraneous right bracket"))
 	    (else
 	     (reading-error port (cdr form)))))))
 
@@ -547,8 +542,13 @@
 ; Reader errors
 
 (define (reading-error port message . irritants)
-  (apply signal 'read-error message
-	 (append irritants (list port))))
+  (raise
+   (condition
+    (&message (message message))
+    (&i/o-port (port port))
+    (&lexical)
+    (&irritants
+     (irritants (cons port irritants))))))
 
 ; returns index of value (must be number) in vector
 (define (binary-search vec val)
