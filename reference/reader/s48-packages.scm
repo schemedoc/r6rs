@@ -1,6 +1,7 @@
 (define-structure r6rs-faux (export u8-list->bytes
 				    bytes=?
-				    &i/o-read &i/o-port &lexical)
+				    &i/o-read &i/o-port &lexical
+				    get-char lookahead-char)
   (open scheme
 	srfi-74 ; blobs
 	conditions
@@ -25,6 +26,12 @@
     (define-condition-type &i/o-port &i/o
       i/o-port-error?
       (port i/o-error-port))
+
+    (define (get-char port)
+      (read-char port))
+
+    (define (lookahead-char port)
+      (peek-char port))
     ))
 
 (define-structure read-datums (export get-datum)

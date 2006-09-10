@@ -77,7 +77,7 @@
   (vector-set! read-terminating?-vector (char->integer char) terminating?))
 
 (define (sub-read port)
-  (let ((c (read-char port)))
+  (let ((c (get-char port)))
     (if (eof-object? c)
         c
 	(let ((scalar-value (char->integer c)))
@@ -166,12 +166,12 @@
 (set-standard-read-macro! #\, #t
   (lambda (c port)
     c
-    (let* ((next (peek-char port))
+    (let* ((next (lookahead-char port))
 	   ;; DO NOT beta-reduce!
 	   (keyword (cond ((eof-object? next)
 			   (reading-error port "end of file after ,"))
 			  ((char=? next #\@)
-			   (read-char port)
+			   (get-char port)
 			   'unquote-splicing)
 			  (else 'unquote))))
       (list keyword
@@ -194,7 +194,7 @@
   (lambda (c port)
     c ;ignored
     (let loop ((l '()) (i 0))
-      (let ((c (read-char port)))
+      (let ((c (get-char port)))
         (cond ((eof-object? c)
                (reading-error port "end of file within a string"))
               ((char=? c #\\)
@@ -209,7 +209,7 @@
 	       (loop (cons c l) (+ i 1))))))))
 
 (define (decode-escape port)
-  (let ((c (read-char port)))
+  (let ((c (get-char port)))
     (if (eof-object? c)
 	(reading-error port "end of file within a string"))
     (let ((scalar-value (char->integer c)))
@@ -218,12 +218,12 @@
 	c)
        ((char=? c #\newline)
 	(let loop ()
-	  (let ((c (peek-char port)))
+	  (let ((c (lookahead-char port)))
 	    (cond 
 	     ((eof-object? c)
 	      (reading-error port "end of file within a string"))
 	     ((char-unicode-whitespace? c)
-	      (read-char port)
+	      (get-char port)
 	      (loop))
 	     (else #f)))))
        ((char=? c #\a) *alarm*)
@@ -236,7 +236,7 @@
        ((char=? c #\e) *escape*)
        ((char=? c #\x)
 	(let ((d (decode-hex-digits port char-semicolon? "string literal")))
-	  (read-char port) ; remove semicolon
+	  (get-char port) ; remove semicolon
 	  d))
        (else
 	(reading-error port
@@ -251,7 +251,7 @@
 ; This doesn't remove the delimiter from the port.
 (define (decode-hex-digits port delimiter? desc)
   (let loop ((rev-digits '()))
-    (let ((c (peek-char port)))
+    (let ((c (lookahead-char port)))
       (cond
        ((delimiter? c)
 	(integer->char
@@ -265,7 +265,7 @@
 		       (string-append "invalid hex digit in a " desc)
 		       c))
        (else
-	(read-char port)
+	(get-char port)
 	(loop (cons c rev-digits)))))))
 
 (define (char-hex-digit? c)
@@ -285,7 +285,7 @@
 
 (define (gobble-line port)
   (let loop ()
-    (let ((c (read-char port)))
+    (let ((c (get-char port)))
       (cond ((eof-object? c) c)
 	    ((char=? c #\newline) #f)
 	    (else (loop))))))
@@ -298,7 +298,7 @@
 (set-standard-read-macro! #\# #f
   (lambda (c port)
     c ;ignored
-    (let* ((c (peek-char port))
+    (let* ((c (lookahead-char port))
 	   (c (if (eof-object? c)
 		  (reading-error port "end of file after #")
 		  (char-downcase c)))
@@ -308,31 +308,31 @@
 	  (reading-error port "unknown # syntax" c)))))
 
 (define-sharp-macro #\f
-  (lambda (c port) (read-char port) #f))
+  (lambda (c port) (get-char port) #f))
 
 (define-sharp-macro #\t
-  (lambda (c port) (read-char port) #t))
+  (lambda (c port) (get-char port) #t))
 
 (define-sharp-macro #\'
   (lambda (c port)
-    (read-char port)
+    (get-char port)
     (list 'syntax
 	  (sub-read-carefully port))))
 
 (define-sharp-macro #\`
   (lambda (c port)
-    (read-char port)
+    (get-char port)
     (list 'quasisyntax
 	  (sub-read-carefully port))))
 
 (define-sharp-macro #\,
   (lambda (c port)
-    (read-char port)
-    (let* ((next (peek-char port))
+    (get-char port)
+    (let* ((next (lookahead-char port))
 	   (keyword (cond ((eof-object? next)
 			   (reading-error port "end of file after ,"))
 			  ((char=? next #\@)
-			   (read-char port)
+			   (get-char port)
 			   'unsyntax-splicing)
 			  (else 'unsyntax))))
       (list keyword
@@ -340,31 +340,31 @@
 
 (define-sharp-macro #\v
   (lambda (c port)
-    (read-char port)
-    (let ((next (peek-char port)))
+    (get-char port)
+    (let ((next (lookahead-char port)))
       (cond
        ((eof-object? next)
 	(reading-error port "end of file after #v"))
        ((not (char=? next #\u))
 	(reading-error port "invalid char after #v"))
        (else
-	(read-char port)
-	(let ((next (peek-char port)))
+	(get-char port)
+	(let ((next (lookahead-char port)))
 	  (cond
 	   ((eof-object? next)
 	    (reading-error port "end of file after #vu"))
 	   ((not (char=? next #\8))
 	    (reading-error port "invalid char after #vu"))
 	   (else
-	    (read-char port)
-	    (let ((next (peek-char port)))
+	    (get-char port)
+	    (let ((next (lookahead-char port)))
 	      (cond
 	       ((eof-object? next)
 		(reading-error port "end of file after #vu8"))
 	       ((not (char=? next #\())
 		(reading-error port "invalid char after #vu8"))
 	       (else
-		(read-char port)
+		(get-char port)
 		(let ((elts (sub-read-list-paren next port)))
 		  (if (not (proper-list? elts))
 		      (reading-error port "dot in #vu8(...)")
@@ -390,29 +390,29 @@
 
 (define-sharp-macro #\|
   (lambda (c port)
-    (read-char port)
+    (get-char port)
     (let recur ()
-      (let ((next (read-char port)))
+      (let ((next (get-char port)))
 	(cond
 	 ((eof-object? next)
 	  (reading-error port "end of file in #| comment"))
 	 ((char=? next #\|)
-	  (let ((next (peek-char port)))
+	  (let ((next (lookahead-char port)))
 	    (cond
 	     ((eof-object? next)
 	      (reading-error port "end of file in #| comment"))
 	     ((char=? next #\#)
-	      (read-char port))
+	      (get-char port))
 	     (else
-	      (read-char port)
+	      (get-char port)
 	      (recur)))))
 	 ((char=? next #\#)
-	  (let ((next (peek-char port)))
+	  (let ((next (lookahead-char port)))
 	    (cond
 	     ((eof-object? next)
 	      (reading-error port "end of file in #| comment"))
 	     ((char=? next #\|)
-	      (read-char port)
+	      (get-char port)
 	      (recur)
 	      (recur)))))
 	 (else
@@ -421,7 +421,7 @@
 
 (define-sharp-macro #\;
   (lambda (char port)
-    (read-char port)
+    (get-char port)
     (sub-read-carefully port)
     (sub-read port)))
 
@@ -441,14 +441,14 @@
 
 (define-sharp-macro #\\
   (lambda (c port)
-    (read-char port)
-    (let ((c (peek-char port)))
+    (get-char port)
+    (let ((c (lookahead-char port)))
       (cond ((eof-object? c)
 	     (reading-error port "end of file after #\\"))
 
 	    ((char=? #\x c)
-	     (read-char port)
-	     (if (delimiter? (peek-char port))
+	     (get-char port)
+	     (if (delimiter? (lookahead-char port))
 		 c
 		 (decode-hex-digits port char-scalar-value-literal-delimiter? "char literal")))
 	    ((char-alphabetic? c)
@@ -461,7 +461,7 @@
 		      (reading-error port "unknown #\\ name" name)))))
 
 	    (else
-	     (read-char port)
+	     (get-char port)
 	     c)))))
 
 (define (char-scalar-value-literal-delimiter? c)
@@ -470,7 +470,7 @@
 
 (define-sharp-macro #\(
   (lambda (c port)
-    (read-char port)
+    (get-char port)
     (let ((elts (sub-read-list-paren c port)))
       (if (proper-list? elts)
 	  (list->vector elts)
@@ -494,22 +494,22 @@
 
 (define (sub-read-token c port)
   (let loop ((l (list c)) (n 1))
-    (let ((c (peek-char port)))
+    (let ((c (lookahead-char port)))
       (cond
        ((eof-object? c)
 	(reverse-list->string l n))
        ((char=? c #\\)
-	(read-char port)
-	(let ((c (peek-char port)))
+	(get-char port)
+	(let ((c (lookahead-char port)))
 	  (cond
 	   ((or (eof-object? c)
 		(not (char=? #\x c)))
 	    (reading-error port "invalid escape sequence in a symbol"
 			   c))
 	   (else
-	    (read-char port)
+	    (get-char port)
 	    (let ((d (decode-hex-digits port char-semicolon? "symbol literal")))
-	      (read-char port)		; remove semicolon
+	      (get-char port)		; remove semicolon
 	      (loop (cons d l) (+ n 1)))))))
        (else
 	(let ((sv (char->integer c)))
@@ -518,7 +518,7 @@
 		  (binary-search *non-symbol-constituents-above-127* sv))
 	      (reverse-list->string l n)
 	      (begin
-		(read-char port)
+		(get-char port)
 		(loop (cons c l)
 		      (+ n 1))))))))))
 
