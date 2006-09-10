@@ -1,4 +1,4 @@
-; A little Scheme reader.
+; A little R6RS Scheme reader, adapted from the Scheme 48 reader.
 
 ; Copyright (c) 1993-2006 by Richard Kelsey, Jonathan Rees, and Mike Sperber
 ; All rights reserved.
