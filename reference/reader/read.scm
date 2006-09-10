@@ -38,7 +38,6 @@
 	  (r6rs i/o port basic)
 	  (r6rs bytes))
 
-
 (define (get-datum port)
   (let loop ()
     (let ((form (sub-read port)))
@@ -226,7 +225,7 @@
       (cond
        ((or (char=? c #\\) (char=? c #\"))
 	c)
-       ((char=? c #\newline)
+       ((char=? c *linefeed*)
 	(let loop ()
 	  (let ((c (lookahead-char port)))
 	    (cond 
@@ -297,7 +296,7 @@
   (let loop ()
     (let ((c (get-char port)))
       (cond ((eof-object? c) c)
-	    ((char=? c #\newline) #f)
+	    ((char=? c *linefeed*) #f)
 	    (else (loop))))))
 
 (define *sharp-macros* '())
@@ -438,7 +437,6 @@
 (define *char-name-table*
   (list
    (cons 'space #\space)
-   (cons 'newline #\newline)
    (cons 'nul *nul*)
    (cons 'alarm *alarm*)
    (cons 'backspace *backspace*)
