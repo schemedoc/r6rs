@@ -16,6 +16,10 @@
 	     ;; Too many right parens.
 	     (warn "discarding extraneous right parenthesis" port)
 	     (loop))
+	    ((eq? form close-bracket)
+	     ;; Too many right parens.
+	     (warn "discarding extraneous right bracket" port)
+	     (loop))
 	    (else
 	     (reading-error port (cdr form)))))))
 
@@ -32,6 +36,7 @@
   (and (pair? form) (eq? (car form) reader-token-marker)))
 
 (define close-paren (make-reader-token "unexpected right parenthesis"))
+(define close-bracket (make-reader-token "unexpected right bracket"))
 (define dot         (make-reader-token "unexpected \" . \""))
 
 
@@ -88,7 +93,7 @@
 (define (set-standard-read-macro! c terminating? proc)
   (set-standard-syntax! c terminating? proc))
 
-(define (sub-read-list c port)
+(define (sub-read-list c port close-token)
   (let ((form (sub-read port)))
     (if (eq? form dot)
 	(reading-error port
@@ -97,11 +102,11 @@
 	  (cond ((eof-object? form)
 		 (reading-error port
 				"end of file inside list -- unbalanced parentheses"))
-		((eq? form close-paren) '())
+		((eq? form close-token) '())
 		((eq? form dot)
 		 (let* ((last-form (sub-read-carefully port))
 			(another-form (sub-read port)))
-		   (if (eq? another-form close-paren)
+		   (if (eq? another-form close-token)
 		       last-form
 		       (reading-error port
 				      "randomness after form after dot"
@@ -109,12 +114,24 @@
 		(else
 		 (cons form (recur (sub-read port)))))))))
 
-(set-standard-read-macro! #\( #t sub-read-list)
+(define (sub-read-list-paren c port)
+  (sub-read-list c port close-paren))
+(define (sub-read-list-bracket c port)
+  (sub-read-list c port close-bracket))
+
+(set-standard-read-macro! #\( #t sub-read-list-paren)
+
+(set-standard-read-macro! #\[ #t sub-read-list-bracket)
 
 (set-standard-read-macro! #\) #t
   (lambda (c port)
     c port
     close-paren))
+
+(set-standard-read-macro! #\] #t
+  (lambda (c port)
+    c port
+    close-bracket))
 
 (set-standard-read-macro! #\' #t
   (lambda (c port)
@@ -331,7 +348,7 @@
 (define-sharp-macro #\(
   (lambda (c port)
     (read-char port)
-    (let ((elts (sub-read-list c port)))
+    (let ((elts (sub-read-list-paren c port)))
       (if (proper-list? elts)
 	  (list->vector elts)
 	  (reading-error port "dot in #(...)")))))
@@ -403,6 +420,8 @@
   (or (char-unicode-whitespace? c)
       (char=? c #\))
       (char=? c #\()
+      (char=? c #\])
+      (char=? c #\[)
       (char=? c #\")
       (char=? c #\;)))
 

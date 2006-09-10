@@ -6,3 +6,10 @@
   (files read
 	 syntax-info)
   (optimize auto-integrate))
+
+(define-structure read-test (export)
+  (open scheme
+	srfi-6 ; basic string ports
+	read-datums
+	)
+  (files test))
