@@ -168,7 +168,7 @@
 (define *page* (integer->char 12))
 (define *return* (integer->char 13))
 (define *escape* (integer->char 27))
-(define *rubout* (integer->char 127))
+(define *delete* (integer->char 127))
 
 (set-standard-read-macro! #\" #t
   (lambda (c port)
@@ -312,9 +312,8 @@
    (cons 'linefeed *linefeed*)
    (cons 'vtab *vtab*)
    (cons 'page *page*)
-   (cons 'return *return*)
-   (cons 'escape *escape*)
-   (cons 'rubout *rubout*)))
+   (cons 'esc *escape*)
+   (cons 'delete *delete*)))
 
 (define-sharp-macro #\\
   (lambda (c port)
