@@ -1,7 +1,8 @@
 (define-structure r6rs-faux (export u8-list->bytes
 				    bytes=?
 				    &i/o-read &i/o-port &lexical
-				    get-char lookahead-char)
+				    get-char lookahead-char
+				    (library :syntax))
   (open scheme
 	srfi-74 ; blobs
 	conditions
@@ -32,6 +33,15 @@
 
     (define (lookahead-char port)
       (peek-char port))
+
+    (define-syntax library
+      (syntax-rules (import export)
+	((library ?name 
+	   (export ?export-spec ...)
+	   (import ?import-spec ...)
+	   ?body ...)
+	 (begin ?body ...))))
+		  
     ))
 
 (define-structure read-datums (export get-datum)

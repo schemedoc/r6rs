@@ -29,6 +29,16 @@
 ; - it doesn't properly check the syntax of symbols starting with "->"
 ; - it doesn't check the maximum size for hex scalar-value literals
 
+(library (r6rs i/o port reader)
+  (export get-datum)
+  (import (r6rs base)
+	  (r6rs unicode)
+	  (r6rs exceptions)
+	  (r6rs conditions)
+	  (r6rs i/o port basic)
+	  (r6rs bytes))
+
+
 (define (get-datum port)
   (let loop ()
     (let ((form (sub-read port)))
@@ -593,3 +603,5 @@
   (list->string (reverse l)))
 
 (define (make-immutable! x) x)
+
+) ; end of library form
