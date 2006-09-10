@@ -55,6 +55,9 @@
  (get-datum (open-input-string "->foo")) => (string->symbol "->foo"))
 (check
  (get-datum (open-input-string "#vu8(1 2 3 4 5)")) => (bytes=?) (u8-list->bytes '(1 2 3 4 5)))
+(check
+ (get-datum (open-input-string "(#t #f #b1001 #T #F #B1001)")) => '(#t #f 9 #t #f 9))
+
 
 (newline)
 (display "correct tests: ")

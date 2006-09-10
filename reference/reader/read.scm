@@ -1,8 +1,33 @@
-; -*- Mode: Scheme; Syntax: Scheme; Package: Scheme; -*-
-; Copyright (c) 1993-2006 by Richard Kelsey and Jonathan Rees. See file COPYING.
-
-
 ; A little Scheme reader.
+
+; Copyright (c) 1993-2006 by Richard Kelsey, Jonathan Rees, and Mike Sperber
+; All rights reserved.
+
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions
+; are met:
+; 1. Redistributions of source code must retain the above copyright
+;    notice, this list of conditions and the following disclaimer.
+; 2. Redistributions in binary form must reproduce the above copyright
+;    notice, this list of conditions and the following disclaimer in the
+;    documentation and/or other materials provided with the distribution.
+; 3. The name of the authors may not be used to endorse or promote products
+;    derived from this software without specific prior written permission.
+; 
+; THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
+; IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+; OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+; IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+; INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+; NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+; DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+; THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+; Known insufficiencies:
+; - it doesn't properly check the syntax of symbols starting with "->"
+; - it doesn't check the maximum size for hex scalar-value literals
 
 (define (get-datum port)
   (let loop ()
@@ -192,7 +217,6 @@
        ((or (char=? c #\\) (char=? c #\"))
 	c)
        ((char=? c #\newline)
-	;; SRFI 75; skip intra-line whitespace
 	(let loop ()
 	  (let ((c (peek-char port)))
 	    (cond 
@@ -202,7 +226,6 @@
 	      (read-char port)
 	      (loop))
 	     (else #f)))))
-       ;; SRFI 75
        ((char=? c #\a) *alarm*)
        ((char=? c #\b) *backspace*)
        ((char=? c #\t) *tab*)
@@ -402,12 +425,6 @@
     (sub-read-carefully port)
     (sub-read port)))
 
-; These are from Matthew Flatt's Unicode proposal for R6RS
-; See write.scm.
-
-; Richard will hopefully provide a fancy version of this that provides
-; all the names in the Unicode character database.
-
 (define *char-name-table*
   (list
    (cons 'space #\space)
@@ -472,7 +489,7 @@
   (for-each (lambda (c)
 	      (define-sharp-macro c number-sharp-macro))
 	    '(#\b #\o #\d #\x #\i #\e)))
-
+
 ; Tokens
 
 (define (sub-read-token c port)
