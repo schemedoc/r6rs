@@ -5,19 +5,13 @@
 ; A little Scheme reader.
 
 ; Nonstandard things used:
-;  ASCII stuff: ascii-whitespaces
-;    (for dispatch table; portable definition in alt/ascii.scm)
-;  Unicode: char->scalar-value, scalar-value->char
-;  reverse-list->string  -- ok to define as follows:
-;    (define (reverse-list->string l n)
-;      (list->string (reverse l)))
-;  make-immutable! -- ok to define as follows:
-;    (define (make-immutable! x) x)
 ;  signal (only for use by reading-error; easily excised)
 
 
 (define (read . port-option)
-  (let ((port (input-port-option port-option)))
+  (let ((port (if (pair? port-option)
+		  (car port-option)
+		  (current-input-port))))
     (let loop ()
       (let ((form (sub-read port)))
         (cond ((not (reader-token? form))
@@ -58,17 +52,17 @@
   (make-vector *dispatch-table-limit* #t))
 
 (define (set-standard-syntax! char terminating? reader)
-  (vector-set! read-dispatch-vector     (char->scalar-value char) reader)
-  (vector-set! read-terminating?-vector (char->scalar-value char) terminating?))
+  (vector-set! read-dispatch-vector     (char->integer char) reader)
+  (vector-set! read-terminating?-vector (char->integer char) terminating?))
 
 (define (sub-read port)
   (let ((c (read-char port)))
     (if (eof-object? c)
         c
-	(let ((scalar-value (char->scalar-value c)))
+	(let ((scalar-value (char->integer c)))
 	  (cond
 	   ((< scalar-value *dispatch-table-limit*)
-	    ((vector-ref read-dispatch-vector (char->scalar-value c))
+	    ((vector-ref read-dispatch-vector (char->integer c))
 	     c port))
 	   ((char-alphabetic? c)
 	    (sub-read-constituent c port))
@@ -81,7 +75,8 @@
          (sub-read port))))
   (for-each (lambda (c)
               (vector-set! read-dispatch-vector c sub-read-whitespace))
-            ascii-whitespaces))
+	    ;; ASCII whitespaces
+            '(32 9 10 11 12 13)))
 
 (define (sub-read-constituent c port)
   (parse-token (sub-read-token c port) port))
@@ -151,16 +146,16 @@
 
 ; Don't use non-R5RS char literals to avoid bootstrap circularities
 
-(define *nul* (scalar-value->char 0))
-(define *alarm* (scalar-value->char 7))
-(define *backspace* (scalar-value->char 8))
-(define *tab* (scalar-value->char 9))
-(define *linefeed* (scalar-value->char 10))
-(define *vtab* (scalar-value->char 11))
-(define *page* (scalar-value->char 12))
-(define *return* (scalar-value->char 13))
-(define *escape* (scalar-value->char 27))
-(define *rubout* (scalar-value->char 127))
+(define *nul* (integer->char 0))
+(define *alarm* (integer->char 7))
+(define *backspace* (integer->char 8))
+(define *tab* (integer->char 9))
+(define *linefeed* (integer->char 10))
+(define *vtab* (integer->char 11))
+(define *page* (integer->char 12))
+(define *return* (integer->char 13))
+(define *escape* (integer->char 27))
+(define *rubout* (integer->char 127))
 
 (set-standard-read-macro! #\" #t
   (lambda (c port)
@@ -184,7 +179,7 @@
   (let ((c (read-char port)))
     (if (eof-object? c)
 	(reading-error port "end of file within a string"))
-    (let ((scalar-value (char->scalar-value c)))
+    (let ((scalar-value (char->integer c)))
       (cond
        ((or (char=? c #\\) (char=? c #\"))
 	c)
@@ -228,7 +223,7 @@
     (let ((c (peek-char port)))
       (cond
        ((delimiter? c)
-	(scalar-value->char
+	(integer->char
 	 (string->number (list->string (reverse rev-digits)) 16)))
        ((eof-object? c)
 	(reading-error
@@ -243,7 +238,7 @@
 	(loop (cons c rev-digits)))))))
 
 (define (char-hex-digit? c)
-  (let ((scalar-value (char->scalar-value c)))
+  (let ((scalar-value (char->integer c)))
     (or (and (>= scalar-value 48)	; #\0
 	     (<= scalar-value 57))	; #\9
 	(and (>= scalar-value 65)	; #\A
@@ -362,7 +357,7 @@
 ; Tokens
 
 (define (sub-read-token c port)
-  (let loop ((l (list (preferred-case c))) (n 1))
+  (let loop ((l (list c)) (n 1))
     (let ((c (peek-char port)))
       (cond
        ((eof-object? c)
@@ -381,14 +376,14 @@
 	      (read-char port)		; remove semicolon
 	      (loop (cons d l) (+ n 1)))))))
        (else
-	(let ((sv (char->scalar-value c)))
+	(let ((sv (char->integer c)))
 	  (if (if (< sv *dispatch-table-limit*)
 		  (vector-ref read-terminating?-vector sv)
 		  (binary-search *non-symbol-constituents-above-127* sv))
 	      (reverse-list->string l n)
 	      (begin
 		(read-char port)
-		(loop (cons (preferred-case c) l)
+		(loop (cons c l)
 		      (+ n 1))))))))))
 
 (define (parse-token string port)
@@ -416,29 +411,7 @@
       (char=? c #\;)))
 
 (define (char-unicode-whitespace? c)
-  (binary-search *whitespaces* (char->scalar-value c)))
-
-;--- This loses because the compiler won't in-line it.
-; and it's in READ's inner loop.
-
-(define preferred-case
-  (if (char=? (string-ref (symbol->string 't) 0) #\T)
-      char-upcase
-      char-downcase))
-
-; For ASCII, we previously had this hand-hacked version,
-
-; (define p-c-v (make-string ascii-limit #\0))
-; 
-; (let ((p-c (if (char=? (string-ref (symbol->string 't) 0) #\T)
-;                char-upcase
-;                char-downcase)))
-;   (do ((i 0 (+ i 1)))
-;       ((>= i ascii-limit))
-;     (string-set! p-c-v i (p-c (ascii->char i)))))
-; 
-; (define (preferred-case c)
-;   (string-ref p-c-v (char->ascii c)))
+  (binary-search *whitespaces* (char->integer c)))
 
 ; Reader errors
 
@@ -466,3 +439,9 @@
 	    low
 	    #f))
        (else #f)))))
+
+; Some Scheme implementations may have better versions of these
+(define (reverse-list->string l n)
+  (list->string (reverse l)))
+
+(define (make-immutable! x) x)
