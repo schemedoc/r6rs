@@ -7,21 +7,17 @@
 ; Nonstandard things used:
 ;  signal (only for use by reading-error; easily excised)
 
-
-(define (read . port-option)
-  (let ((port (if (pair? port-option)
-		  (car port-option)
-		  (current-input-port))))
-    (let loop ()
-      (let ((form (sub-read port)))
-        (cond ((not (reader-token? form))
-	       form)
-              ((eq? form close-paren)
-               ;; Too many right parens.
-	       (warn "discarding extraneous right parenthesis" port)
-               (loop))
-	      (else
-	       (reading-error port (cdr form))))))))
+(define (get-datum port)
+  (let loop ()
+    (let ((form (sub-read port)))
+      (cond ((not (reader-token? form))
+	     form)
+	    ((eq? form close-paren)
+	     ;; Too many right parens.
+	     (warn "discarding extraneous right parenthesis" port)
+	     (loop))
+	    (else
+	     (reading-error port (cdr form)))))))
 
 (define (sub-read-carefully port)
   (let ((form (sub-read port)))
