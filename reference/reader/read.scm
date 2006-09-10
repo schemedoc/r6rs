@@ -468,13 +468,18 @@
 	     (string->symbol (make-immutable! string)))
 	    ((string=? string ".")
 	     dot)
+	    ;; ->... symbols
+	    ;; #### should have more checking
+	    ((and (>= (string-length string) 2)
+		  (char=? (string-ref string 0) #\-)
+		  (char=? (string-ref string 1) #\>))
+	     (string->symbol (make-immutable! string)))
 	    (else
 	     (reading-error port "unsupported number syntax" string)))
       (string->symbol (make-immutable! string))))
 
 (define strange-symbol-names
   '("+" "-" "..."
-	"->"	    ;Only for JAR's thesis
 	))
 
 (define (delimiter? c)
