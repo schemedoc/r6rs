@@ -351,6 +351,12 @@
 	  (recur)))))
     (sub-read port)))
 
+(define-sharp-macro #\;
+  (lambda (char port)
+    (read-char port)
+    (sub-read-carefully port)
+    (sub-read port)))
+
 ; These are from Matthew Flatt's Unicode proposal for R6RS
 ; See write.scm.
 

@@ -49,6 +49,8 @@
  (get-datum (open-input-string "(1 #| foo bar |# 2 3)")) => '(1 2 3))
 (check
  (get-datum (open-input-string "(1 #| foo #| bar |# |# 2 3)")) => '(1 2 3))
+(check
+ (get-datum (open-input-string "(1 #;(foo bar baz) 2 3)")) => '(1 2 3))
 
 (newline)
 (display "correct tests: ")
