@@ -1,24 +1,39 @@
 ; Copyright 2006 William D Clinger.
 ;
 ; Permission to copy this software, in whole or in part, to use this
-; software for any lawful noncommercial purpose, and to redistribute
-; this software is granted subject to the restriction that all copies
-; made of this software must include this copyright notice in full.
+; software for any lawful purpose, and to redistribute this software
+; is granted subject to the restriction that all copies made of this
+; software must include this copyright notice in full.
 ; 
 ; I also request that you send me a copy of any improvements that you
 ; make to this software so that they may be incorporated within it to
 ; the benefit of the Scheme community.
 ;
-; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
 ; Finite sets of symbols, and their use as enumeration types.
 
-; Uses SRFI 76 (R6RS Records)
-; Uses SRFI 77 (Preliminary Proposal for R6RS Arithmetic)
-; Uses SRFI 23 (Error reporting mechanism)
-; Uses a symbol-hash procedure that maps symbols to non-negative
-; exact integers.  The implementation will work even if all
-; symbols hash to the same value.
-
+(library (r6rs enum)
+  (export make-enumeration
+          enum-set-universe
+          enum-set-indexer
+          enum-set-constructor
+          enum-set->list
+          enum-set-member?
+          enum-set-subset?
+          enum-set=?
+          enum-set-union
+          enum-set-intersection
+          enum-set-difference
+          enum-set-complement
+          enum-set-projection
+          define-enumeration)     ; syntax, untested, with known bugs
+  (import (r6rs base)
+          (r6rs list)
+          (r6rs records procedural)
+          (r6rs hash-tables)
+          (r6rs arithmetic fixnum))
+  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; Procedural interface.
@@ -48,10 +63,11 @@
     (loop symbols '()))
 
   (if (not (list? symbols))
-      (error "Non-list passed to make-enumeration" symbols))
+      (error 'make-enumeration "Non-list passed to make-enumeration" symbols))
   (for-each (lambda (x)
               (if (not (symbol? x))
-                  (error "Non-symbol in list passed to make-enumeration" x)))
+                  (error 'make-enumeration
+                         "Non-symbol in list passed to make-enumeration" x)))
             symbols)
 
   (let* ((this '*)            ; will become this enumeration type
@@ -115,7 +131,8 @@
                     (cdr syms)
                     (exact-ior bits
                                (exact-arithmetic-shift-left 1 index)))
-                   (error "Illegal value passed to set constructor"
+                   (error "anonymous set constructor"
+                          "Illegal value passed to set constructor"
                           (car syms))))))
 
        ; As above, but specialized to use fixnum arithmetic when
@@ -134,7 +151,8 @@
                     (cdr syms)
                     (fixnum-ior bits
                                 (fixnum-arithmetic-shift-left 1 index)))
-                   (error "Illegal value passed to set constructor"
+                   (error "anonymous set constructor"
+                          "Illegal value passed to set constructor"
                           (car syms))))))
 
        ; Given a subset of this universe, returns its elements
@@ -145,7 +163,8 @@
        (define (deconstructor set)
          (if (eq? this (enumeration:set-type set))
              (bits-deconstructor (enumeration:set-bits set) '())
-             (error "Illegal set passed to set deconstructor" set)))
+             (error "anonymous set deconstructor"
+                    "Illegal set passed to set deconstructor" set)))
 
        (define (bits-deconstructor bits syms)
          (if (= bits 0)
@@ -161,7 +180,8 @@
        (define (fixnum-deconstructor set)
          (if (eq? this (enumeration:set-type set))
              (fixnum-bits-deconstructor (enumeration:set-bits set) '())
-             (error "Illegal set passed to set deconstructor" set)))
+             (error "anonymous set deconstructor"
+                    "Illegal set passed to set deconstructor" set)))
 
        (define (fixnum-bits-deconstructor bits syms)
          (if (= bits 0)
@@ -269,7 +289,7 @@
                 (enumeration:type-universe type2))
            (enumeration:make-set (exact-ior bits1 bits2) type1))
           (else
-           (error "Incompatible sets" set1 set2)))))
+           (error 'enum-set-union "Incompatible sets" set1 set2)))))
 
 ; Given two enumeration sets that share the same
 ; enumeration type as universe, returns their intersection.
@@ -286,7 +306,7 @@
                 (enumeration:type-universe type2))
            (enumeration:make-set (exact-and bits1 bits2) type1))
           (else
-           (error "Incompatible sets" set1 set2)))))
+           (error 'enum-set-intersection "Incompatible sets" set1 set2)))))
 
 ; Given two enumeration sets that share the same
 ; enumeration type as universe, returns their difference.
@@ -303,7 +323,7 @@
                 (enumeration:type-universe type2))
            (enumeration:make-set (exact-and bits1 (exact-not bits2)) type1))
           (else
-           (error "Incompatible sets" set1 set2)))))
+           (error 'enum-set-difference "Incompatible sets" set1 set2)))))
 
 ; Given an enumeration set, returns
 ; its complement with respect to its universe.
@@ -414,22 +434,14 @@
 
     ; vec0 and vec1 are larger than necessary
     (define (trimmed-vectors)
-      (if (= n 0)
-          (values '#(#f) '#(#f))
-          (do ((m (vector-length vec0) (- m 1))
-               (v0 '#() (if (and (zero? (vector-length v0))
-                                 (vector-ref vec0 (- m 1)))
-                            (make-vector (+ m maxdistance) #f)
-                            v0))
-               (v1 '#() (if (and (zero? (vector-length v0))
-                                 (vector-ref vec0 (- m 1)))
-                            (make-vector (+ m maxdistance) 0)
-                            v1)))
-              ((negative? m)
-               (values v0 v1))
-            (if (< m (vector-length v0))
-                (begin (vector-set! v0 m (vector-ref vec0 m))
-                       (vector-set! v1 m (vector-ref vec1 m)))))))
+      (let* ((n (+ m maxdistance 1))
+             (v0 (make-vector n #f))
+             (v1 (make-vector n 0)))
+        (do ((i 0 (+ i 1)))
+            ((= i n)
+             (values v0 v1))
+          (vector-set! v0 i (vector-ref vec0 i))
+          (vector-set! v1 i (vector-ref vec1 i)))))
 
     (do ((symbols symbols (cdr symbols))
          (i 0 (+ i 1)))
@@ -524,3 +536,4 @@
 
 (basic-enumerations-tests)
 
+)

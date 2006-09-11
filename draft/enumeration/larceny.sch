@@ -1,7 +1,23 @@
+; Copyright 2006 William D Clinger.
+;
+; Permission to copy this software, in whole or in part, to use this
+; software for any lawful purpose, and to redistribute this software
+; is granted subject to the restriction that all copies made of this
+; software must include this copyright notice in full.
+; 
+; I also request that you send me a copy of any improvements that you
+; make to this software so that they may be incorporated within it to
+; the benefit of the Scheme community.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
 ; This file of Larceny-dependent code implements enough of
 ;
-; SRFI-76 (R6RS Records)
-; SRFI-77 (Preliminary Proposal for R6RS Arithmetic)
+; (r6rs base)
+; (r6rs list)
+; (r6rs records procedural)
+; (r6rs hash-tables)
+; (r6rs arithmetic fixnum)
 ;
 ; and other things to support Will Clinger's reference implementation of
 ;
@@ -16,7 +32,46 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; SRFI-76 (R6RS Records)
+; (r6rs base)
+;
+; Implements only as much as is used by enumerations.sch.
+;
+; Except for the library syntax, the reference implementation
+; uses only the R5RS-compatible procedures from this library.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-syntax library
+  (syntax-rules ()
+   ((library name (export x ...) (import lib ...) form ...)
+    (begin form ...))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; (r6rs list)
+;
+; Implements only as much as is used by enumerations.sch.
+;
+; The filter procedure is already provided by Larceny.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; (r6rs hash-tables)
+;
+; Implements only as much as is used by enumerations.sch.
+;
+; The symbol-hash procedure is already provided by Larceny.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; (r6rs records procedural)
 ;
 ; Implements only as much as is used by enumerations.sch.
 ;
@@ -45,7 +100,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; SRFI-77 (Preliminary Proposal for R6RS Arithmetic)
+; (r6rs arithmetic fixnum)
 ;
 ; Implements only as much as is used by enumerations.sch.
 ;
