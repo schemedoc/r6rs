@@ -36,8 +36,9 @@
 (define normalization-tests-filename "NormalizationTest.txt")
 
 (load "ustring.sch")
+(load "unicode1.sch")
+(load "unicode2.sch")
 (load "unicode.sch")
-(load "normalization.sch")
 
 (define (read-line port)
   (let loop ((l '()))

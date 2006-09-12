@@ -31,40 +31,13 @@
 ; Date: Tue, 20 Jun 2006 19:59:15 +0200
 ; 
 ; 
-; I've attached the code I wrote.  It's horrible (especially
-; composition.)  I had three or four rewrite runs at it, trying to write
-; good code, and every time I ran against special-case wrinkles in the
-; specification.  (It doesn't help that the specs from the consortium
-; are hard to interpret, the example code from the Unicode consortium
-; does funky tricks with adjusting the length of the UTF-16 encoding in
-; Java, and the code in the major book on the subject is incorrect.)
-; So, in the end, I just took whatever looked best at the time and fixed
-; special case after special case until the entire test suite ran.
-; 
-; (I'm sure you can do something better with BINARY-SEARCH.  I'm
-; terrible with algorithms.)
-; 
-; It does use old-style bitwise operations that would need to be
-; adjusted.  Also, you probably need
-; 
-; (define scalar-value->char integer->char)
-; (define scalar-value->char char->integer)
-; 
-; Other than that, it should be Plain Old R5RS code.
-; 
-; Comments very welcome.  Also, let me know if you want the
-; table-generation code.
-; 
-; -- 
-; Cheers =8-} Mike
-; Friede, Völkerverständigung und überhaupt blabla
+; I've attached the code I wrote....
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; Revised by Will Clinger, 20 June - 8 August 2006.
+; Revised by Will Clinger, 20 June - 11 September 2006.
 ;
 ; Modifications include:
-;     Larceny compatibility (immediately below)
 ;     deletion of tables (that occupied at least 136208 bytes)
 ;     addition of tables (that occupy about 60 kilobytes)
 ;     deletion of several procedures:
@@ -84,106 +57,26 @@
 ; The above changes reduced the table sizes by a factor of 2,
 ; and sped up the tests in NormalizationTests.txt by a factor of 2.
 ;
-; Still to do:
-;     replace Larceny-specific bytevectors by bytes objects
+; FIXME: still to do:
 ;     upgrade tables from Unicode 4.1 to 5.0
 ;     improve performance on typical inputs, e.g. Ascii strings
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(library (proto-unicode2)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; Larceny compatibility.
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (export
 
-; This shouldn't be necessary, but Larceny ships with some
-; brain-dead repeat macro, and there appears to be a bug in
-; Larceny's macro expander that doesn't allow that macro to
-; be shadowed by a named let.  (This is probably an example
-; of syntactic ambiguity created by internal definitions,
-; but I don't want to take the time to verify that.)
+    string-normalize-nfd
+    string-normalize-nfkd
+    string-normalize-nfc
+    string-normalize-nfkc)
 
-(define repeat)
-
-; Given exact integers n and k, with k >= 0, return (* n (expt 2 k)).
-
-(define (arithmetic-shift n k)
-  (if (and (exact? n)
-           (integer? n)
-           (exact? k)
-           (integer? k))
-      (cond ((> k 0)
-             (* n (expt 2 k)))
-            ((= k 0)
-             n)
-            ((>= n 0)
-             (quotient n (expt 2 (- k))))
-            (else
-             (let* ((q (expt 2 (- k)))
-                    (p (quotient (- n) q)))
-               (if (= n (* p k))
-                   (- p)
-                   (- -1 p)))))
-      (error "illegal argument to arithmetic-shift" n k)))
-
-; Bitwise operations on exact integers.
-
-(define (bitwise-and i j)
-  (if (and (exact? i)
-           (integer? i)
-           (exact? j)
-           (integer? j))
-      (cond ((or (= i 0) (= j 0))
-             0)
-            ((= i -1)
-             j)
-            ((= j -1)
-             i)
-            (else
-             (let* ((i0 (if (odd? i) 1 0))
-                    (j0 (if (odd? j) 1 0))
-                    (i1 (- i i0))
-                    (j1 (- j j0))
-                    (i/2 (quotient i1 2))
-                    (j/2 (quotient j1 2))
-                    (hi (* 2 (bitwise-and i/2 j/2)))
-                    (lo (* i0 j0)))
-               (+ hi lo))))
-      (error "illegal argument to bitwise-and" i j)))
-
-(define (bitwise-ior i j)
-  (if (and (exact? i)
-           (integer? i)
-           (exact? j)
-           (integer? j))
-      (cond ((or (= i -1) (= j -1))
-             -1)
-            ((= i 0)
-             j)
-            ((= j 0)
-             i)
-            (else
-             (let* ((i0 (if (odd? i) 1 0))
-                    (j0 (if (odd? j) 1 0))
-                    (i1 (- i i0))
-                    (j1 (- j j0))
-                    (i/2 (quotient i1 2))
-                    (j/2 (quotient j1 2))
-                    (hi (* 2 (bitwise-ior i/2 j/2)))
-                    (lo (if (= 0 (+ i0 j0)) 0 1)))
-               (+ hi lo))))
-      (error "illegal argument to bitwise-ior" i j)))
+  (import (r6rs base)
+          (r6rs bytes))
 
 (define char->scalar-value char->integer)
 (define scalar-value->char integer->char)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; End of Larceny compatibility section.
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Hangul constants
 ;; from Unicode Standard Annex #15
@@ -453,8 +346,8 @@
 
   (define (bytes-ref16 bytes i)
     (let ((i2 (+ i i)))
-      (+ (* 256 (bytevector-ref bytes i2))
-         (bytevector-ref bytes (+ i2 1)))))
+      (+ (* 256 (bytes-u8-ref bytes i2))
+         (bytes-u8-ref bytes (+ i2 1)))))
 
   (define (loop i j)
     (let ((mid (quotient (+ i j) 2)))
@@ -467,7 +360,7 @@
             (else
              (loop i mid)))))
 
-  (let ((hi (quotient (bytevector-length bytes) 2)))
+  (let ((hi (quotient (bytes-length bytes) 2)))
     (if (or (= hi 0) (< key (bytes-ref16 bytes 0)))
         #f
         (loop 0 hi))))
@@ -477,7 +370,7 @@
 (define (sv-combining-class s)
   (let ((index (binary-search combining-class-is-nonzero s)))
     (if index
-        (bytevector-ref combining-class-values index)
+        (bytes-u8-ref combining-class-values index)
         0)))
 
 ; Given a Unicode scalar value, returns the index of the index
@@ -490,7 +383,7 @@
              (let ((index0 (binary-search decomposition-chars-morebits s)))
                (if index0
                    (+ index0
-                      (quotient (bytevector-length decomposition-chars-16bit)
+                      (quotient (bytes-length decomposition-chars-16bit)
                                 2))
                    index0)))))
     (if index
@@ -504,10 +397,10 @@
 (define (sv-decomposition-sequence-range index)
   (define (decode hi lo)
     (+ (* 256 (if (< hi 128) hi (- hi 128))) lo))
-  (let* ((hi0 (bytevector-ref decomposition-indexes index))
-         (lo0 (bytevector-ref decomposition-indexes (+ index 1)))
-         (hi1 (bytevector-ref decomposition-indexes (+ index 2)))
-         (lo1 (bytevector-ref decomposition-indexes (+ index 3))))
+  (let* ((hi0 (bytes-u8-ref decomposition-indexes index))
+         (lo0 (bytes-u8-ref decomposition-indexes (+ index 1)))
+         (hi1 (bytes-u8-ref decomposition-indexes (+ index 2)))
+         (lo1 (bytes-u8-ref decomposition-indexes (+ index 3))))
     (values (decode hi0 lo0)
             (decode hi1 lo1))))
 
@@ -524,8 +417,8 @@
 (define (sv-canonical-decomposition-index s)
   (let ((index (sv-decomposition-index-of-index s)))
     (if index
-        (let* ((hi (bytevector-ref decomposition-indexes index))
-               (lo (bytevector-ref decomposition-indexes (+ index 1))))
+        (let* ((hi (bytes-u8-ref decomposition-indexes index))
+               (lo (bytes-u8-ref decomposition-indexes (+ index 1))))
           (if (< hi 128)
               (+ (* 256 hi) lo)
               #f))
@@ -537,8 +430,8 @@
 (define (sv-compatibility-decomposition-index s)
   (let ((index (sv-decomposition-index-of-index s)))
     (if index
-        (let* ((hi (bytevector-ref decomposition-indexes index))
-               (lo (bytevector-ref decomposition-indexes (+ index 1))))
+        (let* ((hi (bytes-u8-ref decomposition-indexes index))
+               (lo (bytes-u8-ref decomposition-indexes (+ index 1))))
           (if (>= hi 128)
               (+ (* 256 (- hi 128)) lo)
               #f))
@@ -574,7 +467,7 @@
     (let ((index-of-index (sv-decomposition-index-of-index sv)))
       (if (and index-of-index
                (or compat?
-                   (< (bytevector-ref decomposition-indexes index-of-index)
+                   (< (bytes-u8-ref decomposition-indexes index-of-index)
                       128)))
           (call-with-values
            (lambda () (sv-decomposition-sequence-range index-of-index))
@@ -603,8 +496,8 @@
           (if index
               (let* ((compositions (cadr entry))
                      (i (+ index index))
-                     (hi (bytevector-ref compositions i))
-                     (lo (bytevector-ref compositions (+ i 1))))
+                     (hi (bytes-u8-ref compositions i))
+                     (lo (bytes-u8-ref compositions (+ i 1))))
                 (+ (* 256 hi) lo))
               #f))
         #f)))
@@ -681,7 +574,7 @@
 ; This table contains 384 elements.
 
 (define combining-class-values
-  (list->bytevector
+  (u8-list->bytes
    '(
      230 230 230 230 230 230 230 230 
      230 230 230 230 230 230 230 230 
@@ -739,7 +632,7 @@
 ; This table contains 7680 elements.
 
 (define decomposition-chars-16bit
-  (list->bytevector
+  (u8-list->bytes
    '(
      #x0 #xa0 #x0 #xa8 #x0 #xaa #x0 #xaf 
      #x0 #xb2 #x0 #xb3 #x0 #xb4 #x0 #xb5 
@@ -1916,7 +1809,7 @@
 ; This table contains 10780 elements.
 
 (define decomposition-indexes
-  (list->bytevector
+  (u8-list->bytes
    '(
      #x80 #x0 #x80 #x1 #x80 #x3 #x80 #x4 
      #x80 #x6 #x80 #x7 #x80 #x8 #x80 #xa 
@@ -4291,7 +4184,7 @@
 ; This table contains 112 elements.
 
 (define composition-modifiers
-  (list->bytevector
+  (u8-list->bytes
    '(
      #x3 #x0 #x3 #x1 #x3 #x2 #x3 #x3 
      #x3 #x4 #x3 #x6 #x3 #x7 #x3 #x8 
@@ -4323,7 +4216,7 @@
 (define canonical-compositions
   (vector
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x45 #x0 #x49 #x0 #x4e 
        #x0 #x4f #x0 #x55 #x0 #x57 #x0 #x59 
@@ -4346,7 +4239,7 @@
        #x1f #x41 #x1f #x48 #x1f #x49 #x1f #x50 
        #x1f #x51 #x1f #x59 #x1f #x60 #x1f #x61 
        #x1f #x68 #x1f #x69 #x1f #xbf #x1f #xfe ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #xc0 #x0 #xc8 #x0 #xcc #x1 #xf8 
        #x0 #xd2 #x0 #xd9 #x1e #x80 #x1e #xf2 
@@ -4370,7 +4263,7 @@
        #x1f #x53 #x1f #x5b #x1f #x62 #x1f #x63 
        #x1f #x6a #x1f #x6b #x1f #xcd #x1f #xdd )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x43 #x0 #x45 #x0 #x47 
        #x0 #x49 #x0 #x4b #x0 #x4c #x0 #x4d 
@@ -4402,7 +4295,7 @@
        #x1f #x49 #x1f #x50 #x1f #x51 #x1f #x59 
        #x1f #x60 #x1f #x61 #x1f #x68 #x1f #x69 
        #x1f #xbf #x1f #xfe ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #xc1 #x1 #x6 #x0 #xc9 #x1 #xf4 
        #x0 #xcd #x1e #x30 #x1 #x39 #x1e #x3e 
@@ -4435,7 +4328,7 @@
        #x1f #x64 #x1f #x65 #x1f #x6c #x1f #x6d 
        #x1f #xce #x1f #xde )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x43 #x0 #x45 #x0 #x47 
        #x0 #x48 #x0 #x49 #x0 #x4a #x0 #x4f 
@@ -4445,7 +4338,7 @@
        #x0 #x6f #x0 #x73 #x0 #x75 #x0 #x77 
        #x0 #x79 #x0 #x7a #x1e #xa0 #x1e #xa1 
        #x1e #xb8 #x1e #xb9 #x1e #xcc #x1e #xcd ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #xc2 #x1 #x8 #x0 #xca #x1 #x1c 
        #x1 #x24 #x0 #xce #x1 #x34 #x0 #xd4 
@@ -4456,7 +4349,7 @@
        #x1 #x77 #x1e #x91 #x1e #xac #x1e #xad 
        #x1e #xc6 #x1e #xc7 #x1e #xd8 #x1e #xd9 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x45 #x0 #x49 #x0 #x4e 
        #x0 #x4f #x0 #x55 #x0 #x56 #x0 #x59 
@@ -4465,7 +4358,7 @@
        #x0 #xc2 #x0 #xca #x0 #xd4 #x0 #xe2 
        #x0 #xea #x0 #xf4 #x1 #x2 #x1 #x3 
        #x1 #xa0 #x1 #xa1 #x1 #xaf #x1 #xb0 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #xc3 #x1e #xbc #x1 #x28 #x0 #xd1 
        #x0 #xd5 #x1 #x68 #x1e #x7c #x1e #xf8 
@@ -4475,7 +4368,7 @@
        #x1e #xc5 #x1e #xd7 #x1e #xb4 #x1e #xb5 
        #x1e #xe0 #x1e #xe1 #x1e #xee #x1e #xef )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x45 #x0 #x47 #x0 #x49 
        #x0 #x4f #x0 #x55 #x0 #x59 #x0 #x61 
@@ -4488,7 +4381,7 @@
        #x3 #xa5 #x3 #xb1 #x3 #xb9 #x3 #xc5 
        #x4 #x18 #x4 #x23 #x4 #x38 #x4 #x43 
        #x1e #x36 #x1e #x37 #x1e #x5a #x1e #x5b ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1 #x0 #x1 #x12 #x1e #x20 #x1 #x2a 
        #x1 #x4c #x1 #x6a #x2 #x32 #x1 #x1 
@@ -4502,7 +4395,7 @@
        #x4 #xe2 #x4 #xee #x4 #xe3 #x4 #xef 
        #x1e #x38 #x1e #x39 #x1e #x5c #x1e #x5d )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x45 #x0 #x47 #x0 #x49 
        #x0 #x4f #x0 #x55 #x0 #x61 #x0 #x65 
@@ -4512,7 +4405,7 @@
        #x4 #x10 #x4 #x15 #x4 #x16 #x4 #x18 
        #x4 #x23 #x4 #x30 #x4 #x35 #x4 #x36 
        #x4 #x38 #x4 #x43 #x1e #xa0 #x1e #xa1 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1 #x2 #x1 #x14 #x1 #x1e #x1 #x2c 
        #x1 #x4e #x1 #x6c #x1 #x3 #x1 #x15 
@@ -4523,7 +4416,7 @@
        #x4 #xe #x4 #xd1 #x4 #xd7 #x4 #xc2 
        #x4 #x39 #x4 #x5e #x1e #xb6 #x1e #xb7 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x42 #x0 #x43 #x0 #x44 
        #x0 #x45 #x0 #x46 #x0 #x47 #x0 #x48 
@@ -4537,7 +4430,7 @@
        #x0 #x78 #x0 #x79 #x0 #x7a #x1 #x5a 
        #x1 #x5b #x1 #x60 #x1 #x61 #x1 #x7f 
        #x1e #x62 #x1e #x63 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x2 #x26 #x1e #x2 #x1 #xa #x1e #xa 
        #x1 #x16 #x1e #x1e #x1 #x20 #x1e #x22 
@@ -4552,7 +4445,7 @@
        #x1e #x65 #x1e #x66 #x1e #x67 #x1e #x9b 
        #x1e #x68 #x1e #x69 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x45 #x0 #x48 #x0 #x49 
        #x0 #x4f #x0 #x55 #x0 #x57 #x0 #x58 
@@ -4568,7 +4461,7 @@
        #x4 #x3e #x4 #x43 #x4 #x47 #x4 #x4b 
        #x4 #x4d #x4 #x56 #x4 #xd8 #x4 #xd9 
        #x4 #xe8 #x4 #xe9 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #xc4 #x0 #xcb #x1e #x26 #x0 #xcf 
        #x0 #xd6 #x0 #xdc #x1e #x84 #x1e #x8c 
@@ -4585,7 +4478,7 @@
        #x4 #xed #x4 #x57 #x4 #xda #x4 #xdb 
        #x4 #xea #x4 #xeb )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x45 #x0 #x49 #x0 #x4f 
        #x0 #x55 #x0 #x59 #x0 #x61 #x0 #x65 
@@ -4593,7 +4486,7 @@
        #x0 #xc2 #x0 #xca #x0 #xd4 #x0 #xe2 
        #x0 #xea #x0 #xf4 #x1 #x2 #x1 #x3 
        #x1 #xa0 #x1 #xa1 #x1 #xaf #x1 #xb0 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1e #xa2 #x1e #xba #x1e #xc8 #x1e #xce 
        #x1e #xe6 #x1e #xf6 #x1e #xa3 #x1e #xbb 
@@ -4602,25 +4495,25 @@
        #x1e #xc3 #x1e #xd5 #x1e #xb2 #x1e #xb3 
        #x1e #xde #x1e #xdf #x1e #xec #x1e #xed )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x55 #x0 #x61 #x0 #x75 
        #x0 #x77 #x0 #x79 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #xc5 #x1 #x6e #x0 #xe5 #x1 #x6f 
        #x1e #x98 #x1e #x99 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x4f #x0 #x55 #x0 #x6f #x0 #x75 
        #x4 #x23 #x4 #x43 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1 #x50 #x1 #x70 #x1 #x51 #x1 #x71 
        #x4 #xf2 #x4 #xf3 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x43 #x0 #x44 #x0 #x45 
        #x0 #x47 #x0 #x48 #x0 #x49 #x0 #x4b 
@@ -4632,7 +4525,7 @@
        #x0 #x72 #x0 #x73 #x0 #x74 #x0 #x75 
        #x0 #x7a #x0 #xdc #x0 #xfc #x1 #xb7 
        #x2 #x92 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1 #xcd #x1 #xc #x1 #xe #x1 #x1a 
        #x1 #xe6 #x2 #x1e #x1 #xcf #x1 #xe8 
@@ -4645,64 +4538,64 @@
        #x1 #x7e #x1 #xd9 #x1 #xda #x1 #xee 
        #x1 #xef )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x45 #x0 #x49 #x0 #x4f 
        #x0 #x52 #x0 #x55 #x0 #x61 #x0 #x65 
        #x0 #x69 #x0 #x6f #x0 #x72 #x0 #x75 
        #x4 #x74 #x4 #x75 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x2 #x0 #x2 #x4 #x2 #x8 #x2 #xc 
        #x2 #x10 #x2 #x14 #x2 #x1 #x2 #x5 
        #x2 #x9 #x2 #xd #x2 #x11 #x2 #x15 
        #x4 #x76 #x4 #x77 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x45 #x0 #x49 #x0 #x4f 
        #x0 #x52 #x0 #x55 #x0 #x61 #x0 #x65 
        #x0 #x69 #x0 #x6f #x0 #x72 #x0 #x75 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x2 #x2 #x2 #x6 #x2 #xa #x2 #xe 
        #x2 #x12 #x2 #x16 #x2 #x3 #x2 #x7 
        #x2 #xb #x2 #xf #x2 #x13 #x2 #x17 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x3 #x91 #x3 #x95 #x3 #x97 #x3 #x99 
        #x3 #x9f #x3 #xa9 #x3 #xb1 #x3 #xb5 
        #x3 #xb7 #x3 #xb9 #x3 #xbf #x3 #xc1 
        #x3 #xc5 #x3 #xc9 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1f #x8 #x1f #x18 #x1f #x28 #x1f #x38 
        #x1f #x48 #x1f #x68 #x1f #x0 #x1f #x10 
        #x1f #x20 #x1f #x30 #x1f #x40 #x1f #xe4 
        #x1f #x50 #x1f #x60 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x3 #x91 #x3 #x95 #x3 #x97 #x3 #x99 
        #x3 #x9f #x3 #xa1 #x3 #xa5 #x3 #xa9 
        #x3 #xb1 #x3 #xb5 #x3 #xb7 #x3 #xb9 
        #x3 #xbf #x3 #xc1 #x3 #xc5 #x3 #xc9 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1f #x9 #x1f #x19 #x1f #x29 #x1f #x39 
        #x1f #x49 #x1f #xec #x1f #x59 #x1f #x69 
        #x1f #x1 #x1f #x11 #x1f #x21 #x1f #x31 
        #x1f #x41 #x1f #xe5 #x1f #x51 #x1f #x61 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x4f #x0 #x55 #x0 #x6f #x0 #x75 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1 #xa0 #x1 #xaf #x1 #xa1 #x1 #xb0 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x42 #x0 #x44 #x0 #x45 
        #x0 #x48 #x0 #x49 #x0 #x4b #x0 #x4c 
@@ -4715,7 +4608,7 @@
        #x0 #x74 #x0 #x75 #x0 #x76 #x0 #x77 
        #x0 #x79 #x0 #x7a #x1 #xa0 #x1 #xa1 
        #x1 #xaf #x1 #xb0 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1e #xa0 #x1e #x4 #x1e #xc #x1e #xb8 
        #x1e #x24 #x1e #xca #x1e #x32 #x1e #x36 
@@ -4729,28 +4622,28 @@
        #x1e #xf5 #x1e #x93 #x1e #xe2 #x1e #xe3 
        #x1e #xf0 #x1e #xf1 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x55 #x0 #x75 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1e #x72 #x1e #x73 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x61 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1e #x0 #x1e #x1 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x53 #x0 #x54 #x0 #x73 #x0 #x74 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x2 #x18 #x2 #x1a #x2 #x19 #x2 #x1b )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x43 #x0 #x44 #x0 #x45 #x0 #x47 
        #x0 #x48 #x0 #x4b #x0 #x4c #x0 #x4e 
@@ -4758,7 +4651,7 @@
        #x0 #x64 #x0 #x65 #x0 #x67 #x0 #x68 
        #x0 #x6b #x0 #x6c #x0 #x6e #x0 #x72 
        #x0 #x73 #x0 #x74 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #xc7 #x1e #x10 #x2 #x28 #x1 #x22 
        #x1e #x28 #x1 #x36 #x1 #x3b #x1 #x45 
@@ -4767,52 +4660,52 @@
        #x1 #x37 #x1 #x3c #x1 #x46 #x1 #x57 
        #x1 #x5f #x1 #x63 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x41 #x0 #x45 #x0 #x49 #x0 #x4f 
        #x0 #x55 #x0 #x61 #x0 #x65 #x0 #x69 
        #x0 #x6f #x0 #x75 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1 #x4 #x1 #x18 #x1 #x2e #x1 #xea 
        #x1 #x72 #x1 #x5 #x1 #x19 #x1 #x2f 
        #x1 #xeb #x1 #x73 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x44 #x0 #x45 #x0 #x4c #x0 #x4e 
        #x0 #x54 #x0 #x55 #x0 #x64 #x0 #x65 
        #x0 #x6c #x0 #x6e #x0 #x74 #x0 #x75 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1e #x12 #x1e #x18 #x1e #x3c #x1e #x4a 
        #x1e #x70 #x1e #x76 #x1e #x13 #x1e #x19 
        #x1e #x3d #x1e #x4b #x1e #x71 #x1e #x77 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x48 #x0 #x68 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1e #x2a #x1e #x2b )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x45 #x0 #x49 #x0 #x55 #x0 #x65 
        #x0 #x69 #x0 #x75 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1e #x1a #x1e #x2c #x1e #x74 #x1e #x1b 
        #x1e #x2d #x1e #x75 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x42 #x0 #x44 #x0 #x4b #x0 #x4c 
        #x0 #x4e #x0 #x52 #x0 #x54 #x0 #x5a 
        #x0 #x62 #x0 #x64 #x0 #x68 #x0 #x6b 
        #x0 #x6c #x0 #x6e #x0 #x72 #x0 #x74 
        #x0 #x7a ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1e #x6 #x1e #xe #x1e #x34 #x1e #x3a 
        #x1e #x48 #x1e #x5e #x1e #x6e #x1e #x94 
@@ -4820,7 +4713,7 @@
        #x1e #x3b #x1e #x49 #x1e #x5f #x1e #x6f 
        #x1e #x95 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #x3c #x0 #x3d #x0 #x3e #x21 #x90 
        #x21 #x92 #x21 #x94 #x21 #xd0 #x21 #xd2 
@@ -4833,7 +4726,7 @@
        #x22 #x86 #x22 #x87 #x22 #x91 #x22 #x92 
        #x22 #xa2 #x22 #xa8 #x22 #xa9 #x22 #xab 
        #x22 #xb2 #x22 #xb3 #x22 #xb4 #x22 #xb5 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x22 #x6e #x22 #x60 #x22 #x6f #x21 #x9a 
        #x21 #x9b #x21 #xae #x21 #xcd #x21 #xcf 
@@ -4847,7 +4740,7 @@
        #x22 #xac #x22 #xad #x22 #xae #x22 #xaf 
        #x22 #xea #x22 #xeb #x22 #xec #x22 #xed )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x0 #xa8 #x3 #xb1 #x3 #xb7 #x3 #xb9 
        #x3 #xc5 #x3 #xc9 #x3 #xca #x3 #xcb 
@@ -4857,7 +4750,7 @@
        #x1f #x50 #x1f #x51 #x1f #x59 #x1f #x60 
        #x1f #x61 #x1f #x68 #x1f #x69 #x1f #xbf 
        #x1f #xfe ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1f #xc1 #x1f #xb6 #x1f #xc6 #x1f #xd6 
        #x1f #xe6 #x1f #xf6 #x1f #xd7 #x1f #xe7 
@@ -4868,7 +4761,7 @@
        #x1f #x67 #x1f #x6e #x1f #x6f #x1f #xcf 
        #x1f #xdf )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x3 #x91 #x3 #x97 #x3 #xa9 #x3 #xac 
        #x3 #xae #x3 #xb1 #x3 #xb7 #x3 #xc9 
@@ -4886,7 +4779,7 @@
        #x1f #x6b #x1f #x6c #x1f #x6d #x1f #x6e 
        #x1f #x6f #x1f #x70 #x1f #x74 #x1f #x7c 
        #x1f #xb6 #x1f #xc6 #x1f #xf6 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x1f #xbc #x1f #xcc #x1f #xfc #x1f #xb4 
        #x1f #xc4 #x1f #xb3 #x1f #xc3 #x1f #xf3 
@@ -4905,177 +4798,177 @@
        #x1f #xaf #x1f #xb2 #x1f #xc2 #x1f #xf2 
        #x1f #xb7 #x1f #xc7 #x1f #xf7 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x6 #x27 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x6 #x22 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x6 #x27 #x6 #x48 #x6 #x4a #x6 #xc1 
        #x6 #xd2 #x6 #xd5 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x6 #x23 #x6 #x24 #x6 #x26 #x6 #xc2 
        #x6 #xd3 #x6 #xc0 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x6 #x27 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x6 #x25 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x9 #x28 #x9 #x30 #x9 #x33 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x9 #x29 #x9 #x31 #x9 #x34 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x9 #xc7 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x9 #xcb )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x9 #xc7 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x9 #xcc )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #x47 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #x4b )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #x47 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #x48 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #x47 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #x4c )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #xc6 #xb #xc7 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #xca #xb #xcb )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #x92 #xb #xc6 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xb #x94 #xb #xcc )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xc #x46 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xc #x48 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xc #xc6 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xc #xca )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xc #xbf #xc #xc6 #xc #xca ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xc #xc0 #xc #xc7 #xc #xcb )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xc #xc6 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xc #xc8 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #x46 #xd #x47 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #x4a #xd #x4b )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #x46 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #x4c )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #xd9 #xd #xdc ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #xda #xd #xdd )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #xd9 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #xdc )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #xd9 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xd #xde )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xf #x71 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xf #x73 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xf #x71 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xf #x75 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xf #x71 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #xf #x81 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x10 #x25 ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x10 #x26 )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x30 #x46 #x30 #x4b #x30 #x4d #x30 #x4f 
        #x30 #x51 #x30 #x53 #x30 #x55 #x30 #x57 
@@ -5089,7 +4982,7 @@
        #x30 #xc6 #x30 #xc8 #x30 #xcf #x30 #xd2 
        #x30 #xd5 #x30 #xd8 #x30 #xdb #x30 #xef 
        #x30 #xf0 #x30 #xf1 #x30 #xf2 #x30 #xfd ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x30 #x94 #x30 #x4c #x30 #x4e #x30 #x50 
        #x30 #x52 #x30 #x54 #x30 #x56 #x30 #x58 
@@ -5104,15 +4997,16 @@
        #x30 #xd6 #x30 #xd9 #x30 #xdc #x30 #xf7 
        #x30 #xf8 #x30 #xf9 #x30 #xfa #x30 #xfe )))
    (list
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x30 #x6f #x30 #x72 #x30 #x75 #x30 #x78 
        #x30 #x7b #x30 #xcf #x30 #xd2 #x30 #xd5 
        #x30 #xd8 #x30 #xdb ))
-    (list->bytevector
+    (u8-list->bytes
      '(
        #x30 #x71 #x30 #x74 #x30 #x77 #x30 #x7a 
        #x30 #x7d #x30 #xd1 #x30 #xd4 #x30 #xd7 
        #x30 #xda #x30 #xdd )))
 ))
 
+)
