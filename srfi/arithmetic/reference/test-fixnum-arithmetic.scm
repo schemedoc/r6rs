@@ -347,14 +347,14 @@
     (check (fixnum=? (fixnum-bit-count (greatest-fixnum))
 		     (fixnum- (fixnum-width) n1)) => #t)
   
-    (check (fixnum-length n-1) ==> 1)
+    (check (fixnum-length n-1) ==> 0)
     (check (fixnum-length n0) ==> 0)
     (check (fixnum-length n15) ==> 4)
     (check (fixnum-length n85) ==> 7)
     (check (fixnum=? (fixnum-length (greatest-fixnum))
 		     (fixnum- (fixnum-width) n1)) => #t)
     (check (fixnum=? (fixnum-length (least-fixnum))
-		     (fixnum-width)) => #t)
+		     (fixnum- (fixnum-width) n1)) => #t)
   
     (check (fixnum-first-bit-set n-1) ==> 0)
     (check (fixnum-first-bit-set n0) ==> -1)
@@ -587,14 +587,14 @@
   (check (fixnum=? (fxbit-count (greatest-fixnum))
 		   (fx- (fixnum-width) n1)) => #t)
 
-  (check (fxlength n-1) ==> 1)
+  (check (fxlength n-1) ==> 0)
   (check (fxlength n0) ==> 0)
   (check (fxlength n15) ==> 4)
   (check (fxlength n85) ==> 7)
   (check (fixnum=? (fxlength (greatest-fixnum))
 		   (fx- (fixnum-width) n1)) => #t)
   (check (fixnum=? (fxlength (least-fixnum))
-		   (fixnum-width)) => #t)
+		   (fx- (fixnum-width) n1)) => #t)
 
   (check (fxfirst-bit-set n-1) ==> 0)
   (check (fxfirst-bit-set n0) ==> -1)

@@ -1,10 +1,11 @@
-This is the reference implemenation of the Preliminary R6RS Arithmetic
-SRFI.  The reference implementation itself probably has alpha quality,
-and is a little rough around many of its edges.
+This is a reference implementation for the Preliminary R6RS Arithmetic
+SRFI.  This implementation should be replaced by a more modular and
+efficient reference implementation, which Will Clinger plans to produce,
+but this one will have to do for now.
 
 See COPYING for license information.
 
-It is written in R5RS Scheme  with few exceptions:
+This implementation is written in R5RS Scheme with a few exceptions:
 
 - There may be name clashes between the different modules that
   constitute the code.
@@ -31,8 +32,10 @@ The code assumes a certain minimal fixnum range:
 
 The code has one temporary caveat: The procedures `->exact' and
 `->inexact' are called `x->exact' and `x->inexact', as `->exact' and
-`->inexact' are not valid R5RS identifiers.  They will be renamed once
-the reference implementation moves into the real of R6RS.
+`->inexact' are not valid R5RS identifiers.  They will be renamed in
+a future version of this reference implementation, which will use
+the records and libraries proposed for R6RS in place of SRFI 9 and
+the Scheme 48 module system.
 
                                 * * *
 
@@ -84,9 +87,16 @@ Then do:
 ,in test-strings-to-numbers
 ,in test-fixnum-arithmetic
 ,in test-generic-arithmetic
-,in test-generic-arithmetic/mike
 ,in test-generic-arithmetic/exact
 ,in test-generic-arithmetic/inexact
+
+The following used to work, but is now broken.  Since it
+tests code that implements a semantics that is no longer
+under consideration for R6RS, and will eventually be
+removed from this reference implementation, the problem
+is not worth fixing.
+
+,in test-generic-arithmetic/mike
 
                                 * * *
 
