@@ -1,0 +1,41 @@
+This directory contains a reference implementation for (r6rs bytes).
+It consists of the following files:
+
+    README              what you're reading
+    bytes.sch           the (r6rs bytes) library
+    bytes-core.sch      definitions of the core procedures
+    bytes-proto.sch     definitions of most other procedures
+    bytes-ieee.sch      definitions related to IEEE-754
+    bytes-tests.sch     tests
+    r5rs.sch            for testing in R5RS-compatible systems
+
+For license information, see the copyright files at the top
+of each file.
+
+This implementation is written in R6RS Scheme with a few exceptions:
+
+- bytes-tests.sch and r5rs.sch are written in R5RS Scheme.
+
+- bytes-core.sch contains system-specific definitions that
+  implementors of the R6RS are expected to rewrite.
+
+For improved efficiency, most implementors will also want to
+rewrite at least some of the definitions in bytes-proto.sch
+and in bytes-ieee.sch.
+
+                                * * *
+
+To load the code into an R5RS-conforming system:
+
+1.  (load "r5rs.sch")
+
+This will run a series of tests after the code is loaded.
+Exactly one test should fail (because bytes objects will
+be represented as vectors).
+
+                                * * *
+
+Enjoy!
+
+William D Clinger
+14 September 2006
