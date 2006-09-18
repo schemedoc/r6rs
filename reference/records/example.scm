@@ -1,9 +1,10 @@
 #! /usr/bin/env scheme-script
 
-(import (r6rs records procedural))
-(import (r6rs records inspection))
-(import (r6rs records explicit))
-(import (add-prefix (r6rs records implicit) im:))
+(import (r6rs)
+	(r6rs records procedural)
+	(r6rs records inspection)
+	(r6rs records explicit)
+	(add-prefix (r6rs records implicit) im:))
 
 (define *correct-count* 0)
 (define *failed-count* 0)

@@ -1,4 +1,7 @@
 
+The "example.scm" is an R6RS script that contains examples of using
+records.
+
 The files "r6rs-records-procedural.scm", "r6rs-records-implicit.scm",
 "r6rs-records-explicit.scm", and "r6rs-records-inspection.scm" each
 contain an R6RS library implementing an R6RS record library.
@@ -15,13 +18,41 @@ opaque-cells)'. The "generic-opaque-cells.scm" file, in turn,
 implements `(implementation opaque-cells)' by building on a SRFI-9
 library.
 
+Executing in MzScheme (with `library' hack)
+-------------------------------------------
+
 The "mzscheme-load.scm" file can be used to load the implementation in
 MzScheme. It uses the `(implementation vector-types)' library in
 "mzscheme-vector-types.scm". The "mzscheme-load.ss" file begins with a
-hacked-up implementaton of `library' and `import' in terms of
-MzScheme's `module' and `require'.
+hack to implement of `library' and `import' in terms of MzScheme's
+`module' and `require'.
 
-The "example.scm" is an R6RS script that contains examples.
+To try this implementation using MzScheme:
+  > (load "mzscheme-load.scm")
+  > (load "examples.scm")
+
+Executing via van Tonder `syntax-case' and `library' (in MzScheme)
+------------------------------------------------------------------
+
+The "vantonder-mzscheme-load.scm" file can be used to load the record
+implementation into van Tonder's implementation of R6RS `library' and
+`syntax-case'. The load file assumes that the van Tonder
+implementation is in "../synatx-case/vantonder" relative to this
+directory.
+
+As of the September 13 version of the van Tonder system, small patches
+are required to add exports some exports to `(r6rs)'. See
+"vantonder.diff".
+
+The van Tonder load file uses "vantonder-mzscheme-srfi-9.scm", which
+implements `(srfi-9)' by using MzScheme's `make-struct-type' ---
+which, in turn, is imported via the `primitives' extension of `import'
+in van Tonder's `library'.
+
+To try this implementation using MzScheme:
+ > (load "vantonder-mzscheme-load.scm")
+ ; comment out first line of "example.scm", and then
+ > (r6rs-load "example.scm")
 
 Procedures to be supplied by `(implementation vector-types)'
 ------------------------------------------------------------

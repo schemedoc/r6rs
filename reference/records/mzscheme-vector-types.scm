@@ -31,7 +31,7 @@
 	  typed-vector-accessor typed-vector-mutator
 	  typed-vector?
 	  typed-vector-type)
-  (import (mzscheme))
+  (import (r6rs))
 
   (define-struct vector-type (data field-count supertype
 				   struct-type constructor predicate accessor mutator))

@@ -39,7 +39,7 @@
 
   (define (ensure-opaque-cell-access key cell)
     (if (not ((opaque-cell-key-predicate cell) key))
-	(error "access to opaque cell denied" cell key)))
+	(contract-violation "access to opaque cell denied" cell key)))
 
   (define (opaque-cell-ref key cell)
     (ensure-opaque-cell-access key cell)

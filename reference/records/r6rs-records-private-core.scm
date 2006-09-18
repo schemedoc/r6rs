@@ -107,7 +107,7 @@
   (define (make-record-type-descriptor name parent uid sealed? opaque? field-specs)
     (if (and parent
 	     (record-type-sealed? parent))
-	(error "can't extend a sealed parent class" parent))
+	(contract-violation "can't extend a sealed parent class" parent))
     (let ((opaque? (if parent
 		       (or (record-type-opaque? parent)
 			   opaque?)
@@ -126,8 +126,8 @@
 	      => (lambda (old-rtd)
 		   (if (record-type-descriptor=? rtd old-rtd)
 		       old-rtd
-		       (error "mismatched nongenerative record types with identical uids"
-			      old-rtd rtd))))
+		       (contract-violation "mismatched nongenerative record types with identical uids"
+					   old-rtd rtd))))
 	     (else
 	      (set! *nongenerative-record-types* 
 		    (cons rtd *nongenerative-record-types*))
@@ -140,7 +140,7 @@
 
   (define (ensure-rtd thing)
     (if (not (record-type-descriptor? thing))
-	(error "not a record-type descriptor" thing)))
+	(contract-violation "not a record-type descriptor" thing)))
 
   (define (parse-field-spec spec)
     (apply (lambda (mutability name)
@@ -148,7 +148,7 @@
 	      (case mutability
 		((mutable) #t)
 		((immutable) #f)
-		(else (error "field spec with invalid mutability specification" spec)))
+		(else (contract-violation "field spec with invalid mutability specification" spec)))
 	      name))
 	   spec))
 
@@ -172,7 +172,7 @@
   (define (record-rtd rec)
     (if (record? rec)
 	(typed-vector-type rec)
-	(error "cannot extract rtd of a non-record or opaque record" rec)))
+	(contract-violation "cannot extract rtd of a non-record or opaque record" rec)))
 
   ;; Constructing constructors
 
@@ -181,13 +181,13 @@
   (define (make-record-constructor-descriptor rtd previous protocol)
     (let ((parent (record-type-parent rtd)))
       (if (and previous (not parent))
-	  (error "mismatch between rtd and constructor descriptor" rtd previous))
+	  (contract-violation "mismatch between rtd and constructor descriptor" rtd previous))
 
       (if (and previous
 	       (not protocol)
 	       (record-constructor-descriptor-custom-protocol? previous))
-	  (error "default protocol requested when parent constructor descriptor has custom one"
-		 protocol previous)) 
+	  (contract-violation "default protocol requested when parent constructor descriptor has custom one"
+			      protocol previous)) 
       
       (let ((custom-protocol? (and protocol #t))
 	    (protocol (or protocol (default-protocol rtd)))
@@ -246,8 +246,8 @@
 		   (lambda parent-protocol-args
 		     (lambda for-rtd-field-values
 		       (if (not (= (length for-rtd-field-values) for-rtd-field-count))
-			   (error "wrong number of arguments to record constructor"
-				  for-rtd for-rtd-field-values))
+			   (contract-violation "wrong number of arguments to record constructor"
+					       for-rtd for-rtd-field-values))
 		       (apply (parent-protocol
 			       (apply parent-make-seeder
 				      (append for-rtd-field-values extension-field-values)))
@@ -256,8 +256,8 @@
 	  (lambda extension-field-values
 	    (lambda for-rtd-field-values
 	      (if (not (= (length for-rtd-field-values) for-rtd-field-count))
-		  (error "wrong number of arguments to record constructor"
-			 for-rtd for-rtd-field-values))
+		  (contract-violation "wrong number of arguments to record constructor"
+				      for-rtd for-rtd-field-values))
 	      (wrap
 	       (apply (typed-vector-constructor real-rtd)
 		      (append for-rtd-field-values extension-field-values))))))))))
@@ -286,7 +286,7 @@
 
   (define (record-mutator rtd field-id)
     (if (not (record-field-mutable? rtd field-id))
-	(error "record-mutator called on immutable field" rtd field-id))
+	(contract-violation "record-mutator called on immutable field" rtd field-id))
     (typed-vector-mutator rtd (field-id-index rtd field-id)))
 
   ;; A FIELD-ID is an index, which refers to a field in RTD itself.

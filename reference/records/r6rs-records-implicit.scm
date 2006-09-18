@@ -27,10 +27,9 @@
   (export define-record-type
 	  record-type-descriptor
 	  record-constructor-descriptor)
-  (import (rename (r6rs records explicit)
-		  (define-record-type/explicit define-record-type))
-	  (only (r6rs records explicit)
-		record-type-descriptor record-constructor-descriptor))
+  (import (r6rs)
+	  (rename (r6rs records explicit)
+		  (define-record-type define-record-type/explicit)))
 
   ;; R5RS part of the implementation of DEFINE-RECORD-TYPE for Records SRFI
 
@@ -93,17 +92,17 @@
 	    (?simple-clause ...))
 
 	 (with-syntax ((?constructor-name
-			(datum->syntax-object (syntax ?record-name)
+			(datum->syntax (syntax ?record-name)
 					      (string->symbol
 					       (string-append "make-"
 							      (symbol->string
-							       (syntax-object->datum
+							       (syntax->datum
 								(syntax ?record-name)))))))
 		       (?predicate-name
-			(datum->syntax-object (syntax ?record-name)
+			(datum->syntax (syntax ?record-name)
 					      (string->symbol
 					       (string-append (symbol->string
-							       (syntax-object->datum
+							       (syntax->datum
 								(syntax ?record-name)))
 							      "?")))))
 	   
@@ -120,45 +119,45 @@
 	    (?simple-clause ...)
 	    ?clause ...)
 
-	 (let ((record-name (symbol->string (syntax-object->datum (syntax ?record-name)))))
+	 (let ((record-name (symbol->string (syntax->datum (syntax ?record-name)))))
 	   (with-syntax
 	       (((?simple-field ...)
 		 (map (lambda (clause)
 			(syntax-case clause (mutable immutable)
 			  ((immutable ?field-name)
 			   (with-syntax ((?accessor-name
-					  (datum->syntax-object
+					  (datum->syntax
 					   (syntax ?field-name)
 					   (string->symbol
 					    (string-append record-name "-"
 							   (symbol->string
-							    (syntax-object->datum
+							    (syntax->datum
 							     (syntax ?field-name))))))))
 			     (syntax
 			      (immutable ?field-name ?accessor-name))))
 			  ((mutable ?field-name)
 			   (with-syntax ((?accessor-name
-					  (datum->syntax-object
+					  (datum->syntax
 					   (syntax ?field-name)
 					   (string->symbol
 					    (string-append record-name "-"
 							   (symbol->string
-							    (syntax-object->datum
+							    (syntax->datum
 							     (syntax ?field-name)))))))
 					 (?mutator-name
-					  (datum->syntax-object
+					  (datum->syntax
 					   (syntax ?field-name)
 					   (string->symbol
 					    (string-append record-name "-"
 							   (symbol->string
-							    (syntax-object->datum
+							    (syntax->datum
 							     (syntax ?field-name)))
 							   "-set!")))))
 			     (syntax
 			      (mutable ?field-name ?accessor-name ?mutator-name))))
 			  (?clause
 			   clause)))
-		      (syntax->list (syntax (?field-clause ...))))))
+		      (syntax (?field-clause ...)))))
 	     (syntax
 	      (define-record-type-1 
 		?record-name ?record-name-spec
