@@ -323,24 +323,24 @@ library described in chapter~\ref{listutilities}:
 \end{entry}
 
 \begin{entry}{%
-\irproto{forall}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}
-\irproto{exists}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}}
+\irproto{forall}{ proc \vari{l} \varii{l} \dotsfoo{} \varn{l}}{procedure}
+\irproto{exists}{ proc \vari{l} \varii{l} \dotsfoo{} \varn{l}}{procedure}}
 
 \domain{\var{Proc} must be a procedure; if any \varj{l} is
     nonempty, then \var{proc} must take as many arguments
     as there are \var{l}s.
-    Either there exists a natural number $n$ such
-    that every $l_i$ is a plausible list of length $n$
+    Either there exists a natural number $k$ such
+    that every $l_i$ is a plausible list of length $k$
     between entry and some subsequent time before exit,
-    or there exists a natural number $n$,
+    or there exists a natural number $k$,
     Scheme objects $x_{i,j}$, and times $t_{i,j}$
     such that for every $l_i$:
-    $l_i, x_{i,1}, \dots, x_{i,n}$ and $t_{i,1}, \ldots, t_{i,n}$
-    is a plausible prefix up to and including $n$, where
-    $t_{i,1}$ is after entry and $t_{i,n}$ is before exit
+    $l_i, x_{i,1}, \dots, x_{i,k}$ and $t_{i,1}, \ldots, t_{i,k}$
+    is a plausible prefix up to and including $k$, where
+    $t_{i,1}$ is after entry and $t_{i,k}$ is before exit
     and there exist $t_i^\prime$ before exit such that
-    $t_i^\prime > t_{i,n}$ (where $t_{i,0}$ is defined to be $t_0$),
-    the car of $x_{i,n}$ at $t_i^\prime$ is $y_i$,
+    $t_i^\prime > t_{i,k}$ (where $t_{i,0}$ is defined to be $t_0$),
+    the car of $x_{i,k}$ at $t_i^\prime$ is $y_i$,
     and a call to \var{proc} on the $y_i$ at some time
     after the maximum of the $t_i^\prime$ but before exit
     yields a false value (for {\cf forall}) or a true

@@ -21,46 +21,53 @@ immediately returns that element.  If \var{proc} returns
 \end{entry}
 
 \begin{entry}{%
-\proto{forall}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}
-\proto{exists}{ proc \vari{l} \varii{l} \dotsfoo}{procedure}}
+\proto{forall}{ proc \vari{l} \varii{l} \dotsfoo{} \varn{l}}{procedure}
+\proto{exists}{ proc \vari{l} \varii{l} \dotsfoo{} \varn{l}}{procedure}}
 
-\domain{The \var{l}s must all be the empty list, or chains of pairs of
-  sizes according to the condition specified below.
-  \var{proc} must be a procedure; it must take a single argument if
-  the \var{l}s are non-empty.}
+\domain{Each \var{l} must be the
+  empty list or a chain of pairs according to the conditions specified
+  below.  \var{Proc} must be a procedure; it must take as many
+  arguments as there are \var{l}s if \vari{l} is non-empty.}
 
-The {\cf forall} procedure applies \var{proc} element-wise to the
-elements of the \var{l}s.  If \var{proc} returns \schtrue{}
-for all but the last elements of the \var{l}s, \var{forall} performs a
-tail call of \var{proc} on the last elements---in this case, the
-\var{l}s must all be lists.  If \var{proc}
+For natural numbers $i = 0, 1, \ldots$, the {\cf forall} procedure
+successively applies \var{proc} to arguments $x_i^1 \ldots x_i^n$,
+where $x_i^j$ is the $i$th element of \varj{l}, until \schfalse{} is
+returned.  If \var{proc} returns true values for all but the last
+element of \vari{l}, \var{forall} performs a tail call of \var{proc}
+on the $k$th elements, where $k$ is the length of \vari{l}---in this
+case, the \var{l}s must all be lists of length $k$.  If \var{proc}
 returns \schfalse{} on any set of elements, {\cf forall} returns
 \schfalse{} after the first such application of \var{proc} without
-further traversing the \var{l}s.  If
-the \var{l}s are all empty, {\cf forall} returns \schtrue.
+further traversing the \var{l}s.  If the \var{l}s are all empty, {\cf
+  forall} returns \schtrue.
 
-The {\cf exists} procedure applies \var{proc} element-wise to the
-elements of the \var{l}s.  If \var{proc} returns \schfalse{}
-for all but the last elements of the \var{l}s, \var{exists} performs a
-tail call of \var{proc} on the last elements---in this case, the
-\var{l}s must all be lists.  If \var{proc}
-returns a true value on any set of elements, {\cf exists} returns
-that value after the first such application of \var{proc} without
-further traversing the \var{l}s.  If
-the \var{l}s are all empty, {\cf exists} returns \schfalse.
-
+For natural numbers $i = 0, 1, \ldots$, the {\cf exists} procedure
+applies \var{proc} successively to arguments $x_i^1 \ldots x_i^n$,
+where $x_i^j$ is the $i$th element of \varj{l}, until \schtrue{} is
+returned.  If \var{proc} returns \schfalse{} for all but the last
+elements of the \var{l}s, \var{exists} performs a tail call of
+\var{proc} on the $k$th elements, where $k$ is the length of
+\vari{l}---in this case, the \var{l}s must all be lists of length $k$.
+If \var{proc} returns a true value on any set of elements, {\cf
+  exists} returns that value after the first such application of
+\var{proc} without further traversing the \var{l}s.  If the \var{l}s
+are all empty, {\cf exists} returns \schfalse.
 
 \begin{scheme}
 (forall even? '(3 1 4 1 5 9)) \ev \schfalse{}
 (forall even? '(3 1 4 1 5 9 . 2)) \ev \schfalse{}
 (forall even? '(2 1 4 14)) \ev \schtrue{}
 (forall even? '(2 1 4 14 . 9)) \lev \exception{\cf\&contract}
-(forall (lambda (n) (and (even? n) n)) '(2 1 4 14) \lev 14
+(forall (lambda (n) (and (even? n) n)) '(2 1 4 14)) \lev 14
+(forall < '(1 2 3) '(2 3 4)) \ev \schtrue{}
+(forall < '(1 2 4) '(2 3 4)) \ev \schfalse{}
 
 (exists even? '(3 1 4 1 5 9)) \ev \schtrue{}
 (exists even? '(3 1 1 5 9)) \ev \schfalse{}
 (exists even? '(3 1 1 5 9 . 2)) \lev \exception{\cf\&contract}
-(exists (lambda (n) (and (even? n) n)) '(2 1 4 14) \lev 2
+(exists (lambda (n) (and (even? n) n)) '(2 1 4 14)) \lev 2
+(exists < '(1 2 4) '(2 3 4)) \ev \schtrue{}
+(exists > '(1 2 3) '(2 3 4)) \ev \schfalse{}
 \end{scheme}
 \end{entry}
 
