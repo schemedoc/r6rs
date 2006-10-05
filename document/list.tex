@@ -54,15 +54,15 @@ If \var{proc} returns a true value on any set of elements, {\cf
 are all empty, {\cf exists} returns \schfalse.
 
 \begin{scheme}
-(forall even? '(3 1 4 1 5 9)) \ev \schfalse{}
-(forall even? '(3 1 4 1 5 9 . 2)) \ev \schfalse{}
+(forall even? '(3 1 4 1 5 9)) \lev \schfalse{}
+(forall even? '(3 1 4 1 5 9 . 2)) \lev \schfalse{}
 (forall even? '(2 1 4 14)) \ev \schtrue{}
 (forall even? '(2 1 4 14 . 9)) \lev \exception{\cf\&contract}
 (forall (lambda (n) (and (even? n) n)) '(2 1 4 14)) \lev 14
 (forall < '(1 2 3) '(2 3 4)) \ev \schtrue{}
 (forall < '(1 2 4) '(2 3 4)) \ev \schfalse{}
 
-(exists even? '(3 1 4 1 5 9)) \ev \schtrue{}
+(exists even? '(3 1 4 1 5 9)) \lev \schtrue{}
 (exists even? '(3 1 1 5 9)) \ev \schfalse{}
 (exists even? '(3 1 1 5 9 . 2)) \lev \exception{\cf\&contract}
 (exists (lambda (n) (and (even? n) n)) '(2 1 4 14)) \lev 2
