@@ -579,10 +579,13 @@ constructs is identical, but they differ in the regions\index{region} they estab
 for their variable bindings.  In a {\cf let} expression, the initial
 values are computed before any of the variables become bound; in a
 {\cf let*} expression, the bindings and evaluations are performed
-sequentially; while in a {\cf letrec*} and in a {\cf letrec}
+sequentially.  In a {\cf letrec*} or {\cf letrec}
 expression, all the bindings are in
 effect while their initial values are being computed, thus allowing
-mutually recursive definitions.
+mutually recursive definitions.  In a {\cf letrec} expression, the
+initial values are computed before being assigned to the variables;
+in a {\cf letrec*}, the evaluations and assignments are performed
+sequentially.
 
 In addition, the binding constructs {\cf let-values} and {\cf
   let*-values} allow the binding of results of expression returning
