@@ -36,17 +36,9 @@ file oject.
 \schindex{procedure?}\index{empty list}\index{unspecified value}
 \index{end of file value}\schindex{unspecified?}\schindex{eof-object?}\schindex{null?}
 
-Although there is a separate boolean type,
-any Scheme value can be used as a boolean value for the purpose of a
-conditional test.  As explained in section~\ref{booleansection}, all
-values count as true in such a test except for \schfalse{}.
-% and possibly the empty list.
-% The only value that is guaranteed to count as
-% false is \schfalse{}.  It is explicitly unspecified whether the empty list
-% counts as true or as false.
-This report uses the word ``true'' to refer to any
-Scheme value except \schfalse{}, and the word ``false'' to refer to
-\schfalse{}. \mainindex{true} \mainindex{false}
+Note that, although there is a separate boolean type, any Scheme value
+can be used as a boolean value for the purpose of a conditional test;
+see section~\ref{booleanvaluessection}.
 
 \section{Definitions}
 \label{defines}
@@ -354,7 +346,7 @@ expressions.
 \semantics
 An {\cf if} expression is evaluated as follows: first,
 \hyper{test} is evaluated.  If it yields a true value\index{true} (see
-section~\ref{booleansection}), then \hyper{consequent} is evaluated and
+section~\ref{booleanvaluessection}), then \hyper{consequent} is evaluated and
 its value(s) is(are) returned.  Otherwise \hyper{alternate} is evaluated and its
 value(s) is(are) returned.  If \hyper{test} yields a false value and no
 \hyper{alternate} is specified, then the result of the expression is
@@ -422,7 +414,7 @@ an ``else clause,'' which has the form
 A {\cf cond} expression is evaluated by evaluating the \hyper{test}
 expressions of successive \hyper{clause}s in order until one of them
 evaluates to a true value\index{true} (see
-section~\ref{booleansection}).  When a \hyper{test} evaluates to a true
+section~\ref{booleanvaluessection}).  When a \hyper{test} evaluates to a true
 value, then the remaining \hyper{expression}s in its \hyper{clause} are
 evaluated in order, and the result(s) of the last \hyper{expression} in the
 \hyper{clause} is(are) returned as the result(s) of the entire {\cf cond}
@@ -511,7 +503,7 @@ appendix~\ref{derivedformsappendix}.
 \semantics
 The \hyper{test} expressions are evaluated from left to right, and the
 value of the first expression that evaluates to a false value (see
-section~\ref{booleansection}) is returned.  Any remaining expressions
+section~\ref{booleanvaluessection}) is returned.  Any remaining expressions
 are not evaluated.  If all the expressions evaluate to true values, the
 value of the last expression is returned.  If there are no expressions
 then \schtrue{} is returned.
@@ -544,7 +536,7 @@ The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
 \semantics
 The \hyper{test} expressions are evaluated from left to right, and the value of the
 first expression that evaluates to a true value (see
-section~\ref{booleansection}) is returned.  Any remaining expressions
+section~\ref{booleanvaluessection}) is returned.  Any remaining expressions
 are not evaluated.  If all expressions evaluate to false values, the
 value of the last expression is returned.  If there are no
 expressions then \schfalse{} is returned.
@@ -2154,38 +2146,9 @@ returns \schfalse{}.
 \label{booleansection}
 
 The standard boolean objects for true and false are written as
-\schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f}  What really
-matters, though, are the objects that the Scheme conditional expressions
-({\cf if}, {\cf cond}, {\cf and}, {\cf or}, {\cf do}) treat as
-true\index{true} or false\index{false}.  The phrase ``a true value''\index{true}
-(or sometimes just ``true'') means any object treated as true by the
-conditional expressions, and the phrase ``a false value''\index{false} (or
-``false'') means any object treated as false by the conditional expressions.
-
-\vest Of all the standard Scheme values, only \schfalse{}
-% is guaranteed to count
-counts as false in conditional expressions.
-%  It is not
-% specified whether the empty list\index{empty list} counts as false
-% or as true in conditional expressions.
-Except for \schfalse{},
-% and possibly the empty list,
-all standard Scheme values, including \schtrue,
-pairs, the empty list, symbols, numbers, strings, vectors, and procedures,
-count as true.
-
-%\begin{note}
-%In some implementations the empty list counts as false, contrary
-%to the above.
-%Nonetheless a few examples in this report assume that the
-%empty list counts as true, as in \cite{IEEEScheme}.
-%\end{note}
-
-% \begin{rationale}
-% For historical reasons some implementations regard \schfalse{} and the
-% empty list as the same object.  These implementations therefore cannot
-% make the empty list count as true in conditional expressions.
-% \end{rationale}
+\schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f} However, of all
+the standard Scheme values, only \schfalse{} counts as false in
+conditional expressions.  See section~\ref{booleanvaluessection}.
 
 \begin{note}
 Programmers accustomed to other dialects of Lisp should be aware that
@@ -3477,7 +3440,7 @@ the \hyper{variable}s are bound to fresh locations, the results of the
 \hyper{variable}s, and then the iteration phase begins.
 
 \vest Each iteration begins by evaluating \hyper{test}; if the result is
-false (see section~\ref{booleansection}), then the \hyper{command}
+false (see section~\ref{booleanvaluessection}), then the \hyper{command}
 expressions are evaluated in order for effect, the \hyper{step}
 expressions are evaluated in some unspecified order, the
 \hyper{variable}s are bound to fresh locations, the results of the
