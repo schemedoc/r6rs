@@ -1317,10 +1317,7 @@ accept both exact and inexact numbers as arguments,
 performing coercions and selecting the appropriate operations
 as determined by the numeric subtypes of their arguments.
 
-Chapter~\ref{numbertypeschapter} contains a detailed description of the
-numerical types of Scheme and a discussion of the concept of exactness.
-Chapter~\ref{numberchapter} contains the mathematical definitions of
-some operations that are assumed here, and describes
+Chapter~\ref{numberchapter} describes
 libraries that define other numerical procedures.
 
 \subsection{Propagation of exactness and inexactness}
@@ -1364,6 +1361,168 @@ One general exception to the rule above is that an implementation may
 return an exact result despite inexact arguments if that exact result
 would be the correct result for all possible substitutions of exact
 arguments for the inexact ones.
+
+\subsection{Representability of infinities and NaNs}
+\label{infinitiesnanssection}
+
+The specification of the numerical operations is written as though
+infinities and NaNs are representable, and specifies many operations
+with respect to these numbers in ways that are consistent with the
+IEEE 754 standard for binary floating point arithmetic.  
+An implementation of Scheme is not required to represent infinities and
+NaNs, however;
+an implementation must raise a continuable exception with
+condition type {\cf\&no-infinities} or {\cf\&no-nans} (respectively;
+see section~\ref{flonumssection})
+whenever it is unable to represent an infinity or NaN as required by
+the specification.  In this case, the continuation of the exception
+handler is the continuation that otherwise would have received
+the infinity or NaN value.  This requirement also applies to
+conversions between numbers and external representations, including
+the reading of program source code.
+
+\subsection{Semantics of common operations}
+
+Some operations are the semantic basis for several arithmetic
+procedures.  The behavior of these operations is described in this
+section for later reference.
+
+\subsubsection{Integer division}
+\label{integerdivision}
+
+For various kinds of arithmetic (fixnum, flonum, exact, inexact, and
+generic), Scheme provides operations for performing integer
+division.  They rely on mathematical operations $\mathrm{div}$,
+$\mathrm{mod}$, $\mathrm{div}_0$, and
+$\mathrm{mod}_0$, that are defined as follows:
+
+$\mathrm{div}$, $\mathrm{mod}$, $\mathrm{div}_0$, and $\mathrm{mod}_0$
+each accept two real numbers $x_1$ and $x_2$ as operands, where
+$x_2$ must be nonzero.
+
+$\mathrm{div}$ returns an integer, and $\mathrm{mod}$ returns a real.
+Their results are specified by
+%
+\begin{eqnarray*}
+x_1~\mathrm{div}~x_2 &=& n_d\\
+x_1~\mathrm{mod}~x_2 &=& x_m
+\end{eqnarray*}
+%
+where
+%
+\begin{displaymath}
+\begin{array}{c}
+x_1 = n_d * x_2 + x_m\\
+0 \leq x_m < |x_2|
+\end{array}
+\end{displaymath}
+%
+Examples:
+\begin{eqnarray*}
+5~\mathrm{div}~3    &=&  1\\
+5~\mathrm{div}~-3   &=&  -1\\
+5~\mathrm{mod}~3    &=&  2\\
+5~\mathrm{mod}~-3   &=&  2
+\end{eqnarray*}
+%
+$\mathrm{div}_0$ and $\mathrm{mod}_0$ are like $\mathrm{div}$ and
+$\mathrm{mod}$, except the result of $\mathrm{mod}_0$ lies within a
+half-open interval centered on zero.  The results are specified by
+%
+\begin{eqnarray*}
+x_1~\mathrm{div}_0~x_2 &=& n_d\\
+x_1~\mathrm{mod}_0~x_2 &=& x_m
+\end{eqnarray*}
+%
+where:
+%
+\begin{displaymath}
+\begin{array}{c}
+x_1 = n_d * x_2 + x_m\\
+-|\frac{x_2}{2}| \leq x_m < |\frac{x_2}{2}|
+\end{array}
+\end{displaymath}
+%
+Examples:
+%
+\begin{eqnarray*}
+5~\mathrm{div}_0~3    &=&  2\\
+5~\mathrm{div}_0~-3   &=&  -2\\
+5~\mathrm{mod}_0~3    &=&  -1\\
+5~\mathrm{mod}_0~-3   &=&  -1
+\end{eqnarray*}
+
+\begin{rationale}
+The half-open symmetry about zero is convenient for some purposes.
+\end{rationale}
+
+\subsubsection{Transcendental functions}
+\label{transcendentalfunctions}
+
+In general, the transcendental functions $\log$, $\sin^{-1}$
+(arcsine), $\cos^{-1}$ (arccosine), and $\tan^{-1}$ are multiply
+defined.  The value of $\log z$ is defined to be the one whose
+imaginary part lies in the range from $-\pi$ (inclusive if $-0.0$ is
+distinguished, exclusive otherwise) to $\pi$ (inclusive).  $\log 0$ is
+undefined.
+
+The value of $\log z$ for non-real $z$ is defined in terms of log on real numbers as 
+
+\begin{displaymath}
+\log z = \log |z| + \mathrm{angle}~z
+\end{displaymath}
+%
+where $\mathrm{angle}~z$ is the angle of $z = a\cdot e^{ib}$ specified
+as:
+$$\mathrm{angle}~z = b+2\pi n$$
+with $-\pi \leq \mathrm{angle}~z\leq \pi$ and $\mathrm{angle}~z =
+b+2\pi n$ for some integer $n$.
+
+With the one-argument version of $\log$ defined this way, the values
+of the two-argument-version of $\log$, $\sin^{-1} z$, $\cos^{-1} z$,
+$\tan^{-1} z$, and the two-argument version of $\tan^{-1}$ are
+according to the following formul\ae:
+\begin{eqnarray*}
+\log z~b &=& \frac{\log z}{\log b}\\
+\sin^{-1} z &=& -i \log (i z + \sqrt{1 - z^2})\\
+\cos^{-1} z &=& \pi / 2 - \sin^{-1} z\\
+\tan^{-1} z &=& (\log (1 + i z) - \log (1 - i z)) / (2 i)\\
+\tan^{-1} x~y &=& \mathrm{angle}(x+ yi)
+\end{eqnarray*}
+
+The range of $\tan^{-1} x~y$ is as in the following table. The
+asterisk (*) indicates that the entry applies to implementations that
+distinguish minus zero.
+
+\begin{center}
+\begin{tabular}{clll}
+& $y$ condition & $x$ condition & range of result $r$\\\hline
+& $y = 0.0$ & $x > 0.0$ & $0.0$\\
+$\ast$ & $y = +0.0$  & $x > 0.0$ & $+0.0$\\     
+$\ast$ & $y = -0.0$ & $x > 0.0$ & $-0.0$\\
+& $y > 0.0$ & $x > 0.0$ & $0.0 < r < \frac{\pi}{2}$\\
+& $y > 0.0$ & $x = 0.0$ & $\frac{\pi}{2}$\\
+& $y > 0.0$ & $x < 0.0$ & $\frac{\pi}{2} < r < \pi$\\
+& $y = 0.0$ & $x < 0$ & $\pi$\\
+$\ast$ & $y = +0.0$ & $x < 0.0$ & $\pi$\\
+$\ast$ & $y = -0.0$ & $x < 0.0$ & $-\pi$\\      
+&$y < 0.0$ & $x < 0.0$ & $-\pi< r< -\frac{\pi}{2}$\\
+&$y < 0.0$ & $x = 0.0$ & $-\frac{\pi}{2}$\\
+&$y < 0.0$ & $x > 0.0$ & $-\frac{\pi}{2} < r< 0.0$\\    
+&$y = 0.0$ & $x = 0.0$ & undefined\\
+$\ast$& $y = +0.0$ & $x = +0.0$ & $+0.0$\\
+$\ast$& $y = -0.0$ & $x = +0.0$& $-0.0$\\
+$\ast$& $y = +0.0$ & $x = -0.0$ & $\pi$\\
+$\ast$& $y = -0.0$ & $x = -0.0$ & $-\pi$\\
+$\ast$& $y = +0.0$ & $x = 0$ & $\frac{\pi}{2}$\\
+$\ast$& $y = -0.0$ & $x = 0$    & $-\frac{\pi}{2}$
+\end{tabular}
+\end{center}
+
+The above specification follows Steele~\cite{CLtL}, which in turn
+cites Penfield~\cite{Penfield81}; refer to these sources for more detailed
+discussion of branch cuts, boundary conditions, and implementation of
+these functions.
 
 \subsection{Numerical operations}
 
