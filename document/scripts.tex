@@ -82,9 +82,9 @@ invoking it.  The semantics of a script body may be roughly explained by
 a simple translation into a library body: All declarations at the script top
 level are moved to the front, and
 each \hyper{expression} that appears before a
-variable definition in
+definition in
 the script body is converted into a dummy definition 
-{\cf (define \hyper{variable} \hyper{expression})},
+{\cf (define \hyper{variable} (begin \hyper{expression} (unspecified)))},
 where \hyper{variable} is fresh identifier.
 (It is generally impossible to determine which forms are declarations,
 definitions, and expressions without concurrently expanding the body, so
