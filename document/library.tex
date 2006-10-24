@@ -724,9 +724,7 @@ Examples for macros and phases:
     (lambda (stx)
       (syntax-case stx ()
         [(\_ [(id ...) expr] body0 body ...)
-         (not (find-dup
-                (syntax-object->list
-                  (syntax (id ...)))))
+         (not (find-dup (syntax (id ...))))
          (syntax
            (call-with-values
                (lambda () expr) 
