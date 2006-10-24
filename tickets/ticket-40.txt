@@ -26,3 +26,43 @@ I propose that either "This distinction is orthogonal to the dimension
 of type." be removed or modified; or Sections "16.5. Exact arithmetic"
 and "16.6. Inexact arithmetic" be removed.
 
+DRAFT RESPONSE
+
+Ticket #40 suggests that the (r6rs arithmetic exact) and (r6rs arithmetic inexact) libraries are largely pointless. 
+
+Mike should probably be the one to explain why those libraries aren't entirely pointless, but here is Will's explanation: The (r6rs arithmetic exact) library provides programmers with a convenient way to assert that the arguments and results of arithmetic operations are exact, with the safety that comes from raising an exception if those assertions do not hold. The argument for the (r6rs arithmetic inexact) library is similar. 
+
+Mike's expansion of that argument: 
+
+I conjecture that in most Scheme programs, applications of arithmetic
+operations are either always invoked with exact or always invoked with
+inexact arguments. Programs that rely on the contagiousness of
+inexactness and actually do something with the exactness of the result
+are rare. In the programs of the former kind, passing arguments with
+exactness other than the intended often leads to erroneous
+computations. Examples are the floating-point example from the Egner
+at al. Scheme workshop paper, where exact arguments lead to disastrous
+run time, and programs dealing with monetary amount, where the
+specification of an amount using decimal-point notation leads to the
+computations bing inadvertenly inexact.
+
+Using the (r6rs arithmetic inexact) and (r6rs arithmetic exact)
+libraries for such programs makes the programs more safe (as noted
+above), and also makes the intentions of the programmer more explicit
+to the reader.
+
+Whether the convenience of making such assertions justifies the
+inclusion of those libraries within the R6RS is debatable. Will (and
+others whose names could be added here) would be happy if those
+libraries were removed from the report. Mike (and others whose names
+could be added here) would be unhappy if those libraries were removed
+from the report. To Mike at least, these libraries are significantly
+more useful (outside of providing reference implementations for the
+rest of the tower) than the fixnum libraries.
+
+Note that none of these arguments has anything to do with the argument
+Aubrey Jaffer is making in the ticket. Actually, Jaffer only suggests
+removing these libraries as one option out of two. The other option is
+removing the assertion in the current draft that exactness is
+orthogonal to type, which Mike favors.
+
