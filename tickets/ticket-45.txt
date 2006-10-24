@@ -1,0 +1,48 @@
+Ticket #45 (defect)
+
+last-element behavior of for-each
+Status: new
+Reported by:	Per Bothner
+Assigned to:	sperber
+Priority:	minor
+Component:	other
+Version:	5.91
+Keywords:	
+Cc:	
+
+The specification of for-each (in R5RS as well as R6RS) has a weird
+asymmetry in that the result value is the result of calling the
+function on the last elements. Furthermore, it is required to
+tail-call the function on the last element.
+
+The problem is that this specification makes it more difficult to
+optimize for-each. If we didn't have this requirement a compiler could
+transform (for-each proc list) into:
+
+  (do ((p list (cdr p)))
+    (if (not (null? p))
+       (let ((x (car p)))
+          (proc x))))
+
+(Notice the unspecified else clause.) 
+
+The key point is that this transformation further allows the compiler
+to inline proc. If the last tail call to proc must be a tail-call,
+then the inlining gets ugly. I think you'd need two copies of the call
+to proc: one for each iteration except the last, and then a final
+tail-call. The former can be inlined, but the latter cannot be,
+Duplicate copies is bad: it leads to code bloat, more difficulties for
+a debugger in setting breakpoints, etc.
+
+Now presumably an even-more-sophisticated compiler would figure out
+when it is safe to use a non-tail-call for the final element. But that
+requires global analysis. If we get rid of the weird last-element
+semantics even a fairly simple compiler can do this optimization.
+
+In addition to hurting optimization the asymmetry in the specification
+is inelegant, in my opinion.
+
+I propose that the return value of for-each be "the unspecified value"
+[pending resolution of this issue], and the requirement for special
+handling of the last element be removed.
+

@@ -1,0 +1,78 @@
+Ticket #60 (defect)
+
+Declarations break lexical scoping
+Status: new
+Reported by:	Andre van Tonder
+Assigned to:	sperber
+Priority:	major
+Component:	other
+Version:	5.91
+Keywords:	
+Cc:	
+
+Component : Bodies and sequences (9.4) and Expansion process (8) 
+
+Pages : 28, 29 and 30 
+
+Summary
+
+Expansion process as currently described violates lexical scoping for
+bodies with "declare" forms.
+
+Description
+
+Consider 
+
+Example 1: 
+   (let ()
+     (declare safe)
+     (define declare 1))
+
+Example 2: 
+   (let ()
+     (declare safe)
+     (define safe 1))
+
+According to the algorithm in the first paragraph of p.28, it appears
+that the first line in both examples should be accepted as a
+declaration. This is in conflict with lexical scoping according to the
+second paragraph of p.30, which says that "the region of the binding
+is the entire <body>"
+
+Suggestion
+
+I see two options: 
+Option 1:
+
+Example 1 (but not example 2) can be fixed by changing the line on p 28: 
+
+"To detect this error, the expander records the identifying keyword
+for each macro use, define-syntax form, define form, begin form,
+let-syntax form, and letrec-syntax form it encounters while processing
+the definitions ..."
+
+--> 
+
+"To detect this error, the expander records the identifying keyword for each macro use, [[declare form]], define-syntax form, define form, begin form, let-syntax form, and letrec-syntax form it encounters while processing the [[declarations and]] definitions ..." 
+
+Example 2 could be "fixed" by requiring declarations' <declare spec>s
+to be expanded after all definitions have been discovered, along with
+right hand sides and expressions. This has a problem:
+
+The problem with this second part of the fix is that by the time all
+definitions have been discovered, some expressions (all of them in
+case of a script, and at least the first one in case of other bodies)
+have already been partially expanded. Since declarations presumably
+might be intended to affect the result of expanding expressions (e.g.,
+by expanding to safe or unsafe primitives), this might break the
+declarations. Option 2:
+
+Instead of the scope of a definition being the whole <body>, the scope
+could be defined to be just the
+
+<definition>...<sequence>... 
+
+part of the body (for this to be consistent also with the expansion
+process for scripts, I think one would also have to require
+declarations to precede definitions in scripts).
+

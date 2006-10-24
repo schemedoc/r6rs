@@ -1,0 +1,31 @@
+Ticket #5 (defect)
+
+Implementing Common Lisp's defmacro is not straightforward
+Status: new
+Reported by:	Pascal Costanza
+Assigned to:	dyb
+Priority:	minor
+Component:	macros
+Version:	5.91
+Keywords:	
+Cc:	
+
+Section 17.6, page 113, last paragraph, states that "Using lisp-
+transformer, defining a basic version of Common Lisp's defmacro is a
+straightforward exercise."
+
+This is misleading. It is true that Common Lisp's destructuring
+facilities in its macro lambda lists, as well as the inclusion of
+optional and keyword arguments, are merely syntactic sugar. However,
+Common Lisp macros also provide access to the lexical environment of a
+macro invocation via environment objects. See Sections 3.4.4 and
+3.1.1.4 in the ANSI Common Lisp specification [1]. I doubt that it's
+straightforward to reimplement environment objects using syntax-case.
+
+I suggest to drop this sentence completely. The preceding paragraph
+already mentions that lisp-transformer can be used to "write macros in
+the style of old Lisp macros", and that seems to be a sufficient
+motivation for this example.
+
+[1] http://www.lispworks.com/documentation/HyperSpec/Front/index.htm
+

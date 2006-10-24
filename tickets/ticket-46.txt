@@ -1,0 +1,50 @@
+Ticket #46 (defect)
+
+LF should not be the only line separator
+Status: new
+Reported by:	Reinder Verlinde
+Assigned to:	mflatt
+Priority:	major
+Component:	unicode
+Version:	5.91
+Keywords:	
+Cc:	
+
+Section 3.2.1 contains the following production: 
+     <intra-line whitespace> --> <any <whitespace> that is not <linefeed>
+
+First, a minor, textual issue: the < and > tags do not balance (a > is
+missing at the end of the line)
+
+The major issue here is the choice to make "line feed" the only inter-
+line separator.
+
+http://en.wikipedia.org/wiki/Newline#Unicode, although far from
+normative, states:
+
+"The Unicode standard addresses the problem by defining a large number
+of characters that conforming applications should recognize as line
+terminators:
+
+      LF:    Line Feed, u000A
+      CR:    Carriage Return, u000D
+      CR+LF: CR followed by LF, u000D followed by u000A
+      NEL:   Next Line, u0085
+      FF:    Form Feed, u000C
+      LS:    Line Separator, u2028
+      PS:    Paragraph Separator, u2029"
+
+but in my reading, it is consistent with
+http://www.unicode.org/reports/tr14. If a goal of the spec is to make
+Scheme Unicode compliant, it must follow the mandatory aspects of that
+page.
+
+When not making this change, be aware that source files will be
+single-line on some (minority) platforms (examples: Mac OS 9 and
+earlier, and if I read things correctly, EBCDIC-based systems)
+
+This may mean additional changes to the grammar. I haven't completely
+thought it over, but I think the cleanest approach would be to define
+the lexical syntax as consisting of two phases, the first of which
+normalizes line endings (say to LFs).
+

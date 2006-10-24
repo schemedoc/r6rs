@@ -1,0 +1,48 @@
+Ticket #38 (defect)
+
+Position-significance of declarations in scripts
+Status: new
+Reported by:	Andre van Tonder
+Assigned to:	mflatt
+Priority:	minor
+Component:	scripts
+Version:	5.91
+Keywords:	
+Cc:	
+
+Page : 27 
+
+Summary
+
+Position of declarations in scripts is significant, since interspersed
+declarations cannot be consistently applied to expand-time
+computations. This is confusing. Description
+
+The draft states: 
+
+"All declarations at the script top level are moved to the front."
+
+which gives the impression that such declarations will have the whole
+body as their region.
+
+However, the position of a declaration is significant, as in the
+script:
+
+(+ 5 6)
+(define-syntax foo (let ((expand-time-calc (+ 1 2)))
+                      (lambda (stx) (+ 3 4))))
+(declare fast)
+
+Here the declaration (+ 1 2) must be evaluated before the declaration
+is expanded according to the rules on p. 27 (since the definition of
+foo could determine whether (declare fast) is really a declaration).
+
+Since FAST cannot apply to (+ 1 2), the position of the declaration is
+significant. The fact that FAST /does/ apply both to the preceding (+
+5 6) and the following (+ 3 4) is confusing.
+
+Suggestion
+
+Perhaps require declarations to be at the front as in bodies.
+
+

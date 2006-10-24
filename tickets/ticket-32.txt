@@ -1,0 +1,41 @@
+Ticket #32 (defect)
+
+The definition of eval needs refining
+Status: new
+Reported by:	Stanislav Ievlev
+Assigned to:	sperber
+Priority:	major
+Component:	miscellaneous
+Version:	5.91
+Keywords:	
+Cc:	
+
+The phrase 
+
+"Specifically, if the first argument to eval is a definition, it must
+raise an exception with condition type &eval-definition".
+
+should be replaced with something like
+
+"Any types of top level definitions are not allowed"
+
+Because, any of the samples below will break the first rule (and
+security):
+
+(eval '(begin (define a 3) ...) ... )
+(eval '(macro-begin '(+ 1 2) (define a 3) ...) ...)
+(evel '(my-define-macro a) ...)
+
+With a such security hole "eval" is unusable for sandboxing, because
+enviroment function can return the same object for optimization
+reasons.
+
+(eq? (environment (r6rs)) (environment (r6rs)) ==> #t
+
+The phrase "The bindings of the environment represented by a specifier
+are immutable" are superfluous, because according (6.1) all exported
+library definitions are immutable:
+
+"All explicitly exported variables are immutable in both the exporting
+and importing libraries"
+

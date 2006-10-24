@@ -1,0 +1,30 @@
+Ticket #8 (defect)
+
+Unclear how equality predicates behave on NaN
+Status: new
+Reported by:	Per Bothner
+Assigned to:	will
+Priority:	major
+Component:	arithmetic
+Version:	5.91
+Keywords:	
+Cc:	
+
+9.10.2 Numerical operations p 39 
+
+Arithmetic operations 
+
+= explicitly specifies the behavior for +inf.0 and -inf.0, but not for
++nan.0. Implicitly, if any operand is +nan.0, then the result should
+be #f, and this follows IEEE-754. However, it should be stated
+explicitly. (The same is also true for <, >, <= and >=.)
+
+However, in that case the specification of eqv? (9.6 p 35) is
+wrong. It says that (eqv? x y) implies that (= x y) for numbers. This
+is wrong: (eqv? +nan.0 +nan.0) must return #t. This follows because we
+really need (let ((x +nan.0)) (eq? x x)) to be #t.
+
+If x and y are flonums of the same resolution/implementation, then a
+reasonable definition of (eqv? x y) is that it is true if and only y
+are bit-for-bit equal.
+

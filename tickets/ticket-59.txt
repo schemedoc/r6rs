@@ -1,0 +1,87 @@
+Ticket #59 (enhancement)
+
+Vector size in the read syntax
+Status: new
+Reported by:	Jens Axel Søgaard
+Assigned to:	sperber
+Priority:	minor
+Component:	lexicalsyntax
+Version:	5.91
+Keywords:	
+Cc:	
+
+Proposal
+
+In section "3.3.2 Vectors" the read syntax of vector datums are 
+
+     #(<datum> ...) .
+
+I propose to allow the following syntax: 
+
+     #<natural number>(<datum> ...)
+
+The natural number between the # and the opening parenthesis denotes
+the vector size.
+
+If there are fewer <datum>s than the given size, the vector is filled
+with the value denoted by the last <datum>. E.g #4(0 1) denotes #(0 1
+1 1).
+
+If no datums are present the vector is filled with 0. E.g. #4()
+denotes #(0 0 0 0).
+
+More more <datum>s than the given size is not allowed. Rationale
+
+The #<number>(<datum> ...) requires less memory to parse.
+
+During the parsing of, say, #100000(1 2 ...), the reader can allocate
+the vector after seeing the #100000( and then fill in the vector
+slots.
+
+With the #(1 2 ...) syntax the reader needs to allocate a temporary
+data structure to hold the data, until all datums have been read. Then
+the vector can be allocated and the slots be filled.
+
+Current Practice
+
+Chez Scheme
+
+Vectors may be printed with an explicit length prefix, and when the
+explicit length prefix is specified, duplicate trailing elements may
+be omitted. For example, #(a b c) may be printed as #3(a b c), and a
+vector of length 100 containing all zeros may be printed as
+#100(0). The printer generally prints the prefix and suppresses
+duplicate trailing elements unless the parameter print-vector-length
+is set to false.
+
+<http://www.scheme.com/csug7/intro.html#./intro:h1> 
+
+PLT Scheme
+
+Vector constants can be unquoted, and a vector size can be specified
+with a decimal integer between the # and opening parenthesis. If the
+specified size is larger than the number of vector elements that are
+provided, the last specified element is used to fill the remaining
+vector slots. For example, #4(1 2) is equivalent to #(1 2 2 2). If no
+vector elements are specified, the vector is filled with 0. If a
+vector size is provided and it is smaller than the number of elements
+provided, the exn:fail:read exception is raised.
+
+<http://download.plt-scheme.org/doc/352/html/mzscheme/mzscheme-Z-H-11.htm= l#node_sec_11.2.3> 
+
+SISC
+
+SISC supports the length prefix method of creating Vector
+constants. For example, '#5(x) creates a vector constant containing
+five identical symbols. In addition, the length-prefix form is used
+when printing vectors, and if elements repeat at the end of a Vector,
+only the last unique element is printed. This form is referred to as
+the compact vector representation. The unprefixed form with all
+elements displayed is called the verbose representation.
+
+<http://sisc.sourceforge.net/manual/html/ch03.html#Vectors> 
+
+Common Lisp
+
+<http://www.lisp.org/HyperSpec/Body/sec_2-4-8-3.html>
+

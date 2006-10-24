@@ -1,0 +1,58 @@
+Ticket #62 (defect)
+
+Lexical scoping violation for internal define-syntax.
+Status: new
+Reported by:	Andre van Tonder
+Assigned to:	dyb
+Priority:	major
+Component:	macros
+Version:	5.91
+Keywords:	
+Cc:	
+
+Component : Expansion process 
+
+Pages : 27-28 
+
+Dependencies: Sections 9.3 (Syntax definitions) 
+Description
+
+In the following example, the expansion algorithm, as described in
+r6rs, will consider (bar x) an expression and throw a syntax violation
+stating that expressions may not precede definitions.
+
+    (let ((bar 1))
+      (bar x)
+      (define-syntax bar
+        (syntax-rules ()
+          ((bar x) (define x 1))))
+      x)
+
+This syntax error violates lexical scoping, specifically the sentence
+"Keyword bindings established by define-syntax are visible throughout
+the body in which they appear, ..." on p. 29. By lexical scoping, the
+result should be 1. I think it can be made 1 if the expansion
+algorithm is made multi-pass (see below).
+
+I am unsure if this case is covered by the constraint on p.28, which
+reads: "It is a syntax violation if the keyword that identifies one of
+the body forms as a definition (derived or core) is redefined by the
+same definition or a later definition in the same body." When (bar x)
+is expanded, it is not yet known that bar will be a keyword. In any
+case, bar is never "re"-defined.
+
+Even if it is intended to be covered by the constraint, it will not be
+detected by the algorithm in the first paragraph on page 28.
+
+Suggestion
+
+Perhaps lexical scoping with internal define-syntax can be better
+handled by a multipass expansion algorithm instead of single-pass. On
+each pass, the expansion process would restart, using syntax
+definitions discovered on previous passes, until no more syntax
+definitions are discovered.
+
+It seems that such an algorithm would give the result 1 above. The
+implied reprocessing of forms, however, may cause problems with macros
+that update expand-time state (e.g. record definitions).
+

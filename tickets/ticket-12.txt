@@ -1,0 +1,90 @@
+Ticket #12 (enhancement)
+
+R6RS library syntax should include a standard format for importing SRFI libraries
+Status: new
+Reported by:	Dave Herman
+Assigned to:	mflatt
+Priority:	minor
+Component:	libraries
+Version:	5.91
+Keywords:	srfi
+Cc:	
+
+RATIONALE
+
+In the interest of portability, programmers should be able to rely on
+a common format for importing SRFI's from any implementations that
+support them. 
+
+SYNTAX
+
+A <SRFI library reference> is a <library reference> distinguished by
+its first symbol, which is always 'srfi.
+
+A <SRFI library reference> must have the following form: 
+  (srfi <SRFI number>)
+
+A <SRFI number> must be an exact positive integer. 
+MEANING
+
+R6RS implementations may support any of the SRFI's at
+http://srfi.schemers.org, but are not required to support all or
+indeed any of them. An R6RS implementation that supports SRFI n must
+provide that SRFI for import via the library reference
+
+    (srfi n)
+
+DISCUSSION AND ALTERNATIVES
+
+Required SRFI implementations
+
+An R6RS implementation that does not provide an imported SRFI will
+fail fast, so not requiring all SRFI's to be implemented doesn't
+appear too problematic. Besides, there are many rejected and obsolete
+SRFI's, so requiring them all would be pretty silly. Multiple SRFI
+implementations
+
+An R6RS import specifies a concrete implementation, not an abstract
+interface that might have multiple implementations. Nevertheless, for
+SRFI's, it's tempting to allow clients to choose specific
+implementations of SRFI's with graceful degradation to standard
+implementations. For example, R6RS implementations FooScheme and
+BarScheme might both use the standard reference implementation of SRFI
+13 as the default library, but BarScheme might support an alternative
+implementation that is more efficient for certain usage patterns. The
+client might wish to specify:
+
+    (import (srfi 13 (BarScheme fast-on-every-third-wednesday)))
+
+This way FooScheme would be free to use the standard implementation,
+but BarScheme could use the special implementation.
+
+I don't find this terribly compelling, and it seems counter to the
+meaning of R6RS libraries. Furthermore, coordinating globally unique
+identifiers for Scheme implementations seems like a can of worms. Note
+also that the above example is not valid <library reference> syntax
+according to draft 5.91 of R6RS. I doubt it's possible to specify such
+a mechanism without changing the syntax of <library
+reference>. Standard mnemonics for SRFI's
+
+It would be convenient for programmers to be able to import SRFI's by
+symbolic mnemonic instead of index, e.g.:
+
+    (import (srfi list)    ;; same as (srfi 1)
+            (srfi string)) ;; same as (srfi 13)
+
+As far as I know, there is no current registry for such mnemonics, so
+this would probably require a change to the SRFI process.
+
+SRFI imports via planet
+
+An alternative to this proposal would be to provide SRFI's via a
+cross-implementation public repository, similar to PLaneT [1]. I
+really hope such a thing comes to be, but it seems reasonable to allow
+implementations to build more efficient native implementations of
+SRFI's, and to provide a standardized, cross-implementation way that
+Scheme programs import SRFI's.
+
+[1] Matthews, Component Deployment with PLaneT: You Want it
+Where?. Scheme Workshop 2006.
+

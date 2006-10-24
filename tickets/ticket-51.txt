@@ -1,0 +1,69 @@
+Ticket #51 (defect)
+
+Conflating programs and scripts
+Status: new
+Reported by:	Andre van Tonder
+Assigned to:	mflatt
+Priority:	minor
+Component:	scripts
+Version:	5.91
+Keywords:	
+Cc:	
+
+Pages : 26-27 
+
+Description
+
+The report conflates three orthogonal issues - defining a program,
+marking the entry point of the program, and marking the program as one
+particular kind of Scheme program on one particular operating system
+in one particular use case, a use case that, by many Schemers, is not
+commonly needed, if at all.
+
+The current report is allowing this one use case to strongly biase the
+way Scheme programs are supposed to be organised in files. Although it
+is not required by the report, implementations are likely to satisfy
+it by requiring the "main" part of the program (in the script) to be
+in a separate file from the rest, even when it makes no logical
+organizational sense to do this.
+
+An existence proof: Many current Schemes allows one to write portable
+programs that will run on various operating systems, including Unix,
+without having to include any operating-system specific details in the
+text of the program.
+
+A more common use case for many is compiling a program to an
+executable binary. These do not require a scheme-script executable to
+run, nor do they require special directives to satisfy an
+infrastructure requirement for use case they do not need on one
+particular operating system. The report therefore burdens, and
+discriminates against, compiler-only implementations by requiring them
+to provide unneeded facilities.
+
+Presumably the intent of the authors is that a file containing a
+script can be dropped without modification onto any system and will
+just work. But the report states that the first line may contain
+something else, and should be ignored. The report also does not
+explicitly require the script part of a program to be in a separate
+file, nor the #! directive to be on the first line of such a
+file. However, in these cases, presumably it will not portably run on
+Unix. In other words, the report blesses non-portable programs. What
+is then the point of going to the trouble of specifying something in
+the interest of portablity if it does not guarantee portability.
+
+Marking the interpreter as part of the program text is an
+idiosyncratic practice particular to unix scripts, conflating
+orthogonal concerns. The Unix design is not necessarily a particularly
+good design. It should not be adopted and blessed by the Scheme
+report.
+
+A large number of current and future Schemers do not often, if ever,
+use Unix. Suggestion
+
+Consider providing a definition of Scheme programs either instead of,
+or in addition to, scripts, or modify the script specification by
+removing the <script header> and most of the substance of 7.1.1., in a
+way that does not accomodate, bless or otherwise favour a particular
+use case on a particular operating system. Allow programs to consist
+of libraries and entry point in the same contiguous text.
+

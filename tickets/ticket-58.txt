@@ -1,0 +1,47 @@
+Ticket #58 (enhancement)
+
+only 'big' and 'little' as endiannness may not be enough
+Status: new
+Reported by:	Shiro Kawai
+Assigned to:	sperber
+Priority:	minor
+Component:	other
+Version:	5.91
+Keywords:	
+Cc:	
+
+On page 60, it reads: "(endian big) and (endian little) evaluate to
+the symbols big and little, respectively. These symbols represent an
+endianness, and whenever one of the procedures operating on bytes
+objects accepts an endianness as an argument, that argument must be
+one of these symbols"
+
+To my knowledge, some ARM processors stores IEEE double float value in
+neither big-endian nor little-endian format (to be specific, two 32bit
+words are stored in big-endian, but within each 32bit word bytes are
+stored in little-endian).
+
+Limiting endianness to 'big' and 'little' forces implementations on
+these processors to perform some sort of conversion for each
+bytes-ieee-double-native-ref/bytes-ieee-double-native-set!, preventing
+them from efficient access to the processors' truly native binary
+data.
+
+Can't implementations be allowed to extend these procedures so that it
+can accept implementation-specific endianness symbols rather than big
+or little?
+
+A drawback could be that if we allow such an extension,
+(native-endianness) may return a symbol which is neither big nor
+little, causes potential portability problem if such symbol is written
+in the data. A potential solution can be to distinguish "preferred
+endianness", which indicates which of pure big or pure little endian
+the architecture prefers, from "native endianness", which can be
+neither big or little.
+
+If we don't want this additional complexity in the spec, another
+potential resolution is simply to avoid "native" in the procedure
+names. Then implementations can provide truly "native" procedures as
+their extension. native-endianness can be preferred-endianness, but I
+don't have a good word for byte-*-native-{ref|set!} yet.
+

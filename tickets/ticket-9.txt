@@ -1,0 +1,28 @@
+Ticket #9 (defect)
+
+backslash-linefeed
+Status: new
+Reported by:	Per Bothner
+Assigned to:	flatt
+Priority:	minor
+Component:	formalsyntax
+Version:	5.91
+Keywords:	
+Cc:	
+
+3.2.6 \<linefeed><intraline whitespace> : nothing 
+
+Should be: \<intraline whitespace><linefeed><intraline whitespace> 
+
+Having a syntax that is suspectible to invisible trailing whitespace
+is a bad idea (even if it is traditional).
+
+This change may be viewed as conflicting with: 
+
+\<space> space "useful for terminating the previous escape sequence
+before continuing with whitespace"
+
+However, there is no problem, since \<space> is useless - I see no
+specification for an escape sequence that might need such a
+terminator.
+

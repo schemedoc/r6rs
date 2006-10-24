@@ -1,0 +1,51 @@
+Ticket #63 (enhancement)
+
+Blame assignment for contract violations
+Status: new
+Reported by:	Robby Findler
+Assigned to:	sperber
+Priority:	minor
+Component:	other
+Version:	5.91
+Keywords:	
+Cc:	
+
+r6rs component: errors and violations (section 9.17) 
+
+Description
+
+The phrase "contract violation" typically (in English usage and in my
+research) refers to some kind of agreement between two (or more)
+parties where on party has violated the argument. In my work on
+contracts, the parties to the contracts are typically constructs that
+play a role in organizing a program, such as modules or
+components. Also, my research is predicated on the idea that proper
+blame assignment in these situations is important in order to narrow
+down the search for the bug in the program.
+
+The usage in the R6 report does not seem consistent with this take,
+but I think it can be made to be so, in at least one of two ways.
+
+Option One: to write a little bit of explanation in the text in section 
+9.17 that the contract is between the implementation of the report and
+the program itself and implicitly the blame is always being assigned
+to the program (since the implementation of the report is assumed to
+be correct). In that case, all of the other arguments to
+contract-violation are essentially bonus information to help track
+down why the violation occurred (in particular the "who" is not "who
+got blamed").
+
+Option Two: integrate the contract violation mechanism with the
+library
+
+form, and report the library whose use of the primitive failed. For
+example, if my program has two libraries, and one of them contains
+(letrec ((x x)) 1), then the contract violation would name the
+appropriate library (similarly for other contract violations).
+
+Option two is likely to be too expensive (at least I don't see how to
+implement it efficiently, but hopefully I'm missing a trick
+somewhere), but it does have the additional benefit that the same
+mechanism can be used to build a contract library that would mediate
+inter-library contracts, not just the contracts between the library
+and the language implementation.

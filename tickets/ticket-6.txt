@@ -1,0 +1,81 @@
+Ticket #6 (enhancement)
+
+Applicable record instances
+Status: new
+Reported by:	Pascal Costanza
+Assigned to:	sperber
+Priority:	minor
+Component:	records
+Version:	5.91
+Keywords:	
+Cc:	
+
+Full description of the issue:
+
+This is a proposal to add a notion of "applicable record instances" to
+R6RS Scheme. An applicable record instance is a record instance that
+has a distinct "applicable" field that is supposed to contain a
+procedure. Such an applicable instance can be used as the value in the
+first position of an expression, or as the first parameter to apply,
+and when such an expression is evaluated this will effectively call
+the procedure stored in the distinct "applicable" field of the record
+instance (or raise an appropriate exception if that field doesn't
+contain a procedure). Rationale:
+
+Applicable record instances are useful when a program needs to
+associate procedures with data. They enable storing both procedures
+and data directly in the same instances rather than linking them via
+hash tables, association lists, etc., or alternatively making it
+inconvenient to call such procedures.
+
+Such applicable record instances are especially useful to build a more
+full-fledged object system on top. For example, the Common Lisp Object
+System, or better its concept of generic functions, is essentially
+built in terms of such applicable instances, there called "funcallable
+instances" [1]. The downside of a lack of applicable instances can for
+example be observed in the (Scheme-based) implementation of Tiny
+CLOS. The source code of Tiny CLOS has to jump through a few
+unpleasent hoops in order to get the same effect [2].
+
+See also [3] for another object system for Scheme with a different
+flavor based on T that also requires a notion of applicable record
+instance, there simply called instances (cf. Sections 3.1 and 3.2 in
+that paper).
+
+Note that there is no need that the procedure stored in the distinct
+field of an applicable record instance has a special reference to its
+enclosing instance (for example, like a self/this/current reference in
+OOP languages). It's sufficient that such a procedure closes over the
+respective record instance.
+
+I currently see two ways how such applicable record instances can be
+added to R6RS Scheme. One way would be to add a declaration for
+fields, similar to the mutable / immutable declarations, roughly like
+this:
+
+(define-record-type some-record
+  (fields (mutable applicable proc)))
+
+or: 
+
+(define-record-type some-record
+  (fields (mutable-apply proc)))
+
+A disadvantage of such a design would be a requirement to handle
+record types inheriting from each other that declare more than one
+applicable field.
+
+Alternatively, a predefined record type could be added that
+predeclares an applicable field which other record types can be
+derived from. A disadvantage here would be that it has to be decided
+whether such a field is mutable or not (which in the general case it
+should be).
+
+There are probably better alternatives. 
+
+Pascal 
+
+[1] http://www.lisp.org/mop/concepts.html#funcallable-instances 
+[2] http://community.schemewiki.org/?tiny-clos 
+[3] Norman Adams and Jonathan Rees, Object-Oriented Programming in Scheme
+

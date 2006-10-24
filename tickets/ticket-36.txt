@@ -1,0 +1,91 @@
+Ticket #36 (defect)
+
+Ambiguous call/cc-behaviour of list operations
+Status: new
+Reported by:	Andre van Tonder
+Assigned to:	sperber
+Priority:	minor
+Component:	miscellaneous
+Version:	5.91
+Keywords:	
+Cc:	
+
+Pages : p.45 (pairs and lists) and also pp. 63-65 (list utilities) 
+Summary
+
+Some list operations are ambiguous in the presence of call/cc. They
+may easily be unambiguously specified, for example in the way proposed
+below. Description
+
+Various list procedures including map, fold-right, reverse, etc. are
+not currently specified unambiguously in the presence of call/cc.
+
+One of the first difficult bugs I encoutered in a Scheme program I
+wrote was the following (see e.g. Sitaram's book for amb and
+amb-collect = bag-of):
+
+  (define (f x)
+    (amb 0 1))
+
+  (amb-collect (map f '(0 0)))  ==> ((0 1) (0 1) (1 1) (1 1))  !?
+
+This surprising result could be traced to the following imperative
+implementation of map - which is r6rs-conformant as far as I can tell
+- in the host implementation:
+
+  (define (map f lst)
+    (if (null? lst)
+        '()
+        (let ((result (list (f (car lst)))))
+          (let loop ((pair result)
+                     (tail (cdr lst)))
+            (if (pair? tail)
+                (let ((pair* (list (f (car tail)))))
+                  (set-cdr! pair pair*)
+                  (loop pair*
+                        (cdr tail))))
+            result))))
+
+whereas the natural functional implementation would give the correct
+result ((0 1) (0 1) (1 0) (1 1)).
+
+Nothing in the wording of the r6rs document seems to exclude the
+imperative implementation. I know of at least one major implementation
+whose map used to behave this way. So the behaviour of map, reverse,
+fold-right, etc. is potentially ambiguous.
+
+Here is another test I found not relying on amb, due originally to
+Matthias Radestock, I believe:
+
+  (let ((result
+         (let ()
+           (define executed-k #f)
+           (define cont #f)
+           (define res1 #f)
+           (define res2 #f)
+           (set! res1 (map (lambda (x)
+                             (if (= x 0)
+                                 (call/cc (lambda (k) (set! cont k) 0))
+                                 0))
+                           '(1 0 2)))
+           (if (not executed-k)
+               (begin (set! executed-k #t)
+                      (set! res2 res1)
+                      (cont 1)))
+           res2)))
+    (if (equal? result '(0 0 0))
+        (display "Map is call/cc safe, but probably not imperative.")
+        (display "Map is not call/cc safe, but probably imperative."))
+    (newline))
+
+Proposal
+
+Consider fully specifying the list operations by inlining a reference
+implementation for each as part of the descriptive text. This should
+be easy, since these reference specifications are all very short.
+
+I do not know if there is any reliable way of fixing the ambiguity via
+prose.
+
+Andre
+

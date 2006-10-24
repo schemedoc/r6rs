@@ -1,0 +1,52 @@
+Ticket #47 (enhancement)
+
+Add (sort) and (vector-sort!) procedures
+Status: new
+Reported by:	Jason Orendorff
+Assigned to:	sperber
+Priority:	major
+Component:	other
+Version:	5.91
+Keywords:	
+Cc:	
+
+The utility of a standard sort routine seems beyond doubt. It seems
+almost every non-joke language provides one.
+
+For the sake of putting forth a realistic proposal, I suggest adopting
+(only) the non-stable functional list-sort and the non-stable
+four-parameter in-place vector-sort! from SRFI-32. But I don't really
+care what the committee chooses. Any standard sorting facility would
+be better than none.
+
+I try to anticipate possible objections:
+
+- "No one sort algorithm is good enough for all cases." I carelessly
+  estimate that a standard sort can be good enough for >99% of the use
+  cases--without inconveniencing the <1% of users who need a
+  specialized sort for whatever reason.
+
+- "But sort can be implemented efficiently using other features of
+  Scheme--unlike, say, hash tables." I don't know how true that is,
+  but assuming it's completely true, I consider (sort) a convenience
+  feature on par with (map), (filter), (for-each), and (cond).
+
+- "People are already complaining that the spec is too long." I'm
+  sympathetic to this view. In response I can only offer my own
+  opinion, of course; but I think a simple sort is more important,
+  provides more bang for the complexity buck, than any number of other
+  things in the 5.91 spec: continuing to support delay/force, for
+  example. It would be consistent to add sorting procedures while
+  cutting other features to make room.
+
+- "But if we add these we'll have to add list-sort! and vector-sort
+  and stable-list-sort and vector-merge and..." I don't think
+  so. Certainly there's no need to add them all right
+  now. Non-destructively making a sorted copy of a list and
+  destructively sorting a range of a vector in-place probably cover
+  the overwhelming majority of real-world use cases. Sure, this is
+  slightly asymmetric--if the use cases of lists and vectors were
+  totally isomorphic, we wouldn't have them both.
+
+- "But implementors..." Eh, they can handle it.
+

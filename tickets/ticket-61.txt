@@ -1,0 +1,60 @@
+Ticket #61 (defect)
+
+Last modified 1 hour ago
+Expansion process violates lexical scoping
+Status: new
+Reported by:	Andre van Tonder
+Assigned to:	dyb
+Priority:	major
+Component:	macros
+Version:	5.91
+Keywords:	
+Cc:	
+
+Component : Expansion process 
+
+Pages : 27-28 
+
+Dependencies: Section 9.4 (Bodies and sequences) 
+
+Description
+
+According to r6rs, the expression 
+
+  (let ((x #f))
+   (let-syntax ((foo (syntax-rules (x)
+                       ((_ x y) (define y 'outer))
+                       ((_ _ y) (define y 'inner)))))
+     (let ()
+       (foo x p)
+       (define x #f)
+       p)))
+
+evaluates to "outer", whereas it would evaluate to "inner" if the
+definition preceded (foo x p). This violates lexical scoping.
+
+The following example, in addition to violating lexical scoping
+
+  (let ((x #f))
+    (let-syntax ((foo (syntax-rules (x)
+                        ((_ x y) (define y 'outer))
+                        ((_ _ y) 1))))
+      (let ()
+        (foo x p)
+        (define x #f)
+        p)))              ==> outer (wrong)
+
+also violates the spirit (if not the letter) of the first paragraph on
+p. 28: "It is a syntax violation if the keyword that identifies one of
+the body forms as a definition (derived or core) is redefined by the
+same definition or a later definition in the same body."
+
+However, this violation of the spirit will not be detected by the
+algorithm described in the same paragraph.
+
+Suggestion
+
+The algorithm described in the first paragraph of p.28 may also have
+to record the arguments of each use of free-identifier=?. This is,
+however, likely to be expensive.
+

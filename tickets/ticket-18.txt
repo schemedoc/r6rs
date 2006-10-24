@@ -1,0 +1,23 @@
+Ticket #18 (defect)
+
+String exit codes should be allowed
+Status: new
+Reported by:	John Cowan
+Assigned to:	mflatt
+Priority:	minor
+Component:	scripts
+Version:	5.91
+Keywords:	
+Cc:	
+
+In the Plan 9 and Limbo operating systems, process exit codes are
+strings. Furthermore, in Posix systems, the legal exit codes are the
+exact integers 0-255 rather than any exact integer; on VMS, IIRC, any
+32-bit non-negative integer is allowed.
+
+Scheme should allow scripts to return any externally representable
+value, with a note that the external environment will probably only be
+able to handle a limited range of values.
+
+This affects section 7 (p. 26).
+

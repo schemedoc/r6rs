@@ -1,0 +1,38 @@
+Ticket #49 (enhancement)
+
+Higher-order procedures should not interfere with exceptions
+Status: new
+Reported by:	Jason Orendorff
+Assigned to:	sperber
+Priority:	minor
+Component:	baselibrary
+Version:	5.91
+Keywords:	
+Cc:	
+
+My apologies if this is already in R5.91RS, but I couldn't find it.
+
+It doesn't appear procedures like (map) and (for-each) are forbidden
+from installing exception handlers that interfere observably with the
+expected behavior (I hope the expected behavior is clear!). As these
+procedures are very often called "invisibly" via macros and whatnot,
+such a guarantee would nicely reduce the number of unusual cases that
+must be considered when reasoning about code.
+
+I'd like to say, simply, "standard procedures don't install exception
+handlers or interfere with exceptions at all unless they are specified
+to do so."
+
+Hmm. I guess that sort of wording might cause problems for functions
+like call-with-input-file that are allowed to do automatic
+cleanup. You could instead specify something slightly weaker requiring
+the standard procedures to re-raise any exceptions raised to them.
+
+If you wish to leave a further out for implementation cleverness, you
+could add an overriding rule that any procedure may raise a &serious
+exception pretty much at any time, even after receiving some other
+exception in this way. (I don't know why an implementation might want
+this loophole, so maybe it's unnecessary. But as an implementor I'm
+not experienced enough to know, and as a user I would accept this
+loophole.)
+

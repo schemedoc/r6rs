@@ -1,0 +1,52 @@
+Ticket #11 (defect)
+
+NaN is not a real number
+Status: new
+Reported by:	Aubrey Jaffer
+Assigned to:	will
+Priority:	minor
+Component:	arithmetic
+Version:	5.91
+Keywords:	
+Cc:	
+
+Page 10: 2.4. Infinities and NaNs 
+
+A NaN is regarded as a real (but not rational) number whose value is
+so indeterminate that it might represent any real number, including
+positive or negative infinity, and might even be greater than positive
+infinity or less than negative infinity.
+
++inf.0 and -inf.0 are real numbers because they are part of the total
+ordering of that subset of the real numbers represented in Scheme. NaN
+is not part of that ordering; thus it is not a real number. It is,
+however, a complex number.
+
+(/ 0.0 0.0) is NaN because any finite number satisfies the equation: 
+  z * 0.0 = 0.0.
+
+And that includes any finite complex number! Restricting NaN to be
+real is wrong.
+
+In page 10, "2.4. Infinities and NaNs", I propose the sentence should
+be changed to read:
+
+A NaN is regarded as a complex number whose value is so indeterminate
+that it might represent any complex number.
+
+On page 38, the line: 
+  (real? +nan.0) ==> #t
+
+should be changed to: 
+  (real? +nan.0) ==> #f
+
+Because it doesn't participate in the ordering, +nan.0 is not an
+acceptable argument to numerical-ordering predicates (<, <=, >, >=,
+negative?, positive?, etc).
+
+On page 100, the lines 
+  (fl= +nan.0 fl) ==> #f
+  (fl< +nan.0 fl) ==> #f
+
+should be removed.
+

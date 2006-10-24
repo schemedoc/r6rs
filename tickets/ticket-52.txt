@@ -1,0 +1,40 @@
+Ticket #52 (simplification)
+
+Exact-Integer and Real (and Complex) are more useful distinctions than
+Exact and Inexact
+Status: new
+Reported by:	Aubrey Jaffer
+Assigned to:	will
+Priority:	major
+Component:	arithmetic
+Version:	5.91
+Keywords:	
+Cc:	
+
+Page 2: 2.1. Numerical Types 
+
+In order to catch uses of inexact numbers where exact numbers are
+required, Scheme explicitly distinguishes exact from inexact numbers.
+
+From what I have seen, "Using an inexact number where an exact number
+is required" is less common of a programming error than producing a
+non-real number where a real number is required. This happens when
+SQRT, LOG, or EXPT is taken of noisy data without first checking the
+range of the argument. If a sample is negative, then a complex number
+will be the result of the operation. Calling inexact-only procedures
+does not detect this common error.
+
+"Using an inexact number where an exact number is required" also seems less common than producing a non-integer where an integer is required. This occurs when / is used instead of QUOTIENT; or from program logic errors regarding the divisibility of integer variables. Calling exact-only procedures does not detect this common error because non-integer exact rationals are exact. 
+
+SRFI-94 introduces 14 real-only and 3 integer-only variants of R5RS
+procedures to facilitate numerical type checking and declaration. This
+is a significant reduction compared to the scores of procedures
+described by sections 16.5 "Exact Arithmetic" and 16.6 "Inexact
+Arithmetic".
+
+SRFI-94 being a much smaller burden on implementations, and its not
+containing useless functions for orthogonality's sake, I propose that
+it be incorporated into section 9.10.2. "Numerical operations"; and
+that sections 16.5 "Exact Arithmetic" and 16.6 "Inexact Arithmetic" be
+removed.
+

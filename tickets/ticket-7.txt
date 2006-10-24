@@ -1,0 +1,191 @@
+Ticket #7 (enhancement)
+
+Additional LAZY primitive for delayed evaluation
+Status: new
+Reported by:	Andre van Tonder
+Assigned to:	sperber
+Priority:	minor
+Component:	miscellaneous
+Version:	5.91
+Keywords:	
+Cc:	
+
+Summary
+
+The primitives DELAY and FORCE are insufficient to express a large
+class of iterative lazy algorithms so that they will run in bounded
+space.
+
+To solve this problem, an extension is proposed that defines an
+additional primitive LAZY.
+
+This extension is fully compatible with the existing semantics of
+DELAY and FORCE, though not with the details of the example
+implementation in the document. Description
+
+Note: Please see SRFI-45 (Primitives for Expressing Iterative Lazy
+Algorithms) for further description and more examples.
+
+Wadler et al., in the paper [Wad98] provide a straightforward and
+systematic recipe for transforming arbitrary data structures and
+algorithms expressible in a call-by-need language into a strict
+language, using only delay and force.
+
+It would therefore seem as if delay and force are all we'd ever need.
+
+However, this transformation can lead to programs that suffer from
+unbounded space consumption, even if the original lazy algorithm was
+iterative.
+
+The simplest example is the following program, written in a
+hypothetical "lazy Scheme" as
+
+     (define (loop) (loop)).                    --- (1)
+
+In a call-by-need language with the correct graph reduction semantics,
+this algorithm will run forever in bounded space (see [Jon92]). After
+Wadler's transformation to ordinary Scheme, we obtain
+
+     (define (loop) (delay (force (loop))))).   --- (2)
+
+However, evaluating (force (loop)) requires unbounded space
+consumption, as a simple test will show (and as demonstrated
+below). The translation (2) is therefore not a faithful expression of
+the original, iterative, lazy algorithm (1).
+
+There are many useful lazy algorithms that are iterative yet cannot be
+faithfully expressed using only DELAY and FORCE. See, for more
+examples, the stream library of SRFI-40, which adopted the proposal
+described here in its implementation, and the tests in
+SRFI-45.
+
+Proposal
+
+We propose a compatible extension that includes an additional form
+LAZY which, together with DELAY and FORCE, may be used to faithfully
+express iterative lazy algorithms.
+
+LAZY, which may be defined as a macro in terms of existing Scheme
+constructs (see below), may be described as follows: Description in
+prose
+
+Apart from its behaviour with respect to space consumption, the
+expression (lazy <expression>) has the same meaning as (delay (force
+<expression>)). Its behaviour with repect to space consumption is
+described as follows:
+
+One may define a suspended tail call as a procedure call occurring in
+an expression of the form (lazy <expression>) and that would be in a
+tail context if the enclosing (lazy ...) were removed. Forcing a (lazy
+<expression>) may cause the cascading evaluation of an unbounded
+number of suspended tail calls. Implementations of DELAY, FORCE and
+LAZY are required to support the evaluation of an unbounded number of
+such active suspended tail calls.
+
+Semantics
+
+The semantics of DELAY, FORCE and LAZY may be summarized by the
+following reduction rules:
+
+DELAY/FORCE: 
+    (let ((p (delay <expression>))) ---- (force p) ----)
+       -->  (let ((v <expression>))
+              (let ((p (delay v))) ---- v ----)
+
+LAZY/FORCE: 
+    (let ((p (lazy <expression>))) ---- (force p) ----)
+       --> (let ((p <expression>)) ---- (force p) ----)
+
+We may verify that the above incorrect encoding of the example, using
+(delay (force ---)), does not run in bounded space (since the size of
+the expression below grows without bound) [EDIT: example has been
+updated with correction posted to r6rs-discuss by Andre van Tonder]:
+
+      (let (loop) (delay (force (loop))))
+
+      (force (loop)) --> (force (delay (force (loop))))
+                      =  (let ((p (delay (force (loop)))))    (beta-equiv)
+                           (force p))
+                     --> (let ((v (force (loop))))  ---- (*)
+                           (let ((p (delay v)))
+                             v)
+                     --> (let ((v (force (delay (force (loop))))))
+                           (let ((p (delay v)))
+                             v)
+                      =  (let ((p (delay (force (loop)))))
+                           (let ((v (force p)))
+                             (let ((p (delay v)))
+                               v)
+                      =  (let ((v (force (loop)))) ---- one more level than (*)
+                           (let ((p (delay v)))
+                             (let ((v (force p)))
+                               (let ((p (delay v)))
+                                 v)
+                     --> etc.
+        ==> UNBOUNDED SPACE CONSUMPTION
+
+The correct encoding is instead as follows: 
+    (let (loop) (lazy (loop)))
+
+Here the call to (loop) is a suspended tail call as defined above. The
+algorithm therefore runs in bounded space, as we may verify (the size
+of the expression stays bounded):
+
+  (force (loop)) --> (force (lazy (loop)))
+                 === (let ((p (lazy (loop))))       ------ (*)
+                       (force p))
+                 --> (let ((p (loop)))
+                       (force p))
+                 --> (let ((p (lazy (loop))))
+                       (force p))                   ------ same as (*)
+    ==> BOUNDED SPACE
+
+Reference implementation
+
+As in SRFI-45, reproduced here for completeness: 
+
+Note: SRFI-45 contains various tests for correctness and space consumption. 
+;=========================================================================
+; Boxes
+
+(define (box x) (list x))
+(define unbox car)
+(define set-box! set-car!)
+
+;=========================================================================
+; Primitives for lazy evaluation:
+
+(define-syntax lazy
+  (syntax-rules ()
+    ((lazy exp)
+     (box (cons 'lazy (lambda () exp))))))
+
+(define (eager x)
+  (box (cons 'eager x)))
+
+(define-syntax delay
+  (syntax-rules ()
+    ((delay exp) (lazy (eager exp)))))
+
+(define (force promise)
+  (let ((content (unbox promise)))
+    (case (car content)
+      ((eager) (cdr content))
+      ((lazy)  (let* ((promise* ((cdr content)))
+                      (content  (unbox promise)))                      ; *
+                 (if (not (eqv? (car content) 'eager))                 ; *
+                     (begin (set-car! content (car (unbox promise*)))
+                            (set-cdr! content (cdr (unbox promise*)))
+                            (set-box! promise* content)))
+                 (force promise))))))
+
+; (*) These two lines re-fetch and check the original promise in case
+;     the first line of the let* caused it to be forced.  For an example
+;     where this happens, see reentrancy test 3 below.
+References
+
+[Wad98] Philip Wadler, Walid Taha, and David MacQueen. How to add laziness to a strict language, without even being odd, Workshop on Standard ML, Baltimore, September 1998 
+
+[Jon92] Richard Jones. Tail recursion without space leaks, Journal of
+Functional Programming, 2(1):73-79, January 1992
+
