@@ -1,5 +1,7 @@
 % Macros for R^nRS.
 
+\usepackage{makeidx}
+
 %\usepackage{tex2page}
 \let\htmlonly=\iffalse
 \let\endhtmlonly=\fi
@@ -55,6 +57,7 @@
 \newcommand{\backwhack}{{\tt\char`\\}}
 \newcommand{\comma}{{\tt\char`\@}}
 \newcommand{\atsign}{{\tt\char`\@}}
+\newcommand{\bang}{{\tt\char`\!}}
 \newcommand{\sharpsign}{{\tt\#}}
 \newcommand{\verticalbar}{{\tt|}}
 \newcommand{\openbracket}{{\tt\char`\[}}
@@ -107,20 +110,27 @@
 
 \newcommand{\callcc}{{\tt call-with-current-continuation}}
 
-% \reallyindex{SORTKEY}{HEADCS}{TYPE}
-% writes (index-entry "SORTKEY" "HEADCS" TYPE PAGENUMBER)
-% which becomes  \item \HEADCS{SORTKEY} mainpagenumber ; auxpagenumber ...
+\newcommand{\mainschindex}[1]{\label{#1}\index{#1@\texttt{#1}}}
+\newcommand{\mainindex}[1]{\index{#1}}
+\newcommand{\schindex}[1]{\index{#1@\texttt{#1}}}
+\newcommand{\sharpindex}[1]{\index{#1@\texttt{\#{}#1}}}
+\newcommand{\ampindex}[1]{\index{#1@\texttt{\&{}#1}}}
+\newcommand{\libindex}[1]{\index{#1@\texttt{(#1)}}}
 
-\global\def\reallyindex#1#2#3{%
-\write\@indexfile{"#1" "#2" #3 \thepage}}
+\renewenvironment{theindex}
+{\clearpage
+\@topnewpage[
+    \begin{center}
+      \large\bf\MakeUppercase{\indexheading}
+    \end{center}
+    \vskip 1ex \bigskip]
+    \markboth{Index}{Index}
+    \addcontentsline{toc}{chapter}{\indexheading}
+    \parindent\z@
+    \parskip\z@ plus .1pt\relax\let\item\@idxitem
+    \indexintro\par\bigskip}
+               {\clearpage}
 
-\newcommand{\mainschindex}[1]{\label{#1}\reallyindex{#1}{tt}{main}}
-\newcommand{\mainindex}[1]{\reallyindex{#1}{rm}{main}}
-\newcommand{\schindex}[1]{\reallyindex{#1}{tt}{aux}}
-\newcommand{\sharpindex}[1]{\reallyindex{#1}{sharpfoo}{aux}}
-\newcommand{\ampindex}[1]{\reallyindex{#1}{ampfoo}{aux}}
-\newcommand{\libindex}[1]{\reallyindex{#1}{libfoo}{main}}
-\renewcommand{\index}[1]{\reallyindex{#1}{rm}{aux}}
 
 \newcommand{\domain}[1]{#1}
 \newcommand{\nodomain}[1]{}
@@ -254,33 +264,5 @@
 \newcommand{\atleastone}[1]{#1\hbox{$^+$}}
 
 \newcommand{\goesto}{$\longrightarrow$}
-
-% The index
-
-\def\theindex{%\@restonecoltrue\if@twocolumn\@restonecolfalse\fi
-%\columnseprule \z@
-%!! \columnsep 35pt
-\clearpage
-\@topnewpage[
-    \centerline{\large\bf\uppercase{Alphabetic index of definitions of concepts,}}
-    \centerline{\large\bf\uppercase{keywords, and procedures}}
-    \vskip 1ex \bigskip]
-    \markboth{Index}{Index}
-    \addcontentsline{toc}{chapter}{Alphabetic index of 
- definitions of concepts,\hfil\penalty0 \hbox{\hspace*{2em} keywords, and procedures}}
-    \bgroup %\small
-    \parindent\z@
-    \parskip\z@ plus .1pt\relax\let\item\@idxitem}
-
-\def\@idxitem{\par\hangindent 40pt}
-
-\def\subitem{\par\hangindent 40pt \hspace*{20pt}}
-
-\def\subsubitem{\par\hangindent 40pt \hspace*{30pt}}
-
-\def\endtheindex{%\if@restonecol\onecolumn\else\clearpage\fi
-\egroup}
-
-\def\indexspace{\par \vskip 10pt plus 5pt minus 3pt\relax}
 
 \makeatother
