@@ -1,5 +1,11 @@
 % Macros for R^nRS.
 
+%\usepackage{tex2page}
+\let\htmlonly=\iffalse
+\let\endhtmlonly=\fi
+\let\texonly=\iftrue
+\let\endtexonly=\fi
+
 \makeatletter
 
 \newcommand{\topnewpage}{\@topnewpage}
@@ -134,11 +140,11 @@
 % next constructions which use them...
 \newcommand{\cf}{\frenchspacing\frobq\tt}
 
+\texonly
 % Same as \obeycr, but doesn't do a \@gobblecr.
 {\catcode`\^^M=13 \gdef\myobeycr{\catcode`\^^M=13 \def^^M{\\}}%
 \gdef\restorecr{\catcode`\^^M=5 }}
-
-{\catcode`\^^I=13 \gdef\obeytabs{\catcode`\^^I=13 \def^^I{\hbox{\hskip 4em}}}}
+\endtexonly
 
 {\obeyspaces\gdef {\hbox{\hskip0.5em}}}
 
@@ -158,7 +164,7 @@
   \newcommand{\unspecified}{{\em{}unspecified}}
   \newcommand{\theunspecified}{{\em{}the unspecified value}}
   \setupcode
-  \small \cf \obeytabs \obeyspaces \myobeycr
+  \small \cf \obeyspaces \myobeycr
   \begin{tabbing}%
 \qquad\=\hspace*{5em}\=\hspace*{9em}\=\evalsto~\=\kill%   was 16em
 \gobblecr}{\unskip\end{tabbing}}
