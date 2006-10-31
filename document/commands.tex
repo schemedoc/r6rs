@@ -2,11 +2,15 @@
 
 \usepackage{makeidx}
 
-%\usepackage{tex2page}
-\let\htmlonly=\iffalse
-\let\endhtmlonly=\fi
-\let\texonly=\iftrue
-\let\endtexonly=\fi
+% tex2page.sty mucks with in some manner
+\let\centerlinesaved=\centerline
+\usepackage{tex2page}
+\let\centerline=\centerlinesaved
+
+% \let\htmlonly=\iffalse
+% \let\endhtmlonly=\fi
+% \let\texonly=\iftrue
+% \let\endtexonly=\fi
 
 \makeatletter
 
@@ -23,7 +27,7 @@
   \addcontentsline{toc}{chapter}{#1}}
 
 \newcommand{\clearchaptergroupstar}[1]{
-  \clearpage
+  \texonly\clearpage\endtexonly
   \addcontentsline{toc}{chaptergroup}{#1}
   \topnewpage[
     \centerline{\large\bf\uppercase{#1}}
