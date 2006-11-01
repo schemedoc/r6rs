@@ -14,7 +14,14 @@
 
 \makeatletter
 
+\texonly
 \newcommand{\topnewpage}{\@topnewpage}
+\endtexonly
+
+\htmlonly
+\newcommand{\topnewpage}[0][]{#1}
+\endhtmlonly
+
 \newcommand{\authorsc}[1]{{\scriptsize\scshape #1}}
 
 % Chapters, sections, etc.
@@ -123,7 +130,7 @@
 
 \renewenvironment{theindex}
 {\clearpage
-\@topnewpage[
+\topnewpage[
     \begin{center}
       \large\bf\MakeUppercase{\indexheading}
     \end{center}
@@ -131,9 +138,9 @@
     \markboth{Index}{Index}
     \addcontentsline{toc}{chapter}{\indexheading}
     \parindent\z@
-    \parskip\z@ plus .1pt\relax\let\item\@idxitem
+    \texonly\parskip\z@ plus .1pt\endtexonly\relax\let\item\@idxitem
     \indexintro\par\bigskip}
-               {\clearpage}
+               {\texonly\clearpage\endtexonly}
 
 
 \newcommand{\domain}[1]{#1}
