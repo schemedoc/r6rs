@@ -1,0 +1,86 @@
+Ticket #67 (enhancement)
+
+The definition of flonum is in the wrong place
+Status: new
+Reported by:	Aubrey Jaffer
+Assigned to:	will
+Priority:	major
+Component:	arithmetic
+Version:	5.91
+Keywords:	
+Cc:	
+
+The definition of flonums should be moved out of the "Rationale" on
+page 39:
+
+  The flonums are a subset of the inexact reals, but may be a proper
+  subset.
+
+and put on Page 100, in section "16.4. Flonums".
+
+The phrase "but may be a proper subset" adds nothing to the
+description and should be removed.  To make it compatible with the
+earlier proposal "NaN is not a real number", the paragraph should be
+reworded:
+
+  The flonums are a subset of the inexact reals and NaNs.
+
+Near the bottom of page 39, the lines:
+
+  (finite? x)					procedure
+  (infinite? x)					procedure
+  (nan? x)					procedure
+
+should be changed to:
+
+  (finite? z)					procedure
+  (infinite? z)					procedure
+  (nan? z)					procedure
+
+The text after this (page 40) states:
+
+  ..., finite? tests if it is not an infinity and not a NaN,
+  infinite? tests if it is an infinity, nan? tests if it is a NaN.
+
+This leaves in question whether (infinite? +nan.0).  Changing the text
+thus eliminates the unintended interpretation:
+
+  ..., finite? tests if it is not an infinity and not a NaN,
+  infinite? tests if it is an infinity or NaN, nan? tests if it is a
+  NaN.
+
+DRAFT RESPONSE
+
+In the draft R6RS, flonums are defined on page 9, in the
+last paragraph of section 2.1.  They are referenced on
+page 15 in the last two paragraphs of section 3.2.7, in
+the two rationales for the real->flonum procedure on page
+39 in section 9.10.2, and throughout section 16.4.
+
+The specification of real->flonum should be strengthened
+to something like this:
+
+    Returns the best flonum approximation to x.
+
+In the first rationale for real->flonum, the reminder that
+not all inexact reals are flonums is the core fact of the
+rationale.  Whether that reminder would still be necessary
+with the strengthened specification is an editorial decision.
+If the reminder remains necessary, it could be phrased like
+this:
+
+    Not all reals are inexact, and some inexact reals may
+    not be flonums.
+
+The exact phrasing is an editorial decision.
+
+The rest of Ticket #67 describes several changes that would
+be required if the main proposal of Ticket #11 were adopted.
+Our response to Ticket #11 explains why we believe that
+proposal should not be adopted.
+
+The usefulness of the finite?, infinite?, and nan? procedures
+might be increased by expanding their domain to include all
+numbers, or perhaps even all objects.  The semantics proposed
+by Ticket #67, however, would be incompatible with IEEE-754
+and IEEE-754R because an IEEE NaN is not an IEEE infinity.

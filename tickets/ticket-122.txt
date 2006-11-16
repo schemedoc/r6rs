@@ -1,0 +1,35 @@
+Ticket #122 (enhancement)
+
+Allow real->single and real->double to convert complex numbers
+Status: new
+Reported by:	Alan Watson
+Assigned to:	will
+Priority:	minor
+Component:	arithmetic
+Version:	5.91
+Keywords:	
+Cc:	
+
+The "real->single" and "real->double" procedures are restricted
+to real numbers. Why not rename them "->single" and "->double"
+and allow them to operate on complex numbers too?
+
+DRAFT RESPONSE
+
+When given a complex number that is not real, the result would
+presumably be an inexact complex number whose real and imaginary
+parts are inexact reals that best approximate the best possible
+IEEE single and double precision approximations to the real and
+imaginary parts of the original argument.
+
+This is a good suggestion, although the utility of the suggested
+procedures might not justify their inclusion in the R6RS when
+they can be defined so easily in terms of real->single and
+real->double:
+
+    (define (->single z)
+      (make-rectangular (real->single (real-part z))
+                        (real->single (imag-part z))))
+
+It has been suggested, however, that number->single and
+number->double might be better names for these procedures.

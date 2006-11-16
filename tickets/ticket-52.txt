@@ -24,7 +24,12 @@ range of the argument. If a sample is negative, then a complex number
 will be the result of the operation. Calling inexact-only procedures
 does not detect this common error.
 
-"Using an inexact number where an exact number is required" also seems less common than producing a non-integer where an integer is required. This occurs when / is used instead of QUOTIENT; or from program logic errors regarding the divisibility of integer variables. Calling exact-only procedures does not detect this common error because non-integer exact rationals are exact. 
+"Using an inexact number where an exact number is required" also
+seems less common than producing a non-integer where an integer
+is required. This occurs when / is used instead of QUOTIENT; or
+from program logic errors regarding the divisibility of integer
+variables. Calling exact-only procedures does not detect this
+common error because non-integer exact rationals are exact. 
 
 SRFI-94 introduces 14 real-only and 3 integer-only variants of R5RS
 procedures to facilitate numerical type checking and declaration. This
@@ -38,3 +43,44 @@ it be incorporated into section 9.10.2. "Numerical operations"; and
 that sections 16.5 "Exact Arithmetic" and 16.6 "Inexact Arithmetic" be
 removed.
 
+DRAFT RESPONSE
+
+Ticket #52 asserts that using an inexact number where an exact
+number is required is a less common error than producing non-real
+numbers where real numbers are required, or non-integers where
+integers are required.  All of these errors are known to happen,
+but we do not know of any empirical data that would tell us which
+kinds of errors are more frequent.
+
+Ticket #52 also observes that SRFI 94 is simpler than the
+(r6rs arithmetic exact) and (r6rs arithmetic inexact) libraries
+that are described in sections 16.5 and 16.6 of the draft R6RS.
+SRFI 94 addresses a different problem, of course.
+
+Ticket #52 proposes that SRFI 94 replace the (r6rs arithmetic exact)
+and (r6rs arithmetic inexact) libraries that are described in
+sections 16.5 and 16.6 of the draft R6RS.
+
+It is not clear why Ticket #52 proposes to replace those two
+libraries instead of adding SRFI 94 to them.  The problem
+addressed by SRFI 94 is orthogonal to the problems addressed
+by the (r6rs arithmetic exact) and (r6rs arithmetic inexact)
+libraries, the arguments for all three libraries are similar,
+and we have no evidence that would tell us which of the problems
+addressed by the three libraries are more common or important.
+It seems, therefore, that there are two sensible courses of
+action:
+
+1.  Add SRFI 94 to the R6RS, to join the libraries described in
+sections 16.5 and 16.6 of the draft R6RS.
+
+2.  Remove the libraries described in sections 16.5 and 16.6 of
+the draft R6RS, and make each of them into a SRFI like SRFI 94.
+
+Will recommends the second course of action (with caveats
+listed in response to Ticket #40).  None of the three
+libraries have been tested in the field.  All three
+libraries could be described by a SRFI and provided by
+portable reference implementations that, in compiled
+systems, would be just as efficient as if the libraries
+were part of the R6RS.

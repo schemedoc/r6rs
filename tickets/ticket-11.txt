@@ -53,10 +53,21 @@ should be removed.
 DRAFT RESPONSE
 
 In the draft R6RS, a NaN is regarded as a real (but not rational)
-number. To make NaNs? non-real, as Ticket #11 proposes, would break
+number.  To make NaNs non-real, as Ticket #11 proposes, would break
 the primary closure property that allows the operations of (r6rs
 arithmetic flonum) to be implemented efficiently, often as a single
-machine instruction. Ticket #11 would also degrade the performance of
-generic arithmetic on flonums in compilers that use flow analysis to
-improve the efficiency of generic arithmetic.
+machine instruction.  Ticket #11 would also degrade the performance
+of generic arithmetic on flonums in compilers that use flow analysis
+to improve the efficiency of generic arithmetic.
 
+To forbid comparisons between a NaN and a flonum, as Ticket #11
+proposes, would be incompatible with other programming languages'
+interpretations of IEEE-754 and with hardware, making it more
+difficult for Scheme to interoperate with other languages or to
+make effective use of standard hardware.
+
+In particular, the IEEE-754 standard requires equality tests
+that involve a NaN to come out false.  If the central proposal
+of Ticket #11 were accepted, then implementations of Scheme
+could not implement inexact real arithmetic that is compatible
+with IEEE-754 or IEEE-754R.

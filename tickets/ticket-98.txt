@@ -1,0 +1,51 @@
+Ticket #98 (defect)
+
+inconsistent use of prefixes: "fixnum-", "fx", and "fl"
+Status: new
+Reported by:	Arthur A. Gleckler
+Assigned to:	will
+Priority:	minor
+Component:	arithmetic
+Version:	5.91
+Keywords:	
+Cc:	
+
+
+In <16.3.2. Signalling fixnum operations>, the "fx"
+prefix should be separated from the rest of each name
+using a hyphen in exactly the way as the prefix "fixnum-"
+is used, e.g. fxdiv should be fx-div.  Similarly, in
+<16.4. Flonums>, the "fl-" prefix should be used
+analogously to the "fixnum-" prefix for consistency.
+Currently, the naming conventions are inconsistent.
+
+DRAFT RESPONSE
+
+The naming conventions should be explained in section 5.6.
+
+The naming conventions that were used in the draft R6RS
+were
+
+    short, unpronounceable prefixes (fx and fl) are not
+    followed by a hyphen
+
+    prefixes that are actual words or can be pronounced
+    as though they were actual words are followed by a
+    hyphen, except when the first character following
+    the hyphen would be something other than a letter,
+    in which case the hyphen is omitted
+
+    a predicate's name ends with a question mark if the
+    name contains any letters; otherwise the predicate's
+    name does not end with a question mark [1]
+
+The names used in the draft R6RS are consistent with the
+above conventions.  Whether the conventions are themselves
+consistent is a matter of taste, on which no consensus is
+yet evident.  Perhaps the best that can be said for fx+
+and fl+ is that they have some precedent [2].
+
+[1] http://www.r6rs.org/r6rs-editors/2006-July/001422.html
+[2] Chez Scheme, Chicken, Gambit, and Larceny provide fx+
+    by that name; Chez Scheme, Gambit, and Larceny provide
+    fl+ by that name.

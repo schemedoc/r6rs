@@ -28,28 +28,91 @@ and "16.6. Inexact arithmetic" be removed.
 
 DRAFT RESPONSE
 
-Ticket #40 suggests that the (r6rs arithmetic exact) and (r6rs arithmetic inexact) libraries are largely pointless. 
+Ticket #40 suggests that the (r6rs arithmetic exact) and
+(r6rs arithmetic inexact) libraries are largely pointless.
 
-Mike should probably be the one to explain why those libraries aren't entirely pointless, but here is Will's explanation: The (r6rs arithmetic exact) library provides programmers with a convenient way to assert that the arguments and results of arithmetic operations are exact, with the safety that comes from raising an exception if those assertions do not hold. The argument for the (r6rs arithmetic inexact) library is similar. 
+The basis for that suggestion appears to be an assumption
+that the primary motivation for the (r6rs arithmetic exact)
+and (r6rs arithmetic inexact) libraries is efficiency.  If
+that were so, they would indeed be largely pointless, since
+inclusion of those two libraries within the R6RS would not
+increase their efficiency in compiled systems, and would
+improve their efficiency by very little in interpreted
+systems.
 
-Mike's expansion of that argument: 
+In reality, efficiency has never been a motivation for
+including those two libraries within the R6RS, and they
+are not entirely pointless.
 
-I conjecture that in most Scheme programs, applications of arithmetic
-operations are either always invoked with exact or always invoked with
-inexact arguments. Programs that rely on the contagiousness of
-inexactness and actually do something with the exactness of the result
-are rare. In the programs of the former kind, passing arguments with
-exactness other than the intended often leads to erroneous
-computations. Examples are the floating-point example from the Egner
-at al. Scheme workshop paper, where exact arguments lead to disastrous
-run time, and programs dealing with monetary amount, where the
-specification of an amount using decimal-point notation leads to the
-computations bing inadvertenly inexact.
+The (r6rs arithmetic exact) library provides programmers
+with a convenient way to assert that the arguments and
+results of arithmetic operations are exact, with the
+safety may result from raising an exception if those
+assertions do not hold.
+
+The argument for the (r6rs arithmetic inexact) library
+is similar.  As specified in the draft R6RS, however, the
+(r6rs arithmetic inexact) library is not consistent with
+the generic operations restricted to inexact arguments
+because it sometimes returns an inexact real result
+(typically a NaN) when the generic operations would
+return a more useful inexact complex result.
+
+Will notes that neither library has been tested in the
+field.  Both libraries could be described by a SRFI and
+provided by portable reference implementations that, in
+compiled systems, would be just as efficient as if the
+libraries were part of the R6RS.
+
+Will recommends that the (r6rs arithmetic exact) and
+(r6rs arithmetic inexact) libraries be removed from the
+draft R6RS, moving the following procedures from the
+(r6rs arithmetic exact) library to a new library such
+as the generic arithmetic library proposed by Ticket #27:
+
+    exact-expt
+    exact-sqrt
+    exact-not
+    exact-and
+    exact-ior
+    exact-xor
+    exact-if
+    exact-bit-count
+    exact-length
+    exact-first-bit-set
+    exact-bit-set?
+    exact-copy-bit
+    exact-bit-field
+    exact-copy-bit-field
+    exact-arithmetic-shift
+    exact-arithmetic-shift-left
+    exact-arithmetic-shift-right
+    exact-rotate-bit-field
+    exact-reverse-bit-field
+
+In any case, the specification of the (r6rs arithmetic inexact)
+library should be revised to make its procedures consistent
+with the generic operations, restricted to inexact arguments
+and constrained to return inexact results.
+
+Mike conjectures that, in most Scheme programs, applications
+of arithmetic operations are either always invoked with exact
+or always invoked with inexact arguments.  Mike further
+conjectures that programs that rely on the contagiousness of
+inexactness and actually do something with the exactness
+of the result are rare.  In the programs of the former kind,
+passing arguments with exactness other than the intended often
+leads to erroneous computations.  Examples are the floating-point
+example from the Egner at al. Scheme workshop paper, where exact
+arguments lead to disastrous time inefficiency, and programs
+dealing with monetary amounts, where the specification of an
+amount using decimal-point notation leads to inadvertently
+inexact computations.
 
 Using the (r6rs arithmetic inexact) and (r6rs arithmetic exact)
-libraries for such programs makes the programs more safe (as noted
-above), and also makes the intentions of the programmer more explicit
-to the reader.
+libraries for such programs makes the programs safer (as noted
+above), and also makes the intentions of the programmer more
+explicit to the reader.
 
 Whether the convenience of making such assertions justifies the
 inclusion of those libraries within the R6RS is debatable. Will (and
@@ -60,9 +123,14 @@ from the report. To Mike at least, these libraries are significantly
 more useful (outside of providing reference implementations for the
 rest of the tower) than the fixnum libraries.
 
-Note that none of these arguments has anything to do with the argument
+Note that none of these arguments have anything to do with the argument
 Aubrey Jaffer is making in the ticket. Actually, Jaffer only suggests
 removing these libraries as one option out of two. The other option is
 removing the assertion in the current draft that exactness is
 orthogonal to type, which Mike favors.
 
+Will notes that exactness is indeed orthogonal to type,
+regardless of whether the two libraries under discussion
+become part of the R6RS.  Whether that fact is so obvious
+that the R6RS does not need to mention it is an editorial
+decision.

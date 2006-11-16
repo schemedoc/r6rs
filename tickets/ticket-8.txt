@@ -37,11 +37,18 @@ predicates.
 Contrary to ticket #8, the specification of eqv? does not say that
 (eqv? x y) implies (= x y) when x and y are numbers.
 
-Ticket #8 gives no reason in support of its statement that (let ((x +nan.0)) (eq? x x)) needs to be true. The R5RS does not guarantee that (let ((x z)) (eq? x x)) will be true when z is a number, and we see no reason for the R6RS to require it to be true in the special case where z is a NaN. 
+Ticket #8 gives no reason in support of its statement that
+(let ((x +nan.0)) (eq? x x)) needs to be true.  The R5RS does
+not guarantee that (let ((x z)) (eq? x x)) will be true when
+z is a number, and we see no reason for the R6RS to add such
+a guarantee for the special case where z is a NaN.
 
-When x and y are flonums that are represented in IEEE floating point
-or similar, it is reasonable to implement (eq? x y) by a bitwise
-comparison of the floating point representations, but the R6RS should
-not require this, partly because the R6RS does not require that
-flonums be represented by a floating point representation.
-
+When x and y are flonums represented in IEEE floating point or
+similar, it is reasonable to implement (eq? x y) by a bitwise
+comparison of the floating point representations.  The R6RS
+should not require this, however, because (1) the R6RS does
+not require that flonums be represented by a floating point
+representation, and (2) the interpretation of a NaN's payload
+is explicitly implementation-dependent according to both the
+IEEE-754 standard and the current draft of its proposed
+replacement, IEEE-754R.

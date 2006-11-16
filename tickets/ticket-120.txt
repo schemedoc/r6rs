@@ -1,0 +1,398 @@
+Ticket #120 (enhancement)
+
+Clean-up in the additional arithmetic libraries
+Status: new
+Reported by:	Alan Watson
+Assigned to:	will
+Priority:	minor
+Component:	arithmetic
+Version:	5.91
+Keywords:	
+Cc:	
+
+Text:
+
+Consistency and simplicity of naming is important, especially when
+dealing with libratries that introduce variants on a common operation.
+
+I propose the following renamings and additions to the arithmetic
+libraries defined in section 16. These have the global advantage of
+using exactly the same names for both generic and type-specific
+procedures representing similar mathematical operations.
+
+How then would one distinguish between different procedures with the
+same name? One would use the renaming or prefixing procedures allowed by
+the library system. For example, one would import the fixnum procedures
+with a prefix of "fixnum:". This would give completely consistent names;
+currently some of the current names are prefixed by "fixnum" and others
+by "fixnum-", and some have an appended "?".
+
+16.3.1
+======
+
+Library (r6rs arithmetic fixnum) is renamed as (r6rs arithmetic fixnum
+quotient-ring) or (r6rs arithmetic fixnum modular).
+
+Current                         New
+
+fixnum?                         number?
+NONE                            complex?
+NONE                            real?
+NONE                            rational?
+NONE                            integer?
+
+NONE                            real-valued?
+NONE                            rational-valued?
+NONE                            integer-values?
+
+   All of these routines are synonums for the current "fixnum?".
+
+   Rationale: The generic routines use these procedures to discern types.
+   The fixnum specific routines should use the the same names. In this
+   context, "number?" means "Does the fixnum library treat this as a
+   number?".
+
+NONE                            exact?
+NONE                            inexact?
+
+   Comment: Equivalent to the generic exact? and inexact?, but with the
+   arguments restricted for fixnums.
+
+NONE                            ->inexact
+NONE                            ->exact
+
+   Comment: Fixnum to general inexact and general number to fixnum,
+   signalling if "no reasonable close equivalent".
+
+NONE                            real->fixnum
+NONE                            real->single
+NONE                            real->double
+
+fixnum-width                    width
+least-fixnum                    least
+greatest-fixnum                 greatest
+
+
+fixnum=?                        =
+fixnum>?                        >
+fixnum<?                        <
+fixnum>=?                       >=
+fixnum<=?                       <=
+fixnum-zero?                    zero?
+fixnum-positive?                positive?
+fixnum-negative?                negative?
+fixnum-odd?                     odd?
+fixnum-even?                    even?
+NONE                            finite?
+NONE                            infinite?
+NONE                            nan?
+
+fixnum-min                      min
+fixnum-max                      max
+fixnum+                         +
+fixnum*                         *
+fixnum-                         -
+
+NONE                            abs
+
+fixnum-div+mon                  div-and-mod
+
+   Comment: "+" means something quite specific in arithmetic. The routine
+   "div+mod" should properly return the sum of the div and mod. With
+   "div-and-mod", this confusion does not arise.
+
+fixnum-div                      div
+fixnum-mod                      mod
+fixnum-div0+mod0                div0-and-mod0
+fixnum-div0                     div0
+fixnum-mod0                     mod0
+
+NONE                            gcd
+NONE                            lcm
+
+fixnum+/carry                   +-with-carry
+fixnum-/carry                   /-with-carry
+fixnum*/carry                   *-with-carry
+
+   Comment: The use of "/" to mean "with" is specific to only certain
+   dialects of English. It is not well know, for example, in British
+   English. Furthermore, "/" already has a specific meaning in
+   arithmetic; the procedure "+/carry" should return the sum divided by
+   the carry.
+
+fixnum-not                      bitwise-not
+fixnum-and                      bitwise-and
+fixnum-ior                      bitwise-or
+fixnum-xor                      bitwise-exclusive-or
+
+   Comment: These perform bitwise operations, not logical operations, and
+   should be marked as such. For example, using "bitwise-not" makes it
+   clear that the procedure corresponds to C's "~" operations not C's "!"
+   operations.
+
+   I suggest "or" instead of "ior" because "or" is already used in the
+   base library to mean inclusive or (albeit a logical inclusive or).
+
+   I suggest "exclusive-or" instead of "xor" because Scheme has
+   historically preferred to avoid abreviations. However, "xor" would not
+   be wrong.
+
+fixnum-if                       bitwise-if
+
+fixnum-bit-count                bit-count
+fixnum-length                   bit-length
+
+fixnum-first-bit-set            first-bit-set
+fixnum-bit-set?                 bit-set?
+fixnum-copy-bit                 copy-bit?
+fixnum-bit-field                bit-field
+fixnum-copy-bit-field           copy-bit-field
+
+NONE                            set-bit!
+
+   Comment: This should be the same as:
+
+      (fixnum-copy-bit fx1 fx2 (fixnum-logical-shift-left 1 fx2))
+
+fixnum-arithmetic-shift         arithmetic-shift
+fixnum-arithmetic-shift-left    arithmetic-shift-left
+fixnum-arithmetic-shift-right   arithmetic-shift-right
+
+NONE                            bitwise-shift
+fixnum-logical-shift-left       bitwise-shift-left
+fixnum-logical-shift-right      bitwise-shift-right
+
+   Comment: "logical" in the context of Scheme seems to me to refer more
+   to booleans. I would suggest "bitwise-shift" here or, failing that,
+   just plain "shift".
+
+   Comment: Why is there no three-argument logical shift, to match the
+   three-argument arithmetic shift?
+
+fixnum-rotate-bit-field         rotate-bit-field
+fixnum-reverse-bit-field        reverse-bit-field
+
+NONE                            number->string
+NONE                            string->number
+
+16.3.2
+======
+
+Library "(r6rs arithmetic fx)" is renamed "(r6rs arithmetic fixnum
+signalling)".
+
+Similar changes are made in the procedures.
+
+In addition, I see no reason for omitting procedures simply because they
+depend on the precision w, so I would add the carry procedures and the
+logical shift procedures. The results are perfectly well defined,
+although obviously they depend on w.
+
+16.4
+====
+
+Current                         New
+
+flonum?                         number?
+NONE                            complex?
+NONE                            real?
+NONE                            rational?
+flinteger?                      integer?
+
+NONE                            real-valued?
+NONE                            rational-valued?
+NONE                            integer-valued?
+
+NONE                            exact?
+NONE                            inexact?
+
+->exact
+->inexact
+
+   Comment: Generic number to flonum, yielding a NaN if the number is
+   complex, and flonum to generic exact number.
+
+NONE                            real->flonum
+NONE                            real->single
+NONE                            real->double
+
+
+fl=?                            =
+fl<?                            <
+fl>?                            >
+fl<=?                           <=
+fl>=?                           >=
+
+flzero?                         zero?
+flpositive?                     positive?
+flnegative?                     negative?
+flodd?                          odd?
+fleven?                         even?
+flfinite?                       finite?
+flinfinite?                     infinite?
+flnan?                          nan?
+
+flmax                           max
+flmin                           min
+
+fl+                             +
+fl*                             *
+fl-                             -
+fl/                             /
+
+flabs                           abs
+
+fldiv+mod                       div-and-mod
+fldiv                           div
+flmod                           mod
+fldiv0+mod0                     div0-and-mod0
+fldiv0                          div0
+flmod0                          mod0
+
+NONE                            gcd
+NONE                            lcm
+
+flnumerator                     numerator
+fldenominator                   denominator
+
+flfloor                         floor
+flceiling                       ceiling
+fltruncate                      truncate
+flround                         round
+
+NONE                            rationalize
+
+flexp                           exp
+fllog                           log
+flsin                           sin
+flcos                           cos
+fltan                           tan
+flasin                          asin
+NONE                            acos
+flatan                          atan
+
+   Comment: Even if you hate this idea, flcos is missing.
+
+flsqrt                          sqrt
+flexpt                          expt
+
+NONE                            number->string
+NONE                            string->number
+
+16.5 Exact arithmetic
+=====================
+
+By now, the pattern of my suggested renamings should be clear.
+
+This library also needs:
+
+   real?
+   real-valued?
+   rational-valued?
+   integer-valued?
+   exact?
+   inexact?
+   ->inexact
+   ->exact
+   real->flonum
+   real->single
+   real->double
+   infinite?
+   finite?
+   nan?
+   rationalize
+   string->number
+   number->string
+
+along with appropriate additions corresponding to the added fixnum 
+procedures.
+
+16.6 Inexact arithmetic
+=======================
+
+Again, renamings to remove prefixes and spurious ? suffixes, along with:
+
+   real-valued?
+   rational-valued?
+   integer-valued?
+   exact?
+   inexact?
+   ->exact
+   ->inexact
+   real->flonum
+   real->single
+   real->double
+   rationalize
+   acos
+   string->number
+   number->string
+
+DRAFT RESPONSE
+
+Ticket #120 proposes renaming of the (r6rs arithmetic fixnum),
+and (r6rs arithmetic fx) libraries.
+
+More importantly, Ticket #120 proposes to rename most procedures
+that are exported by all five of libraries described in sections
+16.3, 16.4, 16.5, and 16.6 of the draft R6RS.  The renaming would
+"have the global advantage of using exactly the same names for
+both generic and type-specific procedures" that have related
+(but generally not identical) semantics.  The basic idea of the
+renaming is to strip off the prefix that identifies the library
+from which the procedure is imported and (in most cases) the
+types of its arguments.  To prevent illegal name clashes, programs
+that use one of those libraries together with (r6rs base) would
+have to rename the imported procedures, typically by prefixing
+them with a programmer-specified prefix.
+
+The net effect would be to let the renaming prefix be chosen by
+individual programmers, which would make it harder for Scheme
+programmers to read each other's code.
+
+Several of the proposed renamings are controversial.  For
+example, a program that imports (r6rs arithmetic fixnum) and
+uses fixnum: as a prefix would import all of the following
+names for exactly the same procedure:
+
+    fixnum:number?
+    fixnum:complex?
+    fixnum:real?
+    fixnum:rational?
+    fixnum:integer?
+    fixnum:real-valued?
+    fixnum:rational-valued?
+    fixnum:integer-values?
+
+It would also import fixnum:exact?, which is the generic exact?
+procedure restricted to fixnum arguments; that procedure would
+return #t whenever it does not raise an exception.  Similarly
+fixnum:inexact? would raise #f whenever it does not raise an
+exception.
+
+Most of the changes proposed by Ticket #120 seem to be more
+confusing than helpful, and should not be adopted for the R6RS.
+
+Some of the renamings suggested by Ticket #120 seem like good
+ideas, and could be adopted in modified form (without dropping
+the prefix).  Possible improvements that should be considered
+for the next draft of the R6RS include:
+
+    draft R6RS                      possible renaming
+
+    fixnum-div+mod                  fixnum-div-and-mod
+    fixnum-div0+mod0                fixnum-div0-and-mod0
+    fixnum+/carry                   fixnum+with-carry
+    fixnum-/carry                   fixnum-with-carry
+    fixnum*/carry                   fixnum*with-carry
+    fixnum-ior                      fixnum-or
+    fixnum-xor                      fixnum-exclusive-or
+
+The rationale for including the X-arithmetic-shift procedures
+but not any X-logical-shift procedures is that the arithmetic
+shifts have simple definitions in terms of the generic floor,
+*, and expt procedures, but the semantics of a logical shift
+involves an essential discontinuity based on the sign of the
+second argument.
+
+As suggested by Ticket #120, an flcos procedure should be added
+to the (r6rs arithmetic flonum) library.
