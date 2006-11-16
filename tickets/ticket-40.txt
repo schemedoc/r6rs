@@ -36,7 +36,8 @@ that the primary motivation for the (r6rs arithmetic exact)
 and (r6rs arithmetic inexact) libraries is efficiency.  If
 that were so, they would indeed be largely pointless, since
 inclusion of those two libraries within the R6RS would not
-increase their efficiency in compiled systems, and would
+increase their efficiency in compiled systems (except for
+the bit-diddling operations on exact integers), and would
 improve their efficiency by very little in interpreted
 systems.
 
@@ -47,7 +48,7 @@ are not entirely pointless.
 The (r6rs arithmetic exact) library provides programmers
 with a convenient way to assert that the arguments and
 results of arithmetic operations are exact, with the
-safety may result from raising an exception if those
+safety that may result from raising an exception if those
 assertions do not hold.
 
 The argument for the (r6rs arithmetic inexact) library
@@ -59,10 +60,11 @@ because it sometimes returns an inexact real result
 return a more useful inexact complex result.
 
 Will notes that neither library has been tested in the
-field.  Both libraries could be described by a SRFI and
-provided by portable reference implementations that, in
-compiled systems, would be just as efficient as if the
-libraries were part of the R6RS.
+field.  Except for the bit-diddling operations on exact
+integers, both libraries could be described by a SRFI
+and provided by portable reference implementations that
+would be just as efficient as if the libraries were part
+of the R6RS.
 
 Will recommends that the (r6rs arithmetic exact) and
 (r6rs arithmetic inexact) libraries be removed from the
