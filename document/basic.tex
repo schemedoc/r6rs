@@ -18,7 +18,7 @@ respectively.  Subsequent chapters
 describe various standard libraries provided by a Scheme system.  In
 particular, chapter~\ref{baselibrarychapter} describes a base
 library that defines many of the constructs traditionally associated with
-Scheme programs.
+Scheme.
 
 The division between the base library and other standard libraries is
 based on use, not on construction.  In particular, some facilities
@@ -40,7 +40,8 @@ of syntax is called a {\em syntactic keyword}\mainindex{syntactic keyword}
 and is said to be {\em bound} to that syntax.  An identifier that names a
 location is called a {\em variable}\mainindex{variable} and is said to be
 {\em bound} to that location.  The set of all visible
-bindings\mainindex{binding} in effect at some point in a program is
+bindings\mainindex{binding} in effect at some point in a script or
+library body is
 known as the {\em environment} in effect at that point.  The value
 stored in the location to which a variable is bound is called the
 variable's value.  By abuse of terminology, the variable is sometimes
@@ -71,8 +72,8 @@ variable binding constructs are {\cf let}, {\cf let*}, {\cf letrec*},
 %Note: internal definitions not mentioned here.
 
 \vest Scheme is a statically scoped language with
-block structure.  To each place where an identifier is bound in a program
-there corresponds a \defining{region} of the program text within which
+block structure.  To each place in a script or library body where an identifier is bound 
+there corresponds a \defining{region} of code within which
 the binding is visible.  The region is determined by the particular
 binding construct that establishes the binding; if the binding is
 established by a {\cf lambda} expression, for example, then its region
@@ -90,7 +91,7 @@ it is said to be \defining{unbound}.\mainindex{bound}
 \label{exceptionalsituationsection}
 
 \mainindex{exceptional situation}A variety of exceptional situations
-are distinguished in this report, among them violations of program
+are distinguished in this report, among them violations of 
 syntax, violations of a procedure's specification, violations of
 implementation restrictions, and exceptional situations in the
 environment.  When an exception is raised, an object is provided that
