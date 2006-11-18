@@ -115,10 +115,12 @@ procedure.
 \begin{entry}{%
 \proto{eol-style}{ name}{\exprtype}}
 
-If \var{name} is one of the \meta{identifier}s {\cf lf}, {\cf cr}, {\cf crlf}, or
-{\cf ls}, then the form evaluates to the corresponding symbol.  If \var{name} is
-not one of these identifiers, the effect of evaluating this expression is
-implementation-dependent.
+If \var{name} is one of the \meta{identifier}s {\cf lf}, {\cf cr},
+{\cf crlf}, or {\cf ls}, then the form evaluates to the corresponding
+symbol.  If \var{name} is not one of these identifiers, effect and
+result are implementation-dependent: The result may be an
+eol-style symbol acceptable as an \var{eol-mode}
+argument to {\cf make-transcoder}.  Otherwise, an exception is raised.
 
 \begin{rationale}
   End-of-line styles other than those listed might become commonplace
@@ -188,10 +190,12 @@ continues after that character.
 \begin{entry}{%
 \proto{error-handling-mode}{ name}{\exprtype}}
 
-If \var{name} is one of the \meta{identifier}s {\cf ignore}, {\cf raise}, or {\cf
-  replace}, then the result is the corresponding symbol.  If \var{name} is
-not one of these identifiers, the result the expression is
-implementation-dependent.
+If \var{name} is one of the \meta{identifier}s {\cf ignore}, {\cf
+  raise}, or {\cf replace}, then the result is the corresponding
+symbol.  If \var{name} is not one of these identifiers, effect and
+result are implementation-dependent: The result may be an
+error-handling-mode symbol acceptable as a \var{handling-mode}
+argument to {\cf make-transcoder}.  Otherwise, an exception is raised.
 
 \begin{rationale}
   Implementations may support error-handling modes other than those
