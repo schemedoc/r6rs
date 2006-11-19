@@ -251,9 +251,10 @@ The expression above is equivalent to
 If \var{rtd} is an extension of another record type \var{parent-rtd},
 \var{parent-constructor-descriptor} must be a constructor descriptor
 of \var{parent-rtd} or \schfalse.
-If \var{parent-constructor-descriptor} is \schfalse, a default
-constructor descriptor is supplied.
-In this case, \var{p} is a procedure that accepts the same number
+If it is \schfalse, a default constructor descriptor is assumed, whose
+constructor accepts as many values as there are fields and initializes
+the fields to the arguments.
+In the extension case, \var{p} is a procedure that accepts the same number
 of arguments as the constructor of \var{parent-constructor-descriptor}
 and returns a procedure \var{new}, which, as above,
 expects one parameter for every field of \var{rtd} (not including parent
