@@ -24,7 +24,7 @@ the last byte has an index one less than the length of the bytes
 object.
 
 Generally, the access procedures come in different flavors according
-to the size of the represented integer, and the endianness of the
+to the size of the represented integer and the endianness of the
 representation.  The procedures also distinguish signed and unsigned
 representations.
 The signed representations all use two's complement.
@@ -36,6 +36,7 @@ must be quoted:
 '\#vu8(12 23 123) \ev \#vu8(12 23 123)%
 \end{scheme}
 
+\section{General operations}
 
 \begin{entry}{%
 \proto{endianness}{ {\cf big}}{\exprtype}
@@ -87,6 +88,58 @@ Returns, as an exact integer, the number of bytes in \var{bytes}.
 \end{entry}
 
 \begin{entry}{%
+\proto{bytes=?}{ \vari{bytes} \varii{bytes}}{procedure}}
+   
+Returns \schtrue{} if \vari{bytes} and \varii{bytes} are equal---that
+is, if they have the same length and equal bytes at all valid indices.
+It returns \schfalse{} otherwise.
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-copy!}{ source source-start target target-start n}{procedure}}
+
+\domain{\var{Source-start}, \var{target-start},
+  and \var{n} must be non-negative exact integers that satisfy
+  
+  \begin{displaymath}
+    \begin{array}{rcccccl}
+      0 & \leq & \var{source-start} & \leq & \var{source-start} + \var{n} & \leq & l_{\var{source}}
+      \\
+      0 & \leq & \var{target-start} & \leq & \var{target-start} + \var{n} & \leq & l_{\var{target}}
+    \end{array}
+  \end{displaymath}
+  %
+  where $l_{\var{source}}$ is the length of \var{source} and
+  $l_{\var{target}}$ is the length of \var{target}.}
+   
+   
+  The {\cf bytes-copy!} procedure copies the bytes from \var{source} at indices 
+  \begin{displaymath}
+     \{ \var{source-start}, \ldots \var{source-start} + \var{n} - 1 \}
+  \end{displaymath}
+  to consecutive indices in \var{target} starting at \var{target-index}.
+   
+  This must work even if the memory regions for the source and the target
+  overlap, i.e., the bytes at the target location after the copy must be
+  equal to the bytes at the source location before the copy.
+   
+  This returns \unspecifiedreturn.
+\begin{scheme}
+(let ((b (u8-list->bytes '(1 2 3 4 5 6 7 8))))
+  (bytes-copy! b 0 b 3 4)
+  (bytes->u8-list b)) \ev (1 2 3 1 2 3 4 8)
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes-copy}{ bytes}{procedure}}
+   
+Returns a newly allocated copy of \var{bytes}.
+\end{entry}
+
+\section{Operations on bytes and octets}
+
+\begin{entry}{%
 \proto{bytes-u8-ref}{ bytes k}{procedure}
 \proto{bytes-s8-ref}{ bytes k}{procedure}}
    
@@ -135,6 +188,20 @@ Both procedures return \unspecifiedreturn.
     (bytes-s8-ref b 1)
     (bytes-u8-ref b 1))) \ev (-126 130 -10 246)
 \end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{bytes->u8-list}{ bytes}{procedure}
+\proto{u8-list->bytes}{ list}{procedure}}
+   
+\domain{\var{List} must be a list of octets.}
+
+The {\cf bytes->u8-list} procedure returns a newly allocated list of the bytes of
+\var{bytes} in the same order.
+
+The {\cf u8-list->bytes} procedure returns a newly allocated bytes object whose
+elements are the elements of list \var{list}, in
+the same order.  It is analogous to {\cf list->vector}.
 \end{entry}
 
 \begin{entry}{%
@@ -197,6 +264,32 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \end{scheme}
 \end{entry}
 
+\section{Operations on integers of arbitrary size}
+
+\begin{entry}{%
+\proto{bytes->uint-list}{ bytes endianness size}{procedure}
+\proto{bytes->sint-list}{ bytes endianness size}{procedure}
+\proto{uint-list->bytes}{ list endianness size}{procedure}
+\proto{sint-list->bytes}{ list endianness size}{procedure}}
+   
+\domain{\var{Size} must be a positive exact integer.}
+   
+These procedures convert between lists of integers and their consecutive
+representations according to \var{size} and \var{endianness} in the
+\var{bytes} objects in the same way as {\cf bytes->u8-list} and {\cf
+  u8-list->bytes} do for one-byte representations.
+
+\begin{scheme}
+(let ((b (u8-list->bytes '(1 2 3 255 1 2 1 2))))
+  (bytes->sint-list b (endianness little) 2)) \lev (513 -253 513 513)
+
+(let ((b (u8-list->bytes '(1 2 3 255 1 2 1 2))))
+  (bytes->uint-list b (endianness little) 2)) \lev (513 65283 513 513)
+\end{scheme}
+\end{entry}
+
+\section{Operations on 16-bit integers}
+
 \begin{entry}{%
 \proto{bytes-u16-ref}{ bytes k endianness}{procedure}
 \proto{bytes-s16-ref}{ bytes k endianness}{procedure}
@@ -243,6 +336,8 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \end{scheme}
 \end{entry}
 
+\section{Operations on 32-bit integers}
+
 \begin{entry}{%
 \proto{bytes-u32-ref}{ bytes k endianness}{procedure}
 \proto{bytes-s32-ref}{ bytes k endianness}{procedure}
@@ -261,7 +356,7 @@ procedures with {\cf u32} in their names deal with the unsigned representation,
 those with {\cf s32} with the two's complement representation.
    
 The procedures with {\cf native} in their names employ the native endianness, and
-only work at aligned indices: \var{k} must be a multiple of 4..
+only work at aligned indices: \var{k} must be a multiple of 4.
    
 The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 
@@ -315,14 +410,6 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes=?}{ \vari{bytes} \varii{bytes}}{procedure}}
-   
-Returns \schtrue{} if \vari{bytes} and \varii{bytes} are equal---that
-is, if they have the same length and equal bytes at all valid indices.
-It returns \schfalse{} otherwise.
-\end{entry}
-
-\begin{entry}{%
 \proto{bytes-ieee-single-native-ref}{ bytes k}{procedure}
 \proto{bytes-ieee-single-ref}{ bytes k endianness}{procedure}}
 
@@ -334,6 +421,8 @@ These procedures return the inexact real that best represents the IEEE-754 singl
 precision number represented by the four bytes beginning at index
 \var{k}.
 \end{entry}
+
+\section{Operations on IEEE-754 numbers}
 
 \begin{entry}{%
 \proto{bytes-ieee-double-native-ref}{ bytes k}{procedure}
@@ -372,84 +461,6 @@ elements \var{k} through $\var{k}+3$ of \var{bytes}, and returns
 These procedures store an IEEE-754 double precision representation of \var{x} into
 elements \var{k} through $\var{k}+7$ of \var{bytes}, and returns
 \unspecifiedreturn.
-\end{entry}
-
-\begin{entry}{%
-\proto{bytes-copy!}{ source source-start target target-start n}{procedure}}
-
-\domain{\var{Source-start}, \var{target-start},
-  and \var{n} must be non-negative exact integers that satisfy
-  
-  \begin{displaymath}
-    \begin{array}{rcccccl}
-      0 & \leq & \var{source-start} & \leq & \var{source-start} + \var{n} & \leq & l_{\var{source}}
-      \\
-      0 & \leq & \var{target-start} & \leq & \var{target-start} + \var{n} & \leq & l_{\var{target}}
-    \end{array}
-  \end{displaymath}
-  %
-  where $l_{\var{source}}$ is the length of \var{source} and
-  $l_{\var{target}}$ is the length of \var{target}.}
-   
-   
-  The {\cf bytes-copy!} procedure copies the bytes from \var{source} at indices 
-  \begin{displaymath}
-     \{ \var{source-start}, \ldots \var{source-start} + \var{n} - 1 \}
-  \end{displaymath}
-  to consecutive indices in \var{target} starting at \var{target-index}.
-   
-  This must work even if the memory regions for the source and the target
-  overlap, i.e., the bytes at the target location after the copy must be
-  equal to the bytes at the source location before the copy.
-   
-  This returns \unspecifiedreturn.
-\begin{scheme}
-(let ((b (u8-list->bytes '(1 2 3 4 5 6 7 8))))
-  (bytes-copy! b 0 b 3 4)
-  (bytes->u8-list b)) \ev (1 2 3 1 2 3 4 8)
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{bytes-copy}{ bytes}{procedure}}
-   
-Returns a newly allocated copy of \var{bytes}.
-\end{entry}
-
-\begin{entry}{%
-\proto{bytes->u8-list}{ bytes}{procedure}
-\proto{u8-list->bytes}{ list}{procedure}}
-   
-\domain{\var{List} must be a list of octets.}
-
-The {\cf bytes->u8-list} procedure returns a newly allocated list of the bytes of
-\var{bytes} in the same order.
-
-The {\cf u8-list->bytes} procedure returns a newly allocated bytes object whose
-elements are the elements of list \var{list}, in
-the same order.  Analogous to {\cf list->vector}.
-\end{entry}
-
-\begin{entry}{%
-\proto{bytes->uint-list}{ bytes endianness size}{procedure}
-\proto{bytes->sint-list}{ bytes endianness size}{procedure}
-\proto{uint-list->bytes}{ list endianness size}{procedure}
-\proto{sint-list->bytes}{ list endianness size}{procedure}}
-   
-\domain{\var{Size} must be a positive exact integer.}
-   
-These procedures convert between lists of integers and their consecutive
-representations according to \var{size} and \var{endianness} in the
-\var{bytes} objects in the same way as {\cf bytes->u8-list} and {\cf
-  u8-list->bytes} do for one-byte representations.
-
-\begin{scheme}
-(let ((b (u8-list->bytes '(1 2 3 255 1 2 1 2))))
-  (bytes->sint-list b (endianness little) 2)) \lev (513 -253 513 513)
-
-(let ((b (u8-list->bytes '(1 2 3 255 1 2 1 2))))
-  (bytes->uint-list b (endianness little) 2)) \lev (513 65283 513 513)
-\end{scheme}
 \end{entry}
 
 

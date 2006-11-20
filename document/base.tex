@@ -89,7 +89,7 @@ variable.  This form is equivalent to
   (lambda \hyper{formal} \hyper{body}))\rm.%
 \end{scheme}
 
-\item A syntax definition, see section~\ref{define-syntax}.
+\item a syntax definition (see section~\ref{define-syntax})
 \end{itemize}
 
 \section{Syntax definitions}
@@ -188,7 +188,7 @@ forms, may be specified by a syntactic abstraction
 
 An expanded \hyper{body} (see chapter~\ref{expansionchapter})
 containing internal definitions can
-always be converted into a completely equivalent {\cf letrec*}
+always be converted into a equivalent {\cf letrec*}
 expression.  For example, the {\cf let} expression in the above
 example is equivalent to
 
@@ -215,6 +215,7 @@ section~\ref{primitiveexpressionsection}.
 \proto{quote}{ \hyper{datum}}{\exprtype}}
 
 \syntax \hyper{Datum} should be a datum value.
+
 \semantics
 {\cf (quote \hyper{datum})} evaluates to the datum
 denoted by \hyper{datum}.
@@ -261,14 +262,14 @@ and \hyper{body} must be according to section~\ref{bodiessection}.
 effect when the \lambdaexp{} is evaluated is remembered as part of the
 procedure.  When the procedure is later called with some actual
 arguments, the environment in which the \lambdaexp{} was evaluated is
-be extended by binding the variables in the formal argument list to
+extended by binding the variables in the formal argument list to
 fresh locations, and the resulting actual argument values are stored
 in those locations.  Then, the expressions in the body of the \lambdaexp{}
 (which may contain internal definitions and thus represent a {\cf
   letrec*} form, see section~\ref{bodiessection}) are evaluated
 sequentially in the extended environment.
-The result(s) of the last expression in the body is(are) returned as
-the result(s) of the procedure call.
+The results of the last expression in the body are returned as
+the results of the procedure call.
 
 \begin{scheme}
 (lambda (x) (+ x x))      \ev  {\em{}a procedure}
@@ -462,20 +463,20 @@ the following forms:
 The second form, which specifies an ``else clause,''
 may only appear as the last \hyper{clause}.
 Each \hyper{datum} is an external representation of some object.
-The datums denoted by the \hyper{datum}s must not be distinct.
+The datums denoted by the \hyper{datum}s must be distinct.
 
 \semantics
 A {\cf case} expression is evaluated as follows.  \hyper{Key} is
-evaluated and its result is compared against each the datum denoted by
+evaluated and its result is compared in sequence against the datum denoted by
 each \hyper{datum}.  If the
 result of evaluating \hyper{key} is equivalent (in the sense of
 {\cf eqv?}; see section~\ref{eqv?}) to a datum, then the
 expressions in the corresponding \hyper{clause} are evaluated from left
-to right and the result(s) of the last expression in the \hyper{clause} is(are)
-returned as the result(s) of the {\cf case} expression.  If the result of
+to right and the results of the last expression in the \hyper{clause} are
+returned as the results of the {\cf case} expression.  If the result of
 evaluating \hyper{key} is different from every datum, then if
 there is an else clause its expressions are evaluated and the
-result(s) of the last is(are) the result(s) of the {\cf case} expression;
+results of the last are the results of the {\cf case} expression;
 otherwise the result of the {\cf case} expression is the unspecified value.
 
 \begin{scheme}
@@ -500,6 +501,7 @@ appendix~\ref{derivedformsappendix}.
 \proto{and}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
 \syntax The \hyper{test}s must be expressions.
+
 \semantics
 The \hyper{test} expressions are evaluated from left to right, and the
 value of the first expression that evaluates to a false value (see
@@ -533,6 +535,7 @@ The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
 \proto{or}{ \hyperi{test} \dotsfoo}{\exprtype}}
 
 \syntax The \hyper{test}s must be expressions.
+
 \semantics
 The \hyper{test} expressions are evaluated from left to right, and the value of the
 first expression that evaluates to a true value (see
@@ -987,11 +990,11 @@ The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
 \end{scheme}
 
 \item \vari{Obj} and \varii{obj} are both exact\index{exact} numbers,
-  and are numerically equal (see {\cf =}, section see
+  and are numerically equal (see {\cf =}, 
   section~\ref{genericarithmeticsection}).
 
 \item \vari{Obj} and \varii{obj} are both inexact\index{inexact} numbers, are numerically
-  equal (see {\cf =}, section see section~\ref{genericarithmeticsection}, and
+  equal (see {\cf =}, section~\ref{genericarithmeticsection}, and
   yield the same results (in the sense of {\cf eqv?}) when passed
   as arguments to any other procedure that can be defined
   as a finite composition of Scheme's standard arithmetic
@@ -1195,7 +1198,7 @@ vectors and empty strings.
 \todo{Needs to be explained better above.  How can this be made to be
 not confusing?  A table maybe?}
 
-\begin{rationale} It is usually be possible to implement {\cf eq?}\ much
+\begin{rationale} It is usually possible to implement {\cf eq?}\ much
 more efficiently than {\cf eqv?}, for example, as a simple pointer
 comparison instead of as some more complicated operation.  One reason is
 that it may not be possible to compute {\cf eqv?}\ of two numbers in
@@ -1794,11 +1797,11 @@ When in doubt, consult a numerical analyst.
 These numerical predicates test a number for a particular property,
 returning \schtrue{} or \schfalse{}.  See note above.  The {\cf zero?}
 procedure
-tests if the number is {\cf =} to zero, {\cf positive?} tests if it is
-greater than zero, {\cf negative?} tests if it is less than zero, {\cf
-  odd?} tests if it is odd, {\cf even?} tests if it is even, {\cf
-  finite?} tests if it is not an infinity and not a NaN, {\cf
-  infinite?} tests if it is an infinity, {\cf nan?} tests if it is a
+tests if the number is {\cf =} to zero, {\cf positive?} tests whether it is
+greater than zero, {\cf negative?} tests whether it is less than zero, {\cf
+  odd?} tests whether it is odd, {\cf even?} tests whether it is even, {\cf
+  finite?} tests whether it is not an infinity and not a NaN, {\cf
+  infinite?} tests whether it is an infinity, {\cf nan?} tests whether it is a
 NaN.
 
 \begin{scheme}
@@ -2380,8 +2383,8 @@ is the first element and whose cdr is a pair whose car is the second element
 and whose cdr is the empty list.  The length of a list is the number of
 elements, which is the same as the number of pairs.
 
-The empty list\mainindex{empty list} is a special object of its own type
-(it is not a pair); it has no elements and its length is zero.
+The empty list\mainindex{empty list} is a special object of its own type.
+It is not a pair.  It has no elements and its length is zero.
 
 \begin{note}
 The above definitions imply that all lists have finite length and are
@@ -2512,8 +2515,8 @@ twenty-eight of these procedures in all.
 \begin{entry}{%
 \proto{null?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is the empty list\index{empty list},
-otherwise returns \schfalse.
+Returns \schtrue{} if \var{obj} is the empty list\index{empty list}.
+Otherwise, returns \schfalse.
 
 % \begin{note}
 % In implementations in which the empty
@@ -2526,7 +2529,7 @@ otherwise returns \schfalse.
 \begin{entry}{%
 \proto{list?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a list, otherwise returns \schfalse{}.
+Returns \schtrue{} if \var{obj} is a list.  Otherwise, returns \schfalse{}.
 By definition, all lists have finite length and are terminated by
 the empty list.
 
@@ -2964,10 +2967,10 @@ with condition type {\cf\&contract} to be raised.
 \proto{string=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
 
 Returns \schtrue{} if the strings are the same length and contain the same
-characters in the same positions, otherwise returns \schfalse.
+characters in the same positions.  Otherwise, returns \schfalse.
 
 \begin{scheme}
-(string=? "Straﬂe" "Strasse") \ev \schfalse%
+(string=? "Stra\ss{}e" "Strasse") \ev \schfalse%
 \end{scheme}
 \end{entry}
 
@@ -3077,7 +3080,7 @@ to some.  Elaborate on the distinction.}
 \begin{entry}{%
 \proto{vector?}{ obj}{procedure}}
  
-Returns \schtrue{} if \var{obj} is a vector, otherwise returns \schfalse.
+Returns \schtrue{} if \var{obj} is a vector.  Otherwise, returns \schfalse.
 \end{entry}
 
 
@@ -3283,7 +3286,7 @@ arguments.
 \label{continuations} \domain{\var{Proc} must be a procedure of one
 argument.} The procedure {\cf call-with-current-continuation} 
 (which is the same as the procedure {\cf call/cc}) packages
-up the current continuation (see the rationale below) as an ``escape
+the current continuation (see the rationale below) as an ``escape
 procedure''\mainindex{escape procedure} and passes it as an argument to
 \var{proc}.  The escape procedure is a Scheme procedure that, if it is
 later called, will abandon whatever continuation is in effect at that later
@@ -3337,7 +3340,7 @@ the power of {\cf call-with-current-continuation}.
 
 \vest A common use of {\cf call-with-current-continuation} is for
 structured, non-local exits from loops or procedure bodies, but in fact
-{\cf call-with-current-continuation} is extremely useful for implementing a
+{\cf call-with-current-continuation} is useful for implementing a
 wide variety of advanced control structures.
 
 \vest Whenever a Scheme expression is evaluated there is a
@@ -3607,8 +3610,8 @@ the \hyper{variable}s are bound to fresh locations, the results of the
 \hyper{variable}s, and then the iteration phase begins.
 
 \vest Each iteration begins by evaluating \hyper{test}; if the result is
-false (see section~\ref{booleanvaluessection}), then the \hyper{command}
-expressions are evaluated in order for effect, the \hyper{step}
+false (see section~\ref{booleanvaluessection}), then the \hyper{expression}s
+are evaluated in order for effect, the \hyper{step}
 expressions are evaluated in some unspecified order, the
 \hyper{variable}s are bound to fresh locations, the results of the
 \hyper{step}s are stored in the bindings of the
@@ -3694,7 +3697,7 @@ of the {\cf unquote} form.
 
 If an {\cf (unquote-splicing \hyper{expression} \dotsfoo)} form
 appears inside a \hyper{qq template}, then the \hyper{expression}s must
-evaluate to lists; the opening and closing parentheses of the list are
+evaluate to lists; the opening and closing parentheses of the lists are
 then ``stripped away'' and the elements of the lists are inserted in
 place of the {\cf unquote-splicing} form.
 
@@ -3791,7 +3794,7 @@ un\-quo\-ta\-tion $D$} takes precedence.
 
 The {\cf let-syntax} and {\cf letrec-syntax} forms are analogous to {\cf let}
 and {\cf letrec} but bind keywords rather than variables.
-Like {\cf begin}, a {\cf let-syntax} or {\cf letrec-syntax} form
+Like a {\cf begin} form, a {\cf let-syntax} or {\cf letrec-syntax} form
 may appear in a definition context, in which case it is treated as a
 definition, and the forms in the body of the form must also be
 definitions.
@@ -3824,7 +3827,7 @@ Each binding of a \hyper{keyword} has the \hyper{form}s as its region.
 
 The \hyper{form}s of a {\cf let-syntax}
 form are treated, whether in definition or expression context, as if
-wrapped in an implicit {\cf begin}, see section~\ref{begin}.
+wrapped in an implicit {\cf begin}.  See section~\ref{begin}.
 Thus, internal definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   let-syntax} form would have.
@@ -3942,7 +3945,7 @@ or {\cf letrec-syntax} can be a {\cf syntax-rules} form:
 \mainschindex{syntax-rules}
 
 \syntax Each \hyper{literal} must be an identifier.
-Each \hyper{syntax rule} must take one of the the following forms:
+Each \hyper{syntax rule} must take one of the following forms:
 
 \begin{scheme}
 (\hyper{srpattern} \hyper{template})
@@ -4013,7 +4016,7 @@ regardless of whether the keyword were bound by {\cf let-syntax},
 
 Pattern variables match arbitrary input subforms and
 are used to refer to elements of the input.
-It is a syntax violation if the same pattern variable may appears more than once in a
+It is a syntax violation if the same pattern variable appears more than once in a
 \hyper{pattern}.
 
 Underscores also match arbitrary input subforms but are not pattern variables

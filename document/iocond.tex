@@ -2,13 +2,13 @@
 \label{iocondsection}
 
 In exceptional situations arising from ``I/O errors,'' the procedures
-described in this chapter raise an exception with
-condition type {\cf\&i/o}.  Except where explicitly specified, there
-is no guarantee that the raised condition object contains all the
-information that would be applicable. It is recommended, however, that
-an implementation provide all information about an exceptional
-situation in the condition object that is available at the place where
-it is detected.
+described in this chapter raise an exception with condition type
+{\cf\&i/o}.  Except where explicitly specified, there is no guarantee
+that the raised condition object contains all the information that
+would be applicable.  It is recommended, however, that an
+implementation collect all information that is available about an
+exceptional situation at the place where it is detected and place it
+in the condition object.
 
 The condition types and corresponding predicates and accessors are
 exported by both the \library{r6rs i/o primitive} and \library{r6rs
@@ -32,6 +32,7 @@ This is a supertype for a set of more specific I/O errors.
 \ctproto{i/o-read}
 \proto{i/o-read-error?}{ obj}{procedure}}
 
+This condition type could be defined by
 \begin{scheme}
 (define-condition-type \&i/o-read \&i/o
   i/o-read-error?)
@@ -135,7 +136,7 @@ This condition type could be defined by
   i/o-file-already-exists-error?)
 \end{scheme}
 A condition of this type specifies that an operation tried to operate on an
-existing named file under the assumption that it does not exist.
+existing named file under the assumption that it did not exist.
 \end{entry}   
 
 \begin{entry}{%
@@ -151,7 +152,7 @@ This condition type could be defined by
 \end{scheme}
 
 A condition of this type specifies that an operation tried to operate on an
-non-existent named file under the assumption that it exists.
+non-existent named file under the assumption that it existed.
 \end{entry}   
 
 %%% Local Variables: 

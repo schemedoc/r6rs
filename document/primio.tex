@@ -8,7 +8,7 @@ is suitable for implementing high-throughput and zero-copy I/O.
 
 This library also allows programs to implement custom data
 sources and sinks via a simple interface.
-It handles only blocking-I/O.
+It handles only blocking I/O.
 
 \subsection{File names}
 
@@ -67,7 +67,7 @@ operation.
 \begin{rationale}
   The flags specified above represent only a common subset of
   meaningful options on popular platforms.  The {\cf file-options}
-  form does not restrict the \hyper{file-options name}s so that
+  form does not restrict the \hyper{file-options name}s, so 
   implementations can extend the file options by platform-specific
   flags.
 \end{rationale}
@@ -80,7 +80,7 @@ those representing output data sinks are called writers.
 Both readers and writer are unbuffered, and they operate purely on binary data.  
 Although some
 reader and writer objects might conceivably have something to do with
-files or devices, programmers should never assume it.
+files or devices, programmers should never assume so.
 A \var{reader} parameter name means that the
 corresponding argument must be a reader.
 A \var{writer} parameter name means that the
@@ -116,7 +116,7 @@ condition, but they are not required to do so.
 \domain{\var{Size} must be a non-negative exact integer.} The {\cf make-i/o-buffer} procedure
 creates a bytes object of size \var{size} with undefined contents.
 Callers of the procedures from the \library{r6rs i/o primitive} library  are encouraged to use bytes
-objects created by {\cf make-i/o-buffer}, because they might have
+objects created by {\cf make-i/o-buffer} because they might have
 alignment and placement characteristics that {\cf make reader-read!}
 and {\cf writer-write!} more efficient.  (Those procedures are still
 required to work on regular bytes objects, however.)
@@ -125,7 +125,9 @@ required to work on regular bytes objects, however.)
 \subsection{Readers}
 
 The purpose of reader objects is to represent the output of arbitrary
-algorithms in a form susceptible to imperative I/O.
+algorithms in a form amenable to imperative I/O.
+A reader allows reading an infinite sequence of bytes punctuated
+by end of file objects.
 
 \begin{entry}{%
 \proto{reader?}{ obj}{procedures}}
@@ -156,7 +158,7 @@ The remaining arguments are procedures.  For each such procedure, an
 operation exists that calls that procedure.  For example, the {\cf
   reader-read!} operation, when called on a simple reader, calls
 its \var{read!} procedure.
-It is encouraged that these procedures check that their arguments are
+These procedures should check that their arguments are
 of the appropriate types.  The operations that call them perform
 no checking beyond ensuring that their \var{reader} arguments are
 simple readers, and, if applicable, that the reader supports the operation.
@@ -180,7 +182,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
   count is 0. If \var{count} is positive, \var{read!} blocks until at
   least one byte has been read or until it has encountered an end of file.
   
-  \var{Bytes} may or may not be a bytes object returned by {\cf
+  \var{Bytes} must be a bytes object, but may or may not be one returned by {\cf
     make-i/o-buffer}.
   
   \var{Count} may or may not be the same as the chunk size of the
@@ -352,7 +354,7 @@ byte stream of the next end of file, without changing the current
 position.  Otherwise, an exception with condition type {\cf\&contract}
 is raised.
 
-For a reader created by {\cf mmake-simple-reader}, {\cf
+For a reader created by {\cf make-simple-reader}, {\cf
   reader-end-position} tail-calls the \var{end-position} procedure of
 \var{reader}.
 \end{entry}
@@ -377,8 +379,8 @@ Returns a \defining{bytes reader} that uses
 \var{bytes}, a bytes object, as its contents. The result reader supports
 the {\cf reader-get-position}, {\cf reader-set-position!}, and {\cf reader-end-position}
 operations.
-The effect of modifying the contents of \var{bytes}, after 
-{\cf open-bytes-reader} has been called, on the reader is unspecified.
+If the contents of \var{bytes} are modified after 
+{\cf open-bytes-reader} has been called, the effect on the reader is unspecified.
 \end{entry}
 
 \begin{entry}{%
@@ -403,7 +405,7 @@ Returns a reader connected to the standard input. The meaning of
 \subsection{Writers}
 
 The purpose of writer objects is to represent the input of arbitrary
-algorithms in a form susceptible to imperative I/O.
+algorithms in a form amenable to imperative I/O.
 
 \begin{entry}{%
 \proto{writer?}{ obj}{procedure}}
@@ -434,7 +436,7 @@ The remaining arguments are procedures.  For each such procedure, an
 operation exists that calls that procedure.  For example, the {\cf
   writer-write!} operation, when called on a simple writer, calls
 its \var{write!} procedure.
-It is encouraged that these procedures check that their arguments are
+These procedures should check that their arguments are
 of the appropriate types.  The operations that call them perform
 no checking beyond ensuring that their \var{writer} arguments are
 indeed writers, and, if applicable, that the writer supports the operation.
@@ -455,7 +457,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
   until it can write at least one byte. The result is the number of bytes
   actually written as a positive exact integer.
   
-  \var{Bytes} may or may not be a bytes object returned by {\cf
+  \var{Bytes} must be a bytes object, but may or may not be one returned by {\cf
     make-i/o-buffer}.
   
   \var{Count} may or may not be the same as the chunk size of the
@@ -489,7 +491,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
 \begin{entry}{%
 \proto{writer-id}{ writer}{procedure}}
    
-Returns string naming the writer, provided for informational
+Returns a string naming the writer, provided for informational
 purposes only. For a file writer returned by {\cf open-file-writer}
 or {\cf open-file-reader+writer}, the result is a string
 representation of the file name.
@@ -627,7 +629,6 @@ the result values are unspecified.
 Returns a \defining{bytes writer} that can yield everything written to it as
 a bytes object. The result writer supports the {\cf writer-get-position},
 {\cf writer-set-position!}, and {\cf writer-end-position} operations.
-operations.
 \end{entry}
 
 \begin{entry}{%
@@ -747,7 +748,7 @@ the {\cf reader-get-position}, {\cf reader-set-position!}, {\cf
                    (reader/writer writer))))))
 
     (define writer
-      (make-writer
+      (make-simple-writer
        "<bytes writer>"
        buffer
        3

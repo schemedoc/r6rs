@@ -7,8 +7,8 @@ it detects an exceptional situation, to pass control to an exception
 handler, and for dynamically establishing such exception handlers.
 Exception handlers are always invoked with an object describing the
 exceptional situation.  Scheme's condition system provides a
-standardized taxonomy of such descriptive objects, as well as facility
-for defining new condition types.
+standardized taxonomy of such descriptive objects, as well as a facility
+for extending the taxonomy.
 
 \section{Exceptions}
 \label{exceptionssection}
@@ -36,7 +36,7 @@ The system maintains the current exception handler as part of the
 dynamic environment of the program, the context for {\tt
   dynamic-wind}. The dynamic environment can be thought of as that
 part of a continuation that does not specify the destination of any
-returned values. It includes the {\tt dynamic-wind} context, and the
+returned values. It includes the {\tt dynamic-wind} context and the
 current exception handler.
 
 When a safe script begins its execution, the current
@@ -46,7 +46,7 @@ exception has been raised, and displaying information
 about the condition object that was provided.  The handler
 may then exit, or may provide a choice of other options.
 Moreover, the exception handler is expected to return when
-passed any other (``non-serious'') condition.
+passed any other non-{\cf\&serious} condition.
 Interpretation of these expectations necessarily depends
 upon the nature of the system in which scripts are executed,
 but the intent is that users perceive the raising of an
@@ -106,8 +106,8 @@ is equivalent to the continuation of the call to {\tt
 exception handler is the one that was in place for the call to {\tt
   with-exception-handler} that installed the handler being called, and
 (2) if the handler being called returns, then it will again become the
-current exception handler.  If the handler returns, the value(s) it
-returns become(s) the value(s) returned by the call to
+current exception handler.  If the handler returns, the values it
+returns become the values returned by the call to
 {\tt raise-continuable}.
 \end{entry}
 
@@ -303,7 +303,7 @@ associated with the condition type.
 \proto{condition-type?}{ \var{thing}}{procedure}}
 
 Returns \schtrue{} if \var{thing} is a condition type, and \schfalse{}
-otherwise
+otherwise.
 \end{entry}
 
 \begin{entry}{%
@@ -349,7 +349,7 @@ associated with \var{field-name}.
 Returns a compound condition belonging
 to all condition types that the \var{condition}s belong to.
 
-The {\cf condition-ref} procedure, when applied to a compound condition returns
+The {\cf condition-ref} procedure, when applied to a compound condition, returns
 the value from the first of the \var{condition}s that has such a field.
 \end{entry}
 
@@ -383,7 +383,7 @@ to return \schfalse.
 {\tt\obeyspaces\\
   \hyper{predicate}\\
   \hyperi{field-spec} \dotsfoo)}
-
+\mainschindex{define-condition-type}
 \syntax \hyper{Condition-type},
 \hyper{supertypes}, and \hyper{predicate} must all be identifiers.
 Each \hyper{field-spec} must be of the form
@@ -428,12 +428,12 @@ must be of the form
 %
 where \hyper{field} is a field identifier from the definition of
 \hyper{condition-type}.
-x
-The \hyper{expression} are evaluated in some unspecified order; their values
+
+The \hyper{expression}s are evaluated in some unspecified order; their values
 can later be extracted from the condition object via the accessors of
 the associated condition types or their supertypes.
 
-The condition returned by condition is created by a call of form
+The condition returned by condition is created by a call of the form
 %
 \begin{schemenoindent}
 (make-compound-condition
@@ -456,7 +456,7 @@ the condition form.
 \begin{entry}{%
 \ctproto{condition}}
 
-This is the root of the entire condition type hierarchy. It has a no
+This is the root of the entire condition type hierarchy. It has no
 fields.
 \end{entry}
 

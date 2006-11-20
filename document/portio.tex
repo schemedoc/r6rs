@@ -16,7 +16,7 @@ whereas an output port is a sink for data.  A port may be both an
 input port and an output port; such a port typically provides
 simultaneous read and write access to a file or other data.
 
-This section uses the \var{input-port}, \var{output-port}, \var{port}
+This section uses the \var{input-port}, \var{output-port}, and \var{port}
 parameter names for arguments that must be input ports (or combined
 input/output ports), output ports (or combined input/output ports),
 or any kind of port.
@@ -52,7 +52,7 @@ output operation flushes the buffer associated with the output
 port. The possible buffer modes are the symbols {\cf none} for no buffering,
 {\cf line} for flushing upon line feeds and line separators (U+2028), and
 {\cf block} for arbitrary buffering.  This section uses the parameter name
-\var{buffer-name} for arguments that must be buffer-mode symbols.
+\var{buffer-mode} for arguments that must be buffer-mode symbols.
 
 \begin{entry}{%
 \proto{buffer-mode}{ \hyper{name}}{\exprtype}}
@@ -236,8 +236,8 @@ on how to handle such an exception.
 \rproto{make-transcoder}{ codec eol-style}{procedure}
 \rproto{make-transcoder}{ codec}{procedure}}
 
-\domain{\var{Codec} must be a codec, \var{eol-style}, if present, an
-  eol-style symbol, and \var{handling-mode}, if present, an
+\domain{\var{Codec} must be a codec; \var{eol-style}, if present, an
+  eol-style symbol; and \var{handling-mode}, if present, an
   error-handling-mode symbol.}  \var{eol-style} may be omitted, in
 which case it defaults to the native end-of-line style of the
 underlying platform.  \var{handling-mode} may be omitted, in which
@@ -342,7 +342,7 @@ A closed port is still a port. The unspecified value is returned.
 calls \var{proc} with \var{port} as an argument. If
 \var{proc} returns, then the \var{port} is closed automatically and
 the values returned by \var{proc} are returned. If \var{proc} does not
-return, then the port is not closed automatically, unless it is
+return, then the port is not closed automatically, except perhaps when it is
 possible to prove that the port will never again be used for a
 {\cf lookahead}, {\cf get}, or {\cf put} operation.
 \end{entry}
@@ -419,8 +419,8 @@ Returns an input port whose bytes are drawn from an encoding of
 UTF-8.  If \var{transcoder} is specified, the encoding is according to
 \var{transcoder}.  Also, \var{transcoder} becomes the transcoder
 associated with the returned port.
-The effect of modifying \var{string}, after {\cf open-string-input-port}
-has been called, on the returned port is unspecified.
+If \var{string} is modified after {\cf open-string-input-port}
+has been called, the effect on the returned port is unspecified.
 \end{entry}
 
 \begin{entry}{%
@@ -479,7 +479,7 @@ The {\cf get-bytes-n!} procedure reads from \var{input-port}, blocking as necess
 \var{count} bytes are available from \var{input-port} or until an end of file is
 reached. If \var{count} or more bytes are available before an end of file,
 they are written into \var{bytes} starting at index \var{start}, and
-the the result is \var{count}. If fewer bytes are available before
+the result is \var{count}. If fewer bytes are available before
 the next end of file, the available bytes are written into \var{bytes}
 starting at index \var{start}, and the result is the number of bytes actually
 read. In either case, the input port is updated to point just past the
@@ -728,7 +728,7 @@ as a string.  That decoding is according to
 the decoding is according to the transcoder associated with the port.
 If no transcoder is associated with the port, the decoding is
 according to UTF-8.
-In either
+In any
 case, decoding errors are always handled analogously to the {\cf
   replace} error-handling mode: the first byte of each invalid
 encoding is skipped and decoded as the U+FFFD replacement character.
@@ -751,7 +751,7 @@ a string.  That decoding is according to
 the decoding is according to the transcoder associated with the port.
 If no transcoder is associated with the port, the decoding is
 according to UTF-8.
-In either
+In any
 case, decoding errors are always handled analogously to the {\cf
   replace} error-handling mode.
 If \var{transcoder} is specified, it also becomes the transcoder

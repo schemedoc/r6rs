@@ -489,7 +489,7 @@ if and only if the corresponding input subforms are wrapped.
 
 The following definitions of {\cf or} illustrate {\cf syntax-case}
 and {\cf syntax}.
-The second is equivalent to the first but uses the the {\cf \#'}
+The second is equivalent to the first but uses the {\cf \#'}
 prefix instead of the full {\cf syntax} form.
 
 \begin{schemenoindent}
@@ -510,24 +510,6 @@ prefix instead of the full {\cf syntax} form.
       [(\_ e1 e2 e3 ...)
        \#'(let ([t e1])
            (if t t (or e2 e3 ...)))])))
-
-(define-syntax case
-  (lambda (x)
-    (syntax-case x (else)
-      [(\_ e0 [(k ...) e1 e2 ...] ...
-              [else else-e1 else-e2 ...])
-       \#'(let ([t e0])
-           (cond
-             [(memv t '(k ...)) e1 e2 ...]
-             ...
-             [else else-e1 else-e2 ...]))]
-      [(\_ e0 [(ka ...) e1a e2a ...]
-              [(kb ...) e1b e2b ...] ...)
-       \#'(let ([t e0])
-           (cond
-             [(memv t '(ka ...)) e1a e2a ...]
-             [(memv t '(kb ...)) e1b e2b ...]
-             ...))])))
 \end{schemenoindent}
 
 The examples below define \emph{identifier macros\mainindex{identifier
