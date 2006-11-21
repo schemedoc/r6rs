@@ -395,18 +395,22 @@ Each \hyper{field-spec} must be of the form
 where both \hyper{field} and \hyper{accessor} must be identifiers.
 
 \semantics
-The {\cf define-condition-type} form defines an identifier
-\hyper{condition-type} to some value describing a new condition type.
+The {\cf define-condition-type} form expands into a set of
+definitions:
+
+\begin{itemize}
+\item \hyper{Condition-type}, which is bound to some value describing a new condition type.
 \hyper{Supertype} must be the name of a previously defined condition
 type.
 
-The {\cf define-condition-type} form also defines \hyper{predicate} to a
+\item \hyper{Predicate} is bound to a
 predicate that identifies conditions associated with that type, or
 with any of its subtypes.
 
-The {\cf define-condition-type} form defines each \hyper{accessor} to a
+\item Each \hyper{accessor} is bound to a
 procedure which extracts the value of the named field from a condition
 associated with this condition type.  
+\end{itemize}
 \end{entry}
 
 \begin{entry}{%
@@ -625,7 +629,7 @@ This condition type could be defined by
 \end{scheme}
 %
 This type denotes that an exception handler invoked via
-\texttt{raise} returned.
+\texttt{raise} has returned.
 \end{entry}
 
 \begin{entry}{%
