@@ -1,0 +1,35 @@
+Ticket #96 (simplification)
+
+Hashtable issues
+Status: new	Reported by:	Andre van Tonder	Assigned to:	anton
+Priority:	minor	Milestone:	r6rs
+Component:	hashtables	Version:	5.91
+
+Summary: 
+
+Minor issues in hashtable API.
+
+Description: 
+
+- In the rationale of hash-table-copy with immutable, it is stated that 
+
+"Also, a library may choose to export a hash table which cannot be
+changed by clients."
+
+This may not be the best rationale, because it suggests that this is
+useful for access control that makes the table read-only to the
+client. However, the exporting "server" library won't be able to
+change the hash table copy either. So "changed by clients" is
+misleading.
+
+Also, this has nothing to do with libraries, since any local scope can
+"export" a read-only hashtable by returning an immutable copy in this
+way.
+
+- How often are "hash-table-keys" and "hash-table-values" really used, and 
+
+even when they are, are they really a good abstraction?
+
+Since they are trivially expressible in terms of -fold, as stated in
+the document, please consider dropping these.
+

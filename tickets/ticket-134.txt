@@ -1,0 +1,65 @@
+Ticket #134 (defect)
+Status: new	Reported by:	Thomas Lord	Assigned to:	mflatt
+Priority:	major	Milestone:	r6rs
+Component:	other	Version:	5.91
+
+R6RS component: The CHAR? type. (Section 9.14) 
+
+Summary
+
+The restriction in section 9.14, prohibitting the domain of
+INTEGER->CHAR from including surrogates, should be
+relaxed. Implementations should be permitted, not required, to adopt
+that restriction.
+
+Body
+
+The text of 9.14 says, concerning the domain of the INTEGER->CHAR
+procedure:
+      (integer->char sv)
+
+Sv must be a scalar value, i.e. a non-negative exact integer in
+[0,#xD7FF] union [#xE000,#x10FFFF].
+
+I think it should say: 
+
+Implementations are permitted to require that Sv must be a scalar
+value, i.e. a non-negative exact integer in [0,#xD7FF] union
+[#xE000,#x10FFFF].
+
+or words to that effect. 
+
+Opinions vary about the desirability of an implementation in which an
+"unpaired surrogate" can be represented as a CHAR? value. There seem
+to be no definitive arguments for or against this proposition. I would
+be happy to explain in detail an implementation that permits unpaired
+surrogates as CHAR? values, and why I prefer such an implementation.
+
+John Cowan and I have both asserted that a problem with allowing
+unpaired surrogates as CHAR? values is that there is no standard way
+to write them to a UTF-8 or UTF-16 port. That is true, but it is not
+an argument for the restriction in 9.14.
+
+What is not clear to me is why the authors favor the restriction and
+what kind of arguments, examples, logic etc. to offer in order to
+attempt to persuade them otherwise. Would it be helpful for me to
+describe an implementation that doesn't have the restriction? Or to
+explain how the I/O issues can be addressed? I am hoping it is a
+simple matter to drop the restriction on the general principle that
+restrictions like that need a strong, positive rationale which, in
+this case, is clearly lacking.
+
+Very briefly, therefore: 
+
+In general, the less restricted model is simpler and more powerful. In
+an implementation without the restriction, the CHAR? type can simply
+be isomorphic with a set of exact integers in some (possibly improper)
+superset of [0,#xFFFFFFFF]. That enables things like "bucky bits" (a
+fine lisp tradition). It is certainly easy to teach and learn. It
+seems to be simpler to implement, too.
+
+The I/O issues can be solved in a clever way -- by reinterpreting
+ill-formed UTF-8 and UTF-16 as spellings of sequences of certain
+private-use codepoints. Round-trips with processes that don't
+understand these private use characters are perfectly robust to the
+extent that those processes are conforming.

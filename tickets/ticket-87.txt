@@ -1,0 +1,309 @@
+Ticket #87 (simplification)
+
+Last modified 1 week ago
+Reduce over-specification as well as under-specification
+Status: new	Reported by:	Will Clinger	Assigned to:	sperber
+Priority:	major	Milestone:	r6rs
+Component:	presentation	Version:	5.91
+
+The draft R6RS often specifies things that do not need to be
+specified, even as it neglects to specify related things that do need
+to be specified.
+
+For example, the draft R6RS often does a better job of specifying
+which programs are incorrect (because they raise an exception) than of
+specifying which programs are correct, or of how correct programs will
+behave.
+
+The R6RS ought to distinguish the responsibilities of programmers
+(clients) from the responsibilities of those who implement the
+language (implementors). It ought to describe those responsibilities
+clearly, without pretending one set of responsibilities can be
+inferred from the other. In particular, the R6RS ought not to pretend
+everything that implementations are not required to detect is legal,
+nor to pretend implementations must detect all illegal programs.
+
+This is a pervasive problem with the draft R6RS. The problem appears
+to be rooted within a tacit philosophy or ideology whose unintended
+effects are to increase the complexity of the draft R6RS and to
+interfere with the pragmatic goal of writing portable programs. This
+comment describes several specific examples of the problem, but
+systematic repair will require reconsideration and editing of the
+entire report.
+
+* * 
+
+The reports on Scheme amount to informal axiomatic specifications of
+the language. Programmers can rely on any behavior that is implied by
+the axioms, and cannot rely on any behavior that is not implied by the
+axioms. Implementations of Scheme must satisfy the axioms, but may
+exhibit arbitrary behavior for situations not covered by the axioms.
+
+In model-theoretic words, an implementation is a model of the
+axiomatic specification (not the other way around). The Scheme reports
+are like the axioms of group theory or point set topology---and unlike
+the axioms of Euclidean plane geometry or the second order axioms of
+Peano arithmetic---in that they are intended to describe many models
+(implementations), not just one.
+
+Portable programs must rely only on behaviors that are guaranteed by
+the axioms. One of the main reasons it has been so difficult to write
+portable programs in Scheme is that the axiomatic specifications
+expressed by previous reports were too weak. It is appropriate for the
+R6RS to strengthen those specifications.
+
+The R6RS does not need to strengthen its specification so much that it
+allows only one model, or a single behavior, or a single
+implementation, or recursively enumerable behaviors. Unnecessary
+over-specification, such as specifying the unspecified value, does not
+contribute to portability; it is more likely to detract from
+portability, by wasting time on things that don't
+matter. Over-specification also increases the complexity of the
+report, which makes it harder for reviewers of the draft to spot
+problems with it, and makes misinterpretation of the specification by
+programmers and implementors alike more likely.
+
+Over-specification is counter-productive. 
+
+Where previous reports have erred by under-specifying, the draft R6RS
+frequently errs by over-specifying, while continuing to under-specify
+some of the more important things. For example, the draft R6RS often
+provides a detailed specification of circumstances under which
+implementations are required to raise some exception, while failing to
+describe the circumstances under which implementations are forbidden
+to raise the exception. When writing a portable program, it is more
+important to know what will work (i.e. will not raise an exception)
+than to know what won't.
+
+In short, the draft R6RS has its priorities backwards. 
+
+* * 
+
+Here are six specific examples of the general problem: 
+
+immutable objects (section 4.7) 
+library phasing (section 6.2) 
+script syntax (section 7.1.1) 
+the unspecified value (section 9.8) 
+list utilities (section 12) 
+plausible lists (section 23.3) 
+
+* * 
+
+Immutable objects (section 4.7).
+
+This problem is inherited from the R5RS. The problem is that the
+"immutable objects", as defined in section 4.7, are explicitly
+implementation-dependent. (What's more, the antecedent of the phrase
+"such systems" is so unclear that neither programmers nor implementors
+can tell for sure which implementations even have immutable objects.) 
+This makes it harder for programmers to figure out what they must do
+to write portable programs.
+
+Fixing the problem is easy. The R6RS should give an
+implementation-independent definition of immutable objects, as the
+objects that result from evaluation of a literal constant together
+with the strings returned by symbol->string (and perhaps a few other
+objects). The R6RS should say that correct programs do not try to
+mutate immutable objects, and that implementations should (not "must")
+raise an exception when mutation of an immutable object is attempted.
+
+That is how the matter was handled in the R4RS. The changes made in
+the R5RS may have been motivated by some ideological discomfort
+surrounding the fact that most existing implementations cannot
+distinguish the immutable objects from the mutable ones, and therefore
+cannot reliably raise the exception they should raise. That kind of
+embarrassment should not stand in the way of specifying the semantics
+of immutable objects.
+
+* * 
+
+Library phasing (section 6.2). 
+
+The last paragraph of section 6.2 talks about what implementations are
+allowed to do, and states that "a portable library's meaning must not
+depend on whether the invocations are distinguished or preserved
+across phases or library expansions."
+
+That paragraph is an example of what I am asking the R6RS to do more
+consistently: It explains the programmer's responsibility. It also
+says that implementations have no obligation to implement many details
+of the phasing semantics that had been described by the previous 22
+paragraphs of section 6.2.
+
+In other words, section 6.2 contains a complex specification that
+implementations are not required to implement, and on which programs
+cannot rely.
+
+Hence programmers must establish the correctness of portable libraries
+under the assumption that the phasing semantics is implemented, and
+also under the assumption that a single set of bindings is shared by
+all phases.
+
+It seems to me that the complex phasing semantics, on which libraries
+cannot rely but with which they must nonetheless be prepared to cope,
+hinders the development of portable libraries more than it helps.
+
+One possible solution is for the R6RS to sketch only a vague semantics
+for phase levels, perhaps along the lines of the semantics given for
+declarations in section 9.22, instead of specifying so many details
+that implementations are explicitly allowed to ignore.
+
+The main thing programmers need to know about phase levels is that
+they matter only for procedural macros and for libraries used by
+procedural macros. With the draft R6RS, the easiest way to cope with
+the phasing problems in portable code is to avoid all use of the (r6rs
+syntax-case) library. If that were to remain true in the R6RS, then
+the R6RS ought to say so.
+* * 
+
+Script syntax (section 7.1.1). 
+
+The first line of a script is required to be: 
+
+#! /usr/bin/env scheme-script<linefeed> 
+
+with no space allowed before the <linefeed>. 
+
+On the other hand, implementations are required to ignore the first
+line, even if it is not the above.
+
+The draft R6RS gives a rationale for requiring implementations to
+ignore the first line, and almost states a rationale for requiring all
+Scheme programs to contain the line that will be ignored: On Unix, the
+ignored line will make the program look like a shell script.
+
+Of course, an incorrect Scheme program might have something else, such
+as meaningless garbage, on its first line. According to the draft
+R6RS, such incorrect programs must nevertheless behave like programs
+that have the prescribed first line---even on Unix.
+
+That implies that executing a Scheme program as a Unix shell script is
+not allowed by the draft R6RS, except as part of some larger process
+that ensures Unix will (in effect) ignore the first line. Since that
+larger process might just as well insert the first line, the
+specification of that line's syntax within the draft R6RS does not
+serve any apparent purpose.
+
+If implementations must ignore the first line of a Scheme script, then
+the Unix-specific syntax of that first line should either be dropped
+or reduced to a mere recommendation, and the formal syntax of scripts
+should allow anything on the first line.
+
+As things stand, the most important role of the formal syntax is to
+define what is meant by "the first line." Since the draft R6RS
+requires implementations to accept first lines other than the one
+generated by the grammar, however, the formal syntax given in the
+draft R6RS serves no real purpose, and the definition of that first
+line becomes an interesting, albeit silly, question. For example, does
+the draft R6RS allow a first line that contains multiple line
+separators? That contains multiple returns? That contains multiple
+linefeeds? * *
+
+The unspecified value (section 9.8).
+
+"The unspecified value is not a datum value, and thus has no external
+representation."
+
+Since the draft R6RS does not specify or even constrain the output
+produced when a value that has no external representation is passed to
+procedures such as write, implementations are free to print the
+unspecified value however they like. An R6RS-conformant implementation
+might print the unspecified value as (), or as #f, or as 42.
+
+Specifying an unspecified value that may print the same as the empty
+list is no less confusing than allowing procedures to return the empty
+list when no result is specified.
+
+I do not believe that specifying the unspecified value will improve
+portability in any meaningful way. If the R6RS must specify the
+unspecified value, however, then the R6RS should specify an external
+representation for the unspecified value, so programmers will
+recognize it when they see it.
+
+* * 
+
+List utilities (section 12). 
+
+The specifications of find, forall, exists, filter, partition,
+fold-left, fold-right, remp, memp, assp all say that the proc argument
+must take a certain number of arguments, but only when the list
+arguments are nonempty.
+
+It would be simpler just to specify the number of arguments that the
+proc argument must take, independently of the length of the list
+arguments. No purpose is served by widening the range of proc
+arguments for just one boundary case, but some costs of that widening
+are clear. One cost is the increased complexity of
+specification. Another is that compilers would be forbidden to warn
+about things like
+
+(find vector-set! x) 
+
+when the compilers can't prove that x won't be the empty list.
+
+Implementations should not be required to raise an exception when
+things like (find vector-set! '()) are executed, but they should be
+allowed to raise an exception.
+
+Similarly, the specifications of find, forall, exists, memp, member,
+memv, memq, assq, assoc, assv, and assq were made more complex by
+forbidding these procedures to traverse a list past the point at which
+their result could be known.
+
+It would be simpler just to require their arguments to be lists (or
+association lists). These procedures should all be allowed to raise an
+exception if any of their list arguments are not a list, even if their
+"natural" implementations would not be likely to detect that
+violation. These procedures should not be required to detect that
+violation, however, except perhaps when they have to traverse the
+entire list anyway; even then, simplicity argues against requiring the
+exception, as does the SRFI 1 semantics of some similar procedures.
+
+As with immutable objects, I suspect the unnecessary complexity of
+specification in section 12 grew out of ideological discomfort with
+the idea that systems might enjoy some leeway with respect to when and
+whether they raise exceptions. Ideological discomfort should not be
+allowed to complicate the semantics of Scheme.
+
+* * 
+
+Plausible lists (section 23.3). 
+
+The unnecessary complexity of specification in section 12 really comes
+home to roost when pairs are mutable, as in section 23.3. Almost all
+of the complexity in that section could be avoided by stipulating that
+programmers are responsible for making sure that all list arguments
+are lists, and no list argument may be mutated during the call
+while limiting implementations' responsibilities: implementations
+should raise an exception if any list argument is not a list, but
+implementations are not required to raise those exceptions
+
+Note that reliable detection of non-lists is impossible in systems
+with mutable pairs and concurrent execution, and is inefficient even
+with sequential execution of higher order procedures.
+
+(Most of the higher-order procedures could copy their list arguments
+on entry, which isn't too bad, but that wouldn't work for memp, whose
+result must share structure with its list argument. In any case, the
+copying solution doesn't always work when a concurrent process
+lengthens the list while it is being copied, and the inefficiency of
+copying matters even for sequential execution.)
+
+Note also that the complex specifications of the draft R6RS do not
+serve their apparent purpose of requiring detection of non-list
+arguments, since a plausible list may not be a list. In practice,
+traditional implementations of the specification sketched above would
+detect about as many bugs as the superficially stricter and far more
+complex semantics described by the draft R6RS.
+
+* * 
+
+Although each of the examples presented above could be the subject of
+a more specific formal comment, their purpose in this formal comment
+is to illustrate a general tendency of the draft R6RS toward
+unnecessary over-specification, which often masks related
+under-specification. I believe it is more important to recognize and
+to correct the general tendency than to fix these specific examples of
+it.
+

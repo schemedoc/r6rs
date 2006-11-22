@@ -1,0 +1,74 @@
+Ticket #78 (enhancement)
+Rationalize the various iteration procedures
+Status: new	Reported by:	Michael Lenaghan	Assigned to:	anton
+Priority:	major	Milestone:	r6rs
+Component:	other	Version:	5.91
+Keywords:		Cc:	
+
+Component: Hash Tables, Lists, Vectors 
+
+Section: 
+
+9.16 Vectors (pg 47); 12 List Utilities (pg 64); 18.2 Hash Table
+Procedures (pg 117); 23.3.2 List Utilities (pg 125)
+
+Description
+
+R6RS specifies several list iteration procedures, one hash table
+iteration procedure, and no vector iteration procedures.
+
+The parameter list for list folding is somewhat different than that
+for hash table folding; the init parameter is in a different spot. (If
+a fold were offered for vectors the init would be in the same spot as
+the list fold utilities since a vector fold could plausibly accept
+more than one vector, so hash tables should follow the list model.)
+
+        (fold-left kons nil list1 list2 . . . listn)
+        (fold-right kons nil list1 list2 . . . listn)
+
+        (hash-table-fold proc hash-table init)
+
+Why is folding the only iteration offered for hash tables? Chez Scheme
+and PLT Scheme both offer hash table map and "each" procedures. Though
+they could both be written in terms of hash-table-fold, R6RS follows a
+funny line, dramatically expanding the number of list utilities while
+at the same time keeping a minimal set of operations for other
+types--more or less. For example, R6RS does provide hash-table-keys
+and hash-table-values, which (as shown in the spec) could also be
+written in terms of hash-table-fold but are nevertheless provided.
+
+Why do folds not allow for premature termination? Oleg argues at
+http://okmij.org/ftp/Computation/Continuations.html#enumerator-stream
+that the most general purpose iterator is a left fold that allows for
+premature termination. None of the fold procedures in R6RS allow for
+premature termination without the use of exceptions or
+continuations. Imagine, for example, writing a procedure to find a
+value (rather than a key) in a hash table; with R6RS the only option
+is hash-table-fold, and the only way to prematurely exit the fold is
+to escape the procedure.
+
+Why is no iteration of any kind offered for vectors? Again, while R6RS
+is dramatically expanding the list utilities it is leaving a rather
+minimal set for nearly all other types. Vectors would benefit from
+pre-defined iterators, and some compilers would undoubtedly be able to
+optimize such iterators.
+
+Recommendations: 
+
+Decide whether the R6RS philosophy is to provide the minimal set of
+procedures, or a reasonable set.
+
+If the philosophy is to provide a minimal set, arguably left fold
+*with premature termination* is more primitive (and more useful) than
+the fold procedures provided.
+
+If the philosophy is to provide a reasonable set, some thought should
+be given to what that set should be, and that set should be
+implemented for all types where it makes sense. A reasonable set might
+be fold with premature termination, fold without premature termination
+(for convenience), map, and for-each.
+
+In any event, parameter lists for similar iterators of different types
+shouldn't differ needlessly.Rationalize the various iteration
+procedures
+

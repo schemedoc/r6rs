@@ -1,0 +1,42 @@
+Ticket #126 (enhancement)
+
+local imports
+Status: new	Reported by:	Abdulaziz Ghuloum	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+
+One sentence summary: A local import form, similar in syntax to
+libraries' import form, should be added to the set of valid R6RS
+definitions.
+
+Description: 
+
+The syntax of R6RS libraries contains a single library-global import
+form. One import form forces programmers to dump all imported
+identifiers into one flat environment that is visible throughout the
+library. While some libraries (such as the r6rs library itself) are
+typically used in every expression in the library, some libraries are
+only used in small local regions of the library. Using a single global
+import form for a library, it is impossible to express the region of
+code that depends on an imported library. A library writer may import
+libraries to fulfill a specific purpose within the body of the
+library. In the cycle of development, other libraries may be chosen to
+fulfill the same purpose, or the dependence on the original library is
+no longer required. If the library imports tens of such helper
+libraries, then isolating their extent may become a refactoring
+nightmare. A local import form supports an elegant solution to the
+problem by allowing libraries to be imported only where they are
+needed.
+
+When I program in C, I usually add the required #include lines as they
+are needed to make the compiler happy. I am personally guilty of
+almost never removing an #include line, even if it's no longer
+needed. I really wish not to do the same in my Scheme libraries.
+
+Recommendation: 
+
+A local import form, with syntax identical to the library-level import
+form, should be added to the set of valid definitions. An import form
+makes the bindings of the exporting libraries visible in the body
+where the import form appears.
+

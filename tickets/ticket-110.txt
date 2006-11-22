@@ -1,0 +1,47 @@
+Ticket #110 (simplification)
+
+Remove double phase semantics
+Status: new	Reported by:	Andre van Tonder	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	presentation	Version:	5.91
+Keywords:		Cc:	
+
+Pages : 24 
+
+Summary
+
+Libraries can be greatly simplified by removing current double choice
+of phase semantics.
+
+Description
+
+The current phase semantics is very complicated and the choice of two
+separate semantics hinders portability.
+
+A simpler semantics is already effectively implemented by two of the
+reference implementations. This semantics shares one set of bindings
+between all the levels into which they are imported.
+
+The visit/invoke semantics becomes HUGELY simplified in this case.
+
+Note that the following is equivalent to the current draft when the
+bindings are shared. It is what the "dybvig-ghuloum" and "vanTonder"
+implementations already effectively do.
+
+To visit a library: 
+
+Visit any library that is imported by this library and that has not
+yet been visited.
+
+For each k >= 1, invoke any library that is imported by this library
+for .... (meta k), and that has not yet been invoked.
+
+Evaluate all syntax definitions in the library.
+
+To invoke a library: 
+
+Invoke any library that is imported by this library and that has not
+yet been invoked.
+
+Evaluate all variable definitions and expressions in the library.
+

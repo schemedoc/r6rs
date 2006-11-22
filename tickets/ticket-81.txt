@@ -1,0 +1,63 @@
+Ticket #81 (simplification)
+
+Change the "add-prefix" import syntax in libraries
+Status: new	Reported by:	Michael Lenaghan	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+
+Section: 6.1 Library form (pg 21) 
+
+Dependencies: 6.4 Examples (pg 25) 
+
+Summary
+
+Change the "add-prefix" import syntax in libraries to make it slightly
+more consistent or add "drop-prefix" to make the inconsistency
+worthwhile.
+
+Description
+
+An <import set> is defined as: 
+        <library reference>
+        (only <import set> <identifier> ...)
+        (except <import set> <identifier> ...)
+        (add-prefix <import set> <identifier>)
+        (rename <import set> (<identifier> <identifier>) ...)
+
+"add-prefix" stands out in this list because of its verb-noun
+form. Strictly speaking, the difference isn't warranted; "prefix" is a
+verb as well as a noun (http://www.answers.com/prefix&r=67):
+
+1. To put or attach before or in front of.
+
+2. To settle or arrange in advance.
+
+3. Grammar. 
+     To add as a prefix. 
+     To add a prefix to. 
+
+PLT Scheme (
+http://download.plt-scheme.org/doc/352/html/mzscheme/mzscheme-Z-H-5.html#node_chap_5
+) uses "prefix" as a verb with other modifiers:
+
+        require
+                prefix
+                prefix-all-except
+
+        provide
+                prefix-all-defined
+                prefix-all-defined-except
+
+The use of "add-prefix" in the context of R6RS may have its roots in
+Chez Scheme (http://www.scheme.com/csug7/syntax.html#./syntax:h5):
+
+        add-prefix
+        drop-prefix
+
+Here at least the reason for the difference in form is readily
+apparent.
+
+Recommendation
+
+Change "add-prefix" to "prefix" or add "drop-prefix".
+

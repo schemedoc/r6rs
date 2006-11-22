@@ -1,0 +1,30 @@
+Ticket #111 (simplification)
+Status: new	Reported by:	David Van Horn	Assigned to:	dyb
+Priority:	major	Milestone:	r6rs
+Component:	macros	Version:	5.91
+Keywords:		Cc:	
+
+Summary
+
+A syntax-rules form should evaluate to a transformer procedure at
+expansion time. Description
+
+For simplicity and consistency, syntax-rules should evaluate to a
+transformer. This simplifies Section 9.3, Syntax definitions, by
+making the right hand side of define-syntax to be a transformer,
+rather than a transformer or a syntax-rules form. Likewise, Section
+9.20, Binding constructs for syntactic keywords, should simplify
+transformer spec to transformer. Current language such as "the
+specified transformers" already blurs the distinction and the obvious
+implementation of syntax-rules in terms of syntax-case provides this
+property.
+
+This also enhances Section 17.3, Transformers, where it is said that a
+binding for a syntactic keyword must be a transformer spec, and a
+transformer spec must be an expression that evaluates to a transformer
+(overriding the previous definition of a transformer spec). This
+implicitly prohibits syntax-rules from being used in (r6rs
+syntax-case) macros. Making syntax-rules evaluate to a transformer
+eliminates this restriction. It also enhances this section by allowing
+syntax-rules forms as inputs to make-variable-transformer.
+

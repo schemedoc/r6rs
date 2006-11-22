@@ -1,0 +1,40 @@
+Ticket #124 (enhancement)
+
+Please give us file-exists? and delete-file
+Status: new	Reported by:	William D Clinger	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	i/o	Version:	5.91
+
+Programs often need to determine whether a file exists, and programs
+also need to clean up after themselves by deleting files.
+
+The draft R6RS does not provide any way to delete a file.
+
+The draft R6RS provides facilities that may be adequate for
+determining whether a file exists: the program would establish an
+exception handler for &i/o-file-exists-not conditions, try to open the
+file for input, and conclude that the file exists if and only no
+exception is raised. That technique is inconvenient, might be
+inefficient, and might be viewed as misuse of the exception system,
+whose stated purpose is to deal with exceptional situations; when
+searching several paths for an optional input or configuration file,
+the existence of that file is more exceptional than its non-existence.
+
+Current practice: 
+
+Of ten implementations surveyed, nine (Bigloo, Chicken, Gambit, Kawa,
+Larceny, MIT Scheme, MzScheme?, Petite Chez, and scm) supply
+file-exists? and delete-file as part of their default runtime. Only
+one (Scheme 48) does not.
+
+A grep of Larceny's code base found more than a hundred uses of
+file-exists?, and more than a hundred uses of delete-file. A
+comparable number of uses were found in Gambit's code base.
+
+Related issues: 
+
+Programs also need to determine whether a directory exists, and to
+iterate through the files that are contained within a directory. I do
+not know whether these features are as ready for standardization as
+file-exists? and delete-file.
+

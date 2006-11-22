@@ -1,0 +1,26 @@
+Ticket #65 (defect)
+
+eq?/eqv? misbehave around NaNs
+Status: new	Reported by:	John Cowan	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component: Base library 
+
+Summary
+
+The fact that (= +nan.0 +nan.0) is #f has unexpected knock-on effects
+on eq? and eqv?. Description
+
+In particular, (lambda (x) (eqv? x x) +nan.0) and its equivalent
+(lambda (x) (eq? x x) +nan.0) are compelled to return #f by the
+definitions of eqv? and eq?. This is extremely counterintuitive, and
+makes the suggestion that eq? compare pointers unusable: the pointers
+must be checked to see if they happen to point to flonums which happen
+to be NaNs?.
+
+I have two alternative proposals: 
+
+1) Allow eqv? and eq? to return either #t or #f if both arguments are
+   NaNs?. 2) Require eqv? to return #t if both arguments are NaNs?.
+
+eq? would be permitted to return either #t or #f, as with all numbers.
+

@@ -1,0 +1,45 @@
+Ticket #71 (defect)
+
+String operations need more complete specification
+Status: new	Reported by:	William D Clinger	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	unicode	Version:	5.91
+
+Section 10.2 describes eight procedures that return strings as
+results, but does not say whether those results should be newly
+allocated strings. When the specified result is string=? to the
+argument, the argument could be returned instead of a copy.
+
+This would be an important optimization for normalization procedures,
+since all strings of ASCII characters normalize to themselves. It
+would be less important, but worthwhile, for the four case-conversion
+procedures.
+
+Inasmuch as section 9.15 consistently requires a newly allocated
+string to be returned, I wonder whether the absence of such
+requirements in section 10.2 was deliberate or an oversight.
+
+The last paragraph of Section 4.6 is relevant for some but not all
+implementations. In "such systems", the strings returned by the case
+conversion and normalization procedures are mutable, which would limit
+opportunities for the optimization tacitly invited by section
+10.2. The meaning of the word "such" is unclear, however. (That lack
+of clarity was introduced by the R5RS; the corresponding paragraph of
+the R4RS was clearer, though not perfectly clear, and was
+implementation-independent.)
+
+I suspect that the twelfth example in section 10.2 contains an
+error. Unicode Standard Annex # 21 (Case Mappings) implies that both
+of the sigmas in the result should be final sigmas [1].
+
+I recommend that the example be corrected, that the notion of an
+immutable object be defined as in the R4RS, but more clearly, that the
+eight case conversion and normalization procedures in section 10.2 be
+allowed to return their argument when that makes sense, even when
+their argument is immutable, and that this be mentioned explicitly in
+their specifications.
+
+Will 
+
+[1] http://unicode.org/reports/tr21/tr21-5.html
+

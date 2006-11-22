@@ -1,0 +1,42 @@
+Ticket #118 (defect)
+
+The value of set! et al. is overspecified
+Status: new	Reported by:	Alan Watson	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	baselibrary	Version:	5.91
+
+The authors of the draft discussed two different behaviours for when
+an unexpected number of values are passed to a continuation: coercing
+to the expected number of values and signalling an error. Both
+behaviours have some validity and there was no concensus between the
+editors as to which was to be prefered. The editors therefore decided
+to mandate neither, but rather left this area unspecified.
+
+This issue has some connection to the behaviour of forms such as set! 
+which do not have an "obvious" value. On a system that silently
+coerces an unexpected number of values to the expected number, such
+forms can be naturally and safely defined to return no values.
+
+However, the current draft mandates returning a single unspecified
+value. This will make it more difficult for a implementations of R6RS
+and future standards to adopt, if it were desired, coercing behaviour
+for multiple values and its natural consequences.
+
+There is no need for R6RS to take such a firm position on this
+issue. Instead of specifiying that set! et al. "return the unspecified
+value", it might be wiser to require that they:
+
+Return an unspecified number of unspecifed values. However, they can
+always be used with continuations that accept either exactly one or
+any number of values.
+
+This would allow, for example, defining them to return zero values on
+systems that adopted coercing behaviour for an unexpected number of
+values but would not prejudice systems with other behaviours.
+
+It would mean, however, that one could not portably use set! et
+al. with continuations that expect a fixed number of values (although
+one might be able to use this in non-portable code that is specific to
+certain classes of implementation). I consider this to be no great
+loss.
+

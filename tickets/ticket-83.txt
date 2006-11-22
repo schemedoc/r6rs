@@ -1,0 +1,99 @@
+Ticket #83 (enhancement)
+
+Add a multi-file library example
+Status: new	Reported by:	Michael Lenaghan	Assigned to:	mflatt
+Priority:	major	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+Keywords:		Cc:	
+
+Section: 6.1 Library form (pg 21) 
+
+Dependencies: 6.4 Examples (pg 25) 
+
+Summary
+
+Add a multi-file library example. This will likely flush out some
+under-specified issues that will affect the portability of libraries,
+especially larger libraries.
+
+Description
+
+Libraries are arguably the single most important feature of R6RS. And,
+arguably, one important reason for adding libraries is to improve the
+portability of Scheme code.
+
+R6RS currently contains a somewhat complex library example in section
+6.4. That example specifically avoids saying anything about the
+relationship between files and libraries. Although that's
+understandable, it unfortunately leaves open the possibility that
+libraries will fail to achieve their portability goal.
+
+Imagine wrapping a large package like SSAX (an excellent Scheme-based
+XML parser) in a library. The library form might look something like
+this:
+
+        (library (ssax (5 0))
+                (export read-xml write-xml ...)
+                (import r6rs)
+
+                ...)
+
+Libraries create scope; ultimately, all of SSAX's identifiers must be
+defined within its library form. But SSAX is far too large to fit in
+one file. So how are all of SSAX' pieces put together?
+
+One obvious solution is to use an "include" form to include the
+various files in the scope of the library definition. But "include"
+isn't part of R6RS, so that isn't a portable solution.
+
+Even if "incldue" is added, another problem pops up: how should the
+included file be specified?
+
+For example, here are some viable approaches: 
+
+        (include "./reader.scm")
+
+        (include "reader.scm")
+
+        (include "ssax-5.0/reader.scm")
+
+        (include "ssax-5.0" "reader.scm")
+
+In the first two cases you can imagine that when the file containing
+the library form is loaded or compiled or included it temporarily sets
+the current directory to the directory containing the library
+file. Now the include forms can use relative paths (either directly or
+indirectly). In the second two cases you can imagine that the
+implementation has one or more directories that it searches. Now the
+include forms can assume they're relative to the directory the package
+ships with.
+
+These (and many other possibilities) are all reasonable choices--and
+that's the problem. It's all too likely that different implementations
+will make different decisions. As it stands it appears that R6RS
+doesn't specify how to build a larger library like SSAX in a portable
+way.
+
+Of course, these issues extend to how the file containing the library
+form is itself located.
+
+Indeed, another question is whether or not SSAX should assume that any
+libraries it needs for its own import have already been been made
+available or whether it should include those files itself. Again,
+demonstrating this in an example will help to flush out portability
+issues. 
+
+Recommendation
+
+Add a multi-file library example. The example should probably
+demonstrate a) how a library can be created from multiple files and b)
+what assumptions a library can make about other liraries it needs
+(should it include or only import?) and c) how the file containing the
+library form can be located.
+
+It's likely that building such an example will identify some issues
+that are currently under-specified. For example, making the example
+work may entail adding "include" to R6RS and it may entail saying
+something about the assumptions users of "include" (and "load" and
+such) can make (or not make).
+

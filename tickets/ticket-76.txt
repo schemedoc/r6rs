@@ -1,0 +1,60 @@
+Ticket #76 (defect)
+
+Clean up make-transcoder to accept three symbol arguments
+Status: new	Reported by:	John Cowan	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	i/o	Version:	5.91
+
+The current design of make-transcoder (Section 15.3.3, pp. 86-87)
+involves passing it up to three arguments:
+
+1) The first argument specifies the encoding, and is an object of
+   unknown type (OUT) which is either:
+
+a) the result of calling one of the standard *-code procedures; or
+
+b) obtained by an implementation-specific method. 
+
+2) The second argument specifies the EOL style. It is either:
+
+a) one of the symbols 'cr, 'lf, 'crlf, or 'ls; or 
+
+b) an OUT returned by the standard macro eol-style when passed an
+   identifier other than one of those four; or
+
+c) an OUT returned by the standard procedure native-eol-style; or 
+
+d) an OUT obtained by an implementation-specific method. 
+
+3) The third argument specifies the error handling mode. It is either: 
+
+a) one of the symbols 'ignore, 'raise, or 'replace; or 
+
+b) an OUT returned by the standard macro error-handling-mode when
+   passed an identifier other than one of those three; or
+
+c) an OUT obtained by an implementation-specific method.
+
+In addition, if the third argument is omitted, it is the same as
+passing 'raise; if the second and third arguments are omitted, it is
+the same as passing (native-eol-style) and 'raise respectively.
+
+I can see absolutely no benefit to this diversity of interface
+styles. I propose that make-transcoder take exactly three arguments
+which must be symbols:
+
+1) If the first argument is 'latin-1 or 'utf-8 or 'utf-16 or 'local,
+   the transcoder will use the specified character sets. If it is a
+   different symbol, the meaning is implementation-defined.
+
+2) If the first argument is 'cr or 'lf or 'crlf or 'universal, the
+   transcoder will use the specified EOL style, where 'universal means
+   "accept any EOL style on input, produce the local EOL style on
+   output". (For reference, the known EOL styles are CR, CR+LF, LF,
+   NEL, CR+NEL, and LS, where NEL = U+0085 and LS = U+2028.) If it is
+   a different symbol, the meaning is implementation-defined.
+
+3) If the third argument is 'ignore or 'raise or 'replace, then the
+   transcoder will take the appropriate action on encoding errors. If
+   it is a different symbol, the meaning is implementation-defined.
+

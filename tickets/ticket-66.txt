@@ -1,0 +1,85 @@
+Ticket #66 (defect)
+
+The implicit cond in guard expressions is not a good idea
+Status: new	Reported by:	Abdulaziz Ghuloum	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	exceptions	Version:	5.91
+Keywords:		Cc:	
+
+Section 14.1 on page 73 of the R5.91RS draft specifies the syntax of
+guard expressions as:
+
+(guard (<variable> <clause1> <clause2> ...) <body>) 
+
+Syntax: Each <clause> should have the same form as a cond clause. 
+
+The syntax is constructed on the assumption that conditional dispatch
+on the condition type is the default action that would be performed in
+the guard handler. This is not necessarily the case. Moreover, the
+syntax is alien since there is no other construct in the language that
+has an implicit cond.
+
+Examples from the draft: 
+(guard (condition
+          (else
+            (display "condition: ")
+            (write condition)
+            (newline)
+            'exception))
+   (+ 1 (raise 'an-error)))
+
+(guard (condition
+          (else
+            (display "something went wrong")
+            (newline)
+            'dont-care))
+   (+ 1 (raise 'an-error)))
+
+First, the (condition <clause1> <clause2> ...) syntax does not imply
+variable binding at all. After all (cond <clause1> <clause2> ...) does
+not bind anything and the two forms look sufficiently similar to cause
+confusion.
+
+Second, a programmer may wish to perform some action before the
+conditional dispatch, after the conditional dispatch, or may not wish
+to perform the conditional dispatch at all. There is no reason to
+assume that conditional dispatch is the only thing a user wants.
+
+Example: Logging an error message using the current syntax: 
+(guard (condition
+          (else
+            (let ([msg (format-condition condition)])
+              (log msg (current-error-port))
+              (cond
+                <clause1>
+                <clause2>
+                ...))))
+   <expr>)
+
+Suggestion: Many ideas are plausible. One possibility is to specify
+the syntax of guard expressions as:
+
+(guard <variable> <handler-expression> <body-expression>)
+
+The first and third examples therefore translate to: 
+(guard condition
+   (begin
+     (display "condition: ")
+     (write condition)
+     (newline)
+     'exception)
+   (+ 1 (raise 'an-error)))
+
+(guard condition
+   (let ([msg (format-condition condition)])
+     (display msg (current-error-port))
+     (cond
+       <clause1>
+       <clause2>
+       ...))
+   <expr>)
+
+Thank you. 
+
+Aziz,
+

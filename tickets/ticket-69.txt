@@ -1,0 +1,23 @@
+Ticket #69 (defect)
+
+FIND delivers an ambiguous value
+Status: new	Reported by:	Nils M Holm	Assigned to:	sperber
+Priority:	major	Milestone:	r6rs
+Component:	other	Version:	5.91
+
+qThe FIND procedure described on page 63 can deliver an ambiguous
+return value when applied to a list of booleans:
+
+(find not '(#f)) => #f
+(find not '(#t)) => #f
+
+Proposed improvement: return the tail of the sublist beginning with
+the first member satisfying the predicate:
+
+(find not '(#t #f #t)) => (#f #t)
+      (find not '(#f)) => (#f)
+      (find not '(#t)) => #f
+
+This modification would not only eliminate the ambiguity described
+above but also make FIND more compatible to MEMBER and friends.
+

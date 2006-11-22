@@ -1,0 +1,45 @@
+Ticket #93 (defect)
+
+Protocol environment
+Status: new	Reported by:	Andre van Tonder	Assigned to:	dybvig
+Priority:	minor	Milestone:	r6rs
+Component:	records	Version:	5.91
+Keywords:		Cc:	
+
+Summary: 
+
+The environment for the protocol is not well specified.
+
+Description: 
+
+On page 70, the description: 
+
+(protocol <expression>) 
+
+<Expression> is evaluated in the same environment as the
+define-record-type form, ...
+
+does not clarify whether the protocol can refer to the predicates and
+accessors of the same record type being defined. In other words, is
+the following possible?
+
+(define-record-type point 
+  (fields (immutable x) 
+          (immutable y)) 
+  (protocol (lambda (p) 
+              (case-lambda 
+                ((x y) (p x y)) ; ordinary constructor
+                ((pt) (p (point-x pt) ; copy existing point 
+                         (point-y pt))))))) 
+
+Here the usages of point-x and point-y are supposed to be the ones
+being defined in the same define-record-type.
+
+This is a very useful and reasonable thing to do.
+
+Suggestion: 
+
+Let the protocol <expression> be evaluated in the scope of the
+bindings of the constructor, predicate, accessors and mutators being
+defined in the define-record-type expression.
+

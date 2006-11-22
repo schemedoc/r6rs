@@ -1,0 +1,70 @@
+Ticket #92 (defect)
+
+Phase semantics
+Status: new	Reported by:	Andre van Tonder	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+Keywords:		Cc:	
+
+Summary: 
+
+Slight refinement in specification of phase semantics for better
+portability.
+
+Description: 
+
+At the beginning of section 6.2, the sentence
+
+"An exception may be raised, however, if a binding is used out of its
+declared phase(s)"
+
+should preferably be changed to
+
+"An exception [must] be raised, however, if a binding is used out of
+its declared phase(s)"
+
+As far as I am aware, all three existing reference implementations do
+this, so it should be no problem. Leaving it unspecified can only
+hinder portability.
+
+On page 24, the sub-paragraph: 
+
+"... Similarly, an implementation is allowed to distinguish
+invocations of a library across different phases or to treat an
+invocation at any phase as an invocation at all phases. An
+implementation is further allowed to start each expansion of a library
+form by removing all library bindings above phase 0. Thus, a portable
+library's meaning must not depend on whether the invocations are
+distinguished or preserved across phases or library expansions."
+
+should preferably be 
+
+"... Similarly, an implementation is allowed to distinguish
+invocations of a library across different phases or to treat an
+invocation at any phase as an invocation at all phases. [no changes]
+
+[changed position of this to avoid confusion:] Thus, a portable
+library's meaning must not depend on whether the invocations are
+distinguished or preserved across phases or library expansions.
+
+An implementation is further [required] to start each expansion of a
+library form by removing all library bindings above phase 0."
+
+Again, as far as I am aware, all three existing reference
+implementations do this, so again it should be no problem. Leaving it
+unspecified can only hinder portability.
+
+Furthermore, it may be helpful to point out that in the following:
+
+"An implementation is allowed to distinguish visits of a library
+across different phases or to treat a visit at any phase as a visit at
+all phases"
+
+the first kind of implementation may (or perhaps must?) use a separate
+space of bindings for each phase, whereas in the second case the
+bindings are shared between phases, but are only available to be used
+in the phases stated in the "for ---" specifier, and that portable
+libraries should not rely on either semantics. This can be a highly
+confusing issue for the initiated and uninitiated alike, and a little
+more explanation could be very useful.
+

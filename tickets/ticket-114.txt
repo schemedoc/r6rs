@@ -1,0 +1,34 @@
+Ticket #114 (enhancement)
+
+identifier macros with syntax-rules
+Status: new	Reported by:	David Van Horn	Assigned to:	dyb
+Priority:	major	Milestone:	r6rs
+Component:	macros	Version:	5.91
+
+Summary
+
+It should be possible to define identifier macros using only the base
+library. Description
+
+The (r6rs syntax-case) library allows for identifier macros to be
+defined, however their specification is orthogonal to both
+non-hygienic macro expansion and the ability to evaluate arbitrary
+Scheme code at expansion time, thus it should be possible to define
+identifier macros in terms of syntax-rules. This implies extending the
+<srpattern> production to include an underscore, having syntax-rules
+forms evaluate to transformers, and moving make-variable-transformer
+to the base library.
+
+Pages: 62-63 
+Discussion
+
+Currently ...-list->bytes and bytes->...list procedures are supplied
+to convert bytes vectors to lists of numbers and back. However, where
+one has the choice, programming with lists of numbers tend to be less
+efficient than programming with vectors of numbers.
+
+It may be useful to supply ...-vector->bytes and ...-bytes->vector
+procedures in addition to, or maybe preferably instead of, the
+list-based procedures. Since these can be implemented extremely
+efficiently, it seems a pity not to provide them.
+

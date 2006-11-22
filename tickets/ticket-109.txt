@@ -1,0 +1,69 @@
+Ticket #109 (defect)
+
+identifier-syntax is not a derived form
+Status: new	Reported by:	Andre van Tonder	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+Keywords:		Cc:	
+
+Dependencies: Libraries (phase semantics) and free-identifier=? 
+(p. 112)
+
+Discussion
+
+Identifier-syntax cannot currently be portably expressed as a derived
+form. I know of two conforming implementations in which it can be so
+expressed only with en extension to negative import levels. A third
+implementation can express identifier-syntax without negative import
+levels, but only by violating the stated semantics of
+free-identifier=?.
+
+Here is essentially how it must be espressed in two of these
+implementations:
+
+(library (core identifier-syntax)
+   (export identifier-syntax)
+   (import (for (r6rs syntax-case base) run expand)
+           (for (r6rs base) expand
+                            run
+                            (meta -1)))  ;; FOR LAST OCCURRENCE OF SET!
+
+   (define-syntax identifier-syntax
+     (lambda (x)
+       (syntax-case x (set!)
+         ((_ e)
+          (syntax (lambda (x)
+                    (syntax-case x ()
+                      (id (identifier? (syntax id)) (syntax e))
+                      ((_ x (... ...))              (syntax (e x (... ...))))))))
+         ((_ (id exp1)
+             ((set! var val) exp2))
+          (and (identifier? (syntax id))
+               (identifier? (syntax var)))
+          (syntax
+           (make-variable-transformer
+            (lambda (x)
+              (syntax-case x (set!)   ;; THIS IS THE PROBLEMATIC OCCURRENCE
+                ((set! var val)               (syntax exp2))
+                ((id x (... ...))             (syntax (exp1 x (... ...))))
+                (id (identifier? (syntax id)) (syntax exp1))))))))))
+   )
+
+A third implementation does not require the "(meta -1)". It does so by
+modifying the semantics of free-identifier=?. In this implementation,
+the current definition
+
+"The free-identifier=? procedure returns #t if and only if the two
+identifiers would resolve to the same binding if both were to appear
+in the output of transformer outside of any bindings inserted by the
+transformer." no longer holds.
+
+Suggestion
+
+Consider refining the semantics of phases, import levels and/or
+free-identifier=? to make identifier-syntax expressible as a derived
+form.
+
+Alternatively, put free-identifier=? somewhere else than the "derived
+forms" section.
+

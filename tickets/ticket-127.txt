@@ -1,0 +1,36 @@
+Ticket #127 (simplification)
+
+Dropping rename and add-prefix from libraries
+Status: new	Reported by:	Abdulaziz Ghuloum	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+
+One sentence summary: The add-prefix and rename forms in libraries'
+import form are not necessary if local imports are provided.
+
+Description: 
+
+The syntax of the import form for R6RS libraries provides a way of
+renaming and adding a prefix to imported identifiers. The rationale
+for providing this facility is to minimize the chance of name
+collision amongst identifiers imported from multiple libraries that
+are written by many people. This is very likely to happen because all
+(possibly thousands of) imported identifiers are dumped into the
+library's global environment, making the chance for conflicts much
+more likely. Making all identifiers longer by adding prefixes, or
+manually renaming all conflicting identifiers is not the optimal
+solution to the problem.
+
+When local imports give the programmers the ability to control the
+scope of the imported identifiers (possibly limiting the scope to a
+single reference if needed), the programmer is unlikely to need having
+all imported identifiers to have unique names. In my personal
+experience using Chez Scheme's modules for years, I never for once
+needed to add prefixes to imported identifiers.
+
+Recommendation: 
+
+The import form of R6RS libraries should be simplified by removing the
+rename and add-prefix forms since these two facilities are an artifact
+of the lack of scope control in current R6RS libraries.
+

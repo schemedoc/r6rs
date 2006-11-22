@@ -1,0 +1,67 @@
+Ticket #131 (enhancement)
+
+separator spaces in dislay/write output
+Status: new	Reported by:	Per Bothner	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	i/o	Version:	5.91
+
+The report is not very precise about required or permitted formatting
+of the values written using display or write. I'm specifically
+concerned about whether an implementation is allowed or required to
+write out spaces between datums.
+
+Consider: 
+
+(write 3) (write 4) The traditional output is "34". However, the
+traditional expectation is that output from write can be read back
+using read (with various exceptions we won't go into here). Obviously,
+the "34" cannot be read back to yield 3 and 4. The solution is to
+insert a space, so the output becomes "3 4".
+
+Similarly: 
+
+(display 3) (display 4) also yields the traditional output
+"34". Again, the traditional expectation is that output from display
+should be "human-readable" and reasonably nicely formatted. Again, the
+traditional output fails in this respect.
+
+To avoid these problems people can and do insert explicit spaces, for
+example using (dwrite-char #\space). But this low-level formatting
+shouldn't be needed; it is especially annoying in loops, where one has
+to explicitly test if this is the first iteration of the loop, and
+only display a space when it is not. It's even harder with more
+complicated loops or recursion.
+
+Suggestion: Allow (require?) an implementation to insert spaces in
+these cases. I will describe this operationally, in terms of what an
+implementation might do; this is probably not how it should be
+formulated in R6RS.
+
+Each text output port has a datum-written bit, which is initially
+false. The functions write-char and newline ignore and clear the
+datum-written bit. The function write always writes an initial space
+if the datum-written flag was set, and sets the datum-written flag
+when done. The behavior of display depends on the type of the value:
+If the value is a string or character, then display ignores and clears
+the datum-written bit, just like write-char. Otherwise, display acts
+like write, in that it writes an initial space if the datum-written
+flag was set, and sets the datum-written flag when done.
+
+This rule is simple to describe, to implement, and seems to "do the
+right thing" quite consistently. It is easy to suppress the extra
+spaces in the rare case when that is wanted, for example by using
+(display ""). Suppressing the extra case happens automatically
+whenever explicit formatting is done, such as by displaying a string
+between two displayed values.
+
+I believe there will be rare in practice for a real program to print
+different output under this rule than in traditional implementations,
+and it's even harder to think of cases where the latter output is more
+desirable or correct.
+
+I have implemented this for Kawa, and it works quite nicely. However,
+there is legitimate concern about compatibility: first whether any
+actual code would break, and secondly whether this is allowed by R5RS
+and/or R5RS. I'm requesting that if R6RS does not require the
+described behavior it at least not prohibit it.
+

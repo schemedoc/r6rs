@@ -1,0 +1,63 @@
+Ticket #95 (defect)
+
+Condition hierarchy
+Status: new	Reported by:	Andre van Tonder	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	exceptions	Version:	5.91
+
+Summary: 
+
+Minor defects in and comments on condition hierarchy. 
+
+Description:
+
+* For &warning conditions, I would suggest that if it were true that
+
+"this type describes conditions that can safely be ignored", then no
+warning would be necessary in the first place.
+
+* I do not understand why &defect is necessary in addition to
+* &violation.
+
+I expect that the distinction will confuse users. 
+
+* There seems to be no good reason why syntax-violation is not a defect but 
+
+the other ...-violations, for example &undefined, are defects.
+
+* If there was a mistake and &syntax is indeed also a &defect, then all 
+
+the violations would be defects, and there would be no reason within
+the existing hierarchy to have a &defect subtype separate from
+&violation.
+
+* If, on the other hand, it is indeed considered important to distinguish 
+
+defects from just violations, I would suggest that the distinction be
+reflected in the naming convention. For example,
+
+- raise-contract-defect - undefined-defect? 
+
+to distinguish from the mere violations: 
+
+- raise-syntax-violation 
+
+If, on the other hand, the distinction is not important enough to
+reflect in the naming convention, I would suggest that it is not
+important enough to have &defect in the first place as a separate
+subtype.
+
+* Under &syntax, the document states 
+
+"This type describes syntax violations at the level of the library
+syntax." This seems to suggest that &syntax violations are not meant
+for scripts. It could also be taken to imply that &syntax violations
+are only used for malformed "library" forms, and not, e.g., for
+malformed "lambda" forms.
+
+Suggestion: 
+
+- Consider fixing minor description defects raised above. - COnsider
+  dropping &defect as a simplification. The hierarchy isalready quite
+  complicated.
+

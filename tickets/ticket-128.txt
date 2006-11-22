@@ -1,0 +1,37 @@
+Ticket #128 (defect)
+
+Declarations do not belong in the report
+Status: new	Reported by:	Abdulaziz Ghuloum	Assigned to:	will
+Priority:	critical	Milestone:	r6rs
+Component:	other	Version:	5.91
+Keywords:		Cc:	
+
+One sentence summary: Declarations have no reliable semantics and
+should be dropped from the report.
+
+Description: 
+
+A big problem with declarations is that the way they're specified,
+they do not follow any scoping rules. This is especially true in the
+presence of macros: when one library with one declaration exports a
+macro that is used in another library using a different set of
+declarations. There is just no meaningful way in which the programmer
+can specify the extent of a declaration or know how a single
+declaration in one library is going to affect the rest of the program.
+
+Another problem with declarations is that they are very very
+implementation specific. The current set declarations may be useless
+for some implementations, while other implementations may need a
+different set. There is no one-size-fits-all set.
+
+There is no way in which one can use declarations reliably, safely,
+and in a portable way. The original goal of R6RS was portability and
+code sharing. Declarations, as they stand in the report, do not help
+accomplishing that goal and may indeed hinder it.
+
+Recommendation: 
+
+Implementation-specific features (including declarations) should be
+implemented as implementation-specific libraries and not be mandated
+by the report.
+

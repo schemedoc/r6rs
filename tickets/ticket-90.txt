@@ -1,0 +1,33 @@
+Ticket #90 (simplification)
+
+Record layers are not orthogonal
+Status: new	Reported by:	William D Clinger	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	records	Version:	5.91
+
+The procedural record layer (r6rs records procedural) is strictly more
+expressive than the syntactic layers, (r6rs records explicit) and
+(r6rs records implicit), because the procedural layer can create new
+subtypes given only a record-type-descriptor, but the two syntactic
+layers cannot.
+
+This is entirely appropriate, assuming the syntactic layers are
+provided only for convenience in simple cases, and the procedural
+layer is intended to be used for all complex cases.
+
+Assuming that assumption, however, the two syntactic layers could be
+simplified further. Since they are not intended to be fully general,
+they ought to be made easier to use for simple cases.
+
+Although simplification of the syntactic layers is one solution to
+this problem, I would suggest a more radical solution: omit both
+syntactic layers from the R6RS. Both could be described by a SRFI and
+provided by portable reference implementations that build on the
+procedural layer.
+
+Omitting the syntactic layers from the report would have the added
+benefit of permitting other syntactic alternatives on an equal footing
+with those described in the draft R6RS. No portability would be lost;
+the procedural layer would be the only universal record layer, just as
+in the draft R6RS.
+

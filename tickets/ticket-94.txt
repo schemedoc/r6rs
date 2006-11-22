@@ -1,0 +1,61 @@
+Ticket #94 (enhancement)
+
+Illegal null cases in import syntax
+Status: new	Reported by:	Andre van Tonder	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+
+Summary: 
+
+In conflict with the rest of the report, certain null cases that make
+sense are prohibited in the import syntax. It is requested that these
+null cases be legalized.
+
+Description: 
+
+In the current description of
+
+<version> = <empty> | (<subversion1> <subversion2> ...) 
+
+presumably the intent is that <empty> be thought of as shorthand for
+the second line with zero subversions. The description of subversion
+matching implicitly assumes this. However, it is currently not allowed
+to write this out as in, for example,
+
+(library (foo ()) ---). 
+
+This is in conflict with the entire rest of the report, where empty
+cases are always legal syntax where it makes sense.
+
+For example, it is legal to write
+
+(import) (export) (for foo) (rename foo) (fields) ; in record definitions ... 
+
+Allowing the empty list here, and stating that <empty> in the above
+grammar abbreviates (),
+
+- reduces confusion as to the meaning of <empty> - reduces the number
+  of special cases in parsing the grammar - is consistent with the
+  rest of Scheme, where all empty cases
+
+are normally allowed where it makes sense
+
+- follows a regularity that can simplify automatic generation
+
+and processing of code
+
+The same goes for the specifications of AND and OR in the import
+syntax on page 22. In fact, since normal AND and OR do take zero
+arguments, the current description of AND and OR in the import syntax
+introduces a gratuitous inconsistency.
+
+Suggestion: 
+
+Please change the syntax of AND, OR, <version> and <version reference>
+to work also for the null cases as follows:
+
+(and <subversion condition> ...) 
+(or <subversion condition> ...) 
+<version> = <empty> | (<subversion> ...) 
+<version reference> = <empty> | (<subversion reference> ...)
+

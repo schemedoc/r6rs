@@ -1,0 +1,45 @@
+Ticket #80 (simplification)
+
+Correct I/O Interface Inconsistencies
+Status: new	Reported by:	Michael Lenaghan	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	i/o	Version:	5.91
+
+Section: 15.3.5, 15.3.6, 15.4 
+
+Summary
+
+Correct some I/O interface inconsistencies regarding what procedures
+are available and where they're located.
+
+Description
+
+There appear to be some funny inconsistencies in the I/O spec. 
+
+In 15.3.6 (Output ports) there's call-with-bytes-output-port and
+call-with-string-output-port, but in 15.3.5 (Input ports) there's no
+corresponding call-with-bytes-input-port and
+call-with-string-input-port.
+
+In 15.3.6 (Output ports) and 15.3.5 (Input ports) there's no
+call-with-file-output-port or call-with-file-input-port
+(respectively).
+
+In 15.4 (Simple I/O) there's call-with-input-file and
+call-with-output-file and with-input-from-file and
+with-output-to-file.
+
+Recommendations
+
+Add call-with-input-string and call-with-output-string and
+with-input-from-string and with-output-to-string to 15.4. 
+
+Remove call-with-string-output-port from 15.3.6. 
+
+Add call-with-bytes-input-port to 15.3.5 (or, conversely, remove
+call-with-bytes-output-port from 15.3.6).
+
+(An alternative would be to have all appropriate call procedures for
+files and strings in 15.3.5 and 15.3.6. At least make the choices
+consistent.)
+

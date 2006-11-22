@@ -1,0 +1,42 @@
+Ticket #77 (enhancement)
+
+Querying Declaration Quality Priorities
+Status: new	Reported by:	Michael Lenaghan	Assigned to:	will
+Priority:	major	Milestone:	r6rs
+Component: Declarations 
+
+Section: 9.22 (pg 56) 
+
+Summary
+
+Developers should have access to declaration quality priorities so
+that developer code can take the current value into account.
+
+Description
+
+Chez Scheme has an optimize-level parameter. The value of
+optimize-level can be both read and written. Currently, optimize-level
+3 means that the compiler is allowed to generate unsafe
+code. Developers can query the value of optimize-level at expansion
+time so that expanded code takes the current setting into account.
+
+For example, in Chez Scheme it's possible to write code like this:
+
+(define-syntax define-something
+    (lambda (e)
+        (syntax-case e ()
+            [(_ (field ...))
+                (with-syntax ([no-type-check (>= (optimize-level) 3)])
+                    #'(<some code>
+                            (if (or no-type-check (check-type? <some code>))
+                                <some code>
+                                <some error code>)
+                        <some code>)])))
+
+Chez Scheme itself uses an approach like this to avoid record type
+checks in record field accessors when expanding records at
+optimize-level 3.
+
+To write code like this--especially in a portable way--developers need
+access to the current values of the declaration qualities.
+

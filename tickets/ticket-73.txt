@@ -1,0 +1,36 @@
+Ticket #73 (simplification)
+
+Record nongenerative UID should be library name where record is defined
+Status: new	Reported by:	Aubrey Jaffer	Assigned to:	sperber
+Priority:	major	Milestone:	r6rs
+Component:	records	Version:	5.91
+Keywords:		Cc:	
+
+Page 66 of R5.91RS suggests the use of "UUID namespace" for
+nongenerative UIDs, presumably to avoid name conflicts with other
+record-types of the same name:
+
+Note: Users are encouraged to use symbol names constructed using the
+UUID namespace (for example, using the record-type name as a prefix)
+for the uid argument.
+
+RFC-4122 "Universally Unique IDentifier"s are cryptic to humans. To
+interchange records between modules, the 36-digit hexadecimal number
+must be extracted from one and pasted into the source of the others.
+
+Were there no other context where Scheme programs needed to resolve
+external resources, this might be good enough. But R6.91RS libraries
+must be resolved, libraries which already must contain the record
+definitions!
+
+I propose that a UID argument be either #f or a library-name; and that
+two record definitions be identified with each other only when their
+record-names and UIDs match.
+
+Going one step further, I propose that generative record-types be
+removed, and that a #f UID default to the library-name in which this
+record definition appears. If modules have unique names, then record
+definitions with a #f UID will not conflict with each other; and
+record definitions with a #f UID will effectively export themselves
+for sharing.
+

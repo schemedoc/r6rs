@@ -1,0 +1,108 @@
+Ticket #130 (defect)
+
+Multiple versions of one library should be linkable
+Status: new	Reported by:	Carl Eastlund	Assigned to:	mflatt
+Priority:	major	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+
+Summary: 
+
+The restriction against multiple versions of the same library in one
+program is an unnecessary hindrance to development.
+
+Full description: 
+
+The R(5.91)RS states in section 6.1: 
+
+"To avoid problems such as incompatible types and replicated state,
+two libraries whose library names contain the same sequence of
+identifiers but whose versions do not match cannot co-exist in the
+same program."
+
+For the sake of clarity in this formal comment, I will refer to this
+as the "library replication restriction".
+
+I propose that the library replication restriction should be
+lifted. Many libraries have no need for the restriction. The
+restriction can make technically compatible and seemingly unrelated
+libraries incompatible, and can prevent incremental development of
+software. The library replication restriction does not seem to be the
+right way for R6RS to address the stated problems.
+
+Many libraries have no invariants which require their uniqueness. Some
+libraries have neither unique types nor internal state. Others may
+have new types or internal state, but guard their own invariants
+(e.g. with software contracts). These libraries can coexist with other
+versions and gain no benefit from the library replication restriction.
+
+The library replication restriction can create hidden and complex
+incompatibilities. Consider an example scenario. Library A is
+developed on its own; it has versions 1 and 2 which would not suffer
+from coexistence. Library B imports library A version 1. Library C
+imports library A version 2. Now a programmer may try to use the
+seemingly unrelated libraries B and C in a program, and find they are
+incompatible: the Scheme implementation produces an error about
+linking A version 1 with A version 2. Tracing the graph of imports
+back to libraries B and C may be difficult, and if B and C are
+third-party proprietary code it may not help. The developer cannot use
+B and C in the same program.
+
+The library replication restriction hinders incremental software
+upgrades. Consider the same library A, with versions 1 and 2 that
+could (in theory) harmlessly coexist. Now consider a program comprised
+of many libraries, all of which use A version 1. If a programmer
+wishes to update one component to get the benefit of A version 2, that
+programmer must simultaneously update all other components because the
+program must not use both A version 1 and A version 2. If versions
+could coexist, some such upgrades could be performed incrementally and
+as needed.
+
+The library replication restriction limits the use of versioned
+library references. The version specifications from section 6.1 of
+R(5.91)RS are presumably designed to allow developers to specify which
+imports are compatible with the current library or program. This
+becomes a much less desirable feature if version specifications are
+also simultaneously specifying incompatibility with a large class of
+other libraries: those which use a different version of the same
+import.
+
+The library replication restriction does not seem an appropriate
+constraint for R6RS. It rejects potentially correct programs at link
+time, contrary to Scheme's long-standing tradition of dynamic safety
+checks. Furthermore, the stated goals of the restriction can be
+fulfilled in other ways which are less restrictive and more germane to
+their issues. Libraries can guard against use of incompatible types
+with software contracts or assertions. Libraries can sometimes guard
+their state invariants with software contracts or mutual exclusion
+locks.
+
+Some libraries may not be able to ensure their own safety without the
+library replication restriction. For instance, a library providing
+gensym or similar functionality cannot guarantee uniqueness of symbols
+if other code can produce them as well. Some such libraries are not
+safe even with the restriction: for instance, if one third-party
+library can provide gensym, so can another (the restriction does not
+guard against similar libraries with different names). There may be a
+very specific set of libraries which are not safe without the library
+replication restriction, but which can be made safe with it. R6RS
+could make the restriction available as an option to library
+developers, for use in libraries that need it.
+
+PLT Scheme's PLaneT distribution mechanism currently provides this
+option. Each individual module may declare itself compatible with all,
+some, or none of the other versions of itself (with specific subsets
+specified similarly to the version references of R(5.91)RS). The
+current PLaneT default is incompatibility, because PLaneT initially
+enforced and must now maintain the same restriction as R(5.91)RS. This
+default is unfortunate: any module designer who does not give explicit
+thought to the issue creates the problems I have outlined above. I
+believe the default should be unrestricted compatibility. The burden
+of overriding the default should fall on libraries with complex and
+fragile internal invariants.
+
+To summarize, I believe programs should be allowed to contain multiple
+versions of libraries by the same name, as the alternative is an
+impediment to development. I have no objection to allowing individual
+libraries to restrict their own coexistence with other versions, but
+by default they should not be restricted.
+

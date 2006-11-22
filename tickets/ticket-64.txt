@@ -1,0 +1,34 @@
+Ticket #64 (enhancement)
+
+Declarations don't seem to be designed for real-world needs
+Status: new	Reported by:	Jason Orendorff	Assigned to:	will
+Priority:	minor	Milestone:	r6rs
+Component: Declarations 
+
+R5.91RS declarations strike me as odd. The common use case for this
+sort of feature is to make a debug build and a release build of the
+same code. In this use case, users often want debug builds to have
+extra runtime checks (read: asserts) and sometimes extra debug output.
+
+Other use cases are extremely rare, in my experience, especially for
+anything higher-level than a device driver.
+
+This leads me to the following thoughts:
+
+1. Source code is not a useful place for this sort of information. 
+
+2. The level of fine-grained expressivity provided by (declare) seems
+   excessive. As a user, I never need anything beyond a single switch:
+   "safe" vs. "fast". Even searching Makefiles for instances of gcc
+   compiler flags fails to bring up anything much more exotic than
+   -O2.
+
+3. To support the dominant use case, R6RS would need to allow code to
+   "see" the settings under which it's compiled. You can't implement
+   an (assert) macro in R5.91RS, for example.
+
+There seems to have been a lot of discussion on r6rs-editors about
+"safe" and "unsafe", but not much about declarations as a language
+feature. The two are independent; R6RS could-- and perhaps should--
+specify safe and unsafe modes without (declare) and the rest.
+

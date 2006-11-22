@@ -1,0 +1,321 @@
+Ticket #123 (defect)
+
+Replacing the import's "for" syntax with implicit phasing
+Status: new	Reported by:	Abdulaziz Ghuloum	Assigned to:	mflatt
+Priority:	critical	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+
+One sentence summary: The "for" syntax should be removed from the
+  "import" syntax and that library phasing be implicit.
+
+
+Summary:
+
+Explicit specification of phases in the library import form puts an
+unnecessary burden on the programmer and limits the expressiveness of
+the
+library mechanism.  In addition, it leads to unnecessary library visits
+and invocations.  The library mechanism would thus be easier to use,
+more
+expressive, and more efficient if phasing is implicit.  An
+implementation
+capable of verifying that identifiers are used out of phase (as are the
+current reference implementations) is equally capable of inferring when
+the imported libraries must be visited and invoked.  A potential
+downside
+might be that the user does not have complete control over when any
+externally visible side effects of visiting a library occur.  Such side
+effects are already problematic, however, with the existing
+specification,
+which allows libraries to be visited and/or invoked once or multiple
+times
+by an implementation.  Furthermore, I believe that it is bad programming
+practice for a library to have externally visible side effects at visit
+or invocation time.
+
+I recommend, therefore, that the "for" syntax be removed from the
+"import" syntax and that library phasing be implicit.
+
+
+
+* Introduction:
+
+The import form of R6RS libraries specifies the following: (1) The
+sets of libraries to be imported, (2) Modifications on the sets
+including exclusion, renaming, and adding prefixes, and (3) the
+phase or phases in which the library is made available.  The import
+phase specifies *when* information about a library is made available
+and consequently *where* the imported transformers and bindings can
+appear within the library.  The import phase is one of:
+
+- run: for bindings appearing in run-time code
+
+- expand: for bindings appearing in the bodies of transformers
+    (e.g. the right-hand-sides of transformer bindings)
+
+- (meta 2) for bindings appearing in the bodies of transformers
+    that appear within bodies of transformers, and so on.
+
+Section 6.2 of R5.91RS states that ``an exception may be raised,
+however, if a binding is used out of its declared phase(s)''.
+Consequently, users wishing to write portable libraries must specify
+the precise set of required import phases.  From my experience in
+implementing the phased model of R6RS libraries, I realized three
+key difficulties with precise phase specification:
+
+- The import phases fail to capture the intention of the user of
+   when libraries must be visited and invoked.
+
+- The import phases restrict the set of macros that one
+   wishes to write.  Some useful and semantically valid macros are
+   unexpressible in the phased model of R6RS libraries.
+
+- The process of manual derivation of the import phases for a
+   library that makes good use of Scheme's macros is error-prone,
+   time-consuming and counter-productive.
+
+The rest of this document is divided into two parts: part 1 is an
+elaboration on the key difficulties summarized above, and part 2
+describes a proposal for an alternative model in which the
+implementation, rather than the user, takes the responsibility of
+deriving the required phases.
+
+
+* Difficulties with the Phased Model
+
+** The phased model fails to capture the users' intentions
+
+This section is an extended example of some libraries that one may
+wish to write.  Let's start off with a simple library that defines a
+defmacro-like transformer: (identifiers are numbers so that I can
+reference them)
+
+(library defsyntax
+   (export defsyntax)
+   (import (for r6rs ???))
+   (define-syntax#0 defsyntax
+     (syntax-rules#1 ()
+       [(_ (name args ...) body)
+        (define-syntax#2 name
+          (syntax-rules#3 ()
+            [(_ args ...) body]))])))
+
+For which phases should the four referenced identifiers be imported?
+
+define-syntax#0 should be imported for run and syntax-rules#2 should
+be imported for expand since define-syntax#0 appears in level-0 and
+syntax-rules#1 appears in level-1 (right-hand-side of a
+transformer).
+
+define-syntax#2 should also be imported for run and syntax-rules#3
+should be imported for expand since they will appear in level-0 and
+level-1 code (respectively) in the importing library.
+
+ From the requirements of the library and its importer, we know that
+the r6rs library must be imported for run and expand.
+
+(library defsyntax
+   (export defsyntax)
+   (import (for r6rs run expand))
+   (define-syntax defsyntax
+     (syntax-rules ()
+       [(_ (name args ...) body)
+        (define-syntax name
+          (syntax-rules ()
+            [(_ args ...) body]))])))
+
+Now that we have defsyntax, we can use it in another library:
+
+(library definlined
+   (export definlined)
+   (import (for defsyntax ???))
+   (defsyntax#0 (definlined name value)
+     (defsyntax#1 (name) value)))
+
+Spend a minute or two to try to puzzle out the import phases for
+defsyntax.
+
+Using definlined is now straightforward:
+
+(library C
+   (export c)
+   (import (for definlined run))
+   (definlined c 5))
+
+(library D
+   (export)
+   (import r6rs C)
+   (display (c)))
+
+In order to compile D, we first:
+   visit C at phase 0, causing
+     visit definlined at phase 0, causing
+       visit defsyntax at phase 0, causing
+         visit r6rs at phase 0 and
+         visit and invoke r6rs at phase 1
+       visit and invoke defsyntax at phase 1, causing
+         visit and invoke r6rs at phase 1 and
+         visit and invoke r6rs at phase 2
+
+Most of this avalanche of library visits and invocations is unnecessary
+since definlined and defsyntax are only needed when C is compiled, not
+when it is visited.
+
+(library C
+   (export c)
+   (import (for r6rs run expand))
+   (define-syntax c
+     (syntax-rules ()
+       [(_) 5])))
+
+In short, C imported definlined for its own local expansion.  Once C
+was expanded and compiled, no more references to definlined or
+defsyntax exist in the transformer code, yet every time C is imported
+by another library, definlined and defsyntax are visited and invoked
+needlessly and possibly many times.  We had no way of stating that
+definlined is needed only for expanding the body of the library and
+will never be needed from that point forward.
+
+Back to the library D:
+
+(library D
+   (export)
+   (import r6rs C)
+   (display (c)))
+
+Once D is expanded, it will look as if it were written as:
+
+(library D
+   (export)
+   (display 5))
+
+The sad part is that whenever D is imported, the whole avalanche of
+visits and invocations is done again despite the fact that D exports
+nothing and uses nothing from the libraries C, definlined, and
+defsyntax!
+
+
+** Macro helpers are unexpressible
+
+Suppose one wishes to define a set of assertion macros to be defined as
+follows:
+
+(assert-integer expr)
+=>
+(let ([t expr])
+   (if (integer? t) t (error ---)))
+
+Since we might want to define many assertion macros such as
+assert-boolean, assert-string, ..., we can define a library that
+abstracts away the details of making a transformer as follows:
+
+(library errors
+   (export report-error)
+   (import r6rs)
+   (define report-error ---))
+
+(library assertion-maker
+   (export assertion-transformer)
+   (import r6rs (for report-error ???))
+   (define-syntax assertion-transformer
+     (syntax-rules ()
+       [(_ pred)
+        (syntax-rules ()
+          [(_ val)
+           (let ([t val])
+             (if (pred t)
+                 t
+                 (report-error ---)))])])))
+
+Next, we can define our set of assertion macros using the
+assertion-transformer macro:
+
+(library canned-assertions
+   (export assert-integer assert-boolean assert-string)
+   (import r6rs (for assertion-maker expand))
+   (define-syntax assert-integer
+     (assertion-transformer integer?))
+   (define-syntax assert-boolean
+     (assertion-transformer boolean?))
+   (define-syntax assert-string
+     (assertion-transformer string?)))
+
+First, the import of assertion-maker-phases in canned-assertions
+must be "for expand" since the call to assertion-transformer appears on
+the right-hand-side of a transformer definition.
+
+Now suppose a library L imports canned-assertions "for run".  Invoking
+L at phase 0 causes invoking canned-assertions at phase 0 which does
+NOT cause assertion-maker to be invoked (it was imported for expand)
+and consequently report-error is not invoked at runtime.
+
+The two existing reference implementations of R6RS libraries, one by
+Ghuloum and Dybvig and the other by van Tonder, exhibit this problem and
+use two different approaches for dealing with the problem.  The two
+techniques are cited here as evidence only; I'm not a fan of either
+technique.
+
+The Ghuloum/Dybvig implementation extends the R6RS libraries by
+including
+meta definitions and meta macro definitions.  In essense, meta appearing
+in phase N cause its body to be defined in phase N+1.  In the previous
+example, canned-assertions imports report-error for run and meta-defines
+assertion-maker for expand.  Consequently, when canned-assertions
+imports
+assertion-maker for run, everything works as we want.
+
+The van Tonder implementation extends the R6RS libraries by including
+negative meta levels.  With this approach, report-error is imported
+by assertion-maker for (meta -1) which cancels out with the (meta 1)
+used for importing assertion-maker making report-error effectively a
+phase-0 import.  Negative meta levels are similar to PLT Scheme's
+require-for-template form.
+
+Neither solution is ideal since each adds more complexity to a library
+semantics that is already needlessly complex.
+
+
+** Manual derivation of import phases is complex
+
+Based on my personal experience in implementing and testing phased
+libraries, I found the task of deriving the correct import phases for
+any
+library that makes good use of Scheme macros extremely complex,
+error-prone, and time-consuming.  Despite my intimate understanding of
+the implementation, I often found myself guessing at the proper phase
+specifications.  Overall, I found the activity of deriving the
+correct import phases to be counter-productive, since I spent more time
+determining phases than in the task of writing the rest of the library.
+I found it frustrating as well whenever I discovered that a sufficient
+set
+of phase declarations did not exist or when I discovered that the
+necessary set of declarations caused unnecessary library visits and
+invocations.
+
+This experience led me to conclude that the burden for determining when
+libraries should be visited and invoked should be placed on the
+implementation, not the user, in order to eliminate guess work,
+busy work, and frustration on the part of the user while simultaneously
+increasing both the expressiveness and efficiency of the library
+mechanism.  It turns out that an implementation that detects phase
+errors can easily be converted into one that infers when libraries
+must be visited and invoked, and I have developed such an implementation
+and found it to be much more pleasant to use.
+
+* Formal recommendation:
+
+I recommend that phase specifiers be dropped completely from the
+library's
+import form.  The replacement for explicit phase specification is an
+implicit phase derivation in which the macro expander automatically
+derives the phases in which identifiers are used.  The macro expander,
+knowing exactly from which library identifiers were imported, and
+knowing
+exactly the types of the imported identifiers (i.e.  syntacic forms,
+variables, etc.) can handle visiting and invoking these libraries on
+demand in the appropriate phases (compiling a library, importing a macro
+definition, importing a variable reference, etc.).
+
+A reference implementation will be made available within the next few
+days.
+

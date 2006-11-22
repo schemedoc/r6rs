@@ -1,0 +1,75 @@
+Ticket #82 (simplification)
+
+Change the "for" import syntax in libraries
+Status: new	Reported by:	Michael Lenaghan	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+
+Section: 6.1 Library form (pg 21) 
+
+Dependencies: 6.4 Examples (pg 25) 
+Summary
+
+Change the "for" import syntax in libraries to make it easier to read. 
+Description
+
+In section 6.1 a library <import spec> is defined to be one of: 
+        <import set>
+        (for <import set> <import phase> ...)
+
+In section 6.4 an example uses the "for" syntax: 
+        (library (my-helpers values-stuff)
+                (export mvlet)
+                (import r6rs (for (my-helpers id-stuff) expand))
+                ...)
+
+The "for" syntax is already somewhat difficult to read since it places
+an identifier--in this case a compound identifier--in the middle of an
+English phrase. Unfortunately, it can get worse; an import set can
+contain nested clauses such as "only", "except", "add-prefix", and
+"rename" pushing the import phase even further from the "for":
+
+        (library (my-helpers values-stuff)
+                (export mvlet)
+                (import r6rs (for (add-prefix (my-helpers id-stuff) mh-id:) expand))
+                ...)
+
+It becomes more difficult to read such syntax than it needs to
+be.
+
+Recommendation
+
+The "for" clause can place the import phase(s) immediately after the "for": 
+        (for <import phase> ... <import set>)
+
+I think that makes the examples easier to read:
+
+        (library (my-helpers values-stuff)
+                (export mvlet)
+                (import r6rs (for expand (my-helpers id-stuff)))
+                ...)
+
+        (library (my-helpers values-stuff)
+                (export mvlet)
+                (import r6rs (for expand (add-prefix (my-helpers id-stuff) mh-id:)))
+                ...)
+
+The underlying implementation may or may not be marginally more
+difficult, but if it is I think the effort is worth the trade-off.
+
+Anoher variant on this idea is: 
+        (for <import phases> <import set>)
+
+Where <import phases> (note the plural) is: 
+        <import phase>
+        (<import phase> ...)
+
+For multiple import phases that would end up looking like this: 
+        (library (my-helpers values-stuff)
+                (export mvlet)
+                (import r6rs (for (expand run) (add-prefix (my-helpers id-stuff) mh-id:)))
+                ...)
+
+(The fact that a "meta" import phase is represented as a list may make
+this undesirable.)
+

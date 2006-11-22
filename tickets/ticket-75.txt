@@ -1,0 +1,95 @@
+Ticket #75 (simplification)
+
+Simplifying conditions
+Status: new	Reported by:	Andre van Tonder	Assigned to:	sperber
+Priority:	major	Milestone:	r6rs
+Component:	exceptions	Version:	5.91
+
+Component : Conditions 
+
+Pages : 74-76 
+Summary
+
+Conditions can be simplified by following a well-understood
+object-interface model. Description
+
+The rules for repeated fields seem to convey an intent that conditions
+be thought of as objects implementing more than one "condition type"
+interface. If so, why not make a much simpler representation by
+following well-understood object models, such as the Java model, as
+follows:
+
+Think of condition types as "interfaces" and condition objects as
+objects of anonymous type that "implement" these interfaces. Drop
+compound conditions and drop the procedures "make-compound-condition"
+and "extract-condition", flatten the fields eliminating repeats and
+list all the implemented interfaces (= condition types) as part of the
+object. A condition object can then be created as
+
+   (make-condition list-of-types field-name obj ...)
+
+For example 
+
+   (make-condition '(&message &who)  ; implements two interfaces
+     'condition-message "phone me"
+     'condition-who "mother")
+
+which can be represented internally as a list of types (interfaces)
+and a flat alist of fields. The syntactic API for the compound example
+in the document could be the more concise
+
+(define v3 (condition (&c1 &c2)  ; implements two interfaces
+              (x "V3/1")
+              (a "a3")
+              (b "b3")))
+
+If downcasting to a particular interface is really required (the
+analogue of the current "extract-condition") it can also be easily
+implemented in this representation.
+
+The suggested representation is simpler, since compound conditions can
+be dropped is more concise better expresses the "object implements
+interfaces/mixins" idea. gets rid of the current complicated semantics
+of repeated fields reproduces the practically and theoretically
+well-understood "object implementing interfaces" idea in languages
+like Java.
+
+The current wording does seem to convey an intent of trying to
+approximate the "object implementing interfaces" idea. I quote:
+
+"Each type-field-binding must contain field bindings for all fields of
+condition-type without duplicates. There is an exception to this rule:
+if a field binding is missing, and the field belongs to a supertype
+shared with one of the other htype-field-bindingi subforms, then the
+value defaults to that of the first such binding in the condition
+form."
+
+But this expresses the "object implementing interfaces" idea very
+awkwardly in imperfectly. The above suggested encoding does it better
+in my opinion and is easier to understand, especially for people with
+prior exposure to object models similar to Java's.
+
+The current specification has several further issues, which would fall
+away if the model were simplified as above: It is not clear if the
+type of conditions is the recursive type 
+
+<condition> ::= (make-condition ---) / (make-compound-condition <condition> ...)
+
+which would allow make-compound-condition to be nested, or the
+alternative non-recursive type
+
+<simple-condition> ::= (make-condition ---)
+<condition> ::= <simple-condition> / (make-compound-condition <simple-condition> ...)  If the recursive type, then "condition-ref"
+
+is not fully specified in case of repeated fields, since it is not
+specified if the search for the first field is e.g. depth-first. Same
+for "extract-condition" if the type is recursive above.
+
+Suggestion
+
+As in above text: drop "make-compound-condition". drop complex
+descrioptions of field priorities. drop "extract-condition", unless
+downcasting ability is a requirement, in which case I would preferably
+use a different name for it. modify "make-condition" procedure as
+described above modify "condition" syntax as described above
+

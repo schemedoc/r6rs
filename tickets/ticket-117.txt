@@ -1,0 +1,67 @@
+Ticket #117 (enhancement)
+
+Last modified 2 days ago
+Bodies should be more widely permitted
+Status: new	Reported by:	Alan Watson	Assigned to:	will
+Priority:	minor	Milestone:	r6rs
+Component:	baselibrary	Version:	5.91
+
+I propose that bodies be allowed in the clauses of cond, case, do,
+when, unless, and begin forms. Essentially, this would permit these
+clauses to be have declarations and internal definitions.
+
+This change simplies the description of the language. Currently, there
+are three kinds of "sequences of forms":
+
+- The bodies of binding forms. 
+
+- The sequences of expressions in cond, case, do, when, and unless
+  forms and non-splicing begin forms.
+
+- The sequences of forms in splicing begin forms (those that are
+  spliced into bodies, library bodies, and script bodies as described
+  in section 9.5.7).
+
+This proposal unifies the first two classes and thereby simplifies the
+language and removes an arbitrary restriction.
+
+This change is backwards compatible with R5RS. 
+
+Currently, this behaviour can be obtained by, for example, using a
+(let () ...) form in the sequence, but this seems a bit of a hack.
+
+This change is easy to implement. Consider an existing Scheme
+implementation that allows only sequences of expression in the
+contexts mentioned in (2) above. Such an implementation could be
+converted to accept bodies in these contexts by modifying it to wrap
+the sequences in (let () ...).
+
+The changes to the draft are: 
+
+9.4: Add "begin", "cond", "case", and "do" to the list of forms that
+have bodies. (I suggest not adding "when" and "unless" as these are
+not in the base library.)
+
+9.5.5: Replace the expression sequences in the first and third forms
+or cond clauses and in both forms of case clauses with bodies. Add a
+comment that these clauses establish new lexical regions.
+
+9.5.7: Replace the expression sequences in the second form of begin
+with a body. Add a comment that this form establishes a new lexical
+region.
+
+9.18: In the description of the values procedure, write "The
+continuations of all non-final expressions within a body as well as
+the continuations of the before and after arguments to dynamic-wind
+take an arbitrary number of values."
+
+9.19: Replace both expression sequences in the do form with
+bodies. Add a comment that this form establishes new lexical regions
+in these bodies.
+
+20.1: Replace the expression sequences in when and unless forms with
+bodies. Add a comment that these forms establish new lexical regions.
+
+The syntax definitions of cond, case, do, when, and unless in 19.9,
+20.1, and Appendix B do not need changing if begin takes a body.
+

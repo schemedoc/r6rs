@@ -1,0 +1,25 @@
+Ticket #89 (simplification)
+
+Leave readers and writers out of the report
+Status: new	Reported by:	William D Clinger	Assigned to:	sperber
+Priority:	major	Milestone:	r6rs
+Component:	i/o	Version:	5.91
+
+Section 15.2 of the draft R6RS specifies reader and writer objects,
+which represent arbitrary sources and sinks for binary data. These
+objects are not used anywhere else in the report, do not appear to
+have been used in the field, and well-known principles of software
+reuse would argue for making them ports instead of a separate data
+type.
+
+So long as they are a separate data type, however, they could be
+specified by a SRFI and implemented by a portable reference
+implementation. It appears that no significant efficiency would be
+lost by providing them via a portable reference implementation, since
+the operations on file readers and writers could just delegate to an
+encapsulated binary port.
+
+If they were ports, they might be useful. Including them in the R6RS
+as a separate data type might interfere with making them ports in the
+R7RS.
+

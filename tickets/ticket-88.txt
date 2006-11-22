@@ -1,0 +1,193 @@
+Ticket #88 (defect)
+
+Improve port i/o
+Status: new	Reported by:	William D Clinger	Assigned to:	sperber
+Priority:	major	Milestone:	r6rs
+Component:	i/o	Version:	5.91
+
+Section 15.3 of the draft R6RS describes a design for port i/o that
+was based on my misunderstanding of the requirements. In particular,
+it was designed to allow arbitrary mixing of binary and textual i/o
+for a small set of Unicode character encodings, but does not
+generalize well to the large set of encodings that are currently in
+use.
+
+The real requirements appear to be: 
+
+- Support efficient binary i/o. 
+
+- Support efficient text i/o. 
+
+- Provide a small set of standard transcoders, while allowing
+  implementations to provide others, including transcoders with
+  arbitrarily weird semantics.
+
+- Support conversion of binary ports into text ports, mainly to
+  support use cases such as input from XML files, where the transcoder
+  is determined by reading a small prefix of the file.
+
+The first three of those requirements can be satisfied by a more
+conventional design.
+
+The fourth requirement can be met by a procedure that accepts a binary
+port as argument and returns a text port that consumes bytes from the
+binary port while transcoding them into characters.
+
+The rest of this comment suggests a better design, and then describes
+some outstanding issues for which I have no strong recommendation at
+this time.
+
+* * 
+
+The main ideas of this alternative design are to distinguish binary
+from text files, and to forbid compositions of
+transcoders. Composition of transcoders is well-defined in a
+mathematical sense, but the composition of two transcoders is unlikely
+to be useful.
+
+Those ideas run counter to the ideas of SRFI 81, which was a starting
+point for section 15.3 of the draft report.
+
+Other aspects of the suggested design include: 
+
+A transcoder is an immutable description (think of it as a factory
+method for manufacturing transcoding objects) of some possibly
+stateful algorithm for translating sequences of bytes into sequences
+of characters and vice versa.
+
+Every transcoder can operate in the input direction (bytes to
+characters) or in the output direction (characters to bytes), but the
+composition of those directions need not be identity (and often
+isn't). (See [issue:bidirectional].)
+
+Transcoders are never composed, so there is no reason to define the
+composition of two transcoders.
+
+The standard transcoders are constructed from codecs, eol styles, and handling modes as described in section 15.3 of the draft R6RS. 
+
+The standard codecs of Scheme include: 
+
+latin-1-codec utf-8-codec utf-16-codec utf-32-codec 
+
+That list of standard codecs includes three of the seven Unicode
+character encoding schemes, but omits UTF-16BE, UTF-16LE, UTF-32BE,
+and UTF-32LE on the grounds that Scheme programmers should be
+encouraged to use codecs that use and interpret a byte-order-mark
+(BOM) or its absence as specified by the Unicode standard. (See
+[issue:BOM].)
+
+Implementations may support other codecs, eol styles, and other kinds
+of transcoders. In particular, they may support Unicode character
+encoding schemes that interpret a BOM as a ZERO WIDTH NO-BREAK SPACE,
+a noncharacter, or as a private use character.
+
+The binary transcoder is a special pseudo-transcoder that is returned
+by the binary-transcoder procedure (which would be added to the
+procedures described in section 15.3). Every binary transcoder is eqv? 
+to every binary transcoder (but not necessarily eq?), and is not eqv? 
+to any transcoder that is returned by the make-transcoder
+procedure. The transcoder-codec, transcode-eol-style, and
+transcoder-error-handling-mode procedures return #f when given a
+binary transcoder as their argument.
+
+A binary port is a port whose transcoder is the binary transcoder.
+
+Binary ports are created by passing the binary transcoder to an open-X
+procedure, or by calling an open-bytes-X or call-with-bytes-X
+procedure with no transcoder argument.
+
+The binary lookahead-X, get-X, and put-X operations (which have "byte"
+or "bytes" in their names) operate only on binary ports.
+
+A text port is a port whose transcoder is not the binary transcoder.
+
+Text ports are creating by passing a transcoder other than the binary
+transcoder to an open-X procedure, or by calling an open-X procedure
+without a transcoder argument (provided the open-X procedure is not
+one of those whose standard name contains "bytes").
+
+The textual lookahead-X, get-X, and put-X operations operate only on
+text ports. They do not accept a transcoder as an argument.
+
+A new procedure, transcoded-port, takes a binary port and a transcoder
+as arguments and returns a new text port whose state is largely that
+of the binary port but whose transcoder is the newly specified
+transcoder.
+
+To prevent interference between operations on the original binary port
+and buffering of transcoded characters on the text port created by
+transcoded-port, the original binary port is closed when the derived
+text port is created. (Implementation note: the original binary port
+can be cloned, the cloned port encapsulated within the derived text
+port, and then the original port closed in a special way that doesn't
+release resources needed by its clone.)
+
+If no optional transcoder argument is passed to an open-file-X
+procedure, then a text port is returned but the transcoder associated
+with that text port is not otherwise specified. (See [issue:locale].)
+
+The port-position and set-port-position! procedures are required only
+for binary ports that were created by an open-X procedure. (See
+[issue:position].)
+
+The open-X procedures may raise an exception if the specified
+transcoder is not supported for the kind of port being opened.
+
+To simplify the process of reading individual characters a binary
+port, the R6RS should provide something like get-char-from-binary and
+lookahead-char-from-binary, which would take a binary port and a
+transcoder as arguments. (See [issue:lookahead].)
+
+The various procedures that are associated with bytes and string ports would also change. The changes for those procedures are contingent upon acceptance of the design sketched above, so I will not try to suggest any detailed specification for those procedures in this comment, except to note that transcode-bytes and transcode-string procedures should be provided to simplify translations from bytes to strings and vice versa. 
+
+* * 
+
+Issues: 
+
+[issue:bidirectional] 
+
+Transcoding algorithms are unidirectional (bytes to characters or
+characters to bytes), but are usually named in pairs that are
+near-inverses of each other.
+
+[issue:BOM] 
+
+While I'm all for encouraging programmers to use the Unicode character
+encodings that interpret byte order marks as specified by the Unicode
+standard, I worry about documents that implicitly use or explicitly
+specify UTF-16LE or UTF-32LE, which cannot be read using the UTF-16 or
+UTF-32 codecs. If few documents actually use UTF-16LE or UTF-32LE,
+then this is not much of a concern.
+
+[issue:locale] 
+
+Implementations of Scheme will be in a much better position than the
+R6RS to guess the transcoding that is appropriate for a text file, so
+the R6RS should not insist upon any particular transcoding when none
+is specified by the call to an open-X procedure.
+
+[issue:position] 
+
+Asking for the byte position of a complexly transcoded port can be
+like asking for the carrier frequency of a spread spectrum signal, and
+I am told that some standard encodings do not always align the
+encodings of characters upon byte boundaries, so the port-position
+operation should be required only for binary ports, if at all.
+
+[issue:lookahead] 
+
+For a more general approach to this problem, see
+http://lists.r6rs.org/pipermail/r6rs-discuss/2006-November/000646.html
+(See also [issue:readers].)
+
+[issue:readers] 
+
+The readers described in section 15.2 of the draft R6RS might seem
+relevant to the problem of providing ports with arbitrary lookahead,
+but they can't solve that problem because they aren't ports. It seems
+as though the right thing to do may be to eliminate readers and
+writers from the report, while folding their functions into ports that
+represent arbitrary sources and sinks. That might be too radical for
+R6RS, but dropping readers and writers from the R6RS would clear the
+way for a more general solution in R7RS.
+

@@ -1,0 +1,39 @@
+Ticket #86 (defect)
+
+Last modified 1 week ago
+Legal libraries cannot be imported
+Status: new	Reported by:	Andre Van Tonder	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	presentation	Version:	5.91
+
+Summary: 
+
+The <import spec> syntax disallows some legally definable libraries
+from being imported.
+
+Description: 
+
+Libraries with names like
+
+(only foo bar), (except foo bar), (rename foo), (for foo expand), (for foo run), (add-prefix foo bar) 
+
+can be legally defined. However, the current <import spec> syntax
+makes it impossible to import them. For example, since "the ambiguity
+should be resolved in favor of the interpretation of the name as
+library syntax", the following cannot be used to import the above
+libraries:
+
+(import (only foo bar) 
+
+(except foo bar) (rename foo) ...) 
+
+Suggestion: 
+
+Either 
+
+- Make library names single identifiers (as argued already in another
+  formal comment), or
+
+- Drop the (single-identifier) -> single-dentifier shorthand of the
+  current spec.
+

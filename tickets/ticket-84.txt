@@ -1,0 +1,164 @@
+Ticket #84 (simplification)
+
+Eliminate compound library names
+Status: new	Reported by:	Michael Lenaghan	Assigned to:	mflatt
+Priority:	major	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+
+Section: 6.1 Library form (pg 21) 
+
+Dependencies: 6.4 Examples (pg 25) 
+Description
+
+R6RS allows compound library names. Compound names create a variety of
+problems that aren't worth the cost.
+
+Compound names are harder to read.
+
+Here's part of the example in section 6.4: 
+
+        (library (my-helpers values-stuff) 
+                (export mvlet) 
+                (import r6rs (for (my-helpers id-stuff) expand))
+                ...)
+
+It would be difficult to argue that the compound name enhances
+readability. But this is a simple example; import sets can be nested,
+creating far more complex expressions:
+
+        (library (my-helpers values-stuff) 
+                (export mvlet) 
+                (import r6rs (for (add-prefix (only (my-helpers id-stuff) find-dup) mh-id:) expand))
+                ...)
+
+Typically the import set identifiers are the first symbol in a
+list. Compound names become an exception to that rule requiring a much
+more careful read of the code to distinguish names from syntax. The
+ambiguity is real; it is possible for a compound name to look exactly
+like an import set. The specification states that in such cases the
+ambiguity should be resolved in favor of library syntax--but in the
+absence of compound names such ambiguity would be impossible; library
+names would always be identifiers and import sets would always be
+lists. [Library version numbers make that statement not quite true,
+but I'll tackle version numbers in a separate comment.]
+
+Compound names invite a misleading sense of file hierarchies.
+
+Compound names might make more sense if they were related to file
+hierarchies, but they aren't. Indeed, R6RS makes some effort to break
+the link between file names and compound library names. For example,
+the R6RS compound library names (ie, the standard libraries) appear to
+form a logical rather than physical hierarchy; it's unlikely that any
+implementation would make any effort to mirror that hierarchy in
+files. Still, when you see a compound name it's just too easy to
+assume the correspondence.
+
+I don't mean to imply that this is fatal. Rather, I'm suggesting that
+the confusion is natural and I'm asking what benefit is gained by it.
+
+Of course, even worse is the prospect that some implementations might
+actually decide to map compound names to files. That raises the
+spectre of portability issues since the mapping isn't specified and
+would potentially differ from one implementation to the next. Compound
+names invite a misleading sense of hierarchy.
+
+Not only are compound names not file hierarchies, they aren't really
+hierarchies of any kind.
+
+For example, R6RS defines a set of library names. All but one of the
+names is compound. (Technically, of course, all names are compound,
+but you know what I mean.) The one non-compound name, r6rs, appears to
+be the root of a hiearchy, but in fact it's simply another identifier
+that happens to start with the same symbol. Section 21 says:
+
+"The (r6rs) library is a composite of most of the libraries described
+in this report. The only exceptions are..."
+
+So r6rs simply imports a set of libraries and exports their
+identifiers. There is no other relationship between them.
+
+Again, this is not fatal, just a little confusing than it needs to
+be. And again the question is what benefit is gained by the feature to
+warrant the confusion. Compound names run counter to the concept of a
+Scheme identifier.
+
+Scheme has a pervasive concept of identifier. Compound names run
+counter to that concept. That complicates various plausible library
+enhancements.
+
+For example, Chez's module names are identifiers. In Chez modules can
+be imported and exported via their names. I've built sophisticated
+object systems in Chez that use modules to implement classes. The
+class definition expands into a module definition; the module exports
+the user-accessible part of the class implementation. The generated
+module is automatically imported into local scope. More importantly,
+though, the module that contains the class implementation has a
+generated name. That means that the module containing the class can be
+exported from *its* enclosing module with a single identifier (ie, via
+the generated module name). It also means that the entire class
+(constructor, class methods, instance methods, etc.) can be imported
+into another module via that module name:
+
+        (module some-module (some-class)
+
+                (module some-class 
+                        (make-some-class
+                         some-class-a
+                         some-class-a!
+                        ...)
+                        <some private stuff we don't
+                         want to make visible...>
+                        ...)
+                (import some-class)
+
+                ...)
+
+        (module some-other-module ()
+                (import some-class)
+
+                (some-class-a (make-some-class)))
+
+How much will compound names complicate such usage? For example,
+identifiers can be prefixed or renamed during import. Obviously you
+can neither prefix nor rename a compound name using the existing
+syntax. It goes on; in the face of compound names, for example, how do
+syntax-case' free-identifer=? and bound-identifier=? work?
+
+Andre van Tonder added these points on the discussion list; I believe
+they make the same point from a different (and more accurate)
+perspective: The current specification does not generalize to local
+libraries, which are a very natural future extension that already
+exists in at least one major Scheme implementation.
+
+Local library names must be identifiers so that they can scope
+lexically and be subject to hygiene, like other bindings. The current
+draft says that toplevel library names are not identifiers. As a
+result, an extension of the current draft that adds local libraries
+would be forced into the absurd situation where toplevel and local
+libraries belong to two different namespaces. It is as absurd as
+introducing different namespaces for local and toplevel "define".
+
+Even if one never needs to add local libraries, the current
+specification introduces two namespaces at the toplevel - that is in
+Schemes that do have a toplevel, which r6rs does not forbid. This goes
+against the one-namespace tradition in Scheme.
+
+(That isn't meant to imply that he agrees or disagrees with anything
+else I've said.)
+
+Recommendations
+
+Eliminate compound library names. 
+
+This will of course require that all but one of the R6RS libraries be
+renamed. Suggest a naming convention for compound library names that
+are still
+
+single identifiers. 
+
+Someone on the discussion list pointed out that in an identifier like
+r6rs-hash-table it's impossible to see where the breaks are meant to
+go. They suggested that R6RS could produce a convention for naming the
+parts of a compound name within a single identifier--eg,
+r6rs:hash-table or r6rs::hash-table.
+

@@ -1,0 +1,33 @@
+Ticket #72 (enhancement)
+
+A record-type-length procedure is suggested
+Status: new	Reported by:	Andre van Tonder	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	records	Version:	5.91
+
+Pages : 72 
+Summary
+
+A record-type-length procedure is suggested. 
+
+Description
+
+An operation is requested that returns the valid range for the field
+index argument of the procedures "record-accessor", "record-mutator"
+and "record-field-mutable".
+
+Such a procedure would be convenient and useful for more efficiently
+writing operations that act on more than one record type. One use case
+supported by record-type-length would be a "record-copy" procedure
+that can copy an arbitrary non-opaque record value with maximum
+efficiency.
+
+Currently, although the length is indirectly available via
+(record-type-field-names rtd), this is less convenient and may be
+slighly less efficient for the above kind of use case.
+
+Suggestion
+
+E.g., 
+  (record-type-length rtd)
+

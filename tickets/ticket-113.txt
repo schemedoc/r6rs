@@ -1,0 +1,23 @@
+Ticket #113 (simplification)
+
+fenders should be dropped from syntax-rules
+Status: new	Reported by:	David Van Horn	Assigned to:	dyb
+Priority:	major	Milestone:	r6rs
+Component:	macros	Version:	5.91
+
+Summary
+
+The <fender> production should be removed from the language of
+syntax-rules forms. Description
+
+Allowing fenders in syntax-rules significantly complicates the
+semantics of syntax-rules-based transformations, introducing phase
+distinctions where there used to be none and allowing the use of
+arbitrary Scheme code in what was once a simple rewritting
+specification. The complications add essentially no practical benefit
+without also using the (r6rs syntax-case) library. With the inclusion
+of syntax-case in R6RS, when fenders are needed, they may be used and
+a derived form syntax-rules/fenders can be defined using (r6rs
+syntax-case), but this makes it explicit that the enhanced facilities
+provided by syntax-case are being relied upon.
+

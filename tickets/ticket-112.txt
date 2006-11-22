@@ -1,0 +1,43 @@
+Ticket #112 (defect)
+Status: new	Reported by:	Andre van Tonder	Assigned to:	mflatt
+Priority:	minor	Milestone:	r6rs
+Component:	libraries	Version:	5.91
+
+Pages : 23 
+
+Summary
+
+The current spec does not specify whether the phases in which bindings
+are available are determined lexically.
+
+Description
+
+The following example may or may not be an error according to the
+current draft:
+
+    (library foo
+      (import r6rs)
+      (export f)
+      (define (f) 1))
+
+    (library bar
+      (import r6rs
+              (for foo expand))  ;; This is the wrong level !
+      (export g)
+      (define-syntax g
+       (syntax-rules ()
+         ((_) (f)))))    ;; used at level RUN
+
+    (library main
+      (import foo bar)   ;; Imports f for level RUN
+      (display (g)))     ;; not specified if this is error
+
+I believe the reference implementations all say that this is an error,
+so there should not be any technical issue in specifying it to be one.
+
+Suggestion
+
+Allowing the above to not be an error would be in conflict with
+lexical scoping of phases. Leaving it unspecified invites portability
+problems.
+

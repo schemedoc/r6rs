@@ -1,0 +1,44 @@
+Ticket #125 (enhancement)
+
+Quasiquote should support unquotation within bytes object
+Status: new	Reported by:	Felix Klock	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	bytes	Version:	5.91
+
+It seems natural and useful to support unquotation for the elements of
+a bytes object.
+
+For example: 
+
+(let ((a 0) (b 1) (cs '(2 3))) 
+
+`#vu8(,a ,b ,@cs)) ==> #vu8(0 1 2 3) 
+
+This is relevant to the section on quasiquotation (which is unnumbered
+in R{5.91}RS but immediately follows section 9.19) on pages 52-53.
+
+To support this: 
+
+1.) The grammar for quasiquotation would need to be extended with a
+template for bytes, something like the following:
+
+<bytes qq template D> -> #vu8(<qq template or splice D>*) 
+
+2.) The report would need to specify whether spliced expressions can
+evaluate to either an octet or a byte at whim, or if the expressions
+must always evaluate to octets, or always to bytes.
+
+This corresponds to deciding whether unquote within a #vu8(...) can
+expand unconditionally to bytes-u8-set! (or bytes-s8-set!), or if some
+new procedure will need to be introduced that handles both octets and
+bytes as arguments.
+
+3.) The report would need to specify the behavior when an unquoted
+expression evaluates to a value that cannot be stored in a bytes
+object; one choice would be to raise a &contract exception.
+
+One contentious aspect of this suggestion is that the bytes objects
+support a variety of -set! and -ref procedures, but quasiquote would
+presumably only accept unquoting of expressions that evaluate to
+single bytes (or, in the case of unquote-splicing, lists of bytes).
+
