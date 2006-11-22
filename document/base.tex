@@ -826,7 +826,7 @@ Then, the \hyper{body} is evaluated in the extended environment, and the
 value(s) of the last expression of \hyper{body} is(are) returned.
 Each binding of a variable has \hyper{body} as its
 region.\index{region}
-If no \hyper{formals} match, an exception with condition type
+If the \hyper{formals} do not match, an exception with condition type
 {\cf\&contract} is raised.
 
 \begin{scheme}
@@ -3393,10 +3393,12 @@ expressions in {\cf lambda}, {\cf begin}, {\cf let}, {\cf let*}, {\cf
 of the \var{before} and \var{after} arguments to {\cf dynamic-wind}
 take an arbitrary number of values.
 
-Except for these and the continuations created by the {\cf
-  call-with-values} procedure, all other continuations take exactly
-one value.  The effect of passing an inappropriate number of values to
-a continuation not created by {\cf call-with-values} is undefined.
+Except for these and the continuations created by {\cf
+  call-with-values}, {\cf let-values}, and {\cf let*-values}, all
+other continuations take exactly one value.  The effect of passing an
+inappropriate number of values to a continuation not created by {\cf
+  call-with-values}, {\cf let-values}, or {\cf let*-values}is
+undefined.
 \end{entry}
 
 \begin{entry}{%
