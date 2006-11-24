@@ -15,18 +15,27 @@ overkill. #;<datum> adds no expressive power, and is dangerous, and
 should be removed.
 
 #;<datum> is always equivalent to #|<datum>|#. It saves two
-#;characters, at the cost of making it harder to see where the comment
-#;ends. The expressed rationale is to make it easy to comment out
-#;sections of code - but it only makes sense to use it during
-#;development/debugging. In "production" code or anything else
-#;supposed to be maintainable you clearly should use #|...|# instead
-#;since it is much safer and clearer exactly what is commented
-#;out. And during development/debugging you can use an editor/IDE
-#;which can just as easily enclude code in #|...|# comments.
+characters, at the cost of making it harder to see where the comment
+ends. The expressed rationale is to make it easy to comment out
+sections of code - but it only makes sense to use it during
+development/debugging. In "production" code or anything else
+supposed to be maintainable you clearly should use #|...|# instead
+since it is much safer and clearer exactly what is commented
+out. And during development/debugging you can use an editor/IDE
+which can just as easily enclude code in #|...|# comments.
 
 Furthermore, #|<datum>|# is strictly more powerful, since it can
 comment out not just a single <datum> but as many as you want.
 
 #; is the sort of "save two characters" "feature" which is not
-#; appropriate in a Scheme standard.
+appropriate in a Scheme standard.
 
+DRAFT RESPONSE
+
+We remain more convinced by the arguments in favor of `#;',
+particularly that it allows a programmer to clearly communicate the
+commenting out of a single expression (as opposed to a line or block
+of arbitrary text).
+
+Since one purpose of the standard is to foster communication in terms
+of code, it is appropriate for R6RS to standardized `#;'.
