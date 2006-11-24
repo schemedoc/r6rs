@@ -65,7 +65,9 @@ case of a script, and at least the first one in case of other bodies)
 have already been partially expanded. Since declarations presumably
 might be intended to affect the result of expanding expressions (e.g.,
 by expanding to safe or unsafe primitives), this might break the
-declarations. Option 2:
+declarations.
+
+Option 2:
 
 Instead of the scope of a definition being the whole <body>, the scope
 could be defined to be just the
@@ -76,3 +78,13 @@ part of the body (for this to be consistent also with the expansion
 process for scripts, I think one would also have to require
 declarations to precede definitions in scripts).
 
+DRAFT RESPONSE
+
+Option 2 is the simplest way to repair the problem.
+
+The freedom to place declarations anywhere within a script
+should be withdrawn.  Declarations, if present, should
+precede all definitions.
+
+The scope of definitions should exclude any declarations
+that precede the definitions.

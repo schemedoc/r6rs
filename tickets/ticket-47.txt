@@ -50,3 +50,59 @@ I try to anticipate possible objections:
 
 - "But implementors..." Eh, they can handle it.
 
+DRAFT RESPONSE
+
+The R6RS should definitely provide sorting routines in one
+of its standard libraries.
+
+The comment proposes two procedures from a SRFI that was
+withdrawn several years ago.  Both are non-stable, and one
+is destructive.
+
+As can be seen by reading section 23 of the draft R6RS,
+higher-order procedures that perform side effects create
+problems.  To reduce these problems, and to provide the
+most useful sorting routines with the simplest API, Will
+suggests that the R6RS provide the following procedures:
+
+(list-sort proc list)
+(vector-sort proc vec)
+
+For both procedures, the first argument must be a predicate
+that accepts any two elements of the list or vec and returns
+a boolean indicating whether its first argument is less than
+or equal to its second.  This predicate should not have any
+side effects.
+
+The list-sort and vector-sort procedures perform a stable
+sort of the list or vec, without changing the given list or
+vec in any way.  The list-sort procedure returns a list, and
+vector-sort returns a vector.  The results may be eq? to the
+arguments when the arguments are already sorted, and the
+result of list-sort may share structure with a tail of the
+original list.  The sorting algorithm performs O(n lg n)
+calls to the predicate, and all arguments passed to the
+predicate are elements of the list or vector being sorted,
+but the pairing of arguments and the sequencing of calls to
+the predicate are not specified.
+
+Issues:
+
+Placing the procedure first is the convention established
+for R5RS and previous reports, but the R6RS could break with
+that tradition as it has with others.
+
+One can argue whether the predicate should define the meaning
+of "less than or equal" or just "less than".
+
+The effect of a destructive sort on a subvector can be
+obtained by copying the subvector into a fresh vector,
+performing a non-destructive sort, and copying the result
+back into the original subvector.  The copying would not
+change the asymptotic complexity of the overall sort, is
+unlikely to add much to the sort's constant factors, and
+has much cleaner semantics than a destructive sort in place.
+
+The list-sort and vector-sort procedures could be combined
+into a single sort procedure that dispatches to an internal
+list-sort or vector-sort based on its argument.

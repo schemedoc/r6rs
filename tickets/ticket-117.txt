@@ -65,3 +65,50 @@ bodies. Add a comment that these forms establish new lexical regions.
 The syntax definitions of cond, case, do, when, and unless in 19.9,
 20.1, and Appendix B do not need changing if begin takes a body.
 
+DRAFT RESPONSE
+
+As the comment observes, current practice for placing
+definitions in an otherwise illegal context involves
+the (let () ...) hack.  That hack works fine, but is
+considered inelegant.  The comment's proposal would
+reduce but not eliminate uses of the hack.
+
+The main problem with this proposal is that it would
+interact with the macro expander's determination of
+the boundary between definitions and expressions.
+The algorithm described in section 8 of the current
+draft would have to be changed, and new scope rules
+would have to be invented:
+
+    (let ((main (lambda (f)
+                  (define (g) (f))
+                  (begin (define (f) 13)
+                         (g)))))
+      (main (lambda () 17)))
+
+With the draft R6RS, the expression above evaluates
+to 13.  With the proposed change, it is unclear
+whether it should evaluate to 13 or to 17.
+
+The proposal would create many new opportunities for
+placing declarations and definitions, without making
+declarations and definitions available in all contexts.
+This would provide a small increase in convenience, at
+the cost of a small increase in confusion: programmers
+have to know which syntactic constructs have bodies,
+and that set would become larger under the proposal.
+
+Confusion would also increase because the meaning of a
+definition would depend upon whether it is followed by
+an expression.  Within a module body, for example:
+
+    ; x can be exported
+
+    (begin (define x 3))
+
+    ; y cannot be exported
+
+    (begin (define y 4) 5)
+
+The benefits and costs of this proposal are small, but
+its costs may be larger than its benefits.

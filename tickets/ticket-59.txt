@@ -85,3 +85,41 @@ Common Lisp
 
 <http://www.lisp.org/HyperSpec/Body/sec_2-4-8-3.html>
 
+DRAFT RESPONSE
+
+To expand on current practice:
+
+                        '#4(0 1 2 3)    '#4(0 1)
+
+Bigloo 2.7a             error           error
+Petite Chez 7.0a        #4(0 1 2 3)     #4(0 1 1 1)
+Chicken 2,5             error           error
+Gambit-C v4.0b20        error           error
+Kawa 1.8                #(0 1 2 3)      #(0 1)
+Larceny v0.93           error           error
+MIT Scheme 7.7.90.+     error           error
+MzScheme v352           #4(0 1 2 3)     #4(0 1 1 1)
+Scheme 48 v1.3          error           error
+SCM 5e1                 error           error
+
+Two of the three systems that allow the proposed syntax
+also use it (by default) when writing vectors, which has
+been a barrier to portability.  There are two obvious ways
+to fix this non-portability: require the implementations
+that are using the syntax to stop using it (as was done
+by the current draft), or require all implementations
+to support it (as the comment proposes).
+
+In the current draft R6RS, choices of this kind were
+generally settled by requiring implementations that use
+the nonstandard syntax to stop using it, unless those
+implementations are represented by at least two editors.
+That is a silly precedent, however, and the R6RS might
+find greater acceptance within the Scheme community if
+the editors would refrain from preferring their own pet
+extensions over those of other implementations.
+
+On the other hand, the proposed extension does not do
+a great deal of harm.  The main issue is whether it has
+been implemented by enough systems and is important
+enough to be required of all R6RS-conformant systems.

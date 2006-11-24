@@ -35,7 +35,8 @@ any x. Similar examples could be added for some of the other numerical
 predicates.
 
 Contrary to ticket #8, the specification of eqv? does not say that
-(eqv? x y) implies (= x y) when x and y are numbers.
+(eqv? x y) implies (= x y) when x and y are numbers.  This should
+be emphasized by an example.
 
 Ticket #8 gives no reason in support of its statement that
 (let ((x +nan.0)) (eq? x x)) needs to be true.  The R5RS does
@@ -43,12 +44,42 @@ not guarantee that (let ((x z)) (eq? x x)) will be true when
 z is a number, and we see no reason for the R6RS to add such
 a guarantee for the special case where z is a NaN.
 
+It would have been more reasonable to argue that the R6RS
+should require (let ((x E)) (eqv? x x)) to evaluate to true
+when E evaluates to a number; both the R5RS and R6RS imply
+this for certain other types, and for most numbers, but not
+for NaNs.  Since the IEEE-754 and draft IEEE-754R both say
+that the interpretation of a NaN's payload is left up to
+implementations, and implementations of Scheme often do not
+have much control over the implementation of IEEE arithmetic,
+it would be unwise for the R6RS to insist upon the truth of
+(let ((x E)) (or (not (number? x)) (eqv? x x))), even though
+that expression is likely to evaluate to true in most
+systems.  For example, a system with delayed boxing of
+inexact real numbers may box the two arguments to eqv?
+separately, the boxing process may involve a change of
+precision, and the two separate changes of precision may
+result in two different payloads.
+
 When x and y are flonums represented in IEEE floating point or
-similar, it is reasonable to implement (eq? x y) by a bitwise
+similar, it is reasonable to implement (eqv? x y) by a bitwise
 comparison of the floating point representations.  The R6RS
 should not require this, however, because (1) the R6RS does
 not require that flonums be represented by a floating point
-representation, and (2) the interpretation of a NaN's payload
+representation, (2) the interpretation of a NaN's payload
 is explicitly implementation-dependent according to both the
 IEEE-754 standard and the current draft of its proposed
-replacement, IEEE-754R.
+replacement, IEEE-754R, and (3) the semantics of Scheme
+should remain independent of bit-level representations.
+
+For example, IEEE-754, IEEE-754R, and the draft R6RS all allow
+the external representation +nan.0 to be read as a NaN whose
+payload encodes the input port and position at which +nan.0
+was read.  This is no different from any other external
+representation such as (), #(), or 324.  An implementation
+can have arbitrarily many bit-level representations of the
+empty vector, for example, and some do.  That is why the
+behavior of the eq? and eqv? procedures on vectors cannot
+be defined by reference to bit-level representations, and
+must instead be defined explicitly.
+
