@@ -63,3 +63,34 @@ ill-formed UTF-8 and UTF-16 as spellings of sequences of certain
 private-use codepoints. Round-trips with processes that don't
 understand these private use characters are perfectly robust to the
 extent that those processes are conforming.
+
+DRAFT RESPONSE
+
+We concede that scalar values (as reflected by the R6RS character data
+type) is not a suitable representation for all forms of data. Perhaps
+more surprisingly, scalar values turn out to be unsuitable for
+representing UTF-16 code units.
+
+In response to the key remark:
+
+ What is not clear to me is why the authors favor the restriction and
+ what kind of arguments, examples, logic etc. to offer in order to
+ attempt to persuade them otherwise.
+
+Given the complexity of the topic, and given that our areas of
+expertise lie elsewhere, the editors have simply chosen to follow
+other experts on this point: the Unicode consortium. By our reading,
+every consortium standard and recommendation that we find explicitly
+prohibits unpaired surrogates, including the the UTF-8 encoding, the
+UTF-16 encoding, the UTF-32 encoding, and recommendations for
+implementing the ANSI C wchar_t type.
+
+Even UCS-4, which originally permitted a larger range of values that
+includes the surroagte range, has been redefined to match UTF-32
+exactly. That is, the original UCS-4 range was shrunk and surrogates
+were exlcuded.
+
+We would be pursuded by a published recommandation from the Unicode
+consortium that seems to us to unambiguously support your suggestion,
+e.g., a recommendation of Unicode code points as a suitable definition
+for a "character" datatype.

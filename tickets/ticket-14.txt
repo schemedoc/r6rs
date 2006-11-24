@@ -3,7 +3,7 @@ Ticket #14 (defect)
 <hex scalar value> should allow only 6 digits
 Status: new
 Reported by:	John Cowan
-Assigned to:	sperber
+Assigned to:	mflatt
 Priority:	minor
 Component:	lexicalsyntax
 Version:	5.91
@@ -12,3 +12,19 @@ Cc:
 
 The maximum Unicode scalar value is 10FFFF, so 6 digits suffice.
 
+DRAFT RESPONSE
+
+The current limit of 8 digits is an arbitrary hold-over from a
+previous attempt to be compatible with other syntaxes.
+
+Limiting to 6 digits would be a clear improvement. Removing the limit
+entirely also seems sensible, given that the range of the specific
+number must be checked anyway (to be less than #x110000 and not in the
+surrogate range).
+
+A possible advantage of keeping a limit is that it might simplify the
+implementation of some parsers. A certain advantage of removing the
+limit is that it's simpler to specify.
+
+In the interest of specification simplicity, the next draft of R6RS
+removes the limit.

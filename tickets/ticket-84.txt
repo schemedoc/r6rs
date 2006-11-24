@@ -162,3 +162,42 @@ go. They suggested that R6RS could produce a convention for naming the
 parts of a compound name within a single identifier--eg,
 r6rs:hash-table or r6rs::hash-table.
 
+DRAFT RESPONSE
+
+With respect to point that compound names can be more difficult to
+read, the point is well taken. Simply eliminating compound names does
+not solve this problem, however, unless we also eliminate versioning.
+
+With respect to the point about local modules, we agree that your
+examples are excellement confirmation for the usefulness of local
+modules. The debatable point, however, is whether top-level `library'
+is (or should be) the same construct as local `module'. The job of the
+top-level `library' system is to organize the top-level namespace, and
+not to serve as a target for expansion of sophisticated macros. Of
+course, the broader roles and syntactic similarity of `module' and
+`library' suggest merging the concepts, but merging the concepts
+further broadens the role of each; such generalization seems
+intuitively right to Scheme programmers, but all our previous attempts
+that such broadening have led away from consensus rather than toward
+it. In the long run, you may be proven correct, but this is a point
+where we have decided to prune the search for a workable `library'
+form.
+
+When considreing just `library' for it's role in organizing the
+top-level namespace, experiemnce across programming languages stringly
+suggests a hierarchy. Embedding a heirachy within a single string or
+symbol is certainly possible; the SRFI draft of the `library' system
+took that approach. Ultimately, we became convined by the arguments in
+favor of using S-expressions to reprsent hierarchical structure,
+rather than encoding it in a string or symbol. Versioning, in
+particular, seems natural in S-expression form, but awkward in encoded
+form.
+
+For these reasons, despite the syntactic complexity of compound names,
+and despite the potential mishandling of the hierarchy by
+implementations, we belive that the hierarchy is worth keeping for
+R6RS.
+
+
+Even keeping the hierarchy, we could improve the syntax to make it
+more readable. See the response to formal comment 86...
