@@ -15,3 +15,46 @@ arguments to be of unequal length, and specify that they terminate
 when the shortest list runs out. This is what SRFI-1 does, it is
 cheap, and it is useful.
 
+DRAFT RESPONSE
+
+The proposal is indeed cheap to implement, more useful
+than the draft R6RS semantics, and has one of the most
+widely used SRFIs as precedent.
+
+To investigate precedent further, several implementations
+were tested to see whether they allow list arguments of
+different lengths:
+
+Bigloo 2.7a             error
+Petite Chez 7.0a        error
+Chicken 2,5             error
+Gambit-C v4.0b20        error
+Kawa 1.8                okay (but does not allow circular lists)
+Larceny v0.93           okay (but does not allow circular lists)
+MIT Scheme 7.7.90.+     error
+MzScheme v352           error
+Scheme 48 v1.3          okay (but does not allow circular lists)
+SCM 5e1                 okay (even with circular lists)
+
+It is questionable whether the SRFI-1 extension of these
+procedures to accept lists of differing lengths is so
+widely accepted that it should be required by the R6RS.
+
+On the other hand, the SRFI-1 extension is common enough
+that the R6RS should not preclude it.  With the current
+draft R6RS, programs that use the extended forms of map
+and for-each would have to import them from a SRFI-1 or
+other nonstandard library, and would have to exclude map
+and for-each when importing (r6rs base) or (r6rs).  The
+need to exclude map and for-each when importing those
+libraries could be eliminated by dropping map and for-each
+from the standard libraries, or by renaming them, perhaps
+to list-map and list-for-each, to indicate that they are
+fussier than their equivalents in SRFI-1.
+
+Another solution would be to specify map and for-each as
+in R5RS:  If list arguments have different lengths, then
+an exception might be raised, but is not required.
+Portable programs would not be able to depend upon the
+extension, and would also not be able to depend upon the
+exception being raised.

@@ -89,3 +89,56 @@ prose.
 
 Andre
 
+DRAFT RESPONSE
+
+Some ambiguity is desired.  Prose specifications often contain
+too much ambiguity, while specifications as code often contain
+too little.  This is a well-known problem with specifications
+in general.
+
+It wouldn't hurt to have less ambiguous specifications, but
+specifications as code aren't going to be very simple given
+the complexity of requirements introduced by the draft R6RS.
+
+The map procedure, for example, could be required to behave
+as though defined by
+
+(define (map f x . rest)
+
+  (define (check-arguments)
+    (if (not (and (list? x)
+                  (let ((n (length x)))
+                    (forall (lambda (y)
+                              (and (list? y) (= n (length y))))
+                            rest))))
+        (apply contract-violation 'map
+                                  "illegal list arguments"
+                                  x rest)))
+
+  (define (map1 f x)
+    (if (pair? x)
+	(cons (f (car x)) (map1 f (cdr x)))
+	'()))
+
+  (define (mapn f lists)
+    (if (pair? (car lists))
+	(cons (apply f (map1 car lists))
+	      (mapn f (map1 cdr lists)))
+	'()))
+
+  (check-arguments)
+  (mapn f (cons x rest)))
+
+The above specification as code avoids specifying the dynamic
+order in which f is applied to the elements of the lists, but
+does not allow all of the behaviors that the draft R6RS was
+intended to allow.  For example, the above specification as
+code would rule out copying of all list arguments on entry,
+which is in some ways a more desirable implementation than
+the one given above.
+
+If the first argument to map were forbidden to have side
+effects, then the above specification as code would work
+better.  This is an example of how prose and code can work
+together to provide less ambiguous specifications, which
+would be an improvement over the draft R6RS.
