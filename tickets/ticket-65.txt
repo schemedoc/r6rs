@@ -24,3 +24,17 @@ I have two alternative proposals:
 
 eq? would be permitted to return either #t or #f, as with all numbers.
 
+RESPONSE:
+
+That specification of `eqv?'  says that `eqv?' returns #t "if" any of
+several things are true, and returns #f "if" any of several other
+things are true.  There is no "only if" or "if and only if".  The
+behavior of eqv? on NaNs is not specified by section 9.6.  A
+clarifying example will be added to that effect.
+
+The basic reason why the behavior of `eqv?' is not specified on NaNs
+is that the IEEE-754 standard does not say much about how the bits of
+a NaN are to be interpreted, and explicitly allows implementations of
+that standard to use most of a NaN's bits to encode
+implementation-dependent semantics.  The implementors of a Scheme
+system should therefore decide how `eqv?' should interpret those bits.

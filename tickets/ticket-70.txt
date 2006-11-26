@@ -36,3 +36,28 @@ this library might be profitably excised. Suggestion
 Perhaps drop this library. Alternatively, it may be helpful to provide
 a compelling rationale for including it.
 
+RESPONSE:
+
+The following rationale is the basis for the decision to include
+enumerations:
+
+Many procedures in many libraries accept arguments from a finite set,
+or subsets of a finite sets to describe a certain mode of operation,
+or several flags to describe a mode of operation.  Examples in the
+R6RS include the endianness for bytes-object operations, and file and
+buffering modes in the I/O library.  As the mandate of the R6RS is to
+foster portable and readable code, it makes sense to offer a default
+policy for dealing with such values.  (Much as records do for compound
+values, or multiple values for procedures computing several values.)
+Moreover, as noted in am earlier formal comment, representations of
+sets from a finite set of options should offer the standard set
+operations, as they tend to occur in practice.  (One such set
+operation is the complement, which makes lists of symbols a less than
+suitable representation, by the way.)
+
+Different Scheme implementations have taken different approaches to
+this problem in the past, which suggests that a default policy does
+not merely encode what any sensible programmer would do anyway.  Given
+how often possible uses occur, it makes perfect sense to standardize
+this particular aspect of interface construction.
+

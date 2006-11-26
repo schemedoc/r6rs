@@ -93,3 +93,77 @@ downcasting ability is a requirement, in which case I would preferably
 use a different name for it. modify "make-condition" procedure as
 described above modify "condition" syntax as described above
 
+RESPONSE:
+
+====
+The condition system distinguishes between simple conditions and
+compound conditions.  A compound condition consists of an ordered set
+of simple conditions.  Thus, every condition can be viewed as an
+ordered set of simple component conditions: If it is simple, the set
+consists of the condition itself; if it is compound, it consists of
+the simple conditions that compose it.
+
+====
+The following procedures replace the ones in the current draft:
+
+(make-condition-type id parent field-names) <as before>
+
+(condition-type? thing) <as before>
+
+(make-condition type alist)
+
+Make-condition creates a simple condition value belonging condition
+type type. The following arguments must be an association list mapping
+field names to arbitrary values.  There must be a pair in the
+association list for each field of type and its direct and indirect
+supertypes. Make-condition returns the condition value, with the
+argument values associated with their respective fields.
+
+(condition? thing) <as before>
+
+(condition-has-type? condition condition-type) <as before>
+
+(explode-condition condition)
+
+Condition must be a condition.  This returns a list of the component
+conditions of condition.
+
+(condition-ref condition type field-name)
+
+Condition must be a condition, type a condition type, and field-name a
+symbol naming a field of type or its direct or indirect supertypes.
+Moreover, condition must be a simple condition of type type, or a
+compound condition containing a simple condition of type type.
+Condition-ref returns the value of the field named by field-name in
+the first component condition of condition that has type type.
+
+(make-compound-condition condition0 condition1 ...)
+
+Make-compound-condition returns a compound condition consisting of the
+component conditions of condition0, condition1, in that order.
+
+====
+The following replaces the current specification of the `condition'
+macro:
+
+(condition <type-field binding> ...)
+
+This creates a condition value. Each <type-field binding> must be of
+the form
+
+( <condition type> <field binding> ...)
+
+Each <field binding> must be of the form
+
+( <field name> <exp> )
+
+where <field> is a field identifier from the definition of
+<condition-type>.
+
+The condition returned by condition is created by a call of form
+(make-compound-condition
+  (make-condition <condition-type> '<field-name> <exp>...)
+  ...)
+
+with the condition types retaining their order from the condition
+form.

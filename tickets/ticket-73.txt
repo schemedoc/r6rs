@@ -34,3 +34,16 @@ definitions with a #f UID will not conflict with each other; and
 record definitions with a #f UID will effectively export themselves
 for sharing.
 
+RESPONSE:
+
+Nongenerative UIDs are in a sense very unmodular: The addition of a
+new nongenerative record-type definition can cause a program that
+worked without it to break, if the UIDs of the record-type definitions
+match.  Hence, a namespace for the UIDs is needed that avoids
+collisions as much as possible.  Allowing #f would make it much more
+likely that such collisions occur.
+
+Except for the #f part, the proposal of the formal comment would also
+minimize collisions.  Consequently, we will adopt this part of the
+formal comment.
+

@@ -17,3 +17,15 @@ real-valued? in particular returns #f on NaN (where real? returns #t).
 
 What are these procedures for? R6RS should say.
 
+RESPONSE:
+
+The `*-valued' procedures check whether a given number can be coerced
+to the specified type without loss of numerical information.  This is
+more closely related to the type information a program might require
+of a number than the "regular" numerical predicates, whose behavior is
+motivated by closure properties designed to enable efficient
+implementation.
+
+Issues:
+
+- `real-valued?' should return #t on +nan.0.

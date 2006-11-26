@@ -65,3 +65,22 @@ actual code would break, and secondly whether this is allowed by R5RS
 and/or R5RS. I'm requesting that if R6RS does not require the
 described behavior it at least not prohibit it.
 
+RESPONSE:
+
+The 5.91 draft contains a special note addressing this question:
+
+  The put-datum procedure merely writes the external
+  representation.  If put-datum is used to write several
+  subsequent external representations to an output port, care must be
+  taken to delimit them properly so they can be read back in by
+  subsequent calls to get-datum.
+
+The description of `put-datum' says nothing about a trailing
+delimiter, and a trailing delimiter is also not part of the external
+representation of a datum value.
+
+This was an intentional decision: Changing the specification to
+sometimes output a delimiter would make the description more complex,
+and programs using (output-string "") or an equivalent call harder to
+read.  On the other hand, explicit code to output the delimiter is
+easy to write and read.
