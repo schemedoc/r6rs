@@ -21,7 +21,7 @@ immediately returns that element.  If \var{proc} returns
 \end{entry}
 
 \begin{entry}{%
-\proto{forall}{ proc \vari{l} \varii{l} \dotsfoo{} \varn{l}}{procedure}
+\proto{for-all}{ proc \vari{l} \varii{l} \dotsfoo{} \varn{l}}{procedure}
 \proto{exists}{ proc \vari{l} \varii{l} \dotsfoo{} \varn{l}}{procedure}}
 
 \domain{Each \var{l} must be the
@@ -29,17 +29,17 @@ immediately returns that element.  If \var{proc} returns
   below.  \var{Proc} must be a procedure; it must take as many
   arguments as there are \var{l}s if \vari{l} is non-empty.}
 
-For natural numbers $i = 0, 1, \ldots$, the {\cf forall} procedure
+For natural numbers $i = 0, 1, \ldots$, the {\cf for-all} procedure
 successively applies \var{proc} to arguments $x_i^1 \ldots x_i^n$,
 where $x_i^j$ is the $i$th element of \varj{l}, until \schfalse{} is
 returned.  If \var{proc} returns true values for all but the last
-element of \vari{l}, \var{forall} performs a tail call of \var{proc}
+element of \vari{l}, \var{for-all} performs a tail call of \var{proc}
 on the $k$th elements, where $k$ is the length of \vari{l}---in this
 case, the \var{l}s must all be lists of length $k$.  If \var{proc}
-returns \schfalse{} on any set of elements, {\cf forall} returns
+returns \schfalse{} on any set of elements, {\cf for-all} returns
 \schfalse{} after the first such application of \var{proc} without
 further traversing the \var{l}s.  If the \var{l}s are all empty, {\cf
-  forall} returns \schtrue.
+  for-all} returns \schtrue.
 
 For natural numbers $i = 0, 1, \ldots$, the {\cf exists} procedure
 applies \var{proc} successively to arguments $x_i^1 \ldots x_i^n$,
@@ -54,13 +54,13 @@ If \var{proc} returns a true value on any set of elements, {\cf
 are all empty, {\cf exists} returns \schfalse.
 
 \begin{scheme}
-(forall even? '(3 1 4 1 5 9)) \lev \schfalse{}
-(forall even? '(3 1 4 1 5 9 . 2)) \lev \schfalse{}
-(forall even? '(2 4 14)) \ev \schtrue{}
-(forall even? '(2 4 14 . 9)) \lev \exception{\cf\&contract}
-(forall (lambda (n) (and (even? n) n)) '(2 4 14)) \lev 14
-(forall < '(1 2 3) '(2 3 4)) \ev \schtrue{}
-(forall < '(1 2 4) '(2 3 4)) \ev \schfalse{}
+(for-all even? '(3 1 4 1 5 9)) \lev \schfalse{}
+(for-all even? '(3 1 4 1 5 9 . 2)) \lev \schfalse{}
+(for-all even? '(2 4 14)) \ev \schtrue{}
+(for-all even? '(2 4 14 . 9)) \lev \exception{\cf\&contract}
+(for-all (lambda (n) (and (even? n) n)) '(2 4 14)) \lev 14
+(for-all < '(1 2 3) '(2 3 4)) \ev \schtrue{}
+(for-all < '(1 2 4) '(2 3 4)) \ev \schfalse{}
 
 (exists even? '(3 1 4 1 5 9)) \lev \schtrue{}
 (exists even? '(3 1 1 5 9)) \ev \schfalse{}
