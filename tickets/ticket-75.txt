@@ -123,7 +123,7 @@ argument values associated with their respective fields.
 
 (condition-has-type? condition condition-type) <as before>
 
-(explode-condition condition)
+(condition->list condition)
 
 Condition must be a condition.  This returns a list of the component
 conditions of condition.
@@ -162,7 +162,7 @@ where <field> is a field identifier from the definition of
 
 The condition returned by condition is created by a call of form
 (make-compound-condition
-  (make-condition <condition-type> '<field-name> <exp>...)
+  (make-condition <condition-type> (list (cons '<field-name> <exp>) ...))
   ...)
 
 with the condition types retaining their order from the condition
