@@ -2,6 +2,33 @@
 \chapter{Notation and terminology}
 \label{terminologychapter}
 
+\section{Requirement levels} 
+\label{requirementsection}
+
+The key words ``must'', ``must not'', ``required'', ``shall'', ``shall
+not'', ``should'', ``should not'', ``recommended'', ``may'', and
+``optional'' in this document are to be interpreted as described in
+RFC~2119~\cite{mustard}.  Specifically:
+
+\begin{description}
+\item[must] This word means that a statement is an absolute
+  requirement of the specification.
+\item[must not] This phrase means that a statement is an absolute
+  prohibition of the specification.
+\item[should] This word, or the adjective ``recommended'', mean that
+  valid reasons max exist in particular circumstances to ignore a
+  statement, but that the implications must be understood and weighed
+  before choosing a different course.
+\item[should not] This phrase, or the phrase ``not recommended'', mean
+  that valid reasons max exist in particular circumstances when the
+  behavior of a statement is acceptable, but that the implications
+  must be understood and weighed before choosing the course described
+  by the statement.
+\item[may] This word, or the adjective ``optional'', mean that an item
+  is truly optional.
+\end{description}
+
+
 \section{Entry format}
 
 The chapters describing bindings in the base library and the standard
@@ -23,7 +50,7 @@ Components of the form described by a template are designated
 by syntactic variables, which are written using angle brackets, for
 example, \hyper{expression}, \hyper{variable}.  Case is insignificant
 in syntactic variables.  Syntactic variables
-should be understood to denote other forms, or, in some cases,
+denote other forms, or, in some cases,
 sequences of them.  A syntactic variable may refer to a non-terminal
 in the grammar for syntactic datums, in which case only forms matching
 that non-terminal are permissible in that position.  For example,
@@ -47,8 +74,7 @@ shape specified by a template---an exception with condition type
 
 Descriptions of syntax may express other restrictions on the
 components of a form.  Typically, such a restriction is formulated
-as a phrase of the form ``\hyper{x} must be a \ldots'' (or otherwise
-using the word ``must''.)  As with
+as a phrase of the form ``\hyper{x} must be a \ldots''.  As with
 implicit restrictions, such a phrase means that an exception with
 condition type {\cf\&syntax} is raised if the component does not
 meet the restriction.
@@ -88,7 +114,7 @@ specified to handle raises an exception with condition type
 {\cf\&contract}.  Also, if the number of arguments provided in
 a procedure call does not match any argument count specified for the
 called procedure, an exception with condition type {\cf\&contract}
-must be raised.
+is raised.
 
 For succinctness, we follow the convention
 that if a parameter name is also the name of a type, then the corresponding argument must be of the named type.
@@ -166,7 +192,7 @@ In programs that mutate pairs through use of the \library{r6rs
   mutable-pairs} library, a pair
 that is the head of a list at one moment may not always be the head of
 a list.  Thus a traversal of the structure cannot by itself guarantee
-that the structure is a list; one must also know that no concurrent or
+that the structure is a list; one also has to know that no concurrent or
 interleaved computation can mutate the pairs of the structure.
 This greatly complicates the description of how certain procedures
 must verify that their arguments are valid.
@@ -179,7 +205,7 @@ procedures.
 
 \section{Evaluation examples}
 
-The symbol ``\evalsto'' used in program examples should be read
+The symbol ``\evalsto'' used in program examples can be read
 ``evaluates to''.  For example,
 
 \begin{scheme}
@@ -226,21 +252,11 @@ that implementations must detect the situation and report it to the
 program through the exception system described in
 chapter~\ref{exceptionsconditionschapter}.
 
-Several variations on ``an exception is raised'' are possible:
-
-\begin{itemize}
-\item ``An exception should be raised'' means that implementations
-  are encouraged, but not required, to detect the situation
-  and to raise an exception.
-
-\item ``An exception may be raised'' means that implementations
-are allowed, but not required or encouraged, to detect
-the situation and to raise an exception.
-
-\item ``An exception might be raised'' means that implementations
-are allowed, but discouraged, to detect the situation
-and to raise an exception.
-\end{itemize}
+Several variations on ``an exception is raised'' using the keywords
+described in section~\ref{requirementsection} are possible, in
+particular ``an exception must be raised'' (equivalent to ``an
+exception is raised''), ``an exception should be raised'', and ``an
+exception may be raised''.
 
 This report uses the phrase ``an exception with condition type \var{t}''
 to indicate that the object provided with the
@@ -251,7 +267,7 @@ an exceptional situation that permits the exception handler to return,
 thereby allowing program execution to continue at the place where the
 original exception occurred.  See section~\ref{exceptionssection}.
 
-\vest For example, an exception with condition type {\cf\&contract}
+For example, an exception with condition type {\cf\&contract}
 is raised if a procedure is passed an argument that the procedure
 is not explicitly specified to handle, even though such domain
 exceptions are not always mentioned in this report.
