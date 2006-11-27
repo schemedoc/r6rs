@@ -42,67 +42,25 @@ access to the current values of the declaration qualities.
 
 DRAFT RESPONSE
 
-As specified in the draft R6RS, declarations have
-implementation-independent syntax but implementation-dependent
-semantics.  Their purpose is related to the last two guiding
-principles of the R6RS Status Report of June 21, 2006:  R6RS
-Scheme should:
+In response to a different formal comment, declarations
+will be dropped from the report.
+
+The second sentence of section 4.4 will be revised to say
+something like "Libraries and scripts that import only
+from safe libraries are also said to be safe."  The last
+sentence of section 4.4 will be revised to something like
+"Implementations may provide access to unsafe libraries,
+and may provide other implementation-specific facilities
+that cannot guarantee safety."
+
+Implementation-specific facilities may also be mentioned
+in a non-normative appendix.
+
+The report will abandon the second half of the guiding
+principle stated in the R6RS Status Report of June 21,
+2006, that R6RS Scheme should:
 
   * allow programmers to rely on a level of automatic run-time
     type and bounds checking sufficient to ensure type safety
     while also providing a standard way to declare whether such
-    checks are desired; and
-
-  * allow implementations to generate efficient code, without
-    requiring programmers to use implementation-specific
-    operators or declarations.
-
-The draft R6RS outlaws most implementation-specific syntactic
-extensions of the kind that several R5RS-conforming systems
-have been using to allow programmers to advise the compiler
-concerning the desirability of certain optimizations, and to
-declare what degree of run-time checking is desired.  Having
-outlawed such extensions, the draft R6RS cannot achieve both
-of the goals quoted above without providing some syntax that
-serves a similar purpose.
-
-The interpretation of declarations is implementation-specific
-because implementations of Scheme do not all use the same
-technologies.  Some use interpreters, some use compilers,
-and some use a combination of interpretation and compilation.
-Interpreted systems are likely to ignore all declarations,
-as may some compilers.  Not all compilers perform run-time
-checking in the same way; the ways in which run-time checking
-is performed interacts strongly with various optimizations,
-and not all compilers perform the same optimizations.
-
-Since implementations of Scheme are allowed to ignore all
-declarations, any proposed way for Scheme code to access the
-priorities declared for it must allow the reported priority
-to be 1, regardless of any declarations that actually occur
-within the source code.
-
-A proposal that allows Scheme code to access those priorities
-at run time would be fairly straightforward, but the example
-given in this formal comment would require the priorities to
-be available at macro expansion time, which interacts with
-hygiene.  In the R5RS, macros cannot obtain any information
-about their context by direct inquiry; hygienic expansion is
-based upon deferred resolution of identifiers with respect to
-context.  The procedural macros that are proposed for the
-R6RS allow certain limited inquiries about the context,
-specifically so macros can break hygiene.
-
-Although it would be possible to add another hygiene-breaking
-mechanism that macros can use to query the context of their
-uses, the proposed mechanism would be limited to the special
-purpose of querying priorities that are likely to be constant
-in many implementations, including some whose compilers might
-actually pay attention to the priorities after macro expansion.
-Whether the benefit of the proposed feature justifies its
-inclusion within R6RS is questionable.
-
-Chez Scheme could continue to provide its current facilities
-to programs that import a Chez-specific library for expand,
-so omitting the proposed feature from the R6RS would not
-break any existing code.
+    checks are desired;
