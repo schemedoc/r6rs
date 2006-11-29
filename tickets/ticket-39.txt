@@ -1,0 +1,59 @@
+Name        : Andre van Tonder
+Email       : andre at het.brown.edu
+Type        : enhancement
+Priority    : minor
+Component   : Script/body semantics
+Version     : 5.91
+Pages       : 27
+Dependencies: None
+
+Summary:
+--------
+
+Difference between bodies and script bodies
+seem like an unnecessary complication.
+
+Description:
+------------
+
+The description of scripts gives a meaning to expressions
+preceding definitions that may just as easily be applied
+to other bodies.  The fact that it does not complicates
+the draft.
+
+If the same rules applied to both scripts and bodies, it
+would be easier to convert one into the other during
+incremental or interactive development.  Presumably this
+would be a useful feature.
+
+Also, the current state of affairs slightly complicates
+implementation.  I currently use the same code for expanding
+both scripts and bodies, except for a couple of statements
+of the form
+
+   (when (not script?) (syntax-violation ....))
+
+which seem like a gratuitous complication.
+
+Suggestion:
+-----------
+
+Perhaps treat scripts/bodies the same by either allowing or
+disallowing interspersed expressions/definitions in both.
+
+
+DRAFT RESPONSE:
+
+This suggestion will not be adopted, for the following reasons:
+
+  * libraries generally represent reusable code, for which the labor involved in putting definitions before expressions 
+is amortized over reuse 
+
+  * some programs are throwaway code, for which the syntactic annoyance of putting definitions before expressions might 
+represent some measurable fraction of the five minutes spent on writing the program 
+
+  * besides, libraries can be combined using import; the only way to combine programs is concatenation, which wouldn't 
+create a program if definitions were required to precede expressions 
+
+Historical note: mixing definitions with expressions has several possible semantics, and has been confusing historically. 
+This feature of programs specifies a single unambigous semantics that can be relied on by portable programs. 
