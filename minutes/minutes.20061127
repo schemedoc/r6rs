@@ -1,0 +1,175 @@
+Conference call November 27 2006 8:00am-9:00am EDT
+All present by 8:03am:
+Kent, Matthew, Mike, Anton, Will
+
+0. finalize agenda (1 minute)
+
+1. action items (5 minutes)
+   - split the report into base and libraries (Mike)
+        in progress; LaTeX issues
+   - reformat front page to reflect editor/author roles (Mike)
+        begun
+   - email steering committee re: front page (Kent)
+   - draft responses by Wednesday November 29 (All)
+        mostly done
+   - email editors re: formal comment response process (Kent)
+        (actually done in Will's 11/20 meeting notes)
+   - draft "readability principle" for R6RS (Will)
+        done
+   - insert readability and other guiding principles from
+     status reports into draft R6RS (Mike)
+        not yet (Will sent draft just last night)
+
+2. closed tickets (5 minutes)
+   - suggest we vote on first batch of closed tickets on Wednesday
+     - technical vote; vote on actual response comes when response has
+       been written
+   - in the meantime, look for any that should not be closed
+   - ticket numbers:  4 13 15 16 19 20 21 23 24 29 30 31 32 33 34 35 37 43
+     44 50 53 54 55 56 74 85 93 101 102 103 116 119 121 125 133
+
+3. done, probably uncontroversial (critical/yellow) tickets (5 minutes)
+   - suggest we vote on these Wednesday
+     - technical vote; vote on actual response comes when response has
+       been written
+   - in the meantime, change priority of any you think are controversial,
+     adding a note to explain why
+   - ticket numbers:  5 8 10 11 12 14 22 60 67 94 98 112 120 129 134
+
+4. we have to discuss it, first (minor/cyan) tickets (5 minutes)
+   - suggest we take a straw poll on these Wednesday
+        no, we already have enough to do on Wednesday,
+        and it isn't clear with these what the vote would mean
+   - in the meantime, add your own notes or email group
+   - ticket numbers:  7 17 18 25 26 28 38 39 40 41 42 49 51 57 58 59 63 64
+     65 66 70 72 76 79 80 81 82 90 92 95 96 99 100 104 105 108 109 110 115
+     118 122 124 126 127 131 132
+
+5. suggested response/action, but needs discussion (major/white) tickets (5 minutes)
+   - suggest we take a straw poll on these Wednesday
+   - in the meantime, add your own notes or email group
+   - ticket numbers:  6 27 36 45 46 47 52 61 62 68 69 71 73 75 77 78 84 86
+     87 88 89 97 106 107 111 113 114 117 123 128 130
+
+6. "don't know" but should should be easy (blocker/red) tickets (5 minutes)
+   - discuss these now
+   - tickets:
+     - 9 (backslash-linefeed)
+        accept
+     - 95 (condition hierarchy)
+        accept
+
+7. I'm stumped for the moment (trivial/blue) tickets (10 minutes)
+   - discuss these now
+   - tickets (may evaporate by Wednesday):
+     - 83 (Add a multi-file library example)
+        possible library-to-file mappings could be mentioned in appendix
+        include doesn't seem like the right thing
+        for SSAX, see how it's done in PLT Scheme
+        private libraries: leave for R7RS
+
+8. Discussion of controversial issues (remaining time)
+   - ground rules
+        discuss only concrete proposals
+            (which we can make even if we don't advocate them)
+   - nomination for items to discuss first (some possibilties below, grouped)
+   - #26: Map and for-each should work even if lists are of unequal length
+     #25 "forall" and "exists" should use SRFI-1 equivalents
+     #42 Requirement to detect circular lists
+     #41 Plausible lists presentation defect
+     #36 Ambiguous call/cc-behaviour of list operations
+     #45 last-element behavior of for-each
+     #48 Slight defect in plausible alist description
+     #49 Higher-order procedures should not interfere with exceptions
+     #87 Reduce over-specification as well as under-specification
+     #100 forall should be for-all for consistency with for-each
+            accept this one
+     #130 Multiple versions of one library should be linkable
+   - #52: Exact-Integer and Real (and Complex) are more useful
+          distinctions than Exact and Inexact; combine with:
+     #40: Exactness is orthogonal to type
+     #27: Some generic arithmetic procedures should be put in a library
+   - #61: Expansion process violates lexical scoping; combine with
+     #62: Lexical scoping violation for internal define-syntax.
+   - #84: Eliminate compound library names
+   - #87: Reduce over-specification as well as under-specification
+   - #89: Leave readers and writers out of the report
+   - #106: #! /usr/bin/env is not portable.  It's Unix-specific.
+            non-normative; banish to appendix
+            keep command-line-arguments
+            stop talking about scripts; talk about programs
+            disallow multiple definitions of same identifier
+            definitions can still be interspersed with expressions
+                (Kent thinks we should have definitions at front,
+                but one could interpret a program as a library by
+                adding dummy definitions for all expressions)
+            programs are not a replacement for R5RS top level,
+                which most systems will continue to have;
+                this should be said in the document
+     #105: Scheme is not a scripting language
+     #51: Conflating programs with scripts
+     #39: Script-body differences
+            should revisit this one
+            reject formal comment, but give rationale
+            rationale for differences:
+                mixing definitions with expressions
+                    has several possible semantics, and has
+                    been confusing historically
+                libraries generally represent reusable code,
+                    for which the labor involved in putting
+                    definitions before expressions is amortized
+                    over reuse
+                some programs are throwaway code, for which the
+                    syntactic annoyance of putting definitions
+                    before expressions might represent some
+                    measurable fraction of the five minutes
+                    spent on writing the program
+                besides, libraries can be combined using import;
+                the only way to combine programs is concatenation,
+                    which wouldn't create a program if definitions
+                    were required to precede expressions
+     #38: Position-significance of declarations in scripts
+            declarations should be allowed only at front of scripts
+   - #107: Scheme should not be changed to be case sensitive
+            Mike's draft response is exactly right
+   - #123: Replacing the import's "for" syntax with implicit phasing
+     #92: Phase semantics
+     #109: identifier-syntax is not a derived form
+     #110: Remove double phase semantics
+   - #117: Bodies should be more widely permitted
+   - #126: local imports
+   - #128: Declarations do not belong in the report; combine with
+            accept
+            safety guarantees holds regardless
+            non-normative appendix says implementations may provide
+                ways to negate the safety guarantees
+     #64: Declarations don't seem to be designed for real-world needs
+     #77: Querying Declaration Quality Priorities
+   - #130: Multiple versions of one library should be linkable
+   - #78: Rationalize the various iteration procedures
+            fix hash-table-fold
+            drop hash-table-keys, hash-table-values
+            what about hash-table->vector ?
+                favorable response to this
+            add vector-fold (SRFI 43?);
+                Mike, Kent, and Will don't like this
+            add vector-for-each ?
+                yes
+            what about vector-map ?
+                yes
+            does the procedure take the index, or just the element?
+                vector-walk takes index and no element
+                    why not just dotimes?
+                    could be in a SRFI
+                vector-for-each takes an element only
+                vector-map takes an element only
+            premature termination?
+                that's what call/cc is for
+            drop hash-table-fold etc
+            use hash-table->vector
+            rely on vector-map, vector-for-each
+                composition with hash-table->vector
+                could be optimized if anyone cares
+
+9. adjourned sometime after 9:53am
+    (I was disconnected at 9:53am)
