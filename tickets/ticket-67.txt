@@ -79,8 +79,18 @@ be required if the main proposal of Ticket #11 were adopted.
 Our response to Ticket #11 explains why we believe that
 proposal should not be adopted.
 
-The usefulness of the finite?, infinite?, and nan? procedures
-might be increased by expanding their domain to include all
-numbers, or perhaps even all objects.  The semantics proposed
-by Ticket #67, however, would be incompatible with IEEE-754
-and IEEE-754R because an IEEE NaN is not an IEEE infinity.
+Ticket #67 proposes a semantics for nan? that would be
+incompatible with IEEE-754 and IEEE-754R, because an IEEE
+NaN is not an IEEE infinity.  This proposal was not adopted.
+
+The editors considered expanding the domains of the finite?,
+infinite?, and nan? procedures to include all numbers, or
+perhaps even all objects, but decided against these changes.
+Expanding nan? to complex numbers would involve at least some
+arbitrariness; not expanding its domain while expanding the
+domains of the other two would introduce an irregularity into
+the domains of these three procedures, which are likely to be
+used together; it is easier for programmers who wish to use
+these procedures with complex numbers to express their intent
+in terms of the real-only versions than it would be for the
+editors to guess their intent.
