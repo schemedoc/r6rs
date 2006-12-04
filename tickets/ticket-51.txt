@@ -67,3 +67,66 @@ way that does not accomodate, bless or otherwise favour a particular
 use case on a particular operating system. Allow programs to consist
 of libraries and entry point in the same contiguous text.
 
+
+
+DRAFT RESPONSE:
+
+To address this comment, the current specification of Scheme "scripts"
+will be replaced by a definition of Scheme "programs".  A "program" 
+will have similar semantics to that given for scripts, but the 
+specification will make no reference to files or a script header.  
+A specification for packaging Scheme programs as scripts will be moved 
+to an appendix or other auxiliary location in the report.  The issue 
+of any operating-system specificity will be addressed in a rationale 
+in the latter section.
+
+Specific changes planned for the next draft are as follows:
+
+1. In the "Description of the language" part of the draft:
+
+   a. Sections 1.11 and 7, which relate to "scripts", will be replaced
+      with sections that define Scheme "programs".
+
+   b. All mentions of "script" in this part of the draft will be 
+      replaced with "program".
+
+   c. Any references to the script header and the "scheme-script"
+      interpreter will be removed from this part of the draft.  
+      These are addressed in point 2 below.
+
+   d. A rationale will be provided for "programs".  With the "script"
+      aspect factored out, the remaining rationale for programs is 
+      that they provide:
+
+       i. A more informal format for Scheme code, comparable to the 
+          R5RS top level, but better-defined.  A more detailed 
+          treatment of this issue is given in the response to formal 
+          comment #39, "Script-body differences".
+
+      ii. A portable and flexible way to specify an entry point into 
+          a body of Scheme code.
+
+2. A section specifying Scheme scripts will be added in an appendix 
+   (or other auxiliary location).  This will include the following:
+
+    a. Specification of how a script relates to a Scheme program, 
+       i.e. a script may be specified as a file (or some 
+       generalization thereof, such as a "delimited piece of text") 
+       containing an optional script header (e.g. beginning with 
+       "#! " or "#!/"), which is followed by a Scheme program.
+
+    b. Specification of the semantics of the "scheme-script" 
+       interpreter. This will only be mentioned in this section.  
+       The interpreter must ignore any script header and initiate 
+       the execution of the remaining Scheme program.
+
+    c. Brief descriptions of any script-related issues on major  
+       operating systems, such as Apple Macintosh, Unix, and 
+       Microsoft Windows.
+
+    d. A note that R6RS-conformant implementations can omit script 
+       support when appropriate, such as in implementations targeting 
+       embedded platforms.
+
+    e. A rationale for the inclusion of the above details in the report.
+
