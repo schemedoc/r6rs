@@ -23,7 +23,7 @@
 %% 
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
-\ProvidesClass{algol60}[1997/03/13 Algol 60 document class]      % !!
+\ProvidesClass{algol60}[2006/12/04 Algol 60 document class]      % !!
 \newcommand\@ptsize{}
 \newif\if@restonecol
 \newif\if@titlepage
@@ -731,8 +731,10 @@
   January\or February\or March\or April\or May\or June\or
   July\or August\or September\or October\or November\or December\fi
   \space\number\day, \number\year}
-\setlength\columnsep{10\p@}
+%!!\setlength\columnsep{10\p@}
+\setlength\columnsep{15\p@}
 \setlength\columnseprule{0\p@}
+
 \pagestyle{plain}
 \pagenumbering{arabic}
 \if@twoside
@@ -746,9 +748,25 @@
 \else
   \onecolumn
 \fi
-\endinput
 
 %!! Some size stuff
 \parskip 5pt plus 2pt minus 2pt %!! 0pt plus 1pt % Extra vertical space between paragraphs.
 \parindent 0pt %!! 15pt                    % Width of paragraph indentation.
-\topsep 0pt plus 2pt %!! 8pt plus 2pt minus 4pt % Extra vertical space, in addition to 
+\topmargin -.375in       %    Nominal distance from top of page to top of
+                         %    box containing running head.
+\headsep 15pt            %    Space between running head and text.
+
+\textheight 663pt        % Height of text (including footnotes and figures, 
+                         % excluding running head and foot).
+
+\textwidth 523pt         % Width of text line.
+
+\oddsidemargin  -.5in    % Left margin on odd-numbered pages.
+\evensidemargin -.5in    % Left margin on even-numbered pages.
+
+\topsep 0pt plus 2pt            % Extra vertical space, in addition to 
+                                % \parskip, added above and below list and
+                                % paragraphing environments.
+
+
+\endinput
