@@ -62,26 +62,44 @@ and (r6rs arithmetic inexact) libraries that are described in
 sections 16.5 and 16.6 of the draft R6RS.
 
 It is not clear why Ticket #52 proposes to replace those two
-libraries instead of adding SRFI 94 to them.  Since exactness
-is orthogonal to type, the problem addressed by SRFI 94 is
-orthogonal to the problems addressed by the (r6rs arithmetic
-exact) and (r6rs arithmetic inexact) libraries.
+libraries instead of adding SRFI 94 to them.  The problems
+addressed by SRFI 94 are orthogonal to the problems addressed
+by the (r6rs arithmetic exact) and (r6rs arithmetic inexact)
+libraries.
 
 The arguments for all three libraries are similar, and we have
 no evidence that would tell us which of the problems addressed
-by the three libraries are more common or important.  There
-seem to two sensible courses of action:
+by the three libraries are more common or important.
 
-1.  Add SRFI 94 to the R6RS, to join the libraries described in
-sections 16.5 and 16.6 of the draft R6RS.
+The editors have decided to remove the (r6rs arithmetic exact),
+(r6rs arithmetic inexact), and (r6rs arithmetic fixnum) libraries
+from the report.  The following procedures will be renamed by
+changing the "exact-" prefix to "bitwise-", and will be
+placed within a new (r6rs arithmetic bitwise) library:
 
-2.  Remove the libraries described in sections 16.5 and 16.6 of
-the draft R6RS, and make each of them into a SRFI like SRFI 94.
+    exact-not
+    exact-and
+    exact-ior
+    exact-xor
+    exact-if
+    exact-bit-count
+    exact-length
+    exact-first-bit-set
+    exact-bit-set?
+    exact-copy-bit
+    exact-bit-field
+    exact-copy-bit-field
+    exact-arithmetic-shift
+    exact-arithmetic-shift-left
+    exact-arithmetic-shift-right
+    exact-rotate-bit-field
+    exact-reverse-bit-field
 
-Will recommends the second course of action (with caveats
-listed in response to Ticket #40).  None of the three
-libraries have been tested in the field.  All three
-libraries could be described by a SRFI and provided by
-portable reference implementations that, in compiled
-systems, would be just as efficient as if the libraries
-were part of the R6RS.
+The exact-expt and exact-sqrt procedures will be renamed
+to integer-expt and integer-sqrt and moved to the (r6rs
+base) library.  They will accept only exact integers as
+arguments.
+
+The rest of the (r6rs arithmetic exact) library and the
+(r6rs arithmetic inexact) library might become SRFIs, in
+which case they would have the same status as SRFI 94.
