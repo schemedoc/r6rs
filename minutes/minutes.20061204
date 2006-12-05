@@ -1,0 +1,141 @@
+Conference call December 4 2006 8:00am-10:00am
+Present by 8:02am:
+Kent, Will, Anton, Mike; Matthew (in China) joined later
+
+0. finalize agenda (1 minute)
+
+1. action items (1 minute)
+   - split the report into base and libraries (Mike)
+        in progress
+   - email steering committee re: front page (Kent)
+        done
+   - insert readability and other guiding principles from
+     status reports into draft R6RS (Mike)
+        not done yet
+   - update responses to script comments [106, 105, 106] (Anton)
+     - based on Anton's email proposal w/preservation of
+       command-line-arguments (possibly as command-line) and
+       restriction that multiple definitions of an identifier
+       are not allowed; see also 2006/11/27 minutes
+     - move to "done, probably uncontroversial (critical/yellow)"
+     - technical vote next Monday
+        done
+   - update responses to declaration comments [128, 64, 77, 60] (Will)
+     - declarations are flushed along with claim re: providing way for
+       programmers to say checks aren't desired, though mention likelihood
+       that some implementations will provide a mechanism for doing so in
+       "real world" appendix; safety guarantee holds
+     - move to "done, probably uncontroversial (critical/yellow)"
+     - technical vote next Monday
+        done
+   - update response to backslash-linefeed [9] (Matthew)
+     - yes, change to \<intraline whitespace><linefeed><intraline whitespace>
+     - also means flushing \<space> (can use %20;)
+     - close (no need for another technical vote)
+        unknown (Matthew not here)
+   - update response to condition hierarchy [95] (Mike)
+     - flush &defect
+     - move to "done, probably uncontroversial (critical/yellow)"
+     - close (no need for another technical vote)
+        done
+   - update response to script-body differences [39] (Anton)
+     - reject
+     - rationale in 2006/11/27 minutes
+     - close (no need for another technical vote)
+        done
+   - close "Scheme should not be changed to be case sensitive [107] (Mike)
+     - current response is okay
+     - close (no need for another technical vote)
+        done
+   - update response to rationalize the various iteration procedures [78] (Anton)
+     - flush hash-table-fold
+     - add hash-table->vector
+        not done yet
+     - vector-for-each, vector-map (same interface as for-each and map)
+     - call/cc can be used for premature termination
+     - (vector-map p (hash-table->vector ht)) and
+       (vector-for-each p (hash-table->vector ht)) can be recognized by
+       optimizer if implementor feels optimization is useful
+     - move to "done, probably uncontroversial (critical/yellow)"
+     - technical vote next week
+   - note: tickets 1-3 are test tickets and can be ignored
+   - note: tickets 135 and up came in after 2006/11/15 and can be deferred
+
+2. technical vote on done, probably uncontroversial (critical/yellow) tickets
+   - ticket numbers: 9 17 38 39 51 63 64 65 70 77 78 79 83 91 96 97 104
+     105 106 107 128 131 136
+        9 closed already
+        17 (4-0)
+        38 (irrelevant because we voted to drop declarations from report)
+        39 (removed from list by chair's decision)
+        51 (deferred to Wednesday by chair)
+        63 (3-0-1)
+        64 (already voted)
+        65 (rejecting formal comment; 4-0)
+        70 (giving rationale; 2-0-2)
+        77 (already voted)
+        78 (not yet ready for vote)
+        79 (rejecting formal comment; 4-0)
+        83 (accepting technical content of current draft response; 4-0)
+        91 (accepting formal comment; 4-0)
+        96 (not yet ready for vote)
+        97 (accepting gist of current draft response; add timeline; 4-0)
+        104 (accepting formal comment; 4-0)
+        105, 106 (deferred to Wednesday)
+        107 (already voted to reject, 3-2)
+        128 (already voted to accept)
+        131 (rejecting formal comment; 4-0)
+        136 (rejecting formal comment; 4-0)
+
+3. straw poll on suggested response/action, but needs discussion (major/white) tickets (5 minutes)
+   - ticket numbers: 69 71 75 84 86 111 113 114 117 130
+     18 28 58 66 72 108 138
+        discussion generally needed before straw polls, e.g.
+        71: (accept proposal, allowing but not requiring optimization; 5-0)
+
+4. Continued discussion of controversial issues (remaining time)
+   - ground rules: prefer to debate concrete proposals
+   - nomination for items to discuss first (some possibilties below, grouped)
+   - #26: Map and for-each should work even if lists are of unequal length
+     #25: "forall" and "exists" should use SRFI-1 equivalents
+     #42: Requirement to detect circular lists
+     #41: Plausible lists presentation defect
+     #36: Ambiguous call/cc-behaviour of list operations
+     #45: last-element behavior of for-each
+     #48: Slight defect in plausible alist description
+     #49: Higher-order procedures should not interfere with exceptions
+     #87: Reduce over-specification as well as under-specification
+     #130: Multiple versions of one library should be linkable
+   - #52: Exact-Integer and Real (and Complex) are more useful
+          distinctions than Exact and Inexact
+     #40: Exactness is orthogonal to type
+     #27: Some generic arithmetic procedures should be put in a library
+     Proposal: flush exact-only, inexact-only, and fixnum (but not
+               fx) libraries
+        Amendment: keep the carry operations, in the fx library
+        Amendment: move the bitwise operations from
+            (r6rs arithmetic exact) to (r6rs bitwise), changing the
+            exact- prefix to bitwise-
+        Will will draft response
+   - #61: Expansion process violates lexical scoping
+     #62: Lexical scoping violation for internal define-syntax.
+   - #84: Eliminate compound library names
+   - #87: Reduce over-specification as well as under-specification
+   - #89: Leave readers and writers out of the report
+            Mike will write up a proposal to move their functions
+            into ports.
+   - #123: Replacing the import's "for" syntax with implicit phasing
+     #92: Phase semantics
+     #109: identifier-syntax is not a derived form
+     #110: Remove double phase semantics
+     #112: Lexical determination of phases
+   - #117: Bodies should be more widely permitted
+   - #126: local imports
+            (technical vote: reject formal comment; 4-1)
+   - #130: Multiple versions of one library should be linkable
+            needs more thought
+
+Action item:
+    study ticket #88; discuss next time
+
+5. adjourned about 10:02am
