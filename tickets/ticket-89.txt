@@ -23,3 +23,41 @@ If they were ports, they might be useful. Including them in the R6RS
 as a separate data type might interfere with making them ports in the
 R7RS.
 
+RESPONSE:
+
+The comment's statement that the ports "are not used anywhere else in
+the report" is false: They appear in Section 15.3.8, "Ports from
+Readers and Writers."  Readers and writers are the only means
+specified in the 5.91 draft for obtaining ports from custom input
+sources and output sinks.
+
+A future draft of the report will eliminate readers and writers, but
+provide means for obtaining ports from custom input sources and output
+sinks via the procedures outlined below, obtained by composing the
+`open-...-port' procecures from Section 15.3.8 with the
+`make-simple-reader' and `make-simple-writer' from the Primive I/O
+library, and replacing the procedures of Section 15.3.8 with them.
+The exact specification of these procedures may change slightly
+because of other changes planned for the I/O libraries.
+
+(open-custom-input-port id descriptor
+                        chunk-size read! available
+                        get-position set-position! end-position
+                        close)
+
+(open-custom-output-port id descriptor
+                         chunk-size write!
+                         get-position set-position! end-position
+                         close)
+
+(open-custom-input/output-port id descriptor
+                               chunk-size read! write!
+                               get-position set-position! end-position
+                               close)
+
+The various arguments to these procedures are as specified for
+`make-simple-reader' and `make-simple-writer' in Section 15.2.
+
+In addition to these changes, file options and the I/O condition types
+described in Section 15.1 will be moved to the (r6rs i/o ports)
+library.
