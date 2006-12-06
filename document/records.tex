@@ -97,7 +97,7 @@ rtd, the returned record type, \var{t}, extends the record type
 record of type \var{p}, and all operations applicable to a record of
 type \var{p} are also applicable to a record of type \var{t}, except for
 inspection operations if \var{t} is opaque but \var{p} is not. An exception with
-condition type {\cf\&contract} is raised if \var{parent} is sealed (see below).
+condition type {\cf\&assertion} is raised if \var{parent} is sealed (see below).
    
 The extension relationship is transitive in the sense that a type extends
 its parent's parent, if any, and so on.
@@ -119,7 +119,7 @@ arguments {\cf equal?}, the \var{sealed?} arguments boolean-equivalent
 (both false or both non-false), and the \var{opaque?} arguments
 boolean-equivalent.
 If these conditions are not met, an exception with condition type
-{\cf\&contract} is raised when the second call occurs.
+{\cf\&assertion} is raised when the second call occurs.
 If they are met, the second call returns, without creating a new
 record type, the same record-type descriptor
 (in the sense of {\cf eqv?}) as the first call.
@@ -138,7 +138,7 @@ is opaque.
 If passed an instance of the record type,
 {\cf record?} returns
 \schfalse{} and {\cf record-rtd} (see ``Inspection'' below) raises
-an exception with condition type {\cf\&contract}.
+an exception with condition type {\cf\&assertion}.
 The record type is also opaque if an opaque parent is
 supplied.  If \var{opaque?} is false and an opaque parent is not
 supplied, the record is not opaque.
@@ -149,7 +149,7 @@ or a list of the form {\cf (immutable \var{name})}.
 Each name must be a symbol and names the corresponding field of the record
 type; the names need not be distinct.  A field identified as mutable may
 be modified, whereas an attempt to obtain a mutator for a field identified
-as immutable raises an exception with condition type {\cf\&contract}.
+as immutable raises an exception with condition type {\cf\&assertion}.
 Where field order is relevant, e.g., for record construction and field
 access, the fields are considered to be ordered as specified, although
 no particular order is required for the actual representation of a
@@ -391,7 +391,7 @@ The field selected is the one corresponding the \var{k}th element
 
 If the accessor procedure is given something other than
 a record of the type represented by \var{rtd}, an exception with
-condition type {\cf\&contract} is raised.  Records
+condition type {\cf\&assertion} is raised.  Records
 of the type represented by \var{rtd} include records of extensions of
 the type represented by \var{rtd}.
 \end{entry}
@@ -405,7 +405,7 @@ record \var{r} of the type represented by \var{rtd} and an object
 \var{obj}, stores \var{obj} within the field of \var{r} specified by
 \var{k}. The \var{k} argument is as in {\cf record-accessor}. If
 \var{k} specifies an immutable field, an exception with condition type
-{\cf\&contract} is raised.
+{\cf\&assertion} is raised.
 The mutator returns the unspecified value.
 \end{entry}
 
@@ -575,7 +575,7 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
   the implied arguments to {\cf make-record-type-descriptor}
   must be equivalent as described under {\cf make-record-type-descriptor}.
   If this condition is not met, it is either considered a syntax violation or
-  an exception with condition type {\cf\&contract} is raised.
+  an exception with condition type {\cf\&assertion} is raised.
   If the condition is met, a single record type is generated for both
   definitions.
 
@@ -839,7 +839,7 @@ Returns the rtd representing the type of \var{record} if the type is not
 opaque. The rtd of the most precise type is returned; that is, the
 type \var{t} such that \var{record} is of type \var{t} but not of any
 type that extends \var{t}.  If the type is opaque, an exception is
-raised with condition type {\cf\&contract}.
+raised with condition type {\cf\&assertion}.
 \end{entry}
 
 \begin{entry}{%

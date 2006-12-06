@@ -718,14 +718,14 @@ This type describes unbound identifiers in the program.
 \end{entry}
 
 \begin{entry}{%
-\ctproto{contract}
-\proto{contract-violation?}{ obj}{procedure}}
+\ctproto{assertion}
+\proto{assertion-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
-(define-condition-type \&contract \&defect
-  contract-violation?)%
+(define-condition-type \&assertion \&defect
+  assertion-violation?)%
 \end{scheme}
 % 
 This type describes an invalid call to a procedure, either passing an
@@ -749,7 +749,7 @@ The {\cf irritants} field should contain a list of objects.  This
 condition provides additional information about a condition, typically
 the argument list of a procedure that detected an exception.
 Conditions of this type are created by the {\cf error} and {\cf
-  contract-violation} procedures of report section~\ref{report:errorviolation}.
+  assertion-violation} procedures of report section~\ref{report:errorviolation}.
 \end{entry}
  
 \begin{entry}{%
@@ -768,7 +768,7 @@ This condition type could be defined by
 The {\cf who} field should contain a symbol or string identifying the
 entity reporting the exception.
 Conditions of this type are created by the {\cf error} and {\cf
-  contract-violation} procedures (report section~\ref{report:errorviolation}), and
+  assertion-violation} procedures (report section~\ref{report:errorviolation}), and
 the {\cf syntax-violation} procedure (section~\ref{syntax-violation}).
 \end{entry}
 

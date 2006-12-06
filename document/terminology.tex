@@ -111,9 +111,9 @@ numbers.
 \label{typeconventions}
 A procedure that is called with an argument that it is not
 specified to handle raises an exception with condition type
-{\cf\&contract}.  Also, if the number of arguments provided in
+{\cf\&assertion}.  Also, if the number of arguments provided in
 a procedure call does not match any argument count specified for the
-called procedure, an exception with condition type {\cf\&contract}
+called procedure, an exception with condition type {\cf\&assertion}
 is raised.
 
 For succinctness, we follow the convention
@@ -154,7 +154,7 @@ arguments of a procedure.  Typically, such a restriction is formulated
 as a phrase of the form ``\var{x} must be a \ldots'' (or otherwise
 using the word ``must''.)  As with
 implicit restrictions, such a phrase means that an exception with
-condition type {\cf\&contract} is raised if the argument does not
+condition type {\cf\&assertion} is raised if the argument does not
 meet the restriction.
 
 If \var{category} is something other than ``syntax'' and
@@ -223,12 +223,12 @@ The ``\evalsto'' symbol is also used when the evaluation of an
 expression raises an exception.  For example,
 
 \begin{scheme}
-(integer->char \sharpsign{}xD800) \ev \exception{\&contract}
+(integer->char \sharpsign{}xD800) \ev \exception{\&assertion}
 \end{scheme}
 
 means that the evaluation of the expression {\cf (integer->char
   \sharpsign{}xD800)} causes an exception with condition type
-{\cf\&contract} to be raised.
+{\cf\&assertion} to be raised.
 
 \section{Unspecified behavior}
 
@@ -267,7 +267,7 @@ an exceptional situation that permits the exception handler to return,
 thereby allowing program execution to continue at the place where the
 original exception occurred.  See library section~\ref{lib:exceptionssection}.
 
-For example, an exception with condition type {\cf\&contract}
+For example, an exception with condition type {\cf\&assertion}
 is raised if a procedure is passed an argument that the procedure
 is not explicitly specified to handle, even though such domain
 exceptions are not always mentioned in this report.

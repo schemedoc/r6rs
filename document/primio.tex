@@ -218,7 +218,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
   Marks the reader as closed, performs any necessary
   cleanup, and releases the resources associated with the reader.
   Further operations on the reader must raise an exception with
-  condition type {\cf\&contract}.
+  condition type {\cf\&assertion}.
 \end{itemize}
 
 \end{entry}
@@ -310,7 +310,7 @@ When {\cf reader-has-get-position} returns \schtrue{} for reader, {\cf
   reader-get-position} returns the current position in the byte stream
 as an exact integer counting the number of bytes since the beginning
 of the stream.  Otherwise, an exception with condition type
-{\cf\&contract} is raised.
+{\cf\&assertion} is raised.
 
 For a reader created by {\cf make-simple-reader}, {\cf
   reader-get-position} tail-calls the \var{get-position} procedure of
@@ -331,7 +331,7 @@ returns \schtrue{} if it has a \var{set-position!} procedure.
 When {\cf reader-has-set-position!?} returns \schtrue{} for
 \var{reader}, {\cf reader-set-position!}  moves to position \var{pos}
 in the stream.  Otherwise, an {\cf exception} with condition type
-{\cf\&contract} is raised.
+{\cf\&assertion} is raised.
 
 For a reader created by {\cf make-simple-reader}, {\cf
   reader-set-position!} tail-calls the \var{set-position!} procedure
@@ -351,7 +351,7 @@ returns \schtrue{} if it has a \var{end-position} procedure.
 When {\cf reader-has-end-position?} returns \schtrue{} for
 \var{reader}, {\cf reader-end-position} returns the position in the
 byte stream of the next end of file, without changing the current
-position.  Otherwise, an exception with condition type {\cf\&contract}
+position.  Otherwise, an exception with condition type {\cf\&assertion}
 is raised.
 
 For a reader created by {\cf make-simple-reader}, {\cf
@@ -365,7 +365,7 @@ For a reader created by {\cf make-simple-reader}, {\cf
 Marks \var{reader} as closed, performs any necessary cleanup, and
 releases the resources associated with the reader. Further operations
 on the reader must raise an exception with condition type
-{\cf\&contract}.
+{\cf\&assertion}.
    
 For a reader created by {\cf make-simple-reader}, {\cf reader-close} tail-calls the
 \var{close} procedure of reader.  For all other readers, the return
@@ -484,7 +484,7 @@ omitted, in which case the corresponding arguments must be \schfalse.
   Marks the writer as closed, performs any necessary
   cleanup, and releases the resources associated with the writer. Further
   operations on the writer must raise an exception with condition type
-  {\cf\&contract}.
+  {\cf\&assertion}.
 \end{itemize}
 \end{entry}
 
@@ -559,7 +559,7 @@ When {\cf writer-has-get-position?} returns \schtrue{} for
 returns the current position in the byte stream as
 an exact integer counting the number of bytes since the beginning of
 the stream.  Otherwise, an exception with condition
-type {\cf\&contract} is raised.
+type {\cf\&assertion} is raised.
 
 For a writer created by {\cf make-simple-writer}, {\cf
   writer-get-position} calls the \var{get-position} procedure of
@@ -582,7 +582,7 @@ When {\cf writer-has-set-position!?} returns \schtrue{} for
 moves to position \var{pos} (which must be a non-negative
 exact integer) in the stream.
 Otherwise, an exception with condition type
-{\cf\&contract} is raised.  
+{\cf\&assertion} is raised.  
 
 For a writer created by {\cf make-simple-writer}, {\cf
   writer-set-position!} calls the \var{set-position!}  procedure of
@@ -603,7 +603,7 @@ When {\cf writer-has-end-position?} returns \schtrue{} for writer,
 {\cf writer-end-position}
 returns the byte position of the next end of file, without
 changing the current position.  Otherwise, an exception with condition
-type {\cf\&contract} is raised.
+type {\cf\&assertion} is raised.
    
 For a writer created by {\cf make-simple-writer}, {\cf
   writer-end-position} calls the \var{end-position} procedure of
@@ -616,7 +616,7 @@ For a writer created by {\cf make-simple-writer}, {\cf
 Marks the writer as closed, performs any necessary cleanup, and
 releases the resources associated with the writer. Further operations
 on the writer must raise an exception with condition type
-{\cf\&contract}.
+{\cf\&assertion}.
    
 For a writer created by {\cf make-simple-writer}, calls the
 \var{close} procedure of \var{writer}.  For all other writers,
@@ -743,7 +743,7 @@ the {\cf reader-get-position}, {\cf reader-set-position!}, {\cf
           (raise (condition
                   (\&message
                    (message "bytes writer closed"))
-                  (\&contract)
+                  (\&assertion)
                   (\&i/o-reader/writer
                    (reader/writer writer))))))
 

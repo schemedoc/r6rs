@@ -57,14 +57,14 @@ are all empty, {\cf exists} returns \schfalse.
 (for-all even? '(3 1 4 1 5 9)) \lev \schfalse{}
 (for-all even? '(3 1 4 1 5 9 . 2)) \lev \schfalse{}
 (for-all even? '(2 4 14)) \ev \schtrue{}
-(for-all even? '(2 4 14 . 9)) \lev \exception{\cf\&contract}
+(for-all even? '(2 4 14 . 9)) \lev \exception{\cf\&assertion}
 (for-all (lambda (n) (and (even? n) n)) '(2 4 14)) \lev 14
 (for-all < '(1 2 3) '(2 3 4)) \ev \schtrue{}
 (for-all < '(1 2 4) '(2 3 4)) \ev \schfalse{}
 
 (exists even? '(3 1 4 1 5 9)) \lev \schtrue{}
 (exists even? '(3 1 1 5 9)) \ev \schfalse{}
-(exists even? '(3 1 1 5 9 . 2)) \lev \exception{\cf\&contract}
+(exists even? '(3 1 1 5 9 . 2)) \lev \exception{\cf\&assertion}
 (exists (lambda (n) (and (even? n) n)) '(2 1 4 14)) \lev 2
 (exists < '(1 2 4) '(2 3 4)) \ev \schtrue{}
 (exists > '(1 2 3) '(2 3 4)) \ev \schfalse{}
