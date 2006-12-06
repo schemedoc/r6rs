@@ -571,7 +571,9 @@ This condition type could be defined by
   warning?)%
 \end{scheme}
 %
-This type describes conditions that can safely be ignored.
+This type describes conditions that do not, in
+principle, prohibit immediate continued execution of the program, but
+may interfere with the program's execution later.
 \end{entry}
 
 \begin{entry}{%
@@ -654,27 +656,13 @@ for NaNs and infinities.  (See section~\ref{flonumssection}.)
 \end{entry}
 
 \begin{entry}{%
-\ctproto{defect}
-\proto{defect?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&defect \&violation
-  defect?)%
-\end{scheme}
-%
-This type describes defects in the program.
-\end{entry}
-
-\begin{entry}{%
 \ctproto{lexical}
 \proto{lexical-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
-(define-condition-type \&lexical \&defect
+(define-condition-type \&lexical \&violation
   lexical-violation?)%
 \end{scheme}
 %
@@ -710,7 +698,7 @@ information.
 This condition type could be defined by
 %
 \begin{scheme}
-(define-condition-type \&undefined \&defect
+(define-condition-type \&undefined \&violation
   undefined-violation?)%
 \end{scheme}
 % 
@@ -724,7 +712,7 @@ This type describes unbound identifiers in the program.
 This condition type could be defined by
 %
 \begin{scheme}
-(define-condition-type \&assertion \&defect
+(define-condition-type \&assertion \&violation
   assertion-violation?)%
 \end{scheme}
 % 
