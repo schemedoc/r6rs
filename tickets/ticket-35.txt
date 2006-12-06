@@ -1,0 +1,42 @@
+Ticket #35 (enhancement)
+
+Equivalence predicate version of memp
+Status: closed (fixed)
+Reported by:	Andre van Tonder
+Assigned to:	sperber
+Priority:	minor
+Component:	miscellaneous
+Version:	5.91
+Keywords:	
+Cc:	
+
+Summary
+
+Memp is unwieldy and potentially inefficient in the very common case
+where one tests for membership is based on an equivalence
+predicate.
+
+Description
+
+In my experience the most common usage pattern of generic membership
+is expressed by the SRFI-1 generic member procedure, which has to be
+expressed in r6rs as follows:
+
+  (member x l =)  ==>  (memp (lambda (y) (= x y)) l)
+
+This gets unwieldy to write, is hard to read, and is inefficient in
+the absence of smart optimizations.
+
+Proposal
+
+The inclusion of an additional procedure for generic membership based
+on an equivalence predicate argument. One possibility is enhancing
+member with an extra optional argument, or using a new name for it
+such as mem=
+
+RESPONSE:
+
+The comment was addressed on the mailing list.  Cf.
+
+http://lists.r6rs.org/pipermail/r6rs-discuss/2006-September/000173.html
+

@@ -1,0 +1,49 @@
+Ticket #119 (enhancement)
+
+Opened 1 week ago
+Clarify the description of which continuations take multiple values
+Status: newReported by:	Alan Watson	Assigned to:	sperber
+Priority:	minor	Milestone:	r6rs
+Component:	baselibrary	Version:	5.91
+
+The number of values accepted by certain continuations is touched upon
+in 4.5 and then defined more precisely in 9.5.7 and 9.18 in the
+descriptions of the let-values and let*-values syntac and the values
+and call-with-values procedures. Section 4.5
+
+When I first read 4.5, I was confused by its vagueness, because I
+thought it would be the definitive description the number of values
+accepted by certain continuations and the behaviour when an unexpected
+number of values is supplied. However, on repeated reading, it became
+clear that it is simply introducing concepts which are firmed up later
+in 9.18.
+
+I would changing the second paragraph of 4.5 as follows (my additions
+in upper case):
+
+Not all continuations accept any number of values. FOR EXAMPLE, a
+continuation that accepts the argument to a procedure call is
+guaranteed to accept exactly one value. The effect of passing ... then
+an exception is raised. A MORE COMPLETE DESCRIPTION OF THE NUMBER OF
+VALUES ACCEPTED BY DIFFERENT CONTINUATIONS AND THE CONSEQUENCES OF
+PASSING AN UNEXPECTED NUMBER OF VALUES IS GIVEN IN THE DESCRIPTION OF
+THE VALUES PROCEDURE IN SECTION 9.18. Section 9.5.7
+
+The description of let-values currently says "If no formals match,
+...". Would it not be better to say "If the formals do not match ..."?
+
+Section 9.18
+
+Mention let-values and let*-values. That is, change the second
+paragraph to (my changes in upper case):
+
+Except for these and the continuations created by call-with-values,
+LET-VALUES, AND LET*-VALUES, all other continuations take exactly one
+value. The effect of passing an inappropriate number of values to a
+continuation not created by call-with-values, LET-VALUES, OR
+LET*-VALUES is undefined
+
+RESPONSE:
+
+This suggestion will be adopted in the next draft of the report.
+

@@ -1,0 +1,27 @@
+Ticket #24 (defect)
+
+U+FFFD is not meant for encoding errors.
+Status: closed (invalid)
+Reported by:	John Cowan
+Assigned to:	sperber
+Priority:	minor
+Component:	i/o
+Version:	5.91
+Keywords:	
+Cc:	
+
+The Unicode character U+FFFD is intended to represent a character in a
+non-Unicode encoding which is not representable within Unicode as
+currently defined. It is not intended to represent an encoding error.
+
+The Plan 9 OS uses U+0080, which has no Unicode or ISO defined
+meaning, to represent encoding errors. I suggest it.
+
+This affects error-handling-code in 15.3.3 (p. 87).
+
+RESPONE:
+
+The formal comment was withdrawn here:
+
+http://lists.r6rs.org/pipermail/r6rs-discuss/2006-September/000149.html
+
