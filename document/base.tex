@@ -1,4 +1,4 @@
-%\vfill\eject
+\vfill\eject
 \chapter{Base library}
 \label{baselibrarychapter}
 
@@ -150,15 +150,13 @@ expression.
 expression or that of a
 definition with a body has the following form:
 
-{\cf \hyper{declaration} \ldots \hyper{definition} \ldots \hyper{sequence}}
-
-\hyper{Declaration} is according to section~\ref{declarationssection}.
+{\cf \hyper{definition} \ldots \hyper{sequence}}
 
 \hyper{Sequence} has the following form:
 
 {\cf \hyperi{expression} \hyperii{expression} \ldots}
 
-Definitions may occur after the declarations in a \hyper{body}.
+Definitions may occur in a \hyper{body}.
 Such definitions are known as {\em internal definitions}
 \mainindex{internal definition} as opposed to library body
 definitions. 
@@ -4151,123 +4149,6 @@ which would result in a contract violation.
 
 \end{entry}
 
-\section{Declarations}
-\label{declarationssection}
-
-\schindex{declarations}
-A declaration affects a range of code and indicates that the code
-within that range should be compiled or executed to have certain
-qualities.  A declaration appears at the beginning of a \hyper{body}
-(see section~\ref{bodiessection}), at the beginning of a \hyper{library body}
-(see chapter~\ref{librarychapter}), or within a 
-\hyper{script body} (see chapter~\ref{scriptchapter}),
-and its range is the body in which it appears, possibly but not
-necessarily including code inserted into the range by macro expansion.
-
-A \hyper{declaration} is always a {\cf declare} form.
-
-\begin{entry}{%
-\proto{declare}{ \arbno{\hyper{declare spec}}}{syntax}}
-
-A \hyper{declare spec} has one of the following forms:
-
-\begin{itemize}
-\item {\cf (\hyper{quality} \hyper{priority})}
-
-  \hyper{Quality} has to be one of {\cf safe}, {\cf fast}, {\cf
-    small}, and {\cf debug}.  \hyper{priority} has to be one of {\cf
-    0}, {\cf 1}, {\cf 2}, and {\cf 3}.
-
-  This specifies that the code in the range of the declaration should
-  have the indicated quality at the indicated priority, where priority
-  3 is the highest priority.  Priority 0 means the quality is not a
-  priority at all.
-
-\item {\cf \hyper{quality}}
-  
-  This is a synonym for {\cf (\hyper{quality} 3)}.
-  
-\item {\cf unsafe}
-
-  This is a synonym for {\cf (safe 0)}.
-\end{itemize}
-
-For {\cf safe}, the default priority must be 1 or higher.  When the
-priority for {\cf safe} is 1 or higher, implementations must raise all
-required exceptions and let them be handled by the exception mechanism
-(see library chapter~\ref{lib:exceptionsconditionschapter}).
-
-Beyond that, the detailed interpretation of declarations will vary in
-different implementations.  In particular, implementations are free to
-ignore declarations, and may observe some declarations while ignoring
-others.
-\end{entry}
-
-The following descriptions of each quality may provide some guidance
-for programmers and implementors.
-
-\paragraph{{\tt safe}}
-
-This quality's priority influences the degree of checking for
-exceptional situations, and the raising and handling of exceptions in
-response to those situations.  The higher the priority, the more
-likely an exception is raised.
-
-At priority 0, an implementation is allowed to ignore any requirements
-for raising an exception with condition type {\cf\&violation} (or one
-of its subtypes).  In situations for which this report allows or
-requires the implementation to raise an exception with condition type
-{\cf\&violation}, the implementation may ignore the situation and
-continue the computation with an incorrect result, may terminate the
-computation in an unpleasant fashion, or may destroy the invariants of
-run-time data structures in ways that cause unexpected and mysterious
-misbehavior even in code that comes within the scope of a safe
-declaration.  All bets are off.
-
-At priority 1 and higher, an implementation must raise all exceptions
-required by this report, handle those exceptions using the exception
-mechanism described in library chapter~\ref{lib:exceptionsconditionschapter}, and
-use the default exception handlers described in that chapter.  See
-also section~\ref{safeunsafemodesection}.
-
-At higher priorities, implementations may be more likely to raise
-exceptions that are allowed but not required by this report.
-
-Most implementations are able to recognize some violations when
-parsing, expanding macros, or compiling a definition or expression
-whose evaluation has not yet commenced in the usual sense.
-Implementations are allowed to use nonstandard exception handlers at
-those times, and are encouraged to raise {\cf\&syntax} exceptions for
-violations detected at those times, even if the definition or
-expression that contains the violation will never be executed.
-Implementations are also allowed to raise a {\cf\&warning} exception
-at those times if they determine that some subexpression would
-inevitably raise some kind of {\cf\&violation} exception were it ever
-to be evaluated.
-
-\paragraph{{\tt fast}}
-
-This quality's priority influences the speed of the code it governs.
-At high priorities, the code is likely to run faster, but that
-improvement is constrained by other qualities and may come at the
-expense of the small and debug qualities.
-
-\paragraph{{\tt small}}
-
-This quality's priority influences the amount of computer memory
-needed to represent and to run the code.  At high priorities, the code
-is likely to occupy less memory and to require less memory during
-evaluation.
-
-\paragraph{{\tt debug}}
-
-This quality's priority influences the programmer's ability to debug
-the code.  At high priorities, the programmer is more likely to
-understand the correspondence between the original source code and
-information displayed by debugging tools.  At low priorities, some
-debugging tools may not be usable.
-
-
 \section{Tail calls and tail contexts}
 \label{basetailcontextsection}
 
@@ -4281,7 +4162,7 @@ expression.
   shown as \hyper{tail expression} below, occurs in a tail context.
 \begin{grammar}%
 (l\=ambda \meta{formals}
-  \>\arbno{\hyper{declaration}} \arbno{\hyper{definition}} 
+  \>\arbno{\hyper{definition}} 
   \>\arbno{\meta{expression}} \meta{tail expression})
 \end{grammar}%
 
@@ -4330,7 +4211,7 @@ are shown here.
 \meta{cond clause} \: (\meta{test} \meta{tail sequence})
 \meta{case clause} \: ((\arbno{\meta{datum}}) \meta{tail sequence})
 
-\meta{tail body} \: \arbno{\meta{declaration}} \arbno{\meta{definition}}
+\meta{tail body} \: \arbno{\meta{definition}}
 \>\> \meta{tail sequence}
 \meta{tail sequence} \: \arbno{\meta{expression}} \meta{tail expression}
 \end{grammar}%

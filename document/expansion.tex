@@ -28,11 +28,6 @@ The expander invokes the associated transformer to transform the macro
 use, then recursively performs whichever of these actions are appropriate
 for the resulting form.
 
-\item[{\cf declaration} form]
-If none of the body forms processed so far is a definition, the
-declaration is handled in some implementation-dependent fashion.
-It is a syntax violation for a declaration to appear after a definition.
-
 \item[{\cf define-syntax} form]
 The expander expands and evaluates the right-hand-side expression and binds the
 keyword to the resulting transformer.
@@ -143,10 +138,7 @@ the expander's processing of a \hyper{script body} is somewhat
 more complicated.
 It behaves as described above for a \hyper{body} or
 \hyper{library body} with the following exceptions.
-First, it treats declarations that appear after any definitions or
-expressions as if they appeared before all of the definitions and
-expressions.
-Second, when the expander finds a nondefinition,
+When the expander finds a nondefinition,
 it defers its expansion and continues scanning for definitions.
 Once it reaches the end of set of forms, it processes the
 deferred right-hand-side and body expressions, then

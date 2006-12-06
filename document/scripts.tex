@@ -25,8 +25,7 @@ the following syntax:
   \> \| \meta{import form} \meta{script body}
 \meta{import form} \: (import \arbno{\meta{import spec}})
 \meta{script body} \: \arbno{\meta{script body form}} \meta{expression}
-\meta{script body form} \: \meta{declaration}
-\> \| \meta{definition}
+\meta{script body form} \: \| \meta{definition}
 \> \| \meta{expression}
 \end{grammar}
 
@@ -63,7 +62,7 @@ The \meta{import form} is identical to the import clause in
 libraries (see section~\ref{librarysyntaxsection}), 
 and specifies a set of libraries to import.  A \meta{script
   body} is like a \meta{library body} (see
-section~\ref{librarybodysection}), except that declarations,
+section~\ref{librarybodysection}), except that 
 definitions and expressions may occur in any order, and that the final
 form of the script body must be an expression.  Thus, the syntax
 specified by \meta{script body form} refers to the result of macro
@@ -79,15 +78,14 @@ forms, may be specified by a syntactic abstraction
 
 A script is executed by treating the script similarly to a library, and
 invoking it.  The semantics of a script body may be roughly explained by
-a simple translation into a library body: All declarations at the script top
-level are moved to the front, and
-each \hyper{expression} that appears before a
+a simple translation into a library body: 
+Each \hyper{expression} that appears before a
 definition in
 the script body is converted into a dummy definition 
 {\cf (define \hyper{variable} (begin \hyper{expression} (unspecified)))},
 where \hyper{variable} is fresh identifier.
-(It is generally impossible to determine which forms are declarations,
-definitions, and expressions without concurrently expanding the body, so
+(It is generally impossible to determine which forms are 
+definitions and expressions without concurrently expanding the body, so
 the actual translation is somewhat more complicated; see
 chapter~\ref{expansionchapter}.)
 

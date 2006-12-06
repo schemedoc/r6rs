@@ -9,7 +9,7 @@ together with a set of \textit{libraries\index{library}}, each
 of which defines a part of the program connected to the others through
 explicitly specified exports and imports.  A library consists of a set
 of export and import specifications and a body, which consists of
-declarations, definitions, and expressions;
+definitions, and expressions;
 a script is similar to a library, but
 has no export specifications.
 Chapters~\ref{librarychapter} and \ref{scriptchapter}
@@ -125,22 +125,8 @@ For example, an implementation may raise an exception
 with condition type {\cf\&implementation-restriction} if it does not
 have enough storage to run a program.
 
-The above requirements for violations and implementation restrictions
-apply only in scripts and libraries that are said to be \textit{safe}.
-In \textit{unsafe} code, implementations may not raise the
-exceptions that are normally raised in those situations.  The
-distinction between safe and unsafe code is explained in
-section~\ref{safeunsafemodesection}.
-
 \section{Safety}
 \label{safeunsafemodesection}
-
-The standard libraries whose exports are described by this document
-are said to be \defining{safe libraries}.  Libraries and scripts
-that import only
-from safe libraries, and do not contain any {\cf (safe 0)} or
-{\cf unsafe} declarations (see section~\ref{declarationssection}),
-are also said to be safe.
 
 As defined by this document, the Scheme programming language
 is safe in the following sense:
@@ -162,7 +148,7 @@ inconsistent with the semantics described in this document.
 The above safety properties are guaranteed only for scripts
 and libraries that are said to be safe.  Implementations
 may provide access to unsafe libraries, and may interpret
-{\cf (safe 0)} and {\cf unsafe} declarations in ways that
+implementation-specific declarations in ways that
 cannot guarantee safety.
 
 \section{Multiple return values}
