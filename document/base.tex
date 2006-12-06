@@ -2,9 +2,6 @@
 \chapter{Base library}
 \label{baselibrarychapter}
 
-\newcommand{\syntax}{{\em Syntax: }}
-\newcommand{\semantics}{{\em Semantics: }}
-
 This chapter describes Scheme's \deflibrary{r6rs base} library, which exports many of
 the procedure and syntax bindings that are traditionally associated
 with Scheme.
@@ -104,7 +101,7 @@ anywhere other definitions may appear.
 This binds the keyword \hyper{variable} to a transformer specification specified by
 \hyper{transformer spec}, which must either be a {\cf syntax-rules}
 form (see section~\ref{syntax-rules}), or evaluate, at macro-expansion
-time, to a transformer.  (Section~\ref{transformerssection}).
+time, to a transformer.  (See library section~\ref{lib:transformerssection}).
 
 Keyword bindings established by {\cf define-syntax} are visible
 throughout the body in which they appear, except where shadowed by
@@ -1222,7 +1219,7 @@ equal as ordered trees.
 The {\cf equal?} predicate treats pairs and vectors
 as nodes with outgoing edges, uses {\cf
   string=?} to compare strings, uses {\cf
-  bytes=?} to compare bytes objects (see chapter~\ref{byteschapter}),
+  bytes=?} to compare bytes objects (see library chapter~\ref{lib:byteschapter}),
   and uses {\cf eqv?} to compare other nodes.
 
 \begin{scheme}
@@ -1293,7 +1290,7 @@ returns \schfalse.
 \label{eofsection}
 
 The end of file object is returned by various I/O procedures (see
-section~\ref{portsiosection}) when they reach end of file.
+library section~\ref{lib:portsiosection}) when they reach end of file.
 
 \begin{entry}{%
 \proto{eof-object}{}{procedure}}
@@ -1319,14 +1316,12 @@ returns \schfalse.
 The procedures described here implement arithmetic that is
 generic over
 the numerical tower described in chapter~\ref{numbertypeschapter}.
-Unlike the procedures exported by
-the libraries described in chapter~\ref{numberchapter},
-the generic procedures described in this section
+The generic procedures described in this section
 accept both exact and inexact numbers as arguments,
 performing coercions and selecting the appropriate operations
 as determined by the numeric subtypes of their arguments.
 
-Chapter~\ref{numberchapter} describes
+Library chapter~\ref{lib:numberchapter} describes
 libraries that define other numerical procedures.
 
 \subsection{Propagation of exactness and inexactness}
@@ -1382,7 +1377,7 @@ An implementation of Scheme is not required to represent infinities and
 NaNs, however;
 an implementation must raise a continuable exception with
 condition type {\cf\&no-infinities} or {\cf\&no-nans} (respectively;
-see section~\ref{flonumssection})
+see library section~\ref{lib:flonumssection})
 whenever it is unable to represent an infinity or NaN as required by
 the specification.  In this case, the continuation of the exception
 handler is the continuation that otherwise would have received
@@ -1534,15 +1529,6 @@ discussion of branch cuts, boundary conditions, and implementation of
 these functions.
 
 \subsection{Numerical operations}
-
-On exact arguments, the procedures described here behave
-consistently with the corresponding procedures of
-section~\ref{exactsection} whose names
-are prefixed by {\cf exact-} or {\cf exact}.
-On inexact arguments, the procedures described here behave
-consistently with the corresponding procedures of
-section~\ref{inexactsection} whose names
-are prefixed by {\cf inexact-} or {\cf inexact}.
 
 \subsubsection{Numerical type predicates}
 
@@ -3205,7 +3191,7 @@ the exceptional situation.  The \var{irritant}s should be the arguments
 to the operation that detected the operation.
 
 The condition object provided with the exception (see
-chapter~\ref{exceptionsconditionschapter}) has the following condition types:
+library chapter~\ref{lib:exceptionsconditionschapter}) has the following condition types:
 %
 \begin{itemize}
 \item If \var{who} is not \schfalse, the condition has condition type
@@ -3816,7 +3802,7 @@ expressions.
 Each \hyper{keyword} is an identifier,
 each \hyper{transformer spec} is either an instance of {\cf syntax-rules}
 or an expression that evaluates to a transformer (see
-chapter~\ref{syntaxcasechapter}).  It is a
+library chapter~\ref{lib:syntaxcasechapter}).  It is a
 syntax violation for \hyper{keyword} to appear more than once in the list of keywords
 being bound.
 The \hyper{form}s are arbitrary forms.
@@ -3985,7 +3971,7 @@ A \hyper{subtemplate} is a \hyper{template} followed by zero or more ellipses.
 
 \hyper{Fender}, if present, is an expression.
 The \hyper{fender} is generally useful only if the {\cf (r6rs syntax-case)}
-library has been imported; see chapter~\ref{syntaxcasechapter}.
+library has been imported; see library chapter~\ref{lib:syntaxcasechapter}.
 
 \semantics An instance of {\cf syntax-rules} produces a new macro
 transformer by specifying a sequence of hygienic rewrite rules.  A use
@@ -4209,7 +4195,7 @@ A \hyper{declare spec} has one of the following forms:
 For {\cf safe}, the default priority must be 1 or higher.  When the
 priority for {\cf safe} is 1 or higher, implementations must raise all
 required exceptions and let them be handled by the exception mechanism
-(see chapter~\ref{exceptionsconditionschapter}).
+(see library chapter~\ref{lib:exceptionsconditionschapter}).
 
 Beyond that, the detailed interpretation of declarations will vary in
 different implementations.  In particular, implementations are free to
@@ -4240,7 +4226,7 @@ declaration.  All bets are off.
 
 At priority 1 and higher, an implementation must raise all exceptions
 required by this report, handle those exceptions using the exception
-mechanism described in chapter~\ref{exceptionsconditionschapter}, and
+mechanism described in library chapter~\ref{lib:exceptionsconditionschapter}, and
 use the default exception handlers described in that chapter.  See
 also section~\ref{safeunsafemodesection}.
 

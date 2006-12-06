@@ -1,0 +1,129 @@
+\documentclass[twoside,twocolumn]{algol60}
+%\documentclass[twoside]{algol60}
+
+\usepackage{xr}
+\externaldocument[report:]{r6rs}
+
+\pagestyle{headings}
+\showboxdepth=0
+\makeindex
+\input{commands}
+
+\def\headertitle{Revised$^{5.92}$ Scheme Libraries}
+\def\integerversion{6}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+\topnewpage[{
+\begin{center}   {\huge\bf
+        Revised{\Huge$^{\mathbf{5.92}}$} Report on the Algorithmic Language \\
+                              \vskip 3pt
+                              Scheme\\
+                                \vskip 1.5ex
+                              --- Standard Libraries ---}
+
+\vskip 1ex
+\input{authors}
+
+\end{center}
+
+\chapter*{Summary}
+\medskip
+
+The report gives a defining description of the libraries of the
+programming language Scheme.
+
+Chapter~\ref{unicodechapter} describes the library implementing Unicode
+semantics for characters and strings, chapter~\ref{byteschapter}
+describes the library for handling binary data,
+chapter~\ref{listutilities} describes the library containing list utilities
+procedures, chapter~\ref{recordschapter} describes the record system,
+\ref{exceptionsconditionschapter} describes the libraries for
+exceptions and conditions, chapter~\ref{iochapter} describes the I/O
+libraries, chapter~\ref{numberchapter} describes specialized libraries
+for dealing with numbers and arithmetic,
+chapter~\ref{syntaxcasechapter} describes the {\cf syntax-case}
+facility for writing arbitrary macros, chapter~\ref{hashtablechapter}
+describes the library for hash tables,
+chapter~\ref{enumerationschapter} describes the enumerations library, and
+chapter~\ref{misclibchapter} describes various miscellaneous libraries.
+
+Chapter~\ref{complibchapter} describes the composite library
+containing most of the forms described in this report.
+Chapter~\ref{evalchapter} describes the {\cf eval} facility for
+evaluating Scheme expressions represented as data.
+Chapter~\ref{pairmutationchapter} describes the operations for
+mutating pairs.  Chapter~\ref{r5rscompatchapter} describes a library
+with some procedures from the previous
+version of this report for backwards compatibility.
+
+The report concludes with a list of references and an
+alphabetic index.
+
+This report frequently refers back to the \textit{Revised$^6$ Report
+  on the Algorithmic Language Scheme}~\cite{R6RS}; references to the
+report are identified by designations such as ``report section'' or
+``report chapter''.
+
+\bigskip
+
+\begin{center}
+{\large \bf
+*** DRAFT*** \\
+}\end{center}
+
+This is a preliminary draft.  It is intended to reflect the decisions
+taken by the editors' committee, but contains many mistakes,
+ambiguities and inconsistencies.
+
+}]
+
+\texonly\clearpage\endtexonly
+
+\chapter*{Contents}
+\addvspace{3.5pt}                  % don't shrink this gap
+\renewcommand{\tocshrink}{-4.0pt}  % value determined experimentally
+{\footnotesize
+\tableofcontents
+}
+
+\vfill
+\eject
+
+\input{unicode} \par
+\input{bytes}   \par
+\input{list}    \par
+\input{records} \par
+\input{exc}     \par
+\input{io}      \par
+\input{arith}   \par
+\input{syntax-case} \par
+\input{hashtable} \par
+\input{enum}    \par
+\input{misclib} \par
+\input{complib} \par
+\input{eval}    \par
+\input{setcar}  \par
+\input{r5rscompat} \par
+\input{libderived} \par
+%\newpage                   %  Put bib on it's own page (it's just one)
+%\twocolumn[\vspace{-.18in}]%  Last bib item was on a page by itself.
+\renewcommand{\bibname}{References}
+
+\bibliographystyle{plain}
+\bibliography{abbrevs,rrs}
+
+\vfill\eject
+
+
+\newcommand{\indexheading}{Alphabetic index of definitions of
+  concepts, keywords, and procedures}
+\newcommand{\indexintro}{The principal entry for each term, procedure,
+  or keyword is listed first, separated from the other entries by a
+  semicolon.}
+
+\printindex
+
+\end{document}
