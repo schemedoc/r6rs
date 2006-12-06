@@ -135,7 +135,7 @@ one of the following:
 \hyper{library~reference}
 (only \hyper{import~set} \hyper{identifier} \ldots)
 (except \hyper{import~set} \hyper{identifier} \ldots)
-(add-prefix \hyper{import~set} \hyper{identifier})
+(prefix \hyper{import~set} \hyper{identifier})
 (rename \hyper{import~set} (\hyper{identifier} \hyper{identifier}) \ldots)%
 \end{scheme}
 
@@ -193,7 +193,7 @@ visible within an importing library using the names given to the bindings
 by the imported library.
 The precise set of bindings to be imported and the names of those
 bindings can be adjusted with the {\cf only}, {\cf except},
-{\cf add-prefix}, and {\cf rename} forms as described below.
+{\cf prefix}, and {\cf rename} forms as described below.
 
 \begin{itemize}
 \item The {\cf only} form produces a subset of the bindings from another
@@ -204,7 +204,7 @@ bindings can be adjusted with the {\cf only}, {\cf except},
 \hyper{import~set}, including all but the listed
 \hyper{identifier}s; if any of the excluded \hyper{identifier}s is not in
 \hyper{import~set}, an exception is raised.
-\item The {\cf add-prefix} adds the \hyper{identifier} prefix to each
+\item The {\cf prefix} adds the \hyper{identifier} prefix to each
 name from another \hyper{import~set}.
 \item The {\cf rename} form, for each pair of identifiers {\cf (\hyper{identifier}
 \hyper{identifier})}, removes a binding from the set from \hyper{import~set},
@@ -271,7 +271,7 @@ expression is unspecified.
 The names {\cf library}, {\cf export}, {\cf import},
 {\cf for}, {\cf run}, {\cf expand}, {\cf meta},
 {\cf import}, {\cf export}, {\cf only}, {\cf except}, {\cf
-  add-prefix}, {\cf rename}, {\cf and}, {\cf or}, {\cf >=}, and {\cf <=}
+  prefix}, {\cf rename}, {\cf and}, {\cf or}, {\cf >=}, and {\cf <=}
 appearing in the library syntax are part of the
 syntax and are not reserved, i.e, the same can be used for other
 purposes within the library or even exported from or imported 
@@ -675,7 +675,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
           (rename (party-pop! pop!)))
   (import r6rs
           (only stack make push! pop!) ; not empty!
-          (add-prefix balloons balloon:))
+          (prefix balloons balloon:))
 
   ;; Creates a party as a stack of balloons,
   ;; starting with two balloons
