@@ -4,6 +4,7 @@ LATEX = latex
 BIBTEX = bibtex
 MAKEINDEX = makeindex
 PDFLATEX = pdflatex
+SCHEME = scheme48 -a batch
 
 report: r6rs.dvi
 
@@ -59,8 +60,13 @@ BIB_FILES = rrs.bib abbrevs.bib
 %.bbl : %.aux $(BIB_FILES)
 	$(BIBTEX) $*
 
-%.ind : %.idx
-	$(MAKEINDEX) -c $<
+r6rs.ind : r6rs.idx r6rs-lib.idx
+	rm -f r6rs-report-lib.idx
+	$(SCHEME) < frob-lib-index.scm
+	$(MAKEINDEX) -s r6rs.mst -c r6rs.idx r6rs-report-lib.idx
+
+r6rs-lib.ind : r6rs-lib.idx
+	$(MAKEINDEX) -s r6rs.mst -c r6rs-lib.idx
 
 r6rs.aux : $(COMMON_TEX_FILES) $(REPORT_TEX_FILES)
 	$(LATEX) r6rs
