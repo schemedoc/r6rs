@@ -62,16 +62,16 @@ is destructive.
 As can be seen by reading section 23 of the draft R6RS,
 higher-order procedures that perform side effects create
 problems.  To reduce these problems, and to provide the
-most useful sorting routines with the simplest API, Will
-suggests that the R6RS provide the following procedures:
+most useful sorting routines with the simplest API, the
+the R6RS will provide (at least) the following procedures:
 
 (list-sort proc list)
 (vector-sort proc vec)
 
 For both procedures, the first argument must be a predicate
 that accepts any two elements of the list or vec and returns
-a boolean indicating whether its first argument is less than
-or equal to its second.  This predicate should not have any
+a boolean indicating whether its first argument is strictly
+less than its second.  This predicate should not have any
 side effects.
 
 The list-sort and vector-sort procedures perform a stable
@@ -86,14 +86,13 @@ predicate are elements of the list or vector being sorted,
 but the pairing of arguments and the sequencing of calls to
 the predicate are not specified.
 
-Issues:
+Notes:
 
 Placing the procedure first is the convention established
-for R5RS and previous reports, but the R6RS could break with
-that tradition as it has with others.
+for R5RS and previous reports.
 
-One can argue whether the predicate should define the meaning
-of "less than or equal" or just "less than".
+Using "less than" is consistent with Common Lisp and with
+SRFI 1.
 
 The effect of a destructive sort on a subvector can be
 obtained by copying the subvector into a fresh vector,
@@ -102,7 +101,3 @@ back into the original subvector.  The copying would not
 change the asymptotic complexity of the overall sort, is
 unlikely to add much to the sort's constant factors, and
 has much cleaner semantics than a destructive sort in place.
-
-The list-sort and vector-sort procedures could be combined
-into a single sort procedure that dispatches to an internal
-list-sort or vector-sort based on its argument.
