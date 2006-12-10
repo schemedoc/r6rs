@@ -1,0 +1,41 @@
+Ticket #136 (enhancement)
+Status: new	Reported by:	Lynn Winebarger 	Assigned to: 	dyb
+Priority:	critical	Milestone:	r6rs
+Component: 	macros	Version: 	5.91
+
+Summary:
+
+The macro system needs a way of redefining core forms without losing their
+primitive definitions.
+
+Description:
+
+Scheme is a language without reserved words.  However, while it is
+possible to redefine core forms such as lambda, doing so will render the
+system useless, because the original primitive transformer will be lost. 
+The v 5.91 draft has admitted that syntactic transformation is
+accomplished by closures.  These closures should be accessible.  The
+following code illustrates the idea.
+
+(define-syntax primitive-lambda (capture-syntax lambda))
+(define-syntax lambda (capture-syntax trace-lambda))
+<code to be traced>
+(define-syntax lambda (capture-syntax primitive-lambda))
+
+A more serious example might extend the definition of lambda to take
+keyword arguments or more patterns in the argument than a simple list. 
+The capture-syntax form should be trivial to implement.
+
+
+DRAFT RESPONSE
+
+It is already possible using the import syntax within a library or program
+(5.91 script) to rename any keyword and provide an alternative definition
+of it in terms of the renamed binding.  Thus a new feature is not needed
+to achieve the stated goals for portable code, which is the only code for
+which the draft R6RS attempts to give a syntax or semantics.
+
+Since the draft R6RS does not attempt to describe the syntax or semantics
+of a top level, implementations are free to support some mechanism for
+redefining keywords, e.g., import with renaming and the ability to
+redefine keywords, at top level, and we suspect that most will do so.
