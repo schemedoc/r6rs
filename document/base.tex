@@ -1343,8 +1343,8 @@ provided all their arguments are exact, and no divisors are zero:
 
 \begin{scheme}
 /
-div          mod           div+mod
-div0         mod0          div0+mod0%
+div          mod           div-and-mod
+div0         mod0          div0-and-mod0%
 \end{scheme}
 
 The general rule is that the generic operations return the correct
@@ -1922,10 +1922,10 @@ Returns the absolute value of its argument.
 \end{entry}
 
 \begin{entry}{%
-\proto{div+mod}{ \vari{x} \varii{x}}{procedure}
+\proto{div-and-mod}{ \vari{x} \varii{x}}{procedure}
 \proto{div}{ \vari{x} \varii{x}}{procedure}
 \proto{mod}{ \vari{x} \varii{x}}{procedure}
-\proto{div0+mod0}{ \vari{x} \varii{x}}{procedure}
+\proto{div0-and-mod0}{ \vari{x} \varii{x}}{procedure}
 \proto{div0}{ \vari{x} \varii{x}}{procedure}
 \proto{mod0}{ \vari{x} \varii{x}}{procedure}}
 
@@ -1938,10 +1938,10 @@ otherwise, an exception with condition type {\cf\&assertion} is raised.
 \begin{scheme}
 (div \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{div}~\varii{x}\)
 (mod \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{mod}~\varii{x}\)
-(div+mod \vari{x} \varii{x})     \ev \(\vari{x}~\mathrm{div}~\varii{x}, \vari{x}~\mathrm{mod}~\varii{x}\)\\\>\>\>; two return values
+(div-and-mod \vari{x} \varii{x})     \ev \(\vari{x}~\mathrm{div}~\varii{x}, \vari{x}~\mathrm{mod}~\varii{x}\)\\\>\>\>; two return values
 (div0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{div}_0~\varii{x}\)
 (mod0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{mod}_0~\varii{x}\)
-(div0+mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; two return values%
+(div0-and-mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; two return values%
 \end{scheme}
 
 \begin{entry}{%
@@ -2116,6 +2116,17 @@ argument.
 (sqrt +inf.0)               \ev  +inf.0
 (sqrt -inf.0)               \ev  +inf.0i%
 \end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{exact-sqrt}{ ei}{procedure}}
+
+FIXME
+
+\domain{\var{Ei} must be non-negative.}
+The {\cf exact-sqrt} procedure returns two non-negative exact
+integers $s$ and $r$ where $\var{ei} = s^2 +
+r$ and $\var{ei} < (s+1)^2$.
 \end{entry}
 
 \begin{entry}{%

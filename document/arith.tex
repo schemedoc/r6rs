@@ -3,8 +3,8 @@
 \index{number}
 
 This chapter describes Scheme's libraries for more specialized
-numerical operations: fixnum and flonum arithmetic, as well as generic
-exact and generic inexact arithmetic.
+numerical operations: fixnum and flonum arithmetic, as well as bitwise
+operations on exact integers.
 
 \section{Fixnums}
 \label{fixnumssection}
@@ -23,43 +23,17 @@ implementation.
 A fixnum is an exact integer whose value lies within this
 fixnum range.
 
-This section specifies two kinds of operations on fixnums.  Operations
-whose names begin with {\cf fixnum} perform arithmetic modulo
-$2^{w}$.  Operations whose names begin with {\cf fx}
-perform integer arithmetic on their fixnum arguments, but raise an
-exception with condition type {\cf\&implementation-restriction} 
-if the result is not a fixnum.
-
-\begin{rationale}
-The operations whose names begin with {\cf fixnum}
-implement arithmetic on a quotient ring of the integers,
-but their results are not the same in every implementation
-because the particular ring is parameterized by $w$.
-The operations whose names begin with {\cf fx} do
-not have as nice a closure property, and the arguments that
-cause them to raise an exception are not the same in every
-implementation, but any results they return without
-raising an exception are the same in all implementations.
-\end{rationale}
-
-Some operations (e.g.\ {\cf fixnum<} and {\cf fx<}) behave the same in
-both sets.
-
-\begin{rationale}
-Duplication of names reduces bias toward either set,
-and saves programmers from having to remember which
-names are supplied.
-\end{rationale}
+This section describes the \deflibrary{r6rs arithmetic fx} library,
+which defines various operations on fixnums.
+Fixnum operations perform integer arithmetic on their fixnum
+arguments, but raise an exception with condition type
+{\cf\&implementation-restriction} if the result is not a fixnum.
 
 This section uses \var{fx}, \vari{fx} and \varii{fx} as parameter
 names for arguments that must be fixnums.
 
-\subsection{Quotient-ring fixnum operations}
-
-This section describes the \deflibrary{r6rs arithmetic fixnum} library.
-
 \begin{entry}{%
-\proto{fixnum?}{ obj}{procedure}}
+\rproto{fixnum?}{ obj}{procedure}}
 
 Returns \schtrue{} if \var{obj} is an exact
 integer within the fixnum range, and
@@ -67,384 +41,13 @@ otherwise returns \schfalse{}.
 \end{entry}
 
 \begin{entry}{%
-\proto{fixnum-width}{}{procedure}
-\proto{least-fixnum}{}{procedure}
-\proto{greatest-fixnum}{}{procedure}}
-
-These procedures return $w$,
-$-2^{w-1}$ and $2^{w-1} - 1$: the
-width, minimum and the maximum value of the fixnum range, respectively.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fixnum>?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fixnum<?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fixnum>=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
-\proto{fixnum<=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}}
-
-These procedures return \schtrue{} if their arguments are (respectively):
-equal, monotonically increasing, monotonically decreasing,
-monotonically nondecreasing, or monotonically nonincreasing,
-\schfalse{} otherwise.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-zero?}{ fx}{procedure}
-\proto{fixnum-positive?}{ fx}{procedure}
-\proto{fixnum-negative?}{ fx}{procedure}
-\proto{fixnum-odd?}{ fx}{procedure}
-\proto{fixnum-even?}{ fx}{procedure}}
-
-These numerical predicates test a fixnum for a particular property,
-returning \schtrue{} or \schfalse{}.  The five properties tested by
-these procedures are: whether the number is zero, greater than zero,
-less than zero, odd, or even.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-max}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}
-\proto{fixnum-min}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}}
-
-These procedures return the maximum or minimum of their arguments.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum+}{ \vari{fx} \dotsfoo}{procedure}
-\proto{fixnum*}{ \vari{fx} \dotsfoo}{procedure}}
-
-These procedures return the unique fixnum that is congruent mod $2^w$
-to the sum or product of their arguments.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}
-\rproto{fixnum-}{ fx}{procedure}}
-
-With two or more arguments, this procedure returns the unique fixnum
-that is congruent mod $2^w$ to the difference of its arguments,
-associating to the left.  With one argument, however, it returns the
-the unique fixnum that is congruent mod $2^w$ to the additive inverse
-of its argument.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-div+mod}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fixnum-div}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fixnum-mod}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fixnum-div0+mod0}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fixnum-div0}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fixnum-mod0}{ \vari{fx} \varii{fx}}{procedure}}
-
-{\varii{fx} must be nonzero.}
-These procedures implement number-theoretic integer division modulo
-$2^w$.  Each procedure returns the unique fixnum(s) congruent modulo
-$2^w$ to the result(s) specified in report section~\ref{report:integerdivision}.
-
-\begin{scheme}
-(fixnum-div \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{div}~\varii{ex}\)
-(fixnum-mod \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{mod}~\varii{ex}\)
-(fixnum-div+mod \vari{ex} \varii{ex})     \lev \(\vari{ex}~\mathrm{div}~\varii{ex}, \vari{ex}~\mathrm{mod}~\varii{ex}\)\\\>\>; two return values
-(fixnum-div0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{div}\sb{0}~\varii{ex}\)
-(fixnum-mod0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)
-(fixnum-div0+mod0 \vari{ex} \varii{ex})   \lev \(\vari{ex} \vari{ex}~\mathrm{div}\sb{0}~\varii{ex}, \vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)\\\>\>; two return values%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum+/carry}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-Returns the two fixnum results of the following computation:
-%
-\begin{scheme}
-(let* ((s (+ \vari{fx} \varii{fx} \variii{fx}))
-       (s0 (mod0 s (expt 2 (fixnum-width))))
-       (s1 (div0 s (expt 2 (fixnum-width)))))
-  (values s0 s1))%
-\end{scheme}
-
-\begin{note}
-The results returned by the
-{\cf fixnum+/carry},
-{\cf fixnum-/carry}, and
-{\cf fixnum*/carry}
-procedures depend upon the precision $w$,
-so there are no {\cf fx} equivalents to these procedures.
-\end{note}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-/carry}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-Returns the two fixnum results of the following computation:
-%
-\begin{scheme}
-(let* ((d (- \vari{fx} \varii{fx} \variii{fx}))
-       (d0 (mod0 d (expt 2 (fixnum-width))))
-       (d1 (div0 d (expt 2 (fixnum-width)))))
-  (values d0 d1))%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum*/carry}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-Returns the two fixnum results of the following computation:
-\begin{scheme}
-(let* ((s (+ (* \vari{fx} \varii{fx}) \variii{fx}))
-       (s0 (mod0 s (expt 2 (fixnum-width))))
-       (s1 (div0 s (expt 2 (fixnum-width)))))
-  (values s0 s1))%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-not}{ \var{fx}}{procedure}}
-
-Returns the unique fixnum that is congruent
-mod $2^w$ to the one's-complement of \var{fx}.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-and}{ \vari{fx} \dotsfoo}{procedure}
-\proto{fixnum-ior}{ \vari{fx} \dotsfoo}{procedure}
-\proto{fixnum-xor}{ \vari{fx} \dotsfoo}{procedure}}
-
-These procedures return the fixnum that is the bit-wise ``and'',
-``inclusive or'', or ``exclusive or'' of the two's complement
-representations of their arguments.  If they are passed only one
-argument, they return that argument.  If they are passed no arguments,
-they return the fixnum (either $-1$ or $0$) that acts as identity for the
-operation.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-if}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-Returns the fixnum result of the following
-computation:
-\begin{scheme}
-(fixnum-ior (fixnum-and \vari{fx} \varii{fx})
-            (fixnum-and (fixnum-not \vari{fx}) \variii{fx}))%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-bit-count}{ \var{fx}}{procedure}}
-
-If \var{fx} is non-negative, this procedure returns the
-number of 1 bits in the two's complement representation of \var{fx}.
-Otherwise it returns the number of 0 bits in the two's complement
-representation of \var{fx}.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-length}{ \var{fx}}{procedure}}
-
-Returns the fixnum result of the following
-computation:
-\begin{scheme}
-(do ((result 0 (+ result 1))
-     (bits (if (fixnum-negative? \var{fx})
-               (fixnum-not \var{fx})
-               \var{fx})
-           (fixnum-logical-shift-right bits 1)))
-    ((fixnum-zero? bits)
-     result))%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-first-bit-set}{ \var{fx}}{procedure}}
-
-Returns the index of the least significant $1$ bit in
-the two's complement representation of \var{fx}.  If 
-\var{fx} is $0$, then $-1$ is returned.
-%
-\begin{scheme}
-(fixnum-first-bit-set 0)        \ev  -1
-(fixnum-first-bit-set 1)        \ev  0
-(fixnum-first-bit-set -4)       \ev  2%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-bit-set?}{ \vari{fx} \varii{fx}}{procedure}}
-
-\domain{\varii{Fx} must be non-negative.}  The {\cf fixnum-bit-set?} procedure returns the
-fixnum result of the following computation:
-\begin{scheme}
-(not
-  (fixnum-zero?
-    (fixnum-and \vari{fx}
-                (fixnum-logical-shift-left 1 \varii{fx}))))%
-\end{scheme}
-%
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-copy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-\domain{\varii{Fx} must be non-negative.}  The {\cf fixnum-copy-bit} procedure
-returns the fixnum result of the following computation:
-\begin{scheme}
-(let* ((mask (fixnum-logical-shift-left 1 \varii{fx})))
-  (fixnum-if mask
-             (fixnum-logical-shift-left \variii{fx} \varii{fx})
-             \vari{fx}))%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-\domain{\varii{Fx} and \variii{fx} must be non-negative.}  The {\cf fixnum-bit-field} procedure
-returns the fixnum result of the following computation:
-%
-\begin{scheme}
-(let* ((mask (fixnum-not
-              (fixnum-logical-shift-left -1 \variii{fx}))))
-  (fixnum-logical-shift-right (fixnum-and \vari{fx} mask)
-                              \varii{fx}))%
-\end{scheme}
-%
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-copy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
-
-\domain{\varii{Fx} and \variii{fx} must be non-negative.} The
-{\cf fixnum-copy-bit-field} procedure
-returns the fixnum result of the following computation:
-\begin{scheme}
-(let* ((to    \vari{fx})
-       (start \varii{fx})
-       (end   \variii{fx})
-       (from  \variv{fx})
-       (mask1 (fixnum-logical-shift-left -1 start))
-       (mask2 (fixnum-not
-               (fixnum-logical-shift-left -1 end)))
-       (mask (fixnum-and mask1 mask2)))
-  (fixnum-if mask
-             (fixnum-logical-shift-left from start)
-             to))%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-arithmetic-shift}{ \vari{fx} \varii{fx}}{procedure}}
-
-Returns the unique fixnum that is congruent mod $2^w$ to the result of
-the following computation:
-%
-\begin{scheme}
-(exact-floor (* \vari{fx} (expt 2 \varii{fx})))%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-arithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fixnum-arithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
-
-\domain{\varii{Fx} must be non-negative.}  {\cf
-  fixnum-arithmetic-shift-left} returns the same result as {\cf
-  fixnum-arithmetic-shift}, and {\cf (fixnum-arithmetic-shift-right
-\vari{fx} \varii{fx})} returns the same result as
-{\cf (fixnum-arithmetic-shift \vari{fx} (fixnum- \varii{fx}))}.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-logical-shift-left}{ \vari{fx} \varii{fx}}{procedure}}
-
-Behaves the same as {\cf fixnum-arithmetic-shift-left}.
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-logical-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
-
-\domain{\varii{Fx} must be non-negative.}  The {\cf fixnum-logical-shift-right} procedure returns
-the result of the following computation:
-\begin{scheme}
-(let* ((n       \vari{fx})
-       (shift   \varii{fx})
-       (shifted
-         (fixnum-arithmetic-shift-right n shift)))
-  (let* ((mask-width
-           (fixnum-
-             (fixnum-width)
-             (fixnum-mod shift (fixnum-width))))
-         (mask (fixnum-not
-                (fixnum-logical-shift-left
-                  -1 mask-width))))
-    (fixnum-and shifted mask)))%
-\end{scheme}
-%
-\begin{note}
-The results of {\cf fixnum-logical-shift-left}
-and {\cf fixnum-logical-shift-left}
-can depend upon the precision $w$,
-so they have no {\cf fx} equivalents.
-\end{note}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-rotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
-
-\domain{\varii{Fx}, \variii{fx}, and \variv{fx} must be non-negative.}
-The {\cf fixnum-rotate-bit-field} procedure returns the result of the following computation:
-\begin{scheme}
-(let* ((n     \vari{fx})
-       (start \varii{fx})
-       (end   \variii{fx})
-       (count \variv{fx})
-       (width (fixnum- end start)))
-  (if (fixnum-positive? width)
-      (let* ((count (fixnum-mod count width))
-             (field0
-               (fixnum-bit-field n start end))
-             (field1
-               (fixnum-logical-shift-left
-                 field0 count))
-             (field2
-               (fixnum-logical-shift-right
-                 field0 (fixnum- width count)))
-             (field (fixnum-ior field1 field2)))
-        (fixnum-copy-bit-field n start end field))
-      n))%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{fixnum-reverse-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
-
-Returns the fixnum obtained from \vari{fx} by reversing the
-bit field specified by \varii{fx} and \variii{fx}.
-\begin{scheme}
-(fixnum-reverse-bit-field \sharpsign{}b1010010 1 4)    \lev  88 ; \sharpsign{}b1011000
-(fixnum-reverse-bit-field \sharpsign{}b1010010 91 -4)  \lev  82 ; \sharpsign{}b1010010%
-\end{scheme}
-\end{entry}
-
-\subsection{Signalling fixnum operations}
-
-This section describes the \deflibrary{r6rs arithmetic fx} library.
-
-\begin{entry}{%
-\rproto{fixnum?}{ obj}{procedure}}
-
-This is the same as {\cf fixnum?} in the \library{r6rs
-  arithmetic fixnum} library.
-\end{entry}
-
-\begin{entry}{%
 \rproto{fixnum-width}{}{procedure}
 \rproto{least-fixnum}{}{procedure}
 \rproto{greatest-fixnum}{}{procedure}}
 
-These are the same as {\cf fixnum-width},
-{\cf least-fixnum}, and {\cf greatest-fixnum} in the \library{r6rs
-  arithmetic fixnum} library,
-respectively.
+These procedures return $w$,
+$-2^{w-1}$ and $2^{w-1} - 1$: the
+width, minimum and the maximum value of the fixnum range, respectively.
 \end{entry}
 
 \begin{entry}{%
@@ -454,9 +57,10 @@ respectively.
 \proto{fx>=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}
 \proto{fx<=?}{ \vari{fx} \varii{fx} \variii{fx} \dotsfoo}{procedure}}
 
-These procedures perform the same operations as {\cf fixnum=?}, {\cf
-  fixnum>?}, {\cf fixnum<?}, {\cf fixnum>=?}, and {\cf fixnum<=?},
-respectively.
+These procedures return \schtrue{} if their arguments are (respectively):
+equal, monotonically increasing, monotonically decreasing,
+monotonically nondecreasing, or monotonically nonincreasing,
+\schfalse{} otherwise.
 \end{entry}
 
 \begin{entry}{%
@@ -466,17 +70,17 @@ respectively.
 \proto{fxodd?}{ fx}{procedure}
 \proto{fxeven?}{ fx}{procedure}}
 
-These procedures perform the same operations as {\cf fixnum-zero?},
-{\cf fixnum-positive?}, {\cf fixnum-negative?}, {\cf fixnum-odd?}, and
-{\cf fixnum-even?}, respectively.
+These numerical predicates test a fixnum for a particular property,
+returning \schtrue{} or \schfalse{}.  The five properties tested by
+these procedures are: whether the number is zero, greater than zero,
+less than zero, odd, or even.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxmax}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}
 \proto{fxmin}{ \vari{fx} \varii{fx} \dotsfoo}{procedure}}
 
-These procedures perform the same operations as {\cf fixnum-max},
-and {\cf fixnum-min}, respectively.
+These procedures return the maximum or minimum of their arguments.
 \end{entry}
 
 \begin{entry}{%
@@ -515,34 +119,71 @@ mathematically correct result of this procedure is not a fixnum.
 \end{entry}
 
 \begin{entry}{%
-\proto{fxdiv+mod}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxdiv-and-mod}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxdiv}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxmod}{ \vari{fx} \varii{fx}}{procedure}
-\proto{fxdiv0+mod0}{ \vari{fx} \varii{fx}}{procedure}
+\proto{fxdiv0-and-mod0}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxdiv0}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxmod0}{ \vari{fx} \varii{fx}}{procedure}}
 
 \domain{\varii{Fx} must be nonzero.}
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
-specified in report section~\ref{report:integerdivision}.  An exception with
-condition type {\cf\&implementation-restriction} is raised if a result
-specified by that section is not a fixnum.
+specified in report section~\ref{report:integerdivision}.
 
 \begin{scheme}
-(fxdiv \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{div}~\varii{ex}\)
-(fxmod \vari{ex} \varii{ex})         \ev \(\vari{ex}~\mathrm{mod}~\varii{ex}\)
-(fxdiv+mod \vari{ex} \varii{ex})     \lev \(\vari{ex}~\mathrm{div}~\varii{ex}, \vari{ex}~\mathrm{mod}~\varii{ex}\)\\\>\>; two return values
-(fxdiv0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{div}\sb{0}~\varii{ex}\)
-(fxmod0 \vari{ex} \varii{ex})        \ev \(\vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)
-(fxdiv0+mod0 \vari{ex} \varii{ex})   \lev \(\vari{ex} \vari{ex}~\mathrm{div}\sb{0}~\varii{ex}, \vari{ex}~\mathrm{mod}\sb{0}~\varii{ex}\)\\\>\>; two return values%
+(fxdiv \vari{fx} \varii{fx})         \ev \(\vari{fx}~\mathrm{div}~\varii{fx}\)
+(fxmod \vari{fx} \varii{fx})         \ev \(\vari{fx}~\mathrm{mod}~\varii{fx}\)
+(fxdiv-and-mod \vari{fx} \varii{fx})     \lev \(\vari{fx}~\mathrm{div}~\varii{fx}, \vari{fx}~\mathrm{mod}~\varii{fx}\)\\\>\>; two return values
+(fxdiv0 \vari{fx} \varii{fx})        \ev \(\vari{fx}~\mathrm{div}\sb{0}~\varii{fx}\)
+(fxmod0 \vari{fx} \varii{fx})        \ev \(\vari{fx}~\mathrm{mod}\sb{0}~\varii{fx}\)
+(fxdiv0-and-mod0 \vari{fx} \varii{fx})   \lev \(\vari{fx} \vari{fx}~\mathrm{div}\sb{0}~\varii{fx}, \vari{fx}~\mathrm{mod}\sb{0}~\varii{fx}\)\\\>\>; two return values%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fx+/carry}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+Returns the two fixnum results of the following computation:
+%
+\begin{scheme}
+(let* ((s (+ \vari{fx} \varii{fx} \variii{fx}))
+       (s0 (mod0 s (expt 2 (fixnum-width))))
+       (s1 (div0 s (expt 2 (fixnum-width)))))
+  (values s0 s1))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fx-/carry}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+Returns the two fixnum results of the following computation:
+%
+\begin{scheme}
+(let* ((d (- \vari{fx} \varii{fx} \variii{fx}))
+       (d0 (mod0 d (expt 2 (fixnum-width))))
+       (d1 (div0 d (expt 2 (fixnum-width)))))
+  (values d0 d1))%
+\end{scheme}
+\end{entry}
+
+\begin{entry}{%
+\proto{fx*/carry}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
+
+Returns the two fixnum results of the following computation:
+\begin{scheme}
+(let* ((s (+ (* \vari{fx} \varii{fx}) \variii{fx}))
+       (s0 (mod0 s (expt 2 (fixnum-width))))
+       (s1 (div0 s (expt 2 (fixnum-width)))))
+  (values s0 s1))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{fxnot}{ \var{fx}}{procedure}}
 
-This performs the same operation as {\cf fixnum-not}.
+Returns the unique fixnum that is congruent
+mod $2^w$ to the one's-complement of \var{fx}.
 \end{entry}
 
 \begin{entry}{%
@@ -550,40 +191,77 @@ This performs the same operation as {\cf fixnum-not}.
 \proto{fxior}{ \vari{fx} \dotsfoo}{procedure}
 \proto{fxxor}{ \vari{fx} \dotsfoo}{procedure}}
 
-These procedures perform the same operations as {\cf fixnum-and},
-{\cf fixnum-ior}, and {\cf fixnum-xor}, respectively.
+These procedures return the fixnum that is the bit-wise ``and'',
+``inclusive or'', or ``exclusive or'' of the two's complement
+representations of their arguments.  If they are passed only one
+argument, they return that argument.  If they are passed no arguments,
+they return the fixnum (either $-1$ or $0$) that acts as identity for the
+operation.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxif}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-This performs the same operation as {\cf fixnum-if}.
+Returns the fixnum result of the following
+computation:
+\begin{scheme}
+(fxior (fxand \vari{fx} \varii{fx})
+       (fxand (fxnot \vari{fx}) \variii{fx}))%
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{fxbit-count}{ \var{fx}}{procedure}}
 
-This performs the same operation as {\cf fixnum-bit-count}.
+If \var{fx} is non-negative, this procedure returns the
+number of 1 bits in the two's complement representation of \var{fx}.
+Otherwise it returns the number of 0 bits in the two's complement
+representation of \var{fx}.
 \end{entry}
 
 \begin{entry}{%
 \proto{fxlength}{ \var{fx}}{procedure}}
 
-This performs the same operation as {\cf fixnum-length}.
+Returns the fixnum result of the following
+computation:
+\begin{scheme}
+(do ((result 0 (+ result 1))
+     (bits (if (fxnegative? \var{fx})
+               (fxnot \var{fx})
+               \var{fx})
+           (fxlogical-shift-right bits 1)))
+    ((fxzero? bits)
+     result))%
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{fxfirst-bit-set}{ \var{fx}}{procedure}}
 
-This performs the same operation as {\cf fixnum-first-bit-set}.
+Returns the index of the least significant $1$ bit in
+the two's complement representation of \var{fx}.  If 
+\var{fx} is $0$, then $-1$ is returned.
+%
+\begin{scheme}
+(fxfirst-bit-set 0)        \ev  -1
+(fxfirst-bit-set 1)        \ev  0
+(fxfirst-bit-set -4)       \ev  2%
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%
 \proto{fxbit-set?}{ \var{fx} \varii{fx}}{procedure}}
 
 \domain{\varii{Fx} must be non-negative and less than {\cf
-  (fixnum-width)}.}  The {\cf fxbit-set?} procedure
-returns the same result as {\cf fixnum-bit-set?}.
+ (fixnum-width)}.}  The {\cf fxbit-set?} procedure returns the
+fixnum result of the following computation:
+\begin{scheme}
+(not
+  (fxzero?
+    (fxand \vari{fx}
+           (fxlogical-shift-left 1 \varii{fx}))))%
+\end{scheme}
+%
 \end{entry}
 
 \begin{entry}{%
@@ -591,8 +269,16 @@ returns the same result as {\cf fixnum-bit-set?}.
 
 \domain{\varii{Fx} must be non-negative and less than {\cf
   (fixnum-width)}. \variii{Fx} must be 0 or
-1.}  The {\cf fxcopy-bit} procedure returns the same result as {\cf
-  fixnum-copy-bit}.
+1.}  The {\cf fxbit-field} procedure
+returns the fixnum result of the following computation:
+%
+\begin{scheme}
+(let* ((mask (fxnot
+              (fxlogical-shift-left -1 \variii{fx}))))
+  (fxlogical-shift-right (fxand \vari{fx} mask)
+                         \varii{fx}))%
+\end{scheme}
+%
 \end{entry}
 
 \begin{entry}{%
@@ -600,8 +286,16 @@ returns the same result as {\cf fixnum-bit-set?}.
 
 \domain{\varii{Fx} and \variii{fx} must be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
-    equal to \variii{fx}.}  The {\cf fxbit-field} procedure returns the same result
-  returned by {\cf fixnum-bit-field}.
+    equal to \variii{fx}.}  The {\cf fxbit-field} procedure
+returns the fixnum result of the following computation:
+%
+\begin{scheme}
+(let* ((mask (fxnot
+              (fxlogical-shift-left -1 \variii{fx}))))
+  (fxlogical-shift-right (fxand \vari{fx} mask)
+                         \varii{fx}))%
+\end{scheme}
+%
 \end{entry}
 
 \begin{entry}{%
@@ -609,8 +303,22 @@ returns the same result as {\cf fixnum-bit-set?}.
 
 \domain{\varii{Fx} and \variii{fx} must be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
-    equal to \variii{fx}.}  The {\cf fxcopy-bit-field} procedure returns the same result
-  returned by {\cf fixnum-copy-bit-field}.
+    equal to \variii{fx}.}  The
+{\cf fxcopy-bit-field} procedure
+returns the fixnum result of the following computation:
+\begin{scheme}
+(let* ((to    \vari{fx})
+       (start \varii{fx})
+       (end   \variii{fx})
+       (from  \variv{fx})
+       (mask1 (fxlogical-shift-left -1 start))
+       (mask2 (fxnot
+               (fxlogical-shift-left -1 end)))
+       (mask (fxand mask1 mask2)))
+  (fxif mask
+        (fxlogical-shift-left from start)
+        to))%
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%
@@ -620,7 +328,7 @@ returns the same result as {\cf fixnum-bit-set?}.
 {\cf (fixnum-width)}.}  If
 %
 \begin{scheme}
-(exact-floor (* \vari{fx} (expt 2 \varii{fx})))%
+(* \vari{fx} (expt 2 \varii{fx}))%
 \end{scheme}
 %
 is a fixnum, then that fixnum is returned.  Otherwise an exception
@@ -644,9 +352,29 @@ raised.
 
 \domain{\varii{Fx}, \variii{fx}, and \variv{fx} must be non-negative
   and less than {\cf (fixnum-width)}.  \variv{Fx} must be less than
-  the difference between \variii{fx} and \variii{fx}.}  The {\cf fxrotate-bit-field} procedure
-returns the same result as the {\cf fixnum-rotate-bit-field}
-procedure.
+  the difference between \variii{fx} and \variii{fx}.}
+  The {\cf fxrotate-bit-field} procedure returns the result of the following computation:
+\begin{scheme}
+(let* ((n     \vari{fx})
+       (start \varii{fx})
+       (end   \variii{fx})
+       (count \variv{fx})
+       (width (fx- end start)))
+  (if (fxpositive? width)
+      (let* ((count (fxmod count width))
+             (field0
+               (fxbit-field n start end))
+             (field1
+               (fxlogical-shift-left
+                 field0 count))
+             (field2
+               (fxlogical-shift-right
+                 field0 (fx- width count)))
+             (field (fxior field1 field2)))
+        (fxcopy-bit-field n start end field))
+      n))%
+\end{scheme}
+
 \end{entry}
 
 \begin{entry}{%
@@ -654,8 +382,15 @@ procedure.
 
 \domain{\varii{Fx} and \variii{fx} must be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
-  equal to \variii{fx}.}  The {\cf fxreverse-bit-field} procedure returns the same result as
-the {\cf fixnum-reverse-bit-field} procedure.
+  equal to \variii{fx}.}  The {\cf fxreverse-bit-field} procedure
+returns
+the fixnum obtained from \vari{fx} by reversing the
+bit field specified by \varii{fx} and \variii{fx}.
+\begin{scheme}
+(fxreverse-bit-field \sharpsign{}b1010010 1 4)    \lev  88 ; \sharpsign{}b1011000
+(fxreverse-bit-field \sharpsign{}b1010010 91 -4)  \lev  82 ; \sharpsign{}b1010010%
+\end{scheme}
+
 \end{entry}
 
 \section{Flonums}
@@ -799,10 +534,10 @@ Returns the absolute value of \var{fl}.
 \end{entry}
 
 \begin{entry}{%
-\proto{fldiv+mod}{ \vari{fl} \varii{fl}}{procedure}
+\proto{fldiv-and-mod}{ \vari{fl} \varii{fl}}{procedure}
 \proto{fldiv}{ \vari{fl} \varii{fl}}{procedure}
 \proto{flmod}{ \vari{fl} \varii{fl}}{procedure}
-\proto{fldiv0+mod0}{ \vari{fl} \varii{fl}}{procedure}
+\proto{fldiv0-and-mod0}{ \vari{fl} \varii{fl}}{procedure}
 \proto{fldiv0}{ \vari{fl} \varii{fl}}{procedure}
 \proto{flmod0}{ \vari{fl} \varii{fl}}{procedure}}
 
@@ -814,10 +549,10 @@ procedures may return a NaN or some meaningless flonum.
 \begin{scheme}
 (fldiv \vari{fl} \varii{fl})         \ev \(\vari{fl}~\mathrm{div}~\varii{fl}\)
 (flmod \vari{fl} \varii{fl})         \ev \(\vari{fl}~\mathrm{mod}~\varii{fl}\)
-(fldiv+mod \vari{fl} \varii{fl})     \lev \(\vari{fl}~\mathrm{div}~\varii{fl}, \vari{fl}~\mathrm{mod}~\varii{fl}\)\\\>\>; two return values
+(fldiv-and-mod \vari{fl} \varii{fl})     \lev \(\vari{fl}~\mathrm{div}~\varii{fl}, \vari{fl}~\mathrm{mod}~\varii{fl}\)\\\>\>; two return values
 (fldiv0 \vari{fl} \varii{fl})        \ev \(\vari{fl}~\mathrm{div}_0~\varii{fl}\)
 (flmod0 \vari{fl} \varii{fl})        \ev \(\vari{fl}~\mathrm{mod}_0~\varii{fl}\)
-(fldiv0+mod0 \vari{fl} \varii{fl})   \lev \(\vari{fl}~\mathrm{div}_0~\varii{fl}, \vari{fl}~\mathrm{mod}_0~\varii{fl}\)\\\>\>; two return values%
+(fldiv0-and-mod0 \vari{fl} \varii{fl})   \lev \(\vari{fl}~\mathrm{div}_0~\varii{fl}, \vari{fl}~\mathrm{mod}_0~\varii{fl}\)\\\>\>; two return values%
 \end{scheme}
 
 \end{entry}
@@ -980,208 +715,25 @@ may be greater than the flonum precision.
 \end{note}
 \end{entry}
 
-\section{Exact arithmetic}
+\section{Exact bitwise arithmetic}
 \label{exactsection}
 
-This section describes the \deflibrary{r6rs arithmetic exact} library.
-
-The exact arithmetic provides generic operations on exact numbers;
-these operations correspond to their mathematical counterparts.  The
-exact numbers include rationals of arbitrary precision, and exact
-rectangular complex numbers.  A rational number with a denominator of
-$1$ is indistinguishable from its numerator.  An exact rectangular
-complex number with a zero imaginary part is indistinguishable from
-its real part.
+This section describes the \deflibrary{r6rs arithmetic bitwise}
+library.  The exact bitwise arithmetic provides generic operations on
+exact integers.  This section uses \var{ei}, \vari{ei}, \varii{ei},
+and \variii{ei} as parameter names that must be exact integers.
 
 \begin{entry}{%
-\proto{exact-number?}{ ex}{procedure}
-\proto{exact-complex?}{ ex}{procedure}
-\proto{exact-rational?}{ ex}{procedure}
-\proto{exact-integer?}{ ex}{procedure}}
-
-These numerical type predicates can be applied to any kind of
-argument, including non-numbers.  They return \schtrue{} if the object
-is an exact number of the named type, and otherwise return
-\schfalse{}.  In general, if a type predicate is true of a number then
-all higher type predicates are also true of that number.
-Consequently, if a type predicate is false of a number, then all lower
-type predicates are also false of that number.
-\end{entry}
-
-This section uses \var{ex}, \vari{ex}, \varii{ex}, and \variii{ex} as
-parameter names for arguments that must be exact complex numbers, \var{ef},
-\vari{ef}, \varii{ef}, and \variii{ef} as parameter names for arguments 
-that must be exact rational numbers, and \var{ei}, \vari{ei}, \varii{ei}, and
-\variii{ei} as parameter names that must be exact integers.
-
-\begin{entry}{%
-\proto{exact=?}{ \vari{ex} \varii{ex} \variii{ex} \dotsfoo}{procedure}
-\proto{exact>?}{ \vari{ef} \varii{ef} \variii{ef} \dotsfoo}{procedure}
-\proto{exact<?}{ \vari{ef} \varii{ef} \variii{ef} \dotsfoo}{procedure}
-\proto{exact>=?}{ \vari{ef} \varii{ef} \variii{ef} \dotsfoo}{procedure}
-\proto{exact<=?}{ \vari{ef} \varii{ef} \variii{ef} \dotsfoo}{procedure}}
-
-These procedures return \schtrue{} if their arguments are
-(respectively): equal, monotonically increasing, monotonically
-decreasing, monotonically nondecreasing, or monotonically
-nonincreasing \schfalse{} otherwise.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-zero?}{ ex}{procedure}
-\proto{exact-positive?}{ ef}{procedure}
-\proto{exact-negative?}{ ef}{procedure}
-\proto{exact-odd?}{ ei}{procedure}
-\proto{exact-even?}{ ei}{procedure}}
-
-These numerical predicates test an exact number for a particular
-property, returning \schtrue{} or \schfalse{}.  The {\cf exact-zero?} procedure
-tests whether the number is {\cf exact=?} to zero, {\cf exact-positive?}
-tests whether it is greater than zero, {\cf exact-negative?} tests whether it is
-less than zero, {\cf exact-odd?} tests whether it is odd, {\cf exact-even?}
-tests whether it is even.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-max}{ \vari{ef} \varii{ef} \dotsfoo}{procedure}
-\proto{exact-min}{ \vari{ef} \varii{ef} \dotsfoo}{procedure}}
-
-These procedures return the maximum or minimum of their arguments.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact+}{ \vari{ex} \varii{ex} \dotsfoo}{procedure}
-\proto{exact*}{ \vari{ex} \varii{ex} \dotsfoo}{procedure}}
-
-These procedures return the sum or product of their arguments.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-}{ \vari{ex} \varii{ex} \dotsfoo}{procedure}
-\rproto{exact-}{ ex}{procedure}
-\proto{exact/}{ \vari{ex} \varii{ex} \dotsfoo}{procedure}
-\rproto{exact/}{ ex}{procedure}}
-
-With two or more arguments, these procedures return the difference or
-quotient of their arguments, associating to the left.  With one
-argument, however, they return the additive or multiplicative inverse
-of their argument.
-The {\cf exact/} procedure raises an exception with condition
-type {\cf\&assertion} if a divisor is $0$.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-abs}{ ef}{procedure}}
-
-Returns the absolute value of \var{ef}.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-div+mod}{ \vari{ef} \varii{ef}}{procedure}
-\proto{exact-div}{ \vari{ef} \varii{ef}}{procedure}
-\proto{exact-mod}{ \vari{ef} \varii{ef}}{procedure}
-\proto{exact-div0+mod0}{ \vari{ef} \varii{ef}}{procedure}
-\proto{exact-div0}{ \vari{ef} \varii{ef}}{procedure}
-\proto{exact-mod0}{ \vari{ef} \varii{ef}}{procedure}}
-
-\domain{\varii{Ef} must be nonzero.}
-These procedures implement number-theoretic integer division and
-return the results of the corresponding mathematical operations
-specified in report section~\ref{report:integerdivision}.
-%
-\begin{scheme}
-(exact-div \vari{ef} \varii{ef})         \ev \(\vari{ef}~\mathrm{div}~\varii{ef}\)
-(exact-mod \vari{ef} \varii{ef})         \ev \(\vari{ef}~\mathrm{mod}~\varii{ef}\)
-(exact-div+mod \vari{ef} \varii{ef})     \lev \(\vari{ef}~\mathrm{div}~\varii{ef}, \vari{ef}~\mathrm{mod}~\varii{ef}\)\\\>\>; two return values
-(exact-div0 \vari{ef} \varii{ef})        \ev \(\vari{ef}~\mathrm{div}_0~\varii{ef}\)
-(exact-mod0 \vari{ef} \varii{ef})        \ev \(\vari{ef}~\mathrm{mod}_0~\varii{ef}\)
-(exact-div0+mod0 \vari{ef} \varii{ef})   \lev \(\vari{ef}~\mathrm{div}_0~\varii{ef}, \vari{ef}~\mathrm{mod}_0~\varii{ef}\)\\\>\>; two return values%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-gcd}{ \vari{ei} \varii{ei} \dotsfoo}{procedure}
-\proto{exact-lcm}{ \vari{ei} \varii{ei} \dotsfoo}{procedure}}
-
-These procedures return the greatest common divisor or least common
-multiple of their arguments.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-numerator}{ ef}{procedure}
-\proto{exact-denominator}{ ef}{procedure}}
-
-These procedures return the numerator or denominator of their argument.
-The result is computed as if the argument were represented as a
-fraction in lowest terms.  The denominator is always positive.  The
-denominator of $0$ is defined to be $1$.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-floor}{ ef}{procedure}
-\proto{exact-ceiling}{ ef}{procedure}
-\proto{exact-truncate}{ ef}{procedure}
-\proto{exact-round}{ ef}{procedure}}
-
-These procedures return exact integers.  The {\cf exact-floor} procedure returns the
-largest integer not larger than \var{ef}.  The {\cf exact-ceiling} procedure returns
-the smallest integer not smaller than \var{ef}.  The {\cf
-  exact-truncate} procedure
-returns the integer closest to \var{ef} whose absolute value is not
-larger than the absolute value of \var{ef}.  The {\cf exact-round} procedure returns
-the closest integer to \var{ef}, rounding to even when \var{ef} is
-halfway between two integers.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-expt}{ \vari{ef} \varii{ei}}{procedure}}
-
-Returns \vari{ef} raised to the power \varii{ei}.  $0^{\var{ei}}$ is
-$1$ if $\var{ei} = 0$ and $0$ if \var{ei} is positive.
-If \vari{ef} is zero and \varii{ei} is negative,
-this procedure raises an exception with condition type {\cf\&assertion}.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-make-rectangular}{ \vari{ef} \varii{ef}}{procedure}
-\proto{exact-real-part}{ ex}{procedure}
-\proto{exact-imag-part}{ ex}{procedure}}
-
-The arguments of {\cf exact-make-rectangular} must be exact
-rationals.  Suppose \var{ex} is a complex number such that
-%
-\begin{displaymath}
-\var{ex} = \vari{ef} + \varii{ef}i\mathrm{.}
-\end{displaymath}
-%
-Then:
-\begin{scheme}
-(exact-make-rectangular \vari{ef} \varii{ef}) \lev \var{ex}
-(exact-real-part \var{ex})              \ev \vari{ef}
-(exact-imag-part \var{ex})              \ev \varii{ef}%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-sqrt}{ ei}{procedure}}
-
-\domain{\var{Ei} must be non-negative.}
-The {\cf exact-sqrt} procedure returns two non-negative exact
-integers $s$ and $r$ where $\var{ei} = s^2 +
-r$ and $\var{ei} < (s+1)^2$.
-\end{entry}
-
-\begin{entry}{%
-\proto{exact-not}{ ei}{procedure}}
+\proto{bitwise-not}{ ei}{procedure}}
 
 Returns the exact integer whose two's complement representation is the
 one's complement of the two's complement representation of \var{ei}.
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-and}{ \vari{ei} \dotsfoo}{procedure}
-\proto{exact-ior}{ \vari{ei} \dotsfoo}{procedure}
-\proto{exact-xor}{ \vari{ei} \dotsfoo}{procedure}}
+\proto{bitwise-and}{ \vari{ei} \dotsfoo}{procedure}
+\proto{bitwise-ior}{ \vari{ei} \dotsfoo}{procedure}
+\proto{bitwise-xor}{ \vari{ei} \dotsfoo}{procedure}}
 
 These procedures return the exact integer that is the bit-wise
 ``and'', ``inclusive or'', or ``exclusive or'' of the two's complement
@@ -1192,17 +744,17 @@ the operation.
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-if}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
+\proto{bitwise-if}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
 Returns the exact integer that is the result of the following computation:
 \begin{scheme}
-(exact-ior (exact-and \vari{ei} \varii{ei})
-           (exact-and (exact-not \vari{ei}) \variii{ei}))%
+(bitwise-ior (bitwise-and \vari{ei} \varii{ei})
+             (bitwise-and (bitwise-not \vari{ei}) \variii{ei}))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-bit-count}{ ei}{procedure}}
+\proto{bitwise-bit-count}{ ei}{procedure}}
  
 If \var{ei} is non-negative, this procedure returns the number of
 1 bits in the two's complement representation of \var{ei}.
@@ -1211,64 +763,64 @@ representation of \var{ei}.
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-length}{ ei}{procedure}}
+\proto{bitwise-length}{ ei}{procedure}}
 
 These procedures return the exact integer that is the result of the following
 computation:
 \begin{scheme}
 (do ((result 0 (+ result 1))
-     (bits (if (exact-negative? \var{ei})
-               (exact-not \var{ei})
+     (bits (if (bitwise-negative? \var{ei})
+               (bitwise-not \var{ei})
                \var{ei})
-           (exact-arithmetic-shift bits -1)))
-    ((exact-zero? bits)
+           (bitwise-arithmetic-shift bits -1)))
+    ((zero? bits)
      result))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-first-bit-set}{ ei}{procedure}}
+\proto{bitwise-first-bit-set}{ ei}{procedure}}
 
 Returns the index of the least significant $1$
 bit in the two's complement representation of \var{ei}.
 If \var{ei} is $0$, then $-1$ is returned.
 \begin{scheme}
-(exact-first-bit-set 0)        \ev  -1
-(exact-first-bit-set 1)        \ev  0
-(exact-first-bit-set -4)       \ev  2%
+(bitwise-first-bit-set 0)        \ev  -1
+(bitwise-first-bit-set 1)        \ev  0
+(bitwise-first-bit-set -4)       \ev  2%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-bit-set?}{ \vari{ei} \varii{ei}}{procedure}}
+\proto{bitwise-bit-set?}{ \vari{ei} \varii{ei}}{procedure}}
 
 \domain{\varii{Ei} must be non-negative.}
 
 Otherwise returns the result of the following computation:
 \begin{scheme}
-(not (exact-zero?
-      (exact-and
-       (exact-arithmetic-shift-left 1 \varii{ei})
+(not (bitwise-zero?
+      (bitwise-and
+       (bitwise-arithmetic-shift-left 1 \varii{ei})
        \vari{ei})))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-copy-bit}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
+\proto{bitwise-copy-bit}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
 \domain{\varii{Ei} must be non-negative, and \variii{ei}
 must be either $0$ or $1$.}
-The {\cf exact-copy-bit} procedure returns the result of the following computation:
+The {\cf bitwise-copy-bit} procedure returns the result of the following computation:
 \begin{scheme}
-(let* ((mask (exact-arithmetic-shift-left 1 \varii{ei})))
-  (exact-if mask
-            (exact-arithmetic-shift-left \variii{ei} \varii{ei})
+(let* ((mask (bitwise-arithmetic-shift-left 1 \varii{ei})))
+  (bitwise-if mask
+            (bitwise-arithmetic-shift-left \variii{ei} \varii{ei})
             \vari{ei}))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
+\proto{bitwise-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
 \domain{\varii{Ei} and \variii{ei} must be non-negative, and
   \varii{ei} must be less than or equal to \variii{ei}.}  This
@@ -1276,20 +828,20 @@ procedure returns the result of the following computation:
 %
 \begin{scheme}
 (let* ((mask
-        (exact-not
-         (exact-arithmetic-shift-left -1 \variii{ei}))))
-  (exact-arithmetic-shift-right
-   (exact-and \vari{ei} mask)
+        (bitwise-not
+         (bitwise-arithmetic-shift-left -1 \variii{ei}))))
+  (bitwise-arithmetic-shift-right
+   (bitwise-and \vari{ei} mask)
    \varii{ei}))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-copy-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
+\proto{bitwise-copy-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
 
 \domain{\varii{Ei} and \variii{ei} must be non-negative,
 and \varii{ei} must be less than or equal to \variii{ei}.}
-The {\cf exact-copy-bit-field} procedure returns the result of the following computation:
+The {\cf bitwise-copy-bit-field} procedure returns the result of the following computation:
 %
 \begin{scheme}
 (let* ((to    \vari{ei})
@@ -1297,41 +849,41 @@ The {\cf exact-copy-bit-field} procedure returns the result of the following com
        (end   \variii{ei})
        (from  \variv{ei})
        (mask1
-         (exact-arithmetic-shift-left -1 start))
+         (bitwise-arithmetic-shift-left -1 start))
        (mask2
-         (exact-not
-           (exact-arithmetic-shift-left -1 end)))
-       (mask (exact-and mask1 mask2)))
-  (exact-if mask
-            (exact-arithmetic-shift-left from
-                                         start)
-            to))%
+         (bitwise-not
+           (bitwise-arithmetic-shift-left -1 end)))
+       (mask (bitwise-and mask1 mask2)))
+  (bitwise-if mask
+              (bitwise-arithmetic-shift-left from
+                                             start)
+              to))%
 \end{scheme}
 \end{entry}
 
-\begin{entry}{%
-\proto{exact-arithmetic-shift}{ \vari{ei} \varii{ei}}{procedure}}
+\begin{entry} {%
+\proto{bitwise-arithmetic-shift}{ \vari{ei} \varii{ei}}{procedure}}
 
-Returns the exact integer result of the following computation:
+Returns the result of the following computation:
 %
 \begin{scheme}
-(exact-floor (* \vari{ei} (expt 2 \varii{ei})))%
+(* \vari{ei} (expt 2 \varii{ei}))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-arithmetic-shift-left}{ \vari{ei} \varii{ei}}{procedure}
-\proto{exact-arithmetic-shift-right}{ \vari{ei} \varii{ei}}{procedure}}
+\proto{bitwise-arithmetic-shift-left}{ \vari{ei} \varii{ei}}{procedure}
+\proto{bitwise-arithmetic-shift-right}{ \vari{ei} \varii{ei}}{procedure}}
 
-\domain{\varii{Ei} must be non-negative.}  {\cf
-  exact-arithmetic-shift-left} returns the same result as {\cf
-  exact-arithmetic-shift}, and {\cf (exact-arithmetic-shift-right
+\domain{\varii{Ei} must be non-negative.}  The {\cf
+  bitwise-arithmetic-shift-left} procedure returns the same result as {\cf
+  bitwise-arithmetic-shift}, and {\cf (bitwise-arithmetic-shift-right
   \vari{ei} \varii{ei})} returns the same result as {\cf
-  (exact-arithmetic-shift \vari{ei} (exact- \varii{ei}))}.
+  (bitwise-arithmetic-shift \vari{ei} (- \varii{ei}))}.
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-rotate-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
+\proto{bitwise-rotate-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
 
 \domain{\varii{Ei}, \variii{ei}, \variv{ei} must be non-negative, and \variv{ei}
 must be less than the difference between \varii{ei} and \variii{ei}.}
@@ -1342,309 +894,32 @@ The procedure returns the result of the following computation:
        (start \varii{ei})
        (end   \variii{ei})
        (count \variv{ei})
-       (width (exact- end start)))
-  (if (exact-positive? width)
-      (let* ((count (exact-mod count width))
+       (width (- end start)))
+  (if (positive? width)
+      (let* ((count (mod count width))
              (field0
-               (exact-bit-field n start end))
-             (field1 (exact-arithmetic-shift-left
+               (bitwise-bit-field n start end))
+             (field1 (bitwise-arithmetic-shift-left
                        field0 count))
-             (field2 (exact-arithmetic-shift-right
+             (field2 (bitwise-arithmetic-shift-right
                        field0
-                       (exact- width count)))
-             (field (exact-ior field1 field2)))
-        (exact-copy-bit-field n start end field))
+                       (- width count)))
+             (field (bitwise-ior field1 field2)))
+        (bitwise-copy-bit-field n start end field))
       n))%
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{exact-reverse-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
+\proto{bitwise-reverse-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
 \domain{\varii{Ei} and \variii{ei} must be non-negative, and
-  \varii{ei} must be less than or equal to \variii{ei}.}  The {\cf exact-reverse-bit-field} procedure returns
+  \varii{ei} must be less than or equal to \variii{ei}.}  The {\cf bitwise-reverse-bit-field} procedure returns
 the result obtained from the \vari{ei} by reversing the bit field
 specified by \varii{ei} and \variii{ei}.
 \begin{scheme}
-(exact-reverse-bit-field \sharpsign{}b1010010 1 4)   \lev  88 ; \sharpsign{}b1011000
-(exact-reverse-bit-field \sharpsign{}1010010 91 -4)  \lev  \exception{\&assertion}%
-\end{scheme}
-\end{entry}
-
-\section{Inexact arithmetic}
-\label{inexactsection}
-
-This section describes the \deflibrary{r6rs arithmetic inexact} library.
-
-The inexact arithmetic provides generic operations on inexact numbers.
-The inexact numbers include inexact reals and inexact complex numbers,
-both of which are distinguishable from the exact numbers.  The inexact
-complex numbers include the flonums, and the procedures described here
-behave consistently with the corresponding flonum procedures if passed
-flonum arguments.
-
-\begin{entry}{%
-\proto{inexact-number?}{ obj}{procedure}
-\proto{inexact-complex?}{ obj}{procedure}
-\proto{inexact-real?}{ obj}{procedure}
-\proto{inexact-rational?}{ obj}{procedure}
-\proto{inexact-integer?}{ obj}{procedure}}
-
-These numerical type predicates can be applied to any kind of
-argument, including non-numbers.  They return \schtrue{} if the object
-is an inexact number of the named type, and otherwise they return
-\schfalse{}.  In general, if a type predicate is true of a number then
-all higher type predicates are also true of that number.
-Consequently, if a type predicate is false of a number, then all lower
-type predicates are also false of that number.
-\end{entry}
-
-This section uses \var{in}, \vari{in}, \varii{in}, and
-\variii{in} as parameter names for arguments that must be inexact numbers,
-\var{ir}, \vari{ir}, \varii{ir}, and \variii{ir} as
-parameter names for arguments that must be inexact real numbers,
-\var{if}, \vari{if}, \varii{if}, and \variii{if} as
-parameter names for arguments that must be inexact rationals, and
-\var{ii}, \vari{ii}, \varii{ii}, and \variii{ii} as
-parameter names for arguments that must be the inexact integers.
-
-\begin{entry}{%
-\proto{inexact=?}{ \vari{in} \varii{in} \variii{in} \dotsfoo}{procedure}
-\proto{inexact>?}{ \vari{ir} \varii{ir} \variii{ir} \dotsfoo}{procedure}
-\proto{inexact<?}{ \vari{ir} \varii{ir} \variii{ir} \dotsfoo}{procedure}
-\proto{inexact>=?}{ \vari{ir} \varii{ir} \variii{ir} \dotsfoo}{procedure}
-\proto{inexact<=?}{ \vari{ir} \varii{ir} \variii{ir} \dotsfoo}{procedure}}
-
-These procedures return \schtrue{} if their arguments are
-(respectively): equal, monotonically increasing, monotonically
-decreasing, monotonically nondecreasing, or monotonically
-nonincreasing \schfalse{} otherwise.  These predicates are required to
-be transitive.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-zero?}{ in}{procedure}
-\proto{inexact-positive?}{ ir}{procedure}
-\proto{inexact-negative?}{ ir}{procedure}
-\proto{inexact-odd?}{ ii}{procedure}
-\proto{inexact-even?}{ ii}{procedure}
-\proto{inexact-finite?}{ in}{procedure}
-\proto{inexact-infinite?}{ in}{procedure}
-\proto{inexact-nan?}{ in}{procedure}}
-
-These numerical predicates test an inexact number for a particular
-property, returning \schtrue{} or \schfalse{}.  The {\cf
-  inexact-zero?} procedure
-tests if the number is {\cf inexact=?} to zero, {\cf
-  inexact-positive?} tests if it is greater than zero, {\cf
-  inexact-negative?} tests if it is less than zero, {\cf inexact-odd?}
-tests if it is odd, {\cf inexact-even?} tests if it is even, {\cf
-  inexact-finite?} tests if it is not an infinity and not a NaN, {\cf
-  inexact-infinite?} tests if it is an infinity, and
-  {\cf inexact-nan?} tests if it is a NaN.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-max}{ \vari{ir} \varii{ir} \dotsfoo}{procedure}
-\proto{inexact-min}{ \vari{ir} \varii{ir} \dotsfoo}{procedure}}
-
-These procedures return the maximum or minimum of their arguments.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact+}{ \vari{in} \varii{in} \dotsfoo}{procedure}
-\proto{inexact*}{ \vari{in} \varii{in} \dotsfoo}{procedure}}
-
-These procedures return the sum or product of their arguments.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-}{ \vari{in} \varii{in} \dotsfoo}{procedure}
-\rproto{inexact-}{ in}{procedure}
-\proto{inexact/}{ \vari{in} \varii{in} \dotsfoo}{procedure}
-\rproto{inexact/}{ in}{procedure}}
-
-With two or more arguments, these procedures return the difference or
-quotient of their arguments, associating to the left.  With one
-argument, however, they return the additive or multiplicative inverse
-of their argument.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-abs}{ in}{procedure}}
-
-Returns the absolute value of its argument.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-div+mod}{ \vari{ir} \varii{ir}}{procedure}
-\proto{inexact-div}{ \vari{ir} \varii{ir}}{procedure}
-\proto{inexact-mod}{ \vari{ir} \varii{ir}}{procedure}
-\proto{inexact-div0+mod0}{ \vari{ir} \varii{ir}}{procedure}
-\proto{inexact-div0}{ \vari{ir} \varii{ir}}{procedure}
-\proto{inexact-mod0}{ \vari{ir} \varii{ir}}{procedure}}
-
-\domain{\vari{Ir}
-must be neither infinite nor a NaN, and \varii{ir} must be nonzero.}
-These procedures implement number-theoretic integer division and
-return the results of the corresponding mathematical operations
-specified in report section~\ref{report:integerdivision}.  
-
-\begin{scheme}
-(inexact-div \vari{ir} \varii{ir})         \ev \(\vari{ir}~\mathrm{div}~\varii{ir}\)
-(inexact-mod \vari{ir} \varii{ir})         \ev \(\vari{ir}~\mathrm{mod}~\varii{ir}\)
-(inexact-div+mod \vari{ir} \varii{ir})     \lev \(\vari{ir}~\mathrm{div}~\varii{ir}, \vari{ir}~\mathrm{mod}~\varii{ir}\)\\\>\>; two return values
-(inexact-div0 \vari{ir} \varii{ir})        \ev \(\vari{ir}~\mathrm{div}_0~\varii{ir}\)
-(inexact-mod0 \vari{ir} \varii{ir})        \ev \(\vari{ir}~\mathrm{mod}_0~\varii{ir}\)
-(inexact-div0+mod0 \vari{ir} \varii{ir})   \lev \(\vari{ir}~\mathrm{div}_0~\varii{ir}, \vari{ir}~\mathrm{mod}_0~\varii{ir}\)\\\>\>; two return values%
-\end{scheme}
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-gcd}{ \vari{ii} \varii{ii} \dotsfoo}{procedure}
-\proto{inexact-lcm}{ \vari{ii} \varii{ii} \dotsfoo}{procedure}}
-
-These procedures return the greatest common divisor or least common
-multiple of their arguments.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-numerator}{ if}{procedure}
-\proto{inexact-denominator}{ if}{procedure}}
-
-These procedures return the numerator or denominator of 
-\var{if}.  The result is computed as if \var{if} was represented
-as a fraction in lowest terms.  The denominator is always positive.
-The denominator of $0.0$ is defined to be $1.0$.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-floor}{ ir}{procedure}
-\proto{inexact-ceiling}{ ir}{procedure}
-\proto{inexact-truncate}{ ir}{procedure}
-\proto{inexact-round}{ ir}{procedure}}
-
-These procedures return inexact integers for real arguments that are
-not infinities or NaNs.  For such arguments, {\cf inexact-floor}
-returns the largest integer not larger than \var{ir}.  The {\cf
-  inexact-ceiling} procedure returns the smallest integer not smaller than
-\var{ir}.  The {\cf inexact-truncate} procedure returns the integer closest to
-\var{in} whose absolute value is not larger than the absolute value of
-\var{in}.  The {\cf inexact-round} procedure returns the closest integer to
-\var{in}, rounding to even when \var{in} is halfway between two
-integers.
-
-\begin{rationale}
-The {\cf inexact-round} procedure rounds to even for consistency with the default rounding
-mode specified by the IEEE floating point standard.
-\end{rationale}
-
-Although infinities and NaNs are not integers, these procedures return
-an infinity when given an infinity as an argument, and a NaN when
-given a NaN.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-exp}{ in}{procedure}
-\proto{inexact-log}{ in}{procedure}
-\rproto{inexact-log}{ \vari{in} \varii{in}}{procedure}
-\proto{inexact-sin}{ in}{procedure}
-\proto{inexact-cos}{ in}{procedure}
-\proto{inexact-tan}{ in}{procedure}
-\proto{inexact-asin}{ in}{procedure}
-\proto{inexact-acos}{ in}{procedure}
-\proto{inexact-atan}{ in}{procedure}
-\rproto{inexact-atan}{ \vari{ir} \varii{ir}}{procedure}}
-
-These procedures compute the usual transcendental functions.  The {\cf
-  inexact-exp} procedure computes the base-$e$ exponential of
-\var{in}.  The {\cf inexact-log} procedure with a single argument computes the natural logarithm
-of \var{in} (not the base ten logarithm); {\cf (inexact-log \vari{in}
-  \varii{in})} computes the base-\varii{in} logarithm of \vari{in}.
-The {\cf inexact-asin}, {\cf inexact-acos}, and {\cf inexact-atan} procedures compute
-arcsine, arccosine, and arctangent, respectively.  The two-argument
-variant of {\cf inexact-atan} computes {\cf (inexact-angle
-  (inexact-make-rectangular \vari{ir} \varii{ir}))} (see below).
-
-See report section~\ref{report:transcendentalfunctions} for the underlying
-mathematical operations.  In the event that these operations do not
-yield a real result for the given arguments, the result may be {\cf
-  +nan.0}, or may be some meaningless inexact number.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-sqrt}{ in}{procedure}}
-
-Returns the principal square root of \var{in}. For a negative argument,
-the result may be {\cf +nan.0}, or may be some meaningless inexact
-number.  With $\log$ defined as in
-report section~\ref{report:transcendentalfunctions}, the value of {\cf (inexact-sqrt
-  \var{in})} could be expressed as
-
-\begin{displaymath}
-e^{\frac{\log \var{in}}{2}}.
-\end{displaymath}
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-expt}{ \vari{in} \varii{in}}{procedure}}
-
-Returns \vari{in} raised to the power \varii{in}.  For nonzero
-\vari{in},
-%
-\begin{displaymath}
-  \vari{in}^{\varii{in}} = e^{\varii{in} \log \vari{in}}
-\end{displaymath}
-%
-$0.0^{\var{in}}$ is $1$ if $\var{in} = 0.0$, and $0.0$ if {\cf
-  (inexact-real-part \var{in})} is positive.  Otherwise,
-for nonzero \vari{in}, this
-procedure raises an exception with condition type {\cf\&implementation-restriction} or
-returns an unspecified number.
-\end{entry}
-
-\begin{entry}{%
-\proto{inexact-make-rectangular}{ \vari{ir} \varii{ir}}{procedure}
-\proto{inexact-make-polar}{ \vari{ir} \varii{ir}}{procedure}
-\proto{inexact-real-part}{ in}{procedure}
-\proto{inexact-imag-part}{ in}{procedure}
-\proto{inexact-magnitude}{ in}{procedure}
-\proto{inexact-angle}{ in}{procedure}}
-
-Suppose \vari{ir}, \varii{ir}, \variii{ir}, and \variv{ir} are inexact
-real numbers, and \var{in} is a complex number, such that
-%
-\begin{displaymath}
-\var{in} = \vari{ir} + \varii{ir}i = \variii{ir} e^{i\variv{ir}}.
-\end{displaymath}
-%
-Then (inexactly):
-%
-\begin{scheme}
-(inexact-make-rectangular \vari{ir} \varii{ir}) \lev \var{in}
-(inexact-make-polar \variii{ir} \variv{ir}) \lev \var{in}
-(inexact-real-part \var{in})              \ev \vari{ir}
-(inexact-imag-part \var{in})              \ev \varii{ir}
-(inexact-magnitude \var{in})              \ev |\variii{ir}|
-(inexact-angle \var{in})                  \ev \var{ir}\(_{\mathrm{angle}}\)%
-\end{scheme}
-%
-where $-\pi \leq \var{ir}_{\mathrm{angle}} \leq \pi$ with
-$\var{ir}_{\mathrm{angle}} = \variv{ir} + 2\pi n$ for
-some integer $n$.
-
-\begin{scheme}
-(inexact-angle -1.0)         \ev \(\pi\)
-(inexact-angle -1.0+0.0)     \ev \(\pi\)
-(inexact-angle -1.0-0.0)     \ev -\(\pi\)\\\>; if -0.0 is distinguished%
-\end{scheme}
-
-Moreover, suppose \vari{ir}, \varii{ir} are such that either \vari{ir}
-or \varii{ir} is an infinity, then
-%
-\begin{scheme}
-(inexact-make-rectangular \vari{ir} \varii{ir}) \lev \var{in}
-(inexact-magnitude \var{in})              \ev +inf.0%
+(bitwise-reverse-bit-field \sharpsign{}b1010010 1 4)   \lev  88 ; \sharpsign{}b1011000
+(bitwise-reverse-bit-field \sharpsign{}1010010 91 -4)  \lev  \exception{\&assertion}%
 \end{scheme}
 \end{entry}
 
