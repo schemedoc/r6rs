@@ -1,0 +1,36 @@
+Ticket #74 (defect)
+
+Base library needs a name
+Status: closed (fixed)	Reported by:	Andre van Tonder	Assigned to:	sperber
+Priority:	major	Milestone:	r6rs
+Component:	baselibrary	Version:	5.91
+
+Component : Base library, Composite library 
+
+Pages : 28 and also 122 
+
+Summary
+
+The base library has no name. Because of this, identifiers in the base
+library cannot be imported for a single phase.
+
+Description
+
+Even though the (r6rs) library contains all the bindings of the base
+library, the base library has no name. As a result, the composite
+library (r6rs) is not expressible as a library form. Since (r6rs)
+exports its bindings for both RUN and EXPAND, there is no way in the
+current specification of importing identifiers such as CAR, CDR,
+... for a single phase (e.g., just for RUN). Users therefore have less
+control over the availability of base library bindings than they do
+for other libraries.
+
+Suggestion
+
+Define a library (r6rs base) that exports its bindings for RUN only.
+
+RESPONSE:
+
+This was an editorial oversight.  The (r6rs base) library is indeed
+mentioned in several places in the report.  A future draft will state
+this at the beginning of the chapter on the base library.
