@@ -153,8 +153,82 @@ particular, we encourage implementors of Scheme to use this report as
 a starting point for manuals and other documentation, modifying it as
 necessary.
 
+\subsection*{Guiding principles}
 
+To help guide the standardization effort, the editors have adopted a
+set of principles, presented below.
+Like the Scheme language defined in \rrs{5}~\cite{R5RS}, the language described
+in this report is intended to:
 
+\begin{itemize}
+\item allow programmers to read each other's code, and allow
+  development of portable programs that can be executed in any
+  conforming implementation of Scheme;
+
+\item derive its power from simplicity, a small number of generally
+  useful core syntactic forms and procedures, and no unnecessary
+  restrictions on how they are composed;
+  
+\item allow programs to define new procedures and new hygienic
+  syntactic forms;
+  
+\item support the representation of program source code as data;
+  
+\item make procedure calls powerful enough to express any form of
+  sequential control, and allow programs to perform non-local control
+  operations without the use of global program transformations;
+  
+\item allow interesting, purely functional programs to run indefinitely
+  without terminating or running out of memory on finite-memory
+  machines;
+  
+\item allow educators to use the language to teach programming
+  effectively, at various levels and with a variety of pedagogical
+  approaches; and
+
+\item allow researchers to use the language to explore the design,
+  implementation, and semantics of programming languages.
+\end{itemize}
+
+In addition, this report is intended to:
+
+\begin{itemize}
+\item allow programmers to create and distribute substantial programs
+  and libraries, e.g., SRFI implementations, that run without
+  modification in a variety of Scheme implementations;
+  
+\item support procedural, syntactic, and data abstraction more fully
+  by allowing programs to define hygiene-bending and hygiene-breaking
+  syntactic abstractions and new unique datatypes along with
+  procedures and hygienic macros in any scope;
+  
+\item allow programmers to rely on a level of automatic run-time type
+  and bounds checking sufficient to ensure type safety; and
+
+\item allow implementations to generate efficient code, without
+  requiring programmers to use implementation-specific operators or
+  declarations.
+\end{itemize}
+
+While it was possible to write portable programs in Scheme as
+described in \rrs{5}, and indeed portable Scheme programs were written
+prior to this report, many Scheme programs were not, primarily because
+of the lack of substantial standardized libraries and the
+proliferation of implementation-specific language additions.
+
+In general, Scheme should include building blocks that allow a wide
+variety of libraries to be written, include commonly used user-level
+features to enhance portability and readability of library and
+application code, and exclude features that are less commonly used and
+easily implemented in separate libraries.
+
+The language described in this report is inteded to also be backward
+compatible with programs written in Scheme as described in \rrs{5} to
+the extent possible without compromising the above principles and
+future viability of the language.  With respect to future viability,
+the editors have operated under the assumption that many more Scheme
+programs will be written in the future than exist in the present, so
+the future programs are those with which we must be most concerned.
 
 \subsection*{Acknowledgements}
 
