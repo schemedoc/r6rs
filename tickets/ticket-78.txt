@@ -74,16 +74,49 @@ shouldn't differ needlessly.
 
 RESPONSE:
 
-(Summarized, will be fleshed out on Tue 12 Dec.  In particular, a response to the issue of the R6RS philosophy will be provided, by reference to the R6RS guiding principles.)
+Regarding the R6RS philosophy, the guiding principles listed in the 
+R6RS Status Report of June 21 2006 are relevant, particularly the
+following excerpts:
+
+* Provide "a small number of generally useful syntactic forms and 
+  procedures".
+
+* Support the development of "substantial programs and libraries,
+  e.g. SRFI implementations, that run without modification 
+  in a variety of Scheme implementations".
+
+* "Include building blocks that allow a wide variety of libraries 
+  to be written ..."
+
+In the case of iteration procedures, the emphasis is not on trying 
+to preempt the development of libraries dealing with basic data 
+types, but rather to support the development of portable libraries 
+by providing procedures which might otherwise be difficult to 
+implement portably and/or efficiently.
+
+To this end, the following changes will be made in the next draft:
+
+* vector-for-each and vector-map procedures will be added, with the 
+  same interface as for-each and map.
 
 * The hash-table-fold procedure will be dropped.
+  Rationale: providing a common iteration interface across data 
+  types is beyond the scope of R6RS.  The data types in question 
+  have different characteristics, and this is particularly apparent
+  when specifying procedures designed to be used as building blocks.
 
-* vector-for-each and vector-map procedures will be added, with the same interface as for-each and map.
+* A hash-table-entries procedure will be added, which returns two 
+  values, a vector of the keys and a vector of the corresponding 
+  values.  Rationale: this procedure can be implemented and used 
+  efficiently, making it useful as a building block for other 
+  procedures.
 
-* The hash-table-keys and hash-table-values procedures will be changed to return a vector of keys and of values  respectively.  Rationale: Returning of vectors can be implemented and used efficiently, making these procedures useful as a building block for other procedures.  hash-table-keys is useful for supporting mutating traversals of a hash table.  hash-table-values is useful in a variety of scenarios.
+* Consistent with hash-table-entries, the hash-table-keys procedure 
+  will be changed to return a vector of keys, rather than a list.
+  In the absence of hash-table-fold, hash-table-keys is particularly 
+  useful for supporting mutating traversals of a hash table.
 
-* A hash-table->vector procedure will be added, which returns a vector of key/value pairs.  This satisfies the requirement for an atomic operation which returns both keys and values, while remaining consistent with the -keys and -values procedures.  Returning key/value pairs allows for convenient conversion to an alist.  [ISSUE: this procedure could return two vectors instead.]
+* The hash-table-values procedures will be dropped.
 
-* call/cc can be used for premature termination
-
-* (vector-map p (hash-table->vector ht)) and (vector-for-each p (hash-table->vector ht)) can be recognized by optimizer if implementor feels optimization is useful. [ISSUE: extend this to all three hash table to vector conversion procedures?]
+* Regarding the comment's point about premature termination, call/cc 
+  can be used for that purpose.
