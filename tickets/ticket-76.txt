@@ -58,3 +58,27 @@ which must be symbols:
    transcoder will take the appropriate action on encoding errors. If
    it is a different symbol, the meaning is implementation-defined.
 
+RESPONSE:
+
+The first argument to `make-transcoder' is a special object rather
+than a symbol to allow implementations to attach the code implementing
+a codec to the codec object.  It also enables providing other kinds of
+codecs in separate libraries.  Using symbols to represent codecs would
+require the I/O system itself to map the name of an encoding to the
+encoding/decoding algorithm, creating centralized and global knowledge
+about the available encodings.  This centralization is unnecessary,
+and using an object of arbitrary type allows using the same kinds of
+objects for codecs specified in the R6RS and codecs specified in other
+libraries.
+
+As to the second and third argument, the values whose semantics is
+specified in the R6RS are all symbols.  The fact that the `eol-style'
+and `error-handling-mode' macros may return implementation-dependent
+values (including non-symbols) for operands not specified in the draft
+caters to possibilities such as specifying the replacement character
+along with a `replace'-like mode.  The editors will make an attempt to
+clarify this in a future revision of the draft.
+
+The comment also suggests adding a "native eol style".  This general
+issue will be addressed as part of a larger revision of the I/O
+system.
