@@ -30,4 +30,14 @@ syntax-rules forms as inputs to make-variable-transformer.
 
 RESPONSE:
 
-Agreed.
+The next report draft will describe syntax-rules as expanding to a
+transformer.
+
+Note:  The motivation for treating syntax-rules essentially as part of the
+syntactic binding syntax was that it would allow implementations to
+determine statically when only rewrite-style macros are used by observing
+that no libraries are imported "for expand".  This will be addressed in the
+next report draft by having the base library export both and only
+syntax-rules and identifier-syntax, so that if no other bindings are
+imported "for expand", the only valid transformer-creating expressions
+will be syntax-rules and identifier-syntax.
