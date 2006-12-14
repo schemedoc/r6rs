@@ -20,4 +20,16 @@ efficiently, it seems a pity not to provide them.
 
 RESPONSE:
 
-[No response yet---either yes or no.]
+We agree that these may be nice, especially with the addition vector-map
+and vector-for-each (see the response to formal comment 78).  A number of
+other converters might also be nice, like string->vector, vector->string,
+as well as other flavors of ...-bytes->list, list->...-bytes,
+...-bytes->vector, and vector->...-bytes that store or extract other forms
+of data, like 16-, 32, and 64-bit signed and unsigned integers, single
+floats, double floats, characters.  Rather than adding all possibly useful
+such converters, it might be better to retain lists as the canonnical
+intermediate form and encourage compilers to optimize expressions of the
+form (list->xxx (yyy->list ---)) into code that does the yyy->xxx
+conversion directly.  In the absense of a concrete proposal for dealing
+with this issue wholistically, however, the editors have decided to keep
+the status quo.
