@@ -55,15 +55,14 @@ characters are recognized as a linefeed following backslash in a
 string.  TR 14 is about rendering text that is represented as a
 sequence of Unicode scalar values.
 
-Unicode TR 13 is more relevant. The recommendation of TR 13 is to
-recognize the platform-specific newline character (not just any
-newline character) when decoding an input stream, as well as LS and
-PS.
+Unicode TR 13, however, seems directly relevant. The recommendation of
+TR 13 is to recognize the platform-specific newline character (not LS
+(U+2028) and PS (U+2029).
 
 The R6RS grammar is meant to apply to a decoded stream. That is,
-specific bytes that represent a new-line in the input stream are meant
-to be converted to the LF character in the character stream that is
-parsed as a program.
+specific bytes that represent a newline some stream are meant to be
+converted to the LF character in the character stream that is parsed
+as a program.
 
 For example, under Mac OS 9, it is expected that the decoder used for
 reading ASCII-encoded source code will decode a #xD byte as an LF
@@ -71,6 +70,6 @@ character. If the file is read via an R6RS port, the port should use a
 transcoder whose eol-style is 'cr.
 
 Putting these pieces together, the R6RS grammar is almost consistent
-with Unicode TR 13. To make it more consistent, however, LS (U+2028)
-and PS (U+2029) should be added as alternatives for <linefeed> in the
-grammar, and we intend to make this change in the next draft.
+with Unicode TR 13. To make it more consistent, however, LS and PS
+should be added as alternatives for <linefeed> in the grammar, and we
+intend to make this change in the next draft.
