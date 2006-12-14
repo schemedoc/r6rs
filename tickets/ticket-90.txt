@@ -33,14 +33,33 @@ in the draft R6RS.
 
 RESPONSE:
 
-A future revision of the draft will add an additional clause
+For the reasons given below, the editors have decided not to simplify or
+drop the syntactic layers and not to generalize them to allow syntactic
+extension of dynamically generated record types.
 
-(parent-descriptors <parent rtd> <constructor desc>)
+The syntactic layers are designed to allow expansion- or compile-time
+determination of record characteristics, including field offsets, so that,
+for example, record accesses can be be compiled efficiently to simple
+memory indirects.  This property would be lost if the parent were not
+generally known until run time, so the restriction requiring that the
+parent be the name of a previously defined record type is well motivated
+and not intended as a simplification.
 
-where <parent rtd> and <constructor desc> are expressions that must
-evaluate to a record-type descriptor and a constructor descriptor,
-respectively.  This specifies that the record type is to have the
-record type specified by <parent rtd> as the parent type, and
-<constructor desc> the constructor descriptor to be used for the
-parent type in the `protocol' clause.
+While the syntactic layers could be simplified, particularly with respect
+to the constructor mechanism, significant demand for the features of the
+present mechanism, particularly the general construction mechanism, was
+expressed during the review process for SRFI 76: R6RS Records, upon which
+the present meechanism is based.
 
+The syntactic layers could be eliminated.  Standardizing on the surface
+syntax will facilitate communication via code, however, and because the
+syntactic layers can be implemented more efficiently, they will facilitate
+the development of efficient portable libraries that define and use record
+types.
+
+Another way to solve the problem would be to eliminate the procedural
+layer.  If this were done, the syntactic layers would become fully general
+in the sense that they would be able to extend any definable record type. 
+The procedural interface remains useful, however, e.g., for writing
+portable interpreters and expanders, so it should be retained along with
+the syntactic layers.
