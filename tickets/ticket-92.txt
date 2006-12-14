@@ -76,3 +76,132 @@ without separate instances of libraries in different phases, and where
 the phase shift of a variable or keyword is determined by context,
 declared levels are meaningless. Therefore, the R6RS will continue to
 allow implementations to ignore declared levels.
+
+The following rationale expands on the rationale behind the R6RS
+library specification. It elaborates the answer this formal comment,
+as well as for comments #109, #110, #112, and #123.
+
+----------------------------------------
+
+The draft R6RS allows code to be organized into reusable libraries
+that import and export both values and syntactic extensions.  A
+precise specification of the library system remains elusive, partly
+because different implementors still have different ideas about how
+the library system should work. In particular, opinions vary on how
+exactly libraries should be instantiated and initialized during the
+expansion and execution of library bodies.
+
+The different opinions are supported by two different reference
+implementations of R6RS libraries: one by Van Tonder and one by
+Ghuloum and Dybvig.  In addition, PLT Scheme implements a library
+system that is similar to the Van Tonder variant of R6RS libraries, at
+least in terms of the design questions where opinions vary.
+
+Despite the differences in the reference implementations, it appears
+that many programs will run the same in both variants of the library
+system. The overlap appears to be large enough to support practical
+portability between the variants.
+
+Under the assumption that the overlap is useful, and given the lack of
+consensus and relative lack of experience with the two prominent
+variants of draft R6RS libraries, the R6RS specification of libraries
+should be designed to admit both of the reference implementations.  As
+a design process, this implementation-driven approach leaves something
+to be desired, but it seems to be the surest way forward.
+
+The draft R6RS specification of libraries already accommodates the two
+existing designs, almost, but a few changes are necessary. The
+following describes the three key differences of opinions in the two
+implementation approaches, and it described the changes that are
+planned to accommodate the differences.
+
+Some Terminology
+----------------
+
+"Phase": an execution time, such as run-time or expand-time. The
+notion of phase is inherently relative to some library; the "run time"
+of one library may be the "expand time" of some other library that
+imports the former for use by procedural macros.
+
+"Phase shift": the execution time of a variable or keyword reference
+relative to a library that is being expanded and parsed. For example,
+when an identifier appears in an unquoted position on the right-hand
+side of a `define-syntax' form, it is either parsed as a variable with
+a phase shift of 1, because it access a variable at expand time
+(relative to the enclosing library), or it is parsed as a keyword whose
+use with a phase shift of 1, because the use is expanded at expand
+time.
+
+"Levels": potential phase shifts for an identifier relative to the
+lexically enclosing library. An unparsed identifier has levels in its
+source context; a parsed variable or keyword has a phase shift in its
+use context.
+
+Implementation Differences
+--------------------------
+
+The two implementation approaches differ on three related points:
+
+ 1. Whether instances of a library at different phases are the same
+    or different.
+
+    This is arguably the driving distinction. PLT Scheme and Van
+    Tonder's implementation instantiate a library separately for each
+    phase, and even for each individual compilation of a library. The
+    motivation for separating instances is to maximize the similarly
+    between compiling and executing libraries all in the same run-time
+    system instance, versus compiling libraries in separate instances
+    of the run-time system. The Ghuloum/Dybvig implementation
+    instantiates a library once for all uses, on the grounds that
+    libraries used in multiple phases generally do not (or should not)
+    use externally visible state, so the overhead for separate
+    instances is not justified.
+
+ 2. Whether bindings are introduced for identifiers at specific levels,
+    so that some relationship is enforced between the binding levels of
+    an identifier and uses the identifier at different phase shifts.
+
+    In the existing implementation approaches, enforcing the
+    connection goes with instantiating libraries separately for each
+    phases (i.e. PLT Scheme and Van Tonder enforce the connection,
+    Ghuloum/Dybvig does not). Whether this correlation is for
+    technical reasons or a matter of taste is unclear, but separating
+    phase instances enables a certain implementation technique for
+    enforcing levels, and enforcing levels seems to make more sense
+    when the meaning of an identifier is potentially different (in
+    some sense) in different phases.  In contrast, when libraries are
+    instantiated once for all phases, requiring the programmer to
+    specify levels seems redundant; phase shifts can always be
+    determined automatically.
+
+ 3. How library instantiations are triggered so that the library is
+    initialized for use at various phases.
+
+    When libraries are instantiated separately for separate phases and
+    when binding levels are explicitly declared, tying instantiation
+    to binding-level declarations ensures that certain "library not
+    initialized at phase X" errors cannot happen. Thus, PLT Scheme and
+    Van Tonder's implementation tie instantiate to import
+    declarations. When phase shifts are inferred, then library
+    dependencies can also be inferred for each phase, so
+    Ghuloum/Dybvig determines instantiation dependencies based on uses
+    of imported bindings, rather than level specifications on import.
+
+Changes to R6RS
+---------------
+
+Besides improving the R6RS draft to clarify the difference between
+phases, phase shifts, and levels, we plan to make two technical
+changes:
+
+ * Allow negative levels for import (i.e., negative integers in a
+   `meta' form). This extension allows `identifier-syntax' to be
+   implemented as a derived form in implementations that enforce
+   levels.
+
+ * Weaken and simplify the specification of invoking and visiting.
+   The revised specification will simply guarantee that if a library
+   in its macro-expanded form uses a variable binding with phase shift
+   0, then before the library is invoked (at phase N, if phases have
+   distinguished instances), the source library for the binding will
+   be invoked (at phase N).
