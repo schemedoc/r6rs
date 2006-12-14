@@ -17,9 +17,12 @@ cheap, and it is useful.
 
 RESPONSE:
 
-The proposal is indeed cheap to implement, more useful
+The proposal is indeed cheap to implement, may be more useful
 than the draft R6RS semantics, and has one of the most
-widely used SRFIs as precedent.
+widely used SRFIs as precedent.  It may, however, mask errors
+where lists of different lengths are supplied by mistake, and
+the semantics becomes unclear when input lists are extended
+destrutively as side effects of invoking the procedural arguments.
 
 To investigate precedent further, several implementations
 were tested to see whether they allow list arguments of
@@ -39,23 +42,16 @@ SCM 5e1                 okay (even with circular lists)
 It is questionable whether the SRFI-1 extension of these
 procedures to accept lists of differing lengths is so
 widely accepted that it should be required by the R6RS.
-
 On the other hand, the SRFI-1 extension is common enough
-that the R6RS should not preclude it.  With the current
-draft R6RS, programs that use the extended forms of map
-and for-each would have to import them from a SRFI-1 or
-other nonstandard library, and would have to exclude map
-and for-each when importing (r6rs base) or (r6rs).  The
-need to exclude map and for-each when importing those
-libraries could be eliminated by dropping map and for-each
-from the standard libraries, or by renaming them, perhaps
-to list-map and list-for-each, to indicate that they are
-fussier than their equivalents in SRFI-1.
+the R6RS should perhaps not preclude it.
 
-Another solution would be to specify map and for-each as
-in R5RS:  If list arguments have different lengths, then
+One solution would be to specify map and for-each essentially
+as in R5RS:  If list arguments have different lengths, then
 an exception might be raised, but is not required.
 Portable programs would not be able to depend upon the
 extension, and would also not be able to depend upon the
 exception being raised.
 
+While we are still studying this issue, the editors intend to
+resolve this issue in a manner consistent with our resolution
+of formal comment #87.
