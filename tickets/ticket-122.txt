@@ -18,9 +18,9 @@ parts are inexact reals that best approximate the best possible
 IEEE single and double precision approximations to the real and
 imaginary parts of the original argument.
 
-This is a good suggestion, although the utility of the suggested
-procedures might not justify their inclusion in the R6RS when
-they can be defined so easily in terms of real->single and
+The editors decided that the utility of the suggested extension
+to complex numbers does not justify their inclusion in the R6RS
+when they can be defined so easily in terms of real->single and
 real->double:
 
     (define (->single z)
@@ -31,5 +31,24 @@ real->double:
       (make-rectangular (real->double (real-part z))
                         (real->double (imag-part z))))
 
-It has been suggested that number->single and number->double
-might be better names for these procedures.
+The editors also decided that the utility of real->single and
+real->double does not justify their inclusion in the R6RS,
+since their effect can be achieved by storing a real number
+into a bytes object:
+
+    (define (real->single x)
+      (let ((b (make-bytes 4)))
+        (bytes-ieee-single-native-set! b 0 x)
+        (bytes-ieee-single-native-ref b 0)))
+
+    (define (real->double x)
+      (let ((b (make-bytes 8)))
+        (bytes-ieee-double-native-set! b 0 x)
+        (bytes-ieee-double-native-ref b 0)))
+
+The IEEE floating point operations on bytes objects were added
+to the draft R6RS several months after the real->single and
+real->double procedures were added, and the editors did not
+realize the real->single and real->double procedures had
+become so easy to define until they considered this formal
+comment.
