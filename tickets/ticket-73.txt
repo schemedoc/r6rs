@@ -36,14 +36,59 @@ for sharing.
 
 RESPONSE:
 
-Nongenerative UIDs are in a sense very unmodular: The addition of a
-new nongenerative record-type definition can cause a program that
-worked without it to break, if the UIDs of the record-type definitions
-match.  Hence, a namespace for the UIDs is needed that avoids
-collisions as much as possible.  Allowing #f would make it much more
-likely that such collisions occur.
+There appear to be four subproposals in the formal comment, which we
+address individually below.
 
-Except for the #f part, the proposal of the formal comment would also
-minimize collisions.  Consequently, we will adopt this part of the
-formal comment.
+1. Allow or suggest that UIDs be library names:
 
+We are unsure whether the proposer meant this to be a requirement or
+merely a suggestion.  We agree with the latter, and the next draft of
+the R6RS will suggest that programmers construct UIDs either from
+library names or the UUID namespace.  We are not in favor of requiring
+that library names be used as UIDs, for any of several reasons:
+
+  - It would force programmers to assign "ownership" of each record
+    type to a particular library, even when the record type definition
+    appears in several libraries.
+
+  - It would force programmers to change record UIDs whenever the
+    program structure changed and the record type must be given a
+    new owner.
+
+  - It may require the published UIDs of an application to be changed
+    in some cases where the application's internal library structure
+    changes.
+
+  - It may break down where local record definitions are concerned,
+    since multiple distinct local record definitions with the same name
+    may reasonably appear in the same library.
+
+  - It does not generalize to record definitions that appear in
+    programs (known as scripts in R5RS), where there is no enclosing
+    library.
+
+2. Make the effective UID a combination of the supplied UID and the record
+   name:
+
+We are ambivalent about this but will study the proposal and make a
+decision by the time the next report draft is released.
+
+3. Treat (nongenerative #f) as an abbreviation for
+   (nongenerative <enclosing-library-name>):
+
+We are not inclined to make this change as long as the use of library
+library names as UIDs is only a convention, and we do not believe that
+it would be a particularly useful shorthand, given that each occurrence
+of the record definition outside of the enclosing library must
+explicitly provide the UID.
+
+4. Eliminate generative record definitions and treat a missing nongenerative
+clause to be equivalent to (nongenerative #f), i.e.,
+(nongenerative <enclosing-library-name>).
+
+We are not inclined to adopt this proposal for the same reasons we are not
+inclined to adopt proposal 3.  Also, we believe that generative record
+types may be useful and are not inclined to eliminate them at this time. 
+Furthermore, implicit publication of internal record types seems like poor
+software practice, especially if there is no way to prevent such
+publication.
