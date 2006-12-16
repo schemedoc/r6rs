@@ -28,10 +28,20 @@ appropriate in a Scheme standard.
 
 RESPONSE:
 
-We remain more convinced by the arguments in favor of `#;',
-particularly that it allows a programmer to clearly communicate the
-commenting out of a single expression (as opposed to a line or block
-of arbitrary text).
-
-Since one purpose of the standard is to foster communication in terms
-of code, it is appropriate for R6RS to standardize `#;'.
+A majority of the editors remain convinced by the arguments in favor of
+`#;'.  We do not agree with the claim that #; is more dangerous than other
+comment mechanisms, and the formal comment offers no evidence to this
+effect.  We also do not agree that #; is less powerful; indeed, it
+automatically comments out a single datum, the basic unit of Scheme
+syntax, something that the other comment mechanisms cannot do. 
+Furthermore, the claim in the formal comment notwithstanding, #|...|#
+cannot be used to comment out an arbitrary datum or set of datums; it
+works only when none of the datums include a string with an unmatched #|
+or |# character sequence.  And, while #|...|# and ; can often be used,
+with care, to comment out a datum, only #; allows the programmer to
+clearly communicate that a single datum has been commented out, as opposed
+to a block or line of arbitrary text.  Finally, while we agree that #; is
+most useful during development and debugging, we do not see this as a
+compelling argument for leaving #; out, particularly since programmers
+sometimes develop and debug a single piece of code concurrently on
+multiple systems.
