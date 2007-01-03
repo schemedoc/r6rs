@@ -12,6 +12,8 @@ This chapter describes the \deflibrary{r6rs lists} library.
 \var{proc} returns a true value for an element, {\cf find}
 immediately returns that element.  If \var{proc} returns
 \schfalse{} for all elements of the list, it returns \schfalse{}.
+\var{Proc} is always called in same dynamic environment 
+as {\cf find} itself.
 
 \begin{scheme}
 (find even? '(3 1 4 1 5 9)) \ev 4
@@ -53,6 +55,9 @@ If \var{proc} returns a true value on any set of elements, {\cf
 \var{proc} without further traversing the \var{l}s.  If the \var{l}s
 are all empty, {\cf exists} returns \schfalse.
 
+\var{Proc} is always called in same dynamic environment 
+as {\cf for-all} or, respectively, {\cf exists} itself.
+
 \begin{scheme}
 (for-all even? '(3 1 4 1 5 9)) \lev \schfalse{}
 (for-all even? '(3 1 4 1 5 9 . 2)) \lev \schfalse{}
@@ -85,6 +90,8 @@ the elements of \var{list}, but returns two values, the first one a
 list of the values of \var{list} for which \var{proc} returned a
 true value, and the second a list of the values of \var{list} for
 which \var{proc} returned \schfalse.
+\var{Proc} is always called in same dynamic environment 
+as {\cf filter} or, respectively, {\cf partition} itself.
 
 \begin{scheme}
 (filter even? '(3 1 4 1 5 9 2 6)) \lev (4 2 6)
@@ -112,6 +119,8 @@ order.  The result becomes the new accumulator value, and \var{combine}
 is applied to new accumulator value and the respective next elements
 of the {\it list}.  This step is repeated until the end of the list is
 reached; then the accumulator value is returned.
+\var{Combine} is always called in same dynamic environment 
+as {\cf fold-left} itself.
 
 \begin{scheme}
 (fold-left + 0 '(1 2 3 4 5)) \ev 15
@@ -154,6 +163,8 @@ The result becomes the new accumulator value, and \var{combine} is
 applied to the respective previous elements of the {\it list} and the
 new accumulator value.  This step is repeated until the beginning of the
 list is reached; then the accumulator value is returned.
+\var{Proc} is always called in same dynamic environment 
+as {\cf fold-right} itself.
 
 \begin{scheme}
 (fold-right + 0 '(1 2 3 4 5)) \ev 15
@@ -184,7 +195,9 @@ Each of these procedures returns a list of the elements of \var{list}
 that do not satisfy a given condition.  The {\cf remp} procedure successively
 applies \var{proc} to the elements of \var{list} and returns a
 list of the values of \var{list} for which \var{proc} returned
-\schfalse.  The {\cf remove}, {\cf remv}, and {\cf remq} procedures return a list of
+\schfalse.  \var{Proc} is always called in same dynamic environment 
+as {\cf remp} itself.
+The {\cf remove}, {\cf remv}, and {\cf remq} procedures return a list of
 the elements that are not \var{obj}.  The {\cf remq} procedure uses {\cf eq?}\ to
 compare \var{obj} with the elements of \var{list}, while {\cf remv}
 uses {\cf eqv?}\ and {\cf remove} uses {\cf equal?}.
@@ -218,7 +231,8 @@ chains of pairs returned by {\tt (list-tail \var{l} \var{k})} for
 \var{k} less than the length of \var{l}.  The {\cf memp} procedure applies
 \var{proc} to the cars of the sublists of \var{l} until it
 finds one for which \var{proc} returns a true value without traversing
-\var{l} further.  The {\cf
+\var{l} further.  \var{Proc} is always called in same dynamic environment 
+as {\cf memp} itself.  The {\cf
   member}, {\cf memv}, and {\cf memq} procedures look for the first occurrence of
 \var{obj}.  If \var{l} does not contain an element satisfying the
 condition, then \schfalse{} (not the empty list) is returned; in that
@@ -266,7 +280,9 @@ If no pair in \var{al} satisfies the condition, then \schfalse{}
 is returned; in that case, \var{al} must be a
 list.  The {\cf assp} procedure successively applies
 \var{proc} to the car fields of \var{al} and looks for a pair
-for which it returns a true value.  The {\cf assoc}, {\cf assv}, and {\cf
+for which it returns a true value.
+\var{Proc} is always called in same dynamic environment 
+as {\cf assp} itself.  The {\cf assoc}, {\cf assv}, and {\cf
   assq} procedures look for a pair that has \var{obj} as its car.  The
 {\cf assoc} procedure uses 
 {\cf equal?}\ to compare \var{obj} with the car fields of the pairs in
