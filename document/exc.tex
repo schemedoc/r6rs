@@ -116,127 +116,63 @@ returns become the values returned by the call to
 \end{entry}
 
 \begin{scheme}
-(call-with-current-continuation
- (lambda (k)
-   (with-exception-handler
-     (lambda (x)
-       (display "condition: ")
-       (write x)
-       (newline)
-       (k 'exception))
-     (lambda ()
-       (+ 1 (raise 'an-error))))))
-   {\it prints:} condition: an-error
-   \ev exception%
- \end{scheme}
+(guard (con
+         ((error? con)
+          (if (message-condition? con)
+              (display (condition-message con))
+              (display "an error has occurred")
+              'error))
+         ((violation? con)
+          (if (message-condition? con)
+              (display (condition-message con))
+              (display "the program has a bug"))
+          'violation))
+  (raise
+    (condition
+      (\&error)
+      (\&message (message "I am an error")))))
+   {\it prints:} I am an error
+   \ev error%
 
-\begin{scheme}
-(call-with-current-continuation
- (lambda (k)
-   (with-exception-handler
-     (lambda (x)
-       (display "something went wrong")
-       (newline)
-       'dont-care)
-     (lambda ()
-       (+ 1 (raise 'an-error))))))
-   {\it prints:} something went wrong
-   {\it and then interrupts the program, reporting a}
-   {\it{\tt \&non-continuable} exception}%
-\end{scheme}
+(guard (con
+         ((error? con)
+          (if (message-condition? con)
+              (display (condition-message con))
+              (display "an error has occurred")
+              'error)))
+  (raise
+    (condition
+      (\&violation)
+      (\&message (message "I am an error")))))
+  \ev \exception{\\&violation}
 
-\begin{scheme}
-(guard (condition
-         (else
-          (display "condition: ")
-          (write condition)
-          (newline)
-          'exception))
-  (+ 1 (raise 'an-error)))
-    {\it prints:} condition: an-error
-    \ev exception%
-\end{scheme}
+(guard (con
+         ((error? con)
+          (display "error opening file")
+          \schfalse))
+  (call-with-input-file "foo.scm" read))
+   {\it prints:} error opening file
+   \ev \schfalse{}
 
-\begin{scheme}
-(guard (condition
-         (else
-          (display "something went wrong")
-          (newline)
-          'dont-care))
- (+ 1 (raise 'an-error)))
-    {\it prints:} something went wrong
-    \ev dont-care%
-\end{scheme}
-
-\begin{scheme}
-(call-with-current-continuation
- (lambda (k)
-   (with-exception-handler
-     (lambda (x)
-       (display "reraised ") (write x) (newline)
-       (k 'zero))
-     (lambda ()
-       (guard (condition
-                ((positive? condition) 'positive)
-                ((negative? condition) 'negative))
-        (raise 1))))))
-    \ev positive%
-\end{scheme}
-
-\begin{scheme} 
-(call-with-current-continuation
- (lambda (k)
-   (with-exception-handler
-     (lambda (x)
-       (display "reraised ") (write x) (newline)
-       (k 'zero))
-     (lambda ()
-       (guard (condition
-                ((positive? condition) 'positive)
-                ((negative? condition) 'negative))
-        (raise -1))))))
-    \ev negative%
-\end{scheme}
-
-\begin{scheme}  
-(call-with-current-continuation
- (lambda (k)
-   (with-exception-handler
-     (lambda (x)
-       (display "reraised ") (write x) (newline)
-       (k 'zero))
-     (lambda ()
-       (guard (condition
-                ((positive? condition) 'positive)
-                ((negative? condition) 'negative))
-        (raise 0))))))
-    {\it prints:} reraised 0
-    \ev zero%
-\end{scheme}
-
-\begin{scheme}  
-(guard (condition
-         ((assq 'a condition) => cdr)
-         ((assq 'b condition)))
-  (raise (list (cons 'a 42))))
-    \ev 42%
-\end{scheme}
-
-\begin{scheme}  
-(guard (condition
-         ((assq 'a condition) => cdr)
-         ((assq 'b condition)))
-  (raise (list (cons 'b 23))))
-    \ev (b . 23)%
-\end{scheme}
-
-\begin{scheme}
 (with-exception-handler
-  (lambda (x)
+  (lambda (con)
+    (cond
+      ((not (warning? con))
+       (raise con))
+      ((message-condition? con)
+       (display (condition-message con)))
+      (else
+       (display "a warning has been issued")))
     42)
   (lambda ()
-    (+ (raise-continuable \schfalse)
-       23))) \ev 65
+    (+ (raise-continuable
+         (condition
+           (\&warning)
+           (\&message
+             (message "should be a number"))))
+       23)))
+   {\it prints:} should be a number
+   \ev 65
 \end{scheme}
 
 \section{Conditions}
