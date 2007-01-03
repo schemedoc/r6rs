@@ -143,7 +143,7 @@ The record type is also opaque if an opaque parent is
 supplied.  If \var{opaque?} is false and an opaque parent is not
 supplied, the record is not opaque.
 
-The \var{fields} argument must be a list of field specifiers. Each
+The \var{fields} argument must be a vector of field specifiers. Each
 field specifier must be a list of the form {\cf (mutable \var{name})}
 or a list of the form {\cf (immutable \var{name})}.
 Each name must be a symbol and names the corresponding field of the record
@@ -157,6 +157,9 @@ record instance.
 
 The specified fields are added to the parent fields, if any, to determine
 the complete set of fields of the returned record type.
+If \var{fields} is modified after {\cf make-record-type}
+has been called, the effect on the returned
+rtd is unspecified.
 
 A record type is considered immutable if all fields
 in its complete set of fields is immutable, and is mutable otherwise.
@@ -414,7 +417,7 @@ The mutator returns the unspecified value.
   (make-record-type-descriptor
     'point \schfalse{}
     \schfalse{} \schfalse{} \schfalse{} 
-    '((mutable x) (mutable y))))
+    '\sharpsign((mutable x) (mutable y))))
 
 (define make-point
   (record-constructor
@@ -437,7 +440,7 @@ The mutator returns the unspecified value.
 (define :point2
   (make-record-type-descriptor
     'point2 :point 
-    \schfalse{} \schfalse{} \schfalse{} '((mutable x) (mutable y))))
+    \schfalse{} \schfalse{} \schfalse{} '\sharpsign((mutable x) (mutable y))))
 
 (define make-point2
   (record-constructor
@@ -887,9 +890,12 @@ opaque.
 \begin{entry}{%
 \proto{record-type-field-names}{ rtd}{procedure}}
    
-Returns a list of symbols naming the fields of the type represented by \var{rtd}
+Returns a vector of symbols naming the fields of the type represented by \var{rtd}
 (not including the fields of parent types) where the fields are ordered as
-described under {\cf make-record-type-descriptor}.
+described under {\cf make-record-type-descriptor}.  The returned
+vector may be immutable.
+If the returned vector is modified, the effect on 
+\var{rtd} is unspecified.
 \end{entry}
 
 \begin{entry}{%
