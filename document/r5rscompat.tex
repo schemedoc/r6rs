@@ -88,6 +88,153 @@ provided all numbers involved in that computation are exact.
 \end{entry}
 
 \begin{entry}{%
+\proto{delay}{ \hyper{expression}}{\exprtype}}
+
+The {\cf delay} construct is used together with the procedure \ide{force} to
+implement \defining{lazy evaluation} or \defining{call by need}.
+{\tt(delay~\hyper{expression})} returns an object called a
+\defining{promise} which at some point in the future may be asked (by
+the {\cf force} procedure) \todo{Bartley's white lie; OK?} to evaluate
+\hyper{expression}, and deliver the resulting value.
+The effect of \hyper{expression} returning multiple values
+is unspecified.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{force}{ promise}{procedure}}
+
+{\var{Promise} must be a promise.}
+
+Forces the value of \var{promise}.  If no value has been computed for
+the promise, then a value is computed and returned.  The value of the
+promise is cached (or ``memoized'') so that if it is forced a second
+time, the previously computed value is returned.
+
+\begin{scheme}
+(force (delay (+ 1 2)))   \ev  3
+(let ((p (delay (+ 1 2))))
+  (list (force p) (force p)))  
+                               \ev  (3 3)
+
+(define a-stream
+  (letrec ((next
+            (lambda (n)
+              (cons n (delay (next (+ n 1)))))))
+    (next 0)))
+(define head car)
+(define tail
+  (lambda (stream) (force (cdr stream))))
+
+(head (tail (tail a-stream)))  
+                               \ev  2%
+\end{scheme}
+
+Promises are mainly intended for programs written in
+functional style.  The following examples should not be considered to
+illustrate good programming style, but they illustrate the property that
+only one value is computed for a promise, no matter how many times it is
+forced.
+
+\begin{scheme}
+(define count 0)
+(define p
+  (delay (begin (set! count (+ count 1))
+                (if (> count x)
+                    count
+                    (force p)))))
+(define x 5)
+p                     \ev  {\it{}a promise}
+(force p)             \ev  6
+p                     \ev  {\it{}a promise, still}
+(begin (set! x 10)
+       (force p))     \ev  6%
+\end{scheme}
+
+Here is a possible implementation of {\cf delay} and {\cf force}.
+Promises are implemented here as procedures of no arguments,
+and {\cf force} simply calls its argument:
+
+\begin{scheme}
+(define force
+  (lambda (object)
+    (object)))%
+\end{scheme}
+
+The expression
+
+\begin{scheme}
+(delay \hyper{expression})%
+\end{scheme}
+
+has the same meaning as the procedure call
+
+\begin{scheme}
+(make-promise (lambda () \hyper{expression}))\rm
+\end{scheme}
+
+as follows
+
+\begin{scheme}
+(define-syntax delay
+  (syntax-rules ()
+    ((delay expression)
+     (make-promise (lambda () expression))))),%
+\end{scheme}
+
+where {\cf make-promise} is defined as follows:
+
+\begin{scheme}
+(define make-promise
+  (lambda (proc)
+    (let ((result-ready? \schfalse)
+          (result \schfalse))
+      (lambda ()
+        (if result-ready?
+            result
+            (let ((x (proc)))
+              (if result-ready?
+                  result
+                  (begin (set! result-ready? \schtrue)
+                         (set! result x)
+                         result))))))))%
+\end{scheme}
+
+\begin{rationale}
+A promise may refer to its own value, as in the last example above.
+Forcing such a promise may cause the promise to be forced a second time
+before the value of the first force has been computed.
+This complicates the definition of {\cf make-promise}.
+\end{rationale}
+
+Various extensions to this semantics of {\cf delay} and {\cf force}
+are supported in some implementations:
+
+\begin{itemize}
+\item Calling {\cf force} on an object that is not a promise may simply
+return the object.
+
+\item It may be the case that there is no means by which a promise can be
+operationally distinguished from its forced value.  That is, expressions
+like the following may evaluate to either \schtrue{} or to \schfalse{},
+depending on the implementation:
+
+\begin{scheme}
+(eqv? (delay 1) 1)          \ev  \unspecified
+(pair? (delay (cons 1 2)))  \ev  \unspecified%
+\end{scheme}
+
+\item Some implementations may implement ``implicit forcing'', where
+the value of a promise is forced by primitive procedures like \cf{cdr}
+and \cf{+}:
+
+\begin{scheme}
+(+ (delay (* 3 7)) 13)  \ev  34%
+\end{scheme}
+\end{itemize}
+\end{entry}
+
+\begin{entry}{%
 \proto{null-environment}{ n}{procedure}}
 
 \domain{\var{N} must be the exact integer 5.}  The {\cf
