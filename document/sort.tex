@@ -1,0 +1,32 @@
+\chapter{Sorting}
+\label{sortingchapter}
+
+This chapter describes the \deflibrary{r6rs sorting} library for
+sorting lists and vectors.
+
+\begin{entry}{%
+\proto{list-sort}{ proc list}{procedure}
+\proto{vector-sort}{ proc vector}{procedure}}
+
+\domain{\var{Proc} must be a procedure that accepts any two elements
+  of the list or vector.  This procedure should not have any side
+  effects.}  \var{Proc} returns a true value when its first argument
+is strictly less than its second, and \schfalse{} otherwise.
+
+The {\cf list-sort} and {\cf vector-sort} procedures perform a stable
+sort of \var{list} or \var{vector}, without changing \var{list} or
+\var{vector} in any way.  The {\cf list-sort} procedure returns a
+list, and {\cf vector-sort} returns a vector.  The results may be {\cf
+  eq?} to the argument when the argument is already sorted, and the
+result of {\cf list-sort} may share structure with a tail of the
+original list.  The sorting algorithm performs $O(n \lg n)$ calls to
+the predicate where $n$ is the length of \var{list} or \var{vector},
+and all arguments passed to the predicate are elements of the list or
+vector being sorted, but the pairing of arguments and the sequencing
+of calls to the predicate are not specified.
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
