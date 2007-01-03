@@ -2707,9 +2707,8 @@ The {\cf for-each} procedure applies \var{proc}
 element-wise to the elements of the
 \var{list}s for its side effects,  in order from the first element(s) to the
 last.
-On the last elements of the \var{list}s, {\cf for-each} tail-calls
-\var{proc}.  If the \var{list}s are empty, {\cf for-each} returns the
-unspecified value.
+The return values of {\cf for-each} are 
+unspecified.
 
 \begin{scheme}
 (let ((v (make-vector 5)))
@@ -2722,6 +2721,11 @@ unspecified value.
 
 (for-each even? '()) \ev \theunspecified%
 \end{scheme}
+
+\begin{rationale}
+  The return values are unspecified to allow implementations of {\cf
+    for-each} to tail-call \var{proc} on the last element(s).
+\end{rationale}
 
 \end{entry}
 
