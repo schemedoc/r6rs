@@ -153,25 +153,6 @@ avoid multiple lookups of the same key:
 \end{scheme}
 \end{entry}
 
-\begin{entry}{\proto{hash-table-fold}{ \var{proc} \var{hash-table} \var{init}}{procedure}}
-
-\domain{\var{Proc} must be a procedure that takes three arguments.}
-For every association in \var{hash-table}, {\cf hash-table-fold} calls
-\var{proc} with the association
-key, the association value, and an accumulated value as arguments.
-The accumulated value is \var{init} for the first
-invocation of \var{proc}, and for subsequent
-invocations of \var{proc}, it is the return value
-of the previous invocation of \var{proc}. The order
-of the calls to \var{proc} is indeterminate. The
-return value of {\cf hash-table-fold} is the value of
-the last invocation of \var{proc}. If any side
-effect is performed on the hash table while a
-{\cf hash-table-fold} operation is in progress, then the
-behavior of {\cf hash-table-fold} is unspecified.
-
-\end{entry}
-
 \begin{entry}{%
 \proto{hash-table-copy}{ \var{hash-table}}{procedure}
 \rproto{hash-table-copy}{ \var{hash-table} \var{immutable}}{procedure}}
@@ -199,25 +180,22 @@ capacity of the hash table is reset to approximately \var{k} elements.
 
 \begin{entry}{\proto{hash-table-keys}{ \var{hash-table}}{procedure}}
 
-Returns a list of all keys in \var{hash-table}.
-The order of the list is unspecified.
-Equivalent to:
-\begin{scheme}
-(hash-table-fold (lambda (k v a) (cons k a)) 
-                 hash-table
-                 '())
-\end{scheme}
+Returns a vector of all keys in \var{hash-table}.
+The order of the vector is unspecified.
 \end{entry}
 
-\begin{entry}{\proto{hash-table-values}{ \var{hash-table}}{procedure}}
+\begin{entry}{%
+\proto{hash-table-entries}{ \var{hash-table}}{procedure}}
 
-Returns a list of all values in \var{hash-table}.
-The order of the list is unspecified.
-Equivalent to:
+Returns two values, a vector of the keys in \var{hash-table}, and a
+vector of the corresponding values.
+
 \begin{scheme}
-(hash-table-fold (lambda (k v a) (cons v a)) 
-                 hash-table
-                 '())
+(let ((h (make-eqv-hash-table)))
+  (hash-table-set! h 1 'one)
+  (hash-table-set! h 2 'two)
+  (hash-table-set! h 3 'three)
+  (hash-table-entries h)) \lev \sharpsign(1 2 3), \sharpsign(one two three)\\\>; two return values%
 \end{scheme}
 \end{entry}
 

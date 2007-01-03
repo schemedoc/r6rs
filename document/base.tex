@@ -2666,7 +2666,7 @@ Returns the \var{k}th element of \var{l}.
 \begin{entry}{%
 \proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s must all have the same length.  \var{proc}
+\domain{The \var{list}s must all have the same length.  \var{Proc}
   must be a procedure.  If the \var{list}s are non-empty,
   \var{proc} must
   take as many arguments as there are {\it list}s and must return a
@@ -2700,7 +2700,7 @@ The dynamic order in which \var{proc} is applied to the elements of the
 \begin{entry}{%
 \proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s must all have the same length.  \var{proc}
+\domain{The \var{list}s must all have the same length.  \var{Proc}
   must be a procedure.  If the \var{list}s are non-empty,
   \var{proc} must
   take as many arguments as there are {\it list}s.}
@@ -3199,6 +3199,45 @@ created vector initialized to the elements of the list \var{list}.
 Stores \var{fill} in every element of \var{vector}
 and returns the unspecified value.  % <!>
 
+\end{entry}
+
+\begin{entry}{%
+\proto{vector-map}{ proc \vari{vector} \varii{vector} \dotsfoo}{procedure}}
+
+\domain{The \var{vector}s must all have the same length.  \var{Proc}
+  must be a procedure.  If the \var{vector}s are non-empty,
+  \var{proc} must
+  take as many arguments as there are {\it vector}s and must return a
+  single value.}
+
+The {\cf vector-map} procedure applies \var{proc} element-wise to the elements of the
+\var{vector}s and returns a vector of the results, in order.
+\var{Proc} is always called in same dynamic environment 
+as {\cf vector-map} itself.
+The dynamic order in which \var{proc} is applied to the elements of the
+\var{vector}s is unspecified.
+
+Analogous to {\cf map}.
+\end{entry}
+
+
+\begin{entry}{%
+\proto{vector-for-each}{ proc \vari{vector} \varii{vector} \dotsfoo}{procedure}}
+
+\domain{The \var{vector}s must all have the same length.  \var{Proc}
+  must be a procedure.  If the \var{vector}s are non-empty,
+  \var{proc} must
+  take as many arguments as there are {\it vector}s.}
+The {\cf vector-for-each} procedure applies \var{proc}
+element-wise to the elements of the
+\var{vector}s for its side effects,  in order from the first element(s) to the
+last.
+\var{Proc} is always called in same dynamic environment 
+as {\cf vector-for-each} itself.
+The return values of {\cf vector-for-each} are 
+unspecified.
+
+Analogous to {\cf for-each}.
 \end{entry}
 
 \section{Errors and violations}
