@@ -1606,12 +1606,18 @@ affect the result.
 \proto{integer-valued?}{ obj}{procedure}}
 
 These numerical type predicates can be applied to any kind of
-argument, including non-numbers.  They return \schtrue{} if the object
-is a number and is equal in the sense of {\cf =} to some object of the
+argument, including non-numbers.  The {\cf real-valued?} procedure
+They return \schtrue{} if the object is a number and is equal in the
+sense of {\cf =} to some real number, or if the object is a NaN, or a
+complex number whose real part is a NaN and whose imaginary part zero
+in the sense of {\cf zero?}.  The {\cf rational-valued?} and {\cf
+  integer-valued?} procedures return \schtrue{} if the object is a
+number and is equal in the sense of {\cf =} to some object of the
 named type, and otherwise they return \schfalse{}.
 
 \begin{scheme}
-(real-valued? +nan.0)                  \ev  \schfalse{}
+(real-valued? +nan.0)                  \ev  \schtrue{}
+(real-valued? +nan.0+0i)                  \ev  \schtrue{}
 (real-valued? -inf.0)                  \ev  \schtrue{}
 (real-valued? 3)                       \ev  \schtrue{}
 (real-valued? -2.5+0.0i)               \ev  \schtrue{}
@@ -1632,6 +1638,14 @@ named type, and otherwise they return \schfalse{}.
 (integer-valued? 3.0+0.0i)             \ev  \schtrue{}
 (integer-valued? 8/4)                  \ev  \schtrue{}%
 \end{scheme}
+
+\begin{rationale}
+  These procedures test whether a given number can be coerced to the
+  specified type without loss of numerical accuracy.  Their behavior
+  is different from the numerical type predicates in the previous
+  entry, whose behavior is motivated by closure properties designed to
+  enable statically predictable semantics and efficient implementation.
+\end{rationale}
 
 \begin{note}
 The behavior of these type predicates on inexact numbers is
