@@ -39,24 +39,31 @@ must be quoted:
 \section{General operations}
 
 \begin{entry}{%
-\proto{endianness}{ {\cf big}}{\exprtype}
-\rproto{endianness}{ {\cf little}}{\exprtype}}
-   
-{\cf (endianness big)} and {\cf (endianness little)} evaluate to the
-symbols {\cf big} and {\cf little}, respectively. These symbols
-represent an endianness, and whenever one of the procedures operating
-on bytes objects accepts an endianness as an argument, that argument
-must be one of these symbols. It is a syntax violation for the operand to
-{\cf endianness} to be
-anything other than {\cf big} or {\cf little}.
+\proto{endianness}{ \hyper{endianness symbol}}{\exprtype}}
+
+\domain{\hyper{Endianness symbol} must be a symbol describing an
+  endianness.  An implementation must support at least the symbols
+  {\cf big} and {\cf little}, but may support other endianness
+  symbols.}  {\cf (endianness \hyper{endianness symbol})} evaluates to
+the symbol named \hyper{endianness symbol}.  Whenever one of the
+procedures operating on bytes objects accepts an endianness as an
+argument, that argument must be one of these symbols.  It is a syntax
+violation for \hyper{endianness symbol} to be anything other than an
+endianness symbol supported by the implementation.
+
+\begin{note}
+  Implementators are encouraged to use widely accepted designations
+  for endianness symbols other than {\cf big} and {\cf little}.
+\end{note}
 \end{entry}
 
 \begin{entry}{%
 \proto{native-endianness}{}{procedure}}
 
-Returns the implementation's preferred endianness
-(usually that of the underlying machine architecture),
-either {\cf big} or {\cf little}.
+Returns the endianness symbol associated implementation's preferred
+endianness (usually that of the underlying machine architecture).
+This may be any \hyper{endianness symbol}, specifically a symbol other
+than {\cf big} and {\cf little}.
 \end{entry}   
 
 \begin{entry}{%
