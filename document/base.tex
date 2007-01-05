@@ -3997,7 +3997,7 @@ to the keyword {\cf f} whose binding is established by the
 {\cf letrec-syntax} form.
 \end{entry}
 
-\section{{\tt syntax-rules}}
+\section{Macro transformers}
 \label{syntaxrulessection}
 
 \begin{entry}{%
@@ -4005,7 +4005,7 @@ to the keyword {\cf f} whose binding is established by the
 \mainschindex{syntax-rules}
 
 \syntax Each \hyper{literal} must be an identifier.
-Each \hyper{syntax rule} must take the following forms:
+Each \hyper{syntax rule} must have the following form:
 
 \begin{scheme}
 (\hyper{srpattern} \hyper{template})
@@ -4215,6 +4215,46 @@ instead of
 \end{scheme}
 
 which would result in a assertion violation.
+
+\end{entry}
+
+\begin{entry}{%
+\proto{identifier-syntax}{ \hyper{template}}{\exprtype}
+\pproto{(identifier-syntax (\hyperi{id} \hyperi{template})}{\exprtype}}\\
+{\tt\obeyspaces
+                   ((set! \hyperii{id} \hyper{pattern})
+                    \hyperii{template}))}
+
+\syntax The \hyper{id}s must be identifiers.
+
+\semantics
+When a keyword is bound to a transformer produced by the first form of
+{\cf identifier-syntax}, references to the keyword within the scope
+of the binding are replaced by \hyper{template}.
+
+\begin{scheme}
+(define p (cons 4 5))
+(define-syntax p.car (identifier-syntax (car p)))
+p.car \ev 4
+(set! p.car 15) \ev \exception{\&syntax}%
+\end{scheme}
+
+The second, more general, form of {\cf identifier-syntax} permits
+the transformer to determine what happens when {\cf set!} is used.
+In this case, uses of the identifier by itself are replaced by
+\hyperi{template}, and uses of {\cf set!} with the identifier are
+replaced by \hyperii{template}.
+
+\begin{scheme}
+(define p (cons 4 5))
+(define-syntax p.car
+  (identifier-syntax
+    (\_ (car p))
+    ((set! \_ e) (set-car! p e))))
+(set! p.car 15)
+p.car           \ev 15
+p               \ev (15 5)%
+\end{scheme}
 
 \end{entry}
 
