@@ -202,15 +202,17 @@ chosen from the set of locations that are not in use, and the chosen
 locations are marked to indicate that they are now in use before the variable
 or object is made to denote them.
 
-In many systems it is desirable for constants\index{constant} (i.e. the values of
-literal expressions) to reside in read-only-memory.  To express this, it is
-convenient to imagine that every object that denotes locations is associated
-with a flag telling whether that object is mutable\index{mutable} or
-immutable\index{immutable}.  In such systems literal constants and the strings
-returned by \ide{symbol->string} are immutable objects, while all objects
-created by the other procedures listed in this report are mutable.  An
-attempt to store a new value into a location that is denoted by an
-immutable object should raise an exception.
+It is desirable for constants\index{constant} (i.e. the values of
+literal expressions) to reside in read-only-memory.  To express this,
+it is convenient to imagine that every object that denotes locations
+is associated with a flag telling whether that object is
+mutable\index{mutable} or immutable\index{immutable}.  Literal
+constants, the strings returned by \ide{symbol->string}, records with
+no mutable fields, and other values explicitly designated as immutable
+are immutable objects, while all objects created by the other
+procedures listed in this report are mutable.  An attempt to store a
+new value into a location that is denoted by an immutable object
+should raise an exception with condition type {\cf\&assertion}.
 
 \section{Proper tail recursion}
 \label{proper tail recursion}
