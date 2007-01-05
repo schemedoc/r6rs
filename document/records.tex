@@ -734,6 +734,9 @@ record name is {\tt frob} and the field name is {\tt widget}, the
 accessor name is {\tt frob-widget} and the mutator name is
 {\tt frob-widget-set!}.
 
+Third, the syntax of \hyper{field-spec} is also extended to consist of
+just the field name.  The corresponding field is assumed to be immutable.
+
 Any definition that takes advantage of implicit naming can be
 rewritten trivially to a definition that conforms to the syntax of the
 explicit-naming layer merely by specifying the names explicitly. For
@@ -754,6 +757,22 @@ is equivalent to the following explicit-naming layer record definition.
                    frob-widget frob-widget-set!))
   (protocol
     (lambda (c) (c (make-widget n)))))
+\end{scheme}
+
+Also, the implicit-naming layer record definition:
+
+\begin{scheme}
+(define-record-type point (fields x y))%
+\end{scheme}
+
+is equivalent to the following explicit-naming layer record
+definition:
+
+\begin{scheme}
+(define-record-type (point make-point point?)
+  (fields 
+    (immutable x point-x)
+    (immutable y point-y)))%
 \end{scheme}
 
 With the implicit-naming layer, one can choose to specify just some of
