@@ -44,7 +44,7 @@ It does not address the following:
 A library declaration contains the following elements:
 
 \begin{itemize}
-\item a name for the library (possibly compound, with versioning),
+\item a name for the library (possibly with versioning),
 \item a list of exports, which name a subset of the bindings defined
       within or imported into the library,
 \item a list of import dependencies, where each dependency specifies:
@@ -86,10 +86,9 @@ multiple times, defined multiple times, or both defined and imported.
 No identifiers are visible within a library except for those explicitly
 imported into the library or defined within the library.
 
-A \hyper{library name} must be one of the following:
+A \hyper{library name} have the following form:
 
 \begin{scheme}
-\hyper{identifier}
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version})%
 \end{scheme}
 
@@ -100,9 +99,6 @@ where \hyper{version} is empty or has the following form:
 \end{scheme}
 
 Each \hyper{subversion} must be an exact nonnegative integer.
-
-As a \hyper{library name}, \hyper{identifier} is shorthand for {\cf
-  (\hyper{identifier})}.
 
 Each \hyper{import~spec} specifies a set of bindings to be imported into
 the library, the phases in which they are to be available, and the local
@@ -139,15 +135,13 @@ one of the following:
 (rename \hyper{import~set} (\hyper{identifier} \hyper{identifier}) \ldots)%
 \end{scheme}
 
-A \hyper{library~reference} identifies a library by its (possibly compound)
-name and optionally by its version.  It must have one the following forms:
+A \hyper{library~reference} identifies a library by its 
+name and optionally by its version.  It must have the following form:
 
 \begin{scheme}
-\hyper{identifier}
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version~reference})%
 \end{scheme}
 
-\hyper{Identifier} is shorthand for {\cf (\hyper{identifier})}.
 A \hyper{version reference} must have one of the following forms:
 
 \begin{scheme}
@@ -277,16 +271,6 @@ syntax and are not reserved, i.e, the same can be used for other
 purposes within the library or even exported from or imported 
 into a library with different meanings, without affecting their
 use in the {\cf library} form.
-
-In the case of any ambiguities that arise from the use of one of
-these names as a shorthand (single-identifier) library name, the
-ambiguity should be resolved in favor of the interpretation
-of the name as library syntax.
-For example, {\cf (import (for lib expand))} should be taken as
-importing library {\cf lib} for {\cf expand}, not as importing
-a library named {\cf (for lib expand)}.
-The user can always eliminate such ambiguities by avoiding the shorthand
-\hyper{library~reference} syntax when such an ambiguity might arise.
 
 Bindings defined with a library are not visible in code
 outside of the library, unless the bindings are explicitly exported from the
@@ -645,7 +629,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 \begin{scheme}
 (library stack
   (export make push! pop! empty!)
-  (import r6rs)
+  (import (r6rs))
 
   (define (make) (list '()))
   (define (push! s v) (set-car! s (cons v (car s))))
@@ -656,7 +640,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 
 (library balloons
   (export make push pop)
-  (import r6rs)
+  (import (r6rs))
 
   (define (make w h) (cons w h))
   (define (push b amt)
@@ -673,9 +657,9 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
           push!
           make-party
           (rename (party-pop! pop!)))
-  (import r6rs
-          (only stack make push! pop!) ; not empty!
-          (prefix balloons balloon:))
+  (import (r6rs)
+          (only (stack) make push! pop!) ; not empty!
+          (prefix (balloons) balloon:))
 
   ;; Creates a party as a stack of balloons,
   ;; starting with two balloons
@@ -690,7 +674,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 
 (library main
   (export)
-  (import r6rs party)
+  (import (r6rs) (party))
 
   (define p (make-party))
   (pop! p)        ; displays "Boom! 108"
@@ -703,7 +687,7 @@ Examples for macros and phases:
 \begin{schemenoindent}
 (library (my-helpers id-stuff)
   (export find-dup)
-  (import r6rs)
+  (import (r6rs))
 
   (define (find-dup l)
     (and (pair? l)
@@ -716,7 +700,7 @@ Examples for macros and phases:
 
 (library (my-helpers values-stuff)
   (export mvlet)
-  (import r6rs (for (my-helpers id-stuff) expand))
+  (import (r6rs) (for (my-helpers id-stuff) expand))
 
   (define-syntax mvlet
     (lambda (stx)
@@ -730,7 +714,7 @@ Examples for macros and phases:
 
 (library let-div
   (export let-div)
-  (import r6rs
+  (import (r6rs)
           (my-helpers values-stuff)
           (r6rs r5rs))
 
