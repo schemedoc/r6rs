@@ -94,9 +94,8 @@ exception handler is that of the {\tt guard} expression.
 Raises a non-continuable exception by invoking the current exception
 handler on \var{obj}. The handler is called with a continuation whose
 dynamic environment is that of the call to {\tt raise}, except that
-the current exception handler is the one that was in place for the
-call to {\tt with-exception-handler} that installed the handler being
-called.  The continuation of the handler raises a non-continuable
+the current exception handler is the one that was in place when the handler being
+called was installed.  The continuation of the handler raises a non-continuable
 exception with condition type {\tt \&non-continuable}.
 \end{entry}
 
@@ -107,8 +106,8 @@ Raises a continuable exception by invoking the current exception
 handler on \var{obj}. The handler is called with a continuation that
 is equivalent to the continuation of the call to {\tt
   raise-continuable} with these two exceptions: (1) the current
-exception handler is the one that was in place for the call to {\tt
-  with-exception-handler} that installed the handler being called, and
+exception handler is the one that was in place 
+when the handler being called was installed, and
 (2) if the handler being called returns, then it will again become the
 current exception handler.  If the handler returns, the values it
 returns become the values returned by the call to
