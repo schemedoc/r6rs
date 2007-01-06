@@ -1,0 +1,60 @@
+\chapter{Top-level programs}
+\label{programchapter}
+
+A \defining{top-level program} specifies an entry point for defining and running
+a Scheme program.  A top-level program specifies a set of libraries to import and
+code to run.  Through the imported libraries, whether directly or through the
+transitive closure of importing, a top-level program defines a complete Scheme
+program.
+
+\section{Top-level program syntax}
+
+A top-level program is a delimited piece of text, typically a file, that follows
+the following syntax:
+
+\begin{grammar}
+\meta{toplevel program} \: \#!r6rs \meta{import form} \meta{toplevel body}
+  \> \| \meta{import form} \meta{toplevel body}
+\meta{import form} \: (import \arbno{\meta{import spec}})
+\meta{toplevel body} \: \arbno{\meta{toplevel body form}} \meta{expression}
+\meta{toplevel body form} \: \| \meta{definition}
+\> \| \meta{expression}
+\end{grammar}
+
+The rules for \meta{toplevel program} specify syntax at the form level.
+
+The \meta{import form} is identical to the import clause in
+libraries (see section~\ref{librarysyntaxsection}), 
+and specifies a set of libraries to import.  A \meta{toplevel 
+ body} is like a \meta{library body} (see
+section~\ref{librarybodysection}), except that 
+definitions and expressions may occur in any order, and the final
+form of the top-level program body must be an expression.  Thus, the syntax
+specified by \meta{toplevel body form} refers to the result of macro
+expansion.
+
+When base-library {\cf begin} forms occur anywhere within a top-level body,
+they are spliced into the body; see section~\ref{begin}.
+Some or all of the top-level body, including portions wrapped in {\cf begin}
+forms, may be specified by a syntactic abstraction
+(see section~\ref{macrosection}).
+
+\section{Top-level program semantics}
+
+A top-level program is executed by treating the program similarly to a library, and
+invoking it.  The semantics of a top-level body may be roughly explained by
+a simple translation into a library body: 
+Each \hyper{expression} that appears before a
+definition in
+the top-level body is converted into a dummy definition 
+{\cf (define \hyper{variable} (begin \hyper{expression} (unspecified)))},
+where \hyper{variable} is a fresh identifier.
+(It is generally impossible to determine which forms are 
+definitions and expressions without concurrently expanding the body, so
+the actual translation is somewhat more complicated; see
+chapter~\ref{expansionchapter}.)
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs"
+%%% End: 
