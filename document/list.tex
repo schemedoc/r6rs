@@ -6,53 +6,57 @@ This chapter describes the \deflibrary{r6rs lists} library.
 \begin{entry}{%
 \proto{find}{ proc list}{procedure}}
 
-\domain{\var{Proc} must be a procedure; it must take a single argument
-  if \var{list} is non-empty.}  The {\cf find} procedure applies
-\var{proc} to the elements of \var{list} in order.  If
-\var{proc} returns a true value for an element, {\cf find}
-immediately returns that element.  If \var{proc} returns
-\schfalse{} for all elements of the list, it returns \schfalse{}.
-\var{Proc} is always called in same dynamic environment 
+\domain{\var{Proc} must be a procedure that takes a single argument
+  and returns a single value.  \var{Proc} must not mutate \var{list}.}
+The {\cf find} procedure applies \var{proc} to the elements of
+\var{list} in order.  If \var{proc} returns a true value for an
+element, {\cf find} immediately returns that element.  If \var{proc}
+returns \schfalse{} for all elements of the list, it returns
+\schfalse{}.  \var{Proc} is always called in same dynamic environment
 as {\cf find} itself.
 
 \begin{scheme}
 (find even? '(3 1 4 1 5 9)) \ev 4
 (find even? '(3 1 5 1 5 9)) \ev \schfalse{}
 \end{scheme}
-  
+
+\implresp The implementation must check that \var{list} is a chain of
+pairs up to the found element, or that it is indeed a list if no
+element is found.  It should not check that it is a chain of pairs
+beyond the found element.  The implementation must check the restrictions on
+\var{proc} to the extent performed by applying it as described.
 \end{entry}
 
 \begin{entry}{%
-\proto{for-all}{ proc \vari{l} \varii{l} \dotsfoo{} \varn{l}}{procedure}
-\proto{exists}{ proc \vari{l} \varii{l} \dotsfoo{} \varn{l}}{procedure}}
+\proto{for-all}{ proc \vari{list} \varii{list} \dotsfoo{} \varn{list}}{procedure}
+\proto{exists}{ proc \vari{list} \varii{list} \dotsfoo{} \varn{list}}{procedure}}
 
-\domain{Each \var{l} must be the
-  empty list or a chain of pairs according to the conditions specified
-  below.  \var{Proc} must be a procedure; it must take as many
-  arguments as there are \var{l}s if \vari{l} is non-empty.}
+\domain{The \var{list}s must all have the same length, and
+  \var{proc} must be a procedure that accepts $n$ arguments and
+  returns a single value.
+  \var{Proc} must not mutate the \var{list} arguments.}
 
 For natural numbers $i = 0, 1, \ldots$, the {\cf for-all} procedure
 successively applies \var{proc} to arguments $x_i^1 \ldots x_i^n$,
-where $x_i^j$ is the $i$th element of \varj{l}, until \schfalse{} is
+where $x_i^j$ is the $i$th element of \varj{list}, until \schfalse{} is
 returned.  If \var{proc} returns true values for all but the last
-element of \vari{l}, \var{for-all} performs a tail call of \var{proc}
-on the $k$th elements, where $k$ is the length of \vari{l}---in this
-case, the \var{l}s must all be lists of length $k$.  If \var{proc}
+element of \vari{list}, \var{for-all} performs a tail call of \var{proc}
+on the $k$th elements, where $k$ is the length of \vari{list}.  If \var{proc}
 returns \schfalse{} on any set of elements, {\cf for-all} returns
-\schfalse{} after the first such application of \var{proc} without
-further traversing the \var{l}s.  If the \var{l}s are all empty, {\cf
+\schfalse{} after the first such application of \var{proc}.
+If the \var{list}s are all empty, {\cf
   for-all} returns \schtrue.
 
 For natural numbers $i = 0, 1, \ldots$, the {\cf exists} procedure
 applies \var{proc} successively to arguments $x_i^1 \ldots x_i^n$,
-where $x_i^j$ is the $i$th element of \varj{l}, until a true value is
+where $x_i^j$ is the $i$th element of \varj{list}, until a true value is
 returned.  If \var{proc} returns \schfalse{} for all but the last
-elements of the \var{l}s, \var{exists} performs a tail call of
+elements of the \var{list}s, \var{exists} performs a tail call of
 \var{proc} on the $k$th elements, where $k$ is the length of
-\vari{l}---in this case, the \var{l}s must all be lists of length $k$.
+\vari{list}---in this case, the \var{list}s must all be lists of length $k$.
 If \var{proc} returns a true value on any set of elements, {\cf
   exists} returns that value after the first such application of
-\var{proc} without further traversing the \var{l}s.  If the \var{l}s
+\var{proc}.  If the \var{list}s
 are all empty, {\cf exists} returns \schfalse.
 
 \var{Proc} is always called in same dynamic environment 
@@ -74,6 +78,14 @@ as {\cf for-all} or, respectively, {\cf exists} itself.
 (exists < '(1 2 4) '(2 3 4)) \ev \schtrue{}
 (exists > '(1 2 3) '(2 3 4)) \ev \schfalse{}
 \end{scheme}
+
+\implresp The implementation must check that the \var{list}s are
+chains of pairs to the extent necessary to determine the return value.
+If this requires traversing the lists entirely, the implementation
+should check that the \var{list}s all have the same length.  If not,
+It should not check that the \var{list}s are chains of pairs beyond
+the traversal.  The implementation must check the restrictions on
+\var{proc} to the extent performed by applying it as described.
 \end{entry}
 
 \begin{entry}{%
@@ -81,8 +93,9 @@ as {\cf for-all} or, respectively, {\cf exists} itself.
 \proto{partition}{ proc list}{procedure}
 }
 
-\domain{\var{Proc} must be a procedure; it must take a single argument
-  if \var{list} is non-empty.}  The {\cf filter} procedure successively applies
+\domain{\var{Proc} must be a procedure that accepts a single argument
+  and returns a single value. \var{Proc} must not mutate \var{list}.}
+The {\cf filter} procedure successively applies
 \var{proc} to the elements of \var{list} and returns a list of
 the values of \var{list} for which \var{proc} returned a true
 value.  The {\cf partition} procedure also successively applies \var{proc} to
@@ -99,25 +112,27 @@ as {\cf filter} or, respectively, {\cf partition} itself.
 (partition even? '(3 1 4 1 5 9 2 6)) \lev (4 2 6) (3 1 1 5 9) ; two values
 \end{scheme}
 
+\implresp The implementation must check the restrictions on \var{proc}
+to the extent performed by applying it as described.
 \end{entry}
 
 \begin{entry}{%
 \proto{fold-left}{ combine nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{If
-  more than one \var{list} is given, then they must all be the same
+\domain{The \var{list}s must all have the same
   length.  \var{Combine} must be a
-  procedure; if the \var{list}s are non-empty, it must take one more
-  argument than there are {\it list}s.}
+  procedure that takes one more
+  argument than there are \var{list}s and returns a single value.
+  \var{Combine} must not mutate the \var{list} arguments.}
 The {\cf fold-left} procedure iterates the \var{combine} procedure over an
-accumulator value and the values of the {\it list}s from left to
+accumulator value and the values of the \var{list}s from left to
 right, starting with an accumulator value of \var{nil}.  More
-specifically, {\cf fold-left} returns \var{nil} if the {\it list}s are
+specifically, {\cf fold-left} returns \var{nil} if the \var{list}s are
 empty.  If they are not empty, \var{combine} is first applied to
-\var{nil} and the respective first elements of the {\it list}s in
+\var{nil} and the respective first elements of the \var{list}s in
 order.  The result becomes the new accumulator value, and \var{combine}
 is applied to new accumulator value and the respective next elements
-of the {\it list}.  This step is repeated until the end of the list is
+of the \var{list}.  This step is repeated until the end of the list is
 reached; then the accumulator value is returned.
 \var{Combine} is always called in same dynamic environment 
 as {\cf fold-left} itself.
@@ -142,25 +157,29 @@ as {\cf fold-left} itself.
 
 (fold-left + 0 '(1 2 3) '(4 5 6)) \lev 21
 \end{scheme}
+
+\implresp The implementation should check that the \var{list}s all
+have the same length.  The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
 \end{entry}
 
 
 \begin{entry}{%
 \proto{fold-right}{ combine nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{ If
-  more than one \var{list} is given, then they must all be the same
+\domain{The \var{list}s must all have the same
   length.  \var{Combine} must be a
-  procedure; if the \var{list}s are non-empty, it must take one more
-  argument than there are {\it list}s.}
+  procedure that takes one more
+  argument than there are \var{list}s and returns a single value.
+  \var{Combine} must not mutate the \var{list} arguments.}
 The {\cf fold-right} procedure iterates the \var{combine} procedure over
-the values of the {\it list}s from right to left and an accumulator
+the values of the \var{list}s from right to left and an accumulator
 value, starting with an accumulator value of \var{nil}.  More
-specifically, {\cf fold-right} returns \var{nil} if the {\it list}s
+specifically, {\cf fold-right} returns \var{nil} if the \var{list}s
 are empty.  If they are not empty, \var{combine} is first applied to the
-respective last elements of the {\it list}s in order and \var{nil}.
+respective last elements of the \var{list}s in order and \var{nil}.
 The result becomes the new accumulator value, and \var{combine} is
-applied to the respective previous elements of the {\it list} and the
+applied to the respective previous elements of the \var{list} and the
 new accumulator value.  This step is repeated until the beginning of the
 list is reached; then the accumulator value is returned.
 \var{Proc} is always called in same dynamic environment 
@@ -181,6 +200,10 @@ as {\cf fold-right} itself.
 
 (fold-right + 0 '(1 2 3) '(4 5 6)) \lev 21
 \end{scheme}
+
+\implresp The implementation should check that the \var{list}s all
+have the same length.  The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
 \end{entry}
 
 \begin{entry}{%
@@ -189,8 +212,9 @@ as {\cf fold-right} itself.
 \proto{remv}{ obj list}{procedure}
 \proto{remq}{ obj list}{procedure}}
 
-\domain{\var{Proc} must be a procedure; it must take a single argument
-  if \var{list} is non-empty.}
+\domain{\var{Proc} must be a procedure that takes a single argument
+   and returns a single value.
+   \var{Proc} must not mutate the \var{list} arguments.}
 Each of these procedures returns a list of the elements of \var{list}
 that do not satisfy a given condition.  The {\cf remp} procedure successively
 applies \var{proc} to the elements of \var{list} and returns a
@@ -211,34 +235,34 @@ uses {\cf eqv?}\ and {\cf remove} uses {\cf equal?}.
 
 (remq 'foo '(bar foo baz)) \ev (bar baz)
 \end{scheme}
+
+\implresp The implementation must check the restrictions on \var{proc}
+to the extent performed by applying it as described.
 \end{entry}
 
 \begin{entry}{%
-\proto{memp}{ proc l}{procedure}
-\proto{member}{ obj l}{procedure}
-\proto{memv}{ obj l}{procedure}
-\proto{memq}{ obj l}{procedure}
+\proto{memp}{ proc list}{procedure}
+\proto{member}{ obj list}{procedure}
+\proto{memv}{ obj list}{procedure}
+\proto{memq}{ obj list}{procedure}
 }
 
-\domain{\var{Proc} must be a procedure; it must take a single argument
-  if \var{l} is non-empty.
-  \var{l} must be the empty list or a chain of pairs of size according
-to the conditions stated below.}
+\domain{\var{Proc} must be a procedure that takes a single argument
+  and returns a single value.  \var{Proc} must not mutate \var{list}.}
 
-These procedures return the first sublist of \var{l} whose car
-satisfies a given condition, where the subchains of \var{l} are the
-chains of pairs returned by {\tt (list-tail \var{l} \var{k})} for
-\var{k} less than the length of \var{l}.  The {\cf memp} procedure applies
-\var{proc} to the cars of the sublists of \var{l} until it
+These procedures return the first sublist of \var{list} whose car
+satisfies a given condition, where the sublists of \var{lists} are the
+lists returned by {\tt (list-tail \var{list} \var{k})} for
+\var{k} less than the length of \var{list}.  The {\cf memp} procedure applies
+\var{proc} to the cars of the sublists of \var{list} until it
 finds one for which \var{proc} returns a true value without traversing
-\var{l} further.  \var{Proc} is always called in same dynamic environment 
+\var{list} further.  \var{Proc} is always called in same dynamic environment 
 as {\cf memp} itself.  The {\cf
   member}, {\cf memv}, and {\cf memq} procedures look for the first occurrence of
-\var{obj}.  If \var{l} does not contain an element satisfying the
-condition, then \schfalse{} (not the empty list) is returned; in that
-case, \var{l} must be a list.  The {\cf
+\var{obj}.  If \var{list} does not contain an element satisfying the
+condition, then \schfalse{} (not the empty list) is returned.  The {\cf
   member} procedure uses {\cf equal?}\ to compare \var{obj} with the elements of
-\var{l}, while {\cf memv} uses {\cf eqv?}\ and {\cf memq} uses
+\var{list}, while {\cf memv} uses {\cf eqv?}\ and {\cf memq} uses
 {\cf eq?}.
 
 \begin{scheme}
@@ -253,6 +277,13 @@ case, \var{l} must be a list.  The {\cf
 (memq 101 '(100 101 102))       \ev  \unspecified
 (memv 101 '(100 101 102))       \ev  (101 102)%
 \end{scheme} 
+
+\implresp The implementation must check that \var{list} is a chain of
+pairs up to the found element, or that it is indeed a list if no
+element is found.  It should not check that it is a chain of pairs
+beyond the found element.  The implementation must check the restrictions on
+\var{proc} to the extent performed by applying it as described.
+
 \begin{rationale}
   Although they are ordinarily used as predicates, {\cf memp}, {\cf
     member}, {\cf memv}, {\cf memq}, do not have question marks in
@@ -262,23 +293,20 @@ case, \var{l} must be a list.  The {\cf
 \end{entry}
 
 \begin{entry}{%
-\proto{assp}{ proc al}{procedure}
-\proto{assoc}{ obj al}{procedure}
-\proto{assv}{ obj al}{procedure}
-\proto{assq}{ obj al}{procedure}}
+\proto{assp}{ proc alist}{procedure}
+\proto{assoc}{ obj alist}{procedure}
+\proto{assv}{ obj alist}{procedure}
+\proto{assq}{ obj alist}{procedure}}
 
-\domain{\var{Al} (for ``association list'') must be the empty list or
-  a chain of pairs of size according to
-  the conditions specified below, where each car contains a pair.
-  \var{Proc} must be a procedure; it
-  must take a single argument if \var{al} is non-empty.}
+\domain{\var{Alist} (for ``association list'') must be lists of pairs.
+  \var{Proc} must be a procedure that takes a single argument
+  and returns a single value.  \var{Proc} must not mutate \var{list}.}
 
-These procedures find the first pair in \var{al}
+These procedures find the first pair in \var{alist}
 whose car field satisfies a given condition, and returns that pair
-without traversing \var{al} further.
-If no pair in \var{al} satisfies the condition, then \schfalse{}
-is returned; in that case, \var{al} must be a
-list.  The {\cf assp} procedure successively applies
+without traversing \var{alist} further.
+If no pair in \var{alist} satisfies the condition, then \schfalse{}
+is returned.  The {\cf assp} procedure successively applies
 \var{proc} to the car fields of \var{al} and looks for a pair
 for which it returns a true value.
 \var{Proc} is always called in same dynamic environment 
@@ -289,6 +317,12 @@ as {\cf assp} itself.  The {\cf assoc}, {\cf assv}, and {\cf
 \var{al}, while {\cf assv} uses {\cf eqv?}\ and {\cf assq} uses
 {\cf eq?}.
 
+\implresp The implementation must check that \var{alist} is a chain of
+pairs containing pairs up to the found pair, or that it is indeed a
+list of pairs if no element is found.  It should not check that it is
+a chain of pairs beyond the found element.  The implementation must
+check the restrictions on \var{proc} to the extent performed by
+applying it as described.
 
 \begin{scheme}
 (define d '((3 a) (1 b) (4 c)))

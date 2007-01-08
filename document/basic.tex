@@ -125,6 +125,49 @@ For example, an implementation may raise an exception
 with condition type {\cf\&implementation-restriction} if it does not
 have enough storage to run a program.
 
+\section{Argument checking}
+\label{argumentcheckingsection}
+
+Many procedures and forms specified in this report or as part of a
+standard library only accept arguments of specific types or adhering
+to other restrictions.  These restrictions imply responsibilities for
+both the programmer and the implementation of the specified forms and
+procedures.  Specifically, the programmer is responsible for ensuring
+that the arguments passed indeed adhere to the restrictions described
+in the specification.  The implementation is responsible for checking
+that the restrictions in the specification are indeed met, to the
+extent that it is reasonable, possible and necessary to allow the
+specified operation to complete successfully.
+
+It is not always possible for an implementation to completely check
+the restrictions set forth in the specifications.  Specifically, if an
+operation is specified to accept a procedure with specific properties,
+checking of these properties is undecidable in general.  Moreover,
+some operations accept both list arguments and procedures that are
+called by these operations.  As lists are mutable in programs that
+make use of the \library{r6rs mutable-pairs} library (see library
+chapter~\ref{lib:pairmutationchapter}), an argument that is a list
+when the operation starts may be mutated by the passed procedure so
+that it becomes a non-list during the execution of the operation.
+Also, the procedure might escape to a different continuation,
+preventing the operation to perform more checks.
+Even if not, requiring the operation to check that the argument is a list after
+each call to such a procedure would be impractical.  Furthermore, some
+operations that accept list arguments only need to traverse the lists
+partially to perform their function---requiring the implementation to
+check that the arguments are lists would be impractical or potentially
+violate reasonable performance assumptions.  For these reasons, the
+programmer's obligations may exceed the checking obligations of the
+implementation.  Implementations are, however, encouraged to perform
+as much checking as possible and give detailed feedback about
+violations.
+
+When an implementation detects a violation of an argument
+specification at run time, it must either raise an exception with
+condition type {\cf\&violation}, or abort the program in a way
+consistent with the safety of execution as described in the next
+section.
+
 \section{Safety}
 \label{safeunsafemodesection}
 

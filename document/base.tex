@@ -2543,7 +2543,7 @@ Otherwise, returns \schfalse.
 \proto{list?}{ obj}{procedure}}
 
 Returns \schtrue{} if \var{obj} is a list.  Otherwise, returns \schfalse{}.
-By definition, all lists have finite length and are terminated by
+By definition, all lists are chains of pairs that have finite length and are terminated by
 the empty list.
 
 \begin{scheme}
@@ -2598,7 +2598,7 @@ proper list.
 (append '() 'a)                 \ev  a%
 \end{scheme}
 
-The resulting improper list is always newly allocated, except that it shares
+The resulting chain of pairs is always newly allocated, except that it shares
 structure with the \var{obj} argument.
 \end{entry}
 
@@ -2618,31 +2618,62 @@ in reverse order.
 
 
 \begin{entry}{%
-\proto{list-tail}{ l k}{procedure}}
+\proto{list-tail}{ list k}{procedure}}
 
-\domain{If \var{k} is 0, \var{l} must be the empty list or a pair.
-  Otherwise, \var{l} must be a chain of pairs of size at least \var{k}.}
+\domain{\var{List} must be a list of size at least \var{k}.}
 
-The {\cf list-tail} procedure returns the subchain of pairs of \var{l}
+The {\cf list-tail} procedure returns the subchain of pairs of \var{list}
 obtained by omitting the first \var{k} elements.
+
 \begin{scheme}
-(list-tail '(a b c d) 2)                 \ev  (c d)
-(list-tail '(a b c . d) 2)                 \ev  (c . d)%
+(list-tail '(a b c d) 2)                 \ev  (c d)%
 \end{scheme}
+
+\implresp The implementation must check that \var{list} is a chain of
+pairs of size at least \var{k}.  It should not check that it is a chain
+of pairs beyond this size.
+
+{\cf List-tail} could be defined by
+
+\begin{scheme}
+(define (list-tail l k)
+  (if (and (not (null? l))
+           (not (pair? l)))
+      (assertion-violation
+       'list-tail
+       "not a list"
+       l))
+  (if (or (not (exact? k))
+          (not (integer? k))
+          (negative? k))
+      (assertion-violation
+       'list-tail
+       "not an exact non-negative integer"
+       l))
+  
+  (let loop ((l l) (k k))
+    (if (zero? k)
+        l
+        (loop (cdr l) (- k 1)))))%
+\end{scheme} 
+
 \end{entry}
 
 
 \begin{entry}{%
-\proto{list-ref}{ l k}{procedure}}
+\proto{list-ref}{ list k}{procedure}}
 
-\domain{\var{L} must be a chain of pairs of size at least $\var{k}+1$.}
+\domain{\var{List} must be a list of size at least $\var{k}+1$.}
 
-Returns the \var{k}th element of \var{l}.
+Returns the \var{k}th element of \var{list}.
 
 \begin{scheme}
-(list-ref '(a b c d) 2)                 \ev c
-(list-ref '(a b c . d) 2) \ev c%
+(list-ref '(a b c d) 2)                 \ev c%
 \end{scheme}
+
+\implresp The implementation must check that \var{list} is a chain of
+pairs of size at least $\var{k}+1$.  It should not check that it is a list
+of pairs beyond this size.
 \end{entry}
 
 
@@ -2666,10 +2697,9 @@ Returns the \var{k}th element of \var{l}.
 \proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
 \domain{The \var{list}s must all have the same length.  \var{Proc}
-  must be a procedure.  If the \var{list}s are non-empty,
-  \var{proc} must
-  take as many arguments as there are {\it list}s and must return a
-  single value.}
+  must be a procedure that takes as many arguments as there are
+  \var{list}s and returns a single value.  \var{Proc} must not mutate
+  any of the \var{list}s.}
 
 The {\cf map} procedure applies \var{proc} element-wise to the elements of the
 \var{list}s and returns a list of the results, in order.
@@ -2693,6 +2723,9 @@ The dynamic order in which \var{proc} is applied to the elements of the
        '(a b)))                 \ev  (1 2) \var{or} (2 1)%
 \end{scheme}
 
+\implresp The implementation should check that the \var{list}s all
+have the same length.  The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
 \end{entry}
 
 
@@ -2700,9 +2733,10 @@ The dynamic order in which \var{proc} is applied to the elements of the
 \proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
 \domain{The \var{list}s must all have the same length.  \var{Proc}
-  must be a procedure.  If the \var{list}s are non-empty,
-  \var{proc} must
-  take as many arguments as there are {\it list}s.}
+  must be a procedure that takes as many arguments as there are
+  \var{list}s.  \var{Proc} must not mutate
+  any of the \var{list}s.}
+
 The {\cf for-each} procedure applies \var{proc}
 element-wise to the elements of the
 \var{list}s for its side effects,  in order from the first element(s) to the
@@ -2723,6 +2757,10 @@ unspecified.
 
 (for-each even? '()) \ev \theunspecified%
 \end{scheme}
+
+\implresp The implementation should check that the \var{list}s all
+have the same length.  The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
 
 \begin{rationale}
   The return values are unspecified to allow implementations of {\cf
