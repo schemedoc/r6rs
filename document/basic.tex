@@ -4,16 +4,16 @@
 
 \section{Programs and libraries}
 
-A Scheme program consists of a \textit{script\index{script}}
+A Scheme program consists of a \textit{top-level program\index{top-level program}}
 together with a set of \textit{libraries\index{library}}, each
 of which defines a part of the program connected to the others through
 explicitly specified exports and imports.  A library consists of a set
 of export and import specifications and a body, which consists of
 definitions, and expressions;
-a script is similar to a library, but
+a top-level program is similar to a library, but
 has no export specifications.
-Chapters~\ref{librarychapter} and \ref{scriptchapter}
-describe the syntax and semantics of libraries and scripts,
+Chapters~\ref{librarychapter} and \ref{programchapter}
+describe the syntax and semantics of libraries and top-level programs,
 respectively.  Subsequent chapters
 describe various standard libraries provided by a Scheme system.  In
 particular, chapter~\ref{baselibrarychapter} describes a base
@@ -40,7 +40,7 @@ of syntax is called a {\em syntactic keyword}\mainindex{syntactic keyword}
 and is said to be {\em bound} to that syntax.  An identifier that names a
 location is called a {\em variable}\mainindex{variable} and is said to be
 {\em bound} to that location.  The set of all visible
-bindings\mainindex{binding} in effect at some point in a script or
+bindings\mainindex{binding} in effect at some point in a top-level program or
 library body is
 known as the {\em environment} in effect at that point.  The value
 stored in the location to which a variable is bound is called the
@@ -72,7 +72,7 @@ variable binding constructs are {\cf let}, {\cf let*}, {\cf letrec*},
 %Note: internal definitions not mentioned here.
 
 \vest Scheme is a statically scoped language with
-block structure.  To each place in a script or library body where an identifier is bound 
+block structure.  To each place in a top-level program or library body where an identifier is bound 
 there corresponds a \defining{region} of code within which
 the binding is visible.  The region is determined by the particular
 binding construct that establishes the binding; if the binding is
@@ -173,13 +173,13 @@ section.
 
 As defined by this document, the Scheme programming language
 is safe in the following sense:
-If a Scheme script is said to be safe, then its execution
+If a Scheme program is said to be safe, then its execution
 cannot go so badly wrong as to crash or to continue to
 execute while behaving in ways that are
 inconsistent with the semantics described in this document,
 unless said execution first encounters some implementation
 restriction or other defect in the implementation of Scheme
-that is executing the script.
+that is executing the program.
 
 Violations of an implementation restriction must raise an
 exception with condition type {\cf\&implementation-restriction},
@@ -188,7 +188,7 @@ violations and errors that would otherwise threaten system
 integrity in ways that might result in execution that is
 inconsistent with the semantics described in this document.
 
-The above safety properties are guaranteed only for scripts
+The above safety properties are guaranteed only for top-level programs
 and libraries that are said to be safe.  Implementations
 may provide access to unsafe libraries, and may interpret
 implementation-specific declarations in ways that

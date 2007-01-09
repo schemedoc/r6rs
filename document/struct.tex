@@ -232,7 +232,7 @@ identifiers as follows:
 (+ x y) \ev 65%
 \end{scheme}
 
-(These are actually ``top-level'' in the body of a library or script;
+(These are actually ``top-level'' in the body of a top-level program or library;
 see section~\ref{librariesintrosection} below.)
 
 The first two parenthesized structures are \textit{definitions}; they
@@ -491,16 +491,15 @@ from other libraries, and export definitions to other libraries:
   (newline))%
 \end{scheme}
 
-\section{Scripts}
+\section{Top-level programs}
 
-A Scheme program is invoked via a \textit{script}\index{script}.
-Like a library, a script contains definitions and
+A Scheme program is invoked via a \textit{top-level program}\index{top-level program}.
+Like a library, a top-level program contains definitions and
 expressions, but specifies an entry point for execution.  Thus, a
-script defines, via the transitive closure of the libraries it
+top-level program defines, via the transitive closure of the libraries it
 imports, a Scheme program.
 
 \begin{scheme}
-\#! /usr/bin/env scheme-script
 \#!r6rs
 (import (r6rs base)
         (r6rs i/o ports))
