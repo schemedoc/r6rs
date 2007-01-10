@@ -39,8 +39,9 @@ beyond the found element.  The implementation must check the restrictions on
 For natural numbers $i = 0, 1, \ldots$, the {\cf for-all} procedure
 successively applies \var{proc} to arguments $x_i^1 \ldots x_i^n$,
 where $x_i^j$ is the $i$th element of \varj{list}, until \schfalse{} is
-returned.  If \var{proc} returns true values for all 
-elements of \vari{list}, {\cf for-all} returns a true value.  If \var{proc}
+returned.  If \var{proc} returns true values for all but the last
+element of \vari{list}, \var{for-all} performs a tail call of \var{proc}
+on the $k$th elements, where $k$ is the length of \vari{list}.  If \var{proc}
 returns \schfalse{} on any set of elements, {\cf for-all} returns
 \schfalse{} after the first such application of \var{proc}.
 If the \var{list}s are all empty, {\cf
@@ -49,8 +50,10 @@ If the \var{list}s are all empty, {\cf
 For natural numbers $i = 0, 1, \ldots$, the {\cf exists} procedure
 applies \var{proc} successively to arguments $x_i^1 \ldots x_i^n$,
 where $x_i^j$ is the $i$th element of \varj{list}, until a true value is
-returned.  If \var{proc} returns \schfalse{} for all 
-elements of the \var{list}s, {\cf exists} returns \schfalse.
+returned.  If \var{proc} returns \schfalse{} for all but the last
+elements of the \var{list}s, \var{exists} performs a tail call of
+\var{proc} on the $k$th elements, where $k$ is the length of
+\vari{list}---in this case, the \var{list}s must all be lists of length $k$.
 If \var{proc} returns a true value on any set of elements, {\cf
   exists} returns that value after the first such application of
 \var{proc}.  If the \var{list}s
