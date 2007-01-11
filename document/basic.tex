@@ -58,18 +58,28 @@ variable is bound directly to the value. }
 \vest Certain expression types are used to create new kinds of syntax
 and to bind syntactic keywords to those new syntaxes, while other
 expression types create new locations and bind variables to those
-locations.  These expression types are called {\em binding constructs}.
-\mainindex{binding construct}
-The constructs in the base library that bind syntactic keywords are listed in section~\ref{macrosection}.
-The most fundamental of the variable binding constructs is the
-{\cf lambda} expression, because all other variable binding constructs
-can be explained in terms of {\cf lambda} expressions.  The other
-variable binding constructs are {\cf let}, {\cf let*}, {\cf letrec*},
-{\cf letrec}, {\cf let-values}, {\cf let*-values}, {\cf do}, and {\cf
-  case-lambda} expressions (see sections~\ref{lambda}, \ref{letrec}, 
-\ref{do}, and library section \ref{lib:case-lambda}).
+locations.  These expression types are called {\em binding
+  constructs}.\mainindex{binding construct} Scheme has two kinds of
+binding constructs: A \textit{definition}\index{definition} binds a
+variable in a top-level program or library body.  All other binding
+constructs create bindings that are only locally visible in the form
+that creates them.  Variable definitions are created by {\cf define}
+forms (see section~\ref{defines}), and definitions for syntactic
+keywords are created by {\cf define-syntax} forms (see
+section~\ref{syntaxdefinitionsection}).
 
-%Note: internal definitions not mentioned here.
+The most fundamental of the local variable binding constructs is the
+{\cf lambda} expression, because all other local variable binding
+constructs can be explained in terms of {\cf lambda} expressions.  The
+other variable binding constructs are {\cf let}, {\cf let*}, {\cf
+  letrec*}, {\cf letrec}, {\cf let-values}, {\cf let*-values}, {\cf
+  do}, and {\cf case-lambda} expressions (see sections~\ref{lambda},
+\ref{letrec}, \ref{do}, and library section \ref{lib:case-lambda}).
+The constructs in the base library that bind syntactic keywords are
+listed in section~\ref{bindsyntax}.  Local bindings can
+also be created in the form of internal {\cf define} and {\cf
+  define-syntax} forms that appear inside another form rather than at
+the top level of a program or a library body.
 
 \vest Scheme is a statically scoped language with
 block structure.  To each place in a top-level program or library body where an identifier is bound 
