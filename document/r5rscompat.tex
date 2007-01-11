@@ -207,31 +207,6 @@ before the value of the first force has been computed.
 This complicates the definition of {\cf make-promise}.
 \end{rationale}
 
-Various extensions to this semantics of {\cf delay} and {\cf force}
-are supported in some implementations:
-
-\begin{itemize}
-\item Calling {\cf force} on an object that is not a promise may simply
-return the object.
-
-\item It may be the case that there is no means by which a promise can be
-operationally distinguished from its forced value.  That is, expressions
-like the following may evaluate to either \schtrue{} or to \schfalse{},
-depending on the implementation:
-
-\begin{scheme}
-(eqv? (delay 1) 1)          \ev  \unspecified
-(pair? (delay (cons 1 2)))  \ev  \unspecified%
-\end{scheme}
-
-\item Some implementations may implement ``implicit forcing'', where
-the value of a promise is forced by primitive procedures like \cf{cdr}
-and \cf{+}:
-
-\begin{scheme}
-(+ (delay (* 3 7)) 13)  \ev  34%
-\end{scheme}
-\end{itemize}
 \end{entry}
 
 \begin{entry}{%
