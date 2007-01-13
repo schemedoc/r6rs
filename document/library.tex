@@ -50,7 +50,7 @@ A library declaration contains the following elements:
 \item a list of import dependencies, where each dependency specifies:
 \begin{itemize}
 \item the imported library's name,
-\item the relevant phases, e.g., expand or run time, and
+\item the relevant levels, e.g., expand or run time, and
 \item the subset of the library's exports to make available within the
       importing library, and the local names to use within the importing
       library for each of the library's exports, and
@@ -78,7 +78,7 @@ The exported bindings may be defined within the library or imported into
 the library.
 
 An identifier can be imported from two or more libraries or for two
-phases from the same library only if the
+levels from the same library only if the
 binding exported by each library is the same (i.e., the binding is
 defined in one library, and it arrives through the imports only by
 exporting and re-exporting).  Otherwise, no identifier can be imported
@@ -101,27 +101,27 @@ where \hyper{version} is empty or has the following form:
 Each \hyper{subversion} must be an exact nonnegative integer.
 
 Each \hyper{import~spec} specifies a set of bindings to be imported into
-the library, the phases in which they are to be available, and the local
+the library, the levels at which they are to be available, and the local
 names by which they are to be known.  A \hyper{import spec} must
 be one of the following:
 %
 \begin{scheme}
 \hyper{import set}
-(for \hyper{import~set} \hyper{import~phase} \ldots)%
+(for \hyper{import~set} \hyper{import~level} \ldots)%
 \end{scheme}
 
-An \hyper{import phase}  is one of the following:
+An \hyper{import level}  is one of the following:
 \begin{scheme}
 run
 expand
 (meta \hyper{level})%
 \end{scheme}
 
-where \hyper{level} is an exact nonnegative integer.
+where \hyper{level} is an exact integer.
 
-As an \hyper{import phase}, {\cf run} is an abbreviation for {\cf
+As an \hyper{import level}, {\cf run} is an abbreviation for {\cf
   (meta 0)}, and {\cf expand} is an abbreviation for {\cf (meta 1)}.
-Phases are discussed in section~\ref{phasessection}.
+Levels and phases are discussed in section~\ref{phasessection}.
 
 An \hyper{import~set} names a set of bindings from another library, and
 possibly specifies local names for the imported bindings.  It must be
@@ -307,60 +307,8 @@ error can be determined for implicitly exported variables only when the
 importing library is expanded.
 \end{note}
 
-\section{Import and export phases}
+\section{Import and export levels}
 \label{phasessection}
-
-\mainindex{phase}\mainindex{import phase}
-All bindings imported via a library's {\cf import} form are
-\emph{visible} throughout the library's \hyper{library~body}.
-An exception may be raised, however, if a binding is used out of its declared
-phase(s):
-
-\begin{itemize}\mainindex{meta level}
-\item Bindings used in run-time code must be imported ``for {\cf run}'',
-which is equivalent to ``for {\cf (meta 0)}''.
-\item Bindings used in the body of a transformer (appearing on the
-right-hand-side of a transformer binding) in run-time code must be
-imported ``for {\cf expand}'', which is equivalent to
-``for {\cf (meta 1)}'',
-\item Bindings used in the body of a transformer appearing within the body of a
-transformer in run-time code must be imported ``for {\cf (meta 2)}'',
-and so on.
-\end{itemize}
-
-The effective import phases of an imported binding are determined by the enclosing
-{\cf for} form, if any, in the {\cf import} form of the importing
-library, in addition to the phase of the identifier in the exporting library.
-An \hyper{import~set} without an enclosing {\cf for} is equivalent to
-{\cf (for \hyper{import~set} run)}.
-Import and export phases are combined by pairwise addition of all phase
-combinations.  For example, references to an imported identifier exported
-for phases $p_a$ and $p_b$ and imported for phases $q_a$, $q_b$, and $q_c$
-are valid at phases $p_a+q_a$, $p_a+q_b$, $p_a+q_c$, $p_b+q_a$, $p_b+q_b$,
-and $p_b+q_c$.
-
-The export phase of an exported binding is {\cf run} for all bindings
-that are defined within the exporting library. The export phases of a
-reexported binding, i.e., an export imported from another library, are the
-same as the effective import phases of that binding within the reexporting
-library.
-
-The export phase of all bindings exported by the libraries defined in
-the library report, except for the composite {\cf r6rs} library
-(see library chapter~\ref{lib:complibchapter}), is {\cf run}, while
-the export phases for all bindings exported by {\cf r6rs} are {\cf run}
-and {\cf expand}.
-
-\begin{rationale} 
-The {\cf r6rs} library is intended as a convenient import for libraries where fine
-control over imported bindings is not necessary or desirable. The {\cf r6rs} library
-exports all bindings for {\cf expand} as well as {\cf run} so that it is convenient
-for writing macros as well as run-time code.
-\end{rationale}
-
-The effective import phases implicitly determine when information about a
-library must be available and also when the various forms contained within
-a library must be evaluated.
 
 Every library can be characterized by expand-time information (minimally,
 its imported libraries, a list of the exported keywords, a list of the
@@ -371,71 +319,130 @@ The expand-time information must be available to expand references to
 any exported binding, and the run-time information must be available to
 evaluate references to any exported variable binding.
 
-If any of a library's bindings are imported by another library ``for
-{\cf expand}'' (or for any meta level greater than 0), both expand-time and
-run-time information for the first library is made available when the second
-library is expanded.
-If any of a library's bindings are imported by another library ``for
-{\cf run}'', the expand-time information for the first library is made available when
-the second library is expanded, and the run-time information for the first
-library is made available when the run-time information for the second library
-is made available.
+Expanding a library may require run-time information from another
+library. For example, if a library provides functions that are called
+by another library's macros during expansion, then the former library
+must be run when expanding the latter. The former may not be needed
+when the latter is eventually run as part of a program, or it may be
+needed for the latter's run time, too.
 
-It is also relevant when the code to evaluate a library's transformer
-expressions is executed and when the code to evaluate the library's
-variable-definition right-hand-side expressions and body expressions is
-executed.
-Executing the transformer expressions is also said to be \emph{visiting}\mainindex{visiting}
-the library and to executing the variable-definition right-hand-side 
-expressions and body expressions as \emph{invoking}\mainindex{invoking} the library.
-A library must be visited before code that uses its bindings can be
-expanded, and it must be invoked before code that uses its bindings can be
-executed.
-Visiting or invoking a library may also trigger the visiting or
-invoking of other libraries.
+\mainindex{phase}
+%
+A \emph{phase} is a time relative to a particular library that
+expressions are evaluated. Within a library, top-level expressions and
+the right-hand sides of {\cf define} forms are evaluated at run time,
+that is, at phase $0$ for to the enclosing library. The right-hand
+sides of {\cf define-syntax} forms are evaluated at expand time, which
+is phase $1$ for the enclosing library. When a {\cf let-syntax}
+expression appears as a phase $n$ expression, the right-hand sides of
+its bindings are evaluated as phase $n+1$ expressions.
 
-More precisely, visiting a library at phase $N$ causes the system to:
+An \emph{instance} of a library corresponds to an evaluation of its
+definitions and expressions in a particular phase relative to another
+library. For example, if a top-level expression in a library refers to
+an export from another library, then it refers to the export from an
+instance of the latter library at phase $0$ (relative to the former
+library). But if evaluating the right-hand side of a {\cf
+  define-syntax} expression refers to the same export of the other
+library, then it it refers to the export from an instance of the
+latter library at phase $1$ (relative to the former library).
 
-\begin{itemize}
-\item Visit at phase $N$ any library that is imported by this library
-      ``for {\cf run}'' and that is not yet visited at phase $N$.
-\item Visit at phase $N+M$ any library that is imported by this
-      library ``for {\cf (meta \var{M})}'', $M>0$ and that is not yet
-      visited at phase $N+M$.
-\item Invoke at phase $N+M$ any library that is imported by this
-      library ``for {\cf (meta \var{M})}'', $M>0$ and that is not yet
-      invoked at phase $N+M$.
-\item Evaluate the library's transformer expressions.
-\end{itemize}
+\mainindex{level}\mainindex{import level} 
+%
+A \emph{level} is a lexical property of an identifier that determines
+in which phases it can be referenced. The level for each identifier
+bound by a definition within a library is $0$; that is, the identifier
+can be referenced only by phase $0$ expressions within the library.
+The level for each imported binding is determined by the enclosing {\cf
+  for} form of the {\cf import} in the importing library, in
+addition to the levels of the identifier in the exporting
+library. Import and export levels are combined by pairwise addition of
+all level combinations.  For example, references to an imported
+identifier exported for levels $p_a$ and $p_b$ and imported for levels
+$q_a$, $q_b$, and $q_c$ are valid at levels $p_a+q_a$, $p_a+q_b$,
+$p_a+q_c$, $p_b+q_a$, $p_b+q_b$, and $p_b+q_c$. An \hyper{import~set}
+without an enclosing {\cf for} is equivalent to {\cf (for
+  \hyper{import~set} run)}, which is the same as {\cf (for
+  \hyper{import~set} (meta 0))}.
 
-The order in which imported libraries are visited and invoked is not
-defined, but imported libraries must be visited and invoked before the
-library's transformer expressions are evaluated.
+The export level of an exported binding is $0$ for all bindings
+that are defined within the exporting library. The export levels of a
+reexported binding, i.e., an export imported from another library, are the
+same as the effective import levels of that binding within the reexporting
+library.
 
-Similarly, invoking a library at meta phase $N$ causes the system to:
+For the libraries defined in the library report, the export level is
+$0$ for nearly all bindings. The exceptions are {\cf syntax-rules},
+... FIXME ... from the {\cf (r6rs base)} library, which are exported
+with level $1$, and all bindings from the composite {\cf (r6rs)}
+library (see library chapter~\ref{lib:complibchapter}), which are
+exported with levels $0$ and $1$.
 
-\begin{itemize}
-\item Invoke at phase $N$ any library that is imported by this library
-      ``for {\cf run}'' and that is not yet invoked at phase $N$.
-\item Evaluate the library's variable-definition right-hand-side and body
-      expressions.
-\end{itemize}
+\begin{rationale} 
+The {\cf (r6rs)} library is intended as a convenient import for libraries where fine
+control over imported bindings is not necessary or desirable. The {\cf (r6rs)} library
+exports all bindings for {\cf expand} as well as {\cf run} so that it is convenient
+for writing {\cf syntax-case} macros as well as run-time code.
+\end{rationale}
 
-The order in which imported libraries are invoked is not defined, but
-imported libraries must be invoked before the library's variable-definition
-right-hand-side and body expressions are evaluated.
+Macro expansion within a library can introduce a reference to an
+identifier that is not explicitly imported into the library. In that
+case, the phase of the reference must match the identifier's level as
+shifted by the difference between the phase of the source library
+(i.e., the library that supplied the identifier's lexical context) and
+the library that encloses the reference. For example, suppose that
+expanding a library invokes a macro transformer, and the evaluation of
+the macro transformer refers to an identifier that is exported from
+another library (so the phase $1$ instance of the library is used);
+suppose further that the value of the binding is a syntax object
+representing an identifier with only a level-$n$ binding; then, the
+identifier must be used only in a phase $n+1$ expression in the
+library being expanded. This combination of level and phases is why
+negative levels on identifiers can be useful, even though libraries
+exist only at non-negative phases.
 
-An implementation is allowed to distinguish visits of a library across
-different phases or to treat a visit at any phase as a visit at all
-phases.
-Similarly, an implementation is allowed to distinguish invocations of a
-library across different phases or to treat an invocation at any phase as
-an invocation at all phases.
-An implementation is further allowed to start each expansion of a
-{\cf library} form by removing all library bindings above phase 0.
-Thus, a portable library's meaning must not depend on whether the
-invocations are distinguished or preserved across phases or {\cf library}
-expansions.
+If any of a library's definitions are referenced at phase $0$ in the
+expanded form of a program, then an instance of the referenced library
+is created for phase $0$ before the program's definitions and
+expressios are evaluated. This rule applies transitively: if the
+expanded form of one library references at phase $0$ an identifier
+from another library, then before the referencing library is
+instantiated at phase $n$, the referenced library must be instantiated
+at phase $n$. When an identifier is referenced at any phase $n$
+greater than 0, in contrast, then the defining library is instantiated
+at phase $n$ at some unspecified time before the reference is
+evaluated.
+
+An implementation is allowed to distinguish instances of a library for
+different phases or to use an instance at any phase as an instance at
+any other phase. An implementation is further allowed to start each
+expansion of a {\cf library} form by removing all instances of all
+library in all phases above $0$. An implementation is allowed to
+create instances of more libraries at more phases than required to
+satisfy references. When an identifier appears as an expression in a
+phase that is inconsistent with the identifier's level, then an
+implementation may raise an exception either at expand time or run
+time, or it may allow the reference. Thus, a portable library must
+reference identifiers only in phases consistent with the declared
+levels, and the library's meaning must not depend on whether the
+instances of a library are distinguished or shared across phases or
+{\cf library} expansions.
+
+\begin{rationale} 
+Opinions vary on how libraries should be instantiated and
+initialized during the expansion and execution of library bodies,
+whether library instances should be distnguished across phases,
+and whether levels should be declared so that they constrain 
+identifier uses to particular phases. This report therefore leaves
+considerable latitude to implementations, while attempting to
+provide enough guarantees to make portable libraries practical.
+
+In particular, if a program and its libraries avoids the {\cf (r6rs)}
+and {\cf (syntax-rules)} libraries, and if the program and libraries
+never use the {\cf for} import form, then the program does not depend
+on whether instances are distinguished across phases, and the phase of
+an identifier use cannot be inconsistent with the identifier's level.
+\end{rationale} 
 
 \section{Primitive syntax}
 
