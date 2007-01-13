@@ -331,7 +331,7 @@ needed for the latter's run time, too.
 A \emph{phase} is a time relative to a particular library that
 expressions are evaluated. Within a library, top-level expressions and
 the right-hand sides of {\cf define} forms are evaluated at run time,
-that is, at phase $0$ for to the enclosing library. The right-hand
+that is, at phase $0$ for the enclosing library. The right-hand
 sides of {\cf define-syntax} forms are evaluated at expand time, which
 is phase $1$ for the enclosing library. When a {\cf let-syntax}
 expression appears as a phase $n$ expression, the right-hand sides of
@@ -372,8 +372,9 @@ same as the effective import levels of that binding within the reexporting
 library.
 
 For the libraries defined in the library report, the export level is
-$0$ for nearly all bindings. The exceptions are {\cf syntax-rules},
-... FIXME ... from the {\cf (r6rs base)} library, which are exported
+$0$ for nearly all bindings. The exceptions are {\cf syntax-rules}
+and {\cf identifier-syntax} 
+from the {\cf (r6rs base)} library, which are exported
 with level $1$, and all bindings from the composite {\cf (r6rs)}
 library (see library chapter~\ref{lib:complibchapter}), which are
 exported with levels $0$ and $1$.
@@ -417,7 +418,7 @@ An implementation is allowed to distinguish instances of a library for
 different phases or to use an instance at any phase as an instance at
 any other phase. An implementation is further allowed to start each
 expansion of a {\cf library} form by removing all instances of all
-library in all phases above $0$. An implementation is allowed to
+libraries in all phases above $0$. An implementation is allowed to
 create instances of more libraries at more phases than required to
 satisfy references. When an identifier appears as an expression in a
 phase that is inconsistent with the identifier's level, then an
@@ -437,8 +438,8 @@ identifier uses to particular phases. This report therefore leaves
 considerable latitude to implementations, while attempting to
 provide enough guarantees to make portable libraries practical.
 
-In particular, if a program and its libraries avoids the {\cf (r6rs)}
-and {\cf (syntax-rules)} libraries, and if the program and libraries
+In particular, if a program and its libraries avoid the {\cf (r6rs)}
+and {\cf (r6rs syntax-case)} libraries, and if the program and libraries
 never use the {\cf for} import form, then the program does not depend
 on whether instances are distinguished across phases, and the phase of
 an identifier use cannot be inconsistent with the identifier's level.
@@ -449,7 +450,7 @@ an identifier use cannot be inconsistent with the identifier's level.
 After the {\cf import} form within a {\cf library} form, the forms
 that constitute a library body depend on the libraries that are
 imported. In particular, imported syntactic keywords determine most
-of the available forms, and whether each form is a 
+of the available forms and whether each form is a 
 definition or expression. A few form types are
 always available independent of imported libraries, however,
 including constant literals, variable references, procedure calls,
