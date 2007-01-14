@@ -66,8 +66,8 @@
 	  syntax-violation?
 	  &undefined
 	  undefined-violation?
-	  &contract
-	  contract-violation?
+	  &assertion
+	  assertion-violation?
 	  &irritants
 	  irritants-condition?
 	  condition-irritants

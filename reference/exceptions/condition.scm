@@ -57,8 +57,8 @@
 	  syntax-violation?
 	  &undefined
 	  undefined-violation?
-	  &contract
-	  contract-violation?
+	  &assertion
+	  assertion-violation?
 	  &irritants
 	  irritants-condition?
 	  condition-irritants
@@ -79,16 +79,16 @@
 
 (define (make-condition-type name supertype fields)
   (if (not (symbol? name))
-      (contract-violation 'make-condition-type
+      (assertion-violation 'make-condition-type
 			  "name is not a symbol"
 			  name))
   (if (not (condition-type? supertype))
-      (contract-violation 'make-condition-type
+      (assertion-violation 'make-condition-type
 			  "supertype is not a condition type"
 			  supertype))
   (if (elements-in-common? (condition-type-all-fields supertype)
 			   fields)
-      (contract-violation 'make-condition-type
+      (assertion-violation 'make-condition-type
 			  "duplicate field name"
 			  fields (condition-type-all-fields supertype)))
   (really-make-condition-type name
@@ -141,7 +141,7 @@
 		    (alist (cdr pair)))
 		(if (not (list-set-eq? (condition-type-all-fields type)
 				       (map car alist)))
-		    (contract-violation 'make-condition
+		    (assertion-violation 'make-condition
 					"condition fields don't match condition type"
 					(map car alist)
 					(condition-type-all-fields type)
@@ -158,7 +158,7 @@
                            (label (cddr plist)))))))
     (if (not (list-set-eq? (condition-type-all-fields type)
 			   (map car alist)))
-        (apply contract-violation
+        (apply assertion-violation
 	       'make-condition
 	       "condition fields don't match condition type"
 	       type field-plist))
@@ -176,7 +176,7 @@
 (define (type-field-alist-ref the-type-field-alist field)
   (let loop ((type-field-alist the-type-field-alist))
     (cond ((null? type-field-alist)
-           (contract-violation 'type-field-alist-ref
+           (assertion-violation 'type-field-alist-ref
 			       "field not found"
 			       field the-type-field-alist))
           ((assq field (cdr (car type-field-alist)))
@@ -194,7 +194,7 @@
 			(condition-subtype? (car entry) type))
 		      (condition-type-field-alist condition))))
     (if (not entry)
-        (contract-violation 'extract-condition
+        (assertion-violation 'extract-condition
 			    "invalid condition type"
 			    condition type))
     (really-make-condition
@@ -219,7 +219,7 @@
 	  (let* ((type (car entry))
 		 (all-fields (condition-type-all-fields type)))
 	    (if (not (list-set<=? (map car (cdr entry)) all-fields))
-		(contract-violation 'type-field-alist->condition
+		(assertion-violation 'type-field-alist->condition
 				    "invalid field or fields"
 				    (map car (cdr entry))
 				    type
@@ -251,7 +251,7 @@
 				     (let ((type (car entry)))
 				       (condition-subtype? type supertype)))
 				   the-type-field-alist))
-                            (contract-violation 'check-condition-type-field-alist
+                            (assertion-violation 'check-condition-type-field-alist
 						"missing field in condition construction"
 						type
 						missing-field
@@ -372,8 +372,8 @@
 (define-condition-type &undefined &defect
   undefined-violation?)
 
-(define-condition-type &contract &defect
-  contract-violation?)
+(define-condition-type &assertion &defect
+  assertion-violation?)
 
 (define-condition-type &irritants &condition
   irritants-condition?
@@ -383,7 +383,7 @@
   who-condition?
   (who condition-who))
 
-(define (contract-violation who message . irritants)
+(define (assertion-violation who message . irritants)
   (raise
    (condition
     (&who (who who))
