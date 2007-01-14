@@ -30,7 +30,7 @@
 	  condition-has-type?
 	  condition-ref
 	  make-compound-condition
-	  extract-condition
+	  condition->list
 	  (define-condition-type :syntax)
 	  (condition :syntax)
 	  &condition
@@ -110,8 +110,7 @@
          (and (condition? thing)
               (condition-has-type? thing ?name)))
        (define (?accessor1 condition)
-         (condition-ref (extract-condition condition ?name)
-                        '?field1))
+         (condition-ref condition ?name '?field1))
        ...))))
 
 (define (condition-subtype? subtype supertype)
@@ -129,135 +128,57 @@
           (else
            (loop (condition-type-supertype condition-type))))))
 
-; The type-field-alist is of the form
-; ((<type> (<field-name> . <value>) ...) ...)
-(define-record-type (:condition really-really-make-condition condition?)
+
+(define-record-type (:simple-condition make-simple-condition simple-condition?)
   (fields
-   (immutable type-field-alist condition-type-field-alist)))
+   (immutable type simple-condition-type)
+   (immutable field-alist simple-condition-field-alist)))
 
-(define (really-make-condition type-field-alist)
-  (for-each (lambda (pair)
-	      (let ((type (car pair))
-		    (alist (cdr pair)))
-		(if (not (list-set-eq? (condition-type-all-fields type)
-				       (map car alist)))
-		    (assertion-violation 'make-condition
-					"condition fields don't match condition type"
-					(map car alist)
-					(condition-type-all-fields type)
-					type-field-alist))))
-	    type-field-alist)
-  (really-really-make-condition type-field-alist))
+(define-record-type (:condition really-make-condition condition?)
+  (fields
+   (immutable simple-conditions explode-condition)))
 
-(define (make-condition type . field-plist)
-  (let ((alist (let label ((plist field-plist))
-                 (if (null? plist)
-                            '()
-                     (cons (cons (car plist)
-                                 (cadr plist))
-                           (label (cddr plist)))))))
-    (if (not (list-set-eq? (condition-type-all-fields type)
-			   (map car alist)))
-        (apply assertion-violation
-	       'make-condition
-	       "condition fields don't match condition type"
-	       type field-plist))
-    (really-make-condition (list (cons type alist)))))
+(define (condition->list con)
+  (map list (explode-condition con)))
+
+(define (make-condition type alist)
+  (if (not (list-set-eq? (map car alist)
+			 (condition-type-all-fields type)))
+      (assertion-violation 'make-condition
+			   "condition fields don't match condition type"
+			   type
+			   (condition-type-all-fields type)
+			   alist))
+  (really-make-condition
+   (list (make-simple-condition type alist))))
 
 (define (condition-has-type? condition type)
-  (any? (lambda (has-type)
-	  (condition-subtype? has-type type))
-	(condition-types condition)))
+  (any? (lambda (simple)
+	  (condition-subtype? (simple-condition-type simple) type))
+	(explode-condition condition)))
 
-(define (condition-ref condition field)
-  (type-field-alist-ref (condition-type-field-alist condition)
-                        field))
+(define (condition-ref condition type field)
+  (let loop ((simples (explode-condition condition)))
+    (if (null? simples)
+	(assertion-violation 'condition-ref
+			     "subtype not found"
+			     condition type)
+	(let ((simple (car simples)))
+	  (if (condition-subtype? (simple-condition-type simple) type)
+	      (cdr (assq field (simple-condition-field-alist simple)))
+	      (loop (cdr simples)))))))
 
-(define (type-field-alist-ref the-type-field-alist field)
-  (let loop ((type-field-alist the-type-field-alist))
-    (cond ((null? type-field-alist)
-           (assertion-violation 'type-field-alist-ref
-			       "field not found"
-			       field the-type-field-alist))
-          ((assq field (cdr (car type-field-alist)))
-           => cdr)
-          (else
-           (loop (cdr type-field-alist))))))
-
-(define (make-compound-condition condition-1 . conditions)
+(define (make-compound-condition . conditions)
   (really-make-condition
-   (apply append (map condition-type-field-alist
-                      (cons condition-1 conditions)))))
-
-(define (extract-condition condition type)
-  (let ((entry (first (lambda (entry)
-			(condition-subtype? (car entry) type))
-		      (condition-type-field-alist condition))))
-    (if (not entry)
-        (assertion-violation 'extract-condition
-			    "invalid condition type"
-			    condition type))
-    (really-make-condition
-      (list (cons type
-                  (map (lambda (field)
-                         (assq field (cdr entry)))
-                       (condition-type-all-fields type)))))))
+   (apply append (map explode-condition conditions))))
 
 (define-syntax condition
   (syntax-rules ()
     ((condition (?type1 (?field1 ?value1) ...) ...)
-     (type-field-alist->condition
-      (list
-       (cons ?type1
-             (list (cons '?field1 ?value1) ...))
-       ...)))))
-
-(define (type-field-alist->condition type-field-alist)
-  (check-condition-type-field-alist type-field-alist)
-  (really-make-condition
-   (map (lambda (entry)
-	  (let* ((type (car entry))
-		 (all-fields (condition-type-all-fields type)))
-	    (if (not (list-set<=? (map car (cdr entry)) all-fields))
-		(assertion-violation 'type-field-alist->condition
-				    "invalid field or fields"
-				    (map car (cdr entry))
-				    type
-				    all-fields))
-	    (cons type
-		  (map (lambda (field)
-			 (or (assq field (cdr entry))
- 			     (cons field
-				   (type-field-alist-ref type-field-alist field))))
-		       all-fields))))
-	type-field-alist)))
-
-(define (condition-types condition)
-  (map car (condition-type-field-alist condition)))
-
-(define (check-condition-type-field-alist the-type-field-alist)
-  (let loop ((type-field-alist the-type-field-alist))
-    (if (not (null? type-field-alist))
-        (let* ((entry (car type-field-alist))
-               (type (car entry))
-               (field-alist (cdr entry))
-               (fields (map car field-alist))
-               (all-fields (condition-type-all-fields type)))
-          (for-each (lambda (missing-field)
-                      (let ((supertype
-                             (condition-type-field-supertype type missing-field)))
-                        (if (not
-                             (any? (lambda (entry)
-				     (let ((type (car entry)))
-				       (condition-subtype? type supertype)))
-				   the-type-field-alist))
-                            (assertion-violation 'check-condition-type-field-alist
-						"missing field in condition construction"
-						type
-						missing-field
-						the-type-field-alist))))
-                    (list-set-difference all-fields fields))
-          (loop (cdr type-field-alist))))))
+     (make-compound-condition
+      (make-condition ?type1
+		      (list (cons '?field1 ?value1) ...))
+      ...))))
 
 ;; Utilities, defined locally to avoid having to load SRFI 1
 

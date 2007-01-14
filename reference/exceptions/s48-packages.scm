@@ -39,7 +39,7 @@
 	  condition-has-type?
 	  condition-ref
 	  make-compound-condition
-	  extract-condition
+	  condition->list
 	  (define-condition-type :syntax)
 	  (condition :syntax)
 	  &condition
