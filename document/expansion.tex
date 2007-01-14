@@ -49,40 +49,75 @@ and {\cf letrec-syntax} to be visible only in the inner body forms.
 \item[expression, i.e., nondefinition]
 The expander completes the expansion of the deferred right-hand-side forms
 and the current and remaining expressions in the body, then
-constructs a residual {\cf letrec*} form from the defined variables,
+residualizes the equivalent of a {\cf letrec*} form from the defined variables,
 expanded right-hand-side expressions, and expanded body expressions.
 \end{description}
-
-It is a syntax violation
-if the keyword that identifies one of the body forms
-as a definition (derived or core) is redefined by the same definition or a
-later definition in the same body.
-To detect this error, the expander records the identifying keyword for each
-macro use, {\cf define-syntax} form, {\cf define}
-form, {\cf begin} form, {\cf let-syntax} form, and {\cf letrec-syntax}
-form it encounters while processing the definitions and checks each
-newly defined identifier ({\cf define} or {\cf define-syntax}
-left-hand side) against the recorded keywords, as with
-{\cf bound-identifier=?} (see library section~\ref{lib:identifierpredicatessection}).
-For example, the following forms are syntax violations.
-
-\begin{scheme}
-(let ()
-  (define define 17)
-  define)
-
-(let-syntax ([def0 (syntax-rules ()
-                     [(\_ x) (define x 0)])])
-  (let ()
-    (def0 z)
-    (define def0 '(def 0))
-    (list z def0)))
-\end{scheme}
 
 Expansion of each variable definition right-hand side is deferred until
 after all of the definitions have been seen so that each keyword and
 variable reference within the right-hand side resolves to the local
 binding, if any.
+
+A definition in the sequence of forms must not define any identifier whose
+binding is used to determine the meaning of the undeferred portions of the
+definition or any definition that precedes it in the sequence of forms.
+For example, the bodies of the following expressions violate this
+restriction.
+
+\begin{scheme}
+(let ()
+  (define define 17)
+  (list define))
+
+(let-syntax ([def0 (syntax-rules ()
+                     [(\_ x) (define x 0)])])
+  (let ([z 3])
+    (def0 z)
+    (define def0 list)
+    (list z)))
+
+(let ()
+  (define-syntax foo
+    (lambda (e)
+      (+ 1 2)))
+  (define + 2)
+  (foo))
+\end{scheme}
+
+The following do not violate the restriction.
+
+\begin{scheme}
+(let ([x 5])
+  (define lambda list)
+  (lambda x x))         \ev  (5 5)
+
+(let-syntax ([def0 (syntax-rules ()
+                     [(\_ x) (define x 0)])])
+  (let ([z 3])
+    (define def0 list)
+    (def0 z)
+    (list z)))          \ev  (e)
+
+(let ()
+  (define-syntax foo
+    (lambda (e)
+      (let ([+ -]) (+ 1 2))))
+  (define + 2)
+  (foo))                \ev  -1
+\end{scheme}
+
+The implementation should treat a violation of the restriction as a
+syntax violation.
+
+% Andre's proposed implementation:
+% To detect this violation, the expander can record each
+% identifier whose denotation is determined during expansion
+% of the body, together with the denotation.
+% Before an identifier is bound, its current denotation is compared
+% against denotations already used for the same (in the sense of
+% bound-identifier=?) identifier in the scope of the intended binding,
+% to determine if its current denotation has already been used
+% during the expansion of the body.
 
 Note that this algorithm does not directly reprocess any form.
 It requires a single left-to-right pass over the definitions followed by a
@@ -140,15 +175,18 @@ It behaves as described above for a \hyper{body} or
 \hyper{library body} with the following exceptions.
 When the expander finds a nondefinition,
 it defers its expansion and continues scanning for definitions.
-Once it reaches the end of set of forms, it processes the
+Once it reaches the end of the set of forms, it processes the
 deferred right-hand-side and body expressions, then
-constructs a residual {\cf letrec*} form from the defined variables,
+residualizes the equivalent of a {\cf letrec*} form from the defined variables,
 expanded right-hand-side expressions, and expanded body expressions.
-For each body expression that appears before a variable definition
+For each body expression \hyper{expr} that appears before a variable definition
 in the body, a dummy binding is created at the corresponding place within
 the set of {\cf letrec*} bindings, with a fresh temporary variable on the
-left-hand side and the expression on the right-hand side, so that
+left-hand side and the equivalent of {\cf (begin \hyper{expr} (unspecified))}
+on the right-hand side, so that
 left-to-right evaluation order is preserved.
+The {\cf begin} wrapper allows \hyper{expr} to evaluate to zero or more
+values.
 
 %%% Local Variables: 
 %%% mode: latex
