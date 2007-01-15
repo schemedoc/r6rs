@@ -44,7 +44,7 @@ LIB_TEX_FILES = r6rs-lib.tex \
 	primio.tex \
 	r5rscompat.tex \
 	records.tex \
-	scriptlib.tex \
+	programlib.tex \
 	setcar.tex \
 	syntax-case.tex \
 	unicode.tex
