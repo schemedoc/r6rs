@@ -8,15 +8,14 @@ $$y_k^\prime = f_k(y_1, y_2, \ldots, y_n), \; k = 1, \ldots, n$$
 of differential equations with the method of Runge-Kutta.
 
 As the \library{runge-kutta} library makes use of the \library{r6rs
-  base} and the \library{r6rs promises} libraries, the library
+  base} libraries, the library
 skeleton looks as follows:
 
 \begin{scheme}
 \#!r6rs
 (library (runge-kutta)
   (export integrate-system)
-  (import (r6rs base)
-          (r6rs promises))
+  (import (r6rs base))
   \hyper{library body})
 \end{scheme}
 
@@ -39,8 +38,8 @@ system states.
     (let ((next (runge-kutta-4 system-derivative h)))
       (letrec ((states
                 (cons initial-state
-                      (delay (map-streams next
-                                          states)))))
+                      (lambda () (map-streams next
+                                              states)))))
         states))))%
 \end{schemenoindent}
 
@@ -106,17 +105,17 @@ stream).
 (define map-streams
   (lambda (f s)
     (cons (f (head s))
-          (delay (map-streams f (tail s))))))%
+          (lambda () (map-streams f (tail s))))))%
 \end{schemenoindent}
 
 Infinite streams are implemented as pairs whose car holds the first
-element of the stream and whose cdr holds a promise to deliver the rest
+element of the stream and whose cdr holds a procedure that delivers the rest
 of the stream.
 
 \begin{schemenoindent}
 (define head car)
 (define tail
-  (lambda (stream) (force (cdr stream))))%
+  (lambda (stream) ((cdr stream))))%
 \end{schemenoindent}
 
 \bigskip
@@ -144,7 +143,7 @@ which models a damped oscillator.
   (integrate-system
      (damped-oscillator 10000 1000 .001)
      '\#(1 0)
-     .01)))
+     .01))
 
 (letrec ((loop (lambda (s)
                  (newline)
