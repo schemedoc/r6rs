@@ -7,14 +7,17 @@ code to run.  Through the imported libraries, whether directly or through the
 transitive closure of importing, a top-level program defines a complete Scheme
 program.
 
+Top-level programs follow the convention of many common platforms of accepting 
+a list of string \defining{command-line arguments} that may be used to
+pass data to the script.
+
 \section{Top-level program syntax}
 
 A top-level program is a delimited piece of text, typically a file, that follows
 the following syntax:
 
 \begin{grammar}
-\meta{toplevel program} \: \#!r6rs \meta{import form} \meta{toplevel body}
-  \> \| \meta{import form} \meta{toplevel body}
+\meta{toplevel program} \: \meta{import form} \meta{toplevel body}
 \meta{import form} \: (import \arbno{\meta{import spec}})
 \meta{toplevel body} \: \arbno{\meta{toplevel body form}} \meta{expression}
 \meta{toplevel body form} \: \| \meta{definition}
@@ -53,6 +56,10 @@ where \hyper{variable} is a fresh identifier.
 definitions and expressions without concurrently expanding the body, so
 the actual translation is somewhat more complicated; see
 chapter~\ref{expansionchapter}.)
+
+On platforms that support it, a top-level program may access its command-line 
+arguments by calling the {\cf command-line} procedure (see library 
+section~\ref{lib:command-line}).
 
 %%% Local Variables: 
 %%% mode: latex
