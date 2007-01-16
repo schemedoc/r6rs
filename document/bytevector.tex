@@ -1,27 +1,26 @@
-\chapter{Bytes objects}
-\label{byteschapter}
+\chapter{Bytevectors}
+\label{bytevectorschapter}
 
 Many applications must deal with blocks of binary data by accessing
 them in various ways---extracting signed or unsigned numbers of
-various sizes.  Therefore, the \deflibrary{r6rs bytes} library
+various sizes.  Therefore, the \deflibrary{r6rs bytevector} library
 provides a single type for
 blocks of binary data with multiple ways to access that data. It deals
 only with integers in various sizes with specified endianness, because
 these are the most frequent applications.
 
-Bytes objects\mainindex{bytes objects} are objects of a disjoint
-type. Conceptually, a bytes object represents a sequence of 8-bit
-bytes.  The description of bytes objects uses the term \defining{byte}
+Bytevectors\mainindex{bytevector} are objects of a disjoint
+type. Conceptually, a bytevector represents a sequence of 8-bit
+bytes.  The description of bytevectors uses the term \defining{byte}
 for an exact integer in the interval $\{-128, \ldots, 127\}$ and the
 term \defining{octet} for an exact integer in the interval $\{0,
 \ldots, 255\}$.  A byte corresponds to its two's complement
 representation as an octet.
 
-The length of a bytes object is the number of bytes it contains. This
-number is fixed. A valid index into a bytes object is an exact,
-non-negative integer. The first byte of a bytes object has index 0;
-the last byte has an index one less than the length of the bytes
-object.
+The length of a bytevector is the number of bytes it contains. This
+number is fixed. A valid index into a bytevector is an exact,
+non-negative integer. The first byte of a bytevector has index 0;
+the last byte has an index one less than the length of the bytevector.
 
 Generally, the access procedures come in different flavors according
 to the size of the represented integer and the endianness of the
@@ -29,7 +28,7 @@ representation.  The procedures also distinguish signed and unsigned
 representations.
 The signed representations all use two's complement.
 
-Like list and vector literals, literals representing bytes objects
+Like list and vector literals, literals representing bytevectors
 must be quoted:
 %
 \begin{scheme}
@@ -46,7 +45,7 @@ must be quoted:
   {\cf big} and {\cf little}, but may support other endianness
   symbols.}  {\cf (endianness \hyper{endianness symbol})} evaluates to
 the symbol named \hyper{endianness symbol}.  Whenever one of the
-procedures operating on bytes objects accepts an endianness as an
+procedures operating on bytevectors accepts an endianness as an
 argument, that argument must be one of these symbols.  It is a syntax
 violation for \hyper{endianness symbol} to be anything other than an
 endianness symbol supported by the implementation.
@@ -67,52 +66,52 @@ than {\cf big} and {\cf little}.
 \end{entry}   
 
 \begin{entry}{%
-\proto{bytes?}{ obj}{procedure}}
+\proto{bytevector?}{ obj}{procedure}}
    
-Returns \schtrue{} if \var{obj} is a bytes object,
+Returns \schtrue{} if \var{obj} is a bytevector,
 otherwise returns \schfalse{}.
 \end{entry}
 
 \begin{entry}{%
-\proto{make-bytes}{ k}{procedure}
-\rproto{make-bytes}{ k fill}{procedure}}
+\proto{make-bytevector}{ k}{procedure}
+\rproto{make-bytevector}{ k fill}{procedure}}
    
-Returns a newly allocated bytes object of \var{k} bytes.
+Returns a newly allocated bytevector of \var{k} bytes.
    
 If the \var{fill} argument is missing, the initial contents of the
-returned bytes object are unspecified.
+returned bytevector are unspecified.
    
 If the \var{fill} argument is present, it must be an exact integer in
 the interval $\{-128, \ldots 255\}$ that specifies the initial value
-for the bytes of the bytes object: If \var{fill} is positive, it is
+for the bytes of the bytevector: If \var{fill} is positive, it is
 interpreted as an octet; if it is negative, it is interpreted as a byte.
 \end{entry}   
 
 \begin{entry}{%
-\proto{bytes-length}{ bytes}{procedure}}
+\proto{bytevector-length}{ bytevector}{procedure}}
    
-Returns, as an exact integer, the number of bytes in \var{bytes}.
+Returns, as an exact integer, the number of bytes in \var{bytevector}.
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes=?}{ \vari{bytes} \varii{bytes}}{procedure}}
+\proto{bytevector=?}{ \vari{bytevector} \varii{bytevector}}{procedure}}
    
-Returns \schtrue{} if \vari{bytes} and \varii{bytes} are equal---that
+Returns \schtrue{} if \vari{bytevector} and \varii{bytevector} are equal---that
 is, if they have the same length and equal bytes at all valid indices.
 It returns \schfalse{} otherwise.
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes-fill!}{ bytes fill}}
+\proto{bytevector-fill!}{ bytevector fill}}
 
 \domain{The \var{fill} argument is as in the description of the {\cf
-    make-bytes} procedure.}
+    make-bytevector} procedure.}
 Stores \var{fill} in every element of \var{vector}
 and returns the unspecified value.  Analogous to {\cf vector-fill!}.
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes-copy!}{ source source-start target target-start n}{procedure}}
+\proto{bytevector-copy!}{ source source-start target target-start n}{procedure}}
 
 \domain{\var{Source-start}, \var{target-start},
   and \var{n} must be non-negative exact integers that satisfy
@@ -129,7 +128,7 @@ and returns the unspecified value.  Analogous to {\cf vector-fill!}.
   $l_{\var{target}}$ is the length of \var{target}.}
    
    
-  The {\cf bytes-copy!} procedure copies the bytes from \var{source} at indices 
+  The {\cf bytevector-copy!} procedure copies the bytes from \var{source} at indices 
   \begin{displaymath}
      \{ \var{source-start}, \ldots \var{source-start} + \var{n} - 1 \}
   \end{displaymath}
@@ -141,141 +140,141 @@ and returns the unspecified value.  Analogous to {\cf vector-fill!}.
    
   This returns \unspecifiedreturn.
 \begin{scheme}
-(let ((b (u8-list->bytes '(1 2 3 4 5 6 7 8))))
-  (bytes-copy! b 0 b 3 4)
-  (bytes->u8-list b)) \ev (1 2 3 1 2 3 4 8)
+(let ((b (u8-list->bytevector '(1 2 3 4 5 6 7 8))))
+  (bytevector-copy! b 0 b 3 4)
+  (bytevector->u8-list b)) \ev (1 2 3 1 2 3 4 8)
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes-copy}{ bytes}{procedure}}
+\proto{bytevector-copy}{ bytevector}{procedure}}
    
-Returns a newly allocated copy of \var{bytes}.
+Returns a newly allocated copy of \var{bytevector}.
 \end{entry}
 
 \section{Operations on bytes and octets}
 
 \begin{entry}{%
-\proto{bytes-u8-ref}{ bytes k}{procedure}
-\proto{bytes-s8-ref}{ bytes k}{procedure}}
+\proto{bytevector-u8-ref}{ bytevector k}{procedure}
+\proto{bytevector-s8-ref}{ bytevector k}{procedure}}
    
-\domain{\var{K} must be a valid index of bytes.}
+\domain{\var{K} must be a valid index of \var{bytevector}.}
    
-The {\cf bytes-u8-ref} procedure returns the byte at index \var{k} of \var{bytes},
+The {\cf bytevector-u8-ref} procedure returns the byte at index \var{k} of \var{bytevector},
 as an octet.
    
-The {\cf bytes-s8-ref} procedure returns the byte at index \var{k} of \var{bytes},
+The {\cf bytevector-s8-ref} procedure returns the byte at index \var{k} of \var{bytevector},
 as a (signed) byte.
 
 \begin{scheme}
-(let ((b1 (make-bytes 16 -127))
-      (b2 (make-bytes 16 255)))
+(let ((b1 (make-bytevector 16 -127))
+      (b2 (make-bytevector 16 255)))
   (list
-    (bytes-s8-ref b1 0)
-    (bytes-u8-ref b1 0)
-    (bytes-s8-ref b2 0)
-    (bytes-u8-ref b2 0))) \ev (-127 129 -1 255)
+    (bytevector-s8-ref b1 0)
+    (bytevector-u8-ref b1 0)
+    (bytevector-s8-ref b2 0)
+    (bytevector-u8-ref b2 0))) \ev (-127 129 -1 255)
 \end{scheme}
 \end{entry}   
 
 \begin{entry}{%
-\proto{bytes-u8-set!}{ bytes k octet}{procedure}
-\proto{bytes-s8-set!}{ bytes k byte}{procedure}}
+\proto{bytevector-u8-set!}{ bytevector k octet}{procedure}
+\proto{bytevector-s8-set!}{ bytevector k byte}{procedure}}
    
-\domain{\var{K} must be a valid index of \var{bytes}.}
+\domain{\var{K} must be a valid index of \var{bytevector}.}
    
-The {\cf bytes-u8-set!} procedure stores \var{octet} in element \var{k} of
-\var{bytes}.
+The {\cf bytevector-u8-set!} procedure stores \var{octet} in element \var{k} of
+\var{bytevector}.
    
-The {\cf bytes-s8-set!} procedure stores the two's complement representation of
-\var{byte} in element \var{k} of \var{bytes}.
+The {\cf bytevector-s8-set!} procedure stores the two's complement representation of
+\var{byte} in element \var{k} of \var{bytevector}.
    
 Both procedures return \unspecifiedreturn.
 
 \begin{scheme}
-(let ((b (make-bytes 16 -127)))
+(let ((b (make-bytevector 16 -127)))
 
-  (bytes-s8-set! b 0 -126)
-  (bytes-u8-set! b 1 246)
+  (bytevector-s8-set! b 0 -126)
+  (bytevector-u8-set! b 1 246)
 
   (list
-    (bytes-s8-ref b 0)
-    (bytes-u8-ref b 0)
-    (bytes-s8-ref b 1)
-    (bytes-u8-ref b 1))) \ev (-126 130 -10 246)
+    (bytevector-s8-ref b 0)
+    (bytevector-u8-ref b 0)
+    (bytevector-s8-ref b 1)
+    (bytevector-u8-ref b 1))) \ev (-126 130 -10 246)
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes->u8-list}{ bytes}{procedure}
-\proto{u8-list->bytes}{ list}{procedure}}
+\proto{bytevector->u8-list}{ bytevector}{procedure}
+\proto{u8-list->bytevector}{ list}{procedure}}
    
 \domain{\var{List} must be a list of octets.}
 
-The {\cf bytes->u8-list} procedure returns a newly allocated list of the bytes of
-\var{bytes} in the same order.
+The {\cf bytevector->u8-list} procedure returns a newly allocated list of the bytes of
+\var{bytevector} in the same order.
 
-The {\cf u8-list->bytes} procedure returns a newly allocated bytes object whose
+The {\cf u8-list->bytevector} procedure returns a newly allocated bytevector whose
 elements are the elements of list \var{list}, in
 the same order.  It is analogous to {\cf list->vector}.
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes-uint-ref}{ bytes k endianness size}{procedure}
-\proto{bytes-sint-ref}{ bytes k endianness size}{procedure}
-\proto{bytes-uint-set!}{ bytes k n endianness size}{procedure}
-\proto{bytes-sint-set!}{ bytes k n endianness size}{procedure}}
+\proto{bytevector-uint-ref}{ bytevector k endianness size}{procedure}
+\proto{bytevector-sint-ref}{ bytevector k endianness size}{procedure}
+\proto{bytevector-uint-set!}{ bytevector k n endianness size}{procedure}
+\proto{bytevector-sint-set!}{ bytevector k n endianness size}{procedure}}
    
 \domain{\var{Size} must be a positive exact integer. $\{\var{k}, \ldots,
-  \var{k} + \var{size} - 1\}$ must be valid indices of \var{bytes}.}
+  \var{k} + \var{size} - 1\}$ must be valid indices of \var{bytevector}.}
    
-{\cf bytes-uint-ref} retrieves the exact integer corresponding to the
+{\cf bytevector-uint-ref} retrieves the exact integer corresponding to the
 unsigned representation of size \var{size} and specified by \var{endianness}
 at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-{\cf bytes-sint-ref} retrieves the exact integer corresponding to the two's
+{\cf bytevector-sint-ref} retrieves the exact integer corresponding to the two's
 complement representation of size \var{size} and specified by \var{endianness} at
 indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-\domain{For {\cf bytes-uint-set!}, \var{n} must be an exact integer in the
+\domain{For {\cf bytevector-uint-set!}, \var{n} must be an exact integer in the
   set $\{0, \ldots, 256^{\var{size}}-1\}$.}
 
-{\cf bytes-uint-set!} stores the unsigned representation of size \var{size}
-and specified by \var{endianness} into \var{bytes} at indices
+{\cf bytevector-uint-set!} stores the unsigned representation of size \var{size}
+and specified by \var{endianness} into \var{bytevector} at indices
 $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-\domain{For {\cf bytes-sint-set!}, \var{n} must be an exact integer in
+\domain{For {\cf bytevector-sint-set!}, \var{n} must be an exact integer in
   the interval $\{-256^{\var{size}}/2, \ldots,
   256^{\var{size}}/2-1\}$.}
-{\cf bytes-sint-set!} stores the two's complement
+{\cf bytevector-sint-set!} stores the two's complement
 representation of size \var{size} and specified by \var{endianness}
-into \var{bytes} at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
+into \var{bytevector} at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
 The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 
 \begin{scheme}
-(define b (make-bytes 16 -127))
+(define b (make-bytevector 16 -127))
 
-(bytes-uint-set! b 0 (- (expt 2 128) 3)
-                 (endianness little) 16)
+(bytevector-uint-set! b 0 (- (expt 2 128) 3)
+                     (endianness little) 16)
 
-(bytes-uint-ref b 0 (endianness little) 16)\lev
+(bytevector-uint-ref b 0 (endianness little) 16)\lev
     \#xfffffffffffffffffffffffffffffffd
 
-(bytes-sint-ref b 0 (endianness little) 16)\lev -3
+(bytevector-sint-ref b 0 (endianness little) 16)\lev -3
 
-(bytes->u8-list b)\lev (253 255 255 255 255 255 255 255
+(bytevector->u8-list b)\lev (253 255 255 255 255 255 255 255
                255 255 255 255 255 255 255 255)
 
-(bytes-uint-set! b 0 (- (expt 2 128) 3)
+(bytevector-uint-set! b 0 (- (expt 2 128) 3)
                  (endianness big) 16)
 
-(bytes-uint-ref b 0 (endianness big) 16) \lev
+(bytevector-uint-ref b 0 (endianness big) 16) \lev
     \#xfffffffffffffffffffffffffffffffd
 
-(bytes-sint-ref b 0 (endianness big) 16) \lev -3
+(bytevector-sint-ref b 0 (endianness big) 16) \lev -3
 
-(bytes->u8-list b) \lev (255 255 255 255 255 255 255 255
+(bytevector->u8-list b) \lev (255 255 255 255 255 255 255 255
                255 255 255 255 255 255 255 253))
 \end{scheme}
 \end{entry}
@@ -283,40 +282,40 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \section{Operations on integers of arbitrary size}
 
 \begin{entry}{%
-\proto{bytes->uint-list}{ bytes endianness size}{procedure}
-\proto{bytes->sint-list}{ bytes endianness size}{procedure}
-\proto{uint-list->bytes}{ list endianness size}{procedure}
-\proto{sint-list->bytes}{ list endianness size}{procedure}}
+\proto{bytevector->uint-list}{ bytevector endianness size}{procedure}
+\proto{bytevector->sint-list}{ bytevector endianness size}{procedure}
+\proto{uint-list->bytevector}{ list endianness size}{procedure}
+\proto{sint-list->bytevector}{ list endianness size}{procedure}}
    
 \domain{\var{Size} must be a positive exact integer.}
    
 These procedures convert between lists of integers and their consecutive
 representations according to \var{size} and \var{endianness} in the
-\var{bytes} objects in the same way as {\cf bytes->u8-list} and {\cf
-  u8-list->bytes} do for one-byte representations.
+\var{bytevector} objects in the same way as {\cf bytevector->u8-list} and {\cf
+  u8-list->bytevector} do for one-byte representations.
 
 \begin{scheme}
-(let ((b (u8-list->bytes '(1 2 3 255 1 2 1 2))))
-  (bytes->sint-list b (endianness little) 2)) \lev (513 -253 513 513)
+(let ((b (u8-list->bytevector '(1 2 3 255 1 2 1 2))))
+  (bytevector->sint-list b (endianness little) 2)) \lev (513 -253 513 513)
 
-(let ((b (u8-list->bytes '(1 2 3 255 1 2 1 2))))
-  (bytes->uint-list b (endianness little) 2)) \lev (513 65283 513 513)
+(let ((b (u8-list->bytevector '(1 2 3 255 1 2 1 2))))
+  (bytevector->uint-list b (endianness little) 2)) \lev (513 65283 513 513)
 \end{scheme}
 \end{entry}
 
 \section{Operations on 16-bit integers}
 
 \begin{entry}{%
-\proto{bytes-u16-ref}{ bytes k endianness}{procedure}
-\proto{bytes-s16-ref}{ bytes k endianness}{procedure}
-\proto{bytes-u16-native-ref}{ bytes k}{procedure}
-\proto{bytes-s16-native-ref}{ bytes k}{procedure}
-\proto{bytes-u16-set!}{ bytes k n endianness}{procedure}
-\proto{bytes-s16-set!}{ bytes k n endianness}{procedure}
-\proto{bytes-u16-native-set!}{ bytes k n}{procedure}
-\proto{bytes-s16-native-set!}{ bytes k n}{procedure}}
+\proto{bytevector-u16-ref}{ bytevector k endianness}{procedure}
+\proto{bytevector-s16-ref}{ bytevector k endianness}{procedure}
+\proto{bytevector-u16-native-ref}{ bytevector k}{procedure}
+\proto{bytevector-s16-native-ref}{ bytevector k}{procedure}
+\proto{bytevector-u16-set!}{ bytevector k n endianness}{procedure}
+\proto{bytevector-s16-set!}{ bytevector k n endianness}{procedure}
+\proto{bytevector-u16-native-set!}{ bytevector k n}{procedure}
+\proto{bytevector-s16-native-set!}{ bytevector k n}{procedure}}
    
-\domain{\var{K} must be a valid index of \var{bytes}; so must $\var{k}
+\domain{\var{K} must be a valid index of \var{bytevector}; so must $\var{k}
   + 1$.}
    
 These retrieve and set two-byte representations of numbers at indices
@@ -333,38 +332,38 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 
 \begin{scheme}
 (define b
-  (u8-list->bytes
+  (u8-list->bytevector
     '(255 255 255 255 255 255 255 255
       255 255 255 255 255 255 255 253)))
 
-(bytes-u16-ref b 14 (endianness little)) \lev 65023
-(bytes-s16-ref b 14 (endianness little)) \lev -513
-(bytes-u16-ref b 14 (endianness big)) \lev 65533
-(bytes-s16-ref b 14 (endianness big)) \lev -3
+(bytevector-u16-ref b 14 (endianness little)) \lev 65023
+(bytevector-s16-ref b 14 (endianness little)) \lev -513
+(bytevector-u16-ref b 14 (endianness big)) \lev 65533
+(bytevector-s16-ref b 14 (endianness big)) \lev -3
 
-(bytes-u16-set! b 0 12345 (endianness little))
-(bytes-u16-ref b 0 (endianness little)) \lev 12345
+(bytevector-u16-set! b 0 12345 (endianness little))
+(bytevector-u16-ref b 0 (endianness little)) \lev 12345
 
-(bytes-u16-native-set! b 0 12345)
-(bytes-u16-native-ref b 0) \ev 12345
+(bytevector-u16-native-set! b 0 12345)
+(bytevector-u16-native-ref b 0) \ev 12345
 
-(bytes-u16-ref b 0 (endianness little)) \lev \unspecified
+(bytevector-u16-ref b 0 (endianness little)) \lev \unspecified
 \end{scheme}
 \end{entry}
 
 \section{Operations on 32-bit integers}
 
 \begin{entry}{%
-\proto{bytes-u32-ref}{ bytes k endianness}{procedure}
-\proto{bytes-s32-ref}{ bytes k endianness}{procedure}
-\proto{bytes-u32-native-ref}{ bytes k}{procedure}
-\proto{bytes-s32-native-ref}{ bytes k}{procedure}
-\proto{bytes-u32-set!}{ bytes k n endianness}{procedure}
-\proto{bytes-s32-set!}{ bytes k n endianness}{procedure}
-\proto{bytes-u32-native-set!}{ bytes k n}{procedure}
-\proto{bytes-s32-native-set!}{ bytes k n}{procedure}}
+\proto{bytevector-u32-ref}{ bytevector k endianness}{procedure}
+\proto{bytevector-s32-ref}{ bytevector k endianness}{procedure}
+\proto{bytevector-u32-native-ref}{ bytevector k}{procedure}
+\proto{bytevector-s32-native-ref}{ bytevector k}{procedure}
+\proto{bytevector-u32-set!}{ bytevector k n endianness}{procedure}
+\proto{bytevector-s32-set!}{ bytevector k n endianness}{procedure}
+\proto{bytevector-u32-native-set!}{ bytevector k n}{procedure}
+\proto{bytevector-s32-native-set!}{ bytevector k n}{procedure}}
    
-\domain{$\{\var{k}, \ldots, \var{k}+ 3\}$ must be valid indices of \var{bytes}.}.
+\domain{$\{\var{k}, \ldots, \var{k}+ 3\}$ must be valid indices of \var{bytevector}.}.
    
 These retrieve and set four-byte representations of numbers at indices $\{\var{k},
 \ldots, \var{k}+ 3\}$, according to the endianness specified by \var{endianness}. The
@@ -378,28 +377,28 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 
 \begin{scheme}
 (define b
-  (u8-list->bytes
+  (u8-list->bytevector
     '(255 255 255 255 255 255 255 255
       255 255 255 255 255 255 255 253)))
 
-(bytes-u32-ref b 12 (endianness little)) \lev 4261412863
-(bytes-s32-ref b 12 (endianness little)) \lev -33554433
-(bytes-u32-ref b 12 (endianness big)) \lev 4294967293
-(bytes-s32-ref b 12 (endianness big)) \lev -3
+(bytevector-u32-ref b 12 (endianness little)) \lev 4261412863
+(bytevector-s32-ref b 12 (endianness little)) \lev -33554433
+(bytevector-u32-ref b 12 (endianness big)) \lev 4294967293
+(bytevector-s32-ref b 12 (endianness big)) \lev -3
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes-u64-ref}{ bytes k endianness}{procedure}
-\proto{bytes-s64-ref}{ bytes k endianness}{procedure}
-\proto{bytes-u64-native-ref}{ bytes k}{procedure}
-\proto{bytes-s64-native-ref}{ bytes k}{procedure}
-\proto{bytes-u64-set!}{ bytes k n endianness}{procedure}
-\proto{bytes-s64-set!}{ bytes k n endianness}{procedure}
-\proto{bytes-u64-native-set!}{ bytes k n}{procedure}
-\proto{bytes-s64-native-set!}{ bytes k n}{procedure}}
+\proto{bytevector-u64-ref}{ bytevector k endianness}{procedure}
+\proto{bytevector-s64-ref}{ bytevector k endianness}{procedure}
+\proto{bytevector-u64-native-ref}{ bytevector k}{procedure}
+\proto{bytevector-s64-native-ref}{ bytevector k}{procedure}
+\proto{bytevector-u64-set!}{ bytevector k n endianness}{procedure}
+\proto{bytevector-s64-set!}{ bytevector k n endianness}{procedure}
+\proto{bytevector-u64-native-set!}{ bytevector k n}{procedure}
+\proto{bytevector-s64-native-set!}{ bytevector k n}{procedure}}
  
-\domain{$\{\var{k}, \ldots, \var{k}+ 7\}$ must be valid indices of \var{bytes}.}
+\domain{$\{\var{k}, \ldots, \var{k}+ 7\}$ must be valid indices of \var{bytevector}.}
    
 These retrieve and set eight-byte representations of numbers at
 indices $\{\var{k}, \ldots, \var{k}+ 7\}$, according to the endianness
@@ -414,23 +413,23 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 
 \begin{scheme}
 (define b
-  (u8-list->bytes
+  (u8-list->bytevector
     '(255 255 255 255 255 255 255 255
       255 255 255 255 255 255 255 253)))
 
-(bytes-u64-ref b 8 (endianness little)) \lev 18302628885633695743
-(bytes-s64-ref b 8 (endianness little)) \lev -144115188075855873
-(bytes-u64-ref b 8 (endianness big)) \lev 18446744073709551613
-(bytes-s64-ref b 8 (endianness big)) \lev -3
+(bytevector-u64-ref b 8 (endianness little)) \lev 18302628885633695743
+(bytevector-s64-ref b 8 (endianness little)) \lev -144115188075855873
+(bytevector-u64-ref b 8 (endianness big)) \lev 18446744073709551613
+(bytevector-s64-ref b 8 (endianness big)) \lev -3
 \end{scheme}
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes-ieee-single-native-ref}{ bytes k}{procedure}
-\proto{bytes-ieee-single-ref}{ bytes k endianness}{procedure}}
+\proto{bytevector-ieee-single-native-ref}{ bytevector k}{procedure}
+\proto{bytevector-ieee-single-ref}{ bytevector k endianness}{procedure}}
 
 \domain{$\{\var{k}, \ldots, \var{k}+3\}$ must be valid indices of
-  \var{bytes}.  For {\cf bytes-ieee-single-native-ref}, \var{k} must
+  \var{bytevector}.  For {\cf bytevector-ieee-single-native-ref}, \var{k} must
   be a multiple of $4$.}
 
 These procedures return the inexact real that best represents the IEEE-754 single
@@ -441,11 +440,11 @@ precision number represented by the four bytes beginning at index
 \section{Operations on IEEE-754 numbers}
 
 \begin{entry}{%
-\proto{bytes-ieee-double-native-ref}{ bytes k}{procedure}
-\proto{bytes-ieee-double-ref}{ bytes k endianness}{procedure}}
+\proto{bytevector-ieee-double-native-ref}{ bytevector k}{procedure}
+\proto{bytevector-ieee-double-ref}{ bytevector k endianness}{procedure}}
 
 \domain{$\{\var{k}, \ldots, \var{k}+7\}$ must be valid indices of
-  \var{bytes}.  For {\cf bytes-ieee-double-native-ref}, \var{k} must
+  \var{bytevector}.  For {\cf bytevector-ieee-double-native-ref}, \var{k} must
   be a multiple of $8$.}
 
 These procedures return the inexact real that best represents the IEEE-754 single
@@ -454,28 +453,28 @@ precision number represented by the eight bytes beginning at index
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes-ieee-single-native-set!}{ bytes k x}{procedure}
-\proto{bytes-ieee-single-set!}{ bytes k x endianness}{procedure}}
+\proto{bytevector-ieee-single-native-set!}{ bytevector k x}{procedure}
+\proto{bytevector-ieee-single-set!}{ bytevector k x endianness}{procedure}}
 
 \domain{$\{\var{k}, \ldots, \var{k}+3\}$ must be valid indices of
-  \var{bytes}.  For {\cf bytes-ieee-single-native-set!}, \var{k} must
+  \var{bytevector}.  For {\cf bytevector-ieee-single-native-set!}, \var{k} must
   be a multiple of $4$.  \var{X} must be a real number.}
 
 These procedures store an IEEE-754 single precision representation of \var{x} into
-elements \var{k} through $\var{k}+3$ of \var{bytes}, and returns
+elements \var{k} through $\var{k}+3$ of \var{bytevector}, and returns
 \unspecifiedreturn.
 \end{entry}
 
 \begin{entry}{%
-\proto{bytes-ieee-double-native-set!}{ bytes k x}{procedure}
-\proto{bytes-ieee-double-set!}{ bytes k x endianness}{procedure}}
+\proto{bytevector-ieee-double-native-set!}{ bytevector k x}{procedure}
+\proto{bytevector-ieee-double-set!}{ bytevector k x endianness}{procedure}}
 
 \domain{$\{\var{k}, \ldots, \var{k}+7\}$ must be valid indices of
-  \var{bytes}.  For {\cf bytes-ieee-double-native-set!}, \var{k} must
+  \var{bytevector}.  For {\cf bytevector-ieee-double-native-set!}, \var{k} must
   be a multiple of $8$.}
 
 These procedures store an IEEE-754 double precision representation of \var{x} into
-elements \var{k} through $\var{k}+7$ of \var{bytes}, and returns
+elements \var{k} through $\var{k}+7$ of \var{bytevector}, and returns
 \unspecifiedreturn.
 \end{entry}
 

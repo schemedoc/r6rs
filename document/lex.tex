@@ -661,7 +661,7 @@ section~\ref{lexicalsyntaxsection}:
 \meta{simple datum} \: \meta{boolean} \| \meta{number}
 \>  \| \meta{character} \| \meta{string} \|  \meta{symbol}
 \meta{symbol} \: \meta{identifier}
-\meta{compound datum} \: \meta{list} \| \meta{vector}
+\meta{compound datum} \: \meta{list} \| \meta{vector} \| \meta{bytevector}
 \meta{list} \: (\arbno{\meta{datum}})
 \>    \| [\arbno{\meta{datum}}]
 \>    \| (\atleastone{\meta{datum}} .\ \meta{datum})
@@ -670,7 +670,7 @@ section~\ref{lexicalsyntaxsection}:
 \meta{abbreviation} \: \meta{abbrev prefix} \meta{datum}
 \meta{abbrev prefix} \: ' \| ` \| , \| ,@ \| \#' | \#` | \#, | \#,@
 \meta{vector} \: \#(\arbno{\meta{datum}})
-\meta{bytes} \: \#vu8(\arbno{\meta{u8}})
+\meta{bytevector} \: \#vu8(\arbno{\meta{u8}})
 \meta{u8} \: $\langle${\rm any \meta{number} denoting an exact}
  \>\>\quad\quad {\rm integer in $\{0, \ldots, 255\}$}$\rangle$%
 \end{grammar}
@@ -729,21 +729,21 @@ The general rule is that, if a dot is followed by an open parenthesis,
 the dot, the open parenthesis, and the matching closing parenthesis
 can be omitted in the external representation.
 
-\subsection{Bytes objects}
+\subsection{bytevectors}
 
-Bytes datums, denoting bytes objects (see
-library section~\ref{lib:byteschapter}), are written using the notation
+Bytevector datums, denoting bytevectors (see
+library section~\ref{lib:bytevectorschapter}), are written using the notation
 {\tt\#vu8(\hyper{u8} \dotsfoo)}, where the \hyper{u8}s represent the octets of
-the bytes object.  For example, a bytes object of length 3 containing the
+the bytevector.  For example, a bytevector of length 3 containing the
 octets 2, 24, and 123 can be written as follows:
 
 \begin{scheme}
 \#vu8(2 24 123)%
 \end{scheme}
 
-Note that this is the external representation of a bytes object,
+Note that this is the external representation of a bytevector,
 and is not an
-expression that evaluates to a bytes object.
+expression that evaluates to a bytevector.
 
 \subsection{Abbreviations}\unsection
 \label{quotesection}
