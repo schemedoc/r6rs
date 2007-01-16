@@ -25,8 +25,7 @@ Libraries address the following specific goals:
   each identifier is clear at compile time, and so that there is no
   ambiguity about whether a library needs to be executed for another
   library's compile time and/or run time.
-\item Namespace management, so that different library producers are
-  unlikely to define the same top-level name.
+\item Namespace management, to help prevent name conflicts.
 \end{itemize}
 
 It does not address the following:
@@ -192,24 +191,28 @@ bindings can be adjusted with the {\cf only}, {\cf except},
 {\cf prefix}, and {\cf rename} forms as described below.
 
 \begin{itemize}
-\item The {\cf only} form produces a subset of the bindings from another
+\item An {\cf only} form produces a subset of the bindings from another
 \hyper{import~set}, including only the listed
-\hyper{identifier}s; if any of the included \hyper{identifier}s is not in
-\hyper{import~set}, an exception is raised.
-\item The {\cf except} form produces a subset of the bindings from another
+\hyper{identifier}s.
+The included \hyper{identifier}s must be in
+the original \hyper{import~set}.
+\item An {\cf except} form produces a subset of the bindings from another
 \hyper{import~set}, including all but the listed
-\hyper{identifier}s; if any of the excluded \hyper{identifier}s is not in
-\hyper{import~set}, an exception is raised.
-\item The {\cf prefix} adds the \hyper{identifier} prefix to each
+\hyper{identifier}s.
+All of the excluded \hyper{identifier}s must be in
+the original \hyper{import~set}.
+\item A {\cf prefix} form adds the \hyper{identifier} prefix to each
 name from another \hyper{import~set}.
-\item The {\cf rename} form, for each pair of identifiers {\cf (\hyper{identifier}
-\hyper{identifier})}, removes a binding from the set from \hyper{import~set},
-and adds it back with a different name. 
-The first identifier is the original name, and the
-second identifier is the new name. 
-If the original name is not in \hyper{import~set}, or
-if the new name is already in \hyper{import~set}, an exception is raised.
+\item A {\cf rename} form, {\cf (rename (\hyper{oldid} \hyper{newid}) \ldots)},
+removes the bindings for {\cf \hyper{oldid} \ldots} to form an
+intermediate \hyper{import~set}, then adds the bindings back for the
+corresponding {\cf \hyper{newid} \ldots} to form the final
+\hyper{import~set}.
+Each \hyper{oldid} must be in the original \hyper{import~set},
+each \hyper{newid} must not be in the intermediate \hyper{import~set},
+and the \hyper{newid}s must be distinct.
 \end{itemize}
+It is a syntax violation if a constraint given above is not met.
 
 An \hyper{export~spec} names a set of imported and locally defined bindings to
 be exported, possibly with different
@@ -248,7 +251,7 @@ have the following form:
 \end{scheme}
 
 When base-library {\cf begin} forms occur in a library body prior to the
-first expression, they are spliced into the body; see section~\ref{begin}.
+first (non-{\cf{}begin}) expression, they are spliced into the body; see section~\ref{begin}.
 Some or all of the library body, including portions wrapped in {\cf begin}
 forms, may be specified by a syntactic abstraction
 (see section~\ref{macrosection}).
@@ -285,27 +288,27 @@ it produces.
 \label{importsareimmutablesection} 
 All explicitly exported variables are immutable in both the
 exporting and importing libraries. 
-An exception with condition type {\cf\&syntax} is thus raised if an
+It is thus a syntax violation if an
 explicitly exported variable appears on the left-hand side of a {\cf set!}
 expression, either in the exporting or importing libraries.
 All other variables defined within a library are mutable.
 
 All implicitly exported variables are also immutable in both the
 exporting and importing libraries.
-An exception with condition type {\cf\&syntax} is thus raised if a
+It is thus a syntax violation if a
 variable appears on the left-hand side of a {\cf set!}
 expression in any code produced by an exported macro outside of the
 library in which the variable is defined.
-An exception with condition type {\cf\&syntax} is also raised if a
+It is also a syntax violation if a
 reference to an assigned variable appears in any code produced by
 an exported macro outside of the library in which the variable is defined,
 where an assigned variable is one that appears on the left-hand
 side of a {\cf set!} expression in the exporting library.
 
 \begin{note}
-The asymmetry in the exception-raising requirements for attempts to assign
+The asymmetry in the prohibitions against assignments to
 explicitly and implicitly exported variables reflects the fact that the
-error can be determined for implicitly exported variables only when the
+violation can be determined for implicitly exported variables only when the
 importing library is expanded.
 \end{note}
 
@@ -330,24 +333,28 @@ needed for the latter's run time, too.
 
 \mainindex{phase}
 %
-A \emph{phase} is a time relative to a particular library that
-expressions are evaluated. Within a library, top-level expressions and
+A \emph{phase} is a time at which the expressions within a library are
+evaluated.
+Within a library body, top-level expressions and
 the right-hand sides of {\cf define} forms are evaluated at run time,
-that is, at phase $0$ for the enclosing library. The right-hand
-sides of {\cf define-syntax} forms are evaluated at expand time, which
-is phase $1$ for the enclosing library. When a {\cf let-syntax}
-expression appears as a phase $n$ expression, the right-hand sides of
-its bindings are evaluated as phase $n+1$ expressions.
+i.e., phase $0$, and the right-hand
+sides of {\cf define-syntax} forms are evaluated at expand time, i.e.,
+phase $1$.
+When {\cf define-syntax},
+{\cf let-syntax}, or {\cf letrec-syntax}
+forms appear within code evaluated at phase $n$, the right-hand sides
+are evaluated as phase $n+1$ expressions.
 
+These phases are relative to the phase in which the library itself is
+used.
 An \emph{instance} of a library corresponds to an evaluation of its
 definitions and expressions in a particular phase relative to another
-library. For example, if a top-level expression in a library refers to
-an export from another library, then it refers to the export from an
-instance of the latter library at phase $0$ (relative to the former
-library). But if evaluating the right-hand side of a {\cf
-  define-syntax} expression refers to the same export of the other
-library, then it it refers to the export from an instance of the
-latter library at phase $1$ (relative to the former library).
+library. For example, if a top-level expression in a library $L_1$ refers to
+an export from another library $L_0$, then it refers to the export from an
+instance of $L_0$ at phase $0$ (relative to the phase of $L_1$).
+But if a phase $1$ expression within $L_1$ refers to the same binding from
+$L_0$, then it refers to the export from an instance of $L_0$ at phase $1$
+(relative to the phase of $L_1$).
 
 \mainindex{level}\mainindex{import level} 
 %
@@ -602,7 +609,7 @@ the scope within which they are visible, and
   and a facility ({\cf syntax-case}; see
   library chapter~\ref{lib:syntaxcasechapter}) for creating transformers
   via a pattern language that permits the use of arbitrary
-  Scheme code,
+  Scheme code.
 \end{itemize}
 
 Keywords occupy the same name space as variables.
