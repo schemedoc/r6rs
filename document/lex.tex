@@ -42,7 +42,7 @@ A syntactic datum occurring in program text is often called a \defining{form}.
 
 Note that several syntactic datums may represent the same object, a
 so-called \defining{datum value}.
-For example, both``{\tt \#e28.000}'' and
+For example, both ``{\tt \#e28.000}'' and
 ``{\tt\#x1c}'' are syntactic datums representing the exact integer 28;
 The syntactic datums ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
   (13 .\ ()))}'' (and more)
@@ -62,9 +62,9 @@ section~\ref{identifiersection}) that is not {\cf r6rs}, as a syntax
 violation, and it may use specific {\cf \sharpsign{}!}-prefixed
 identifiers as flags indicating that subsequent input contains extensions
 to the standard lexical syntax. 
-(The comment syntax {\cf \sharpsign{}!r6rs} may be used to signify that
-the input which follows is written purely in the language described by
-this report; see section~\ref{whitespaceandcomments}.)
+The syntax {\cf \sharpsign{}!r6rs} may be used to signify that
+the input which follows is written purely with the lexical syntax described by
+this report.  It is otherwise treated as a comment; see section~\ref{whitespaceandcomments}.
 
 This chapter overviews and provides formal accounts of the lexical
 syntax and the read syntax.
@@ -308,11 +308,6 @@ Block comments may be indicated with properly nested {\tt
         (* n (fact (- n 1))))))%
 \end{scheme}
 
-The lexeme {\cf \sharpsign{}!r6rs} is also a comment.  When it occurs in
-program text, it signifies that the program text is written purely in the
-language described by this report (see
-section~\ref{librarysyntaxsection}).
-
 \begin{rationale}
   {\cf \sharpsign\verticalbar} \ldots {\cf \verticalbar\sharpsign}
   cannot be used to comment out an arbitrary datum or set of datums;
@@ -325,6 +320,11 @@ section~\ref{librarysyntaxsection}).
   single datum has been commented out, as opposed to a block or line
   of arbitrary text.
 \end{rationale}
+
+The lexeme {\cf \sharpsign{}!r6rs}, which signifies that the program text
+which follows is written purely with the lexical syntax described in this
+report, is also otherwise treated as a comment.
+
 \subsection{Identifiers}
 \label{identifiersection}
 

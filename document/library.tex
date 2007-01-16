@@ -86,7 +86,7 @@ multiple times, defined multiple times, or both defined and imported.
 No identifiers are visible within a library except for those explicitly
 imported into the library or defined within the library.
 
-A \hyper{library name} have the following form:
+A \hyper{library name} has the following form:
 
 \begin{scheme}
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version})%
@@ -99,10 +99,11 @@ where \hyper{version} is empty or has the following form:
 \end{scheme}
 
 Each \hyper{subversion} must be an exact nonnegative integer.
+An empty \hyper{version} is equivalent to {\cf ()}.
 
 Each \hyper{import~spec} specifies a set of bindings to be imported into
 the library, the levels at which they are to be available, and the local
-names by which they are to be known.  A \hyper{import spec} must
+names by which they are to be known.  An \hyper{import spec} must
 be one of the following:
 %
 \begin{scheme}
@@ -136,20 +137,21 @@ one of the following:
 \end{scheme}
 
 A \hyper{library~reference} identifies a library by its 
-name and optionally by its version.  It must have the following form:
+name and optionally by its version.  It has the following form:
 
 \begin{scheme}
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version~reference})%
 \end{scheme}
 
-A \hyper{version reference} must have one of the following forms:
+A \hyper{version reference} is empty or has the following form:
 
 \begin{scheme}
-\hyper{empty}
 (\hyper{subversion~reference} \ldots)%
 \end{scheme}
 
-A \hyper{subversion reference} must have one of the following forms:
+An empty \hyper{version reference} is equivalent to {\cf ()}.
+
+A \hyper{subversion reference} has one of the following forms:
 
 \begin{scheme}
 \hyper{subversion}
@@ -635,7 +637,7 @@ hygienic unless {\cf datum\coerce{}syntax}
 Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 
 \begin{scheme}
-(library stack
+(library (stack)
   (export make push! pop! empty!)
   (import (r6rs))
 
@@ -646,7 +648,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
                      v))
   (define (empty! s) (set-car! s '())))
 
-(library balloons
+(library (balloons)
   (export make push pop)
   (import (r6rs))
 
@@ -657,7 +659,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
                   (display (* (car b) (cdr b))) 
                   (newline)))
 
-(library party
+(library (party)
   ;; Total exports:
   ;; make, push, push!, make-party, pop!
   (export (rename (balloon:make make)
@@ -680,7 +682,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
     (balloon:pop (pop! p))))
 
 
-(library main
+(library (main)
   (export)
   (import (r6rs) (party))
 
@@ -720,7 +722,7 @@ Examples for macros and phases:
                (lambda () expr) 
              (lambda (id ...) body0 body ...)))]))))
 
-(library let-div
+(library (let-div)
   (export let-div)
   (import (r6rs)
           (my-helpers values-stuff)
