@@ -458,18 +458,20 @@ the following forms:
 The second form, which specifies an ``else clause'',
 may only appear as the last \hyper{clause}.
 Each \hyper{datum} is an external representation of some object.
-The datums denoted by the \hyper{datum}s must be distinct.
+The datums denoted by the \hyper{datum}s need not be distinct.
 
 \semantics
 A {\cf case} expression is evaluated as follows.  \hyper{Key} is
-evaluated and its result is compared in sequence against the datum denoted by
-each \hyper{datum}.  If the
+evaluated and its result is compared against the datums
+denoted by the \hyper{datum}s of each \hyper{clause} in turn, proceding
+in order from left to right through the set of clauses.  If the
 result of evaluating \hyper{key} is equivalent (in the sense of
-{\cf eqv?}; see section~\ref{eqv?}) to a datum, then the
-expressions in the corresponding \hyper{clause} are evaluated from left
+{\cf eqv?}; see section~\ref{eqv?}) to a datum of a \hyper{clause}, the
+corresponding \hyper{expression}s are evaluated from left
 to right and the results of the last expression in the \hyper{clause} are
-returned as the results of the {\cf case} expression.  If the result of
-evaluating \hyper{key} is different from every datum, then if
+returned as the results of the {\cf case} expression.  Otherwise, the
+comparison process continues.  If the result of
+evaluating \hyper{key} is different from every datum in each set, then if
 there is an else clause its expressions are evaluated and the
 results of the last are the results of the {\cf case} expression;
 otherwise the result of the {\cf case} expression is the unspecified value.
@@ -487,8 +489,8 @@ otherwise the result of the {\cf case} expression is the unspecified value.
   (else 'consonant))            \ev  consonant%
 \end{scheme}
 
-A sample definition of {\cf case} in terms of simpler forms is in
-appendix~\ref{derivedformsappendix}.
+% A sample definition of {\cf case} in terms of simpler forms is in
+% appendix~\ref{derivedformsappendix}.
 \end{entry}
 
 
