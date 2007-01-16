@@ -28,7 +28,7 @@ REPORT_TEX_FILES = r6rs.tex \
 	terminology.tex \
 
 LIB_TEX_FILES = r6rs-lib.tex \
-	bytes.tex \
+	bytevector.tex \
 	complib.tex \
 	convio.tex \
 	enum.tex \
