@@ -3,6 +3,7 @@ BIBTEX = bibtex
 MAKEINDEX = makeindex
 PDFLATEX = pdflatex
 SCHEME = scheme48 -a batch
+MZSCHEME = mzscheme
 
 report: thirdrun
 
@@ -65,7 +66,7 @@ r6rs-lib.ind : r6rs-lib.idx
 r6rs.idx r6rs.aux : $(COMMON_TEX_FILES) $(REPORT_TEX_FILES)
 	$(LATEX) r6rs
 
-r6rs.dvi : r6rs.bbl r6rs.ind
+r6rs.dvi : r6rs.bbl r6rs.ind r6-fig-grammar-parti.tex
 	$(LATEX) r6rs
 
 r6rs-lib.idx r6rs-lib.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
@@ -74,7 +75,11 @@ r6rs-lib.idx r6rs-lib.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
 r6rs-lib.dvi : r6rs-lib.bbl r6rs-lib.ind
 	$(LATEX) r6rs-lib
 
+r6-fig-grammar-parti.tex: tex-translate.ss ../model/r6rs.scm
+	$(MZSCHEME) -qu tex-translate.ss
+
 firstrun: $(COMMON_TEX_FILES) $(REPORT_TEX_FILES) $(LIB_TEX_FILES)
+	$(MZSCHEME) -qu tex-translate.ss
 	$(LATEX) r6rs
 	$(LATEX) r6rs-lib
 	touch firstrun
@@ -104,3 +109,4 @@ clean:
 reallyclean: clean
 	-rm -f r6rs.dvi r6rs-lib.dvi
 	-rm -f r6rs.pdf r6rs-lib.pdf
+	-rm -f r6rs-fig-*.tex

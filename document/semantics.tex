@@ -1,0 +1,712 @@
+%!TEX root = paper.tex
+%\section{Preliminaries}
+%\label{sec:prelim}
+
+We assume the reader has a basic familiarity with c ontext-sensitive
+reduction semantics. Readers unfamiliar with this system may wish to
+consult Felleisen and Flatt's monograph~\cite{ff:monograph} or Wright
+and Felleisen~\cite{wf:type-soundness} for a thorough introduction,
+including the relevant technical background, or an introduction to PLT
+Redex~\cite{mfff:plt-redex} for a somewhat lighter one.
+
+As a rough guide, we define the operational semantics of a language
+via a relation on program terms, where the relation corresponds to a
+single step of an abstract machine. The relation is defined using
+evaluation contexts, namely terms with a distinguished place in them,
+called \emph{holes}\index{hole}, where the next step of evaluation
+occurs. We say that a term $e$ decomposes into an evaluation
+context $E$ and another term $e'$ if $e$ is the
+same as $E$ but with the hole replaced by $e'$. We write
+$E[ep]$ to indicate the term obtained by replacing the hole in
+$E$ with $e'$.
+
+For example, assuming that we have defined a grammar containing
+non-terminals for evaluation contexts ($E$), expressions
+($e$), variables ($x$), and values ($v$), we
+would write:
+%
+\begin{displaymath}
+  \begin{array}{l}
+    E_1[((\sy{lambda}~(x_1 \cdots)~e_1)~v_1~\cdots)] \rightarrow
+    \\
+    E_1[{ x_1 \cdots \mapsto v_1 \cdots } e_1] ~~~~~ (\#x_1 = \#v_1)
+  \end{array}
+\end{displaymath}
+%
+to define the $\beta_v$ rewriting rule (as a part of the $\rightarrow$
+single step relation). We use the names of the non-terminals (possibly
+with subscripts) in a rewriting rule to restrict the application of
+the rule, so it applies only when some term produced by that grammar
+appears in the corresponding position in the term. If the same
+non-terminal with an identical subscript appears multiple times, the
+rule only applies when the corresponding terms are structurally
+identical (nonterminals without subscripts are not constrained to
+match each other). Thus, the occurrence of $E_1$ on both the
+left-hand and right-hand side of the rule above means that the context
+of the application expression does not change when using this rule.
+The ellipses are a form of Kleene star, meaning that zero or more
+occurrences of terms matching the pattern proceeding the ellipsis may
+appear in place of the the ellipsis and the pattern preceding it. We
+use the notation $\{ x_1 \cdots \mapsto v_1 \cdots \} e_1$ for
+capture-avoiding substitution; in this case it means that each
+$x_1$ is replaced with the corresponding $v_1$ in
+$e_1$. Finally, we write side-conditions in parenthesis beside
+a rule; the side-condition in the above rule indicates that the number
+of $x_1$s must be the same as the number of $v_1$s.
+Sometimes we use equality in the side-conditions; when we do it merely
+means simple term equality, {\it i.e.} the two terms must have the
+same syntactic shape.
+
+Making the evaluation context $E$ explicit in the rule allows
+us to define relations that manipulate their context. As a simple
+example, we can add another rule that signals an error when a
+procedure is applied to the wrong number of arguments by discarding
+the evaluation context on the right-hand side of a rule:
+%
+\begin{displaymath}
+  \begin{array}{l}
+    E[((\sy{lambda}~(x_1 \cdots)~e)~v_1~\cdots)] \rightarrow
+    \\
+    \textrm{\textbf{error:} wrong argument count} ~~~~~ (\#x_1 \neq \#v_1)
+  \end{array}
+\end{displaymath}
+%
+Later we take advantage of the explicit evaluation context in more
+sophisticated ways.
+
+To help understand the semantics and how it behaves, we have
+implemented it in PLT Redex. The implementation is available at the
+report's website: \url{http://www.r6rs.org/}. All of the reduction
+rules and the metafunctions shown in the figures in this semantics
+were generated automatically from the source code.
+
+\section{Grammar}
+
+\beginfig
+\input{r6-fig-grammar-parti.tex}
+\caption{Program Grammar}\label{fig:grammar}
+\endfig
+
+\beginfig
+\input{r6-fig-grammar-partii.tex}
+\caption{Evaluation Context Grammar}\label{fig:ec-grammar}
+\endfig
+
+Figure~\ref{fig:grammar} shows the grammar for the subset of the
+Report this semantics models. Non-terminals are written in
+\textit{italics} or in a calligraphic font ($\mathcal{P}$) and
+$\mathcal{A}$), syntactic keywords are written in \textbf{boldface} and
+other primitives are written in a \textsf{sans-serif} font.
+
+The $\mathcal{P}$ non-terminal represents possible program states. The
+first alternative is a program with a store and a series of
+definitions. The second alternative is an error, and the final one is
+used to indicate a place where the model does not completely specify
+the behavior of the primitives it models. The $\mathcal{A}$ non-terminal
+represents a final result of a program. It is just like $\mathcal{P}$
+except that all of the definitions have been evaluated and the
+value(s) of the last one is retained.
+
+The $\mathit{sf}$ non-terminal generates individual elements of the
+store. The store holds all of the mutable state of a program. It is
+explained in more detail along with the rules that manipulate it.
+
+The $\mathit{ds}$ non-terminal generates definitions. Each definition
+either binds variables with \sy{define}, is a sequence of
+definitions wrapped in \beginF{}, or is an expression.  Rather
+than synthesize the distinction between Scheme's two \sy{begin}
+forms from the context, the \textbf{F} superscript on the
+\sy{begin} indicates that this is the begin whose arguments are
+expected to be forms, not expressions.
+
+Expressions include quoted data, \sy{begin} expressions, \sy{begin0}
+expressions%
+\footnote{ \sy{begin0} is not part of the standard, but we include it
+  to make the rules for \va{dynamic-wind} easier to read. Although
+  we model it directly, it can be defined in terms of other forms we
+  model here that do come from the standard:
+\begin{displaymath}
+  \begin{array}{rcl}
+    (\sy{begin0}~e_1~e_2~\cdots) &=&
+    \begin{array}{l}
+      (\va{call-with-values}\\
+      ~(\sy{lambda}~()~e_1)\\
+      ~(\sy{lambda}~(\sy{dot}~x)\\
+      ~~e_2 \cdots\\
+      ~~(\va{apply}~\va{values}~x)))
+    \end{array}
+  \end{array}
+\end{displaymath}
+}, application expressions, \sy{if} expressions, \sy{set!}
+expressions, \sy{handlers} expressions (used to model exceptions),
+variables, non-procedure values (\nt{nonproc}), primitive
+procedures (\nt{proc}), \sy{dw} expressions (used to model
+\va{dynamic-wind}), continuations (written with \sy{throw}),
+and lambda expressions. The \sy{dot} is used instead of a period
+for procedures that accept an arbitrary number of arguments, in order
+to avoid meta-circular confusion in our PLT Redex model. Quoted
+expressions are either sequences, symbols, or self-quoting values
+(numbers and the booleans \semtrue{} and \semfalse{}).
+
+\beginfig
+\begin{center}
+\input{r6-fig-Quote.tex}
+
+\input{r6-fig-Qtoc.tex}
+\end{center}
+\caption{Quote}\label{fig:quote}
+\endfig
+
+The $p$ non-terminal represents program that have no quoted
+data. Most of the reduction rules rewrite $p$ to $p$,
+rather than $\mathcal{P}$ to $\mathcal{P}$, since quoted data is first
+rewritten into calls to the list construction functions before
+ordinary evaluation proceeds. Much like \nt{ds}, $d$
+represents definitions and like \nt{es}, $e$ represents
+expressions.
+
+The values ($v$) are divided into five categories:
+%
+\begin{itemize}
+\item the unspecified value, written $(\va{unspecified})$,
+\item Non-procedures (\nt{nonproc}) include pair pointers
+  (\va{pp}), \va{null}, symbols, self-quoting values
+  (\nt{sqv}), and conditions. The self-quoting values are numbers,
+  and the booleans \semtrue{} and \semfalse{}. Conditions represent
+  the report's condition values, but here just contain a message and
+  are otherwise inert.
+\item User procedure (\nt{uproc}) include multi-arity
+  \sy{lambda} expressions and lambda expressions with dotted
+  argument lists,
+\item Primitive procedures (\nt{pproc}) include arithmetic procedures
+  (\nt{aproc}): \va{+}, \va{-}, \va{/}, and \va{*}, procedures of one
+  argument (\nt{proc1}): \va{null?}, \va{pair?}, \va{car}, \va{cdr},
+  \va{call/cc}, \va{procedure?}, and \va{condition?}, procedures of
+  two arguments: \va{cons}, \va{set-car!}, \va{set-cdr!}, \va{eqv?},
+  and \va{call-with-values}, as well as \va{list}, \va{dynamic-wind},
+  \va{apply}, \va{values}, and \va{unspecified}, the zero-arity
+  procedure that produces the unspecified value.
+\item Finally, continuations are represented as \sy{throw} expressions
+  whose body consists of the context where the continuation was
+  grabbed.
+\end{itemize}
+%
+The final set of non-terminals in figure~\ref{fig:grammar}, \nt{sym},
+$x$, \nt{pp}, and $n$ represent symbols, variables, pair pointers, and
+numbers respectively. They are assumed to all be disjoint.
+Additionally, the variables $x$ are assumed not to include any
+keywords, so any program variables whose names coincide with keywords
+must be renamed before the semantics can give the meaning of a
+program.
+
+The set of non-terminals for evaluation contexts are shown in
+figure~\ref{fig:ec-grammar}. The $P$ non-terminal controls where
+evaluation happens in a program that does not contain any quoted data.
+In particular, it allows evaluation in the first definition or
+expression in the sequence of expressions past the store. The $E$ and
+$F$ evaluation contexts are for expressions.  They are factored in
+that manner so that the \nt{PG}, $G$, and $H$ evaluation contexts can
+re-use $F$ and have fine-grained control over the context to support
+exceptions and \va{dynamic-wind}. The starred and circled variants,
+\Estar{}, \Eo, \Fstar, and \Fo{} dictate where a single value is
+promoted to multiple values and where multiple values are demoted to a
+single value. Finally, \nt{SD} and $S$ are the contexts where quoted
+expressions can be simplified. The precise use of the evaluation
+contexts are explained along with the relevant rules.
+
+\section{Quote}
+
+The first reduction rule that applies to any program is the
+\rulename{6qcons} that replaces a quoted expression with a reference
+to a defined variable, and introduces a new definition. This rule
+applies before any other because of the contexts in which it, and all
+of the other rules, apply. In particular, this rule applies in an
+\nt{SD} context. Figure~\ref{fig:ec-grammar} shows that the
+\nt{SD} and $S$ contexts allow this reduction to apply in
+any subexpression of a $d$ or $e$, as long as all of the
+subexpressions to the left have no quoted expressions in them,
+although expressions to the right may have quoted expressions.
+Accordingly, this rule applies once for each quoted expression in the
+program, moving them to definitions at the beginning of the program.
+The rest of the rules apply in contexts that do not contain any quoted
+expressions, ensuring that \rulename{6qcons} converts all quoted data
+into lists before those rules apply.
+
+\section{Multiple Values}
+
+\beginfig
+\begin{center}
+\input{r6-fig-Multiple--values--and--call-with-values.tex}
+\end{center}
+\caption{Multiple Values and Call-with-values}\label{fig:multiple-values-and-call-with-values}
+\endfig
+
+The basic strategy for multiple values is to add a rule that demotes
+$(\va{values}~v)$ to $v$ and another rule that promotes
+$v$ to $(\va{values}~v)$. If we allowed these rules to apply
+in an arbitrary evaluation context, however, we would get infinite
+reduction sequences of endless alternation between promotion and
+demotion. So, the semantics allows demotion only in a context
+expecting a single value and allows promotion only in a context
+expecting multiple values. We obtain this behavior with a small
+extension to the Felleisen-Hieb framework (also present in the
+operational model for R$^5$RS~\cite{mf:op-r5rs} and work on
+interoperability~\cite{mf:interop}). We extend the notation so that
+holes have names (written with a subscript), and the context-matching
+syntax may also demand a hole of a particular name (also written with
+a subscript, for instance $E[e]_{\star}$).  The extension
+allows us to give different names to the holes in which multiple
+values are expected and those in which single values are expected, and
+structure the grammar of contexts accordingly.
+
+To exploit this extension, we use three kinds of holes in the
+evaluation context grammar in figure~\ref{fig:ec-grammar}. The
+ordinary hole \hole{} appears where the usual kinds of
+evaluation can occur. The hole \holes{} appears in contexts that
+allows multiple values and the hole \holeone{} appears in
+contexts that expect a single value. Accordingly, the rules
+\rulename{6promote} only applies in \holes{} contexts, and the
+rule \rulename{6demote} only applies in \holeone{} contexts.
+
+To see how the evaluation contexts are organized to ensure that
+promotion and demotion occur in the right places, consider the $F$,
+\Fstar{} and \Fo{} evaluation contexts. The \Fstar{} and \Fo{}
+evaluation contexts are just the same as $F$, except that they allow
+promotion to multiple values and demotion to a single value,
+respectively. So, the $F$ evaluation context, rather than being
+defined in terms of itself, exploits \Fstar{} and \Fo{} to dictate
+where promotion and demotion can occur. For example, $F$ can be
+$(\sy{if}~\Fo{}~e~e)$ meaning that demotion from $(\va{values}~v)$ to
+$v$ can occur in the first argument to an \sy{if} expression.
+Similarly, $F$ can be $(\sy{begin}~\Fstar{}~e~e~\cdots)$ meaning that
+$v$ can be promoted to $(\va{values}~v)$ in the first argument to a
+\sy{begin}.
+
+In general, the promotion and demotion rules simplify the definitions
+of the other rules. For instance, the rule for \sy{if} does not
+need to consider multiple values in its first subexpression.
+Similarly, the rule for \sy{begin} does not need to consider the
+case of a single value as its first subexpression.
+
+The other three rules in
+figure~\ref{fig:multiple-values-and-call-with-values} handle
+\va{call-with-values}. The evaluation contexts for
+\va{call-with-values} (in the $F$ non-terminal) allow
+evaluation in the body of a thunk that has been passed as the first
+argument to \va{call-with-values}, as long as the second argument
+has been reduced to a value. Once evaluation inside that thunk
+completes, it will produce multiple values (since it is an \Fstar{}
+position), and the entire \va{call-with-values} expression reduces
+to an application of its second argument to those values, via the rule
+\rulename{6cwvd}. If the thunk passed to \va{call-with-values} has
+multiple body expressions, the rule \rulename{6cwvc} drops the first
+one, allowing evaluation to continue with the second. Finally, in the
+case that the first argument to \va{call-with-values} is a value,
+but is not of the form $(\sy{lambda}~()~e)$, the rule
+\rulename{6cwvw} wraps it in a thunk to trigger evaluation.
+
+\section{Exceptions}\label{sec:exceptions}
+
+\beginfig
+\begin{center}
+\input{r6-fig-Exceptions}
+\end{center}
+\caption{Exceptions}\label{fig:exceptions}
+\endfig
+
+\beginfig
+\begin{center}
+\begin{minipage}{0.45\textwidth}
+\input{r6-fig-Arity-zero_.tex}
+\end{minipage}
+~
+\begin{minipage}{0.45\textwidth}
+\input{r6-fig-Arity-one_.tex}
+\end{minipage}
+\end{center}
+\caption{Arity Testing Functions}\label{fig:arity}
+\endfig
+
+The workhorse for the exception system are $(\sy{handlers}~v~\cdots{}
+e)$ expressions and the $G$ and \nt{PG} evaluation contexts (shown in
+figure~\ref{fig:ec-grammar}). The \sy{handlers} expression records the
+active exception handlers ($v \cdots$) in some expression ($e$). The
+intention is that only the nearest enclosing \sy{handlers} expressions
+is relevant to raised exceptions, and the $G$ and \nt{PG} evaluation
+contexts help achieve that goal. They are just like their counterparts
+$P$ and $E$, except that \sy{handlers} expressions cannot occur on the
+path to the hole, and the exception system rules take advantage of
+that context to find the closest enclosing handler.
+
+To see how the contexts work together with \sy{handler}
+expressions, consider the left-hand side of the \rulename{6xuhee}
+rule. It matches expressions that have a call to \va{raise} or
+\va{raise-continuable} (the non-terminal \nt{raise*} matches
+both exception-raising procedures) expression in a \nt{PG}
+evaluation context. Since the \nt{PG} context does not contain any
+\sy{handlers} expressions, this exception cannot be caught, so
+this expression reduces to a final state indicating the uncaught
+exception. The rule \rulename{6xuneh} also signals an uncaught
+exception, but it covers the case where a \sy{handlers} expression
+has exhausted all of the handlers available to it. The rule applies to
+expressions that have a \sy{handlers} expression (with no
+exception handlers) in an arbitrary evaluation context where a call to
+one of the exception-raising functions is nested in the
+\sy{handlers} expression. The use of the $G$ evaluation
+context ensures that there are no other \sy{handler} expressions
+between this one and the raise.
+
+The next two rules handle calls to \va{with-exception-handler}.
+The \rulename{6xweh1} rule applies when there are no \sy{handler}
+expressions. It constructs a new one and applies $v_2$ as a
+thunk in the \sy{handler} body. If there already is a handler
+expression, the \rulename{6xwehn} applies. It collects the current
+handlers and adds the new one into a new \sy{handlers} expression
+and, as with the previous rule, invokes the second argument to
+\va{with-exception-handlers}.
+
+The next two rules cover exceptions that are raised in the context of
+a \sy{handlers} expression. If a continuable exception is raised,
+\rulename{6xraisec} applies. It takes the most recently installer
+handler from the nearest enclosing \sy{handlers} expression and
+applies it to the argument to \va{raise-continuable}, but in a
+context where the exception handlers do not include that latest
+handler. The \rulename{6xraise} rule behaves similarly, except it
+raises a new exception if the handler returns. The new exception is
+created with the \sy{condition} special form.
+
+The \sy{condition} special form is a stand-in for the Report's
+conditions. It does not evaluate its argument (note its absence from
+the $E$ grammar in figure~\ref{fig:ec-grammar}). That argument
+is just a literal string describing the context in which the exception
+was raised. The only operation on conditions is \va{condition?},
+whose semantics are given by the two rules \rulename{6ct} and
+\rulename{6cf}.
+
+Finally, the rule \rulename{6xdone} drops a \sy{handlers} expression
+when its body is fully evaluated, and the rule \rulename{6weherr}
+raises an exception when \va{with-exception-handler} is supplied with
+incorrect arguments.  The metafunctions in the side-condition
+guarantee that this rule only applies when the arguments are not
+suitable functions. Their definitions are given in
+figure~\ref{fig:arity}.
+
+\section{Arithmetic \& Basic Forms}
+
+\beginfig
+\begin{center}
+\input{r6-fig-Arithmetic.tex}
+\end{center}
+\caption{Arithmetic}\label{fig:arithmetic}
+\endfig
+
+\beginfig
+\begin{center}
+\input{r6-fig-Basic--syntactic--forms.tex}
+\end{center}
+\caption{Basic Syntactic Forms}\label{fig:basic-syntactic-forms}
+\endfig
+
+This model does not include the Report's arithmetic, but does include
+an idealized form in order to make experimentation with other features
+simpler. Figure~\ref{fig:arithmetic} shows the reduction rules for the
+primitive procedures that implement addition, subtraction,
+multiplication, and division. They defer to their mathematical
+analogues. In addition, when the subtraction or divison operator are
+applied to no arguments, or when division receives a zero as a
+divisor, or when any of the arithmetic operations receive a
+non-number, an exception is raised.
+
+Figure~\ref{fig:basic-syntactic-forms} shows the rules for
+\sy{if}, \sy{begin}, and \sy{begin0}. The relevant
+evaluation contexts are given by the $F$ non-terminal.
+
+The evaluation contexts for \sy{if} only allow evaluation in its
+first argument. Once that is a value, the rules for \sy{if} reduce
+an \sy{if} expression to its first argument if the test is not
+\semfalse{}, and to its third subexpression (or to the value
+\va{unspecified} if there are only two subexpressions).
+
+The \sy{begin} evaluation contexts allow evaluation in the first
+subexpression of a begin, but only if there are two or more
+subexpressions. In that case, once the first expression has been fully
+simplified, the reduction rules drop its value. If there is only a
+single subexpression, the \sy{begin} itself is dropped.
+
+Like the \sy{begin} evaluation contexts, the \sy{begin0}
+evaluation contexts allow evaluation of the first argument of a
+\sy{begin0} expression when there are two or more subexpressions.
+The \sy{begin0} evaluation contexts also allow evaluation in the
+second argument of a \sy{begin0} expression, as long as the first
+argument has been fully simplified. The \rulename{6begin0n} rule for
+\sy{begin0} then drops a fully simplified second argument.
+Eventually, there is only a single expression in the \sy{begin0},
+at which point the \rulename{begin01} rule fires, and removes the
+\sy{begin0} expression.
+
+\section{Pairs \& Eqv}
+
+\beginfig
+\begin{center}
+\input{r6-fig-Cons.tex}
+\end{center}
+\caption{Lists}\label{fig:cons-cells}
+\endfig
+
+\beginfig
+\begin{center}
+\input{r6-fig-Cons-cell--mutation.tex}
+\end{center}
+\caption{Cons Cell Mutation}\label{fig:cons-cell-mutation}
+\endfig
+
+The rules in figure~\ref{fig:cons-cells} handle the pure subset of
+lists (although they do use the store, to pave the way for mutation).
+The first two rules handle \va{list} by reducing it to a
+succession of calls to \va{cons}, followed by \va{null}.
+
+The next rule, \rulename{6cons}, allocates a new \va{cons} cell.
+It moves $(\va{cons}~v_1~v_2)$ into the store, bound to a fresh
+identifier \nt{pp}, for pair pointer. The rules \rulename{6car}
+and \rulename{6cdr} extract the components of a pair from the store
+when presented with a pair pointer.
+
+The next four rules handle the \va{null?} predicate and the
+\va{pair?} predicate, and the final two rules raise exceptions
+when \va{car} or \va{cdr} receive non pairs.
+
+\section{Procedures \& Application}
+
+\beginfig
+\begin{center}
+\input{r6-fig-Procedure--application.tex}
+\end{center}
+\caption{Procedures \& Application}\label{fig:procedure-application}
+\endfig
+
+\beginfig
+\begin{center}
+\input{r6-fig-Apply.tex}
+\end{center}
+\caption{Apply}\label{fig:apply}
+\endfig
+
+\beginfig
+\begin{center}
+\input{r6-fig-Var-set!d_.tex}
+\end{center}
+\caption{Variable Assignment Metafunction}\label{fig:varsetd}
+\endfig
+
+In evaluating a procedure call, the report deliberately leaves
+unspecified the order in which arguments are evaluated. To model that,
+we use a reduction system with non-unique decomposition to model the
+choice of which argument to evaluate. The intention is that a single
+term decomposes into multiple different combinations of an evaluation
+context and a reducible expression and that each choice corresponds to
+a different order of evaluation.
+
+To capture unspecified evaluation order but allow only evaluation that
+is consistent with some sequential ordering of the evaluation of an
+application's subexpressions, we use non-deterministic choice to pick
+a subexpression to reduce only when we have not already committed to
+reducing some other subexpression. To achieve that effect, we limit
+the evaluation of application expressions to only those that have a
+single expression that isn't fully reduced, as shown in the
+non-terminal $F$, in figure~\ref{fig:ec-grammar}. To evaluate
+application expressions that have more than two arguments to evaluate,
+the rule \rulename{6mark} picks on of the subexpressions of an
+application that is not fully simplified and lifts it out in its own
+application, allowing it to be evaluated. Once one of the lifted
+expressions is evaluated, the \rulename{6appN} substitutes its value
+back into the original application.
+
+The \rulename{6appN} rule also handles other applications whose
+arguments are finished by substituting the first actual parameter for
+the first formal parameter in the expression. Its side-condition uses
+the function in figure~\ref{fig:varsetd} to ensure that there are no
+\sy{set!} expressions with the parameter $x_1$ as a target.
+If there is such an assignment, the \rulename{6appN!} rule applies.
+Instead of directly substituting the actual parameter for the formal
+parameter, it creates a new location in the store, initially bound the
+actual parameter, and substitutes a variable standing for that
+location in place of the formal parameter. The store, then, handles
+any eventual assignment to the parameter. Once all of the parameters
+have been substituted away, the rule \rulename{6app0} applies and
+evaluation of the body of the procedure begins.
+
+The next two rules handle parameters with dotted argument lists. The
+rule \rulename{6$\mu$app} turns a well-formed application of a
+parameter with a dotted argument list into an application of an
+ordinary procedure by constructing a list of the extra arguments. The
+\rulename{6$\mu$arity} rule raises an exception when such a procedure
+is applied to too few arguments.
+
+The next three rules \rulename{6proct}, \rulename{6procf}, and
+\rulename{6procu} handle applications of \va{procedure?}, and the
+remaining rules cover applications of non-procedures and other arity
+errors.
+
+The rules in figure~\ref{fig:apply} cover \va{apply}
+rule, \rulename{6applyf} covers the case where the last argument to
+\va{apply} is the empty list, and simply reduce by erasing the
+empty list and the \va{apply}. The second rule, \rulename{6applyc}
+covers the case where \va{apply}'s final argument is a pair. It
+reduces by extracting the components of the pair from the store and
+putting them into the application of \va{apply}. Repeated
+application of this rule thus extracts all of the list elements passed
+to \va{apply} out of the store. The remaining four rules cover the
+various errors that can occur when using \va{apply}: applying a
+non-procedure, passing a non-list as the last argument, and supplying
+too few arguments to \va{apply}.
+
+\section{Call/cc and Dynamic Wind}\label{sec:callcc}
+
+\beginfig
+\begin{center}
+\input{r6-fig-Call-cc--and--dynamic-wind.tex} \\
+\input{r6-fig-TrimpoStpRe.tex}
+\end{center}
+\caption{Call/cc and Dynamic Wind}\label{fig:call-cc-and-dynamic-wind}
+\endfig
+
+The specification of \va{dynamic-wind} uses $(\sy{dw}~x~e~e~e)$
+expressions to record which dynamic-wind middle thunks are active at
+each point in the computation. Its first argument is an identifier
+that is globally unique and serves to identify invocations of
+\va{dynamic-wind}, in order to avoid exiting and re-entering the
+same dynamic context during a continuation switch. The second, third,
+and fourth arguments are calls to some pre-thunk, middle thunk, and
+post thunks from a call to \va{dynamic-wind}. Evaluation only
+occurs in the middle expression; the \sy{dw} expression only
+serves to record which pre- and post- thunks need to be run during a
+continuation switch. Accordingly, the reduction rule for an
+application of \va{dynamic-wind} reduces to a call to the
+pre-thunk, a \sy{dw} expression and a call to the post-thunk, as
+shown in rule \rulename{6wind} in
+figure~\ref{fig:call-cc-and-dynamic-wind}. The next two rules cover
+abuses of the \va{dynamic-wind} procedure: calling it with
+non-thunks, and calling it with the wrong number of arguments. The
+\rulename{6dwdone} rule erases a \sy{dw} expression when its second
+argument has finished evaluating.
+
+The next two rules cover \va{call/cc}. The rule
+\rulename{6call/cc} creates a new continuation. It takes the context
+of the \va{call/cc} expression and packages it up into a
+\sy{throw} expression, representing the continuation. The
+\sy{throw} expression uses the fresh variable $x$ to record
+where the application of \va{call/cc} occurred in the context for
+use in the \rulename{6throw} rule when the continuation is applied.
+That rule takes the arguments of the continuation, wraps them with a
+call to \va{values}, and puts them back into the place where the
+original call to \va{call/cc} occurred, replacing the current
+context with the context returned by the $\mathcal{T}$ metafunction.
+
+The $\mathcal{T}$ metafunction accepts two $D$ contexts and
+builds a context that matches its second argument, the destination
+context, except that additional calls to the pre- and post- thunks
+from \sy{dw} expressions in the context have been added. The first
+three cases in the function just simplify both the arguments so that
+they are expression contexts. If the destination context is a
+definition, it preserves the definition and otherwise it abandons it.
+
+The fourth clause of the $\mathcal{T}$ metafunction exploits the
+$H$ context, a context that contains everything except
+\sy{dw} expressions. It ensures that shared parts of the
+\va{dynamic-wind} context are ignored, recurring deeper into the
+two expression contexts as long as the first \sy{dw} expression in
+each have matching identifiers ($x_1$). The final rule is a
+catchall; it only applies when all the others fail and thus applies
+either when there are no \sy{dw}s in the context, or when the
+\sy{dw} expressions do not match. It calls the two other
+metafunctions defined in figure~\ref{fig:call-cc-and-dynamic-wind} and
+puts their results together into a \sy{begin} expression.
+
+The $\mathcal{S}$ metafunction extracts all of the post thunks from
+its argument and the $\mathcal{R}$ metafunction extracts all of the pre
+thunks from its argument. They each construct new contexts and exploit
+$H$ to work through their arguments, one \sy{dw} at a time.
+In each case, the metafunctions are careful to keep the right
+\sy{dw} context around each of the thunks in case a continuation
+jump occurs during one of their evaluations. In the case of
+$\mathcal{S}$, all of the context except the \sy{dw}s are
+discarded, since that was the context where the call to the
+continuation occured. In contrast, the $\mathcal{R}$ metafunction
+receives the destination context, and thus keeps the intermediate
+parts of the context in its result.
+
+\section{Library Top Level}
+
+\beginfig
+\begin{center}
+\input{r6-fig-Top--level--and--Variables.tex}
+\end{center}
+\caption{Library Top Level}\label{fig:top-level-and-variables}
+\endfig
+
+The sequence of definitions in the body of a $p$ models the
+body of a library that does not export anything and imports the
+primitives described by the semantics. The grammar for $p$ does
+not preclude alternating definitions and expressions (and indeed, the
+semantics assigns a meaning to such programs), but the informal
+semantics does, so we consider such programs to be malformed. They are
+only modeled here to avoid the complexity of enforcing the requirement
+that all definitions appear before any expression. Similarly, the
+semantics covers multiple definitions of the same identifier, but this
+also would be a syntax error, according to the informal semantics. In
+this case, however, such expressions are modeled because they can also
+arise via a continuation throw and via programs that \sy{set!}
+like this:
+%
+\begin{displaymath}
+  \begin{array}{l}
+    (\sy{define}~x~(\sy{set!}~y~1))\\
+    (\sy{define}~y~2)
+  \end{array}
+\end{displaymath}
+%
+So, the must be covered to show what happens in those situations. The
+only other departure from standard top-level library syntax is the
+\beginF{} expressions. The super-script \textbf{F} serves to
+distinguish a \sy{begin} expression whose subexpressions can be
+forms from one whose subexpressions are ordinary expressions.
+
+The first rule in figure~\ref{fig:top-level-and-variables} covers the
+definition of a variable, and merely moves it into the store. The
+second rule covers re-definition of a variable, and it updates the
+store with the new value. The third rule drops a fully evaluated
+expression, unless it is the last one and the fourth rule adds a
+single expression if there are none, in order to guarantee that there
+is always some result to a program.
+
+The \rulename{6beginF} rule splices \beginF{} expressions into
+their context. The \rulename{6var} rule extracts a value from the
+store and \rulename{6set} updates a value in the store, returning the
+unspecified value. The rule \rulename{6setf} handles an assignment to
+a variable whose definition has not yet been evaluated. The next two
+rules, \rulename{6setu} and \rulename{6refu} handle reference and
+assignment of free variables. Finally, the last two rules dictate the
+behavior of the \va{unspecified?} predicate.
+
+\section{Underspecification}
+
+\beginfig
+\begin{center}
+\input{r6-fig-Underspecification.tex}
+\end{center}
+\caption{Explicitly Unspecified Behavior}\label{fig:underspecification}
+\endfig
+
+The rules in figure~\ref{fig:underspecification} cover aspects of the
+semantics that are explicitly unspecified. Implementations can replace
+these rules with different rules that cover the left-hand sides and,
+as long as they follow the informal specification, any replacement is
+valid.
+
+The three situations are \va{eqv?} applied to two procedures or
+two conditions, and multiple values in a single-value context.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End: 
