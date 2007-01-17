@@ -79,26 +79,27 @@ This closes \var{input-port} or \var{output-port}, respectively.
 
 \begin{entry}{%
 \proto{read-char}{}{procedure}
-\rproto{read-char}{ input-port}{procedure}}
+\rproto{read-char}{ textual-input-port}{procedure}}
 
-This reads from \var{input-port} using the transcoder associated with
-it, blocking as necessary, until the complete encoding for a character
-is available from input-port, or the bytes that are available cannot
+This reads from \var{textual-input-port},
+blocking as necessary until a character
+is available from \var{textual-input-port},
+or the data that are available cannot
 be the prefix of any valid encoding, or an end of file is reached.
 
 If a complete character is available before the next end of file, {\cf
   read-char} returns that character, and updates the input port to
-point past the bytes that encoded that character. If an end of file is
-reached before any bytes are read, then {\cf read-char} returns the
+point past that character. If an end of file is
+reached before any data are read, then {\cf read-char} returns the
 end-of-file object.
 
-If \var{input-port} is omitted, it defaults to the value returned by
+If \var{textual-input-port} is omitted, it defaults to the value returned by
 {\cf current-input-port}.
 \end{entry}
 
 \begin{entry}{%
 \rproto{peek-char}{}{procedure}
-\proto{peek-char}{ input-port}{procedure}}
+\proto{peek-char}{ textual-input-port}{procedure}}
    
 This is the same as {\cf read-char}, but does not consume any data
 from the port.
@@ -106,64 +107,65 @@ from the port.
 
 \begin{entry}{%
 \rproto{read}{}{procedure}
-\proto{read}{ input-port}{procedure}}
+\proto{read}{ textual-input-port}{procedure}}
 
-Reads an external representation from \var{input-port} using the
-transcoder associated with \var{input-port} and returns the datum it
+Reads an external representation from \var{textual-input-port}
+and returns the datum it
 represents.  The {\cf read} procedure operates in the same way as 
 {\cf get-datum}, see section~\ref{get-datum}.
 
-If \var{input-port} is omitted, it defaults to the value returned by
+If \var{textual-input-port} is omitted, it defaults to the value returned by
 {\cf current-input-port}.
 \end{entry}
 
 \begin{entry}{%
 \proto{write-char}{ char}{procedure}
-\rproto{write-char}{ char output-port}{procedure}}
+\rproto{write-char}{ char textual-output-port}{procedure}}
 
-Writes an encoding of the character \var{char} to the port using the
-transcoder associated with \var{output-port}. The unspecified value is
+Writes an encoding of the character \var{char} to the
+\var{textual-output-port}. The unspecified value is
 returned.
 
-If \var{output-port} is omitted, it defaults to the value returned by
+If \var{textual-output-port} is omitted, it defaults to the value returned by
 {\cf current-output-port}.
 \end{entry}
 
 \begin{entry}{%
 \proto{newline}{}{procedure}
-\rproto{newline}{ output-port}{procedure}}
+\rproto{newline}{ textual-output-port}{procedure}}
 
-This is equivalent to using {\cf write-char} to write {\cf \#\backwhack{}linefeed}
-to \var{output-port} using the transcoder associated with \var{output-port}.
+This is equivalent to using {\cf write-char} to write
+{\cf \#\backwhack{}linefeed}
+to \var{textual-output-port}.
 
-If \var{output-port} is omitted, it defaults to the value returned by
+If \var{textual-output-port} is omitted, it defaults to the value returned by
 {\cf current-output-port}.
 \end{entry}
 
 \begin{entry}{%
 \proto{display}{ obj}{procedure}
-\rproto{display}{ obj output-port}{procedure}}
+\rproto{display}{ obj textual-output-port}{procedure}}
 
-Writes a representation of \var{obj} to the given \var{port} using the
-transcoder associated with \var{output-port}.  Strings that appear in
+Writes a representation of \var{obj} to the given \var{textual-output-port}.
+Strings that appear in
 the written representation are not enclosed in doublequotes, and no
 characters are escaped within those strings.  Character objects appear
 in the representation as if written by {\cf write-char} instead of by
 {\cf write}.  {\cf display} returns the unspecified value.  The
-\var{output-port} argument may be omitted, in which case it defaults
+\var{textual-output-port} argument may be omitted, in which case it defaults
 to the value returned by {\cf current-output-port}.
 \end{entry}
 
 \begin{entry}{%
 \proto{write}{ obj}{procedure}
-\rproto{write}{ obj output-port}{procedure}}
+\rproto{write}{ obj textual-output-port}{procedure}}
 
-Writes the external representation of \var{obj} to \var{output-port}
-using the transcoder associated with \var{output-port}.  The {\cf write}
-procedure operates in the same way as {\cf put-datum}, see
+Writes the external representation of \var{obj} to \var{textual-output-port}.
+The {\cf write}
+procedure operates in the same way as {\cf put-datum}; see
 section~\ref{put-datum}.
 
-If \var{output-port} is omitted, it defaults to the value returned by
+If \var{textual-output-port} is omitted, it defaults to the value returned by
 {\cf current-output-port}.
 \end{entry}
 

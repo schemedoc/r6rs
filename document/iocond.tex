@@ -155,6 +155,26 @@ A condition of this type specifies that an operation tried to operate on an
 non-existent named file under the assumption that it existed.
 \end{entry}   
 
+\begin{entry}{%
+\ctproto{i/o-port}
+\proto{i/o-port-error?}{ obj}{procedure}
+\proto{i/o-error-port}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&i/o-port \&i/o
+  i/o-port-error?
+  (port i/o-error-port))
+\end{scheme}
+
+This condition type specifies the port with which an I/O
+error is associated. Except for condition objects provided for
+encoding and decoding errors, conditions raised by procedures may
+include an {\cf\&i/o-port-error} condition, but are not required to do
+so.
+\end{entry}
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "r6rs-lib"
