@@ -2,7 +2,9 @@
 \label{filesystemchapter}
 
 This chapter describes the \deflibrary{r6rs files} library for
-operations on the file system.
+operations on the file system.  This library, in addition to the
+procedures described here, also exports the I/O condition types
+described in section~\ref{iocondsection}.
 
 \begin{entry}{%
 \proto{file-exists?}{ filename}{procedure}}
@@ -18,8 +20,9 @@ is called, \schfalse{} otherwise.
 
 \domain{\var{Filename} must be a filename (see
   section~\ref{filenamesection}).}  The {\cf delete-file} procedure
-deletes the named file if it exists, and returns \unspecifiedreturn.
-If the file cannot be deleted FIXME.
+deletes the named file if it exists and if it is possible, and returns
+\unspecifiedreturn.  If the file does not exist or cannot be deleted,
+an exception with condition type {\cf\&i/o-filename} is raised.
 \end{entry}
 
 
