@@ -51,7 +51,7 @@ violation for \hyper{endianness symbol} to be anything other than an
 endianness symbol supported by the implementation.
 
 \begin{note}
-  Implementators are encouraged to use widely accepted designations
+  Implementors are encouraged to use widely accepted designations
   for endianness symbols other than {\cf big} and {\cf little}.
 \end{note}
 \end{entry}
@@ -111,16 +111,18 @@ and returns the unspecified value.  Analogous to {\cf vector-fill!}.
 \end{entry}
 
 \begin{entry}{%
-\proto{bytevector-copy!}{ source source-start target target-start n}{procedure}}
+\pproto{(bytevector-copy! \var{source} \var{source-start}}{procedure}}
+\mainschindex{bytevector-copy!}{\tt\obeyspaces\\
+     \var{target} \var{target-start} \var{k})}
 
 \domain{\var{Source-start}, \var{target-start},
-  and \var{n} must be non-negative exact integers that satisfy
+  and \var{k} must be non-negative exact integers that satisfy
   
   \begin{displaymath}
     \begin{array}{rcccccl}
-      0 & \leq & \var{source-start} & \leq & \var{source-start} + \var{n} & \leq & l_{\var{source}}
+      0 & \leq & \var{source-start} & \leq & \var{source-start} + \var{k} & \leq & l_{\var{source}}
       \\
-      0 & \leq & \var{target-start} & \leq & \var{target-start} + \var{n} & \leq & l_{\var{target}}
+      0 & \leq & \var{target-start} & \leq & \var{target-start} + \var{k} & \leq & l_{\var{target}}
     \end{array}
   \end{displaymath}
   %
@@ -130,7 +132,7 @@ and returns the unspecified value.  Analogous to {\cf vector-fill!}.
    
   The {\cf bytevector-copy!} procedure copies the bytes from \var{source} at indices 
   \begin{displaymath}
-     \{ \var{source-start}, \ldots \var{source-start} + \var{n} - 1 \}
+     \{ \var{source-start}, \ldots \var{source-start} + \var{k} - 1 \}
   \end{displaymath}
   to consecutive indices in \var{target} starting at \var{target-index}.
    
@@ -454,7 +456,9 @@ precision number represented by the eight bytes beginning at index
 
 \begin{entry}{%
 \proto{bytevector-ieee-single-native-set!}{ bytevector k x}{procedure}
-\proto{bytevector-ieee-single-set!}{ bytevector k x endianness}{procedure}}
+\pproto{(bytevector-ieee-single-set! \var{bytevector}}{procedure}}
+{\tt\obeyspaces\\
+     \var{k} \var{x} \var{endianness})}
 
 \domain{$\{\var{k}, \ldots, \var{k}+3\}$ must be valid indices of
   \var{bytevector}.  For {\cf bytevector-ieee-single-native-set!}, \var{k} must
@@ -467,7 +471,9 @@ elements \var{k} through $\var{k}+3$ of \var{bytevector}, and returns
 
 \begin{entry}{%
 \proto{bytevector-ieee-double-native-set!}{ bytevector k x}{procedure}
-\proto{bytevector-ieee-double-set!}{ bytevector k x endianness}{procedure}}
+\pproto{(bytevector-ieee-double-set! \var{bytevector}}{procedure}}
+{\tt\obeyspaces\\
+     \var{k} \var{x} \var{endianness})}
 
 \domain{$\{\var{k}, \ldots, \var{k}+7\}$ must be valid indices of
   \var{bytevector}.  For {\cf bytevector-ieee-double-native-set!}, \var{k} must
