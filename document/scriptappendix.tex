@@ -13,6 +13,16 @@ the form of an executable program named {\cf scheme-script} that is
 capable of initiating the execution of Scheme scripts, as described 
 below.
 
+\begin{rationale}
+Distributing a Scheme program that is portable with respect to both 
+Scheme implementations and operating systems is challenging, even 
+if that program has been written in standard Scheme.  Languages with 
+a single or primary implementation can at least rely on a standard 
+name for their script interpreters.  Standardizing the name of the 
+executable used to start a Scheme script removes one barrier to the 
+distribution of Scheme scripts.
+\end{rationale}
+
 \section{Syntax}
 
 A Scheme script is a delimited piece of text, typically a file, with 
@@ -33,9 +43,15 @@ The \defining{script header}, if present on the first line of a script,
 is used by Unix-like operating systems to identify the interpreter to 
 be used to execute that script.
 
-Regardless of platform, Scheme script interpreters should ignore the  
+Regardless of platform, Scheme script interpreters must ignore the 
 script header if present, and cause the remainder of the script to be 
 executed as a Scheme top-level program.
+
+\begin{rationale}
+Requiring script interpreters to recognize and ignore the script 
+header helps ensure that Scheme scripts written for Unix-like systems 
+can also run on other kinds of systems.
+\end{rationale}
 
 The script header syntax given above is the recommended portable 
 form for Unix-like operating systems.  However, if the first line 
@@ -84,7 +100,9 @@ script interpreter itself to be implemented as a shell script.)
 
 \subsection{Microsoft Windows}
 The Windows operating system allows a file extension to be associated 
-with a script interpreter such as {\cf scheme-script}.
+with a script interpreter such as {\cf scheme-script}.  This 
+association may be configured appropriately by Scheme implementations, 
+installation programs, or by the user.
 
 \subsection{Selecting an implementation}
 If multiple implementations of Scheme are installed on a machine, the
