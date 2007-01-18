@@ -404,6 +404,9 @@ chapter.
 Closing the \var{binary-port} precludes interference between
 the \var{binary-port} and the textual port constructed from it.
 \end{rationale}
+
+The magic procedure of \var{binary-port} becomes the magic
+procedure of the new textual port.
 \end{entry}
 
 \begin{entry}{%
@@ -437,6 +440,25 @@ input and output port, this first flushes \var{port}.  (See {\cf
   flush-output-port}, section~\ref{flush-output-port}.)
 This procedure raises an exception with condition type {\cf\&assertion}
 if the port does not support the operation.
+\end{entry}
+
+\begin{entry}{%
+\proto{port-magic}{ port}{procedure}}
+
+Returns the magic procedure associated with \var{port}.
+For most ports, this magic procedure accepts any number of arguments,
+ignores the arguments, and returns the unspecified value without
+performing any side effects.
+For custom ports, the magic procedure was specified when the
+custom port was created.
+For ports created by {\cf transcoded-port}, the magic procedure
+is the magic procedure for the port from which the
+transcoded port was created.
+
+\begin{rationale}
+The magic procedure allows custom ports to implement arbitrary
+extensions that are not provided by the standard operations.
+\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -525,11 +547,11 @@ will be implementation-dependent (and possibly transcoder-dependent).
 \end{entry}
 
 \begin{entry}{%
-\proto{open-bytes-input-port}{ bytes}{procedure}
-\rproto{open-bytes-input-port}{ bytes transcoder}{procedure}}
+\proto{open-bytevector-input-port}{ bytevector}{procedure}
+\rproto{open-bytevector-input-port}{ bytevector transcoder}{procedure}}
    
 Returns an input port whose bytes are drawn from the
-bytes object \var{bytes}.
+\var{bytevector}.
 If \var{transcoder} is specified, it becomes the transcoder associated
 with the returned port.
 
@@ -541,7 +563,7 @@ Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
 will be implementation-dependent (and possibly transcoder-dependent).
 
-If \var{bytes} is modified after {\cf open-bytes-input-port}
+If \var{bytevector} is modified after {\cf open-bytevector-input-port}
 has been called, the effect on the returned
 port is unspecified.
 \end{entry}
@@ -577,54 +599,68 @@ the {\cf port-position} and {\cf set-port-position!} operations.
 \end{entry}
 
 \begin{entry}{%
-\pproto{(make-binary-input-port \var{id} \var{read!}}{procedure}}
-\mainschindex{make-binary-input-port}{\tt\obeyspaces\\
-    \var{get-position} \var{set-position!} \var{close})}
+\pproto{(make-custom-binary-input-port \var{id} \var{read!}}{procedure}}
+\mainschindex{make-custom-binary-input-port}{\tt\obeyspaces\\
+    \var{get-position} \var{set-position!} \var{close} \var{magic})}
 
 Returns a newly created binary input port whose byte source is
 an arbitrary algorithm represented by the \var{read!} procedure.
 \var{Id} must be a string naming the new port,
 provided for informational purposes only.
-   
-The remaining arguments are procedures that will be called as
-necessary by operations that perform binary input, positioning,
-or closing.
-The \var{get-position}, \var{set-position!}, and \var{close}
-arguments may be \schfalse{} instead of a procedure, which
-means (respectively) that the binary port will not support
-the {\cf port-position} operation, will not support the
-{\cf set-port-position!} operation, or will not require
-any actions to be performed when the port is closed.
+\var{Read!} must be a procedure, and should behave as specified
+below; it will be called by operations that perform binary input.
+
+Each of the remaining arguments may be \schfalse{}; if any of
+those arguments is not \schfalse{}, it must be a procedure and
+should behave as specified below.
    
 \begin{itemize}
-\item {\cf (\var{read!} \var{bytes} \var{start} \var{count})}
+\item {\cf (\var{read!} \var{bytevector} \var{start} \var{count})}
        
   \var{Start} will be a non-negative exact integer,
   \var{count} will be a positive exact integer,
-  and \var{bytes} will be a bytes object whose length is at least
+  and \var{bytevector} will be a bytevector whose length is at least
   $\var{start} + \var{count}$.
   The \var{read!} procedure obtains up to \var{count} bytes
   from the byte source and writes those bytes
-  into \var{bytes} starting at index \var{start}.
+  into \var{bytevector} starting at index \var{start}.
   The \var{read!} procedure must return the number of bytes
   that it writes, as an exact integer.
   To indicate an end of file condition, the \var{read!}
   should write no bytes and return 0.
-  
+
 \item {\cf (\var{get-position})}
        
   The \var{get-position} procedure (if supplied)
   returns the current position of the input port.
+  If not supplied, the custom port will not support
+  the {\cf port-position} operation.
   
 \item {\cf (\var{set-position!} \var{k})}
        
   The \var{set-position!} procedure (if supplied) sets the position
   of the input port to \var{k}.
+  If not supplied, the custom port will not support
+  the {\cf set-port-position!} operation.
        
 \item {\cf (\var{close})}
        
   The \var{close} procedure (if supplied) performs any
   actions that are necessary when the input port is closed.
+
+\item {\cf (\var{magic} \dotsfoo{})}
+
+  The \var{magic} procedure (if supplied) will be returned
+  when the custom port is passed to {\cf port-magic}.
+  The \var{magic} procedure should accept any number of arguments
+  of any type.  For almost all arguments, \var{magic} should
+  ignore its arguments and return the unspecified value
+  without performing any side effects, but \var{magic}
+  may respond to some arguments by performing arbitrary
+  computations that implement custom behavior.
+  If \var{magic} is not supplied, then the custom port's
+  magic procedure will always ignore its arguments and return
+  the unspecified value.
 \end{itemize}
 
 \end{entry}
@@ -650,60 +686,65 @@ update \var{binary-input-port} to point past the byte.
 \end{entry}
 
 \begin{entry}{%
-\proto{get-bytes-n}{ binary-input-port k}{procedure}}
+\proto{get-bytevector-n}{ binary-input-port k}{procedure}}
    
 Reads from \var{binary-input-port}, blocking as necessary, until \var{k}
 bytes are available from \var{binary-input-port} or until an end of file is
 reached. If \var{k} or more bytes are available before an end
-of file, {\cf get-bytes-n} returns a bytes object of size \var{k}.
-If fewer bytes are available before an end of file, {\cf get-bytes-n}
-returns a bytes object
+of file, {\cf get-bytevector-n} returns a bytevector of size \var{k}.
+If fewer bytes are available before an end of file, {\cf get-bytevector-n}
+returns a bytevector
 containing those bytes. In either case, the input port is updated to
 point just past the bytes read.  If an end of file is reached before
-any bytes are available, {\cf get-bytes-n} returns the end-of-file object.
+any bytes are available, {\cf get-bytevector-n} returns the end-of-file object.
 \end{entry}
 
 \begin{entry}{%
-\proto{get-bytes-n!}{ binary-input-port bytes start count}{procedure}}
-   
+\pproto{(get-bytevector-n! \var{binary-input-port}}{procedure}}
+\mainschindex{get-bytevector-n!}{\tt\obeyspaces\\
+    \var{bytevector} \var{start} \var{count})}
+
 \domain{\var{Count} must be an exact, non-negative integer, specifying
-  the number of bytes to be read. \var{bytes} must be a bytes object with at
+  the number of bytes to be read. \var{bytevector} must be a bytevector
+  with at
   least $\var{start} + \var{count}$ elements.}
    
-The {\cf get-bytes-n!} procedure reads from \var{binary-input-port},
+The {\cf get-bytevector-n!} procedure reads from \var{binary-input-port},
 blocking as necessary, until
 \var{count} bytes are available from \var{binary-input-port} or until
 an end of file is
 reached. If \var{count} or more bytes are available before an end of file,
-they are written into \var{bytes} starting at index \var{start}, and
+they are written into \var{bytevector} starting at index \var{start}, and
 the result is \var{count}. If fewer bytes are available before
-the next end of file, the available bytes are written into \var{bytes}
+the next end of file, the available bytes are written into \var{bytevector}
 starting at index \var{start}, and the result is the number of bytes actually
 read. In either case, the input port is updated to point just past the
 data read. If an end of file is reached before any bytes
-are available, {\cf get-bytes-n!} returns the end-of-file object.
+are available, {\cf get-bytevector-n!} returns the end-of-file object.
 \end{entry}
 
 \begin{entry}{%
-\proto{get-bytes-some}{ binary-input-port}{procedure}}
+\proto{get-bytevector-some}{ binary-input-port}{procedure}}
    
 Reads from \var{binary-input-port}, blocking as necessary, until data is
 available from \var{binary-input-port} or until an end of file is reached.
-If data becomes available, {\cf get-bytes-some} returns a freshly allocated
-bytes object of non-zero size containing the available data, and it updates
+If data becomes available,
+{\cf get-bytevector-some} returns a freshly allocated
+bytevector of non-zero size containing the available data, and it updates
 \var{binary-input-port} to point just past that data.
 If no input bytes are seen before an end
 of file is reached, then the end-of-file object is returned.
 \end{entry}
 
 \begin{entry}{%
-\proto{get-bytes-all}{ binary-input-port}{procedure}}
+\proto{get-bytevector-all}{ binary-input-port}{procedure}}
    
 Attempts to read all data until the next end of file, blocking as
-necessary. If one or more bytes are read, {\cf get-bytes-all} returns
-a bytes object
+necessary. If one or more bytes are read, {\cf get-bytevector-all} returns
+a bytevector
 containing all bytes up to the next end of file.  Otherwise, {\cf
-  get-bytes-all} returns the end-of-file object. Note that  {\cf get-bytes-all}
+  get-bytevector-all} returns the end-of-file object.
+Note that  {\cf get-bytevector-all}
 may block indefinitely, waiting to see an end of
 file, even though some bytes are available.
 \end{entry}
@@ -895,10 +936,10 @@ will be implementation-dependent (and possibly transcoder-dependent).
 \end{entry}   
 
 \begin{entry}{%
-\proto{open-bytes-output-port}{}{procedure}
-\rproto{open-bytes-output-port}{ transcoder}{procedure}}
+\proto{open-bytevector-output-port}{}{procedure}
+\rproto{open-bytevector-output-port}{ transcoder}{procedure}}
 
-Returns an output port that accumulates a bytes object from the
+Returns an output port that accumulates a bytevector from the
 output written to it.  If \var{transcoder} is specified, it becomes
 the transcoder associated with the returned port.
 
@@ -912,40 +953,40 @@ will be implementation-dependent (and possibly transcoder-dependent).
 \end{entry}
 
 \begin{entry}{%
-\proto{call-with-bytes-output-port}{ proc}{procedure}
-\rproto{call-with-bytes-output-port}{ proc transcoder}{procedure}}
+\proto{call-with-bytevector-output-port}{ proc}{procedure}
+\rproto{call-with-bytevector-output-port}{ proc transcoder}{procedure}}
 
 \domain{\var{Proc} must be a procedure accepting one argument.}
-Creates an output port that accumulates a bytes object from the output
+Creates an output port that accumulates a bytevector from the output
 written to it, and calls \var{proc} with that output port as an
 argument. When \var{proc} returns for the first time, the port is
-closed and the bytes object associated with the port is returned.  If
+closed and the bytevector associated with the port is returned.  If
 \var{transcoder} is specified, it becomes the transcoder associated
 with the port.
 
 The transcoder associated with the output port is determined
-as for a call to {\cf open-bytes-output-port}.
+as for a call to {\cf open-bytevector-output-port}.
 \end{entry}
 
 \begin{entry}{%
-\proto{get-output-bytes}{ output-port}{procedure}}
+\proto{get-output-bytevector}{ output-port}{procedure}}
 
-\domain{\var{Output-port} must be a port that accumulates a bytes
-  object from the output written to it, such as the ports created by
-  {\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
-Returns a newly created bytes object containing the output that has
+\domain{\var{Output-port} must be a port that accumulates a bytevector
+  from the output written to it, such as the ports created by
+  {\cf open-bytevector-output-port} and {\cf call-with-bytevector-output-port}.}
+Returns a newly created bytevector containing the output that has
 been accumulated by \var{output-port} so far.
-If the returned bytes object is modified, the
+If the returned bytevector is modified,
 the effect on \var{output-port} is unspecified.
 \end{entry}
 
 \begin{entry}{%
-\proto{clear-bytes-output-port!}{ output-port}{procedure}}
+\proto{clear-bytevector-output-port!}{ output-port}{procedure}}
 
-\domain{\var{Output-port} must be a port that accumulates a bytes
-  object from the output written to it, such as the ports created by
-{\cf open-bytes-output-port} and {\cf call-with-bytes-output-port}.}
-The {\cf clear-bytes-output-port!} procedure removes all bytes that
+\domain{\var{Output-port} must be a port that accumulates a bytevector
+  from the output written to it, such as the ports created by
+{\cf open-bytevector-output-port} and {\cf call-with-bytevector-output-port}.}
+The {\cf clear-bytevector-output-port!} procedure removes all bytes that
 have been accumulated by \var{output-port} so far.
 \end{entry}
 
@@ -1021,53 +1062,35 @@ the {\cf port-position} and {\cf set-port-position!} operations.
 \end{entry}
 
 \begin{entry}{%
-\pproto{(make-binary-output-port \var{id} \var{write!}}{procedure}}
-\mainschindex{make-binary-output-port}{\tt\obeyspaces\\
-    \var{get-position} \var{set-position!} \var{close})}
+\pproto{(make-custom-binary-output-port \var{id}}{procedure}}
+\mainschindex{make-custom-binary-output-port}{\tt\obeyspaces\\
+    \var{write!} \var{get-position} \var{set-position!} \var{close} \var{magic})}
 
 Returns a newly created binary output port whose byte sink is
 an arbitrary algorithm represented by the \var{write!} procedure.
 \var{Id} must be a string naming the new port,
 provided for informational purposes only.
-   
-The remaining arguments are procedures that will be called as
-necessary by operations that perform binary output, positioning,
-or closing.
-The \var{get-position}, \var{set-position!}, and \var{close}
-arguments may be \schfalse{} instead of a procedure, which
-means (respectively) that the binary port will not support
-the {\cf port-position} operation, will not support the
-{\cf set-port-position!} operation, or will not require
-any actions to be performed when the port is closed.
+\var{Write!} must be a procedure, and should behave as specified
+below; it will be called by operations that perform binary output.
+
+Each of the remaining arguments may be \schfalse{}; if any of
+those arguments is not \schfalse{}, it must be a procedure and
+should behave as specified in the description of
+{\cf make-custom-binary-input-port}.
    
 \begin{itemize}
-\item {\cf (\var{write!} \var{bytes} \var{start} \var{count})}
+\item {\cf (\var{write!} \var{bytevector} \var{start} \var{count})}
        
   \var{Start} and \var{count} will be non-negative exact integers,
-  and \var{bytes} will be a bytes object whose length is at least
+  and \var{bytevector} will be a bytevector whose length is at least
   $\var{start} + \var{count}$.
   The \var{write!} procedure reads up to \var{count} bytes
-  from \var{bytes} starting at index \var{start}, and forward
+  from \var{bytevector} starting at index \var{start}, and forward
   them to the byte sink.
   If \var{count} is 0, then the \var{write!} procedure should
   have the effect of passing an end-of-file object to the byte sink.
   In any case, the \var{write!} procedure must return the number of
   bytes that it reads, as an exact integer.
-  
-\item {\cf (\var{get-position})}
-       
-  The \var{get-position} procedure (if supplied)
-  returns the current position of the output port.
-  
-\item {\cf (\var{set-position!} \var{k})}
-       
-  The \var{set-position!} procedure (if supplied) sets the position
-  of the output port to \var{k}.
-       
-\item {\cf (\var{close})}
-       
-  The \var{close} procedure (if supplied) performs any
-  actions that are necessary when the output port is closed.
 \end{itemize}
 
 \end{entry}
@@ -1081,15 +1104,15 @@ Writes \var{octet} to the output port and returns the unspecified value.
 \end{entry}
 
 \begin{entry}{%
-\proto{put-bytes}{ binary-output-port bytes}{procedure}
-\rproto{put-bytes}{ binary-output-port bytes start}{procedure}
-\rproto{put-bytes}{ binary-output-port bytes start count}{procedure}}
+\proto{put-bytevector}{ binary-output-port bytevector}{procedure}
+\rproto{put-bytevector}{ binary-output-port bytevector start}{procedure}
+\rproto{put-bytevector}{ binary-output-port bytevector start count}{procedure}}
    
 \domain{\var{Start} and \var{count} must be non-negative exact
-  integers that default to 0 and $\texttt{(bytes-length \var{bytes})}
-  - \var{start}$, respectively. \var{bytes} must have a size of at
-  least $\var{start} + \var{count}$.}  The {\cf put-bytes} procedure writes
-\var{count} bytes of the bytes object \var{bytes}, starting at index
+  integers that default to 0 and $\texttt{(bytevector-length \var{bytevector})}
+  - \var{start}$, respectively. \var{bytevector} must have a size of at
+  least $\var{start} + \var{count}$.}  The {\cf put-bytevector} procedure writes
+\var{count} bytes of the bytevector \var{bytevector}, starting at index
 \var{start}, to the output port. The unspecified value is returned.
 \end{entry}
 
@@ -1115,9 +1138,9 @@ The unspecified value is returned.
 \rproto{put-string-n}{ textual-output-port string start count}{procedure}}
    
 \domain{\var{Start} and \var{count} must be non-negative exact
-  integers.  \var{string} must have a length of at least $\var{start} +
-  \var{count}$.}  \var{start} defaults to 0.  \var{count} defaults to
-$\texttt{(string-length \var{bytes})} - \var{start}$. Writes the
+  integers.  \var{String} must have a length of at least $\var{start} +
+  \var{count}$.}  \var{Start} defaults to 0.  \var{Count} defaults to
+$\texttt{(string-length \var{string})} - \var{start}$. Writes the
 \var{count} characters of \var{string}, starting at
 index \var{start}, to the port. The unspecified value is returned.
 \end{entry}
@@ -1138,6 +1161,46 @@ The specific external representation is implementation-dependent.
   output port, care must be taken to delimit them properly so they can
   be read back in by subsequent calls to {\cf get-datum}.
 \end{note}
+\end{entry}
+
+
+\subsection{Input/output ports}
+
+\begin{entry}{%
+\proto{open-file-input/output-port}{ filename}{procedure}
+\rproto{open-file-input/output-port}{ filename file-options}{procedure}
+\rproto{open-file-input/output-port}{ filename file-options buffer-mode}{procedure}
+\rproto{open-file-input/output-port}{ filename file-options buffer-mode transcoder}{procedure}}
+   
+Returns a single port that is both an input port and an
+output port for the named file.
+The optional arguments default as described in the specification
+of {\cf open-file-output-port}.
+If the input/output port supports {\cf port-position} and/or
+{\cf set-port-position!}, then the same port position is used
+for both input and output.
+\end{entry}
+
+\begin{entry}{%
+\pproto{(make-custom-binary-input/output-port}{procedure}}
+\mainschindex{make-custom-binary-input/output-port}{\tt\obeyspaces\\
+    \var{id} \var{read!} \var{write!} \var{get-position} \var{set-position!} \var{close} \var{magic})}
+
+Returns a newly created binary input/output port whose
+byte source and sink are
+arbitrary algorithms represented by the \var{read!} and \var{write!}
+procedures.
+\var{Id} must be a string naming the new port,
+provided for informational purposes only.
+\var{Read!} and \var{write!} must be procedures,
+and should behave as specified for the
+{\cf make-custom-binary-input-port} and
+{\cf make-custom-binary-output-port} procedures.
+
+Each of the remaining arguments may be \schfalse{}; if any of
+those arguments is not \schfalse{}, it must be a procedure and
+should behave as specified in the description of
+{\cf make-custom-binary-input-port}.
 \end{entry}
 
 
