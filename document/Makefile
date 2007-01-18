@@ -24,7 +24,7 @@ REPORT_TEX_FILES = r6rs.tex \
 	numbers.tex \
 	programs.tex \
 	repository.tex \
-	sem.tex \
+	semantics.tex \
 	struct.tex \
 	terminology.tex \
 
