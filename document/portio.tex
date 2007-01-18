@@ -563,7 +563,7 @@ Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
 will be implementation-dependent (and possibly transcoder-dependent).
 
-If \var{bytevector} is modified after {\cf open-bytevector-input-port}
+If \var{bytevector} is modified after {\cf open-\linebreak[0]bytevector-\linebreak[0]input-\linebreak[0]port}
 has been called, the effect on the returned
 port is unspecified.
 \end{entry}
@@ -601,7 +601,7 @@ the {\cf port-position} and {\cf set-port-position!} operations.
 \begin{entry}{%
 \pproto{(make-custom-binary-input-port \var{id} \var{read!}}{procedure}}
 \mainschindex{make-custom-binary-input-port}{\tt\obeyspaces\\
-    \var{get-position} \var{set-position!} \var{close} \var{magic})}
+  \var{get-position} \var{set-position!} \var{close} \var{magic})}
 
 Returns a newly created binary input port whose byte source is
 an arbitrary algorithm represented by the \var{read!} procedure.
@@ -903,8 +903,10 @@ Returns the symbol that represents the buffer-mode of
 \begin{entry}{%
 \proto{open-file-output-port}{ filename}{procedure}
 \rproto{open-file-output-port}{ filename file-options}{procedure}
-\rproto{open-file-output-port}{ filename file-options buffer-mode}{procedure}
-\rproto{open-file-output-port}{ filename file-options buffer-mode transcoder}{procedure}}
+\pproto{(open-file-output-port \var{filename}}{procedure}{\tt\obeyspaces%
+\hspace*{2em}\var{file-options} \var{buffer-mode})}\\
+\pproto{(open-file-output-port \var{filename}}{procedure}{\tt\obeyspaces%
+\hspace*{2em}\var{file-options} \var{buffer-mode} \var{transcoder})}}
 
 Returns an output port for the named file.
 
@@ -1064,7 +1066,7 @@ the {\cf port-position} and {\cf set-port-position!} operations.
 \begin{entry}{%
 \pproto{(make-custom-binary-output-port \var{id}}{procedure}}
 \mainschindex{make-custom-binary-output-port}{\tt\obeyspaces\\
-    \var{write!} \var{get-position} \var{set-position!} \var{close} \var{magic})}
+  \var{write!} \var{get-position} \var{set-position!} \var{close} \var{magic})}
 
 Returns a newly created binary output port whose byte sink is
 an arbitrary algorithm represented by the \var{write!} procedure.
@@ -1106,7 +1108,9 @@ Writes \var{octet} to the output port and returns the unspecified value.
 \begin{entry}{%
 \proto{put-bytevector}{ binary-output-port bytevector}{procedure}
 \rproto{put-bytevector}{ binary-output-port bytevector start}{procedure}
-\rproto{put-bytevector}{ binary-output-port bytevector start count}{procedure}}
+\pproto{(put-bytevector \var{binary-output-port}}{procedure}}
+{\tt\obeyspaces\\
+     \var{bytevector} \var{start} \var{count})}
    
 \domain{\var{Start} and \var{count} must be non-negative exact
   integers that default to 0 and $\texttt{(bytevector-length \var{bytevector})}
@@ -1169,8 +1173,10 @@ The specific external representation is implementation-dependent.
 \begin{entry}{%
 \proto{open-file-input/output-port}{ filename}{procedure}
 \rproto{open-file-input/output-port}{ filename file-options}{procedure}
-\rproto{open-file-input/output-port}{ filename file-options buffer-mode}{procedure}
-\rproto{open-file-input/output-port}{ filename file-options buffer-mode transcoder}{procedure}}
+\pproto{(open-file-input/output-port \var{filename}}{procedure}{\tt\obeyspaces%
+\hspace*{2em}\var{file-options} \var{buffer-mode})}\\
+\pproto{(open-file-input/output-port \var{filename}}{procedure}{\tt\obeyspaces%
+\hspace*{2em}\var{file-options} \var{buffer-mode} \var{transcoder})}}
    
 Returns a single port that is both an input port and an
 output port for the named file.
@@ -1184,7 +1190,7 @@ for both input and output.
 \begin{entry}{%
 \pproto{(make-custom-binary-input/output-port}{procedure}}
 \mainschindex{make-custom-binary-input/output-port}{\tt\obeyspaces\\
-    \var{id} \var{read!} \var{write!} \var{get-position} \var{set-position!} \var{close} \var{magic})}
+  \var{id} \var{read!} \var{write!} \var{get-position} \var{set-position!} \var{close} \var{magic})}
 
 Returns a newly created binary input/output port whose
 byte source and sink are
