@@ -5,7 +5,7 @@ The \deflibrary{r6rs i/o ports} library defines an I/O layer for
 conventional, imperative buffered input and output.
 A \defining{port} represents a buffered access object
 for a data sink or source or both simultaneously.
-The library allows ports to be created from arbitrary input sources
+The library allows ports to be created from arbitrary data sources
 and sinks.
 
 The \library{r6rs i/o ports} library distinguishes between \textit{input
@@ -320,7 +320,8 @@ case it defaults to {\cf raise}.  The result is a transcoder with the
 behavior specified by its arguments.
 
 A transcoder returned by {\cf make-transcoder} is equal in the sense
-of {\cf eqv?} to another transcoder returned by {\cf
+of {\cf eqv?} (but not necessarily in the sense of {\cf eq?})
+to another transcoder returned by {\cf
   make-transcoder} if and only if the \var{code}, \var{eol-style},
 and \var{handling-mode} arguments are equal in the sense of {\cf
   eqv?}.
@@ -344,6 +345,22 @@ These are accessors for transcoder objects; when applied to a
 transcoder returned by {\cf make-transcoder}, they return the
 \var{codec}, \var{eol-style}, \var{handling-mode} arguments.
 When applied to the binary transcoder, they return \schfalse{}.
+\end{entry}
+
+\begin{entry}{%
+\proto{bytevector->string}{ bytevector transcoder}{procedure}}
+
+Returns the string that results from transcoding the
+\var{bytevector} according to the input direction of
+the \var{transcoder}.
+\end{entry}
+
+\begin{entry}{%
+\proto{string->bytevector}{ string transcoder}{procedure}}
+
+Returns the bytevector that results from transcoding the
+\var{string} according to the output direction of
+the \var{transcoder}.
 \end{entry}
 
 \subsection{Input and output ports}
@@ -388,12 +405,16 @@ returns a new textual port with the specified \var{transcoder}.
 Otherwise the new textual port's state is largely the same as
 that of the \var{binary-port}.
 If the \var{binary-port} is an input port, then the new textual
-port will transcode the bytes that have not yet been read from
+port will be an input port and
+will transcode the bytes that have not yet been read from
 the \var{binary-port}.
 If the \var{binary-port} is an output port, then the new textual
-port will transcode output characters into bytes that are
+port will be an output port and
+will transcode output characters into bytes that are
 written to the byte sink represented by the \var{binary-port}.
-As a side effect, however, the \var{binary-port} is closed in
+
+As a side effect, however, the {\cf transcoded-port} procedure
+closes \var{binary-port} in
 a special way that allows the new textual port to continue to
 use the byte source or sink represented by the \var{binary-port},
 even though the \var{binary-port} itself is closed and cannot
@@ -670,7 +691,7 @@ should behave as specified below.
 \begin{entry}{%
 \proto{get-u8}{ binary-input-port}{procedure}}
    
-Reads from \var{binary-input-port}, blocking as necessary, until data is
+Reads from \var{binary-input-port}, blocking as necessary, until data are
 available from \var{binary-input-port} or until an end of file is reached.
 If a byte becomes available, {\cf get-u8} returns the byte as an octet, and
 updates \var{binary-input-port} to point just past that byte. If no input
@@ -726,9 +747,9 @@ are available, {\cf get-bytevector-n!} returns the end-of-file object.
 \begin{entry}{%
 \proto{get-bytevector-some}{ binary-input-port}{procedure}}
    
-Reads from \var{binary-input-port}, blocking as necessary, until data is
+Reads from \var{binary-input-port}, blocking as necessary, until data are
 available from \var{binary-input-port} or until an end of file is reached.
-If data becomes available,
+If data become available,
 {\cf get-bytevector-some} returns a freshly allocated
 bytevector of non-zero size containing the available data, and it updates
 \var{binary-input-port} to point just past that data.
@@ -824,7 +845,7 @@ Reads from \var{textual-input-port} until an end of file, decoding
 characters in the same manner as {\cf get-string-n} and {\cf get-string-n!}.
    
 If data are available before the end of file, a string
-containing all the text decoded from that data is returned. If no data
+containing all the text decoded from that data are returned. If no data
 precede the end of file, the end-of-file object file object is
 returned.
 \end{entry}
