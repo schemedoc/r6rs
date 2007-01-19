@@ -8,10 +8,10 @@ MZSCHEME = mzscheme
 report: thirdrun
 
 COMMON_TEX_FILES = \
-	commands.tex \
-	authors.tex
+	commands.tex
 
 REPORT_TEX_FILES = r6rs.tex \
+	semantics-commands.tex \
 	arith.tex \
 	base.tex \
 	basic.tex \
