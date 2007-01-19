@@ -425,9 +425,6 @@ chapter.
 Closing the \var{binary-port} precludes interference between
 the \var{binary-port} and the textual port constructed from it.
 \end{rationale}
-
-The magic procedure of \var{binary-port} becomes the magic
-procedure of the new textual port.
 \end{entry}
 
 \begin{entry}{%
@@ -461,25 +458,6 @@ input and output port, this first flushes \var{port}.  (See {\cf
   flush-output-port}, section~\ref{flush-output-port}.)
 This procedure raises an exception with condition type {\cf\&assertion}
 if the port does not support the operation.
-\end{entry}
-
-\begin{entry}{%
-\proto{port-magic}{ port}{procedure}}
-
-Returns the magic procedure associated with \var{port}.
-For most ports, this magic procedure accepts any number of arguments,
-ignores the arguments, and returns the unspecified value without
-performing any side effects.
-For custom ports, the magic procedure was specified when the
-custom port was created.
-For ports created by {\cf transcoded-port}, the magic procedure
-is the magic procedure for the port from which the
-transcoded port was created.
-
-\begin{rationale}
-The magic procedure allows custom ports to implement arbitrary
-extensions that are not provided by the standard operations.
-\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -622,7 +600,7 @@ the {\cf port-position} and {\cf set-port-position!} operations.
 \begin{entry}{%
 \pproto{(make-custom-binary-input-port \var{id} \var{read!}}{procedure}}
 \mainschindex{make-custom-binary-input-port}{\tt\obeyspaces\\
-  \var{get-position} \var{set-position!} \var{close} \var{magic})}
+  \var{get-position} \var{set-position!} \var{close})}
 
 Returns a newly created binary input port whose byte source is
 an arbitrary algorithm represented by the \var{read!} procedure.
@@ -668,20 +646,6 @@ should behave as specified below.
        
   The \var{close} procedure (if supplied) performs any
   actions that are necessary when the input port is closed.
-
-\item {\cf (\var{magic} \dotsfoo{})}
-
-  The \var{magic} procedure (if supplied) will be returned
-  when the custom port is passed to {\cf port-magic}.
-  The \var{magic} procedure should accept any number of arguments
-  of any type.  For almost all arguments, \var{magic} should
-  ignore its arguments and return the unspecified value
-  without performing any side effects, but \var{magic}
-  may respond to some arguments by performing arbitrary
-  computations that implement custom behavior.
-  If \var{magic} is not supplied, then the custom port's
-  magic procedure will always ignore its arguments and return
-  the unspecified value.
 \end{itemize}
 
 \end{entry}
@@ -1087,7 +1051,7 @@ the {\cf port-position} and {\cf set-port-position!} operations.
 \begin{entry}{%
 \pproto{(make-custom-binary-output-port \var{id}}{procedure}}
 \mainschindex{make-custom-binary-output-port}{\tt\obeyspaces\\
-  \var{write!} \var{get-position} \var{set-position!} \var{close} \var{magic})}
+  \var{write!} \var{get-position} \var{set-position!} \var{close})}
 
 Returns a newly created binary output port whose byte sink is
 an arbitrary algorithm represented by the \var{write!} procedure.
@@ -1211,7 +1175,7 @@ for both input and output.
 \begin{entry}{%
 \pproto{(make-custom-binary-input/output-port}{procedure}}
 \mainschindex{make-custom-binary-input/output-port}{\tt\obeyspaces\\
-  \var{id} \var{read!} \var{write!} \var{get-position} \var{set-position!} \var{close} \var{magic})}
+  \var{id} \var{read!} \var{write!} \var{get-position} \var{set-position!} \var{close})}
 
 Returns a newly created binary input/output port whose
 byte source and sink are
