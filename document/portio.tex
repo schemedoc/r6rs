@@ -363,6 +363,34 @@ Returns the bytevector that results from transcoding the
 the \var{transcoder}.
 \end{entry}
 
+\subsection{End of file object}
+\label{eofsection}
+
+The end of file object is returned by various I/O procedures when they
+reach end of file.\index{end of file object}
+
+\begin{entry}{%
+\proto{eof-object}{}{procedure}}
+
+Returns the end of file object.
+\begin{scheme}
+(eqv? (eof-object) (eof-object)) \lev  \schtrue%
+(eq? (eof-object) (eof-object)) \lev  \schtrue
+\end{scheme}
+\end{entry}
+
+\begin{note}
+  The end of file object  is not a datum value, and thus has no external
+  representation.
+\end{note}
+
+\begin{entry}{%
+\proto{eof-object?}{ obj}{procedure}}
+  
+Returns \schtrue{} if \var{obj} is the end of file object, otherwise
+returns \schfalse.
+\end{entry}
+
 \subsection{Input and output ports}
 
 The operations described in this section are common to input and
@@ -846,7 +874,7 @@ Any \meta{interlexeme space}
 (see report section~\ref{report:lexicalsyntaxsection}) in
 the input is first skipped.  If an end of file occurs after the
 \meta{interlexeme space}, the end of file object (see
-report section~\ref{report:eofsection}) is returned.
+section~\ref{eofsection}) is returned.
 
 If a character inconsistent with an external representation is
 encountered in the input, an exception with condition types
