@@ -926,10 +926,12 @@ will be implementation-dependent (and possibly transcoder-dependent).
 \proto{open-bytevector-output-port}{}{procedure}
 \rproto{open-bytevector-output-port}{ transcoder}{procedure}}
 
-Returns an output port that accumulates a bytevector from the
-output written to it.  If \var{transcoder} is specified, it becomes
-the transcoder associated with the returned port.
+Returns two values: an output port and a procedure.
+The output port accumulates the data written to it for
+later extraction by the procedure.
 
+If \var{transcoder} is specified, it becomes
+the transcoder associated with the port.
 If no \var{transcoder} argument is given, or
 if the binary transcoder is passed as an explicit argument,
 then the port will be a binary port and will support the
@@ -937,6 +939,9 @@ then the port will be a binary port and will support the
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
 will be implementation-dependent (and possibly transcoder-dependent).
+
+When the procedure is called, it returns a bytevector consisting of the
+port's accumulated data and removes the accumulated data from the port.
 \end{entry}
 
 \begin{entry}{%
@@ -944,91 +949,48 @@ will be implementation-dependent (and possibly transcoder-dependent).
 \rproto{call-with-bytevector-output-port}{ proc transcoder}{procedure}}
 
 \domain{\var{Proc} must be a procedure accepting one argument.}
-Creates an output port that accumulates a bytevector from the output
-written to it, and calls \var{proc} with that output port as an
-argument. When \var{proc} returns for the first time, the port is
-closed and the bytevector associated with the port is returned.  If
-\var{transcoder} is specified, it becomes the transcoder associated
-with the port.
+Creates an output port that accumulates the data
+written to it and calls \var{proc} with that output port as an
+argument. Whenever \var{proc} returns, a bytevector consisting of the
+port's accumulated data is returned and the accumulated data is
+removed from the port.
 
 The transcoder associated with the output port is determined
 as for a call to {\cf open-bytevector-output-port}.
 \end{entry}
 
 \begin{entry}{%
-\proto{get-output-bytevector}{ output-port}{procedure}}
-
-\domain{\var{Output-port} must be a port that accumulates a bytevector
-  from the output written to it, such as the ports created by
-  {\cf open-bytevector-output-port} and {\cf call-with-bytevector-output-port}.}
-Returns a newly created bytevector containing the output that has
-been accumulated by \var{output-port} so far.
-If the returned bytevector is modified,
-the effect on \var{output-port} is unspecified.
-\end{entry}
-
-\begin{entry}{%
-\proto{clear-bytevector-output-port!}{ output-port}{procedure}}
-
-\domain{\var{Output-port} must be a port that accumulates a bytevector
-  from the output written to it, such as the ports created by
-{\cf open-bytevector-output-port} and {\cf call-with-bytevector-output-port}.}
-The {\cf clear-bytevector-output-port!} procedure removes all bytes that
-have been accumulated by \var{output-port} so far.
-\end{entry}
-
-\begin{entry}{%
 \proto{open-string-output-port}{ proc}{procedure}}
 
-Returns a textual output port that accumulates a string from the
-characters written to it.
+Returns two values: a textual output port and a procedure.
+The output port accumulates the characters written to it for
+later extraction by the procedure.
+
 The port's transcoder is implementation-dependent,
 but is not the binary transcoder.
 Whether the port supports
 the {\cf port-position} and {\cf set-port-position!} operations
 is implementation-dependent.
+
+When the procedure is called, it returns a string consisting of the port's
+accumulated characters and removes the accumulated characters from the port.
 \end{entry}
 
 \begin{entry}{%
 \proto{call-with-string-output-port}{ proc}{procedure}}
 
 \domain{\var{Proc} must be a procedure accepting one argument.}
-Creates a textual output port that accumulates a string from the
-characters written to it, and calls \var{proc} with that output port
-as an argument. When \var{proc} returns for the first time, the port is
-closed and a newly created string consisting of the accumulated
-characters is returned.  If
-\var{transcoder} is specified, it becomes the transcoder associated
-with the port.
+Creates a textual output port that accumulates the
+characters written to it and calls \var{proc} with that output port
+as an argument. Whenever \var{proc} returns, a string consisting of the
+port's accumulated characters is returned and the accumulated characters are
+removed from the port.
 
 The transcoder associated with the textual output port is
 implementation-dependent, but is not the binary transcoder.
 Whether the port supports
 the {\cf port-position} and {\cf set-port-position!} operations
 is implementation-dependent.
-\end{entry}
-
-\begin{entry}{%
-\proto{get-output-string}{ textual-output-port}{procedure}}
-
-\domain{\var{Textual-output-port} must be a textual output port
-that accumulates characters, such as the ports created by
-  {\cf open-string-output-port} and {\cf call-with-string-output-port}.}
-Returns a newly created string consisting of the characters that
-have been accumulated by the \var{textual-output-port} so far.
-
-If the returned string is modified, 
-the effect on \var{textual-output-port} is unspecified.
-\end{entry}
-
-\begin{entry}{%
-\proto{clear-string-output-port!}{ textual-output-port}{procedure}}
-
-\domain{\var{Textual-output-port} must be a port that accumulates a string
- from the characters written to it, such as the ports created by
-{\cf open-string-output-port} and {\cf call-with-string-output-port}.}
-The {\cf clear-string-output-port!} procedure removes all characters
-that have been accumulated by \var{textual-output-port} so far.
 \end{entry}
 
 \begin{entry}{%
