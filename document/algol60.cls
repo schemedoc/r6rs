@@ -96,6 +96,7 @@
 \ExecuteOptions{letterpaper,10pt,oneside,onecolumn,final,openany}
 \ProcessOptions
 \input{size1\@ptsize.clo}
+\RequirePackage{ifpdf}
 \setlength\lineskip{1\p@}
 \setlength\normallineskip{1\p@}
 \renewcommand\baselinestretch{}
@@ -750,6 +751,11 @@
 \fi
 
 %!! Some size stuff
+\ifpdf
+\pdfpagewidth\paperwidth
+\pdfpageheight\paperheight
+\fi
+
 \parskip 5pt plus 2pt minus 2pt %!! 0pt plus 1pt % Extra vertical space between paragraphs.
 \parindent 0pt %!! 15pt                    % Width of paragraph indentation.
 \topmargin -.375in       %    Nominal distance from top of page to top of
