@@ -25,7 +25,8 @@ allows the programmer to write transformers that perform these sorts of
 transformations, and arbitrary additional transformations, without
 sacrificing the default enforcement of hygiene or the high-level
 pattern-based syntax matching and template-based output construction
-provided by {\cf syntax-rules} (report section~\ref{report:syntax-rules}).
+provided by {\cf syntax-rules} (report
+section~\extref{report:syntax-rules}{Macro transformers}).
 
 Because {\cf syntax-case} does not require literals, including quoted
 lists or vectors, to be copied or even traversed, it may be able to preserve sharing
@@ -192,9 +193,10 @@ may return any syntax object, including an unwrapped syntax object.
 \section{Transformers}
 \label{transformerssection}
 
-In {\cf define-syntax} (report section~\ref{report:define-syntax}), {\cf
+In {\cf define-syntax} (report
+section~\extref{report:define-syntax}{Syntax definitions}), {\cf
   let-syntax}, and {\cf letrec-syntax} forms
-(report section~\ref{report:let-syntax}), a binding for a syntactic keyword must be
+(report section~\extref{report:let-syntax}{Binding constructs for syntactic keywords}), a binding for a syntactic keyword must be
 an
 expression that evaluates to a transformer.
 
@@ -892,7 +894,7 @@ be rewritten to avoid using it, albeit with a loss of clarity.
 The trick is to use a recursively defined intermediate form that
 generates one temporary per expansion step and completes the
 expansion after enough temporaries have been generated. See the
-definition for {\cf letrec} in report appendix~\ref{report:derivedformsappendix}.
+definition for {\cf letrec} in report appendix~\extref{report:derivedformsappendix}{Sample definitions for derived forms}.
 \end{entry}
 
 \section{Derived forms and procedures}
@@ -975,7 +977,7 @@ one-armed {\cf if} expressions where appropriate.
 
 The {\cf quasisyntax} form is similar to {\cf syntax}, but it allows parts
 of the quoted text to be evaluated, in a manner similar to the operation
-of {\cf quasiquote} (report section~\ref{report:quasiquotesection}).
+of {\cf quasiquote} (report section~\extref{report:quasiquotesection}{Quasiquotation}).
 
 Within a {\cf quasisyntax} \var{template}, subforms of
 {\cf unsyntax} and {\cf unsyntax-splicing} forms are evaluated,
@@ -1039,7 +1041,7 @@ idioms~\cite{bawdenquasiquote}, such as {\cf \#,@\#,@}, which has the
 effect of a doubly indirect splicing when used within a doubly nested
 and doubly evaluated {\cf quasisyntax} expression, as with the
 nested {\cf quasiquote} examples shown in
-section~\ref{report:quasiquotesection}.
+section~\extref{report:quasiquotesection}{Quasiquotation}.
 \end{note}
 \end{entry}
 
@@ -1068,7 +1070,7 @@ is present in each clause.
 
 \begin{note}
 The {\cf identifier-syntax} form of the base library (see
-report section~\ref{report:identifier-syntax}) may be defined in terms of {\cf
+report section~\extref{report:identifier-syntax}{Macro transformers}) may be defined in terms of {\cf
   syntax-case}, {\cf syntax}, and {\cf make-variable-transformer} as
 follows.
 

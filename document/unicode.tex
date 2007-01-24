@@ -1,6 +1,8 @@
 \chapter{Unicode}
 \label{unicodechapter}
 
+\newcommand{\latingreek}[1]{\texonly\mathit{#1}\endtexonly\htmlonly\textit{#1}\endhtmlonly}
+
 The procedures exported by the \deflibrary{r6rs unicode}
 library provide access to some aspects
 of the Unicode semantics for characters and strings:
@@ -191,13 +193,13 @@ cased-character sequences, case-ignorable characters are ignored
 (string-downcase "$\Sigma$") \ev "$\sigma$"
 
 ; \textrm{Chi Alpha Omicron Sigma}:
-(string-upcase "$\mathit{XAO}\Sigma$") \ev "$\mathit{XAO}\Sigma$" 
-(string-downcase "$\mathit{XAO}\Sigma$") \ev "$\chi\alpha{}o\varsigma$"
-(string-downcase "$\mathit{XAO}\Sigma\Sigma$") \ev "$\chi\alpha{}o\sigma\varsigma$"
-(string-downcase "$\mathit{XAO}\Sigma~\Sigma$") \ev "$\chi\alpha{}o\varsigma~\sigma$"
-(string-foldcase "$\mathit{XAO}\Sigma\Sigma$") \ev "$\chi\alpha{}o\sigma\sigma$"
-(string-upcase "$\chi\alpha{}o\varsigma$") \ev "$\mathit{XAO}\Sigma$"
-(string-upcase "$\chi\alpha{}o\sigma$") \ev "$\mathit{XAO}\Sigma$"
+(string-upcase "$\latingreek{XAO}\Sigma$") \ev "$\latingreek{XAO}\Sigma$" 
+(string-downcase "$\latingreek{XAO}\Sigma$") \ev "$\chi\alpha{}o\varsigma$"
+(string-downcase "$\latingreek{XAO}\Sigma\Sigma$") \ev "$\chi\alpha{}o\sigma\varsigma$"
+(string-downcase "$\latingreek{XAO}\Sigma~\Sigma$") \ev "$\chi\alpha{}o\varsigma~\sigma$"
+(string-foldcase "$\latingreek{XAO}\Sigma\Sigma$") \ev "$\chi\alpha{}o\sigma\sigma$"
+(string-upcase "$\chi\alpha{}o\varsigma$") \ev "$\latingreek{XAO}\Sigma$"
+(string-upcase "$\chi\alpha{}o\sigma$") \ev "$\latingreek{XAO}\Sigma$"
 
 (string-titlecase "kNock KNoCK")
 \ev "Knock Knock"
@@ -237,7 +239,7 @@ operate on the case-folded versions of the strings.
 \ev \schtrue
 (string-ci=? "Stra\ss{}e" "STRASSE")
 \ev \schtrue
-(string-ci=? "$\mathit{XAO}\Sigma$" "$\chi\alpha{}o\sigma$")
+(string-ci=? "$\latingreek{XAO}\Sigma$" "$\chi\alpha{}o\sigma$")
 \ev \schtrue
 \end{scheme}
 

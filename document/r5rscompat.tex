@@ -11,7 +11,7 @@ revision.
 \proto{inexact->exact}{ z}{procedure}}
 
 These are the same as the {\cf ->inexact} and {\cf ->exact}
-procedures; see report section~\ref{report:->inexact}.
+procedures; see report section~\extref{report:->inexact}{Generic conversions}.
 \end{entry}
 
 \begin{entry}{%
@@ -20,30 +20,30 @@ procedures; see report section~\ref{report:->inexact}.
 \proto{modulo}{ \vari{n} \varii{n}}{procedure}}
 
 These procedures implement number-theoretic (integer)
-division.  \vrii{n} must be non-zero.  All three procedures
-return integers.  If \vri{n}/\vrii{n} is an integer:
+division.  \varii{n} must be non-zero.  All three procedures
+return integers.  If \vari{n}/\varii{n} is an integer:
 \begin{scheme}
-    (quotient \vri{n} \vrii{n})   \ev \vri{n}/\vrii{n}
-    (remainder \vri{n} \vrii{n})  \ev 0
-    (modulo \vri{n} \vrii{n})     \ev 0
+    (quotient \vari{n} \varii{n})   \ev \vari{n}/\varii{n}
+    (remainder \vari{n} \varii{n})  \ev 0
+    (modulo \vari{n} \varii{n})     \ev 0
 \end{scheme}
-If \vri{n}/\vrii{n} is not an integer:
+If \vari{n}/\varii{n} is not an integer:
 \begin{scheme}
-    (quotient \vri{n} \vrii{n})   \ev \vr{n_q}
-    (remainder \vri{n} \vrii{n})  \ev \vr{n_r}
-    (modulo \vri{n} \vrii{n})     \ev \vr{n_m}
+    (quotient \vari{n} \varii{n})   \ev \var{n_q}
+    (remainder \vari{n} \varii{n})  \ev \var{n_r}
+    (modulo \vari{n} \varii{n})     \ev \var{n_m}
 \end{scheme}
-where \vr{n_q} is $\vri{n}/\vrii{n}$ rounded towards zero,
-$0 < |\vr{n_r}| < |\vrii{n}|$, $0 < |\vr{n_m}| < |\vrii{n}|$,
-\vr{n_r} and \vr{n_m} differ from \vri{n} by a multiple of \vrii{n},
-\vr{n_r} has the same sign as \vri{n}, and
-\vr{n_m} has the same sign as \vrii{n}.
+where \var{n_q} is $\vari{n}/\varii{n}$ rounded towards zero,
+$0 < |\var{n_r}| < |\varii{n}|$, $0 < |\var{n_m}| < |\varii{n}|$,
+\var{n_r} and \var{n_m} differ from \vari{n} by a multiple of \varii{n},
+\var{n_r} has the same sign as \vari{n}, and
+\var{n_m} has the same sign as \varii{n}.
 
-Consequently, for integers \vri{n} and \vrii{n} with
-\vrii{n} not equal to 0,
+Consequently, for integers \vari{n} and \varii{n} with
+\varii{n} not equal to 0,
 \begin{scheme}
-     (= \vri{n} (+ (* \vrii{n} (quotient \vri{n} \vrii{n}))
-           (remainder \vri{n} \vrii{n})))
+     (= \vari{n} (+ (* \varii{n} (quotient \vari{n} \varii{n}))
+           (remainder \vari{n} \varii{n})))
                                  \ev  \schtrue%
 \end{scheme}
 provided all numbers involved in that computation are exact.
@@ -66,7 +66,7 @@ provided all numbers involved in that computation are exact.
 
 \begin{note}
   These procedures could be defined in terms of {\cf div} and {\cf
-    mod} (see report section~\ref{report:div}) as follows (without checking of the
+    mod} (see report section~\extref{report:div}{Arithmetic operations}) as follows (without checking of the
   argument types):
 \begin{scheme}
 (define (sign n)

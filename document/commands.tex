@@ -35,11 +35,14 @@
   \addcontentsline{toc}{chapter}{#1}}
 
 \newcommand{\clearchaptergroupstar}[1]{
+  \texonly
   \clearpage
   \addcontentsline{toc}{chaptergroup}{#1}
   \topnewpage[
     \centerline{\large\bf\uppercase{#1}}
-    \bigskip]}
+    \bigskip]
+    \endtexonly
+  }
 
 \newcommand{\clearchapterstar}[1]{
   \clearpage
@@ -133,6 +136,8 @@
 \newcommand{\sharpindex}[1]{\index{#1@\texttt{\#{}#1}}}
 \newcommand{\ampindex}[1]{\index{#1@\texttt{\&{}#1}}}
 \newcommand{\libindex}[1]{\index{#1@\texttt{(#1)}}}
+
+\newcommand{\extref}[2]{\texonly\ref{#1}\endtexonly\htmlonly{on ``#2''}\endhtmlonly}
 
 \renewenvironment{theindex}
 {\clearpage

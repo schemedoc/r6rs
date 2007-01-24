@@ -112,8 +112,8 @@
     (print-something (lambda (r) (reduction-translate r left-right?))
                      name
                      reductions
-                     "\\beginrules"
-                     "\\endrules"))
+                     "\\begin{displaymath}\n\\begin{array}{l@{}l@{}lr}"
+                     "\\end{array}\n\\end{displaymath}"))
   
   (define (reduction-translate r left-right?)
     (fmatch r
