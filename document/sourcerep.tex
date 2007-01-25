@@ -1,0 +1,50 @@
+\chapter{Source code representation}
+\label{sourcecoderepappendix}
+
+The report does not specify how source code is represented and stored.
+The only requirement the report imposes is that the source code of a
+top-level program (see report
+section~\extref{report:programsyntaxsection}{Top-level program
+  syntax}) or a script (see section~\ref{scriptsyntaxsection}) be
+delimited.  The source code of a library is self-delimiting in the
+sense that, if the beginning of a library form can be identified, so
+can the end.
+
+Implementations might take radically different approaches to storing
+source code for libraries, among them:
+%
+\begin{itemize}
+\item files in the file system where each file contains an
+  arbitrary number of library forms,
+\item files in the file system where each file contains an
+  exactly one library forms,
+\item records in a database, and
+\item data structures in memory.
+\end{itemize}
+%
+Similarly, programs and scripts might be stored in a variety of
+formats.  Platform constraints might restrict the choices available to
+an implementation, which is why the report neither mandates nor
+recommends no specific method for storage.
+
+Implementations may provide a means for importing libraries coming from
+the outside via an interface that accepts a UTF-8 text file containing
+an arbitrary number of library forms.  (Authors of such files are
+encouraged to include an {\cf\#!r6rs} comment if the file is written
+purely with the lexical syntax described in the report.  See report
+section~\extref{report:whitespaceandcomments}{Whitespace and
+  comments}.)  After importing such a file, the libraries defined in
+it should be available to other libraries and files.  An
+implementation may store the file as is, or convert it to some storage
+format to achieve this.
+
+Similarly, implementations may provide a means for executing a program
+represented as a UTF-8 text file containing its source code.  (Again,
+authors of such files are encouraged to include an {\cf\#!r6rs}
+comment if the file is written purely with the lexical syntax
+described in the report.
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-app"
+%%% End: 

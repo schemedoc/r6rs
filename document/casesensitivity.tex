@@ -1,0 +1,38 @@
+\chapter{Optional case insensitivity}
+\label{caseinsensitivityappendix}
+
+The report specifies that the lexical syntax of symbols is
+case-sensitive.  This is a major change from the previous revision of
+the report~\cite{R5RS}, which breaks compatibility.  Code written
+under the old assumption of case-insensitivity may break because of
+this change.  Implementations may support such code by implementing
+the following directives:
+
+\begin{entry}{%
+{\cf{}\#!fold-case}\sharpbangindex{fold-case}\\
+{\cf{}\#!no-fold-case}\sharpbangindex{no-fold-case}}
+
+These directives may appear in the read syntax everywhere a
+\hyper{datum} occurs, and affects the reading of subsequent symbols.
+The {\cf{}\#!fold-case} directive means the name of a each subsequent
+symbol is the result of case-folding (see library
+section~\extref{lib:string-foldcase}{``Unicode''}) the name that appears in the
+source text.  The {\cf{}\#!no-fold-case} directive means the name of a each
+subsequent symbol is precisely the name that appears in the source text.
+
+The region where each of these directives has effect depends on the
+context: If the directive occurs at top level, the region extends
+until the next such directive at top level, or until the end of the
+source text if no such directive follows.  If the directive occurs in
+the immediate context of a \hyper{list} or \hyper{vector} datum (i.e.\
+in a place that would make it an element of the list or vector if it
+were a datum), the region of its effect extends until the next such
+directive in the same context, or until the end of the context if no
+such directive follows. A directive occurring inside the region of
+effect of another directive takes precedence.
+\end{entry}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-app"
+%%% End: 
