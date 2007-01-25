@@ -61,9 +61,10 @@ any way, with one exception: it need not treat the syntax
 section~\ref{identifiersection}) that is not {\cf r6rs}, as a syntax
 violation, and it may use specific {\cf \sharpsign{}!}-prefixed
 identifiers as flags indicating that subsequent input contains extensions
-to the standard lexical syntax. 
+to the standard lexical or read syntax. 
 The syntax {\cf \sharpsign{}!r6rs} may be used to signify that
-the input which follows is written purely with the lexical syntax described by
+the input which follows is written purely with the lexical syntax and
+read syntax described by
 this report.  It is otherwise treated as a comment; see section~\ref{whitespaceandcomments}.
 
 This chapter overviews and provides formal accounts of the lexical
@@ -322,7 +323,7 @@ Block comments may be indicated with properly nested {\tt
 \end{rationale}
 
 The lexeme {\cf \sharpsign{}!r6rs}, which signifies that the program text
-which follows is written purely with the lexical syntax described in this
+which follows is written purely with the lexical and read syntax described in this
 report, is also otherwise treated as a comment.
 
 \subsection{Identifiers}
@@ -351,7 +352,7 @@ they were letters.  The following are extended alphabetic characters:
 \end{scheme}
 
 Moreover, all characters whose Unicode scalar values are greater than 127 and
-whose Unicode category is Lu, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pd,
+whose Unicode category is Lu, Ll, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pd,
 Pc, Po, Sc, Sm, Sk, So, or Co can be used within identifiers.
 Moreover, any character can appear as the constituent of an identifier
 when denoted via a hexadecimal escape sequence.  For example, the
@@ -380,8 +381,7 @@ Characters are written using the notation
 \sharpsign\backwhack\hyper{character} or
 \sharpsign\backwhack\hyper{character name} or
 \sharpsign\backwhack{}x\atleastone{\hyper{digit 16}}, where the last
-specifies the Unicode scalar value of a character with a hexadecimal number of
-no more than eight digits.
+specifies the Unicode scalar value of a character with a hexadecimal number.
 
 For example:
 

@@ -38,8 +38,8 @@ system states.
     (let ((next (runge-kutta-4 system-derivative h)))
       (letrec ((states
                 (cons initial-state
-                      (lambda () (map-streams next
-                                              states)))))
+                      (lambda ()
+                        (map-streams next states)))))
         states))))%
 \end{schemenoindent}
 

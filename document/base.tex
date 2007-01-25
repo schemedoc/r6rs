@@ -563,13 +563,13 @@ The {\cf or} keyword could be defined in terms of {\cf if} using {\cf
 
 \subsection{Binding constructs}
 
-The four binding constructs {\cf let}, {\cf let*}, {\cf letrec*}, and {\cf letrec}
+The four binding constructs {\cf let}, {\cf let*}, {\cf letrec}, and {\cf letrec*}
 give Scheme a block structure, like Algol 60.  The syntax of the four
 constructs is identical, but they differ in the regions\index{region} they establish
 for their variable bindings.  In a {\cf let} expression, the initial
 values are computed before any of the variables become bound; in a
 {\cf let*} expression, the bindings and evaluations are performed
-sequentially.  In a {\cf letrec*} or {\cf letrec}
+sequentially.  In a {\cf letrec} or {\cf letrec*}
 expression, all the bindings are in
 effect while their initial values are being computed, thus allowing
 mutually recursive definitions.  In a {\cf letrec} expression, the
@@ -1123,7 +1123,7 @@ procedures.
                         \ev  \schfalse%
 \end{scheme}
 
-Since it is the effect of trying to modify constant objects (those returned by
+Since the effect of trying to modify constant objects (those returned by
 literal expressions) is unspecified, implementations are permitted, though not
 required, to share structure between constants where appropriate.  Thus
 the value of {\cf eqv?} on constants is sometimes
@@ -1334,7 +1334,8 @@ procedures.
 One general exception to the rule above is that an implementation may
 return an exact result despite inexact arguments if that exact result
 would be the correct result for all possible substitutions of exact
-arguments for the inexact ones.
+arguments for the inexact ones.  An example is {\cf (* 1.0 0)} which
+may return either {\cf 0} (exact) or {\cf 0.0} (inexact).
 
 \subsection{Representability of infinities and NaNs}
 \label{infinitiesnanssection}
@@ -1841,7 +1842,8 @@ These procedures return the sum or product of their arguments.
 (* +inf.0 +inf.0)                      \ev  +inf.0
 (* +inf.0 -inf.0)                      \ev  -inf.0
 (* 0 +inf.0)                           \ev  0 \textit{or} +nan.0
-(* 0 +nan.0)                           \ev  0 \textit{or} +nan.0%
+(* 0 +nan.0)                           \ev  0 \textit{or} +nan.0
+(* 1.0 0)                              \ev  0 \textit{or} 0.0%
 \end{scheme}
 
 For any real number \var{x} that is neither infinite nor NaN:
