@@ -3426,6 +3426,9 @@ undefined.
 \begin{entry}{%
 \proto{call-with-values}{ producer consumer}{procedure}}
 
+\domain{\var{Producer} must be a procedure that takes zero
+  arguments.  \var{Consumer} must be a procedure that accepts as many
+  values as \var{producer} returns.}
 Calls \var{producer} with no arguments and
 a continuation that, when passed some values, calls the
 \var{consumer} procedure with those values as arguments.
@@ -3440,9 +3443,9 @@ continuation of the call to {\tt call-with-values}.
 (call-with-values * -)                             \ev  -1%
 \end{scheme}
 
-If an inappropriate number of values is passed to a continuation
-created by {\cf call-with-values}, an exception with condition type
-{\cf\&assertion} is raised.
+\implresp After \var{producer} returns, the implementation must check
+that \var{consumer} accepts as many values as \var{consumer} has
+returned.
 \end{entry}
 
 \begin{entry}{%
