@@ -182,9 +182,13 @@ section.
 \section{Safety}
 \label{safeunsafemodesection}
 
+The standard libraries whose exports are described by this document
+are said to be \defining{safe libraries}.  Libraries and top-level
+program that import only from safe libraries are also said to be safe.
+
 As defined by this document, the Scheme programming language
 is safe in the following sense:
-The execution of a Scheme program
+The execution of a safe top-level program consisting
 cannot go so badly wrong as to crash or to continue to
 execute while behaving in ways that are
 inconsistent with the semantics described in this document,
@@ -200,7 +204,7 @@ integrity in ways that might result in execution that is
 inconsistent with the semantics described in this document.
 
 The above safety properties are guaranteed only for top-level programs
-and libraries that are said to be safe.  Implementations
+and libraries that are said to be safe.  In particular, Implementations
 may provide access to unsafe libraries, and may interpret
 implementation-specific declarations in ways that
 cannot guarantee safety.
