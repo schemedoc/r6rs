@@ -1,6 +1,4 @@
 %!TEX root = paper.tex
-%\section{Preliminaries}
-%\label{sec:prelim}
 
 We assume the reader has a basic familiarity with context-sensitive
 reduction semantics. Readers unfamiliar with this system may wish to
@@ -94,7 +92,7 @@ were generated automatically from the source code.
 
 Figure~\ref{fig:grammar} shows the grammar for the subset of the
 Report this semantics models. Non-terminals are written in
-\textit{italics} or in a calligraphic font ($\mathcal{P}$) and
+\textit{italics} or in a calligraphic font ($\mathcal{P}$ and
 $\mathcal{A}$), syntactic keywords are written in \textbf{boldface} and
 other primitives are written in a \textsf{sans-serif} font.
 
@@ -305,7 +303,7 @@ case that the first argument to \va{call-with-values} is a value,
 but is not of the form $(\sy{lambda}~()~e)$, the rule
 \rulename{6cwvw} wraps it in a thunk to trigger evaluation.
 
-\section{Exceptions}\label{sec:exceptions}
+\section{Exceptions}
 
 \beginfig
 \begin{center}
@@ -560,7 +558,7 @@ various errors that can occur when using \va{apply}: applying a
 non-procedure, passing a non-list as the last argument, and supplying
 too few arguments to \va{apply}.
 
-\section{Call/cc and Dynamic Wind}\label{sec:callcc}
+\section{Call/cc and Dynamic Wind}
 
 \beginfig
 \begin{center}
@@ -655,7 +653,7 @@ that all definitions appear before any expression. Similarly, the
 semantics covers multiple definitions of the same identifier, but this
 also would be a syntax error, according to the informal semantics. In
 this case, however, such expressions are modeled because they can also
-arise via a continuation throw and via programs that \sy{set!}
+arise via a continuation throw and via programs that use \sy{set!}
 like this:
 %
 \begin{displaymath}
@@ -665,8 +663,7 @@ like this:
   \end{array}
 \end{displaymath}
 %
-So, the must be covered to show what happens in those situations. The
-only other departure from standard top-level library syntax is the
+The only other departure from standard top-level library syntax is the
 \beginF{} expressions. The super-script \textbf{F} serves to
 distinguish a \sy{begin} expression whose subexpressions can be
 forms from one whose subexpressions are ordinary expressions.

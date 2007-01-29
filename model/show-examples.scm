@@ -1,7 +1,7 @@
 (module show-examples mzscheme
   
-  (require "redex-gui.scm"
-           "redex.scm"
+  (require (planet "gui.ss" ("robby" "redex.plt" 3))
+           (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
            "r6rs.scm")
   (provide show show-expression)
 

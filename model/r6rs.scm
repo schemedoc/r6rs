@@ -5,7 +5,8 @@ immutability: would somehow have to have Qtoc function produce a store, either w
 |#
 
 (module r6rs mzscheme
-  (require "redex.scm"
+  (require (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
+           (planet "subst.ss" ("robby" "redex.plt" 3))
            (lib "plt-match.ss"))
   
   (provide lang 
@@ -787,10 +788,9 @@ immutability: would somehow have to have Qtoc function produce a store, either w
     [() null]
     [(s_1 s_2 ...) (cons (Qtoc s_1) (Qtoc (s_2 ...)))]
     [(s_1 dot sqv_1) (cons (Qtoc s_1) sqv_1)]
-    [(s_1 s_2 ... dot sqv_1) (cons (Qtoc s_1)
-                                   (Qtoc (s_2 ... dot sqv_1)))]
+    [(s_1 s_2 s_3 ... dot sqv_1) (cons (Qtoc s_1) (Qtoc (s_2 s_3 ... dot sqv_1)))]
     [(s_1 dot sym_1) (cons (Qtoc s_1) 'sym_1)]
-    [(s_1 s_2 ... dot sym_1) (cons (Qtoc s_1) (Qtoc (s_2 ... dot sym_1)))]
+    [(s_1 s_2 s_3 ... dot sym_1) (cons (Qtoc s_1) (Qtoc (s_2 s_3 ... dot sym_1)))]
     [sym_1 'sym_1]
     [sqv_1 sqv_1])
   

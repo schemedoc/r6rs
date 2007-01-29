@@ -1,5 +1,6 @@
 (module test mzscheme
-  (require "redex.scm"
+  (require (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
+           (planet "subst.ss" ("robby" "redex.plt" 3))
            (lib "etc.ss")
            (lib "contract.ss"))
   
@@ -37,7 +38,7 @@
             (when progress?
               (cond
                 [(eq? progress? 'dots)
-                 (when (= 0 (modulo count 200))
+                 (when (= 0 (modulo count 100))
                    (printf ":")
                    (flush-output))]
                 [else
