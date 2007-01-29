@@ -6,6 +6,10 @@ This chapter describes Scheme's \deflibrary{r6rs base} library, which exports ma
 the procedure and syntax bindings that are traditionally associated
 with Scheme.
 
+All exports of the \library{r6rs base} library are exported with level
+$0$, except for exports {\cf syntax-rules} and {\cf identifier-syntax}
+from the {\cf (r6rs base)} library, which are exported with level $1$.
+
 Section~\ref{basetailcontextsection} defines the rules that identify
 tail calls and tail contexts in base-library constructs.
 
@@ -3964,7 +3968,7 @@ to the keyword {\cf f} whose binding is established by the
 \label{syntaxrulessection}
 
 \begin{entry}{%
-\pproto{(syntax-rules (\hyper{literal} \dots) \hyper{syntax rule} \dots)}{\exprtype}}
+\pproto{(syntax-rules (\hyper{literal} \dots) \hyper{syntax rule} \dots)}{\exprtype~({\cf expand})}}
 \mainschindex{syntax-rules}
 
 \syntax Each \hyper{literal} must be an identifier.
@@ -4182,9 +4186,10 @@ which would result in an assertion violation.
 \end{entry}
 
 \begin{entry}{%
-\proto{identifier-syntax}{ \hyper{template}}{\exprtype}
-\pproto{(identifier-syntax (\hyperi{id} \hyperi{template})}{\exprtype}}\\
+\proto{identifier-syntax}{ \hyper{template}}{\exprtype~({\cf expand})}
+\pproto{(identifier-syntax}{\exprtype~({\cf expand})}}\\
 {\tt\obeyspaces
+                   (\hyperi{id} \hyperi{template})
                    ((set! \hyperii{id} \hyper{pattern})
                     \hyperii{template}))}
 
