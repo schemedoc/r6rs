@@ -6,7 +6,8 @@ them in various ways---extracting signed or unsigned numbers of
 various sizes.  Therefore, the \deflibrary{r6rs bytevector} library
 provides a single type for
 blocks of binary data with multiple ways to access that data. It deals
-only with integers in various sizes with specified endianness, because
+with integers and floating-point representations 
+in various sizes with specified endianness, because
 these are the most frequent applications.
 
 Bytevectors\mainindex{bytevector} are objects of a disjoint
@@ -106,7 +107,7 @@ It returns \schfalse{} otherwise.
 
 \domain{The \var{fill} argument is as in the description of the {\cf
     make-bytevector} procedure.}
-Stores \var{fill} in every element of \var{vector}
+Stores \var{fill} in every element of \var{bytevector}
 and returns the unspecified value.  Analogous to {\cf vector-fill!}.
 \end{entry}
 
@@ -392,6 +393,8 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 \end{scheme}
 \end{entry}
 
+\section{Operations on 64-bit integers}
+
 \begin{entry}{%
 \proto{bytevector-u64-ref}{ bytevector k endianness}{procedure}
 \proto{bytevector-s64-ref}{ bytevector k endianness}{procedure}
@@ -428,6 +431,8 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 \end{scheme}
 \end{entry}
 
+\section{Operations on IEEE-754 numbers}
+
 \begin{entry}{%
 \proto{bytevector-ieee-single-native-ref}{ bytevector k}{procedure}
 \proto{bytevector-ieee-single-ref}{ bytevector k endianness}{procedure}}
@@ -440,8 +445,6 @@ These procedures return the inexact real that best represents the IEEE-754 singl
 precision number represented by the four bytes beginning at index
 \var{k}.
 \end{entry}
-
-\section{Operations on IEEE-754 numbers}
 
 \begin{entry}{%
 \proto{bytevector-ieee-double-native-ref}{ bytevector k}{procedure}
