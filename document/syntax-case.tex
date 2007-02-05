@@ -195,10 +195,13 @@ may return any syntax object, including an unwrapped syntax object.
 
 In {\cf define-syntax} (report
 section~\extref{report:define-syntax}{Syntax definitions}), {\cf
-  let-syntax}, and {\cf letrec-syntax} forms
-(report section~\extref{report:let-syntax}{Binding constructs for syntactic keywords}), a binding for a syntactic keyword must be
-an
-expression that evaluates to a transformer.
+  let-syntax}, and {\cf letrec-syntax} forms (report
+section~\extref{report:let-syntax}{Binding constructs for syntactic
+  keywords}), a binding for a syntactic keyword must be an expression
+that evaluates to a transformer.  (This is only the user's
+responsibility; the implementation must check this only if evaluation
+of a transformer expression actually terminates.  See the respective
+specifications.)
 
 A transformer is a \defining{transformation procedure} or a
 \defining{variable transformer}.
@@ -222,7 +225,7 @@ of a {\cf set!} expression.
 \proto{make-variable-transformer}{ proc}{procedure}}
 
 \domain{\var{Proc} must be a procedure that accepts one argument,
-a wrapped syntax object.}
+a wrapped syntax object, and returns a syntax object.}
 
 The {\cf make-variable-transformer} procedure creates a
 \defining{variable transformer}.
@@ -234,6 +237,9 @@ Instead, \var{proc} is called with a
 wrapped syntax object representing the entire {\cf set!} expression as
 its argument, and its return value replaces the entire {\cf set!}
 expression.
+
+\implresp The implementation must check the restrictions on \var{proc}
+only to the extent performed by applying it as described.
 \end{entry}
 
 \section{Parsing input and producing output}

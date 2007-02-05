@@ -224,6 +224,9 @@ If the exception handler returns, it must
 return a character or string representing the decoded text starting at
 the port's current position, and the exception handler must update the 
 port's position to point past the error.
+
+\implresp The implementation must check that the exception handler
+returns a character or a string only if it actually returns.
 \end{entry}
 
 \begin{entry}{% 
@@ -250,10 +253,13 @@ and the {\cf transcoder} field contains the transcoder associated
 with the port.
 
 Exceptions of this type raised by the operations described in this
-section are continuable.  The handler, if it returns, is expected to
+section are continuable.  The handler, if it returns, must 
 output to the port an appropriate encoding for the character that
 caused the error.  The operation that raised the exception 
 continues after that character.
+
+\implresp The implementation is not required to check whether the
+handler has output an encoding.
 \end{entry}
 
 \begin{entry}{%
@@ -508,6 +514,9 @@ the values returned by \var{proc} are returned. If \var{proc} does not
 return, then the port is not closed automatically, except perhaps when it is
 possible to prove that the port will never again be used for a
 {\cf lookahead}, {\cf get}, or {\cf put} operation.
+
+\implresp The implementation must check the restrictions on \var{proc}
+to the extent performed by applying it as described.
 \end{entry}
 
 \subsection{Input ports}
@@ -644,38 +653,43 @@ should behave as specified below.
 \begin{itemize}
 \item {\cf (\var{read!} \var{bytevector} \var{start} \var{count})}
        
-  \var{Start} will be a non-negative exact integer,
-  \var{count} will be a positive exact integer,
+  \domain{\var{Start} will be a non-negative exact integer,
+  \var{count} will be a positive exact integer,}
   and \var{bytevector} will be a bytevector whose length is at least
   $\var{start} + \var{count}$.
-  The \var{read!} procedure obtains up to \var{count} bytes
-  from the byte source and writes those bytes
+  The \var{read!} procedure should obtain up to \var{count} bytes
+  from the byte source, and should write those bytes
   into \var{bytevector} starting at index \var{start}.
-  The \var{read!} procedure must return the number of bytes
-  that it writes, as an exact integer.
+  The \var{read!} procedure must return an exact integer.  This
+  integer should be the number of bytes that it has written.
   To indicate an end of file condition, the \var{read!}
-  should write no bytes and return 0.
+  procedure should write no bytes and return 0.
 
 \item {\cf (\var{get-position})}
        
-  The \var{get-position} procedure (if supplied)
-  returns the current position of the input port.
-  If not supplied, the custom port will not support
+  The \var{get-position} procedure (if supplied) must return an exact
+  integer.  The return value should represent the current position of
+  the input port.  If not supplied, the custom port will not support
   the {\cf port-position} operation.
   
 \item {\cf (\var{set-position!} \var{k})}
        
-  The \var{set-position!} procedure (if supplied) sets the position
-  of the input port to \var{k}.
-  If not supplied, the custom port will not support
-  the {\cf set-port-position!} operation.
+  The \var{set-position!} procedure (if supplied) should set the
+  position of the input port to \var{k}.  If not supplied, the custom
+  port will not support the {\cf set-port-position!} operation.
        
 \item {\cf (\var{close})}
        
-  The \var{close} procedure (if supplied) performs any
-  actions that are necessary when the input port is closed.
+  The \var{close} procedure (if supplied) should perform any actions
+  that are necessary when the input port is closed.
 \end{itemize}
 
+\implresp The implementation is only required to check the return
+values of \var{read!} and \var{get-position} when it actually calls
+them as part of an I/O operation requested by the program.  The
+implementation is not required to check that these procedures
+otherwise behave as described.  If they do not, however, the behavior
+of the resulting port is unspecified.
 \end{entry}
 
 \subsection{Binary input}
@@ -1058,10 +1072,10 @@ should behave as specified in the description of
 \begin{itemize}
 \item {\cf (\var{write!} \var{bytevector} \var{start} \var{count})}
        
-  \var{Start} and \var{count} will be non-negative exact integers,
+  \domain{\var{Start} and \var{count} will be non-negative exact integers,
   and \var{bytevector} will be a bytevector whose length is at least
-  $\var{start} + \var{count}$.
-  The \var{write!} procedure reads up to \var{count} bytes
+  $\var{start} + \var{count}$.}
+  The \var{write!} procedure should read up to \var{count} bytes
   from \var{bytevector} starting at index \var{start}, and forward
   them to the byte sink.
   If \var{count} is 0, then the \var{write!} procedure should
@@ -1070,6 +1084,12 @@ should behave as specified in the description of
   bytes that it reads, as an exact integer.
 \end{itemize}
 
+\implresp The implementation is only required to check the return
+values of \var{write!} when it actually calls \var{write!} as part of
+an I/O operation requested by the program.  The implementation is not
+required to check that \var{write!} otherwise behaves as described.
+If it does not, however, the behavior of the resulting port is
+unspecified.
 \end{entry}
 
 \subsection{Binary output}
@@ -1137,7 +1157,7 @@ The specific external representation is implementation-dependent.
   The {\cf put-datum} procedure merely writes the external
   representation, but no trailing delimiter.  If {\cf put-datum} is
   used to write several subsequent external representations to an
-  output port, care must be taken to delimit them properly so they can
+  output port, care should be taken to delimit them properly so they can
   be read back in by subsequent calls to {\cf get-datum}.
 \end{note}
 \end{entry}

@@ -112,6 +112,11 @@ by {\cf define}.
 All bindings established by a set of internal definitions, whether
 keyword or variable definitions, are visible within the definitions
 themselves.
+
+\implresp The implementation must check that the value of
+\hyper{expression} is a transformer when the evaluation produces a
+value.
+
 For example:
 
 \begin{scheme}
@@ -450,7 +455,7 @@ appendix~\ref{derivedformsappendix}.
 \proto{case}{ \hyper{key} \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
 
 \syntax
-\hyper{Key} must be any expression.  Each \hyper{clause} has one of
+\hyper{Key} must be an expression.  Each \hyper{clause} has one of
 the following forms:
 \begin{scheme}
 ((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)
@@ -719,13 +724,16 @@ define mutually recursive procedures.
 \end{scheme}
 
 One restriction on {\cf letrec} is very important: it must be possible
-to evaluate each \hyper{init} without assigning or referring to the value of any
-\hyper{variable}.  If this restriction is violated, an exception  with
-condition type {\cf\&assertion} is
-raised.  The restriction is necessary because Scheme passes arguments by value rather than by
-name.
-In the most common uses of {\cf letrec}, all the \hyper{init}s are
-\lambdaexp{}s and the restriction is satisfied automatically.
+to evaluate each \hyper{init} without assigning or referring to the
+value of any \hyper{variable}.  The restriction is necessary because
+Scheme passes arguments by value rather than by name.  In the most
+common uses of {\cf letrec}, all the \hyper{init}s are \lambdaexp{}s
+and the restriction is satisfied automatically.
+
+\implresp An implementation may choose one particular order for
+evaluating the \hyper{init} expressions, and, for that particular
+order, must check that evaluation does not violate the restriction
+described above.
 
 A sample definition of {\cf letrec} in terms of simpler forms is in
 appendix~\ref{derivedformsappendix}.
@@ -771,10 +779,8 @@ procedures.
 
 One restriction on {\cf letrec*} is very important: it must be possible
 to evaluate each \hyper{init} without assigning or referring to the value
-the corresponding \hyper{variable} or the \hyper{variable} of any of
+of the corresponding \hyper{variable} or the \hyper{variable} of any of
 the bindings that follow it in \hyper{bindings}.
-If this restriction is violated, an exception with condition type
-{\cf\&assertion} is raised.
 The restriction is necessary because Scheme passes arguments by value
 rather than by name. 
 
@@ -3479,6 +3485,9 @@ If \var{thunk} returns, \var{after} is called without arguments.
 Finally, if \var{after} returns, the values resulting from the
 call to \var{thunk} are returned.
 
+\implresp The implementation must check the restrictions on
+\var{thunk} and \var{after} only if they are actually called.
+
 Invoking an escape procedure to transfer control into or out of the
 dynamic extent of the call to \var{thunk} can cause additional calls to
 \var{before} and \var{after}.
@@ -3862,6 +3871,10 @@ Thus, internal definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   let-syntax} form would have.
 
+\implresp The implementation must check that the value of each
+\hyper{expression} is a transformer when the evaluation produces a
+value.
+
 \begin{scheme}
 (let-syntax ((when (syntax-rules ()
                      ((when test stmt1 stmt2 ...)
@@ -3915,6 +3928,10 @@ wrapped in an implicit {\cf begin}, see section~\ref{begin}.
 Thus, internal definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   letrec-syntax} form would have.
+
+\implresp The implementation must check that the value of each
+\hyper{expression} is a transformer when the evaluation produces a
+value.
 
 \begin{scheme}
 (letrec-syntax

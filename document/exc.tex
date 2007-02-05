@@ -66,6 +66,11 @@ with-exception-handler} procedure returns the result(s) of invoking
 \var{thunk}.  \var{Handler} is installed as the current
 exception handler for the dynamic extent (as determined by {\tt
   dynamic-wind}) of the invocation of \var{thunk}.
+
+\implresp The implementation must check the restrictions on
+\var{handler} to the extent performed by applying it as described,
+when it is called as a result of a call to {\cf raise} or {\cf
+  raise-continuable}.
 \end{entry}
 
 \begin{entry}{%
@@ -202,7 +207,7 @@ situations between parts of a program. Code that detects an exception
 may be in a different part of the program than the code that handles
 it. In fact, the former may have been written independently from the
 latter. Consequently, to facilitate effective handling of exceptions,
-conditions must communicate as much information as possible as
+conditions should communicate as much information as possible as
 accurately as possible, and still allow effective handling by code
 that did not precisely anticipate the nature of the exception that
 occurred.

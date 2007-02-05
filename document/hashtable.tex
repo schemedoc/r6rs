@@ -6,7 +6,9 @@ A \defining{hash table} is a data structure that associates keys with values.
 Any object can be used as a key, provided a \defining{hash function}
 and a suitable \defining{equivalence function} is available.  A hash function is a
 procedure that maps
-keys to integers, and must be compatible with the equivalence function,
+keys to integers.
+It is the programmer's responsibility to ensure that the hash function
+is compatible with the equivalence function,
 which is a procedure that accepts two keys and returns true if they
 are equivalent, otherwise returns \schfalse{}.
 Standard hash tables for arbitrary objects based on the {\cf eq?} and 
@@ -53,7 +55,7 @@ capacity of the hash table is set to approximately \var{k} elements.
 this chapter with a key as argument, and must return a 
 non-negative exact integer.
 \var{Equiv} will be called by other procedures described in
-this chapter with two keys as arguments.}
+this chapter with two keys as arguments, and must return a single value.}
 The {\cf make-hash-table} procedure returns a newly allocated mutable
 hash table using \var{hash-function} 
 as the hash function and \var{equiv} as the equivalence function used to 
@@ -71,6 +73,10 @@ the hash table.  Furthermore, any pair of values for which
 the equivalence function \var{equiv} returns true should
 be hashed to the same exact integers by 
 \var{hash-function}.
+
+\implresp The implementation must check the restrictions on
+\var{hash-function} and \var{equiv} to the extent performed by
+applying them as described.
 
 \begin{note}
 Hash tables are allowed to cache the results of calling the
