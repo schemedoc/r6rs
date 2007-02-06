@@ -730,10 +730,10 @@ Scheme passes arguments by value rather than by name.  In the most
 common uses of {\cf letrec}, all the \hyper{init}s are \lambdaexp{}s
 and the restriction is satisfied automatically.
 
-\implresp An implementation may choose one particular order for
-evaluating the \hyper{init} expressions, and, for that particular
-order, must check that evaluation does not violate the restriction
-described above.
+\implresp Implementations are only required to check this restriction to
+the extent that references to a \hyper{variable} during the evaluation
+of the \hyper{init} expressions (using one particular evaluation order
+and order of evaluating the \hyper{init} expressions) must be detected.
 
 A sample definition of {\cf letrec} in terms of simpler forms is in
 appendix~\ref{derivedformsappendix}.
@@ -783,6 +783,11 @@ of the corresponding \hyper{variable} or the \hyper{variable} of any of
 the bindings that follow it in \hyper{bindings}.
 The restriction is necessary because Scheme passes arguments by value
 rather than by name. 
+
+\implresp Implementations are only required to check this restriction to
+the extent that references to a \hyper{variable} during the evaluation
+of the \hyper{init} expressions (using one particular evaluation order)
+must be detected.
 
 The {\cf letrec*} keyword could be defined approximately in terms of {\cf let}
 and {\cf set!}
