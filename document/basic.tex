@@ -118,23 +118,20 @@ exception should not return.
 In some cases, however, continuing is permissible; the
 handler may return.  See library section~\extref{lib:exceptionssection}{Exceptions}.
 
-An \defining{implementation restriction} is a limitation imposed
-by an implementation.  Implementations are required to raise an
-exception when they are unable to continue correct execution of
-a correct program due to some implementation restriction.
+An \defining{implementation restriction} is a limitation imposed by an
+implementation.  Implementations must raise an exception or abort
+program execution when they are unable to continue correct execution
+of a correct program due to some implementation restriction.  For
+example, an implementation must raise an exception with condition type
+{\cf\&implementation-restriction} or abort the execution of the
+program if it does not have enough storage to run a program.
 
-Some possible implementation restrictions
-such as the lack of representations for NaNs and infinities (see
+Some possible implementation restrictions such as the lack of
+representations for NaNs and infinities (see
 section~\ref{infinitiesnanssection}) are anticipated by this report,
-and implementations must raise an exception of the appropriate
-condition type if they encounter such a situation.
-
-Implementation restrictions not explicitly covered in this report are
-discouraged, and implementations are required to report
-violations of implementation restrictions.
-For example, an implementation may raise an exception
-with condition type {\cf\&implementation-restriction} if it does not
-have enough storage to run a program.
+and implementations typically must raise an exception of the
+appropriate condition type if they encounter such a situation, i.e.\
+not abort the execution of the program.
 
 \section{Argument checking}
 \label{argumentcheckingsection}
@@ -146,7 +143,7 @@ to other restrictions.  These restrictions imply responsibilities\mainindex{resp
 both the programmer and the implementation of the specified forms and
 procedures.  Specifically, the programmer is responsible for ensuring
 that the arguments passed indeed adhere to the restrictions described
-in the specification.  The implementation is responsible for checking
+in the specification.  The implementation must check
 that the restrictions in the specification are indeed met, to the
 extent that it is reasonable, possible and necessary to allow the
 specified operation to complete successfully.
@@ -170,7 +167,7 @@ partially to perform their function---requiring the implementation to
 check that the arguments are lists would be impractical or potentially
 violate reasonable performance assumptions.  For these reasons, the
 programmer's obligations may exceed the checking obligations of the
-implementation.  Implementations are, however, encouraged to perform
+implementation.  Implementations should, however, perform
 as much checking as possible and give detailed feedback about
 violations.
 

@@ -137,8 +137,9 @@ The \var{opaque?} flag must be a boolean. If true, the record type
 is opaque.
 If passed an instance of the record type,
 {\cf record?} returns
-\schfalse{} and {\cf record-rtd} (see ``Inspection'' below) raises
-an exception with condition type {\cf\&assertion}.
+\schfalse{}.  Moreover, if {\cf record-rtd} (see ``Inspection'' below)
+is called an instance of the record type, 
+an exception with condition type {\cf\&assertion} is raised.
 The record type is also opaque if an opaque parent is
 supplied.  If \var{opaque?} is false and an opaque parent is not
 supplied, the record is not opaque.
@@ -148,8 +149,8 @@ field specifier must be a list of the form {\cf (mutable \var{name})}
 or a list of the form {\cf (immutable \var{name})}.
 Each name must be a symbol and names the corresponding field of the record
 type; the names need not be distinct.  A field identified as mutable may
-be modified, whereas an attempt to obtain a mutator for a field identified
-as immutable raises an exception with condition type {\cf\&assertion}.
+be modified, whereas, when a program attempts to obtain a mutator for a field identified
+as immutable, an exception with condition type {\cf\&assertion} is raised.
 Where field order is relevant, e.g., for record construction and field
 access, the fields are considered to be ordered as specified, although
 no particular order is required for the actual representation of a

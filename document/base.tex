@@ -730,10 +730,13 @@ Scheme passes arguments by value rather than by name.  In the most
 common uses of {\cf letrec}, all the \hyper{init}s are \lambdaexp{}s
 and the restriction is satisfied automatically.
 
-\implresp Implementations are only required to check this restriction to
-the extent that references to a \hyper{variable} during the evaluation
-of the \hyper{init} expressions (using one particular evaluation order
-and order of evaluating the \hyper{init} expressions) must be detected.
+\implresp Implementations are only required to check this restriction
+to the extent that references to a \hyper{variable} during the
+evaluation of the \hyper{init} expressions (using one particular
+evaluation order and order of evaluating the \hyper{init} expressions)
+must be detected.  If an implementation detects a violation of the
+restriction, it must either raise an exception with condition type
+{\cf\&assertion}, or abort the execution of the program.
 
 A sample definition of {\cf letrec} in terms of simpler forms is in
 appendix~\ref{derivedformsappendix}.
@@ -787,7 +790,9 @@ rather than by name.
 \implresp Implementations are only required to check this restriction to
 the extent that references to a \hyper{variable} during the evaluation
 of the \hyper{init} expressions (using one particular evaluation order)
-must be detected.
+must be detected.  If an implementation detects a violation of the
+restriction, it must either raise an exception with condition type
+{\cf\&assertion}, or abort the execution of the program.
 
 The {\cf letrec*} keyword could be defined approximately in terms of {\cf let}
 and {\cf set!}
@@ -2145,8 +2150,8 @@ Returns \vari{z} raised to the power \varii{z}.  For nonzero \vari{z},
 
 $0.0^{\var{z}}$ is $1.0$ if $\var{z} = 0.0$, and $0.0$ if {\cf
   (real-part \var{z})} is positive.  For other cases in which
-the first argument is zero, an exception is raised with
-condition type {\cf\&implementation-restriction} or an unspecified
+the first argument is zero, either an exception is raised with
+condition type {\cf\&implementation-restriction}, or an unspecified
 number is returned.
 
 For an exact real \vari{z} and an exact
@@ -3150,7 +3155,7 @@ with condition type {\cf\&assertion} to be raised.
 
 (vector-set! '\#(0 1 2) 1 "doe")  \lev  \unspecified
              ; constant vector
-             ; may raise \exception{\&assertion}%
+             ; should raise \exception{\&assertion}%
 \end{scheme}
 
 \end{entry}
