@@ -1,0 +1,32 @@
+Formal comment #148 (defect)
+
+String output ports are even more broken now
+Reported by: 	William D Clinger
+Version:	5.92
+
+Hidden amongst all the welcome changes to the i/o system were some
+less welcome changes to string output ports.
+
+First of all, the open-string-output-port procedure still requires a
+useless proc argument.
+
+More importantly, the string ports of version 5.91 were compatible
+with the string ports of SRFI 6 in the sense that either could be
+implemented in terms of the other with little effort. The string
+output ports of version 5.92 are no longer compatible with SRFI 6,
+because there is no way to implement the get-output-string procedure
+of SRFI 6 using operations of version 5.92.
+
+No rationale for this change has been offered, and the editors' email
+discussions (which, SFAIK, are not yet public, else I would cite the
+thread that somehow led to this change) contain no serious argument
+for it.
+
+I recommend that the operations on string output ports revert to their
+specification in version 5.91, modulo corrections, removal of optional
+transcoder arguments, and any other changes that may have been made
+necessary by improvements to the rest of the i/o system. The editors'
+Subversion repository contains a proposal along these lines, and the
+editors' email archive contains a correction to that proposal.
+
+Will

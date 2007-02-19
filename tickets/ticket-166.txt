@@ -1,0 +1,29 @@
+Formal comment #166 (enhancement)
+
+Make unspecified return values of eq? / eqv? unspecified
+Reported by: 	Mike Sperber
+Version:	5.92
+
+Summary
+
+The specification of eq? and eqv? should allow portability-checking
+implementations.  Description
+
+In the current draft, the return value of eq?' and eqv?' isn't
+specified for all combinations of arguments. Yet, the return value is
+constrained to be #t or #f.
+
+This makes it easy to write unportable programs, for example by using
+`eq?' to compare characters under the assumption that it's faster than
+`char=?', or by using it to a number to assumed to be a fixnum with an
+immediate representation that `eq?' handles. As an implementation must
+return #t or #f even when applied to arguments where the return is
+unspecified, the draft does not permit an implementation that would
+detect (some) unspecified cases and notify the programmer and/or user
+in that case.
+
+Suggestion
+
+Allow implementations to return other values than #t or #f for the
+unspecified cases, and also allow them to abort the program or raise
+an exception for those cases.

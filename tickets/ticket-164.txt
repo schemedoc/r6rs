@@ -1,0 +1,35 @@
+Formal comment #164 (defect)
+
+Treatment of literal keywords
+Reported by: 	Andre van Tonder
+Version:	5.92
+
+Type : omission; Component : Almost all components
+
+Summary
+
+It is not stated whether various literal keywords refer to bindings.
+
+Description
+
+It is unclear whether literal keywords such as unquote, =>, ..., _,
+else, protocol, fields, etc., refer to bindings, and if so, to what
+they are bound. Typically, such literals may be bound to a macro
+expanding to a syntax error, which is a good idea for error checking.
+
+There is a very strong argument for requiring these literals to be
+bound. If they refer to bindings, they can be exported, imported,
+prefixed, renamed, or excluded. These are useful operations, and I
+think it is important for users to be able to rely on them to work
+portably. Consider, for example, using syntax case together with a
+user-written matcher library, both of which use the identifiers
+... and _ with separate meanings (here prefixing or renaming would be
+useful).
+
+If it were decided that they do not refer to bindings, on the other
+hand, then they would be "always available" in the sense of the first
+paragraph of 6.3, which should then be changed to reflect this (this
+would not, in my opinion, be a good thing, though).  Suggestion
+
+Consider stating that literal identifiers refer to bindings, so that
+they can be imported/exported/renamed/excluded.

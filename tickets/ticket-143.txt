@@ -1,0 +1,78 @@
+Formal comment #143 (enhancement)
+
+Request for reconsideration of formal comment #11
+Reported by: 	Aubrey Jaffer
+Version:	5.92
+
+http://www.r6rs.org/formal-comments/comment-11.txt
+
+> | Formal comment #11 (defect)
+> | 
+> | NaN is not a real number
+> | Reported by:	Aubrey Jaffer
+> | 
+> | Component:	arithmetic
+> | Version:	5.91
+
+....
+
+> RESPONSE:
+> 
+> In the draft R6RS, a NaN is regarded as a real (but not rational)
+> number.  To make NaNs non-real, as formal comment #11 proposes,
+> would break the primary closure property
+
+It need not break closure. Flonums represent members of the union of
+real numbers and NaNs?.
+
+> that allows the operations of (r6rs arithmetic flonum) to be
+> implemented efficiently, often as a single machine instruction.
+
+Okay -- I shouldn't have extended this to fl operations. So the text:
+
+> | On page 100, the lines 
+> |  (fl= +nan.0 fl) ==> #f
+> |  (fl< +nan.0 fl) ==> #f
+> | should be removed.
+
+should be retracted from #11.
+
+Then fl<, fl>, fl<=, fl>=, etc. would accept +nan.0 as an argument,
+while the generic operations <, >, <=, >=, etc. would not. Thus fl
+operations would retain efficient implementation.
+
+> Formal comment #11 would also degrade the performance of generic
+> arithmetic on flonums in compilers that use flow analysis to improve
+> the efficiency of generic arithmetic.
+
+Generic arithmetic (+, -, *, /) performance is not degraded by
+comparison operators rejecting NaNs?, but by the possibility of
+receiving non-real numbers, as can be returned by irrational
+functions.
+
+The fl versions of irrational functions can always return flonums
+(including NaNs?).
+
+> To forbid comparisons between a NaN and a flonum, as Formal comment
+> #11 proposes, would be incompatible with other programming
+> languages' interpretations of IEEE-754 and with hardware, making it
+> more difficult for Scheme to interoperate with other languages or to
+> make effective use of standard hardware.
+
+This same reasoning also argues against having complex non-real
+numbers. Supporting more numeric types necessarily creates interface
+issues with lesser languages.
+
+Use of the fl function-set can guarantee interoperability.
+
+> In particular, the IEEE-754 standard requires equality tests that
+> involve a NaN to come out false.  If the central proposal of Formal
+> comment #11 were accepted, then implementations of Scheme could not
+> implement inexact real arithmetic that is compatible with IEEE-754
+> or IEEE-754R.
+
+Formal comment #11 says nothing about (= +nan.0 +nan.0) !
+
+The fl versions of comparison operators can be IEEE-754 compatible
+without burdening generic comparison operators with behavior which
+extends poorly to complex number systems.

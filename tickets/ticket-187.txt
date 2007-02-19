@@ -1,0 +1,36 @@
+Formal comment #187 (defect)
+
+Bytevectors: `big' and `little' endianness under-specified
+Reported by: 	Ludovic Courtès
+Version:	5.92
+
+Email: ludovic.courtes at laas.fr
+
+Section 2.1 of the report (page 5) requires implementations to support
+the big' and little' endianness types but does not specify them.
+
+This is an issue since beside byte ordering, "word" ordering may also
+differ among encodings (either at the hardware level or among
+software-implemented encodings). For instance, the GNU C Library
+<ieee754.h> header shows that 3 different encodings of IEEE-754
+doubles are in use at the hardware level, depending on both byte order
+_and_ word order [0]. Likewise, GMP's integer export functions allow
+for the full spectrum of integer encoding, thanks to the ORDER, ENDIAN
+and SIZE arguments [1].
+
+Therefore, I believe the meaning of big' and little' should be made
+explicit, both for integer and IEEE double encoding. They should
+probably reflect the encodings most commonly referred to under these
+names. Thus, for integers, 8-bit atomic elements [2] should be
+assumed. For IEEE doubles, little' and big' should correspond to cases
+where both byte and word ordering are the same.
+
+Thanks, Ludovic.
+
+[0] ieee754.h
+
+[1] http://www.swox.com/gmp/manual/Integer-Import-and-Export.html
+
+[2] Using the terminology found in:
+
+        http://en.wikipedia.org/wiki/Endian#Examples

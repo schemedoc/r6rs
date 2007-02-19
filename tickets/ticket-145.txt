@@ -1,0 +1,30 @@
+Formal comment #145 (defect)
+
+< is inconsistent on NaNs.
+Status: closed (worksforme)
+Reported by: 	Aubrey Jaffer
+Version:	5.92
+
+Page 42: 9.9.4 Numeric Operations gives < as a procedure of one or
+more real arguments:
+
+  (< x1 x2 x3 . . . ) procedure
+
+But later in the description states:
+
+  For any number z:
+  (= +nan.0 z) ==> #f
+  (< +nan.0 z) ==> #f
+
+This implies that, while (< 0 1+i) should signal an exception, (<
++nan.0 1+1i) should return #f. If 1+i is an illegal argument to <
+sometimes, then it should always be an illegal argument to <.
+
+The behavior of (< +nan.0) [and (= +nan.0)] should be specified. Is
+the sequence of just +nan.0 "monotonically increasing"? If so, then (<
++nan.0) should return #t. This would seem to be inconsistent with
++nan.0 forcing the example (< +nan.0 z) to return #f.
+
+Having only one NaN inequality example [<] leaves the behavior of >,
+<=, and >= on NaNs? open to question, as well as the behavior when NaN
+is other than the first argument.

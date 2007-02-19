@@ -1,0 +1,75 @@
+Formal comment #135 (enhancement)
+
+syntax-case specification - requests for minor modifications
+Reported by: 	Andre van Tonder
+Version:	5.91
+
+Pages : 108-109
+
+* In section 17.2: Please consider changing 
+
+    "wrapped syntax objects are distinct from other types of values"
+
+to
+
+    "wrapped syntax objects may be distinct from other types of
+    values"
+
+The current verbiage excludes implementations such as my own,
+which would be otherwise conformant but in which all compound
+syntax objects are currently just pairs or vectors.
+
+* In section 17.1, I assume the word "can" in the phrase
+
+    "an expander can maintain hygiene with the help of marks and
+    substitutions"
+
+can be interpreted to allow implementations to use other
+algorithms, as mine does (mine translates syntax-case to a kind of
+hybrid of explicit renaming and syntactic closures).
+
+* The current operational description of the hygiene algorithm has
+  the problem that it works for simple cases where users are less
+  likely to try to use it, but does not cover some more
+  complicated cases where users are more likely to try to use
+  it. As such, it may help some users from the wall into the
+  ditch. It does not currently work for
+
+      o forward references in bodies (at least I had to look
+        elsewhere to understand how these are handled). These may
+        be implemented via some kind of destructive update of
+        environments that is not mentioned.
+      o the interaction with library imports.
+      o the resolution of import levels. 
+
+Perhaps the description can be improved to cover these
+cases. Alternatively, the current axiomatic descriptions (as in
+the hygiene condition and the existing descriptions of visibility
+in bodies) may be enough, and perhaps the complicated operational
+description might be dropped.
+
+* In 17.1, the definition of "wrap" that is used in 17.2, depends
+  on the operational description of an algorithm that may not be
+  used in all implementations. In my implementation, for example,
+  I do not need wraps for the algorithm. They might conceivably be
+  added in future to maintain source information for compound
+  syntax objects, but even if that happens they would still not
+  consist of marks and substitutions as the current definition
+  says.
+
+Perhaps "wrapped syntax objects" can be defined axiomatically in a
+way that does not assume an implementation strategy, and that does
+not require their representation to differ from that of unwrapped
+syntax objects.
+
+Of course, another alternative would be to consider
+implementations such as mine non-conformant :-(
+
+* In 17.4: (nitpick) The sentence 
+
+    "Transformers destructure their input with syntax-case and
+    rebuild their output with syntax"
+
+is inaccurate given that the output can be rebuilt with cons, with
+list, or with quasisyntax.
+

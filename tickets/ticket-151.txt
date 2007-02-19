@@ -1,0 +1,27 @@
+Formal comment #151 (simplification)
+
+Relax ordering constraint on library bodies
+Reported by: 	John Cowan
+Version:	5.92
+
+Currently, library bodies are required to have declarations before
+expressions as a matter of syntax. The informal semantics in report
+section 6.1 work fine whether this restriction is implemented or not,
+and the formal semantics in report chapter 10 go to the trouble of
+explaining that the syntactic restriction is not enforced there.
+
+Relaxing this restriction enables the user to write code like this in
+a library (it's already legal in a top-level program):
+
+(define foo ...)
+(install foo 'foo)
+
+(define bar ...)
+(install bar 'bar)
+
+and even to generate these pairs of declarations and expressions by a
+macro returning a begin form. This seems to me a good and worthy thing
+to be able to do.
+
+Eliminating the distinction between library bodies and toplevel bodies
+also allows a simplification in both description and understanding.

@@ -1,0 +1,15 @@
+Formal comment #150 (simplification)
+
+The library form should prefix rather than enclose libraries
+Reported by: 	John Cowan
+Version:	5.92
+
+Currently a library is represented by a single datum (a library form),
+whereas a top-level program is represented by a sequence of forms. The
+latter is more convenient for both generation and processing, and I
+urge that it be adopted for libraries also.
+
+This can be achieved by moving the export, import, and library-body
+parts of the library out of the library form (typically this amounts
+to moving a single close paren), and copying the language of report
+section 7.1 about "a delimited piece of text" into report section 6.1.

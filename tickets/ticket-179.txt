@@ -1,0 +1,58 @@
+Formal comment #179 (simplification)
+
+Compound conditions considered bogus
+Reported by: 	John Cowan
+Version:	5.92
+
+Summary: Compound conditions solve the wrong problem
+
+In the current design, there are two kinds of conditions: simple
+conditions, which have a type (with a single inheritance tree) and a
+property list, and compound conditions, which are an ordered list of
+simple conditions. Compound conditions have no types as such, but act
+as if they belonged to all the types of the simple conditions from
+which they are composed. Property values can be reliably retrieved
+from a compound condition iff it has no more than one component
+condition of each type. Conditions are immutable.
+
+This poor man's multiple inheritance makes it messy and awkward to add
+a new type to an existing condition. If the existing condition is
+simple, one must create a compound condition containing the new and
+the existing condition; but if it is compound, one must unwrap the
+compound condition, create a new condiion, and rewrap all the simple
+conditions into a new compound condition. In either case, properties
+will not be lost but may be shadowed.
+
+I sketched a couple of more general solutions involving full-bore
+multiple inheritance (a la C++) and multiple prototypes (a la Self),
+but that dragged in all the well-known consequences of those
+solutions, even though there are only (public) data members/fields and
+not methods. Therefore, I decided to suggest something simpler:
+
+All conditions are simple and condition types provide single
+inheritance only. However, any condition can contain another condition
+wrapped in it. In this design, all conditions have a single type (plus
+the ancestral types, of course). However, conditions can carry
+additional information in the form of other conditions, and it's easy
+to add information to a condition by wrapping it.
+
+Specifics:
+
+The make-condition-type, condition-type?, make-condition, and
+condition? procedures and the define-condition-type syntax are
+unchanged. The condition-has-type? procedure applies only to the
+condition itself, not to its wrapped condition.
+
+(wrap-condition condition type alist) creates a new condition of the
+specified type and with the specified property list, wrapping the
+specified condition.
+
+(unwrap-condition condition) returns the condition wrapped in the
+specified condition, or #f if there is none.
+
+(unwrap-all-conditions condition) returns a list of conditions: the
+first is the specified condition, the second is the condition wrapped
+in it, the third is the condition wrapped in that, etc.
+
+I don't know whether the syntax "condition" is still useful under this
+design. I suspect not.

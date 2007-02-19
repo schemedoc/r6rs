@@ -1,0 +1,481 @@
+Formal comment #146 (defect)
+
+
+Mustard must not be preposterous
+Status: new
+Reported by: 	William D Clinger
+Version:	5.92
+
+Quoting RFC 2119, section 5.1 says the word "must" means that a
+statement is an absolute requirement of the specification.
+
+Unfortunately, the draft's use of the word "must" repeatedly fails to
+distinguish between absolute requirements that are imposed upon
+programmers and absolute requirements that are imposed upon
+implementations. The draft often requires implementations to perform
+impractical or even undecidable checking of arguments. In some (but
+not all) cases, these requirements are combined with explicit
+"Implementation requirements" that are far more reasonable. It appears
+that the general policy for interpreting "must" requirements, as
+stated in section 5.2, does not quite say what it may have been
+intended to say.
+
+In particular, section 5.2 says:
+
+        Descriptions of procedures may express other restrictions on
+        the arguments of a procedure. Typically, such a restriction is
+        formulated as a phrase of the form "x must be a ...". (or
+        otherwise using the word "must.) [sic] If the description does
+        not explicitly distinguish between the programmer's and the
+        implementation's responsibilities, the restrictions describe
+        both the programmer's responsibility, who [sic] must ensure
+        that an appropriate argument is passed, and the
+        implementation's responsibilities, which must check [sic] that
+        the argument is appropriate.
+
+Although implementation responsibilities are sometimes marked as such,
+most of the "other restrictions" mentioned by the paragraph quoted
+above do not explicitly distinguish between the programmer's and the
+implementation's responsibilities. According to the above, this means
+implementations "must check that the argument is appropriate".
+
+Since these checks are often undecidable, and checking them is an
+absolute requirement (because of the word "must"), the 5.92 draft
+specification cannot be implemented.
+
+I went through the LaTeX sources for the 5.92 draft, examining every
+use of the word "must" to see whether I believe it is stating an
+absolute requirement. Where "must" is used to describe some
+restriction on the arguments to a procedure, without explicitly
+distinguishing between the programmer's responsibilities and the
+implementation's, I considered whether it is reasonable for the
+specification to require implementations to check the
+restriction. What follows is a list of the specific errors I believe I
+found.
+
+****************************************************************
+
+Page 4, just before the acknowledgements:
+
+    With respect to future viability, the editors have operated under
+    the assumption that many more Scheme programs will be written in
+    the future than exist in the present, so the future programs are
+    those with which we must be most concerned.
+
+Whether the editors are most concerned with the future is
+undecidable. Should, not must.
+
+****************************************************************
+
+Page 10, left column, last paragraph:
+
+    For example, indexes into data structures must be known exactly,
+    as must some polynomial coefficients in a symbolic algebra system.
+
+Implementations should not be required to determine whether anyone
+knows the indexes into data structures or coefficients in a symbolic
+algebra system.
+
+****************************************************************
+
+Page 20, semantics of the word "should":
+
+    This word, or the adjective recommended, mean [sic] that valid
+    reasons max exist in particular circumstances to ignore a
+    statement, but that the implications must be understood and
+    weighed before choosing a different course.
+
+Whether the implications are understood is undecidable.
+
+****************************************************************
+
+Page 26, just before the rationale:
+
+    Thus, a portable library must reference identifiers only in phases
+    consistent with the declared levels, and the library's meaning
+    must not depend on whether the instances of a library are
+    distinguished or shared across phases or library expansions.
+
+Whether the library's meaning depends on whether the instances of a
+library are distinguished or shared across phases or library
+expansions is probably undecidable.
+
+****************************************************************
+
+Page 29, second column, second paragraph:
+
+    A definition in the sequence of forms must not define any
+    identifier whose binding is used to determine the meaning of the
+    undeferred portions of the definition or any definition that
+    precedes it in the sequence of forms.
+
+I think the macro experts decided that it was not practical for
+implementations to enforce this.
+
+****************************************************************
+
+Page 31, specification of define-syntax:
+
+    This binds the keyword variable to the value of expression, which
+    must evaluate, at macro-expansion time, to a transformer.
+
+Whether an expression evaluates to a transformer is
+undecidable. (Whether an expression evaluates to anything at all is
+already undecidable.) Should, not must.
+
+****************************************************************
+
+Page 33, specification of case:
+
+    Key must be any expression.
+
+The R6RS can reasonably require key to be an expression, but cannot
+reasonably require it to be *any* expression.
+
+****************************************************************
+
+Page 35, specification of letrec:
+
+    One restriction on letrec is very important: it must be possible
+    to evaluate each init without assigning or referring to the value
+    of any variable.
+
+It is undecidable whether there exists an order of evaluation that can
+avoid such assignments or references.
+
+****************************************************************
+
+Page 35, specification of letrec*:
+
+    One restriction on letrec* is very important: it must be possible
+    to evaluate each init without assigning or referring to the value
+    the corresponding variable or the variable of any of the bindings
+    that follow it in bindings.
+
+It is undecidable whether there exists an order of evaluation for the
+right hand sides of the bindings that can avoid such assignments or
+references. The R6RS should permit implementations to evaluate
+expressions in some particular order, without requiring
+implementations to perform an exhaustive search of the
+order-of-evaluation space at run time, complete with the overhead
+necessary to undo any side effects that are performed by evaluations
+that run afoul of the restriction.
+
+****************************************************************
+
+Page 45, specification of number->string:
+
+    Radix must be an exact integer, either 2, 8, 10, or 16.
+
+Page 46, specification of string->number:
+
+    Radix must be an exact integer, either 2, 8, 10, or 16.
+
+Many implementations of Scheme have generalized number->string and
+string->number to accept other radixes. The editors may truly intend
+to rule out such generalizations, but the ubiquity of mistaken mustard
+made me question this one.
+
+****************************************************************
+
+Page 48, specification of list-tail:
+
+    List must be a list of size at least k.
+
+Requiring implementations to check whether list is a list contradicts
+explicit language in the "Implementation responsibilities" just four
+lines down.
+
+****************************************************************
+
+Page 48, specification of list-ref:
+
+    List must be a list of size at least k+1.
+
+This too contradicts explicit language in the "Implementation
+responsibilities".
+
+****************************************************************
+
+Page 48, specifications of map and for-each:
+
+    The lists must all have the same length. Proc must be a procedure
+    that takes as many arguments as there are lists and returns a
+    single value. Proc must not mutate any of the lists.
+
+For programs that use mutable pairs, implementations cannot prevent
+proc from mutating the lists, and it is unreasonable to require them
+to check for such mutations. (Consider what would be necessary to
+check for such mutations if the proc never returns from its first
+call.) The vague language under "Implementation responsibilities"
+suggests that the editors may not intend to require map even to check
+that the lists are lists when proc does not terminate. Finally, it is
+unreasonable to require arity checking when all of the lists are
+empty.
+
+****************************************************************
+
+Page 54, specification of dynamic-wind:
+
+    Before, thunk, and after must be procedures accepting zero
+    arguments and returning any number of values.
+
+Arity checking of thunk and after should not be required unless they
+are actually called.
+
+****************************************************************
+
+Page 56, In "Binding constructs for syntactic keywords":
+
+    A let-syntax or letrec-syntax form may also appear in an
+    expression context, in which case the forms within their bodies
+    must be expressions.
+
+It is undecidable whether a form is an expression, because some
+transformer that is called during expansion of the form may fail to
+terminate. That particular undecidability is pervasive, but I'll
+mention it just this once.
+
+****************************************************************
+
+Page L5, first sentence of the "Bytevectors" chapter:
+
+    Many applications must deal with blocks of binary data by
+    accessing them in various ways---extracting signed or unsigned
+    numbers of various sizes.
+
+The R6RS should not mandate the existence of applications that deal
+with blocks of binary data.
+
+****************************************************************
+
+Page L9, specification of find:
+
+    Proc must be a procedure that takes a single argument and returns
+    a single value. Proc must not mutate list.
+
+Arity checking should not be required unless proc is
+called. Implementations should not be required to check for mutation
+in any case.
+
+The "Implementation responsibilities" say the right thing, but can't
+undo the damage caused by the use of "must" in the first two sentences
+of the specification. That's the last time I'll mention
+"Implementation responsibilities" that contradict the language I am
+quoting.
+
+****************************************************************
+
+Pages L9, specifications of for-all and exists:
+
+    The lists must all have the same length, and proc must be a
+    procedure that accepts n arguments and returns a single
+    value. Proc must not mutate the list arguments.
+
+Arity checking should not be required unless proc is called. If proc
+is called and does not return, implementations should not be required
+to determine whether the other arguments are lists or whether they all
+have the same length. Implementations should not be required to
+determine whether proc mutates the lists.
+
+****************************************************************
+
+Pages L9-10, specifications of filter and partition:
+
+    Proc must be a procedure that accepts a single argument and
+    returns a single value. Proc must not mutate list.
+
+Arity checking should not be required unless proc is
+called. Implementations should not be required to determine whether
+proc mutates the list.
+
+****************************************************************
+
+Page L10, specifications of fold-left and fold-right:
+
+    The lists must all have the same length. Combine must be a
+    procedure that takes one more argument than there are lists and
+    returns a single value. Combine must not mutate the list
+    arguments.
+
+Arity checking should not be required unless combine is called. If
+combine is called and does not return, implementations should not be
+required to determine whether the other arguments are lists or whether
+they all have the same length. Implementations should not be required
+to determine whether combine mutates the lists.
+
+****************************************************************
+
+Pages L10-11, specifications of remp, remove, remv, remq, memp,
+member, memv, memq, assp, assoc, assv, assq:
+
+    Proc must be a procedure that takes a single argument and returns
+    a single value. Proc must not mutate the list arguments.
+
+Arity checking and number-of-return-value-checking should not be
+required unless proc is called. Implementations should not be required
+to determine whether proc mutates the lists.
+
+****************************************************************
+
+Page L12, specifications of list-sort and vector-sort:
+
+    Proc must be a procedure that accepts any two elements of the list or vector.
+
+Requiring implementations to test whether proc accepts any two
+elements of the list or vector turns an O(n lg n) algorithm into an
+O(n2) algorithm.
+
+****************************************************************
+
+Page L14, specification of make-record-constructor-descriptor:
+
+    If protocol is a procedure, it is called by record-constructor
+    with a single argument p and must return a procedure that creates
+    and returns an instance of the record type using p as described
+    below.
+
+That is undecidable. Implementations cannot even tell whether protocol
+will return. Should, not must.
+
+    The procedure returned by protocol may take any number of
+    arguments but must call new with the number of arguments it
+    expects and return the resulting record instance, as shown in the
+    simple example below.
+
+Whether protocol calls new at all is already undecidable. Should, not
+must.
+
+****************************************************************
+
+Page L20, specification of with-exception-handler:
+
+    Handler must be a procedure that accepts one argument.
+
+Arity checking should not be required unless the handler is
+called. (In many implementations of Scheme, there is no way for the
+implementation to test the arity of a procedure without calling
+it. Even in systems that can test for arity without calling a
+procedure, the procedure may immediately delegate to some other
+procedure that does not have the same arity.)
+
+****************************************************************
+
+Page L21, fourth paragraph (rationale) of section 6.2:
+
+    Consequently, to facilitate effective handling of exceptions,
+    conditions must communicate as much information as possible as
+    accurately as possible, and still allow effective handling by code
+    that did not precisely anticipate the nature of the exception that
+    occurred.
+
+Whether conditions communicate as much information as possible as
+accurately as possible is undecidable. Should, not must.
+
+****************************************************************
+
+Page L27, specification of &i/o-decoding:
+
+    If the exception handler returns, it must return a character or
+    string representing the decoded text starting at the port's
+    current position, and the exception handler must update the port's
+    position to point past the error.
+
+The exception handler is expected to return a character or string
+representing the decoded text, and should update the port's position,
+but implementations can't possibly enforce that. The specification of
+&i/o-encoding gets this right.
+
+****************************************************************
+
+Page L30, specification of the read! argument to make-custom-binary-input-port:
+
+    The read! procedure must return the number of bytes that it
+    writes, as an exact integer.
+
+Page L33, specification of the write! argument to
+make-custom-binary-output-port:
+
+    In any case, the write! procedure must return the number of bytes
+    that it reads, as an exact integer.
+
+Should (or "is expected to"), not must.
+
+****************************************************************
+
+Page L34, specification of put-datum:
+
+    If put-datum is used to write several subsequent external
+    representations to an output port, care must be taken to delimit
+    them properly so they can be read back in by subsequent calls to
+    get-datum.
+
+Taking care is not an absolute requirement. Should, not must.
+
+****************************************************************
+
+Page L34, specification of call-with-input-file:
+
+    Proc must be a procedure accepting a single argument.
+
+Arity checking should not be required if an i/o exception is raised
+before proc is called.
+
+****************************************************************
+
+Page L35, specifications of with-input-from-file and with-output-to-file:
+
+    Thunk must be a procedure that takes no arguments.
+
+Arity checking should not be required if an i/o exception is raised
+before thunk is called.
+
+****************************************************************
+
+Page L44, first paragraph:
+
+    In define-syntax (report section 9.3), let-syntax, and
+    letrec-syntax forms (report section 9.20), a binding for a
+    syntactic keyword must be an expression that evaluates to a
+    transformer.
+
+Whether an expression evaluates to a transformer is
+undecidable. (Whether an expression evaluates to anything at all is
+already undecidable.) Should, not must.
+
+****************************************************************
+
+Page L44, specification of make-variable-transformer:
+
+    Proc must be a procedure that accepts one argument, a wrapped syntax object.
+
+This too is undecidable.
+
+****************************************************************
+
+Page L50-51:
+
+    A hash function is a procedure that maps keys to integers, and
+    must be compatible with the equivalence function, which is a
+    procedure that accepts two keys and returns true if they are
+    equivalent, otherwise returns #f.
+
+It is undecidable whether the hash function is compatible with the
+equivalence function.
+
+****************************************************************
+
+Page L51, specification of make-hash-table:
+
+    Hash-function will be called by other procedures described in this
+    chapter with a key as argument, and must return a non-negative
+    exact integer.
+
+The make-hash-table procedure cannot tell whether hash-function would
+always return a non-negative exact integer when called with a key. The
+make-hash-table procedure doesn't even know what kinds of keys will be
+used.
+
+****************************************************************
+
+Will

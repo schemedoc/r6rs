@@ -1,0 +1,12 @@
+Formal comment #186 (defect)
+
+Buffer mode should be specifiable on open-file-input-port
+Reported by: 	John Cowan
+Version:	5.92
+
+Currently, buffer modes are for output only. However, operating
+systems also distinguish between buffered and unbuffered input. The
+open-file-input-port procedure should be allowed to accept an
+additional argument specifying the buffer mode, in parallel with
+open-file-output-port. Allowing input to be unbuffered can limit
+deadlocks when dealing with communicating processes.

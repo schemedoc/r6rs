@@ -1,0 +1,26 @@
+Formal comment #165 (defect)
+
+Rename named `let'
+Reported by: 	Mike Sperber
+Version:	5.92
+
+Issue
+
+The fact that the convenient syntax for writing recursive procedures
+is part of `let' is a long-standing wart in the syntax of Scheme. It
+is unintuitive (it expands into `letrec', rather than a simpler form
+of `let), difficult to explain to newcomers to Scheme, and
+disconcerting to the casual reader.
+
+How to fix
+
+If the syntax needs to be integrated with one of the standard binding
+forms, it should be letrec', not let'. However, it would be much
+better to rename named let' to something else such as rec', `recur' or
+`recursive'.
+
+As this would break many existing Scheme programs, the report might
+introduce the separate form, and, to ease the transition, keep named
+`let' for now, either putting it into a separate library alongside
+(r6rs mutable-pairs) or at least marking it as deprecated and likely
+to disappear in a future revision of the report.

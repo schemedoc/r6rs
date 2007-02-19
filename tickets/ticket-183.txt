@@ -1,0 +1,21 @@
+Formal comment #183 (defect)
+
+The standard-*-port procedures should return a fresh binary port
+Reported by: 	John Cowan
+Version:	5.92
+
+Currently, the procedures standard-input-port, standard-output-port,
+and standard-error-port are very vague. One does not know if one will
+get a binary or a textual port, though a textual port is encouraged;
+one does not know if it is safe to close the port or not.
+
+I suggest that the definition be firmed up: the port returned must be
+fresh and binary. In this way it may be safely closed and safely
+converted to a textual port without risking the usability of any
+existing port.
+
+The existing position is radically unsafe: if one closes or
+textualizes the port, one may implicitly close a port in use elsewhere
+in the program. If one gets a textual port and the transcoding is
+inappropriate to the application, there is nothing to be done, as
+there is (deliberately) no way to recover the underlying binary port.

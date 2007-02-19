@@ -1,0 +1,33 @@
+Formal comment #161 (defect)
+
+Problems in description of instantiation semantics
+Reported by: 	Andre van Tonder
+Version:	5.92
+
+Pages : 25-26 Dependencies: None
+
+Summary:
+
+Library instantiation semantics insufficient or incorrect.
+
+Description:
+
+The document does not distinguish evaluation times of macro
+definitions and variable definitions. In particular, it states "An
+instance of a library corresponds to an evaluation of its definitions
+and expressions in a particular phase relative to another library."
+
+Given this, the following statement is incorrect:
+
+        "... if the expanded form of one library references at phase 0
+        an identifier from another library, then before the
+        referencing library is instantiated at phase n, the referenced
+        library must be instantiated at phase n."
+
+It is incorrect because it requires that macro definitions in the
+referenced library must be re-evaluated (unnecessarily) when the
+/already expanded/ referencing library is run.
+
+Furthermore, the decription on pages 25-26 is incomplete. It does not
+actually decribe the phase where the macro definitions in an imported
+must be evaluated (but the variable definitions must not).

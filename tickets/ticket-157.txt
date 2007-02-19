@@ -1,0 +1,27 @@
+Formal comment #157 (enhancement)
+
+Allow limited comparisons of complex numbers
+Reported by: 	John Cowan
+Version:	5.92
+
+Summary: Some general complex inequality comparisons should be
+allowed.
+
+Currently, general complex numbers cannot be compared with <, >, <=,
+or >=: the concept is mathematically defined. However, certain kinds
+of restricted complex numbers can be compared. The status quo is to
+permit comparison of real numbers only.
+
+Option A: extend these functions to compare imaginary numbers (real
+part zero in the sense of "zero?").
+
+Option B: extend these functions to compare general complex numbers
+provided that all the real-parts are the same or all the
+imaginary-parts are the same.
+
+In either case, an error should be signaled if the numbers don't meet
+the criteria.
+
+This allows looping along any orthogonal line in the complex plane
+using >= rather than = to terminate; with inexact numbers, < is more
+reliable.

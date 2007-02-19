@@ -1,0 +1,17 @@
+Formal comment #137 (minor)
+
+Non-ASCII characters should not be treated all alike
+Reported by: 	John Cowan
+
+Component: 	lexicalsyntax 
+Version: 	5.92
+
+The lexical syntax should not allow Nd, Mc, or Me characters to be
+initial in identifiers. Allowing a sequence of Nd characters to be
+identifiers means that digit-strings in non-ASCII digits are
+identifiers. I don't insist that all digit-strings be numerals, but
+they certainly should not be identifiers.
+
+Likewise, Unicode semantics attaches a Mc or Me character to its
+predecessor, which would not be part of the identifier. That's
+undesirable.

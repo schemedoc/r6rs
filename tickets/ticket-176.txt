@@ -1,0 +1,91 @@
+Formal comment #176 (defect)
+
+Raising of exceptions should not be ambiguous or confusing
+Reported by: 	William D Clinger
+Version:	5.92
+
+In an effort to obtain a clearer picture of what the editors of the
+5.92 draft might perhaps have intended to require of implementations,
+I searched for every occurrence of the word "raise" or "raised". Some
+of what I found is ambiguous, confusing, or contradictory. Herewith
+details.
+
+This comment is minor by comparison with the preposterous mustard of
+the 5.92 draft, but it would make sense to try to clean all of this up
+in the next draft.
+
+****************************************************************
+
+The first paragraph of section 4.3 (Exceptional situations) begins:
+
+    A variety of exceptional situations are distinguished in this
+    report, among them violations of syntax, violations of a
+    procedure's specification, violations of implementation
+    restrictions, and exceptional situations in the environment. When
+    an exception is raised, an object is provided that describes the
+    nature of the exceptional situation.
+
+There is no necessary connection between those two sentences. In
+particular, those sentences do not say whether an exception
+must/should/may be raised in response to an exceptional situation. I
+assume that was deliberate.
+
+In the third paragraph of section 4.3, "implementations are required
+to raise an exception" is probably intended to mean that
+"implementations must raise an exception" under the circumstance
+described in that paragraph.
+
+The fifth paragraph of section 4.3 says "implementations are required
+to report violations of implementation restrictions", but then says
+they "may" raise an &implementation-restriction exception when one
+particular kind of implementation restriction is violated. Section 4.5
+(Safety) then says "must" again. This is confusing and contradictory:
+Does the draft mean "may" or "must"?
+
+****************************************************************
+
+The first two paragraphs of section 4.4 (Argument checking) say that
+implementations are "responsible for checking that the restrictions in
+the specfication are indeed met, to the extent that it is reasonable,
+possible, and necessary to allow the specified operation to complete
+successfully" and are "encouraged to perform as much checking as
+possible and give detailed feedback about violations".
+
+That gives implementations a lot of wiggle room; sounds like a
+"should". The last paragraph of section 4.4 then says:
+
+    When an implementation detects a violation of an argument
+    specification at run time, it must either raise an exception with
+    condition type &violation, or abort the program in a way
+    consistent with the safety of execution as described in the next
+    section.
+
+In context, following the first two paragraphs of section 4.4, I
+interpret the above to mean (1) implementations are not required to
+detect such violations at all and (2) even if they detect such a
+violation, they may abort the program without raising an exception.
+
+That interpretation, alas, applies only to situations for which the
+report gives no specific guidance to the contrary.
+
+****************************************************************
+
+The second paragraph of section 4.7 (Multiple return values) says:
+
+    ....If the number of return values passed to a continuation
+    created by a call to call-with-values is not accepted by its
+    consumer that was passed in that call, then an exception is
+    raised....
+
+According to section 5.5 (Exceptional situations), the above means an
+exception must be raised. If the consumer is written in some language
+other than Scheme, however, then the situation may not be
+detectable. Are we to conclude that conforming implementations cannot
+allow consumers to be written in a language/implementation that does
+not expose its procedures' arity at run time?
+
+The specification of call-with-values in section 9.17 has the same
+problem.
+
+*********************************************
+Attachments

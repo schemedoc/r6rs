@@ -1,0 +1,31 @@
+Formal comment #178 (enhancement)
+
+should allow quoting non-letters in identifiers
+Reported by: 	Per Bothner <per@bothner.com>
+Version:	5.92
+
+Summary: allow escaping non-constituent characters in identifiers
+
+Common Lisp and many Scheme implementations provide a way to escape
+certain characters to force them to be viewed as constituents of
+identifiers (and hence symbols).
+
+The draft does allow <inline hex escape> to serve this need, but such
+hex escapes are not very readable or user-friendly.
+
+Traditionally, one or both of these have been used:
+
+|123|
+\123
+
+We may not want to reserve | for this purpose, but \ is already in use
+for escapes, and it is easy to extend it. I suggest:
+
+<initial> --> <constituent> | <special initial>
+   | <inline escape>
+
+<inline escape> -->
+   | <inline hex escape>
+   | \<character name>;
+   | \<any character whose category is none of Lu, Ll, Lt, Lm, or Lo>
+

@@ -1,0 +1,39 @@
+Formal comment #167 (defect)
+
+floor, ceiling, truncate, and round are unnecessarily over-specified on infinities and NaNs
+Reported by: 	Brad Lucier
+Version:	5.92
+
+On page 44 of the main body of the report, the description of floor,
+ceiling, truncate, and round contains the text
+
+> Although infinities and NaNs are not integers, these pro-
+> cedures return an infinity when given an infinity as an ar-
+> gument, and a NaN when given a NaN.
+
+The same text appears in the "Standard Libraries" document when
+describing the flonum-specific versions of the same functions, namely
+flfloor, flceiling, fltruncate, and flround.
+
+I consider the fact that the flonum versions of these operations are
+designed to operate in this way to be an optimization issue, in that
+common hardware implementations of IEEE 754 arithmetic act in this
+way, just as both R5.92RS flsqrt *may* return a NaN and IEEE 754 sqrt
+*is defined* to return NaN when given the argument "-1.". In R*RS,
+however, "(sqrt -1)" is expected to do "the right thing" and return a
+complex imaginary unit if complex numbers are available.
+
+I have argued in the past, and will continue to do so, that the
+generic arithmetic versions of these functions should return only
+integers, and that, in a "safe" environment (I know, I know, the
+existence of such things are no longer mandated) passing an infinity
+or a NaN to these four functions should throw an exception. I believe
+that implementations should be given the freedom to do exactly
+that. If people want the IEEE 754 behavior of these functions, they
+can call the fl* versions of these functions.
+
+So I suggest that the current wording should be kept in the
+specification of the fl* versions of these functions, and be removed
+from the main body of the report.
+
+Brad

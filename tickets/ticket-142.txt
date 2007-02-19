@@ -1,0 +1,22 @@
+Formal comment #142 (enhancement)
+
+Change the response to formal comment #47 to provide vector-sort!, not vector-sort.
+Reported by: 	John Cowan
+Version:	5.92
+
+Report version: 5.92
+
+The response to formal comment #47 says that R6RS will provide
+list-sort and vector-sort procedures, both to be stable and
+nondestructive. However, an important application of vectors is in
+situations where large sequences are required and memory must be
+conserved. In this context, it is often useful to sort a 1G vector in
+place rather than causing the application to thrash (or crash) by
+allocating another such vector.
+
+Providing vector-sort! as primitive will alleviate this
+requirement. It is very easy to define vector-sort on top of it by
+copying the source vector and destructively sorting the copy.
+
+No such issues arise for list-sort, so it can and should be left
+nondestructive.

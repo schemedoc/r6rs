@@ -1,0 +1,33 @@
+Formal comment #180 (defect)
+
+Binary and string pseudo-transcoders should die
+Reported by: 	John Cowan
+Version:	5.92
+
+Every R5.92RS port has a transcoder, which come in three flavors:
+transcoders proper, which are attached to binary ports to make them
+into textual ports; the binary transcoder, which does nothing except
+stand in for a transcoder on a binary port; and the
+implementation-defined transcoder provided for string ports. The
+latter two flavors are not really transcoders, for they don't provide
+any transcoding functions. I propose, therefore, that they be dropped.
+
+The binary-transcoder procedure is no longer required, and #f is
+returned by the port-transcoder procedure when applied to a binary
+port or a string port.
+
+In (I believe) all cases where the binary transcoder is referred to,
+it can simply be dropped. The exception is the open-file-*-port
+procedures, where a binary file can be opened only by explicitly
+specifying the binary transcoder. This is inconsistent with other
+kinds of port constructors, and I propose one of two resolutions:
+
+A: If the transcoder is omitted, return a binary port. In order to
+create a port with "native" transcoding, introduce a procedure
+native-transcoder, which returns an implementation-dependent
+transcoder.
+
+B: Allow #f as an explicit argument to open-file-*-port procedures to
+return a binary port.
+
+I prefer A.

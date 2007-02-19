@@ -1,0 +1,58 @@
+Formal comment #188 (enhancement)
+
+Add symbol=? and boolean=?
+Reported by: 	Lauri Alanko
+Version:	5.92
+
+Email: la at iki.fi
+Summary
+
+Dedicated equivalence predicates for symbols and booleans.
+
+Description
+
+I propose adding to the base library two new equivalence predicates
+whose arguments are restricted to symbols and booleans.
+
+One reason for this is simply consistency. It is customary for all
+(non-singleton) types to have their own dedicated equivalence
+predicates. Symbols and booleans seem to be the only exceptions.
+
+The benefits of dedicated predicates would be the same as usual: in
+contexts where the arguments are expected to be of a single fixed
+type, they provide more information to the programmer and the
+compiler, and better error checking. Especially symbol-only
+comparisons are very common.
+
+Currently, symbol comparisons are often done with eq?, which seems
+like bad style, since eq? is a low-level optimization primitive with
+implementation-dependent semantics. Providing an alternative would
+hopefully encourage writing better-defined code.
+
+I get the feeling that the reason for the lack of the predicates is
+that symbols and booleans are already guaranteed to be comparable with
+eq?, so the implementations cannot be anything but trivial. However, I
+think the guarantees made for an optimization loophole shouldn't
+affect the design of the rest of the language.
+
+PLT Scheme's MzLib? library currently provides these predicates, and
+they seem to enjoy some minor usage.
+
+Proposal
+
+Add to Section 9.10, page 46, the following:
+
+(boolean=? boolean1 boolean2)                      procedure
+
+    Returns #t if boolean1 and boolean2 are both #t or both #f,
+    otherwise returns #f.
+
+Add to Section 9.12, page 49, the following:
+
+(symbol=? symbol1 symbol2)                         procedure
+
+    Returns #t if symbol1 and symbol2 have the same name, otherwise
+    returns #f.
+
+In Section 9.6, page 37, change the definition of eqv? for symbols and
+booleans to refer to the above procedures.

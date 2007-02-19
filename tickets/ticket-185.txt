@@ -1,0 +1,59 @@
+Formal comment #185 (defect)
+
+The mess around line endings (eol-style and line endings completely unspecified)
+Reported by: 	John Cowan
+Version:	5.92
+
+One of the components of a transcoder is a symbol called the
+eol-style. Standard values of this symbol are lf, cr, crlf, and
+ls. There is absolutely no explanation of the purpose of the
+eol-style, however. We are left only with the remark that invoking
+(newline) is the same as applying write-char to #\linefeed, and with
+the explanation of get-line:
+
+    If an end-of-line encoding or line separator is read, then a
+    string containing all of the text up to (but not including) the
+    end-of-line encoding is returned, and the port is updated to point
+    just past the end-of-line encoding or line separator.
+
+It is not clear what an end-of-line encoding is. Is it the one
+specified in eol-style? In any case, U+2028 is always recognized as
+equivalent to an end-of-line encoding, though it is the one hardly
+ever used in the Real World.
+
+Furthermore, line buffering is declared to flush the buffer whenever a
+newline or line separator is written to a buffered output port. What
+about other separators on other platforms?
+
+I propose the following:
+
+   1. The standard line-ending character within R6RS Scheme is #\linefeed.
+
+   2. The purpose of eol-style is to say how to translate external
+      representations of line endings into #\linefeed on input, or
+      vice versa on output. Valid symbols for eol-style are 'cr, 'lf,
+      'crlf, 'nel, 'crnel, 'ls, and 'none.
+
+   3. On input, the line endings CR, LF, CR+LF, NEL, CR+NEL, and LS
+      (U+2028) are all equivalent and are converted to #\linefeed,
+      *unless* the eol-style is 'none. This works better in modern
+      environments, where (e.g.) Mac OS X systems may have a mixture of
+      lf, cr, and (imported from Windows) crlf plain text files. Programs
+      which care about the particulars of line ending must use 'none and
+      do their own line-end processing. The affected procedures are
+      get-char, lookahead-char, get-string-*, get-line (which does not
+      return the #\linefeed), get-datum, and read.
+
+   4. On output, #\linefeed characters are converted to the specified
+      eol-style, or left alone if eol-style is 'none. The affected
+      procedures are put-char, put-string-*, put-datum, write-char,
+      newline, display, and write.
+
+   5. Line buffering is made implementation-dependent (it will be anyhow). 
+
+I also take this opportunity to point out that single-line comments
+with ; should terminate at the first line ending rather than the first
+linefeed, and that a line ending within a Scheme string literal should
+become a single #\linefeed character (as if \n had been
+written). Getting this right requires the above definition of line
+ending to be added to the lexical syntax.

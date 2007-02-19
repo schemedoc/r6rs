@@ -1,0 +1,34 @@
+Formal comment #175 (defect)
+
+returning exception handlers easily trigger infinite loops
+Reported by: 	Robby Findler
+Version:	5.92
+
+As I understand the current informal spec (with help from Mike) and as
+is shown in the operational semantics, exception handlers that return
+to a `raise' very easily get into infinite loops. (Indeed, without
+effects or dispatching on the exception itself, it seems impossible to
+avoid an infinite loop when a handler returns.)
+
+For example these programs:
+
+  (with-exception-handler (lambda (x) x) (lambda () (raise 1)))
+  (with-exception-handler (lambda (x) x) (lambda () (car '())))
+
+both result in infinite loops. (Try it out! :)
+
+I believe that there is a simple fix to this, namely to make the
+implicit raise (the one that gets triggered when the handler returns)
+be in the same context as call to the handler. That is, in the handler
+context that does not contain the handler that just returned.
+
+From the operational semantics point of view, it means changing the
+begin expression in the 6xraise rule from this:
+
+(begin (handlers v_1 ... (v_2 v_3)) (raise (condition "handler returned")))
+
+to this:
+
+(handlers v_1 ... (begin (v_2 v_3) (raise (condition "handler returned"))))
+
+Robby

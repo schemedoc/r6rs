@@ -1,0 +1,23 @@
+Formal comment #184 (enhancement)
+
+SRFI-39 should be made an R6RS library
+Reported by: 	John Cowan
+Version:	5.92
+
+I have searched the various status reports and seen nothing about
+dynamic binding, dynamic variables, or parameters. I suggest that
+SRFI-39 be incorporated into R6RS as the (r6rs parameters) library.
+
+The reason for making parameters part of the standard, beside their
+general utility, is that they are intertwingled with the
+current-*-port facilities, which are explicitly specified as
+parameters by SRFI-39. As a result, it is hard to load a portable
+implementation of parameters into a Scheme that doesn't have it;
+current-*-port cannot be rebound by parameterize correctly.
+
+Judging by the SRFI-39 mail archives, the only thing controversial
+about the final form of the SRFI is the behavior when interacting with
+threads. As threads are not part of R6RS, the issue does not arise.
+
+SRFI-39 is already provided by at least Guile, Kawa, Gambit, SISC,
+RScheme, scsh, Gauche, STklos, and Chicken.

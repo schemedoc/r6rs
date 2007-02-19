@@ -1,0 +1,16 @@
+Formal comment #152 (defect)
+
+Inappropriate number of values should be defined sensibly
+Reported by: 	John Cowan
+Version:	5.92
+
+Report section 9.17, s.v. "values", says that passing an inappropriate
+number of values to a continuation is undefined. I believe it ought to
+be defined thus:
+
+    If an expression supplies too many values to its continuation, the
+    excess values are discarded. If it supplies too few values, the
+    deficient values are set to the unspecified value.
+
+In particular, this paves the way to eliminating "the unspecified
+value" in favor of simply returning zero values.

@@ -1,0 +1,22 @@
+Formal comment #153 (defect)
+
+
+Rename on export considered harmful
+Status: closed (worksforme)
+Reported by: 	John Cowan
+Version:	5.92
+
+Summary: Renaming identifiers on export should be strongly justified
+or abandoned.
+
+Report section 6.1 provides a facility for renaming identifiers on
+export from a library, but no explanation is given for it. The need to
+rename identifiers on import is plain, as they may need to change to
+avoid conflicts with other imported or local identifiers. At export
+time, however, such conflicts are not known.
+
+Having two different "native" identifiers in a library is overkill. It
+is the very simplest of refactorings to globally change all the
+instances of identifiers in a given module, and that ought to be
+sufficient. Either remove the facility or give a strong justification
+for it, please.

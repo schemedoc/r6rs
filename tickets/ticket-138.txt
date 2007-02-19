@@ -1,0 +1,48 @@
+Formal comment #138 (major)
+
+The treatment of version number needs to be changed
+Reported by: 	Mike Sperber
+Version: 	5.91
+
+This post by Marcin Kowalczyk describes the issue:
+
+http://lists.r6rs.org/pipermail/r6rs-discuss/2006-September/000013.html
+
+Quoting the post:
+
+    6.1. As far as I understand it, it's possible to specify
+    conditions in version references only in each subversion field
+    separately. For example it's not possible to say "version (3 n)
+    for n>=2 or version (m n) for m>=4" (i.e. "3.2 or newer"), nor
+    even "(3 2 . m) for any tail m". Perhaps I misunderstood how
+    version numbers would typically be used in practice. But wouldn't
+    it be better if "and" and "or" were applicable to version
+    conditions as a whole, rather than individual subversion fields?
+
+How to fix the issue:
+
+While the above disclaimer applies, I wrote the original versioning
+spec, and this seems like a clear omission.
+
+Here's how I'd like to fix it:
+
+<version reference> -> <empty>
+                     | <version spec>     ; new
+
+<version spec> -> (<subversion reference> ...)
+                | (and <version spec> ...)
+                | (or <version spec> ...)
+                | (not <version spec> ...)
+
+This would allow saying:
+
+(or (3 (>= 2))
+    ((>= 4)))
+
+which would match:
+
+3.2, 3.3, 3.2.1, 3.5.2, etc., 4, 4.0, 4.1.1, etc.
+
+I believe the dual occurrence of and', or', and `not' is unambiguous,
+as crossing from <version spec> to <subversion reference> always
+involves an additional open parenthesis, and there's no way back up.

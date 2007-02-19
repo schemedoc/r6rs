@@ -1,0 +1,79 @@
+Formal comment #141 (enhancement)
+
+It is not clear what negating 0.0 produces
+Reported by: 	Felix Klock
+Version:	5.92
+
+Email: pfr6rs@pnkfx.org
+
+summary: It is not clear what negating -0.0 produces (if it is even
+specified)
+
+description:
+
+(FYI this whole comment is modulo the assumption that we're talking
+about an implementation of R6RS that uses IEEE binary floating point
+numbers.)
+
+The specification of - says on page 40 that when - is applied to a
+single argument, it returns the additive inverse of its
+argument. Likewise, the specification of fl- says on page 101 that
+when fl- is applied to a single argument, it returns the additive
+flonum inverse of its argument.
+
+I am not sure that these descriptions uniquely specify the value of (-
+0.0) or (fl- 0.0). In particular, aren't 0.0 and -0.0 both additive
+inverses of 0.0? That is, for any number x, (= x (+ x 0.0 -0.0) (+ x
+0.0 0.0)), right?
+
+I do not believe there is an obviously correct choice between 0.0 and
+-0.0. In support of this statement, here is an informal tally of
+Scheme system behaviors (a * means that particular scheme
+implementation does not yield negative infinity from (/ 1.0 (* -1.0
+0.0)), and therefore there may be no way to actually observe a -0.0):
+
+(- 0.0) is -0.0
+MzScheme
+Chicken*
+Gambit
+Chez
+Kawa
+
+(- 0.0) is 0.0
+Larceny
+Scheme48*
+Bigloo
+SCM*
+MIT Scheme*
+
+(Corrections to the above tally are welcome.)
+
+If R6RS does specify whether (- 0.0) produces -0.0 or 0.0, there is
+some support for choosing -0.0 given in Goldberg [1], where he says
+that the identity "-x = 0 - x fails for x = +0.".
+
+Perhaps the choice between the two possible results is meant to be
+left unspecified. But even then I think it should be explicitly stated
+as being unspecified, in the same manner that (fllog -0.0) is given as
+an example producing an unspecified
+
+Proposals for how to fix the issue:
+
+Either:
+
+   1. Specify that (fl- 0.0) produces -0.0 and (fl- -0.0) produces
+      0.0, and likewise for -.
+
+   2. Specify that (fl- 0.0) produces -0.0 and (fl- -0.0) produces
+      0.0. For (- 0.0) and (- -0.0), explicitly state that the result
+      is either -0.0 or 0.0, but the choice is otherwise unspecified.
+
+   3. For both fl- and -, explicitly state that the result is either
+      -0.0 or 0.0, but the choice is otherwise unspecified.
+
+-Felix
+
+[1] "What Every Computer Scientist Should Know About Floating-Point Arithmetic"
+
+    http://docs.sun.com/source/806-3568/ncg_goldberg.html
+
