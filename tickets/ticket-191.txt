@@ -1,0 +1,20 @@
+Formal comment #191 (enhancement)
+
+Datum values, shared structure and eq? vs equal?
+Reported by: 	Mikael Tillenius
+Version: 	5.92
+
+email: mti@tillenius.com
+
+Description
+
+The description of datum values in section 1.9 doesn't forbidd shared
+structure. For example would the value of "(let ((x (cons (cons 1 2)
+3))) (set-cdr! x (car x)) x)" return a datum value? I assume the
+answer i "no" but it would be nice to make it explicit. Also in
+section 3 (page 11, middle of right column) in the discussion of "(8
+13)" vs "( 8 13 )" I think it should be defined what is meant by
+"equal", by adding a reference to the predicate "equal?".  Proposal
+
+Make it explicit in section 1.9 that shared or recursive structure is
+forbidden. Add a reference to "equal?" in section 9.6.
