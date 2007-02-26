@@ -1,0 +1,30 @@
+Formal comment #193 (enhancement)
+
+proc in hash-table-update! should not mutate hash-table
+Reported by: 	Daniel Villeneuve
+Version: 	5.92
+
+email: daniel_villeneuve@sympatico.ca
+
+SUMMARY
+
+The callback procedure of the hash-table-update! function should be
+restricted to not mutate the hash-table being updated.
+
+DESCRIPTION
+
+The advertised goal of hash-table-update! is to allow an
+implementation to provide a more efficient update algorithm than the
+one proposed in the Standard.
+
+Such extra efficiency is presumed to come from the implementation
+remembering the "entry" found by the underlying call to hash-table-ref
+and reusing this entry in the underlying call to hash-table-set!.
+
+But this remembering seems unsound if <proc> can call
+(hash-table-delete! ht key) or (hash-table-clear! ht).
+
+PROPOSAL
+
+Add "<proc> must not mutate the hash-table" as in the specification of
+map.

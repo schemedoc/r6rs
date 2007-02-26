@@ -1,0 +1,64 @@
+Formal comment #200 (defect)
+
+I/O: Bytevector output ports and `set-port-position!'
+Reported by: 	Ludovic Courtès
+Version: 	5.92
+
+Summary
+
+The return value of a bytevector output port procedure is
+under-specified when `set-port-position!' is used.
+
+Description
+
+Section 7.2.10 of the report (page 32) explains that binary bytevector
+output ports "will support the port-position' and set-port-position!'
+operations.". It then defines the associated procedure as follows:
+
+    When the procedure is called without arguments, it returns a
+    bytevector consisting of the port's accumulated data and removes
+    the accumulated data from the port.
+
+According to this definition, the procedure returns all the data
+accumulated instead of just the data _up to_ the current port
+position. I believe the latter would be a more appropriate definition
+since otherwise the bytevector returned by the procedure differs from
+the what was intended by the port user.
+
+Example:
+
+  (let-values (((port get-content)
+                (open-bytevector-output-port)))
+    (put-bytevector port (u8-list->bytevector '(1 2 3 4 5 6)))
+    (set-port-position! port 0)
+    (put-bytevector port (u8-list->bytevector '(0 0 0)))
+    (let ((first (get-content)))
+      (let ((second (get-content)))
+        (set-port-position! port (+ (port-position port) 3))
+        (list first second (get-content)))))
+
+Using the current semantics, FIRST and SECOND would be equal to
+`#vu8(0 0 0 4 5 6)' and `#vu8()', respectively, and the following
+`set-port-position!' would raise an error.
+
+Instead, I believe it should return `(#vu8(0 0 0) #vu8() #vu8(4 5
+6))', which is closer to the user intention.
+
+Thus, the aforementioned paragraph could be rewritten along the
+following lines:
+
+    When the procedure is called without arguments, it returns a
+    bytevector consisting of the port's accumulated data up to its
+    current position (when it supports port-position' and
+    set-port-position!'). It removes all the accumulated data up to
+    the port's current position from the port. Accumulated data that
+    is beyond the port's current position should be kept by the
+    port. Invoking the procedure also sets the port position to zero
+    (if the port supports `port-position').
+
+I'm not sure about this last sentence since it would make bytevector
+output ports behave differently from "regular" output ports, which
+might be an issue.
+
+An alternative solution might be to disallow `set-port-position!'
+altogether.

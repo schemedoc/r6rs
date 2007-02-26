@@ -1,0 +1,36 @@
+Formal comment #194 (enhancement)
+
+hash-table-mutable? vs hash-table-immutable?
+Reported by: 	Daniel Villeneuve
+Version: 	5.92
+
+SUMMARY
+
+The predicate about mutability of hash-tables would be better defined
+as hash-table-immutable?.
+
+DESCRIPTION
+
+I suggest that the predicate to test about mutability/immutability of
+hash-tables be named hash-table-immutable? for the following reasons:
+
+a) This is the property that is given to hash-table-copy.
+
+b) Among all Scheme collections, immutability is the exception, and
+   this is what we want to single out.
+
+c) I think that the most frequent idiom for this predicate is
+
+(define (some-function-modifying-a-hash-table! ht)
+  (if (not (hash-table-mutable? ht))
+     (error ...)))
+
+which can be written a little more succinctly as
+
+(define (some-function-modifying-a-hash-table! ht)
+  (if (hash-table-immutable? ht)
+     (error ...)))
+
+PROPOSAL
+
+Replace hash-table-mutable? by hash-table-immutable?.

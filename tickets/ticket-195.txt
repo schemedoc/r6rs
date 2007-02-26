@@ -1,0 +1,20 @@
+Formal comment #195 (enhancement)
+
+procedures passed to make-hash-table should not mutate the hash table
+Reported by: 	Daniel Villeneuve
+Version: 	5.92
+
+SUMMARY
+
+The callback functions passed to make-hash-table should not mutate the
+hash table they're invoked on.
+
+DESCRIPTION
+
+I think this is evident, though it is not clearly stated in the spec
+(p. 51, Constructors).
+
+PROPOSAL
+
+Add "The <hash-function> and <equiv> procedures must not mutate the
+hash-table they are invoked on.", similar to the spec of map.

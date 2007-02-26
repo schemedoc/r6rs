@@ -1,0 +1,79 @@
+Formal comment #196 (enhancement)
+
+modified interface to list-sort and vector-sort
+Reported by: 	Daniel Villeneuve
+Version: 	5.92
+
+SUMMARY
+
+Implementations could provide better sorting performance with a
+slightly different sorting interface.
+
+DESCRIPTION
+
+This comment is in two related parts.
+
+PART A: prototype for comparison functions
+
+The comparison function provided to list-sort and vector-sort should
+return a 3-way result when comparing two objects a and b:
+
+    * negative integer: a < b
+    * 0: a = b
+    * positive integer: a > b 
+
+This avoids comparing items twice, which can be costly in some cases
+(e.g., comparing vectors of numbers).
+
+There is evidence from other languages (C, Java) that the 3-way
+interface has advantages, which I presume involve performance as a
+criterion.
+
+As a useful addition, equality could be returned as #f. This would
+enable easy combination of comparison functions, as in:
+
+(lambda (a b)
+  (or (cmp-increasing-number (get-field-1 a) (get-field-1 b))
+      (cmp-increasing-number (get-field-2 a) (get-field-2 b))))
+
+Standard comparison functions behaving as described above could be
+provided by the implementation:
+
+    * cmp-increasing-number
+    * cmp-decreasing-number
+    * cmp-increasing-string
+    * cmp-decreasing-string 
+
+...
+
+The comparison functions on numbers could raise an exception if two
+numbers are non-comparable (e.g., NaN, complex numbers).
+
+PART B: prototype of the sorting functions
+
+Sorting can be made more efficient by providing a getter (projection)
+function separate from the comparison function:
+
+Both
+
+(list-sort (lambda (a b) (cmp-increasing-number
+                           (get-field-1 a)
+                           (get-field-1 b)))
+           x)
+
+and
+
+(list-sort get-field-1 cmp-increasing-number x)
+
+would behave the same, except that the sorting function could take
+advantage of the separation between the getter and the comparator.
+PROPOSAL
+
+a) Change the prototype of the comparison functions for list-sort and
+   vector-sort so that they are 3-way
+
+b) Optionally allow 0 to be returned as #f.
+
+c) Add 3-arg forms to list-sort and vector-sort, with the first
+   argument being a separate getter procedure used to extract the keys
+   passed to the comparison function.

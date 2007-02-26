@@ -1,0 +1,59 @@
+Ticket #198 (enhancement)
+
+Allow compilers to reject obvious violations
+Reported by: 	will
+Version: 	5.92
+
+The current draft legitimizes many situations that, according to the
+R5RS, are clear errors. The draft generally does this by requiring all
+implementations to raise a &violation exception when the situation
+arises. That allows portable programs to implement an arbitrarily
+bizarre semantics for the violation via inappropriate exception
+handlers.
+
+Unless we expect programmers to abuse the exception system on a
+routine basis, however, the cause of a &violation exception is far
+more likely to be a mistake than a deliberate misuse of the exception
+system.
+
+Several extant Scheme compilers already perform static analyses that
+can occasionally establish that some expression would inevitably raise
+a &violation exception were the expression ever to be executed. The
+R6RS library system will make it much easier for compilers to detect
+such violations at compile time.
+
+The current draft of the R6RS effectively forbids static rejection of
+libraries and programs that contain such violations, because there is
+always the remote possiblity that the violation might be a deliberate
+ploy to invoke some exception handler that might be installed by some
+other library.
+
+That seems unfortunate, especially when compared to the draft's
+absolute requirements that programs containing &lexical or &syntax
+violations always be rejected prior to execution.
+
+I recommend that language such as the following be added to the
+report:
+
+    Implementations may reject a library or program prior to execution
+    if they can establish that (1) some definition or expression
+    within the library or program would inevitably raise a &violation
+    exception were it ever to be executed, and (2) the exception would
+    be raised without calling any of the following procedures: error,
+    assertion-violation, raise, raise-continuable.
+
+I also recommend that an assert syntax be added to the above list and
+to the R6RS, with syntax akin to
+
+  (assert <expression>)
+
+and implementation-dependent semantics akin to
+
+    (if (not <expression>)
+        (assertion-violation #f "Assertion failed"))
+
+but with the expectation that many systems will provide better error
+messages, localization, and optimization than would be obtained with
+the above macro expansion.
+
+Will

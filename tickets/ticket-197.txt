@@ -1,0 +1,22 @@
+Formal comment #197 (defect)
+
+I/O: `call-with-port' and multiple returns
+Reported by: 	Ludovic Courtès
+Version: 	5.92
+
+Section 7.2.6 of the [Libraries] manual does not explicitly mention
+how `call-with-port' should behave if PROC returns multiple times. For
+instance, is the following a valid implementation of `call-with-port'?
+
+  (define (call-with-port port proc)
+    (dynamic-wind
+        (lambda ()
+          #t)
+        (lambda ()
+          (proc port))
+        (lambda ()
+          (close-port port))))
+
+If it is, I would suggest adding a few words saying that once the
+dynamic extent of PROC has been left, PORT is closed even if it is
+eventually re-entered.
