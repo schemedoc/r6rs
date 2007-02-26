@@ -14,3 +14,35 @@ be defined thus:
 
 In particular, this paves the way to eliminating "the unspecified
 value" in favor of simply returning zero values.
+
+RESPONSE:
+
+Two different and fundamentally incompatible positions on this issue
+exist, each with their own merits:
+
+Position #1 considers passing a mismatched number of values to be
+a violation, and thus needs implementations to be able to catch them.
+This includes using the return value of expressions that conceptually
+don't return a useful value (such as assignments), which are evaluated
+only for their side effects.
+
+Position #2 considers being able to resolve mismatches as described
+in the formal comment a desirable feature.
+
+As the 5.92 draft does not satisfy either position, the next draft
+will allow an implementation to take either Position #1 or Position
+#2 in the following sense:
+
+- Passing an inappropriate number of values to a continuation
+  continues to have an undefined effect.
+
+- Expressions currently specified to return the unspecified value
+  will, per the next draft of the report, return an unspecified number
+  of unspecified values.
+
+- The unspecified value will be elided from the report.
+
+In particular, this allows an implementation to have expressions that,
+in the 5.92 draft, return the unspecified value, to return zero return
+values.
+

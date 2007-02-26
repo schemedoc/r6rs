@@ -30,3 +30,40 @@ Subversion repository contains a proposal along these lines, and the
 editors' email archive contains a correction to that proposal.
 
 Will
+
+RESPONSE:
+
+The "useless proc" argument will be removed in the next revision of
+the draft.  As to the other changes, they were made for the following
+reasons:
+ 
+- The new interface requires fewer library procedures:
+
+  - The get-output procedures have been subsumed by the procedure returned
+    by the open routines and have been eliminated.
+
+  - Since the output is cleared in the new interface when the data is
+    extracted from the port, the clear-output procedures are also unnecessary
+    and have been eliminated.
+
+    (This change is orthogonal to the rest.)
+
+- Conceptually, it's cleaner not to have these different kinds of ports.
+  With the new interface, a bytevector- or string- output port is
+  conceptually the same as any other port.
+
+- The new interface is compatible with the new mechanism for creating
+  custom output ports.  (The old interface is not, unless we include
+  something like the R5.91RS primitive-I/O descriptor argument in the
+  custom port mechanism.)  This is a nice bit of conceptual harmony.  It
+  also gives programmers a model for creating similar abstractions with
+  their own custom ports.
+
+While the new interface cannot be used to implement SRFI 6's
+`get-output-string' and similar mechanisms that predated SRFI 6 in
+some Scheme implementations (including Chez Scheme), remedying this
+situation is not a goal of R6RS.
+
+On the other hand, the interface is not inherently incompabible with
+SRFI 6; an implementation can provide both the R5.92RS mechanism and
+the SRFI 6 mechanism.
