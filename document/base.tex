@@ -1020,8 +1020,16 @@ character according to the {\cf char=?} procedure
 \item Both \vari{obj} and \varii{obj} are the empty list, or the unspecified value,
 respectively.
 
-\item \vari{Obj} and \varii{obj} are pairs, vectors, or strings that denote the
-same locations in the store (section~\ref{storagemodel}).
+\item \vari{Obj} and \varii{obj} are mutable objects such as pairs,
+  vectors, strings, mutable records (library
+  chapter~\extref{lib:recordschapter}{Records}), ports (library
+  section~\extref{lib:portsiosection}{Port I/O}), hash tables (library
+  chapter~\extref{lib:hashtablechapter}{Hash tables}) that denote the
+  same locations in the store (section~\ref{storagemodel}).
+
+\item \vari{Obj} and \varii{obj} are record-type descriptors that are
+  specified to be {\cf eqv?} in library
+  section~\extref{lib:recordsproceduralsection}{Procedural layer}.
 
 \item \vari{Obj} and \varii{obj} are procedures whose location tags are
 equal (section~\ref{lambda}).
@@ -1061,8 +1069,12 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 \item One of \vari{obj} and \varii{obj} is the empty list, 
   or the unspecified value, but the other is not.
 
-\item \vari{Obj} and \varii{obj} are pairs, vectors, or strings that denote
-distinct locations.
+\item \vari{Obj} and \varii{obj} are mutable objects such as pairs,
+  vectors, strings, mutable records (library
+  chapter~\extref{lib:recordschapter}{Records}), ports (library
+  section~\extref{lib:portsiosection}{Port I/O}), hash tables (library
+  chapter~\extref{lib:hashtablechapter}{Hash tables}) that denote
+  distinct locations.
 
 \item \vari{Obj} and \varii{obj} are procedures that would behave differently
 (return different value(s) or have different side effects) for some arguments.
@@ -1156,6 +1168,12 @@ implementation-dependent.
 (let ((x '(a)))
   (eqv? x x))                    \ev  \schtrue%
 \end{scheme}
+
+\begin{note}
+  Library section~\extref{lib:recordsproceduralsection}{Procedural
+    layer} elaborates on the semantics of {\cf eqv?} on record
+  objects.
+\end{note}
 
 \begin{rationale} 
 The above definition of {\cf eqv?} allows implementations latitude in
