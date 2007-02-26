@@ -36,6 +36,30 @@ must be quoted:
 '\#vu8(12 23 123) \ev \#vu8(12 23 123)%
 \end{scheme}
 
+\section{Endianness}
+
+Many operations described in this chapter accept and
+\defining{endianness} argument.  Endianness describes the encoding of
+exact integers as several subsequent bytes in a bytevector.  For this
+purpose, the binary representation of the integer is split into
+consecutive bytes.  \mainindex{little-endian}The little-endian
+encoding places the least significant byte of an integer first, with
+the other bytes following in increasing order of significance.
+\mainindex{big-endian}The big-endian encoding places the most
+significant byte of an integer first, with the other bytes following
+in decreasing order of significance. 
+
+This terminology also applies to IEEE-754 numbers: IEEE-754 describes
+how to represent a floating-point number as an exact integer, and
+endianness describes how the bytes of such an integer are laid out in
+a bytevector.
+
+\begin{note}
+  Little- and big-endianness are only the most common kinds of
+  endianness.  Some architectures distinguish between the endianness
+  at different levels of a binary representation.
+\end{note}
+
 \section{General operations}
 
 \begin{entry}{%
