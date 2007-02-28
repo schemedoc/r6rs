@@ -14,3 +14,27 @@ defined using a fold primitive ver two-argument versions.
 
 Alex Shinn's remarks on #scheme inspired this comment, but he is not
 to be held responsible for it.
+
+DRAFT RESPONSE:
+
+No exact number is an identity for max or min, so there is no
+obvious result for them to return when called with no arguments.
+
+Defining (max) and (min) to return +0.inf and -0.inf not allow
+them to be defined in the obvious way using the fold primitive
+over a two-argument restriction, since that definition would
+always return an inexact result, contrary to the specifications
+of max and min.
+
+Creating unique special cases in which max and min return an
+inexact arguments would create exceptions to the rule stated
+in section 9.9.1 that requires them to return an exact result
+provided all of their arguments are exact.
+
+There does not seem to be any compelling reason to extend max
+and min to zero arguments that would offset these identifiable
+problems.
+
+****************************************************************
+
+So Will recommends we not do it.

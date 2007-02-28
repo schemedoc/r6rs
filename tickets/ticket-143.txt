@@ -76,3 +76,42 @@ Formal comment #11 says nothing about (= +nan.0 +nan.0) !
 The fl versions of comparison operators can be IEEE-754 compatible
 without burdening generic comparison operators with behavior which
 extends poorly to complex number systems.
+
+DRAFT RESPONSE:
+
+The R6RS speaks of NaNs because the usual representations
+of inexact real numbers are based on the IEEE standards
+for binary floating point arithmetic.  Those standards
+approximate real arithmetic, using NaNs as error results
+when a rational approximation or infinity would be
+misleading.
+
+The R6RS could define its own notion of a complex-NaN
+that is not considered to be real, but values such as
++nan.0+nan.0i and +nan.0+45i serve that purpose already.
+
+The proposal claims that performance would not suffer,
+but we are not persuaded.  In current practice, the
+representations of real numbers are usually disjoint
+from those of non-real complex numbers, and the generic
+arithmetic dispatch exploits this fact.  If NaNs were
+regarded as non-real but represented like reals, then
+generic operations that require real arguments would
+be slowed by the need to detect and to reject NaNs.
+If NaNs were regarded as non-real and represented as
+non-real, then every result of a flonum operation
+would have to be examined to see whether it is a NaN,
+and converted to non-real representation if it is.
+
+Treating the NaN result of a flonum computation as a
+complex but not real number would reduce effectiveness
+of flow analysis, which would also make generic arithmetic
+slower.  Currently, the flonum operations always return
+a real.  Under the proposal, flonum operations would be
+capable of returning non-reals (the NaNs), which would
+destroy the primary closure property that flow analysis
+exploits when optimizing mixed flonum and generic
+arithmetic.
+
+For all of these reasons, the editors believe it is better
+to treat NaN as a real but not rational number.
