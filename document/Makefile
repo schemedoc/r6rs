@@ -42,7 +42,6 @@ LIB_TEX_FILES = r6rs-lib.tex \
 	list.tex \
 	misclib.tex \
 	portio.tex \
-	primio.tex \
 	r5rscompat.tex \
 	records.tex \
 	programlib.tex \
