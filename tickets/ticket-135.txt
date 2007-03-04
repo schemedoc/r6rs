@@ -73,3 +73,35 @@ implementations such as mine non-conformant :-(
 is inaccurate given that the output can be rebuilt with cons, with
 list, or with quasisyntax.
 
+RESPONSE:
+
+Taking the requests in order:
+
+  * As you request, the next report will state that wrapped syntax objects
+    *may be* distinct from other types of values.  The oringal rationale
+    for this restriction was to help ensure that code written for an
+    implementation such as yours would still work in an implementation
+    that wraps, but we've given up on this sort of requirement elsewhere
+    in the report, so it seems silly to preserve it here.
+
+  * Yes, the word "can" does imply what you're hoping it implies.
+
+  * The current operational description of body expansion may not be as
+    complete as we would like, but it is not incompatible the handling of
+    forward references, library imports, or import levels.  We welcome
+    concrete suggestions for refining the description, however.
+
+  * As long as an implementation behaves in the manner implied by the
+    semantics of wraps, we see no reason why it would be considered
+    invalid, even if it uses some other mechanism.  We would welcome,
+    however, a concrete proposal for a different description of the
+    semantics that doesn't imply that wraps are necessarily used.
+
+  * We agree that output can be rebuilt with a combination of cons, list,
+    or quasisyntax, but syntax is the primary building block, since it is
+    the basis of quasisyntax, and either syntax or quasisyntax is
+    necessary, for most macros, to access pattern variables from the input
+    or introduce identifiers into the output.  It would be more accurate
+    to say that the user need not always use syntax or need not use it
+    directly, but we believe that putting such a statement here would be
+    more confusing than helpful.
