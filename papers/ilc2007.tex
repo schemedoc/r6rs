@@ -1,0 +1,297 @@
+\documentclass{sigplanconf}
+
+\usepackage{url}
+
+\newcommand{\rn}[1]{R$^{#1}$RS}
+\newcommand{\rsix}{\rn{6}}
+
+\begin{document}
+
+\copyrightyear{2007}  
+
+\title{It's All about Being Right:\\ Lessons from the R$^6$RS Process}
+
+\authorinfo{Michael Sperber}
+{\textsc{DeinProgramm}}
+{\texttt{sperber@deinprogramm.de}}
+
+\maketitle
+
+\conferenceinfo{International Lisp Conference 2007}
+
+\begin{abstract}
+  In the Revised Reports on Scheme up to \rn{5}, the language could
+  only be changed by unanimous consent. Arguably, this process reached
+  its limits with the Revised$^5$ Report on Scheme: Crucial language
+  additions such as modules, records and exceptions had little chance
+  of reaching unamimous consent, no matter what the specific design.
+  While the editors of the Revised$^6$ Report no longer follow this
+  rule, standardization is still driven by a strong desire to do the
+  right thing. 
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+\begin{quote}
+  The original Revised Report on Scheme was taken as a model for
+  future definitions of Scheme, and a self-selected group of so-called
+  ``authors'' took on the role of evolving Scheme. The rule they
+  adopted was that features could be added only by unanimous consent.
+  After a fairly short period [\ldots], the rate of change of Scheme
+  slowed down due to this rule. Only peer pressure in a highly
+  intellectual group could convince any recalcitrant author to change
+  his blackball. As a result there is a widely held belief that
+  whenever a feature is added to Scheme, it is clearly the right
+  thing.
+
+  \begin{flushright}
+    Guy L.\ Steele, Jr., Richard P.\ Gabriel\\ \textit{The Evolution of
+      Lisp}~\cite{SteeleGabriel1993}
+  \end{flushright}
+\end{quote}
+%
+If all goes according to plan, 2007 will see the \textit{Revised$^6$
+  Report on the Algorithmic Language Scheme}~\cite{R6RS} (or \rn{6}), the first
+report of the series since 1998.  Many of the most significant changes
+in \rn{6} can be traced back to giving up the unanimous-consent rule,
+which had served the Revised Reports well until \rn{5}.  This paper
+gives a short overview of the history of \rn{6}, its main changes over
+\rn{5}, and attempts to motivate why giving up the unanimous-consent
+rule was necessary.
+
+\section{History}
+\label{sec:history}
+
+This section gives a brief overview of the history of \rn{6}.
+The history of the Revised Report series up to \rn{5} is summarized in
+the ``Background'' section of \rn{5}~\cite{R5RS}.  Until \rn{5},
+decisions to change the report were taken by unanimous consent of
+those present at a physical meeting.  \rn{5} itself came out in 1998,
+six years after the 1992 meeting where most of the changes between
+\rn{4} and \rn{5} were decided.  By that time, a disconnect between
+the process for producing Revised Reports and the current state of the
+community had happened: Whereas previously, the Scheme community was
+well represented by the authors present at the meetings, many of the
+original authors were no longer part of the Scheme community, and the
+community had diversified far beyond its original size.
+
+Richard Kelsey organized a workshop in 1998 (co-located with ICFP
+1998) to discuss future directions to the Scheme.  Many proposals for
+future changes to the language were discussed, but no clear picture
+emerged as to how a new Revised Report might be produced. The main
+tangible result of the workshop was the creation of the \textit{Scheme
+  Requests for Implementation} (SRFI) process, which is now well
+established in the community.  As a counterpoint to the Revised
+Reports, which require that everyone approves a change, a SRFI is
+merely a request by an individual author a group of authors, and thus
+only subject to the approval of the author(s).  The SRFI process sets up
+a mailing list for each such proposal, where members of the community
+can make suggestions to improve the SRFI; the author can revise the
+document throughout the draft period, after which she can finalize or
+withdraw the SRFI.
+
+While the SRFIs are a valuable vehicle for discussing proposals, and
+many are widely adopted by implementations, they do not have a
+coherent organizing principle; for some subjects, several competing
+SRFIs exist.  Thus, the SRFIs in some cases serve as an incubator for
+future standars, they are no substitute for a coherent language design
+and set of standard libraries.
+
+At the 2002 Scheme Workshop, attendees formed a Strategy Committee to
+discuss a process for producing new revisions of the report.  This
+committee drafted a charter for Scheme standardization, which was
+confirmed at the 2003 Scheme Workshop.  Subsequently, a Steering
+Committee according to the charter was selected, consisting of Alan
+Bawden, Guy L.\ Steele Jr., and Mitch Wand.  An editors' committee
+charged with producing this report was also formed at the end of 2003,
+consisting of Will Clinger, R.\ Kent Dybvig, Marc Feeley, Matthew
+Flatt, Richard Kelsey, Manuel Serrano, and Mike Sperber, with Marc
+Feeley acting as Editor-in-Chief.  Richard Kelsey resigned from the
+committee in April 2005, and was replaced by Anton van Straaten.  Marc
+Feeley and Manuel Serrano resigned from the committee in January 2006.
+Subsequently, the charter was revised to reduce the size of the
+editors' committee to five and to replace the office of
+Editor-in-Chief by a Chair and a Project Editor.  R.\ Kent Dybvig
+served as Chair, and Mike Sperber served as Project Editor.  Parts of
+the report were posted as Scheme Requests for Implementation (SRFIs)
+and discussed by the community before being revised and finalized for
+the report.  Jacob Matthews and Robby Findler wrote the operational
+semantics for the language core.
+
+The \rn{6} editors broke with the unanimous-consent rule; instead,
+decisions have been made by simple vote.  While many decisions were
+prepared by e-mail discussion, most votes were actually cast in a
+series of telephone conferences starting in 2007.
+
+The editors' committee produced the first \rn{6} draft (dubbed
+``\rn{5.91}'') in September 2006, at the same time initiating two
+public mailing lists (on a newly created \url{r6rs.org} domain) for general
+discussion of the standard and for making formal comments, which the
+editors are obliged to answer.  Discussion has been lively.  At the
+time of writing, about 190 formal comments have been submitted.  130
+formal comments have received formal responses for the editors.  Many
+formal comments have resulted in changes to the report, leading to a
+second draft (``\rn{5.92}'') that came out in January 2007.  At least one
+more draft is expected to appear before \rn{6} is finalized.  For
+\rn{5.92}, the report has been split into one document describing the
+library system and the base library, and another describing the
+standard libraries.  A document containing non-normative appendices as
+well as a rationale document are expected to complement the final
+report.
+
+\section{Case study: records}
+\label{sec:records}
+
+``Records'' provide a perfect example of the limits of the
+unanimous-consent principle: Until and including \rn{5}, Scheme lacked
+a facility for user-defined types disjoint from the built-in ones, as
+well a simple facility for defining record-like aggregate types.  Few
+disagree that it these are desirable additions to the languages, as
+well as a crucial prerequisite for Scheme to be taken seriously as a
+language for writing applications.  Almost every Scheme system comes
+with some kind of ``record'' or ``structure'' facility, some come with
+several.  Almost no two of them are alike.
+
+Most record systems conflate several different mechanisms, among them
+user-defined types, aggregate types, opacity, and inheritance.  Given
+the typical Schemer's desire for clean design, consensus on any given
+design has traditionally been very difficult.  Moreover, the design of
+a syntactic record-type-defining form exhibits more degrees of freedom
+than most other special forms in \rn{5}: A particular design is as
+much subject to taste as to technical criteria.
+
+Serious discussion of record systems for inclusion in the language
+started in 1987 on the \texttt{rrrs-authors} mailing list.  Almost
+every design aspect of the record system that will be in \rn{6} had already
+been discussed back in 1987 and 1988, in particular separation between
+user-defined types and aggregates, opacity, inheritance, sealedness,
+and procedural vs.\ syntactic systems.  The discussion culminated in
+Pavel Curtis's proposal~\cite{Curtis1991}, a candidate for inclusion
+in \rn{4}.  (The proposal described only a procedural system,
+correctly predicting that the syntax of a syntactic layer would be
+highly contentious.)  Still, the lack of consensus on the particulars
+of the proposal prevented inclusion in the report, first for \rn{4},
+and then for \rn{5}.
+
+Kelsey's SRFI~9~\cite{srfi9} described a syntactic form for
+defining new record types, and alleviated the situation somewhat, and
+is widely implemented.
+
+Given \rn{6}'s guiding principle of enabling the creation and
+distribution of substantial programs (see the next section), the
+editors considered records a necessary addition to the report.  Still,
+the specifics of the design were still hotly debated among the
+editors.  Setting down a minimum set of requirements at a physical
+meeting in May 2005 did not substantially help reaching consensus.  A
+subset of the editors finally drafted a proposal later in 2005 and
+presented it for public discussion as SRFI~76~\cite{srfi76}.  While
+substantial progress was made on improving the proposal and making it
+more palatable for many potential users, it is clear that it will not
+satisfy everybody: It is over-engineered and too complex to some while
+lacking in features to others.  Even in the current \rn{6} draft,
+records are not part of the base language but instead reside in a set
+of four separate libraries.  Thus, records are still somewhat ``in
+play''; future changes seem likely.
+
+Given the wildly different opinions and tastes on what constitutes a
+good record system, it is unlikely that unanimous consent on a record
+system would be possible in any sufficiently diverse group of Scheme users.
+Breaking with the unanimous-consent tradition was necessary to make
+progress.
+
+\section{Guiding principles}
+\label{sec:principles}
+
+To help guide the standardization effort, the editors have adopted a
+set of principles.  Many of the principles had already been used for
+producing the previous revisions of the report.  However, a few new
+principles were added:
+
+\begin{itemize}
+\item allow programmers to create and distribute substantial programs
+  and libraries, e.g., SRFI implementations, that run without
+  modification in a variety of Scheme implementations;
+  
+\item support procedural, syntactic, and data abstraction more fully
+  by allowing programs to define hygiene-bending and hygiene-breaking
+  syntactic abstractions and new unique datatypes along with
+  procedures and hygienic macros in any scope;
+  
+\item allow programmers to rely on a level of automatic run-time type
+  and bounds checking sufficient to ensure type safety; and
+
+\item allow implementations to generate efficient code, without
+  requiring programmers to use implementation-specific operators or
+  declarations.
+\end{itemize}
+%
+Satisfying the first of these principles in particular would have been
+impossible under a unanimous-consent regime, as the records discussion
+showed.  Consequently, the design decisions taken for \rn{6} contain
+progress (or at least movement) on a large number issues, but many
+issues have been resolved by compromises that probably would not have
+been approved by unanimous consent.  Producing a coherent and tasteful
+whole is now primarily at the discretion of the individuals on the
+editors' committee, and the editors bear the responsibility of
+reflecting input from the community in draft revisions of the report.
+
+\section{Language changes}
+\label{sec:changes}
+
+At the time of writing, the combined base and standard
+libraries reports total about 150 pages---three times the size
+of \rn{5}.  (The core report is about 87 pages.)  The main additions
+are:
+%
+\begin{itemize}
+\item A library system allows programmers to organize code into parts,
+  and package and share those parts.
+\item A records system, consisting of a procedural and two syntactic
+  layers has been added.
+\item An exception system and a condition system for describing
+  exceptional situations have been added.
+\item The basis for the character and string types is now Unicode.
+\item A version of the \texttt{syntax-case} facility for writing
+  hygienic macros as code has been added.
+\item A number of standard libraries have been added, for purposes
+  such as dealing with lists, binary data, sorting, I/O, file-system
+  manipulation, specialized arithmetic, hash tables, and enumerations
+  have been added.
+\end{itemize}
+%
+A large number of smaller changes, such as the move to case
+sensitivity, closure properties of complex-number arithmetic, or
+\texttt{letrec*} semantics for internal definitions were made.
+Moreover, many specifications were tightened to reduce variance
+between implementations and improve portability.
+
+All in all, the changes between \rn{5} and \rn{6} are significantly
+greater than between any other pair of subsequent Revised
+Reports.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+Unanimous consent was an excellent rule for the reports up to \rn{5},
+leading to a solid foundation for Scheme as a principled and minimal
+language.  However, sticking with the unanimous-consent rule would
+have prevented most of the progress made with \rn{6}.  Time will tell
+whether the changes made are overall for the better: The fact that
+decisions are made only by simple votes among five individuals is a
+potential problem that can only be alleviated by determined scrutiny
+and active involvement of the community at large.  So far, the
+community has done an excellent job identifying problems with the
+report drafts and helping to improve the document.
+
+\paragraph*{Acknowledgements} I am grateful to my co-editors for the
+huge effort they put into \rn{6}, and the patience and equanimity they
+displayed during the effort.  I also thank the members of the Scheme
+community who have posted on the various mailing lists associated with
+\rn{6} and who are instrumental in making \rn{6} a success.
+
+\bibliographystyle{plain}
+\bibliography{rrs}
+
+
+\end{document}
