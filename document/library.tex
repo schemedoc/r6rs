@@ -349,14 +349,24 @@ are evaluated as phase $n+1$ expressions.
 These phases are relative to the phase in which the library itself is
 used.
 An \defining{instance} of a library corresponds to an evaluation of its
-definitions and expressions in a particular phase relative to another
+variable definitions and expressions in a particular phase relative to another
 library---a process called \defining{instantiation}.
 For example, if a top-level expression in a library $L_1$ refers to
-an export from another library $L_0$, then it refers to the export from an
+a variable export from another library $L_0$, then it refers to the export from an
 instance of $L_0$ at phase $0$ (relative to the phase of $L_1$).
 But if a phase $1$ expression within $L_1$ refers to the same binding from
 $L_0$, then it refers to the export from an instance of $L_0$ at phase $1$
 (relative to the phase of $L_1$).
+
+A \defining{visit} of a library corresponds to the evalution of its syntax
+definitions in a particular phase relative to another
+library---a process called \defining{visiting}. Evaluating a syntax definition
+at phase $n$ means that its right-hand side is evaluated at phase $n+1$.
+For example, if a top-level expression in a library $L_1$ refers to
+a macro export from another library $L_0$, then it refers to the export from an
+visit of $L_0$ at phase $0$ (relative to the phase of $L_1$), which corresponds
+to the evaluation of the macro's transformer expression at phase $1$.
+
 
 \mainindex{level}\mainindex{import level} 
 %
@@ -416,21 +426,25 @@ exist only at non-negative phases.
 If any of a library's definitions are referenced at phase $0$ in the
 expanded form of a program, then an instance of the referenced library
 is created for phase $0$ before the program's definitions and
-expressios are evaluated. This rule applies transitively: if the
+expressions are evaluated. This rule applies transitively: if the
 expanded form of one library references at phase $0$ an identifier
 from another library, then before the referencing library is
 instantiated at phase $n$, the referenced library must be instantiated
-at phase $n$. When an identifier is referenced at any phase $n$
-greater than 0, in contrast, then the defining library is instantiated
-at phase $n$ at some unspecified time before the reference is
-evaluated.
+for at phase $n$. When an identifier is referenced at any phase $n$
+greater than $0$, in contrast, then the defining library is
+instantiated at phase $n$ at some unspecified time before the
+reference is evaluated. Similarly, when a macro keyword is referenced at
+phase $n$ during the expansion of a library, then the
+defining library is visited at phase $n$ at some unspecified time
+before the reference is evaluated.
 
-An implementation is allowed to distinguish instances of a library for
-different phases or to use an instance at any phase as an instance at
+An implementation is allowed to distinguish instances/visits of a library for
+different phases or to use an instance/visit at any phase as an instance/visit at
 any other phase. An implementation is further allowed to start each
-expansion of a {\cf library} form by removing all instances of all
-libraries in all phases above $0$. An implementation is allowed to
-create instances of more libraries at more phases than required to
+expansion of a {\cf library} form by removing
+visits of libraries in any phase and/or instances of
+libraries in phases above $0$. An implementation is allowed to
+create instances/visits of more libraries at more phases than required to
 satisfy references. When an identifier appears as an expression in a
 phase that is inconsistent with the identifier's level, then an
 implementation may raise an exception either at expand time or run
