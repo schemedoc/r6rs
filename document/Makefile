@@ -98,7 +98,7 @@ firstrun: $(COMMON_TEX_FILES) $(REPORT_TEX_FILES) $(LIB_TEX_FILES)
 	$(LATEX) r6rs-app
 	touch firstrun
 
-secondrun: firstrun r6rs.bbl r6rs-lib.bbl
+secondrun: firstrun r6rs.bbl r6rs-lib.bbl r6rs-app.bbl
 	$(SCHEME) < frob-lib-index.scm
 	$(MAKEINDEX) -s r6rs.mst -c r6rs.idx r6rs-report-lib.idx
 	$(MAKEINDEX) -s r6rs.mst -c r6rs-lib.idx
