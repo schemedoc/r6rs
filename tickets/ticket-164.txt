@@ -33,3 +33,22 @@ would not, in my opinion, be a good thing, though).  Suggestion
 
 Consider stating that literal identifiers refer to bindings, so that
 they can be imported/exported/renamed/excluded.
+
+DRAFT RESPONSE:
+
+There is a clear consensus that identifier matching is the right
+choice for literals in positions where non-literals can appear; such
+is the case for `...' and `_' (see formal comment 159), as well as
+`=>' and `else'. We will revise the R6RS to clarify the binding of all
+such identifiers used as literals.
+
+The choice is less clear for literals that appear in positions that
+can have only literals, such as `fields' and `mutable' in a
+`define-record-type' form. An advantage of binding is that it allows
+renaming on import and export, and it allows hiding to prevent access
+to certain constructs. A disadvantage is that binding may introduce
+collisions when literals overlap symbolically with other bindings and
+with the literals of other forms. (Consider the use of `and', `or',
+`>', etc. in an `import' clause.)
+
+[Need a resolution...]
