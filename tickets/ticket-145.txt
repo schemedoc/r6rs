@@ -1,7 +1,7 @@
 Formal comment #145 (defect)
 
 < is inconsistent on NaNs.
-Status: closed (worksforme)
+
 Reported by: 	Aubrey Jaffer
 Version:	5.92
 
@@ -28,3 +28,22 @@ the sequence of just +nan.0 "monotonically increasing"? If so, then (<
 Having only one NaN inequality example [<] leaves the behavior of >,
 <=, and >= on NaNs? open to question, as well as the behavior when NaN
 is other than the first argument.
+
+DRAFT RESPONSE:
+
+The second example contains an error; (< +nan.0 x) is false
+for any real x, and (< +nan.0 1+1i) must (according to the
+5.92 draft) raise an exception.  The error will be corrected
+in the next draft of the report.
+
+Examples of < and = with a NaN as second argument might
+be desirable, as may additional examples for >, <=, and
+>=, but this is an editorial decision.  The intent of the
+NaN examples is to illustrate that all comparisons involving
+a NaN return false.
+
+Numerical comparisons, including < and =, require two
+or more arguments.  The formal comment does not explain
+why they should be extended to accept a single argument,
+so we assume the comment's consideration of such cases
+arose from a misreading of the draft report.
