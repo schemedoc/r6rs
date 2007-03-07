@@ -1,0 +1,33 @@
+Formal comment #201 (defect)
+
+bytevector aliasing severely impedes optimizations
+Reported by: 	Brad Lucier
+Version: 	5.92
+
+I presume that many people might want to use bytevectors as described
+in this report to increase computational speed and decrease memory
+requirements by avoiding boxing/unboxing of objects that might
+otherwise be boxed when held in generic vectors. At least, I don't see
+any other way to get this type of performance or reduce memory in this
+way.
+
+By having only one type of bytevector that aliases all of 32-bit
+integers, 64-bit integers, 32-bit IEEE 754 numbers, and 64-bit IEEE
+754 numbers, optimization opportunities for compilers are severely
+degraded. One does not know, for example, whether storing a 64-bit
+IEEE double into bytevector A changes the value of a 32-bit integer
+read from bytevector B without actually checking whether A and B are
+the same objects and whether the range of indices used to access A and
+B overlap.
+
+This very problem has been recognized by recent C standards, which
+forbid such types of aliasing except by going through (char *). (The
+proposed R6RS bytevectors would propose a problem for more than
+Scheme->C compilers, however---it is a library design problem.) It
+could be said by analogy that the proposed R6RS libraries offer *only*
+a (char*) (more tamed than in C), which solves one small class of
+problems (how to allow semi-portable, low-level translation between
+data types that can be considered sequences of bytes; how to write I/O
+device drivers; ...) while completely ignoring a much larger and more
+important class of problems (allowing fast and memory- efficient
+access to large arrays of homogeneous numerical data).

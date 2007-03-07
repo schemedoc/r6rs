@@ -1,0 +1,28 @@
+Formal comment #203 (defect)
+
+->exact and ->inexact should be renamed
+Status: new
+Reported by: 	Kent Dybvig 	Assigned to: 	will
+Priority: 	minor 	Milestone: 	r6rs
+Component: 	arithmetic 	Version: 	5.92
+Keywords: 		Cc: 	
+Description:
+
+These names ->exact and ->inexact are ugly. They also vaguely imply a
+conversion is necessarily occuring and, therefore, that ->whatever
+should not be applied to something that is already whatever. (They
+are, however, better in this regard than the original names
+inexact->exact and exact->inexact.)
+
+Proposal:
+
+Change the name ->exact to exact and change the name ->inexact to
+inexact, so that, e.g., (exact 3.0) and (exact 3) are both 3 and
+(inexact 3.0) and (inexact 3) are both 3.0.
+
+These names appear more or less like casts and do not imply that a
+conversion is necessarily taking place. They are also consistent with
+the names char-upcase, string-downcase, etc., which contain no -> and
+also name procedures that operate on values that may need no
+conversion. To my mind, they also seem more consistent with the #e and
+#i exactness prefixes.

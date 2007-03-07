@@ -1,0 +1,33 @@
+Formal comment #205 (enhancement)
+
+add list* or cons*
+Reported by: 	Kent Dybvig
+Version: 	5.92
+
+Description:
+
+The list* procedure (aka. cons*) provided by Common Lisp and some
+Scheme systems is like list but puts its last argument in the cdr of
+the final pair. If only one argument is supplied, it returns that
+argument. It does not accept zero arguments. For example:
+
+(list* 1 2 '(3 4 5)) ;=> (1 2 3 4 5)
+(list* 1 2 3) ;=> (1 2 . 3)
+(list* 1) ;=> 1
+
+In my experience this is a handy procedure to have at the user level
+and is the list-processing procedure I use most often outside of those
+already contained in the report. It's also useful in the expansion of
+quasiquote to produce more readable code than the equivalent sets of
+nested conses, and may be useful in other, user-written
+code-construction macros. It's also less work for an implementation to
+generate efficient code for list* than for the equivalent set of
+nested conses.
+
+The name cons* used by MIT Scheme and possibly others is probably more
+descriptive than the name list*, but the name list* is probably
+compatible with a larger body of code.
+
+Proposal:
+
+Add either list* or cons*.

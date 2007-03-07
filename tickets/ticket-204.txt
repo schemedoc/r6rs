@@ -1,0 +1,71 @@
+Formal comment #204 (defect)
+
+freshness and mutability of quasiquoted structure should be specified
+Reported by: 	Kent Dybvig
+Version: 	5.92
+
+pages: 55-56
+Description:
+
+According to the description of quasiquote, when no unquote or
+unquote-splicing forms appear in a <qq template>, (quasiquote <qq
+template>) is equivalent to (quote <qq template>). In this case, the
+value is a literal. Thus, it is not freshly allocated and is not
+mutable.
+
+In all other cases, the mutability is unspecified, so the programmer
+has no way of knowing precisely what is freshly allocated and can be
+modified and what is literal and cannot be modified.
+
+For example, (let ((a 3)) `((1 2) ,a ,4 ,'five 6)) might be equivalent
+to
+
+  (let ((a 3)) (cons '(1 2) (cons a (cons 4 (cons 'five '(6))))))
+  (let ((a 3)) (list (list 1 2) a 4 'five 6))
+  '((1 2) 3 4 five 6)
+
+among other possibilities.
+
+I would like some guidance both for programmers and implementors.
+
+Proposal:
+
+Specify either:
+
+(A) quasiquote returns fresh, mutable objects for all list and vector
+    structure that must be constructed under an assumption that the
+    quantities within unquote and unquote-splicing forms are evaluated
+    at run time, even if the values can be determined prior to run
+    time. Portions that do not need to be rebuilt according to this
+    provision are literal. Thus,
+
+(let ((a 3)) `((1 2) ,a ,4 ,'five 6))
+
+is equivalent to
+
+(let ((a 3)) (cons '(1 2) (cons a (cons 4 (cons 'five '(6))))))
+
+(B) quasiquote may return either fresh, mutable objects or literal
+structure for any list and vector structure that must be constructed
+under an assumption that the quantities within unquote and
+unquote-splicing forms are evaluated at run time. Portions that do not
+need to be rebuilt according to this provision are literal. This
+permits
+
+(let ((a 3)) `((1 2) ,a ,4 ,'five 6))
+
+to be equivalent to a spectrum of expressions with
+
+(let ((a 3)) (cons '(1 2) (cons a (cons 4 (cons 'five '(6))))))
+
+at one end and
+
+'((1 2) 3 4 five 6)
+
+at the other. It disallows
+
+(let ((a 3)) (list (list 1 2) a 4 'five 6))
+
+because (1 2) and (6) must be literals.
+
+I'm sure that the editors can refine the wording.

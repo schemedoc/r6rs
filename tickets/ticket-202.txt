@@ -1,0 +1,177 @@
+Ticket #202 (defect)
+
+Minor wording issues
+Reported by: 	Andre van Tonder
+Version: 	5.92
+
+Description
+
+(1)
+
+The first sentence of section 4.2, which reads:
+
+        In a library body, an identifier may name a type of syntax, or
+        it may name a location where a value can be stored.
+
+should probably be either of the following equivalent options
+
+        In a library body or toplevel program, ..... In a Scheme
+        program, ....
+
+(2)
+
+In the second paragraph of section 4.2, the sentence
+
+        A definition binds a variable in a top-level program or
+        library body.
+
+does not take into account syntax definitions or internal definitions,
+which are mentioned in passing at the end of the next paragraph. It
+seems a bit jumbled to me, but see the next point:
+
+(3)
+
+I am not comfortable with the distinction being made between toplevel
+and local bindings. It seems like a needlesss complication that may
+have been necessary in r5rs but has been made irrelevant in r6rs. R6RS
+does not distinguish them otherwise. In particular, the r6rs semantics
+for library-level definitions is described in terms of letrec*
+identically to that of internal definitions, and such bindings are in
+fact local to the library form, so it feels misleading to say they are
+not local bindings. In addition, the semantics of definitions in
+toplevel programs are explained in terms of libraries/letrec* also, so
+I would say all definitions in R6RS are in fact local.
+
+(4)
+
+Related to (3), the third paragraph of 4.2 is indeed misleading in
+stating that all local variable bindings can be explained in terms of
+lambda. It is misleading because R6RS also explains "toplevel"
+bindings in terms of lambda (via letrec*).
+
+(5)
+
+In the last paragraph of section 4.2, the following sentence does not
+make sense to me:
+
+        If there is no binding of the identifier whose region contains
+        the use, then the use refers to the binding for the variable
+        in the top level environment of the library body or a binding
+        imported from another library.
+
+The sentence contradicts itself by apparently ascribing a binding to
+an identifier that has no binding. Since the semantics of bindings in
+library bodies is identical to that in lambda bodies, a
+library-toplevel binding in fact is a binding with a clear region, in
+contrast to what the first line of the above sentence appears to say.
+
+(6)
+
+The second sentence of 4.2 reads:
+
+        An identifier that names a type of syntax is called a
+        syntactic keyword and is said to be bound to that syntax.
+
+The teminology "syntax" here is unclear (and has a different meaning
+in the syntax-case library - in fact it is pattern variables, not
+keywords, that get bound to pieces of syntax). In paragraph 6.2, it is
+stated much more clearly that "Scheme libraries can define and use new
+derived expressions and definitions called syntactic abstractions or
+macros. A syntactic abstraction is created by binding a keyword to a
+macro transformer or, simply, transformer."
+
+I would therefore suggest replacing the two occurrences of "syntax" in
+the above by "syntactic abstraction" or "macro transformer".
+
+(7)
+
+In 1.6, first paragraph, the following sentence is pre-r6rs:
+
+        An expression that has a syntactic keyword as its operator
+        obeys special rules determined by the keyword.
+
+since it omits to mention the two cases of identifier macros and
+variable transformers' behaviour in set!.
+
+(8)
+
+In 1.3, the sentence that first introduces the concept of variables:
+
+        Scheme allows identifiers to denote values. These identifiers
+        are called variables. (More precisely, variables denote
+        locations. This distinction is not important, however, for a
+        large proportion of Scheme code.)
+
+starts by stating an erroneous definition and then immediately
+contradicts itself. Since this is a major point of confusion, it may
+be better if the language report were at least consistent in its
+description of this. A language report is a formal document and does
+not not need to follow the common 
+pedagogical device of breaking the bad news slowly via partial lies ;)
+
+(9)
+
+In section 4.1, second paragraph:
+
+   ... some facilities that are typically implemented as "primitives" by a
+   compiler or run-time libraries ...
+
+I suspect this use of "libraries" does not refer to the concept of
+"library" as defined by the report.  This is confusing.
+
+(10)
+
+Paragraph 1.4 is more complicated than it needs to be by
+distinguishing toplevel and local bindings a la r5rs.
+
+(11)
+
+Chapter 7 introduction, second paragraph, contains a residual mention
+of the word "script" that should probably be removed.
+
+(12)
+
+Paragraph 7.1 contains the sentence:
+
+   The rules for <toplevel program> specify syntax at the form level.
+
+I don't understand what this means.
+
+(13)
+
+Section 4.2: Variables, syntactic keywords and regions, does not
+mention the concept of *pattern variables* bound by
+syntax-rules/syntax-case patterns.  Since these belong to the same
+namespace, may shadow or be shadowed by other kinds of bindings, and
+have their own regions, the description of scoping in this section is
+incomplete without a mention of them.
+
+(14)
+
+Section 6.1 (library form)
+Section 7.1 (toplevel program syntax)
+Section 9.4 (bodies and sequences)
+
+These sections mention that internal BEGINs are spliced.  However,
+they do not mention the that internal LET[REC]-SYNTAXes are also
+spliced.
+
+In fact, it is not clear to me whether the grammar for bodies really
+refer to the result of expansion or not.  If it refers to the /result/
+of expansion, then it is misleading to mention that BEGINs are
+spliced, since there are no BEGINs after expansion.  If it does not
+refer to the result of expansion, then it is okay to mention splicing
+of BEGINs, but then LET[REC]-SYNTAX should also be mentioned.
+
+(15)
+
+In section 1.8:
+
+   Procedure definitions are also derived forms.
+
+is not correct, since only the first of the two procedure definitions
+examples below this sentence is a derived form.  The second is not.
+
+(16)
+
+Is the terminology "form" defined somewhere?  I could not find it.
