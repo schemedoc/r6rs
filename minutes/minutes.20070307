@@ -1,0 +1,132 @@
+Telephone conference March 7 2007 8:00am-10:00am EST
+Matthew, Mike, Will, Kent, Anton were present by 8:02am
+
+0. finalize agenda (1 minute)
+
+1. action items (1 minute)
+   - for each ticket 135 and 137+, enter proposed response into
+     ticket-*.txt and set trac status to one of:
+       blocker (red) = "don't know" but should should be easy
+       critical (yellow) = done, probably uncontroversial
+       major (white) = suggested response/action, but needs discussion
+       minor (cyan) = we have to discuss it, first
+       trivial (blue) = I'm stumped for the moment
+     (All)
+   - record response votes (All)
+   - draft responses for ticket numbers 145, 166, 184, 189, 193, 194,
+     195, 196, 198
+        response to 145 has been drafted
+   - need final resolution in responses for ticket numbers 150, 164
+   - timing of next conference call
+        Matthew can't meet early in the week
+        Mike's out Wednesday, maybe Thursday and Friday
+        skip next week; meet two weeks from Friday, 8am EDT
+
+2. what should (sqrt -0.0) return? (5 minutes)
+   - ticket 141 quotes IEEE-754R draft that squareRoot(-0) should be -0
+   - therefore suggests (flsqrt -0.0) should be -0.0
+   - what about (sqrt -0.0)?
+        allow it to return 0.0+0.0i
+        this does not need to be mentioned
+            in the response to the formal comment
+
+3. allow unstable vector-sort! with worst-case o(n^2) behavior? (5 minutes)
+   - ticket 142
+        approved unanimously
+
+4. add textual-port?, input/output-port? predicates? (5 minutes)
+   - ticket 182
+        textual-port?
+            yes: Will, Kent, Matthew, Mike
+            abstain: Anton
+        input/output-port?
+            no: everyone
+
+5. keep last-minute 5.92 change to string and bytevector output ports?
+   add string-port?, bytevector-port? predicates? (10 minutes)
+   - tickets 148 and 182
+        keep string and bytevector ports as in 5.92
+            yes: Will, Mike, Matthew, Anton, Kent
+        add string-port?, bytevector-port?
+            no: Will, Kent, Matthew, Mike, Anton
+        no input-output string or bytevector ports
+            maybe for R7RS
+
+6. revisit unspecified value and mrvs semantics? (5-15 minutes)
+   - see ticket 152 response
+   - question for us to vote upon: should we reopen these issues?
+   - if we vote "yes" we can spend some time discussing the issues;
+     otherwise, ticket-152 response is "comment withdrawn by submitter".
+   - this also affects ticket 156
+        tabled for email discussion
+
+7. replace return of unspecified value with return of unspecified number
+   of unspecified values? (5 minutes)
+   - ticket 152
+        tabled for email discussion
+
+8. allow the empty list, vectors, and bytevectors to be self-evaluating?
+   (5 minutes)
+   - ticket 154
+        empty list
+            no: Will, Kent, Matthew, Anton
+            abstain: Mike
+        vectors
+            yes: Matthew
+            no: Will, Kent, Mike, Anton
+        bytevectors
+            yes: Matthew, Anton, Kent
+            no: Will
+            abstain: Mike
+
+9. floor, ceiling, truncate, and round raise an exception or abort on
+   infinity and NaN arguments? (5 minutes)
+   - ticket 167
+        neither the formal comment nor the draft response
+            use the word "abort"; that word appears only
+            in Will's recommendation to accept the comment's
+            proposal; but since it came up...
+            Will moved to ratify Mike's current position that
+                implementations are allowed to bypass the
+                exception system for violations
+            yes: Will, Mike
+            no: Kent, Matthew, Anton
+            motion fails 2-3-0
+        Mike moved to keep the status quo, rejecting the formal comment
+        Kent seconded
+        yes: Kent, Mike, Matthew
+        no: Will
+        abstain: Anton
+
+10. Add native-transcoder, drop binary transcoders, and for missing
+   transcoder open-file-*-port argument return a binary port? (5 minutes)
+   - ticket 180
+        Kent moved we adopt the formal comment's proposal with option A
+        Will seconded
+        yes: Will, Kent, Matthew, Mike, Anton
+        no:
+        abstain:
+
+11. standard-x-port return fresh binary ports? (5 minutes)
+   - ticket 183
+        tabled
+
+12. add buffer modes to open-file-input-port? (5 minutes)
+        not considered (out of time; went on to item 13)
+   - ticket 186
+   - do we allow peeking on unbuffered input port?
+
+13. add boolean=? and symbol=? predicates? (5 minutes)
+   - ticket 188
+        yes: Will, Matthew, Mike, Anton
+        no: Kent
+
+The remaining agenda items were not considered (out of time).
+
+14. allow (case-lambda)? (5 minutes)
+    - see https://r6rs.scheming.org/node/580
+
+15. add file-length, specify set-file-position! extension behavior (5 minutes)
+   - ticket 200
+
+16. adjourned at 9:59am
