@@ -16,31 +16,13 @@ operations.
 
 DRAFT RESPONSE:
 
-****************************************************************
+The textual-port? predicate will be added to the next draft.
 
-Will sees no problem with adding textual-port?.
+File, string, and bytevector ports have no standard operations
+that would require them to be distinguishable, so the editors
+did not perceive a need for the file-port?, string-port?, and
+bytevector-port? predicates.
 
-Will doesn't see much need for input/output-port?, since it
-computes the obvious conjunction, but has no objection to
-adding it.
-
-Will has no objection to adding the file-port? procedure, but
-does not see any real need for it, since file ports don't have
-any standard operations except for those that are common to all
-ports.
-
-Will thought the same comment would apply for string-port? and
-bytevector-port?, but then he realized that you have to close
-those ports differently from ordinary ports, which means the
-proposed string-port? and bytevector-port? would serve a real
-purpose.  (The argument for string-port? and bytevector-port?
-would remain even if Will's favored interface for those ports
-were adopted.)
-
-Adding string-port? and bytevector-port? would make it
-impractical to implement string and bytevector ports using just
-make-custom-binary-input-port and make-custom-binary-output-port,
-but we shouldn't do the Wrong Thing just to hide the limitations
-of our design.
-
-****************************************************************
+Since the input/output-port? predicate would compute the
+obvious conjunction, the editors did not perceive a need for
+it either.
