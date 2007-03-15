@@ -112,29 +112,29 @@ could be defined in terms of base library forms by the following macros:
 \begin{scheme}
 (define-syntax \ide{case-lambda}
   (syntax-rules ()
-    [(_ (fmls b1 b2 ...))
-     (lambda fmls b1 b2 ...)]
-    [(_ (fmls b1 b2 ...) ...)
+    ((case-lambda (fmls b1 b2 ...))
+     (lambda fmls b1 b2 ...))
+    ((case-lambda (fmls b1 b2 ...) ...)
      (lambda args
-       (let ([n (length args)])
+       (let ((n (length args)))
          (case-lambda-help args n
-           (fmls b1 b2 ...) ...)))]))
+           (fmls b1 b2 ...) ...))))))
 
 (define-syntax \ide{case-lambda-help}
   (syntax-rules ()
-    [(_ args n (fmls b1 b2 ...))
-     (apply (lambda fmls b1 b2 ...) args)]
-    [(_ args n ((x ...) b1 b2 ...) more ...)
+    ((case-lambda-help args n (fmls b1 b2 ...))
+     (apply (lambda fmls b1 b2 ...) args))
+    ((case-lambda-help args n ((x ...) b1 b2 ...) more ...)
      (if (= n (length '(x ...)))
          (apply (lambda (x ...) b1 b2 ...) args)
-         (case-lambda-help args n more ...))]
-    [(_ args n ((x1 x2 ... . r) b1 b2 ...) more ...)
+         (case-lambda-help args n more ...)))
+    ((case-lambda-help args n ((x1 x2 ... . r) b1 b2 ...) more ...)
      (if (>= n (length '(x1 x2 ...)))
          (apply (lambda (x1 x2 ... . r) b1 b2 ...)
                 args)
-         (case-lambda-help args n more ...))]
-    [(_ args n (r b1 b2 ...) more ...)
-     (apply (lambda r b1 b2 ...) args)]))
+         (case-lambda-help args n more ...)))
+    ((case-lambda-help args n (r b1 b2 ...) more ...)
+     (apply (lambda r b1 b2 ...) args))))
 \end{scheme}
 \end{entry}
 
