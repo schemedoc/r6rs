@@ -40,13 +40,19 @@ return #f for such tables.
 I find some problems with this: a) This situation prevents
 implementations that can return useful functions to do so. b) This
 inhibits having a complete "hash-table-clone" method, which I think is
-one of the most useful usages for such inspection methods: (define
-(hash-table-clone ht k) (make-hash-table (hash-table-hash-function ht)
-(hash-table-equivalence-function ht) k)) c) On systems that provide
+one of the most useful usages for such inspection methods: 
+
+(define (hash-table-clone ht k)
+  (make-hash-table (hash-table-hash-function ht)
+    (hash-table-equivalence-function ht) k))
+
+c) On systems that provide
 users with public hash-eq and hash-eqv functions, the current wording
 forces the implementation to remember if a hash table was built using
 (make-eq-hash-table) or (make-hash-table hash-eq eq?), just for the
-sake of complying with the hash-table-hash-function's spec.  PROPOSAL
+sake of complying with the hash-table-hash-function's spec.  
+
+PROPOSAL
 
 Alternative 1: on hash tables built using make-eq-hash-table and
 make-eqv-hash-table, hash-table-hash-function can return the
@@ -62,3 +68,13 @@ make-eqv-hash-table, the returned function can throw an exception if
 invoked.
 
 This addresses issues a), b) and c).
+
+
+RESPONSE
+
+The proposed alternative 1 will be adopted.  Specifically, in the next 
+draft of the report, for hash tables constructed using make-eq-hash-table 
+and make-eqv-hash-table, the hash-table-hash-function procedure will be 
+required to return #f only in cases for which the implementation cannot 
+return a procedure which behaves like a pure function on the domain 
+of keys.
