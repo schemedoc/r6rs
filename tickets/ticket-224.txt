@@ -17,3 +17,12 @@ and throwing it away.
 
 Fix: remove get-bytevector-some, or clarify that it reads "one or more
 of the available characters". I suggest the former.
+
+RESPONSE:
+
+How efficient implementations based on `read' are depends on the
+implementation: Some storage manager allow allocating a vector-like
+object and shrinking it later.  Moreover, even if `get-bytes-some'
+isn't very efficient on custom ports, it may still be efficient for
+other kinds of ports.  Therefore, `get-bytevector-some' will be
+retained.
