@@ -28,3 +28,13 @@ define-condition-type can be applied to compound as well as simple
 conditions of that type, since the result will not be ambiguous or
 order-dependent. (R5.92RS is silent on using such an accessor on a
 compound condition.)
+
+RESPONSE:
+
+Compounding conditions of the same type and the shadowing described
+may be desirable: As a condition object is handed up the chain of
+handlers, they may add more precise information to the object.
+Forbidding this shadowing would make this kind of code fragile, and
+would weaken the communication protocols implementable via
+conditions.  Therefore, the proposal will not be adopted.
+
