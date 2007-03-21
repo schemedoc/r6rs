@@ -1,0 +1,40 @@
+Formal comment #221 (defect)
+
+Recursive exception handling considered harmful
+Reported by: 	John Cowan
+Version: 	5.92
+
+Note: This comment is in part based on suggestions by Taylor Campbell,
+but he bears no responsibility for its content.
+
+In R5.92RS, a condition handler is invoked in a dynamic environment
+identical to that of the signaler, but with the condition handler
+stack popped by one frame. Failing to do so will cause the handler to
+be re-entered whenever an exception is raised within it, which is
+obviously disastrous. (Scheme48 behaves this way.) As a consequence,
+"raise" cannot tail-call the current handler, because it must pop and
+later restore the handler stack.
+
+Unfortunately, R5.92RS prescribes that a handler must reraise an
+exception in order to get it processed by the next handler in the
+dynamic chain. This loads the call stack with alternating calls to
+"raise" and to each handler in turn. This is a Bad Thing in an
+environment where there are many handlers and most only handle
+specific kinds of conditions.
+
+I propose, therefore, that the protocol for calling handlers be changed:
+
+1) To decline to handle a condition and propagate it up to the next
+   enclosing handler, a condition handler simply returns the condition
+   that is to be propagated to the next enclosing handler. Only a
+   constant amount of stack space, then, will delimit the handler and
+   the signaler, regardless of how many handlers there are. No
+   debugger traces will be cluttered by unnecessary frames caused by
+   recursive signaling, except in the case where a procedure called by
+   a raises a genuinely new exception.
+
+2) In order to deal with continuable exceptions, "raise" is given a
+   second argument, which is a continuation to be invoked if all
+   handlers decline to handle the exception. The default value of this
+   argument is system-dependent but does not return to the caller of
+   "raise". The "raise-continuably" procedure is removed from R6RS.

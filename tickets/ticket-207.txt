@@ -1,0 +1,19 @@
+Formal comment #207 (defect)
+
+combine syntactic record layers
+Reported by: 	Kent Dybvig
+Version: 	5.92
+
+Having two syntactic record libraries in the report gives the
+appearance of language bloat without added expressiveness, since the
+explicit-naming layer is a strict subset of the implicit-naming layer.
+
+An equivalent of the (r6rs records explicit) library can be defined as
+a wrapper for the (r6rs records implicit) library, perhaps as a SRFI
+that can be used when programmers wish to be sure that no names are
+being generated implicitly.
+
+Proposal:
+
+Eliminate the explicit-naming layer, leaving the report with one
+syntactic layer, presumably called (r6rs records syntactic).

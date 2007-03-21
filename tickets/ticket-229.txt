@@ -1,0 +1,491 @@
+Formal comment #229 (enhancement)
+
+ports, characters, strings, Unicode
+Reported by: 	Thomas Lord
+Version: 	5.92
+
+Email: lord@emf.net
+
+Type of Issue: Simplification/Enhancement/Defect
+
+R6RS components: base library, concepts, formal syntax, I/O, Lexical
+Syntax, Unicode Synopsis:
+
+    Conformant implementations should not be *required* to support any
+    characters beyond the portable character set of R5RS.
+
+    The report should define a standard way to extend beyond the
+    portable character set by addition of characters corresponding to
+    Unicode scalar values.
+
+    The report should recognize and honor a role for a character type
+    that transcends the specifics of Unicode and encompasses discrete
+    communications channels in general. In particular, the report
+    should permit the inclusion of characters which do not correspond
+    to Unicode scalar values.
+
+    The fundamental conformance requirement of an implementation
+    should explicitly pertain to observable consequences of running a
+    program, principly reflected as operations on ports.
+
+Disclaimers:
+
+    This comment is incomplete: some changes are indicated but not
+    fully spelled out; some needed changes (under the premise of this
+    comment) have no doubt been missed; the proposed substitute
+    wording is, at best, a rough first draft; the notion of permitting
+    implementations to support less than all of Unicode has broad
+    implications that merit discussion; the implications of the
+    proposals herein have not explained, here, for the standard
+    libraries.
+
+Full Description:
+
+    I propose a number of changes to the treatment of ports, characters and strings.
+
+    * Change to "Summary", page 1 
+
+    For
+
+            "Chapter 2 explain's Scheme's number types"
+
+    Substitute
+
+            "Chapter 2 explains several of Scheme's fundamental types."
+
+    * Changes to "1.1 Basic Types", page 7 
+
+    Retitle:
+
+                1.1 Fundamental Types
+
+    For
+
+            Characters
+
+            Scheme characters mostly correspond to textual
+            characters. More precisely, they are isomorphic to the
+            scalar values of the Unicode standard.
+
+            Strings
+
+            Strings are finite sequences of characters with fixed
+            length and thus represent arbitrary Unicode texts.
+
+    Substitute
+
+            Ports
+
+            A port is an object representing one end of a discrete
+            communications channel over which Scheme programs can
+            transmit and/or receive characters selected from a finite
+            alphabet associated with the port.
+
+            Characters
+
+            Character objects represent characters such as are
+            transmitted and received over a communication channel
+            associated with a port. Most commonly, character objects
+            correspond to Unicode scalar values and are used as
+            primitive elements when representing textual data.
+
+            Strings
+
+            A string is a linear data structure representing a finite
+            sequence of arbitrary characters. Elements of a string are
+            addressed by an integer index. For example, a Unicode text
+            can be usefully represented as a string.
+
+    * Chapter 2, "Numbers", pages 10 and 11 
+
+    Retitle the chapter: "Fundamental Types"
+
+    Renumber the entire current content of Chapter 2, "2.1" (renumbering the current "2.1" to "2.1.1", etc.)
+
+    For
+
+                "This chapter describes Scheme's representations for numbers" (page 10)
+
+    Substitute
+
+                "This section describes Scheme's representations for numbers" (page 10)
+
+    Add a new introduction:
+
+                ~2. Fundamental Types
+
+                This chapter explains several of Scheme's fundamental types.
+
+    Add a new section:
+
+                2.2 Ports, Characters, and Strings
+
+                This section describes Scheme's mechanisms and
+                representation for synchronous communication between
+                Scheme programs and processes which are external to
+                the execution of a program. Thus, ports characters,
+                and strings comprise an important part of Scheme's
+                model for the formally observable side effects of
+                running a program and the model for observations of
+                external events which may effect a running program.
+
+                Often but not always, such observable communication
+                conveys textual information. Thus, it is useful to
+                first explain these types beginning with an abstract
+                mathematical model of communication, and then to
+                explain how that model applies specifically to textual
+                information.
+
+                2.2.1 Program Execution as World-line
+
+                            and Implementation Correctness
+
+                Conceptually, for the purpose of understanding the
+                observable consequences of running a program, the
+                execution of a Scheme program corresponds to a
+                relativistic world-line. Information about events
+                external to a running program become available to that
+                program at a specific point on the execution's
+                world-line when the program explicitly completes a
+                step to receive that information. Similarly,
+                information from the running program becomes
+                externally observable when explicitly transmitted at a
+                specific point on the execution's world-line. In
+                portable programs, all transmissions and receipt of
+                information are comprised of discrete atomic events --
+                the conveyance of a single character via a port -- and
+                these are totally ordered along the conceptual
+                world-line of a program. Each is a unique
+                event. Implementations are permitted, however, to make
+                extensions which allow for simultaneous transmissions
+                and/or receipts.
+
+                In an important sense, the transmission and receipt
+                events that occur as a Scheme program runs are the
+                *only* formally observable consequence of running the
+                program. An implementation is correct, in an important
+                sense, provided only that these events occur as
+                specified and in a permitted order when running a
+                portable program.
+
+                It should be noted that, while the order of
+                communication events on the world-line of a running
+                program is formally well-defined, that order is not
+                directly observable. That is to say that external
+                observations of and transmissions to a Scheme program
+                may occur, from the perspective of external observers,
+                in a different order, and possibly with loss of
+                information. Only causality relationships, as imposed
+                externally and as implied by execution-order rules in
+                this report, define a partial ordering of
+                communications events upon which all observers can, in
+                principle, agree.
+
+                [This section should cite the source of its conceptual
+                model of communication, the paper:
+
+                    "The Mutual Exclusion Problem: Part I -- A Theory
+
+                        of Interprocess Communication", Leslie
+                        Lamport; Journal for the Association of
+                        Computing Machinery; Volume 33, Number 2,
+                        April 1986.
+
+                ]
+
+                2.2.2 Ports as Discrete Communication Channel Terminals
+
+                Scheme adopts a mathematical model of communication
+                based on discrete communication channels. Each channel
+                is associated with a finite, abstract alphabet. The
+                channel conveys letters from that alphabet in one or
+                both directions, one at a time. For example, the size
+                of the alphabet, together with the number of letters
+                than can be conveyed in a unit of time, determine the
+                bandwidth of the channel.
+
+                A port object represents a Scheme program's direct
+                interface to one end of such a communication's
+                channel. It is through a port object that a program
+                transmits and receives on the channel. It is
+                noteworthy that a port represents only one terminal
+                point on the channel: the physical channel itself as
+                well as the terminal point(s) of external processes
+                are not directly accessible to the program.
+
+                In this model of communication, we make no a priori
+                assumptions about the alphabet whose letters are
+                conveyed, other than it is finite. In particular,
+                distinct ports may use different alphabets.
+
+                When two ports use different alphabets, it is
+                sometimes useful to treat the alphabets as disjoint
+                sets and othertimes useful to identify letters in one
+                alphabet with letters in another. An example of the
+                latter case can be seen by comparing an ASCII-only
+                channel to a Unicode scalar value channel: it is often
+                desirable to treat ASCII as a subset of Unicode. An
+                example of usefully disjoint alphabets can be seen by
+                comparing a Unicode channel, used to convey textual
+                information, to channel used to control a certain
+                style of traffic signal, on which a program wishes to
+                transmit letters that correspond to "red", "yellow",
+                and "green".
+
+                It is, nevertheless, the case that many useful
+                procedures reasonably operate generically on all
+                letters, without regard to which alphabet they come
+                from. For example, if a procedure is intended to
+                concatenate finite sequences of letters ("strings", in
+                Scheme) the same implementation for that procedure
+                suffices regardless of whether the sequence comprises
+                text, traffic signals, or some mix of these. For that
+                reason, Scheme includes the fundamental type
+                "character", which contains all letters from all
+                alphabets supported by an implementation.
+
+                [This section should cite the source of the
+                mathematical model of communication to which it
+                refers, such as:
+
+                    "The Mathematical Theory of Communication",
+
+                        Claude E. Shannon and Warren Weaver; University of Illinois Press; 1963
+
+                ]
+
+                2.2.3 Unicode Scalar Values: A Portable, Textual Alphabet
+
+                This report defines certain character values which
+                must be supported by all implementations and others
+                which may be supported by any implementation but only
+                in specified ways. Together, these comprise the
+                Unicode scalar values and they are included in Scheme
+                so that portable programs may reliably manipulate
+                textual information in the broadest practical range of
+                human languages and, more specifically, to that
+                portable Scheme program can reliably manipulate the
+                source text of portable Scheme programs.
+
+                Unicode scalar values are formally defined by an
+                established but evolving standard, "The Unicode
+                Standard," as published by The Unicode
+                Consortium. Informally speaking, the scalar values
+                "roughly correspond" to the character-like elements of
+                human writing systems however, in its details the
+                exact relationship to writing systems is complex and
+                readers are referred to The Unicode Standard for a
+                complete explanation.
+
+                2.2.4 Character Order
+
+                Communications channel alphabets in general, and
+                Unicode in particular, are frequently defined by
+                standards procedures which are external to the process
+                which defines Scheme. Frequently, as with Unicode
+                scalar values, a total ordering of the letters within
+                an alphabet are included in the definition.
+
+                Consequently, Scheme includes procedures which compare
+                two or more characters for their ordering. Portable
+                program may rely on Unicode scalar values being
+                well-ordered and on that order corresponding to the
+                definitions of The Unicode Standard.
+
+                When characters represent letters from either an
+                unordered alphabet or from disjoint alphabets, the
+                ordering imposed on them may be implementation
+                specific or the characters may be unordered. Thus,
+                portable programs which assume that all characters
+                they encounter are well-ordered may cause errors if
+                run in implementations and contexts that present these
+                programs with non-portable characters. Nevertheless,
+                it is generally reasonable for portable programs that
+                are concerned mainly with Unicode scalar values to
+                assume that all characters they encounter will be
+                well-ordered.
+
+                2.2.5 Character Enumeration
+
+                Similarly, external standards, The Unicode Standard in
+                particular, often define a mapping from the letters of
+                an abstract alphabet to (usually non-negative) exact
+                integer values.
+
+                Because of the central importance of enabling portable
+                programs to reliably manipulate textual data, this
+                report requires implementations to convert Unicode
+                scalar values to the corresponding integer, and vice
+                versa. Implementations are permitted but not required
+                to include additional characters that can be converted
+                to and from integers, provided they satisfy this
+                Unicode requirement.
+
+                Implementations may include characters for which there
+                is no conversion to and from integers, using the
+                standard procedures defined herein. Nevertheless, it
+                is generally reasonable for portable programs that are
+                concerned mainly with Unicode scalar values to assume
+                that all characters they encounter will be convertable
+                to and from integers.
+
+                2.2.6 Strings and String Ordering
+
+                Ports, by definition, convey characters, one at a
+                time. It is commonly necessary, especially when
+                textual information is being manipulated, to manage
+                finite sequences of characters.
+
+                Scheme's string objects represent finite sequences of
+                arbitrary characters.
+
+                When two strings are comprised entirely of
+                well-ordered characters, a natural lexical ordering of
+                the strings may be inferred. In the case of characters
+                corresponding to Unicode scalar values, that ordering
+                is an imperfect but frequently useful approximation of
+                the lexical linguistic ordering of texts.
+
+                2.2.7 Characters, Strings, and Case Conversions
+
+                The lexical syntax of Scheme relies upon certain very
+                limited forms of case conversion among textual
+                letters. These conversions are a subset of a standard,
+                linguistically approximate case conversion among
+                Unicode scalar values. Scheme includes procedures
+                which effect these conversions, as well as their
+                natural character-wise extensions to strings.
+
+                2.2.8 Ports, Characters, and Strings: A Summary
+
+                Ports are communication channel end-points held by a
+                running Scheme program. Characters are letters, from
+                finite abstract alphabets, conveyed over these
+                channels. Strings are finite sequences of characters.
+
+                Portable programs must restrict themselves to
+                characters corresponding to Unicode scalar
+                values. These characters are well-ordered and
+                correspond to standardized integer values. A
+                linguistically approximate case conversion is defined
+                among these characters.
+
+                Implementations may extend the character type (and by
+                implication, the port and string types) with
+                additional characters. The full set of characters
+                supported by an implementation may be well-ordered but
+                need not be.
+
+    [or words to similar effect]
+
+    * Chapter 3, "Lexical syntax and read syntax" 
+
+    In general, implementations should not be required to support more
+    than a minimal portable character set while, at the same time,
+    there should be only one permitted way to add support for fully
+    general Unicode scalar value characters.
+
+    In 3.2.1 ("Formal Account" p. 12) the definition of <consitutent> is too strong.
+
+    For
+
+                <any character whose Unicode scalar value....>
+
+    Substitute
+
+                <any character, supported by the implementation, whose Unicode scalar value ....>
+
+    In 3.2.3, p.14:
+
+    For
+
+                Moreover, all characters whose...
+
+    Substitute
+
+                Moreover, all chacters supported by an implemtnation, whose
+
+    Similar fixes to 3.2.5, p. 14.
+
+    In 3.2.6, p 15, the definition of "\x" notation needs similar fixes.
+
+    * Chapter 4, section 4.3, "Exceptional situations", p. 18 
+
+    It is unclear whether or not it is intended to permit
+    implementations to use the condition system as a means to
+    asynchronously communicate information to an application.
+
+    If so, slight changes are merited to the proposed addition of
+    section 2.2 ("Ports, Characters, and Strings") above.
+
+    [Note: it is a matter worthy of explicit debate whether or not the
+    condition system should be used for asynchronous communication.]
+
+    * Chapter 9, Section 9.1, "Base Types" 
+
+    Add "port?" to the list. I suggest renaming the section,
+    "Fundamental types" because "base" carries too many overtones from
+    the vocabulary of object oriented programming languages.
+
+    Ports should be considered a fundamental type for reasons given in
+    the proposed addition of 2.2 ("Ports, Characters, and Strings"),
+    above.
+
+    * Chapter 9, Section 9.13, "Characters", p. 49 
+
+    Insert a section here introducing ports.
+
+    * Chapter 9, Section 9.13, "Characters", p. 49ff 
+
+    For
+
+        *Characters* are objects that represent Unicode scalar values[46].
+
+    Substitute
+
+        *Characters* are objects that represent abstract letters from
+        a communications channel (port) alphabet.
+
+    For
+
+        *Note:* Unicode defines .... (whose code is in the range #x10000 to #X10FFFF).
+
+    Substitute
+
+        All implementations of scheme are required to support the
+        characters [as per the R5 portable character set].
+
+        Implementations should additionally support a larger character
+        set corresponding to Unicode scalar values.
+
+    For
+
+            [the definitions of char->integer and integer->char]
+
+    Substitute
+
+            (char->integer /char/) procedure (integer->char /int/) procedure
+
+            For characters with an integer mapping (see section 2.2)
+            these procedures implement a bijective mapping between
+            characters and integers. In particular, characters which
+            correspond to Unicode scalar values must be mapped to the
+            corresponding exact integer.
+
+            For other characters which an implementation may support,
+            these procedures have unspecified behavior and return
+            values.
+
+    For (p.50)
+
+                These procedures impose a total ordering on the set of
+                characters according to their Unicode scalar values.
+
+    Substitute
+
+                These procedures define a partial ordering among
+                characters. For characters with an integer mapping (as
+                given by char->integer) the ordering among characters
+                is the same as the ordering of the corresponding
+                integers.
+

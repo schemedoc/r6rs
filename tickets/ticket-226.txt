@@ -1,0 +1,39 @@
+Formal comment #226 (simplification)
+
+Drop formal semantics of library toplevel
+Reported by: 	Andre van Tonder
+Version: 	5.92
+
+Pages : 71-73
+
+Summary
+
+Formal semantics of library toplevel is meaningless, unnecessary and
+clashes with the description in the body of the document. It should be
+removed.
+
+Description
+
+The formal description of the library semantics unnecessarily adds
+significant volume to the formal semantics. It is also inconsistent
+with the informal description of the library semantics and "expansion
+process" described in the body of the document.
+
+According to the description in the text, a library residualizes to
+the equivalent of a LETREC* expression. Therefore
+
+   1. Its semantics can be reduced to that of LAMBDA.
+
+   2. Because of (1), the formal semantics for libraries is redundant
+      and should be removed.
+
+   3. Even worse, the formal semantics for libraries is
+      meaningless. It purports to give a semantics to DEFINE
+      forms. However, an expanded library contains no DEFINEs, just a
+      LETREC*.
+
+Suggestion
+
+Remove the formal semantics of libraries. It should be sufficient to
+include a note that since libraries expand to LETREC*, their semantics
+can be understood in terms of LAMBDA.

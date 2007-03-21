@@ -1,0 +1,30 @@
+Formal comment #228 (simplification)
+
+The components of a compound condition should be independent
+Reported by: 	John Cowan
+Version: 	5.92
+
+In R5.92RS, a condition may contain any number of component
+conditions. However, if two or more of the components are of the same
+exact type, then condition-ref will be able to retrieve the fields
+only of the first such component, not the others. A fortiori, if a
+condition contains two components foo and bar of types &foo and &bar
+respectively, such that &foo is a supertype of &bar, then asking for a
+field of &foo will return the value from whichever component appears
+first.
+
+In order to simplify the use of conditions, I propose to make it an
+error to create a compound condition with two or more components of
+the same type, unless that type has no fields. This means that the
+order of component conditions no longer matters.
+
+None of the standard condition types of report section 6.3 conflict in
+this way, but it would mean, for example, that the condition created
+by the "error" procedure could not be compounded with another such,
+nor with any simple condition of type &who, &irritants, or &message.
+
+If this is done, then the acccessor procedures defined by
+define-condition-type can be applied to compound as well as simple
+conditions of that type, since the result will not be ambiguous or
+order-dependent. (R5.92RS is silent on using such an accessor on a
+compound condition.)

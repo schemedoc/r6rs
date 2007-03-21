@@ -1,0 +1,61 @@
+Formal comment #233 (enhancement)
+
+allow variable-length strings
+Reported by: 	Per Bothner
+Version: 	5.92
+
+The memory allocation for an N-character string is not a fixed
+multiple of N, unless one allocates a fixed 24 or 32 bits per
+character, which most Scheme implementations probably won't do. Hence
+a string will need a variable-sized buffer, which may need to be
+re-sized, for example after:
+
+   (define str (make-string 1000 #\space))
+   (string-set! str 500 #\x20000;)
+
+Since the allocated buffer is variable-sized, why not allow the number
+of characters to change?
+
+Thus in 5.9 replace:
+
+    This number is an exact, non-negative integer that is =EF=AC=81xed
+    when the string is created. by: This number is an exact,
+    non-negative integer which has an initial value, but may vary as
+    the string is modified.
+
+Consider also that string-set! is an awkward function for working with
+string. You almost never want to modify a single character in-place in
+a string. Instead, the most useful way to create a string is by
+appending to it. Hence I suggest adding:
+
+   (string-append! str1 str2)
+   (string-append! str1 ch2)
+
+or more generally:
+
+   (string-append! str1 str-or-char ...)
+
+These modify str1 in place. They return the unspecified
+value. (string-length str1) is increment by (string-length str2) or 1,
+respectively.
+
+Alternative names string-append-string! and string-append-char! might
+be preferable.
+
+These functions are very useful for "building" strings -
+much more useful that string-set!. Futhermore, I'd argue that the
+append functions are more "basic", since string-set! may
+require expansion or contraction in the middle of a buffer.
+
+One might also support string-append-codepoint! if we allow O(1)
+code-point-level access.
+
+If we have variable length strings one might also consider replacing,
+inserting, and deleting substrings. Those are a little hairier, since
+they get into the indexing discussion: should indexes by scalar values
+or code-point indexes or should we allow both. Or should we allow
+sub-string delimited by "markers"? (I like the latter, though it makes
+strings a bit more heavy-weight.)
+
+For now, I'm just proposing string-append! since it is simple to
+specify, simple to implement, and very useful.

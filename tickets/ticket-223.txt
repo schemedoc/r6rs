@@ -1,0 +1,18 @@
+Formal comment #223 (enhancement)
+
+allow port position to be "magic cookie"
+Reported by: 	Per Bothner
+Version: 	5.92
+
+port-position and set-port-position! are specified to get/set the
+port's current position as a byte offset. But there are many kinds of
+ports which do have a position, and on which the position can be
+changed, but not using a byte offset. This includes most text ports
+(except those implemented using simple stateless transcoders). In some
+cases a character offset may make more sense.
+
+Suggestion: For non-binary ports allow the use of any arbitrary
+integral "magic cookie" as the position. One could also allow an
+arbitrary value (such as a record), though that reduces the
+"typeability" of these procedures. However, that would allow a
+straight-forward wrapping of C's fgetpos/fsetpos.

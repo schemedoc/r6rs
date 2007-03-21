@@ -1,0 +1,40 @@
+Formal comment #231 (enhancement)
+
+Allow inline hex escapes anywhere
+Reported by: 	Alan Watson
+Version: 	5.92
+
+Email: alan@alan-watson.org
+Description
+
+The current report allows inline hex escapes (\x...;) in symbol
+literals and string literals and has a similar but different scheme
+for hex escapes in character literals. This allows one to write a
+program that uses non-ASCII symbols, string, and character literals
+using only ASCII characters.
+
+The current report allows non-ASCII characters to appear in symbol
+literals, string literals, character literals, whitespace, and in
+comments. (I think that is an exhaustive list.)
+
+Many current Schemes have lexers written for ASCII (or Latin-1)
+character sets. Conversion of these lexers to the new standard would
+be easier if the report allowed inline hex escapes to appear anywhere
+in Scheme code. One would simply add a pass before the lexer that
+converts non-ASCII characters to inline hex escapes and converts
+inline hex escapes representing ASCII characters to ASCII characters,
+and would modify the lexer to handle inline hex escapes as
+appropriate.
+
+For this scheme to work, the report must be modified, because a lexer
+so modified cannot distinguish a hex escape that was subsituted for a
+non-ASCII character from one that was present originally.
+
+An alternative approach that would achieve more or less the same
+effect would be to allow inline hex escapes anywhere, but outside of
+strings and symbols require that they represent only non-ASCII
+characters. I do not favor this restriction.
+
+This modification would also create a means to portably interchange
+programs using only ASCII, although I'm not sure if this is especially
+useful given UTF-8.

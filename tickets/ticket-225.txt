@@ -1,0 +1,19 @@
+Formal comment #225 (defect)
+
+need make-custom-textual-input-port and make-custom-textual-output-port
+Reported by: 	Per Bothner
+Version: 	5.92
+
+The procedures make-custom-binary-input-port and
+make-custom-binary-output-port allow one to create custom binary
+ports. However, there seems to be no way to create similar textual
+ports. I guess in theory one might be able to wrap a transcoder around
+a custom binary port but that seems horribly wrong when there is no
+underlying byte stream.
+
+Specifically, it should be possible to implement
+open-string-input-port and open-string-output-port using purely public
+procedures.
+
+Furthermore, open-string-input-port should return a seekable port. See
+my other comment. 'allow port position to be "magic cookie"'

@@ -1,0 +1,29 @@
+Formal comment #208 (defect)
+
+eliminate library export immutability loophole
+Reported by: 	Kent Dybvig
+Version: 	5.92
+
+Description:
+
+The present description of libraries leaves open the possibility that
+a continuation grabbed within a variable definition's right-hand-side
+expression and subsequently invoked might cause the reinitialization,
+with different values, of some or all of the local counterparts of the
+exported variables, effecting implicit assignments to variables that
+are supposed to immutable. Since the effect of returning twice to the
+continuation of the last body expression is unspecified, this may also
+result in implicit assignments to the exported variables. If not, the
+values of the exported variables and their local counterparts may
+differ.
+
+While explicit assignments to immutable variables are syntax
+violations, no exception is presently associated with this implicit
+form of assignment.
+
+Proposal:
+
+Add new wording to the effect that the continuation of the
+right-hand-side expression of a library variable definition should not
+be returned to more than once and that implementations either "should"
+or "must" raise an exception if this occurs.

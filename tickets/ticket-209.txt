@@ -1,0 +1,109 @@
+Formal comment #209 (defect)
+
+Syntactic datums and datum values
+Reported by: 	Andre van Tonder
+Version: 	5.92
+Component :
+
+    Section 1.9 : Syntactic datums and datum values
+
+    Chapter 3 : Lexical syntax and read syntax
+
+    Section 4.8 : Storage model
+
+Summary:
+
+Imprecise description may lead to confusion.
+
+Discussion:
+
+Section 1.9 says:
+
+    * Each datum value may be represented in textual form as a
+      syntactic datum, which can be written out and read back in
+      without loss of information.
+
+It is not stated what this means. I guess maybe it means that writing
+out (1 2 3) and reading it back in during the same run will give a
+value that is equal? to the original. Is that correct?
+
+    * Several syntactic datums can represent the same datum value,
+
+I'm unsure what is meant by this. For example, do the two 1s in (cons
+1 1) count as distinct syntactic datums that may represent the same
+value, or does this only refer to the fact that 1.0 and 1.00000 may
+represent the same value (as stated in chapter 3)?
+
+    * but the datum value corresponding to a syntactic datum is uniquely determined. 
+
+I also find this confusing. Clearly this cannot mean uniqueness with
+respect to eq? Does this mean uniqueness with respect to equal? ? Or
+could the two syntactic datums in (cons "abc" "abc") represent
+different datum values (given that they are considered as separate
+syntactic datums, which is unclear)?
+
+Chapter 3 (introduction) says:
+
+    * A syntactic datum can be used in a program to obtain the
+      corresponding value using quote.
+
+What is meant by "the"?
+
+    * Moreover, valid Scheme expressions form a subset of the
+      syntactic datums.
+
+Is this actually true? I believe that there are valid Scheme
+expressions represented by syntax objects that are not syntactic
+datums as described by the grammar of this section. For example,
+macro-generated Scheme expressions may be valid only if identifiers
+are interpreted as entities containing substitutions/renamings. If
+this extra data is removed, the expression would cease to be valid.
+
+Also, is the intent to talk only about expressions or forms?
+
+    * Note that several syntactic datums may represent the same
+      object, a so-called datum value. For example, both "#e28.000"
+      and "#x1c" are syntactic datums representing the exact integer
+      28; The syntactic datums "(8 13)", "( 08 13 )", "(8 . (13
+      . ()))" (and more) all represent a list containing the integers
+      8 and 13.
+
+This paragraph promises to illustrate syntactic datums that represent
+the same object. However, I believe the language "the same object" at
+least strongly suggests eq? to many Schemers. However, the examples
+are of syntactic datums that give rise to objects that may not be eq?
+
+The next line says:
+
+    * Syntactic datums that denote equal objects are always equivalent
+      as forms of a program.
+
+Perhaps changing equal to equal? may clarify what is meant by this (if
+it is in fact true - see comment about syntax objects above).
+
+    * A syntactic datum occurring in program text is often called a
+    * form.
+
+Does this mean that the datum (x 1) in (let ((x 1)) x) is a form? How
+about the 1 in (display (quote 1))?
+
+Section 4.8 says:
+
+    * It is desirable for constants (i.e. the values of literal
+      expressions) to reside in read-only-memory.
+
+I assume that the term "constant" here refers to what is called "datum
+value" in section 1.9. If so, it may be better to use the same
+terminology.
+
+The next line says:
+
+    * Literal constants, the strings returned by symbol->string,
+      records with no mutable fields, and other values explicitly
+      designated as immutable are immutable objects, ...
+
+Again, now datum values are called literal constants instead of the
+previously established terminology. Also, the line above stated the
+desirability of read-only memory for the first of these cases only,
+which makes the extra items in the laundry list of this line
+stylistically surprising.

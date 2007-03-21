@@ -1,0 +1,43 @@
+Formal comment #213 (defect)
+
+defer lambda rather than define rhs when expanding body
+Reported by: 	Per Bothner
+Version: 	5.92
+
+When expanding a body the current specification defers expanding the
+rhs of a define. I suggest it would be more consistent and natural to
+defer expanding lambda-expressions instead.
+
+* It improves consistency. Consider:
+
+#|1|# (define VAR (MAC))
+#|2|# (set! VAR (MAC))
+#|3|# (list (MAC))
+#|4|# (MAC)
+#|5|# (define VAR (lambda () (MAC)))
+#|6|# (set! VAR (lambda () (MAC)))
+#|7|# (define-syntax MAC ...)
+
+Which of #1-#6 are valid when followed by #7? By my reading only #1
+and #5 are allowed. But that doesn't seem natural to me. If #5 is
+allowed, then #6 should be allowed. Similarly for #1 and #2.
+
+In my proposal, #1-#4 are invalid while #5-#6 are valid.
+
+* There are also anomalies with expanding top-level forms. In the
+  above example, the expansion of MAC is deferred in #1, #2, #3, but
+  not #4. This could lead to subtle differences. In my proposal all of
+  these would be expanded eagerly, which removes surprises.
+
+* An informal reason is that this makes the expansion process more
+  similar to evaluation: Evaluating define means evaluating its rhs,
+  while evaluating a lambda expression does not evaluate its body.
+
+* The above reason leads to better support for read-eval-print loops
+  and other interactive modes where expansion is interleaved with
+  evaluation: If I type a define in repl, an implementation can defer
+  expanding a lambda (until it is called), but it can't defer
+  expanding the rhs of a define in general.
+
+Original informal discussion:
+http://lists.r6rs.org/pipermail/r6rs-discuss/2007-February/001612.html

@@ -1,0 +1,56 @@
+Formal comment #210 (simplification)
+
+Why are simple conditions so different from records
+Reported by: 	Andre van Tonder
+Version: 	5.92
+
+Component : Condition objects
+
+Summary:
+
+The interface for simple conditions is different from that of records
+but redundantly reproduces much of the functionality of
+records. Consider making the interfaces more similar or even dropping
+simple conditions as a separate concept and instead using a record
+hierarchy for them.  Discussion:
+
+Simple conditions, like record types, have named fields and single
+inheritance. As such, the API for defining these types, constructing
+instances and accessing fields has to reproduce much of the same
+functionality. However, the interface is different. For example,
+
+    * Record type field names are for informational purposes only,
+      whereas condition field names are actual symbolic labels that
+      are used for lookup.
+
+    * Make-condition-type takes a list of symbols, whereas
+      make-record-type-descriptor takes a vector of symbols.
+
+    * Define-condition-type has a subset of the functionality of
+      define-record-type. Yet the syntax of the former is different
+      from that of the latter.
+
+In fact, I see no good reason why the ability to have custom
+constructors, accessors, explicit and implicit naming APIs, control
+over introspection, opacity, finality, etc., should be denied a
+designer of a condition hierarchy given that these features are
+already available for other user-defined types.
+
+It seems that simple conditions could perfectly well be a record type
+hierarchy under a common root /record/ type.
+
+An API for compound conditions would of course still have to be
+separate.
+
+Recommendation:
+
+Consider making interfaces of simple conditions similar to that of
+records. Better yet, drop simple conditions and consider implementing
+the condition hierarchy as a hierarchy of record types with common
+parent /record type/ condition. In this way, all of the infrastructure
+available for records, including custom constructors, explicit and
+implicit naming interfaces, introspection, etc., would become
+available for new condition types.
+
+Compound conditions could remain largely as they currently are, and so
+can the convenience syntax (condition ----), etc.

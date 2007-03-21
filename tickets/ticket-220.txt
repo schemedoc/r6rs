@@ -1,0 +1,87 @@
+Formal comment #220 (defect)
+
+Map returning twice
+Reported by: 	Andre van Tonder
+Version: 	5.92
+
+Component : Higher order list procedures
+
+Sections : 9.11 (base document), 3 (standard libraries)
+
+Summary
+
+MAP (and possibly other higher-order procedures) should return a new
+list not only the first time, but /every subsequent/ time, if it
+returns more than once. Not doing so may cause inconsistent states in
+algorithms that use backtracking.
+
+Discussion
+
+Consistent behaviour of MAP (and other higher order procedures that
+construct new lists) in cases where these return more than once, is
+important in algorithms that use backtracking.
+
+For this to work correctly, MAP should allocate new list structure not
+only the first time, but /every subsequent/ time it returns. Certain
+imperative implementations of MAP do not allocate new structure on
+subsequent returns, and may lead to inconsistent states in
+backtracking algorithms.
+
+Here is an example:
+
+(let ((resume #f)
+       (results '()))
+   (set! results
+         (cons (map (lambda (x)
+                      (call/cc (lambda (k)
+                                 (unless resume (set! resume k))
+                                 0)))
+                    '(#f #f))
+               results ))
+   (display results)(newline)
+   (if resume
+       (let ((resume* resume))
+         (set! resume #f)
+         (resume* 1))))
+
+With a careful implementation of MAP, a new list is returned every
+time, so that the displayed results are
+
+   ((0 0))
+   ((1 0) (0 0))
+   ((1 1) (1 0) (0 0))
+
+Some imperative implementations of MAP do not return a new list every
+time, so that an inconsistent result such as
+
+   ((0 0))
+   ((1 0) (0 0))
+   ((1 1) (1 1) (0 0))
+
+may be returned (here the first two lists are the same - the (1 0) of
+the second step has been SET-CDR!-ed). Here is one such, otherwise
+reasonable-looking, implementation:
+
+;; Imperative implementation that only returns
+;; a new list the first time it returns:
+
+(define (map f lst)
+   (if (null? lst)
+       '()
+       (let ((result (list (f (car lst)))))
+         (let loop ((pair result)
+                    (tail (cdr lst)))
+           (if (pair? tail)
+               (let ((pair* (list (f (car tail)))))
+                 (set-cdr! pair pair*)
+                 (loop pair*
+                       (cdr tail))))
+           result))))
+
+(While this problem was pointed out in a prior formal comment, that
+comment was not well formulated, and the formal response to that
+comment did not really address this particular issue.)  Recommendation
+
+Require that MAP (and other higher order preocedures that construct
+lists) return a new list every time in cases where it may return more
+than once.

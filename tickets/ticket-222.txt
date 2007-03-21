@@ -1,0 +1,32 @@
+Formal comment #222 (simplification)
+
+Formal semantics should not contain complicating optimizations
+Reported by: 	Andre van Tonder
+Version: 	5.92
+
+Pages : 61-73
+
+Summary
+
+The current formal semantics contains at least one, and possibly more,
+unnecessary performance optimizations that complicate it rather more
+than necessary. Such optimizations have no place in a formal
+description of the semantics and should be removed.
+
+Description
+
+An example of such an optimization occurs on pages 69 and 70, where
+procedure parameters are treated differently depending on whether they
+are the target of set! in the body of the procedure. This is
+unnecessary. It clashes with the informal description in the body of
+the report, and it complicates the semantics with an unnecessary rule
+[6appN], and an unnecessary variable assigment metafunction that takes
+about 25 lines (more than half of page 70) to describe. Both of these,
+and possibly other rules depending on this distinction, should be
+removed.
+
+This is one unnecessary complication, presumably based on optimization
+considerations, that I noticed. A more careful reading may turn up
+other optimization-related complications. This formal comment is
+intended to apply to all cases where the formal semantics may be
+simplified by discarding optimizations.

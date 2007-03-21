@@ -1,0 +1,78 @@
+Formal comment #230 (defect)
+
+Opened 5 days ago
+NaNs are not real numbers
+Status: new
+Reported by: 	Aubrey Jaffer 	Assigned to: 	will
+Priority: 	minor 	Milestone: 	r6rs
+Component: 	arithmetic 	Version: 	5.92
+Keywords: 		Cc: 	
+
+   1. Numbers 
+
+    This chapter describes Scheme's representations for numbers. It is
+    important to distinguish between the mathematical numbers, the
+    Scheme numbers that attempt to model them, the machine
+    representations used to implement the Scheme numbers, and
+    notations used to write numbers. This report uses the types
+    number, complex, real, rational, and integer to refer to both
+    mathematical numbers and Scheme numbers.
+
+So the term "real" must conform to mathematical usage.
+
+    2.4. Infinities and NaNs?
+
+    Positive infinity is regarded as a real (but not rational) number,
+    whose value is indeterminate but greater than all rational
+    numbers. Negative infinity is regarded as a real (but not
+    rational) number, whose value is indeterminate but less than all
+    rational numbers.
+
+These "regards" can be made less vague:
+
+        Positive infinity denotes an irrational real number whose
+        value is greater than all rational numbers representable by
+        the implementation.
+
+The number (expt 2 (expt 10 10000000000.1)) would be a candidate value
+for all existing Scheme implementations.
+
+    A NaN is regarded as a real (but not rational) number whose value
+    is so indeterminate that it might represent any real number,
+    including positive or negative infinity, and might even be greater
+    than positive infinity or less than negative infinity.
+
+Here R6RS runs afoul of mathemtatics. A probability distribution is
+not a real number. While there are an infinitude of numbers which can
+serve to denote positive infinity, there is no real number whose
+ordering behavior matches R6RS_92 NaN's behavior in comparisons.
+
+Mathematically, a real number must be negative, zero, or positive;
+thus NaN is not a real number; thus the text of section 2 is
+incompatible with the report referring to NaN as a real number.
+
+Then what about IEEE-754 flonum NaN?
+
+    2.1. Numerical types
+
+    ... Likewise, every implementation is required to designate a
+    subset of its inexact reals as flonums, and to convert certain
+    external representations into flonums.
+
+By rewording this sentence, some flonums may be used to designate
+NaNs?, even though NaNs? are not real:
+
+        Likewise, every implementation is required to designate a
+        subset of the union of inexact NaNs? with inexact reals as
+        flonums, and to convert certain external representations into
+        flonums.
+
+The "fl" comparison operations, which operate on flonums, are then
+free to follow IEEE-754 NaN comparison behavior.
+
+But the "Arithmetic Operations" <, <=, >, and >= on page 42 must
+signal an exception when applied to non-real arguments like 5+4i or
++nan.0.
+
+By the way, the behavior of "flmin" and "flmax" are not specified when
+applied to NaNs?.

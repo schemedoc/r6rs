@@ -1,0 +1,47 @@
+Formal comment #212 (simplification)
+
+body should allow mixing declarations with expressions
+Reported by: 	Per Bothner
+Version: 	5.92
+
+Scheme should allow expressions and declarations to be mixed in all
+bodies, not just top-level bodies.
+
+For example:
+
+(define (f x)
+    (define y (use x))
+    (display y)
+    (define z (use x y))
+    (display z)
+    (use x y z))
+
+This illustrates one use-case: adding debugging commands.
+
+Another use case:
+
+  (define (fun)
+    (define var1 ...)
+    ... do some calculations or whatever ...
+    (define var2 depending-on-those-calculations)
+    ...rest...)
+
+Of course this use-case can be handled using an inner let, but that
+adds needless nesting and indentation. The latter, especially, is
+often a limited resource.
+
+The semantics are sketched out in the last paragraph of 8. "Expansion
+process".
+
+This is a simplification, since it makes normal bodies the same as
+top-level bodies.
+
+"Programming languages should be designed not by piling feature on top
+of feature, but by removing the weaknesses and restrictions that make
+additional features appear necessary."
+
+"the language described in this report is intended to: ... no
+unnecessary restrictions on how they are composed."
+
+Originally proposed in:
+http://lists.r6rs.org/pipermail/r6rs-discuss/2007-January/001333.html

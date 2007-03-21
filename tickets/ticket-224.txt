@@ -1,0 +1,19 @@
+Formal comment #224 (defect)
+
+get-bytevector-some may be difficult to implement
+Reported by: 	Per Bothner
+Version: 	5.92
+
+It is unclear to me how one would implement get-bytevector-some. I
+don't think it can be implemented reasonably using the read call-back
+function of make-custom-binary-port. The best I can think of:
+allocated some largish buffer, call the read call-back, and the
+re-allocate a new bytevector with however many bytes were actually
+read. But that still won't return "a freshly allocated bytevector of
+non-zero size containing the available data" - just "a freshly
+allocated bytevector of non-zero size containing *part* of the
+available data". And it means allocating a temporary large bytevector
+and throwing it away.
+
+Fix: remove get-bytevector-some, or clarify that it reads "one or more
+of the available characters". I suggest the former.
