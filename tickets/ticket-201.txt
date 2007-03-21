@@ -31,3 +31,20 @@ data types that can be considered sequences of bytes; how to write I/O
 device drivers; ...) while completely ignoring a much larger and more
 important class of problems (allowing fast and memory- efficient
 access to large arrays of homogeneous numerical data).
+
+RESPONSE:
+
+Bytevectors were designed primarily to enable binary I/O, where
+aliasing is desirable.  The comment correctly identifies problems with
+bytevectors when used as unboxed storage for high-performance
+computation.  This suggests that bytevectors are not the right place
+to solve the problem described in the formal comment.   Also, even if
+the aliasing problems were addressed, bytevectors may be an
+inappropriate design for the problem, as high-performance storage of,
+say, flonums, would use the system's native representation, which may
+be different from IEEE 754.  As high-performance computation with
+large arrays of homogeneous numerical data is not among the primary
+goals for R6RS, the formal comment is rejected.
+
+
+
