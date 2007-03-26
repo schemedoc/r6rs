@@ -76,3 +76,35 @@ signal an exception when applied to non-real arguments like 5+4i or
 
 By the way, the behavior of "flmin" and "flmax" are not specified when
 applied to NaNs?.
+
+DRAFT RESPONSE:
+
+This is related to formal comments #143 and #167.  The
+comment's argument is based upon a close reading of the
+draft R6RS.
+
+The editors believe it is important to distinguish between
+the mathematical numbers and the Scheme numbers that attempt
+to model them.  The editors note the presence and importance
+of the word "attempt".
+
+If NaNs were not regarded as a real number, then the domains
+and ranges of the flonum procedures would not be a subset of
+the Scheme numbers that are regarded as real, which would
+make the flonum operations less compatible with the generic
+operations.  The proposal would also have an adverse effect
+upon performance, as noted in the response to formal comment
+#143.
+
+The word "indeterminate" does not imply a probability
+distribution.  In fact, it correctly connotes that there
+is not enough information to construct a probability
+distribution.
+
+The editors believe it is better to continue to regard quiet
+NaNs as real numbers, and to leave the semantics of signalling
+NaNs to some future version of the report.
+
+The next draft should note that the flmin and flmax procedures
+always return an inexact NaN when one or more of the arguments
+is a NaN.
