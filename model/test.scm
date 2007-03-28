@@ -1,6 +1,5 @@
 (module test mzscheme
   (require (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
-           (planet "subst.ss" ("robby" "redex.plt" 3))
            (lib "etc.ss")
            (lib "contract.ss"))
   

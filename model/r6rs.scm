@@ -6,91 +6,61 @@ immutability: would somehow have to have Qtoc function produce a store, either w
 
 (module r6rs mzscheme
   (require (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
-           (planet "subst.ss" ("robby" "redex.plt" 3))
            (lib "plt-match.ss"))
   
   (provide lang 
            reductions
            r6rs-subst-one
            Var-set!d?)
+  
+  (provide Arithmetic
+           Basic--syntactic--forms
+           Cons 
+           Cons-cell--mutation
+           Procedure--application
+           Apply
+           Call-cc--and--dynamic-wind
+           Exceptions
+           Multiple--values--and--call-with-values
+           Quote
+           Top--level--and--Variables
+           Underspecification)
 
   (define lang
     (language
-     (p* (store (sf ...) (ds ...))
-         (uncaught-exception v)
-         (unknown string))
-     (a* (store (sf ...) ((values v ...)))
-         (uncaught-exception v)
-         (unknown string))
+     (p* (store (sf ...) (ds ...)) (uncaught-exception v) (unknown string))
+     (a* (store (sf ...) ((values v ...))) (uncaught-exception v) (unknown string))
+     (sf (x v) (pp (cons v v)))
+     (ds (define x es) (beginF ds ...) es)
      
-     (sf (x v)
-         (pp (cons v v)))
-     
-     (ds (define x es)
-         (beginF ds ...)
-         es)
-     
-     (es 'snv 
-         (begin es es ...)
-         (begin0 es es ...)
-         (es es ...)
-         (if es es es)
-         (if es es)
-         (set! x es) 
-         x
-         nonproc
-         pproc
-         (dw x es es es)
-         (throw x (d d ...))
+     (es 'snv (begin es es ...) (begin0 es es ...) (es es ...)
+         (if es es es) (if es es) (set! x es) x
+         nonproc pproc
+         (dw x es es es) (throw x (d d ...))
          (handlers es ... es)
-         (lambda (x ...) es es ...)
-         (lambda (x ... dot x) es es ...))
+         (lambda (x ...) 
+           es
+           es ...)
+         (lambda (x ... dot x)
+           es
+           es ...))
      
-     (s snv
-        sym)
-     (snv (s ...)
-          (s ... dot sqv)
-          (s ... dot sym)
-          sqv)
+     (s snv sym)
+     (snv (s ...) (s ... dot sqv) (s ... dot sym) sqv)
      
      (p (store (sf ...) (d ...)))
-     
-     (d (define x e)
-        (beginF d ...)
-        e)
-     
-     (e (begin e e ...)
-        (begin0 e e ...)
-        (e e ...)
-        (if e e e)
-        (if e e)
-        (set! x e) 
-        (handlers e ... e)
-        x
-        nonproc 
-        proc
-        (dw x e e e))
-     
+     (d (define x e) (beginF d ...) e)
+     (e (begin e e ...) (begin0 e e ...)
+        (e e ...) (if e e e) (if e e)
+        (set! x e) (handlers e ... e)
+        x nonproc proc (dw x e e e))
      (v (unspecified) nonproc proc)
-     
-     (nonproc pp
-              null
-              'sym
-              sqv
-              (condition string))
+     (nonproc pp null 'sym sqv (condition string))
      (sqv n #t #f)
      
      (proc uproc pproc (throw x (d d ...)))
-     (uproc (lambda (x ...) e e ...) 
-           (lambda (x ... dot x) e e ...))
-     (pproc aproc     ; primitive functions
-           proc1
-           proc2
-           list
-           dynamic-wind
-           apply
-           values
-           unspecified)
+     (uproc (lambda (x ...) e e ...) (lambda (x ... dot x) e e ...))
+     (pproc aproc proc1 proc2 list dynamic-wind apply values unspecified)
      (proc1 null? pair? car cdr call/cc procedure? condition? unspecified? raise*)
      (proc2 cons set-car! set-cdr! eqv? call-with-values with-exception-handler)
      (aproc + - / *)
@@ -103,7 +73,8 @@ immutability: would somehow have to have Qtoc function produce a store, either w
                (variable-except 
                 dot                         ; the . in dotted pairs
                 lambda if loc set!          ; core syntax names
-                quote begin begin0
+                quote
+                begin begin0
                 
                 null                      ; non-function values
                 unspecified
@@ -134,124 +105,98 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (W (D d ...))
      (D (define x Eo) E*)
      
-     (E (in-hole F (handlers v ... E*))
-        (in-hole F (dw x e E* e))
-        F)
+     (E (in-hole F (handlers v ... E*)) (in-hole F (dw x e E* e)) F)
      (E* (hole multi) E)
      (Eo (hole single) E)
      
-     (F hole
-        (v ... Fo v ...)
-        (if Fo e e)
-        (if Fo e)
-        (set! x Fo)
-        (begin F* e e ...)
-        (begin0 F* e e ...)
-        (begin0 (values v ...) F* e ...)
+     (F hole (v ... Fo v ...) (if Fo e e) (if Fo e) (set! x Fo) 
+        (begin F* e e ...) (begin0 F* e e ...) (begin0 (values v ...) F* e ...)
         (call-with-values (lambda () F* e ...) v))
      (F* (hole multi) F)
      (Fo (hole single) F)
-
-     ;; everything except exception handler bodies
-     (PG (store (sf ...) ((define x G) d ...))
-         (store (sf ...) (G d ...)))
-     (G (in-hole F (dw x e G e))
-        F)
-
-     ;; everything except dw
-     (H (in-hole F (handlers v ... H))
-        F)
      
-     (SD S
-         (define x S)
-         (beginF d ... SD ds ...))
-     (S hole
-        (begin e e ... S es ...)
-        (begin S es ...)
-        (begin0 e e ... S es ...)
-        (begin0 S es ...)
-        (e ... S es ...)
-        (if e e S)
-        (if e S es)
-        (if S es es)
-        (if e S)
-        (if S es)
-        (set! x S)
-        (handlers s ... S es ... es)
-        (handlers s ... S)
-        (throw x (e e ...))
-        (lambda (x ...) S es ...)
-        (lambda (x ...) e e ... S es ...)
-        (lambda (x ... dot x) S es ...)
-        (lambda (x ... dot x) e e ... S es ...))))
+     ;; everything except exception handler bodies
+     (PG (store (sf ...) ((define x G) d ...)) (store (sf ...) (G d ...)))
+     (G (in-hole F (dw x e G e)) F)
+     
+     ;; everything except dw
+     (H (in-hole F (handlers v ... H)) F)
+     
+     (SD S (define x S) (beginF d ... SD ds ...))
+     (S hole (begin e e ... S es ...) (begin S es ...)
+        (begin0 e e ... S es ...) (begin0 S es ...)
+        (e ... S es ...) (if e e S) (if e S es) (if S es es) (if e S) (if S es)
+        (set! x S) (handlers s ... S es ... es) (handlers s ... S)
+        (throw x (e e ...)) (lambda (x ...) S es ...) (lambda (x ...) e e ... S es ...)
+        (lambda (x ... dot x) S es ...) (lambda (x ... dot x) e e ... S es ...))))
 
   (define Basic--syntactic--forms
     (reduction-relation
      lang
      ;; if
-     (/-> (if v_1 e_1 e_2)
-          e_1
-          "6if3t"
+     (--> (in-hole P_1 (if v_1 e_1 e_2)) (in-hole P_1 e_1) "6if3t"
           (side-condition (not (eq? (term v_1) #f))))
-     (/-> (if #f e_1 e_2)
-          e_2
+     (--> (in-hole P_1 (if #f e_1 e_2))
+          (in-hole P_1 e_2)
           "6if3f")
      
-     (/-> (if v_1 e_1)
-          e_1
+     (--> (in-hole P_1 (if v_1 e_1))
+          (in-hole P_1 e_1)
           "6if2t"
           (side-condition (not (eq? (term v_1) #f))))
-     (/-> (if #f e_1)
-          (unspecified)
+     (--> (in-hole P_1 (if #f e_1))
+          (in-hole P_1 (unspecified))
           "6if2f")
      
      ;; begin
-     (/-> (begin (values v ...) e_1 e_2 ...) (begin e_1 e_2 ...) "6beginc")
-     (/-> (begin e_1) e_1 "6begind")
+     (--> (in-hole P_1 (begin (values v ...) e_1 e_2 ...))
+          (in-hole P_1 (begin e_1 e_2 ...))
+          "6beginc")
+     (--> (in-hole P_1 (begin e_1)) (in-hole P_1 e_1) "6begind")
      
      ;; begin0
-     (/-> (begin0 (values v_1 ...) (values v_2 ...) e_2 ...) (begin0 (values v_1 ...) e_2 ...) "6begin0n")
-     (/-> (begin0 e_1) e_1 "6begin01")
-     
-     where
-     [(/-> a b) (--> (in-hole P_1 a) (in-hole P_1 b))]))
+     (--> (in-hole P_1 (begin0 (values v_1 ...) (values v_2 ...) e_2 ...))
+          (in-hole P_1 (begin0 (values v_1 ...) e_2 ...))
+          "6begin0n")
+     (--> (in-hole P_1 (begin0 e_1)) (in-hole P_1 e_1) "6begin01")))
   
   (define Arithmetic
     (reduction-relation
      lang
      ;; primitives for numbers
-     (/-> (+) 0 "6+0")
-     (/-> (+ n_1 n_2 ...) ,(sum-of (term (n_1 n_2 ...))) "6+")
+     (--> (in-hole P_1 (+)) (in-hole P_1 0) "6+0")
+     (--> (in-hole P_1 (+ n_1 n_2 ...)) (in-hole P_1 ,(sum-of (term (n_1 n_2 ...)))) "6+")
      
-     (/-> (- n_1) ,(- (term n_1)) "6u-")
-     (/-> (- n_1 n_2 n_3 ...) 
-          ,(- (term n_1) (sum-of (term (n_2 n_3 ...))))
+     (--> (in-hole P_1 (- n_1)) (in-hole P_1 ,(- (term n_1))) "6u-")
+     (--> (in-hole P_1 (- n_1 n_2 n_3 ...)) 
+          (in-hole P_1 ,(- (term n_1) (sum-of (term (n_2 n_3 ...)))))
           "6-")
-     (/-> (-) (raise (condition "arity mismatch")) "6-arity")
+     (--> (in-hole P_1 (-))
+          (in-hole P_1 (raise (condition "arity mismatch")))
+          "6-arity")
      
+     (--> (in-hole P_1 (*)) (in-hole P_1 1) "6*1")
+     (--> (in-hole P_1 (* n_1 n_2 ...)) (in-hole P_1 ,(product-of (term (n_1 n_2 ...)))) "6*")
      
-     (/-> (*) 1 "6*1")
-     (/-> (* n_1 n_2 ...) ,(product-of (term (n_1 n_2 ...))) "6*")
-     
-     (/-> (/ n_1) (/ 1 n_1)
+     (--> (in-hole P_1 (/ n_1)) (in-hole P_1 (/ 1 n_1))
           "6u/")
-     (/-> (/ n_1 n_2 n_3 ...)
-          ,(/ (term n_1) (product-of (term (n_2 n_3 ...))))
+     (--> (in-hole P_1 (/ n_1 n_2 n_3 ...))
+          (in-hole P_1 ,(/ (term n_1) (product-of (term (n_2 n_3 ...)))))
           "6/"
           (side-condition (not (member 0 (term (n_2 n_3 ...))))))
-     (/-> (/ n n ... 0 n ...)
-          (raise (condition "divison by zero"))
+     (--> (in-hole P_1 (/ n n ... 0 n ...))
+          (in-hole P_1 (raise (condition "divison by zero")))
           "6/0")
-     (/-> (/) (raise (condition "arity mismatch")) "6/arity")
+     (--> (in-hole P_1 (/))
+          (in-hole P_1 (raise (condition "arity mismatch")))
+          "6/arity")
      
-     (/-> (aproc v_1 ...)
-          (raise (condition "arith-op applied to non-number"))
+     (--> (in-hole P_1 (aproc v_1 ...))
+          (in-hole P_1 (raise (condition "arith-op applied to non-number")))
           "6ae"
           (side-condition
            (ormap (lambda (v) (not (number? v)))
-                  (term (v_1 ...)))))
-     where
-     [(/-> a b) (--> (in-hole P_1 a) (in-hole P_1 b))]))
+                  (term (v_1 ...)))))))
   
   (define (sum-of x) (apply + x))
   (define (product-of x) (apply * x))
@@ -278,34 +223,31 @@ immutability: would somehow have to have Qtoc function produce a store, either w
                  (in-hole W_1 (unspecified)))
           "6setcdr")
      
-     (/-> (set-car! v_1 v_2)
-          (raise (condition "can't set-car! on a non-pair"))
+     (--> (in-hole P_1 (set-car! v_1 v_2))
+          (in-hole P_1 (raise (condition "can't set-car! on a non-pair")))
           "6scare"
           (side-condition (not (pp? (term v_1)))))
      
-     (/-> (set-cdr! v_1 v_2)
-          (raise (condition "can't set-cdr! on a non-pair"))
+     (--> (in-hole P_1 (set-cdr! v_1 v_2))
+          (in-hole P_1 (raise (condition "can't set-cdr! on a non-pair")))
           "6scdre"
           (side-condition (not (pp? (term v_1)))))
      
-     (/-> (eqv? v_1 v_1)
-          #t
+     (--> (in-hole P_1 (eqv? v_1 v_1))
+          (in-hole P_1 #t)
           "6eqt"
           (side-condition (not (uproc? (term v_1))))
           (side-condition (not (condition? (term v_1)))))
      
      
-     (/-> (eqv? v_1 v_2)
-          #f
+     (--> (in-hole P_1 (eqv? v_1 v_2))
+          (in-hole P_1 #f)
           "6eqf"
           (side-condition (not (uproc? (term v_1))))
           (side-condition (not (uproc? (term v_2))))
           (side-condition (not (condition? (term v_1))))
           (side-condition (not (condition? (term v_2))))
-          (side-condition (not (equal? (term v_1) (term v_2)))))
-     
-     where
-     [(/-> a b) (--> (in-hole P_1 a) (in-hole P_1 b))]))
+          (side-condition (not (equal? (term v_1) (term v_2)))))))
   
   (define Cons
     (reduction-relation
@@ -318,8 +260,12 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           "6cons"
           (fresh pp))
      
-     (/-> (list v_1 v_2 ...) (cons v_1 (list v_2 ...)) "6listc")
-     (/-> (list) null "6listn")
+     (--> (in-hole P_1 (list v_1 v_2 ...))
+          (in-hole P_1 (cons v_1 (list v_2 ...)))
+          "6listc")
+     (--> (in-hole P_1 (list))
+          (in-hole P_1 null)
+          "6listn")
      
      ;; car
      (--> (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...)
@@ -336,34 +282,31 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           "6cdr")
 
      ;; null?
-     (/-> (null? null)
-          #t
+     (--> (in-hole P_1 (null? null))
+          (in-hole P_1 #t)
           "6null?t")
-     (/-> (null? v_1)
-          #f
+     (--> (in-hole P_1 (null? v_1))
+          (in-hole P_1 #f)
           "6null?f"
           (side-condition (not (null-v? (term v_1)))))
      
-     (/-> (pair? pp)
-          #t
+     (--> (in-hole P_1 (pair? pp))
+          (in-hole P_1 #t)
           "6pair?t")
-     (/-> (pair? v_1)
-          #f
+     (--> (in-hole P_1 (pair? v_1))
+          (in-hole P_1 #f)
           "6pair?f"
           (side-condition (not (pp? (term v_1)))))
      
-     (/-> (car v_i)
-          (raise (condition "can't take car of non-pair"))
+     (--> (in-hole P_1 (car v_i))
+          (in-hole P_1 (raise (condition "can't take car of non-pair")))
           "6care"
           (side-condition (not (pp? (term v_i)))))
      
-     (/-> (cdr v_i)
-          (raise (condition "can't take cdr of non-pair"))
+     (--> (in-hole P_1 (cdr v_i))
+          (in-hole P_1 (raise (condition "can't take cdr of non-pair")))
           "6cdre"
-          (side-condition (not (pp? (term v_i)))))
-     
-     where
-     [(/-> a b) (--> (in-hole P_1 a) (in-hole P_1 b))]))
+          (side-condition (not (pp? (term v_i)))))))
   
   (define Procedure--application
     (reduction-relation
@@ -380,10 +323,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (store (sf_1 ...) (in-hole W_1 ((lambda (x_1 x_2 ...) e_1 e_2 ...) v_1 v_2 ...)))
           (store (sf_1 ... (bp v_1))
                  (in-hole W_1
-                          (,(r6rs-subst-one
-                             (term x_1) 
-                             (term bp)
-                             (term (lambda (x_2 ...) e_1 e_2 ...)))
+                          ((r6rs-subst-one (x_1 bp (lambda (x_2 ...) e_1 e_2 ...)))
                             v_2 ...)))
           "6appN!"
           (fresh bp)
@@ -393,12 +333,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
                 (term (Var-set!d? (x_1 (lambda (x_2 ...) e_1 e_2 ...)))))))
      
      (--> (in-hole P_1 ((lambda (x_1 x_2 ...) e_1 e_2 ...) v_1 v_2 ...))
-          (in-hole P_1
-                   (,(r6rs-subst-one
-                      (term x_1) 
-                      (term v_1)
-                      (term (lambda (x_2 ...) e_1 e_2 ...)))
-                     v_2 ...))
+          (in-hole P_1 ((r6rs-subst-one (x_1 v_1 (lambda (x_2 ...) e_1 e_2 ...))) v_2 ...))
           "6appN"
           (side-condition
            (and (= (length (term (x_2 ...))) 
@@ -409,8 +344,8 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           (in-hole P_1 (begin e_1 e_2 ...))
           "6app0")
      
-     (/-> ((lambda (x_1 ...) e e ...) v_1 ...)
-          (raise (condition "arity mismatch"))
+     (--> (in-hole P_1 ((lambda (x_1 ...) e e ...) v_1 ...))
+          (in-hole P_1 (raise (condition "arity mismatch")))
           "6arity"
           (side-condition
            (not (= (length (term (x_1 ...)))
@@ -423,46 +358,43 @@ immutability: would somehow have to have Qtoc function produce a store, either w
            (= (length (term (v_1 ...))) (length (term (x_1 ...))))))
      
      ;; mu-lambda too few arguments case
-     (/-> ((lambda (x_1 ... dot x) e e ...) v_1 ...)
-          (raise (condition "arity mismatch"))
+     (--> (in-hole P_1 ((lambda (x_1 ... dot x) e e ...) v_1 ...))
+          (in-hole P_1 (raise (condition "arity mismatch")))
           "6μarity"
           (side-condition
            (< (length (term (v_1 ...)))
               (length (term (x_1 ...))))))
      
-     (/-> (procedure? proc) #t "6proct")
-     (/-> (procedure? nonproc) #f "6procf")
-     (/-> (procedure? (unspecified)) #f "6procu")
+     (--> (in-hole P_1 (procedure? proc)) (in-hole P_1 #t) "6proct")
+     (--> (in-hole P_1 (procedure? nonproc)) (in-hole P_1 #f) "6procf")
+     (--> (in-hole P_1 (procedure? (unspecified))) (in-hole P_1 #f) "6procu")
      
-     (/-> (nonproc v ...)
-          (raise (condition "can't call non-procedure"))
+     (--> (in-hole P_1 (nonproc v ...))
+          (in-hole P_1 (raise (condition "can't call non-procedure")))
           "6appe")
      
-     (/-> ((unspecified) v ...)
-          (raise (condition "can't call non-procedure"))
+     (--> (in-hole P_1 ((unspecified) v ...))
+          (in-hole P_1 (raise (condition "can't call non-procedure")))
           "6appun")
      
-     (/-> (proc1 v_1 ...)
-          (raise (condition "arity mismatch"))
+     (--> (in-hole P_1 (proc1 v_1 ...))
+          (in-hole P_1 (raise (condition "arity mismatch")))
           "61arity"
           (side-condition (not (= (length (term (v_1 ...))) 1))))
-     (/-> (proc2 v_1 ...)
-          (raise (condition "arity mismatch"))
+     (--> (in-hole P_1 (proc2 v_1 ...))
+          (in-hole P_1 (raise (condition "arity mismatch")))
           "62arity"
           (side-condition (not (= (length (term (v_1 ...))) 2))))
-     (/-> (unspecified v_1 v_2 ...)
-          (raise (condition "arity mismatch"))
-          "6unarity")
-     
-     where
-     [(/-> a b) (--> (in-hole P_1 a) (in-hole P_1 b))]))
+     (--> (in-hole P_1 (unspecified v_1 v_2 ...))
+          (in-hole P_1 (raise (condition "arity mismatch")))
+          "6unarity")))
   
   (define Apply
     (reduction-relation
      lang
      
-     (/-> (apply proc_1 v_1 ... null)
-          (proc_1 v_1 ...)
+     (--> (in-hole P_1 (apply proc_1 v_1 ... null))
+          (in-hole P_1 (proc_1 v_1 ...))
           "6applyf")
      
      (--> (store (sf_1
@@ -479,24 +411,21 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           "6applyc")
      
      
-     (/-> (apply nonproc v ...)
-          (raise (condition "can't apply non-procedure"))
+     (--> (in-hole P_1 (apply nonproc v ...))
+          (in-hole P_1 (raise (condition "can't apply non-procedure")))
           "6applynf")
      
-     (/-> (apply (unspecified) v ...)
-          (raise (condition "can't apply non-procedure"))
+     (--> (in-hole P_1 (apply (unspecified) v ...))
+          (in-hole P_1 (raise (condition "can't apply non-procedure")))
           "6applyun")
      
-     (/-> (apply proc v_1 ... v_2)
-          (raise (condition "apply's last argument non-list"))
+     (--> (in-hole P_1 (apply proc v_1 ... v_2))
+          (in-hole P_1 (raise (condition "apply's last argument non-list")))
           "6applye"
           (side-condition (not (list-v? (term v_2)))))
      
-     (/-> (apply) (raise (condition "arity mismatch")) "6apparity0")
-     (/-> (apply v) (raise (condition "arity mismatch")) "6apparity1")
-     
-     where
-     [(/-> a b) (--> (in-hole P_1 a) (in-hole P_1 b))]))
+     (--> (in-hole P_1 (apply)) (in-hole P_1 (raise (condition "arity mismatch"))) "6apparity0")
+     (--> (in-hole P_1 (apply v)) (in-hole P_1 (raise (condition "arity mismatch"))) "6apparity1")))
   
   ;; Var-set!d? : e -> boolean
   (define-metafunction Var-set!d?
@@ -559,17 +488,17 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           "6wind"
           (fresh x)
           (side-condition 
-           (and (term (Arity-zero? v_1))
-                (term (Arity-zero? v_2))
-                (term (Arity-zero? v_3)))))
+           (and (term (A_0 v_1))
+                (term (A_0 v_2))
+                (term (A_0 v_3)))))
      
      (--> (in-hole P_1 (dynamic-wind v_1 v_2 v_3))
           (in-hole P_1 (raise (condition "dynamic-wind expects arity 0 procs")))
           "6dwerr"
           (side-condition 
-           (or (not (term (Arity-zero? v_1)))
-               (not (term (Arity-zero? v_2)))
-               (not (term (Arity-zero? v_3))))))
+           (or (not (term (A_0 v_1)))
+               (not (term (A_0 v_2)))
+               (not (term (A_0 v_3))))))
      
      (--> (in-hole P_1 (dynamic-wind v_1 ...))
           (in-hole P_1 (raise (condition "arity mismatch")))
@@ -635,14 +564,14 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (in-hole PG_1 (with-exception-handler v_1 v_2))
           (in-hole PG_1 (handlers v_1 (v_2)))
           "6xweh1"
-          (side-condition (term (Arity-one? v_1)))
-          (side-condition (term (Arity-zero? v_2))))
+          (side-condition (term (A_1 v_1)))
+          (side-condition (term (A_0 v_2))))
      
      (--> (in-hole P_1 (handlers v_1 ... (in-hole G_1 (with-exception-handler v_2 v_3))))
           (in-hole P_1 (handlers v_1 ... (in-hole G_1 (handlers v_1 ... v_2 (v_3)))))
           "6xwehn"
-          (side-condition (term (Arity-one? v_2)))
-          (side-condition (term (Arity-zero? v_3))))
+          (side-condition (term (A_1 v_2)))
+          (side-condition (term (A_0 v_3))))
      
      (--> (in-hole P_1 (handlers v_1 ... v_2 (in-hole G_1 (raise-continuable v_3))))
           (in-hole P_1 (handlers v_1 ... v_2 (in-hole G_1 (handlers v_1 ... (v_2 v_3)))))
@@ -674,12 +603,11 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (in-hole P_1 (with-exception-handler v_1 v_2))
           (in-hole P_1 (raise (condition "with-exception-handler bad argument")))
           "6weherr"
-          (fresh x)
           (side-condition 
-           (or (not (term (Arity-one? v_1)))
-               (not (term (Arity-zero? v_2))))))))
+           (or (not (term (A_1 v_1)))
+               (not (term (A_0 v_2))))))))
 
-  (define-metafunction Arity-zero?
+  (define-metafunction A_0
     lang
     [nonproc #f]
     [(unspecified) #f]
@@ -699,7 +627,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
     [values #t]
     [(throw x (d d ...)) #t])
   
-  (define-metafunction Arity-one?
+  (define-metafunction A_1
     lang
     [nonproc #f]
     [(unspecified) #f]
@@ -901,25 +829,43 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      Top--level--and--Variables
      Underspecification))
   
-  (define r6rs-subst-one
-    (subst
-     [(? symbol?) (variable)]
-     [(? number?) (constant)]
-     [(? boolean?) (constant)]
-     [`(condition ,str) (constant)]
-     
-     ;; covers the dot case, but since dot will never be a variable, this is okay
-     [`(lambda ,(xs ...) ,@(bs ...))
-       (all-vars xs)
-       (build (lambda (vars . bodies) `(lambda ,vars ,@bodies)))
-       (subterms xs bs)]
-     
-     ;; covers all other cases
-     [(f args ...)
-      (all-vars '())
-      (build (lambda (vars f . args) `(,f ,@args)))
-      (subterm '() f)
-      (subterms '() args)]))
+  (define-metafunction r6rs-subst-one
+    lang
+    [(variable_1 e_1 variable_1) e_1]
+    [(variable_1 e_1 variable_2) variable_2]
+    [(variable_1 e_1 'any_1) 'any_1]
+    [(variable_1 e (lambda (variable_2 ... dot variable_1) e_2 e_3 ...))
+     (lambda (variable_2 ... dot variable_1) e_2 e_3 ...)]
+    [(variable_1 e (lambda (variable_2 ... variable_1 variable_3 ... dot variable_4) e_2 e_3 ...))
+     (lambda (variable_2 ... variable_1 variable_3 ... dot variable_4) e_2 e_3 ...)]
+    [(variable_1 e_1 (lambda (variable_2 ... dot variable_3) e_2 e_3 ...))
+     ,(term-let ([(variable_new ... variable_new_dot) (variables-not-in (term e_1) (term (variable_2 ... variable_3)))])
+        (term (lambda (variable_new ... dot variable_new_dot) 
+                (r6rs-subst-one (variable_1 
+                                 e_1
+                                 (r6rs-subst-many ((variable_2 variable_new) ... (variable_new_dot variable_3) e_2))))
+                (r6rs-subst-one (variable_1 
+                                 e_1
+                                 (r6rs-subst-many ((variable_2 variable_new) ... (variable_new_dot variable_3) e_3))))
+                ...)))]
+    [(variable_1 e_1 (lambda (variable_2 ... variable_1 variable_3 ...) e_2 e_3 ...))
+     (lambda (variable_2 ... variable_1 variable_3 ...) e_2 e_3 ...)]
+    [(variable_1 e_1 (lambda (variable_2 ...) e_2 e_3 ...))
+     ,(term-let ([(variable_new ...) (variables-not-in (term e_1) (term (variable_2 ...)))])
+        (term (lambda (variable_new ...) 
+                (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_2))))
+                (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_3)))) ...)))]
+    
+    ;; last two cases cover all other expressions -- they don't have any variables, 
+    ;; so we don't care about their structure. 
+    [(variable_1 e_1 (any_1 ...)) ((r6rs-subst-one (variable_1 e_1 any_1)) ...)]
+    [(variable_1 e_1 any_1) any_1])
+  
+  (define-metafunction r6rs-subst-many
+    lang
+    [((variable_1 e_1) (variable_2 e_2) ... e_3) 
+     (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 e_2) ... e_3))))]
+    [(e_1) e_1])
   
   (define unspec? (test-match lang (unspecified)))
   (define condition? (test-match lang (condition string)))

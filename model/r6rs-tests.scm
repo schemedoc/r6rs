@@ -3,7 +3,6 @@
            (lib "list.ss")
            (lib "etc.ss")
            (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
-           (planet "subst.ss" ("robby" "redex.plt" 3))
            "test.scm"
            "r6rs.scm")
   
@@ -100,7 +99,10 @@
       [`(unknown ,string) string]
       [_ (error 'subst-:-vars "unknown exp ~s" exp)]))
   
-  (define (r6rs-subst-all params args body) (foldl r6rs-subst-one body params args))
+  (define (r6rs-subst-all params args body) 
+    (foldl (λ (x y z) (term-let ((x x) (y y) (z z)) (term (r6rs-subst-one (x y z)))))
+           #;r6rs-subst-one
+           body params args))
   (define (do-one-subst sub-vars term)
     (match term
       [`(store ,str ,exps)
@@ -215,7 +217,8 @@
      (make-r6test/v ''x ''x)
      (make-r6test/v ''null ''null)
      (make-r6test/v '(null? 'null) #f)
-     (make-r6test/v ''unspecified ''unspecified)))
+     (make-r6test/v ''unspecified ''unspecified)
+     (make-r6test/v '((lambda (x) (eqv? 'x 1)) 1) #f)))
      
   (define eqv-tests
     (list
@@ -551,6 +554,9 @@
   (define app-tests
     (list 
      (make-r6test/v '((lambda () 1)) 1)
+     (make-r6test/v '(((lambda (x) (lambda (x) x)) 1) 2) 2)
+     (make-r6test/v '(((lambda (x) (lambda (x dot y) x)) 1) 2) 2)
+     (make-r6test/v '(((lambda (x) (lambda (y dot x) (car x))) 1) 2 3) 3)
      (make-r6test/e '((lambda (x y) x) 1) "arity mismatch")
      (make-r6test/v '(car ((lambda (x) (cons x null)) 3)) 3)
      (make-r6test/v '((lambda (x) x) 3) 3)
@@ -739,7 +745,18 @@
      
      (make-r6test/v '((lambda (x y dot z) (set! z (cons x z)) (set! z (cons y z)) (apply + z))
                       1 2 3 4)
-                    '10)))
+                    '10)
+     
+     (make-r6test '(store () 
+                          ((define g (lambda (x) x))
+                           (define f (lambda (x) (g 1)))
+                           (((lambda (x) (lambda (g) (g x))) f)
+                            (lambda (x) 17))))
+                  (list '(store ((g (lambda (x) x))
+                                 (f (lambda (x) (g 1))))
+                                ((values 17)))))
+     
+     ))
   
   (define mv-tests
     (list
@@ -1972,7 +1989,8 @@ of digits with deconv-base
   ;;
   
   (define the-sets 
-    (list (list "arith" arithmetic-tests)
+    (list (list "app" app-tests)
+          (list "arith" arithmetic-tests)
           (list "basic" basic-form-tests)
           (list "pair" pair-tests)
           (list "quote" quote-tests)
@@ -1982,8 +2000,7 @@ of digits with deconv-base
           (list "dw" dw-tests)
           (list "exn" exn-tests)
           (list "r5" r5-tests)
-          (list "mv" mv-tests)
-          (list "app" app-tests)))
+          (list "mv" mv-tests)))
   
   (define the-tests (apply append (map cadr the-sets)))
   

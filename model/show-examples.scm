@@ -38,10 +38,23 @@
   ;; #; comments out an entire sexpression.
   ;; 
   
-  (show '(store () ((lambda (x y) (set! x (+ x y)) x) 2 3)))
+  #;
+  (show '(store () (((lambda (x y) (set! x (+ x y)) x) 2 3))))
 
   ;; an infinite, tail-recursive loop
+  #;
   (show-expression '((lambda (x) ((call/cc call/cc) x)) (call/cc call/cc)))
+
+  ;; demonstrates sharing
+  #;
+  (show-expression
+   '((lambda (c)
+       ((lambda (x y) 
+          (set-car! x 3)
+          (car y))
+        c c))
+     (cons 1 2)))
+
   
   )
 
