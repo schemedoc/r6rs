@@ -26,11 +26,13 @@ as a notation for data, and Scheme's \library{r6rs i/o ports} library
 provides the {\cf get-datum} and {\cf put-datum} procedures
 for reading and writing syntactic datums, converting between their
 textual representation and the corresponding values. 
-A
-syntactic datum can be used in a program to obtain the corresponding
-value using {\cf quote} (see section~\ref{quote}).
+Each syntactic datum uniquely determines a corresponding \defining{datum value}.
+A syntactic datum can be used in a program to obtain the corresponding
+datum value using {\cf quote} (see section~\ref{quote}).
 
-Moreover, valid Scheme expressions form a subset of the syntactic datums.
+The Scheme program consists of syntactic entities called
+\defining{forms}, which, when they occur in source code, 
+are a subset of the syntactic datums.
 Consequently, Scheme's syntax has the property that any sequence of
 characters that is an expression is also a syntactic datum representing
 some object.  This can lead to confusion, since it may not be obvious
@@ -38,10 +40,8 @@ out of context whether a given sequence of characters is intended to
 denote data or program. It is also a source of power, since it
 facilitates writing programs such as interpreters and compilers that
 treat programs as data (or vice versa).
-A syntactic datum occurring in program text is often called a \defining{form}.
 
-Note that several syntactic datums may represent the same object, a
-so-called \defining{datum value}.
+Note a datum value may have several different external representations.
 For example, both ``{\tt \#e28.000}'' and
 ``{\tt\#x1c}'' are syntactic datums representing the exact integer 28;
 The syntactic datums ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
