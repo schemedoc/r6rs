@@ -18,7 +18,7 @@ of characters to change?
 
 Thus in 5.9 replace:
 
-    This number is an exact, non-negative integer that is =EF=AC=81xed
+    This number is an exact, non-negative integer that is fixed
     when the string is created. by: This number is an exact,
     non-negative integer which has an initial value, but may vary as
     the string is modified.
@@ -59,3 +59,15 @@ strings a bit more heavy-weight.)
 
 For now, I'm just proposing string-append! since it is simple to
 specify, simple to implement, and very useful.
+
+RESPONSE:
+
+While the proposed extension would probably be useful in some
+circumstances, it is unclear whether it is general enough to support
+all typical uses.  For example, in some applications it may be
+desirable to shrink a string.  The extension would come with a
+(arguably small) cost in both implementation and the invariants a
+program may assume, and it is unclear whether the benefits outweigh
+them.  Therefore, the formal comment is rejected.
+
+

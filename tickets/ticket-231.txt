@@ -38,3 +38,20 @@ characters. I do not favor this restriction.
 This modification would also create a means to portably interchange
 programs using only ASCII, although I'm not sure if this is especially
 useful given UTF-8.
+
+RESPONSE:
+
+It is unclear why converting the lexers would be significantly simpler
+through this change: Supporting inline hex escapes in symbols and
+string literals in the reader included in the R6RS reference
+implementation was not difficult or time-consuming.
+
+The formal comment effectively adds a pass before lexical analysis to
+the reader.  The problem with this kind of approach is that a
+programmer (or, more importantly, a program-generating program) must
+avoid accidentally generating such inline hex escapes which might
+appear in program.  (Historically, program generating C programs had
+to deal with this problem because of C's trigraphs.)  This problem may
+not be particularly serious, but neither are the benefits of the
+proposal.  Consequently, the formal comment is rejected.
+

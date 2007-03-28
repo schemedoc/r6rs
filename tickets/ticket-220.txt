@@ -80,8 +80,20 @@ reasonable-looking, implementation:
 
 (While this problem was pointed out in a prior formal comment, that
 comment was not well formulated, and the formal response to that
-comment did not really address this particular issue.)  Recommendation
+comment did not really address this particular issue.)
+
+Recommendation
 
 Require that MAP (and other higher order preocedures that construct
 lists) return a new list every time in cases where it may return more
 than once.
+
+RESPONSE:
+
+While the suggestion is not unreasonable, wording the specification to
+unambiguously allow the uses described in the formal comment would
+complicate the specification significantly, and possibly impose
+further, unwanted restrictions on implementations.  A program that
+depends on the behavior described in the formal comment should
+probably include a variant of `map' that explicitly provides the
+needed guarantees.
