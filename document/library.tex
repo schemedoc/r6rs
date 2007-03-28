@@ -94,10 +94,10 @@ A \hyper{library name} has the following form:
 where \hyper{version} is empty or has the following form:
 %
 \begin{scheme}
-(\hyper{subversion} \ldots)%
+(\hyper{sub-version} \ldots)%
 \end{scheme}
 
-Each \hyper{subversion} must be an exact nonnegative integer.
+Each \hyper{sub-version} must be an exact nonnegative integer.
 An empty \hyper{version} is equivalent to {\cf ()}.
 
 Each \hyper{import~spec} specifies a set of bindings to be imported into
@@ -145,26 +145,26 @@ name and optionally by its version.  It has the following form:
 A \hyper{version reference} is empty or has the following form:
 
 \begin{scheme}
-(\hyper{subversion~reference} \ldots)%
+(\hyper{sub-version~reference} \ldots)%
 \end{scheme}
 
 An empty \hyper{version reference} is equivalent to {\cf ()}.
 
-A \hyper{subversion reference} has one of the following forms:
+A \hyper{sub-version reference} has one of the following forms:
 
 \begin{scheme}
-\hyper{subversion}
-\hyper{subversion~condition}%
+\hyper{sub-version}
+\hyper{sub-version~condition}%
 \end{scheme}
 
-where a \hyper{subversion condition} must have one of these forms:
+where a \hyper{sub-version condition} must have one of these forms:
 
 \begin{scheme}
-(>= \hyper{subversion})
-(<= \hyper{subversion})
-(and \hyper{subversion~condition} \ldots)
-(or \hyper{subversion~condition} \ldots)
-(not \hyper{subversion~condition})%
+(>= \hyper{sub-version})
+(<= \hyper{sub-version})
+(and \hyper{sub-version~condition} \ldots)
+(or \hyper{sub-version~condition} \ldots)
+(not \hyper{sub-version~condition})%
 \end{scheme}
 
 
@@ -467,7 +467,7 @@ In particular, if a program and its libraries avoid the {\cf (r6rs)}
 and {\cf (r6rs syntax-case)} libraries, and if the program and libraries
 never use the {\cf for} import form, then the program does not depend
 on whether instances are distinguished across phases, and the phase of
-an identifier use cannot be inconsistent with the identifier's level.
+an identifier's use cannot be inconsistent with the identifier's level.
 \end{rationale} 
 
 \section{Primitive syntax}
@@ -539,8 +539,8 @@ expressions are evaluated (in an unspecified order) and the resulting
 procedure is passed the resulting
 arguments.\mainindex{call}\mainindex{procedure call}
 \begin{scheme}%
-; these examples assume the base library
-; has been imported
+; These examples assume the base library
+; has been imported.
 (+ 3 4)                          \ev  7
 ((if \schfalse + *) 3 4)         \ev  12%
 \end{scheme}
