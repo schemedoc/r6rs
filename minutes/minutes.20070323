@@ -1,0 +1,193 @@
+March 23 2007 8:00am-10:00am EDT
+Kent, Anton, Mike, Will present by 8:01am
+Matthew arrived around 9am
+
+0. finalize agenda (1 minute)
+
+1. action items (1 minute)
+   - create ticket-nnn.txt for new tickets (Mike)
+        done
+   - add response-votes entries for new tickets (Kent)
+        done
+   - initiate email discussion of ticket 152 (Kent)
+        initiated
+   - initiate email discussion of early checking of procedure arity (Kent)
+        done
+   - for each ticket 135 and 137+, enter proposed response into
+     ticket-*.txt and set trac status to one of:
+       blocker (red) = "don't know" but should should be easy
+       critical (yellow) = done, probably uncontroversial
+       major (white) = suggested response/action, but needs discussion
+       minor (cyan) = we have to discuss it, first
+       trivial (blue) = I'm stumped for the moment
+     (All)
+   - record response votes (All)
+        ongoing
+   - draft responses for ticket numbers 166, 196, 198, 202, 204, 205,
+     208-233
+        some still undone
+   - need final resolution in responses for ticket numbers 150, 164
+        not done
+   - update ticket-nnn.txt to reflect decisions:
+     154: allow bytevectors to be self-evaluating (but not vectors or ())
+        not done
+
+2. apparent arity check requirements (5 minutes)
+   - is this problem now fixed?
+        at least partly
+   - if not, what is the fix?
+        maybe use "should" to describe programmer's responsibilities
+        that implementations aren't required to enforce
+
+3. revisit unspecified value and mrvs semantics? (10 minutes)
+   - tickets 152, 156
+   - see https://r6rs.scheming.org/node/588
+     - adopt and select A, B, or C
+        or D: C restricted to returning zero or one
+        straw poll:
+            general sense of Kent's draft response (in email only)
+            does anyone wish to overturn the status quo?
+                Mike: yes!
+            Mike will draft a motion by email
+            tabled for now
+     - don't adopt
+
+4. allow eq? and eqv? to return non-boolean, abort, or raise exception? (5 minutes)
+   - ticket 166
+   - note: we agreed not to allow abort generally in our 3/7 meeting
+        technical vote to reject formal comment:
+            reject: Will, Kent, Matthew, Anton
+            abstain: Mike
+
+5. standard-x-port return fresh binary ports? (5 minutes)
+   - ticket 183
+        tabled for today
+
+6. add buffer modes to open-file-input-port? (5 minutes)
+   - ticket 186
+   - do we allow peeking on unbuffered input port?
+        tabled for today
+
+7. allow (case-lambda)? (5 minutes)
+   - see https://r6rs.scheming.org/node/580
+        yes: Will, Kent, Matthew, Mike, Anton
+
+8. make unicode / string changes? (20 minutes)
+   - tickets 225, 229, 233
+        Kent will draft responses
+        Will moved to add string->utf-8, string->utf-16, string->utf-32
+            (with the appropriate endian variants; and in the other
+            direction, with provision for illegal encodings; can all
+            be specified via string port code)
+        Kent seconded
+        Will withdrew the motion at Kent's request
+        Will volunteered to write up a spec
+   - should strings be immutable?
+        no: Will, Kent, Matthew, Anton
+        abstain: Mike
+   - should string-set! be in a separate library?
+        yes: Will, Matthew, Anton
+        no: Kent
+        abstain: Mike
+   - should we flush string-ref?
+        no
+   - should we add string-for-each?
+        yes: Will, Kent, Matthew
+        no: Mike
+        abstain: Anton
+   - if not, what kind of entity does string-ref return?
+        character, as in current draft
+   - should we require variable-length strings?
+        no: Will, Kent, Matthew, Mike, Anton
+   - should we allow direct creation of custom text ports?
+        yes: Will, Kent, Matthew, Anton
+        no: Mike
+   - should report say string-ref and string-set! should be O(1)
+        yes, unanimously
+
+9. add make-parameter and parameterize? (5 minutes)
+   - ticket 184
+        skipped for now
+
+10. allow/require hash-table-hash-function to return a procedure? (5 minutes)
+   - ticket 189
+        tabled until the draft response has been checked in
+
+11. hash-table-update! proc must not mutate hash-table? (5 minutes)
+    make-hash-table hash-function and equiv procs must not mutate hash-table?
+   - tickets 193 and 195
+        should not mutate hash-table
+        yes: Will, Kent, Matthew, Mike, Anton
+
+12. replace hash-table-mutable? with hash-table-immutable? (5 minutes)
+   - ticket 194
+        we should change the flag so #t means mutable to hash-table-copy,
+        and leave the name of hash-table-mutable? alone
+        yes: Will, Kent, Matthew, Mike, Anton
+
+13. change sort procedure interface? (5 minutes)
+   - ticket 196
+   - make predicates 3-way (< 0, 0, > 0)
+   - allow 0 to be returned as #f
+   - add optional key-extraction-procedure argument
+    shall we reject all three suggestions?
+        yes: Will, Kent, Matthew, Mike, Anton
+
+14. allow compilers to reject programs with obvious violations? (10 minutes)
+   - ticket 198
+        skipped for now
+
+15. add file-length, specify set-file-position! extension behavior (5 minutes)
+   - ticket 200
+        skipped for now
+
+16. specify freshness/mutability of quasiquoted structure? (5 minutes)
+   - ticket 204
+        skipped for now
+
+17. add list* or cons*? (5 minutes)
+   - ticket 205
+        change cons to mean cons*
+        yes: Kent, Mike
+        no: Will, Matthew, Anton
+        add cons* to (r6rs lists):
+        yes: Kent, Matthew, Anton
+        abstain: Will, Mike
+
+18. eliminate library export immutability loophole? (5 minutes)
+   - ticket 208
+        skipped for now
+
+19. should <body> allow mixing definitions with expressions? (5 minutes)
+   - ticket 212
+        skipped for now
+
+20. hyphenate the name "bytevector"? (5 minutes)
+   - ticket 215
+        no: Will, Kent, Matthew, Mike, Anton
+    Anton moved we drop the hyphen from hash-table etc;
+    Will seconded
+        yes: Will, Kent, Anton
+        no: Matthew
+        abstain: Mike
+
+21. should map return new list structure each time? (5 minutes)
+   - ticket 220
+   - option 1: entirely new list structure
+   - option 2: not modify earlier return values
+        skipped for now
+
+22. is nan not a real number? (5 minutes)
+   - ticket 130
+   - also question about flmin and flmax not being specified for nan
+        skipped for now
+
+23. allow inline hex escapes anywhere?
+   - ticket 231
+   - or "allow anywhere except within a hex escape"?
+        skipped for now
+
+plan to meet next Wednesday at the same time;
+Mike might not be able to make it, but will let us know
+
+23. adjourned at 10:01am
