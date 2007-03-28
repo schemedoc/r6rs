@@ -220,7 +220,7 @@ Exceptions of this type raised by the operations described in this
 section are continuable.
 When such an exception is raised, the port's position is at
 the beginning of the invalid encoding.
-If the exception handler returns, it must
+If the exception handler returns, it should
 return a character or string representing the decoded text starting at
 the port's current position, and the exception handler must update the 
 port's position to point past the error.
@@ -253,7 +253,7 @@ and the {\cf transcoder} field contains the transcoder associated
 with the port.
 
 Exceptions of this type raised by the operations described in this
-section are continuable.  The handler, if it returns, must 
+section are continuable.  The handler, if it returns, should 
 output to the port an appropriate encoding for the character that
 caused the error.  The operation that raised the exception 
 continues after that character.
@@ -514,9 +514,6 @@ the values returned by \var{proc} are returned. If \var{proc} does not
 return, then the port is not closed automatically, except perhaps when it is
 possible to prove that the port will never again be used for a
 {\cf lookahead}, {\cf get}, or {\cf put} operation.
-
-\implresp The implementation must check the restrictions on \var{proc}
-to the extent performed by applying it as described.
 \end{entry}
 
 \subsection{Input ports}

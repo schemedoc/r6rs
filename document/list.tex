@@ -6,8 +6,8 @@ This chapter describes the \deflibrary{r6rs lists} library.
 \begin{entry}{%
 \proto{find}{ proc list}{procedure}}
 
-\domain{\var{Proc} must be a procedure that takes a single argument
-  and returns a single value.  \var{Proc} must not mutate \var{list}.}
+\domain{\var{Proc} should be a procedure that takes a single argument
+  and returns a single value.  \var{Proc} should not mutate \var{list}.}
 The {\cf find} procedure applies \var{proc} to the elements of
 \var{list} in order.  If \var{proc} returns a true value for an
 element, {\cf find} immediately returns that element.  If \var{proc}
@@ -31,10 +31,10 @@ beyond the found element.  The implementation must check the restrictions on
 \proto{for-all}{ proc \vari{list} \varii{list} \dotsfoo{} \varn{list}}{procedure}
 \proto{exists}{ proc \vari{list} \varii{list} \dotsfoo{} \varn{list}}{procedure}}
 
-\domain{The \var{list}s must all have the same length, and
-  \var{proc} must be a procedure that accepts $n$ arguments and
+\domain{The \var{list}s should all have the same length, and
+  \var{proc} should be a procedure that accepts $n$ arguments and
   returns a single value.
-  \var{Proc} must not mutate the \var{list} arguments.}
+  \var{Proc} should not mutate the \var{list} arguments.}
 
 For natural numbers $i = 0, 1, \ldots$, the {\cf for-all} procedure
 successively applies \var{proc} to arguments $x_i^1 \ldots x_i^n$,
@@ -93,8 +93,8 @@ the traversal.  The implementation must check the restrictions on
 \proto{partition}{ proc list}{procedure}
 }
 
-\domain{\var{Proc} must be a procedure that accepts a single argument
-  and returns a single value. \var{Proc} must not mutate \var{list}.}
+\domain{\var{Proc} should be a procedure that accepts a single argument
+  and returns a single value. \var{Proc} should not mutate \var{list}.}
 The {\cf filter} procedure successively applies
 \var{proc} to the elements of \var{list} and returns a list of
 the values of \var{list} for which \var{proc} returned a true
@@ -119,11 +119,11 @@ to the extent performed by applying it as described.
 \begin{entry}{%
 \proto{fold-left}{ combine nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{The \var{list}s must all have the same
-  length.  \var{Combine} must be a
+\domain{The \var{list}s should all have the same
+  length.  \var{Combine} should be a
   procedure that takes one more
   argument than there are \var{list}s and returns a single value.
-  \var{Combine} must not mutate the \var{list} arguments.}
+  \var{Combine} should not mutate the \var{list} arguments.}
 The {\cf fold-left} procedure iterates the \var{combine} procedure over an
 accumulator value and the values of the \var{list}s from left to
 right, starting with an accumulator value of \var{nil}.  More
@@ -167,11 +167,11 @@ on \var{combine} to the extent performed by applying it as described.
 \begin{entry}{%
 \proto{fold-right}{ combine nil \vari{list} \varii{list} \dotsfoo \varn{list}}{procedure}}
 
-\domain{The \var{list}s must all have the same
-  length.  \var{Combine} must be a
+\domain{The \var{list}s should all have the same
+  length.  \var{Combine} should be a
   procedure that takes one more
   argument than there are \var{list}s and returns a single value.
-  \var{Combine} must not mutate the \var{list} arguments.}
+  \var{Combine} should not mutate the \var{list} arguments.}
 The {\cf fold-right} procedure iterates the \var{combine} procedure over
 the values of the \var{list}s from right to left and an accumulator
 value, starting with an accumulator value of \var{nil}.  More
@@ -212,9 +212,9 @@ on \var{combine} to the extent performed by applying it as described.
 \proto{remv}{ obj list}{procedure}
 \proto{remq}{ obj list}{procedure}}
 
-\domain{\var{Proc} must be a procedure that takes a single argument
+\domain{\var{Proc} should be a procedure that takes a single argument
    and returns a single value.
-   \var{Proc} must not mutate the \var{list} arguments.}
+   \var{Proc} should not mutate the \var{list} arguments.}
 Each of these procedures returns a list of the elements of \var{list}
 that do not satisfy a given condition.  The {\cf remp} procedure successively
 applies \var{proc} to the elements of \var{list} and returns a
@@ -247,8 +247,8 @@ to the extent performed by applying it as described.
 \proto{memq}{ obj list}{procedure}
 }
 
-\domain{\var{Proc} must be a procedure that takes a single argument
-  and returns a single value.  \var{Proc} must not mutate \var{list}.}
+\domain{\var{Proc} should be a procedure that takes a single argument
+  and returns a single value.  \var{Proc} should not mutate \var{list}.}
 
 These procedures return the first sublist of \var{list} whose car
 satisfies a given condition, where the sublists of \var{lists} are the
@@ -298,9 +298,9 @@ beyond the found element.  The implementation must check the restrictions on
 \proto{assv}{ obj alist}{procedure}
 \proto{assq}{ obj alist}{procedure}}
 
-\domain{\var{Alist} (for ``association list'') must be lists of pairs.
-  \var{Proc} must be a procedure that takes a single argument
-  and returns a single value.  \var{Proc} must not mutate \var{list}.}
+\domain{\var{Alist} (for ``association list'') should be a list of pairs.
+  \var{Proc} should be a procedure that takes a single argument
+  and returns a single value.  \var{Proc} should not mutate \var{list}.}
 
 These procedures find the first pair in \var{alist}
 whose car field satisfies a given condition, and returns that pair

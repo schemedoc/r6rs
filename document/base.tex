@@ -723,7 +723,7 @@ define mutually recursive procedures.
                 \ev  \schtrue%
 \end{scheme}
 
-One restriction on {\cf letrec} is very important: it must be possible
+One restriction on {\cf letrec} is very important: it should be possible
 to evaluate each \hyper{init} without assigning or referring to the
 value of any \hyper{variable}.  The restriction is necessary because
 Scheme passes arguments by value rather than by name.  In the most
@@ -2611,7 +2611,7 @@ in reverse order.
 \begin{entry}{%
 \proto{list-tail}{ list k}{procedure}}
 
-\domain{\var{List} must be a list of size at least \var{k}.}
+\domain{\var{List} should be a list of size at least \var{k}.}
 
 The {\cf list-tail} procedure returns the subchain of pairs of \var{list}
 obtained by omitting the first \var{k} elements.
@@ -2671,9 +2671,9 @@ of pairs beyond this size.
 \begin{entry}{%
 \proto{map}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s must all have the same length.  \var{Proc}
-  must be a procedure that takes as many arguments as there are
-  \var{list}s and returns a single value.  \var{Proc} must not mutate
+\domain{The \var{list}s should all have the same length.  \var{Proc}
+  should be a procedure that takes as many arguments as there are
+  \var{list}s and returns a single value.  \var{Proc} should not mutate
   any of the \var{list}s.}
 
 The {\cf map} procedure applies \var{proc} element-wise to the elements of the
@@ -2707,9 +2707,9 @@ on \var{proc} to the extent performed by applying it as described.
 \begin{entry}{%
 \proto{for-each}{ proc \vari{list} \varii{list} \dotsfoo}{procedure}}
 
-\domain{The \var{list}s must all have the same length.  \var{Proc}
-  must be a procedure that takes as many arguments as there are
-  \var{list}s.  \var{Proc} must not mutate
+\domain{The \var{list}s should all have the same length.  \var{Proc}
+  should be a procedure that takes as many arguments as there are
+  \var{list}s.  \var{Proc} should not mutate
   any of the \var{list}s.}
 
 The {\cf for-each} procedure applies \var{proc}
@@ -3465,7 +3465,7 @@ undefined.
 \proto{call-with-values}{ producer consumer}{procedure}}
 
 \domain{\var{Producer} must be a procedure that takes zero
-  arguments.  \var{Consumer} must be a procedure that accepts as many
+  arguments.  \var{Consumer} should be a procedure that accepts as many
   values as \var{producer} returns.}
 Calls \var{producer} with no arguments and
 a continuation that, when passed some values, calls the
@@ -3489,8 +3489,9 @@ returned.
 \begin{entry}{%
 \proto{dynamic-wind}{ before thunk after}{procedure}}
 
-\domain{\var{Before}, \var{thunk}, and \var{after} must be procedures
-accepting zero arguments and returning any number of values.}
+\domain{\var{Before} must be a procedure accepting zero arguments.
+\var{Thunk} and \var{after} should also be procedures
+accepting zero arguments.  These procedures may return any number of values.}
 
 In the absence of any calls to escape procedures
 (see \ide{call-with-current-continuation}),

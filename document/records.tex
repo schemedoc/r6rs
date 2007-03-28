@@ -87,8 +87,8 @@ Returns a \defining{record-type descriptor}, or \defining{rtd},
 representing a record type distinct from all built-in types and
 other record types.
 
-The \var{name} argument must be a symbol naming the record type; it is
-intended purely for informational purposes and may be used for printing by
+The \var{name} argument must be a symbol. It names the record type,
+and is intended purely for informational purposes and may be used for printing by
 the underlying Scheme system.
 
 The \var{parent} argument must be either \schfalse{} or an rtd. If it is an
@@ -228,7 +228,7 @@ or other constructor descriptors.  \var{Rtd} must be a record-type
 descriptor.  \var{Protocol}\mainindex{protocol} must be a procedure or \schfalse.
 If it is \schfalse, a default \var{protocol} procedure is supplied.
 If \var{protocol} is a procedure, it is called by {\cf record-constructor}
-with a single argument \var{p} and must return a procedure that creates
+with a single argument \var{p} and should return a procedure that creates
 and returns an instance of the record type using \var{p} as described
 below.
 
@@ -238,7 +238,7 @@ In this case, \var{protocol}'s argument \var{p} is a procedure \var{new}
 that expects one parameter for every field of \var{rtd} and returns a
 record instance with the fields of \var{rtd} initialized to its arguments.
 The procedure returned by \var{protocol} may take any number of arguments
-but must call \var{new} with the number of arguments it expects and return
+but should call \var{new} with the number of arguments it expects and return
 the resulting record instance, as shown in the simple example below.
 
 \begin{scheme}

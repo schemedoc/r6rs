@@ -26,9 +26,6 @@ port is closed automatically and the values returned by \var{proc} are
 returned. If \var{proc} does not return, then the port is not
 closed automatically, unless it is possible to prove that the port
 will never again be used for an I/O operation.
-
-\implresp The implementation must check the restrictions on \var{proc}
-to the extent performed by applying it as described.
 \end{entry}
 
 \begin{entry}{%
@@ -54,7 +51,7 @@ described below.
 \proto{with-input-from-file}{ filename thunk}{procedure}
 \proto{with-output-to-file}{ filename thunk}{procedure}}
 
-\domain{\var{Thunk} must be a procedure that takes no arguments.}  The
+\domain{\var{Thunk} must be a procedure that accepts zero arguments.}  The
 file is opened for input or output using empty file options, and
 \var{thunk} is called with no arguments.  During the dynamic extent of
 the call to \var{thunk}, the obtained port is made the value returned
@@ -65,9 +62,6 @@ and the previous values for {\cf current-input-port}.  The values
 returned by \var{thunk} are returned.  If an escape procedure is used
 to escape back into the call to \var{thunk} after \var{thunk} is
 returned, the behavior is unspecified.
-
-\implresp The implementation must check the restrictions on \var{thunk}
-to the extent performed by applying it as described.
 \end{entry}
 
 \begin{entry}{%
