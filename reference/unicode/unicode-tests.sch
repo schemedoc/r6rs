@@ -1,31 +1,35 @@
-; Basic tests of SRFI 75 procedures,
-; mostly taken from the SRFI 75 examples
-; and restricted to ASCII characters and strings.
+; Basic tests of (r6rs unicode) procedures,
+; mostly taken from the R6RS examples.
 ;
-; Does not test or rely upon any non-R5RS lexical syntax.
+; This is R5RS code.
+; It does not rely upon any non-R5RS lexical syntax.
 ;
-; FIXME: Tests that involve non-Latin-1 characters
-; are commented out.
-;
-; FIXME: Tests of things that aren't fully implemented yet
-; are commented out.
+; During the transition to R6RS, an R5RS-compatible equal?
+; procedure might not use Unicode-compatible versions of the
+; character and string comparisons, so we define an extended
+; version of equal? here.
+
+(define (unicode-equal? x y)
+  (or (and (char? x) (char? y) (char=? x y))
+      (and (string? x) (string? y) (string=? x y))
+      (equal? x y)))
 
 (define-syntax unicode-test
   (syntax-rules (=> error)
    ((unicode-test name0 name exp => result exit)
-(begin (display 'name0) (display 'name) (display "...") (newline)
-    (if (not (equal? exp result))
-        (begin (display "*****BUG*****")
-               (newline)
-               (display "Failed test ")
-               (display 'name0)
-               (display 'name)
-               (display ":")
-               (newline)
-               (write 'exp)
-               (newline)
-               (exit #f))))))
-)
+    (begin
+     (display 'name0) (display 'name) (display "...") (newline)
+     (if (not (unicode-equal? exp result))
+         (begin (display "*****BUG*****")
+                (newline)
+                (display "Failed test ")
+                (display 'name0)
+                (display 'name)
+                (display ":")
+                (newline)
+                (write 'exp)
+                (newline)
+                (exit #f)))))))
 
 (begin
  (define es-zed (integer->char #x00df))
@@ -93,7 +97,7 @@
        (test lower1 (char-lower-case? lower-sigma) => #t)
        (test lower2 (char-lower-case? (integer->char #x00AA)) => #t)
        (test title1 (char-title-case? #\I) => #f)
-      ;(test title2 (char-title-case? (integer->char #x01C5)) => #t)
+       (test title2 (char-title-case? (integer->char #x01C5)) => #t)
 
        (test excluded
              (do ((i 128 (+ i 1))
@@ -132,15 +136,14 @@
        (test sfold2 (string-foldcase strasse) => "strasse")
        (test sdown3 (string-downcase "STRASSE")  => "strasse")
 
-'(begin
        (test chaos1 (string-upcase upper-chaos) => upper-chaos)
        (test chaos2 (string-downcase (string upper-sigma))
                     => (string lower-sigma))
        (test chaos3 (string-downcase upper-chaos) => final-chaos)
        (test chaos4 (string-downcase (string-append upper-chaos
                                                     (string upper-sigma)))
-                    => (string-append lower-chaos
-                                      (string final-sigma)))
+                    => (string-append (substring lower-chaos 0 3)
+                                      (string lower-sigma final-sigma)))
        (test chaos5 (string-downcase (string-append upper-chaos
                                                     (string #\space
                                                             upper-sigma)))
@@ -152,23 +155,26 @@
                                       (string final-sigma)))
        (test chaos7 (string-upcase final-chaos) => upper-chaos)
        (test chaos8 (string-upcase lower-chaos) => upper-chaos)
-)
 
        (test stitle1 (string-titlecase "kNock KNoCK") => "Knock Knock")
        (test stitle2 (string-titlecase "who's there?") => "Who's There?")
        (test stitle3 (string-titlecase "r6rs") => "R6Rs")
        (test stitle4 (string-titlecase "R6RS") => "R6Rs")
 
-      ;(test norm1 (string-normalize-nfd "\xE9;") => "\x65;\x301;")
-      ;(test norm2 (string-normalize-nfc "\xE9;") => "\xE9;")
-      ;(test norm3 (string-normalize-nfd "\x65;\x301;") => "\x65;\x301;")
-      ;(test norm4 (string-normalize-nfc "\x65;\x301;") => "\xE9;")
+       (test norm1 (string-normalize-nfd (string #\xE9))
+                   => (string #\x65 #\x301))
+       (test norm2 (string-normalize-nfc (string #\xE9))
+                   => (string #\xE9))
+       (test norm3 (string-normalize-nfd (string #\x65 #\x301))
+                   => (string #\x65 #\x301))
+       (test norm4 (string-normalize-nfc (string #\x65 #\x301))
+                   => (string #\xE9))
 
        (test sci1 (string-ci<? "z" "Z") => #f)
        (test sci2 (string-ci=? "z" "Z") => #t)
        (test sci3 (string-ci=? strasse "Strasse") => #t)
        (test sci4 (string-ci=? strasse "STRASSE") => #t)
-      ;(test sci5 (string-ci=? upper-chaos lower-chaos) => #t)
+       (test sci5 (string-ci=? upper-chaos lower-chaos) => #t)
 
 ))))
 
@@ -176,6 +182,12 @@
 ; According to SRFI 77, this is a complete list of all code points
 ; above 127 in Unicode 4.1 whose Unicode general category is
 ; Ps, Pe, Pi, Pf, Zs, Zp, Zl, Cc, or Cf.
+;
+; In Unicode 5.0, the general category of
+; #\x23B4 (TOP SQUARE BRACKET)
+; and
+; #\x23B5 (BOTTOM SQUARE BRACKET)
+; was changed from Ps and Pe to So.
 
 (define excluded-code-points-above-127
   '(
@@ -192,7 +204,9 @@
  #x202C #x202D #x202E #x202F #x2039 #x203A #x2045 #x2046
  #x205F #x2060 #x2061 #x2062 #x2063 #x206A #x206B #x206C
  #x206D #x206E #x206F #x207D #x207E #x208D #x208E #x2329
- #x232A #x23B4 #x23B5 #x2768 #x2769 #x276A #x276B #x276C
+ #x232A 
+;       #x23B4 #x23B5 ; see note above for Unicode 5.0
+                      #x2768 #x2769 #x276A #x276B #x276C
  #x276D #x276E #x276F #x2770 #x2771 #x2772 #x2773 #x2774
  #x2775 #x27C5 #x27C6 #x27E6 #x27E7 #x27E8 #x27E9 #x27EA
  #x27EB #x2983 #x2984 #x2985 #x2986 #x2987 #x2988 #x2989
@@ -225,3 +239,6 @@
  #xE007A #xE007B #xE007C #xE007D #xE007E #xE007F
  
 ))
+
+(basic-unicode-char-tests)
+(basic-unicode-string-tests)
