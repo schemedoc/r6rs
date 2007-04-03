@@ -1,0 +1,146 @@
+telephone conference March 28 2007 8:00am-10:00am
+Will, Matthew, Mike, Anton, Kent present by 8:01am
+
+0. finalize agenda (1 minute)
+
+1. action items (1 minute)
+   - draft responses for each ticket 135 and 137+ (All)
+   - record response votes (All)
+        ongoing
+   - draft responses for ticket numbers 166, 196, 198, 202, 204, 205,
+     208-222, 224, 226-229, 231-233
+        not done
+   - need final resolution in responses for ticket numbers 150, 164
+        not done
+   - update ticket-nnn responses to reflect decisions:
+        done in only a few cases
+     154: allow bytevectors to be self-evaluating (but not vectors or ())
+     166: formal comment rejected
+     225, 229, 223: strings are not immutable, string-set! in a separate
+       library, string-ref preserved, string-ref returns character (aka
+       Unicode scalar value), no variable-length strings (encourage SRFIs),
+       allow direct creation of text ports (done in ticket 225 response?),
+       report should say that string-ref and string-set! should be O(1),
+       add string-for-each
+     194: leave hash-table-immutable? but change "immutable" argument
+       to hash-table-copy to a "mutable" argument
+     196: formal comment rejected
+     205: add cons*
+     215: do not hyphenate bytevector, do not hyphenate hashtable
+   - update r6rs to reflect additional decisions:
+     - allow (case-lambda)
+     - probably use "should" for programmer requirements that implementations
+       are not required to enforce
+
+3. revisit unspecified value and mrvs semantics? (10 minutes)
+   - tickets 152, 156
+   - see https://r6rs.scheming.org/node/588
+     - adopt and select A, B, or C
+     - or D: like C but restricted to 0 or 1 unspecified values
+     - don't adopt
+        straw polls:
+            Mike's potential motion
+                yes: Matthew, Mike
+                no: Kent, Anton
+                abstain: Will
+            Will's potential motion
+                yes: Will, Anton
+                no: Kent, Matthew, Mike
+            A, B, C/D:                
+                B: Matthew, Mike
+                C: Anton
+                abstain: Will, Kent
+        Mike moved we basically decide to maintain the R5RS
+            position 1 or position 2 with constraints described
+            as above, with option C; Anton seconded
+            yes: Kent, Matthew, Mike, Anton
+            abstain: Will
+        Note: option C includes dropping "the" unspecified value
+
+4. standard-x-port return fresh binary ports? (5 minutes)
+   - ticket 183
+        Mike moved (and Will seconded):
+            add current-error-port to simple i/o
+            copy the three current-x-port procedures to port i/o
+            adopt formal comment 183
+        motion passed unanimously
+
+5. add buffer modes to open-file-input-port? (5 minutes)
+   - ticket 186
+        adopt formal comment
+            yes: Will, Kent, Matthew, Anton
+            no: Mike
+   - do we allow peeking on unbuffered input port?
+        yes
+        if there are two ports connected to the same source,
+        and reading from that source changes the source,
+        then peeking on one port will make that character
+        inaccessible via the other port
+
+6. add make-parameter and parameterize? (5 minutes)
+   - ticket 184
+        Will moved we reject the formal comment and delegate
+        the drafting of our response to someone other than
+        Mike or Kent; Anton volunteered; no objections
+
+7. allow/require hash-table-hash-function to return a procedure? (5 minutes)
+   - ticket 189
+        Mike moved we reject the formal comment; Kent seconded
+            yes: Kent, Matthew, Mike
+            no: Anton
+            abstain: Will
+
+8. allow compilers to reject programs with obvious violations? (10 minutes)
+   - ticket 198
+        current formal response accepts assert, rejects rest of comment
+            yes: Will, Kent, Matthew, Mike, Anton
+
+9. add file-length, specify set-file-position! extension behavior (5 minutes)
+   - ticket 200
+        Will moved we get rid of set-port-position! and the
+        the associated predicate; Matthew seconded
+            yes: Will
+            no: Kent, Matthew, Mike, Anton
+        Kent moved we adopt the Posix semantics for set-port-position!
+        when the underlying object is a file; Anton seconded
+            yes: Will, Kent, Matthew, Anton
+            abstain: Mike
+    tabled; we'll need to read Kent's draft response
+
+10. specify freshness/mutability of quasiquoted structure? (5 minutes)
+   - ticket 204
+        BTW, quoted constants within the same phase should
+            evaluate to the same value (according to eqv?) each
+            time the quoted constant is evaluated; the project
+            editor should add this to the report.
+        The question for ticket 204 is whether it's okay to
+            mutate quasiquoted structures.
+    tabled until next week
+
+We adjourned before getting around to the following agenda items:
+
+11. eliminate library export immutability loophole? (5 minutes)
+   - ticket 208
+
+12. should <body> allow mixing definitions with expressions? (5 minutes)
+   - ticket 212
+
+13. should map return new list structure each time? (5 minutes)
+   - ticket 220
+   - option 1: entirely new list structure
+   - option 2: not modify earlier return values
+
+14. is nan not a real number? (5 minutes)
+   - ticket 130
+   - also question about flmin and flmax not being specified for nan
+
+15. allow inline hex escapes anywhere?
+   - ticket 231
+   - or "allow anywhere except within a hex escape"?
+
+x. Rename "lookahead" procedure-name prefix to "look-ahead"? (bottom of
+   ticket 214)
+
+16. adjourned around 10:01am
+
+Will
