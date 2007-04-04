@@ -13,8 +13,19 @@ deadlocks when dealing with communicating processes.
 
 DRAFT RESPONSE:
 
-****************************************************************
+The next draft will adopt this recommendation.
 
-Will recommends adoption of this comment's proposal.
+If two ports are connected to the same mutable source,
+and both ports are unbuffered, and reading a byte or
+character from that shared source via one of the two
+ports would change the bytes or characters seen via
+the other port, then peeking (or lookahead) on one port
+will render the peeked byte or character inaccessible
+via the other port, while a subsequent read (or get)
+on the peeked port will see the peeked byte or character
+even though the port is otherwise unbuffered.
 
-****************************************************************
+In other words, the semantics of buffering is defined
+in terms of side effects on shared mutable sources,
+and a peek or lookahead operation has the same side
+effect on the shared source as a read or get.
