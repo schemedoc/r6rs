@@ -1,0 +1,96 @@
+April 4 2007 8:00am-10:00am EDT 812-856-3600, PIN 001386#
+
+0. finalize agenda (1 minute)
+
+1. action items (1 minute)
+   - record response votes (All)
+   - draft responses for ticket numbers 202, 208, 209, 210, 217, 221, 229
+   - need final resolution in responses for ticket numbers 150, 164
+   - update ticket-nnn responses to reflect decisions:
+     183: adopt formal comment plus add current-error-port to simple i/o
+          and replicate the three current-x-port procedures in port i/o;
+          (the three current-x-port procedures do not return fresh ports
+          each time)
+     184: (Anton) draft kindler, gentler rejection respons
+     186: adopt formal comment, clarify that if there are two ports
+          connected to the same source, and reading from that source changes
+          the source, then peeking on one port will make that character
+          inaccessible via the other port.  also clarify that a read-char
+          preceded by a peek-char returns the same character as the
+          preceding peek-char even if port is unbuffered.
+     194: leave hash-table-immutable? but change "immutable" argument
+          to hash-table-copy to a "mutable" argument
+     200: adopt Posix semantics for set-port-position! when underlying
+          object is a file
+     225, 229, 223: strings are not immutable, string-set! in a separate
+           library, string-ref preserved, string-ref returns character
+           (aka Unicode scalar value), no variable-length strings
+           (encourage SRFIs), allow direct creation of text ports (done in
+           ticket 225 response?), report should say that string-ref and
+           string-set!  should be O(1), add string-for-each
+   - update r6rs to reflect additional decisions:
+     - allow (case-lambda)
+     - probably use "should" for programmer requirements that implementations
+       are not required to enforce
+
+3. add proposed string <=> bytevector conversion routines? (5 minutes)
+   - see https://r6rs.scheming.org/node/596
+
+4. change the specifications of char-alphabetic?, char-whitespace?, and
+   string-titlecase to conform with Unicode 5? (5 minutes)
+   - see http://lists.r6rs.org/pipermail/r6rs-discuss/2007-April/002250.html
+
+5. change bytevector extraction procedure semantics? (5 minutes)
+   - ticket 200
+   - draft response summary: keep current semantics
+   - is response too detailed?
+   - also, should we add file-length?
+
+6. specify freshness/mutability of quasiquoted structure? (5 minutes)
+   - ticket 204
+
+7. should <body> allow mixing definitions with expressions? (5 minutes)
+   - ticket 212
+
+8. eliminate library export immutability loophole? (5 minutes)
+   - ticket 208
+   - impact on top-level body?
+   - impact on lambda body?
+
+9. should map return new list structure each time? (5 minutes)
+   - ticket 220
+   - option 1: entirely new list structure
+   - option 2: not modify earlier return values
+
+10. Rename "lookahead" procedure-name prefix to "look-ahead"? (5 minutes)
+   - bottom of ticket 214
+   - contrast with "bytevector" and "hashtable"
+   - rationale: "the unhyphenated form is usually used as a noun"
+
+11. Remove (r6rs when-unless)? (5 minutes)
+   - ticket 211
+   - should we move when and unless into the base library?
+
+12. Make simple conditions more like records? (5 minutes)
+   - ticket 210
+
+13. Change exception handling protocol? (5 minutes)
+   - ticket 221
+
+14. Replace library form with library prefix? (5 minutes)
+   - ticket 150
+
+15. Export bindings for various literals? (10 minutes)
+   - ticket 164
+   - literals that can appear where non-literals are legitimate:
+     - syntax-rules underscore (_), ellipses (...)
+     - cond else
+     - quasiquote unquote, unquote-splicing
+     - quasisyntax unsyntax, unsyntax-splicing
+     - others?
+   - literals that can appear only where literals are legitimate:
+     - case else
+     - define-record-type fields, mutable, etc.
+     - others?
+
+16. adjourn
