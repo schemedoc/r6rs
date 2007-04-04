@@ -1,0 +1,178 @@
+telephone conference April 4 2007 8:00am-10:00am EDT
+Will, Kent, Matthew, Mike present shortly after 8am;
+Anton had a serious electrical problem, but joined at 8:14am
+
+0. finalize agenda (1 minute)
+
+1. action items (1 minute)
+   - record response votes (All)
+        ongoing
+   - draft responses for ticket numbers 202, 208, 209, 210, 217, 221, 229
+        not done
+   - need final resolution in responses for ticket numbers 150, 164
+        not done
+   - update ticket-nnn responses to reflect decisions:
+     184: (Anton) draft kindler, gentler rejection respons
+        done
+     200: adopt Posix semantics for set-port-position! when underlying
+          object is a file
+        done, but not decided
+     229: strings are not immutable, string-set! in a separate
+          library, string-ref preserved, string-ref returns character
+          (aka Unicode scalar value), no variable-length strings
+          (encourage SRFIs), report should say that string-ref and
+          string-set!  should be O(1), add string-for-each
+        not done
+   - update r6rs to reflect additional decisions:
+     - allow (case-lambda)
+     - probably use "should" for programmer requirements that implementations
+       are not required to enforce
+
+2. allow binary-port port position to be "magic cookie"?
+   - ticket 223
+        accept formal comment
+        decide later whether to allow non-integers
+
+3. add proposed string <=> bytevector conversion routines? (5 minutes)
+   - see https://r6rs.scheming.org/node/596
+        raise vs replacement semantics
+            raise semantics would require more complex spec for recovery
+            let's go with replacement semantics
+        vote on including these routines with replacement semantics:
+            yes: Will, Kent, Matthew, Mike, Anton
+
+4. change the specifications of char-alphabetic?, char-whitespace?, and
+   string-titlecase to conform with Unicode? (5 minutes)
+   - see http://lists.r6rs.org/pipermail/r6rs-discuss/2007-April/002250.html
+        Will so moved; Kent seconded
+            yes: Will, Kent, Matthew, Mike, Anton
+
+5. change bytevector port extraction procedure semantics? (5 minutes)
+   - ticket 200
+   - draft response summary: keep current semantics
+        sounds about right
+   - is response too detailed?
+        yes
+   - also, should we add file-length?
+        doesn't need to be in response to formal comment
+    tabled until we have a revised draft response
+
+6. specify freshness/mutability of quasiquoted structure? (5 minutes)
+   - ticket 204
+        straw poll
+            A: Kent, Matthew
+            B: Will, Mike
+            abstain: Anton
+        Kent recommends B because it allows A without requiring
+        Mike moved we accept B; Will seconded
+            yes: Will, Kent, Matthew, Mike, Anton
+        project editor will figure out how to phrase this
+
+7. should <body> allow mixing definitions with expressions? (5 minutes)
+   - ticket 212
+        Will moved we reject the proposal and explain why; Anton seconded
+            (defns and exprs are different, and cannot be made
+            interchangeable in all contexts;
+            top-levels are messy and icky but pragmatically useful;
+            we don't want lambda bodies to be that messy and icky)
+            yes: Will, Kent, Matthew, Mike, Anton
+        Will will draft response
+
+8. eliminate library export immutability loophole? (5 minutes)
+   - ticket 208
+   - impact on lambda body?
+        adopt the same restriction for lambda bodies?
+        should instead of must?
+   - impact on top-level body?
+        treated as if libraries, so they'd be restricted also
+   - impact on letrec and letrec*?
+        should (not must?) raise an exception
+    tabled until next week
+        should there be implicit only-once in library defns?
+        same question for internal defns, letrec, letrec*
+
+9. should map return new list structure each time? (5 minutes)
+   - ticket 220
+   - option 1: entirely new list structure
+   - option 2: not modify earlier return values
+        Anton moved we require option 2; Will seconded
+            yes: Will, Kent, Matthew, Anton
+            no: Mike
+
+10. Rename "lookahead" procedure-name prefix to "look-ahead"? (5 minutes)
+   - bottom of ticket 214
+   - contrast with "bytevector" and "hashtable"
+   - rationale: "the unhyphenated form is usually used as a noun"
+        Will moved we reject the hyphenated suggestion; Mike seconded
+            yes: Will, Matthew, Mike, Anton
+            abstain: Kent
+
+11. Remove (r6rs when-unless)? (5 minutes)
+   - ticket 211
+        Mike moved we remove when and unless from R6RS; Will seconded
+            yes: Will, Mike
+            no: Kent, Matthew, Anton
+   - should we move when and unless into the base library?
+        Anton moved when and unless be moved into (r6rs base); Kent seconded
+            yes: Kent, Matthew, Anton
+            no: Will
+            abstain: Mike
+
+12. Make simple conditions more like records? (5 minutes)
+   - ticket 210
+        tabled until next week
+        Mike will draft a response
+
+13. Change exception handling protocol? (5 minutes)
+   - ticket 221
+        tabled until next week
+        Mike will draft a response
+
+14. Replace library form with library prefix? (5 minutes)
+   - ticket 150
+        Will moved we reject formal comment; Matthew seconded
+            yes: Will, Kent, Matthew, Mike, Anton
+
+15. Export bindings for various literals? (10 minutes)
+   - ticket 164
+   - literals that can appear where non-literals are legitimate:
+     - syntax-rules underscore (_), ellipses (...)
+     - cond else
+     - quasiquote unquote, unquote-splicing
+     - quasisyntax unsyntax, unsyntax-splicing
+     - others?
+   - literals that can appear only where literals are legitimate:
+     - case else
+     - define-record-type fields, mutable, etc.
+     - others?
+    Will moved we adopt the last sentence of the formal comment;
+        motion failed for lack of a second.
+    Matthew dropped out for some technical problem.
+    tabled until Matthew could rejoin
+
+16. bytevector aliasing severely impedes optimizations? (5 minutes)
+    - ticket 201
+        Will will revise the draft response
+
+17. change formal semantics? (5 minutes)
+    - tickets 226 (drop library toplevel), 227 (drop define and begin^f)
+        Will moved we make the formal semantics non-normative
+        and put it in a non-normative appendix; Kent seconded.
+            yes: Will, Kent, Mike, Anton
+            Matthew was not present for the vote
+        the issues for those tickets remain open;
+        tabled until next week
+
+adjourned before getting to the next two items:
+
+18. eq? and eqv? should apply to all standardized objects (5 minutes)
+    - ticket 155
+
+19. asymmetry between fold-left and fold-right (5 minutes)
+    - ticket 170
+
+we meet next week same time, same station
+
+20. adjourned around 10:07am
+
+Will
