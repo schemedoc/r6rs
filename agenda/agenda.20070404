@@ -7,27 +7,14 @@ April 4 2007 8:00am-10:00am EDT 812-856-3600, PIN 001386#
    - draft responses for ticket numbers 202, 208, 209, 210, 217, 221, 229
    - need final resolution in responses for ticket numbers 150, 164
    - update ticket-nnn responses to reflect decisions:
-     183: adopt formal comment plus add current-error-port to simple i/o
-          and replicate the three current-x-port procedures in port i/o;
-          (the three current-x-port procedures do not return fresh ports
-          each time)
      184: (Anton) draft kindler, gentler rejection respons
-     186: adopt formal comment, clarify that if there are two ports
-          connected to the same source, and reading from that source changes
-          the source, then peeking on one port will make that character
-          inaccessible via the other port.  also clarify that a read-char
-          preceded by a peek-char returns the same character as the
-          preceding peek-char even if port is unbuffered.
-     194: leave hash-table-immutable? but change "immutable" argument
-          to hash-table-copy to a "mutable" argument
      200: adopt Posix semantics for set-port-position! when underlying
           object is a file
-     225, 229, 223: strings are not immutable, string-set! in a separate
-           library, string-ref preserved, string-ref returns character
-           (aka Unicode scalar value), no variable-length strings
-           (encourage SRFIs), allow direct creation of text ports (done in
-           ticket 225 response?), report should say that string-ref and
-           string-set!  should be O(1), add string-for-each
+     229: strings are not immutable, string-set! in a separate
+          library, string-ref preserved, string-ref returns character
+          (aka Unicode scalar value), no variable-length strings
+          (encourage SRFIs), report should say that string-ref and
+          string-set!  should be O(1), add string-for-each
    - update r6rs to reflect additional decisions:
      - allow (case-lambda)
      - probably use "should" for programmer requirements that implementations
@@ -93,4 +80,16 @@ April 4 2007 8:00am-10:00am EDT 812-856-3600, PIN 001386#
      - define-record-type fields, mutable, etc.
      - others?
 
-16. adjourn
+16. bytevector aliasing severely impedes optimizations? (5 minutes)
+    - ticket 201
+
+17. change formal semantics? (5 minutes)
+    - tickets 226 (drop library toplevel), 227 (drop define and begin^f)
+
+18. eq? and eqv? should apply to all standardized objects (5 minutes)
+    - ticket 155
+
+19. asymmetry between fold-left and fold-right (5 minutes)
+    - ticket 170
+
+20. adjourn
