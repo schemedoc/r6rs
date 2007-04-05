@@ -48,4 +48,67 @@ http://lists.r6rs.org/pipermail/r6rs-discuss/2007-January/001333.html
 
 RESPONSE:
 
-The proposal will be adopted in the next draft of the report.
+The current draft R6RS treats top-level bodies as a
+special case.  Allowing definitions and expressions
+to be mixed in top-level bodies has ugly semantics,
+and introduces a special case, but was allowed as a
+concession to convenience when constructing programs
+rapidly via cut and paste.  If the editors decide to
+eliminate the inconsistency between top-level bodies
+and other bodies, the editors believe it would be
+better to eliminate the special case that allows
+mixing of definitions and expressions in top-level
+bodies than to generalize the special case to other
+bodies.
+
+Definitions are not interchangeable with expressions,
+so definitions cannot be allowed to appear wherever
+expressions can appear, and expressions cannot be
+allowed to appear wherever definitions can appear.
+Composition of definitions with expressions will
+therefore be restricted in some way; the question
+is not whether there will be restrictions, but what
+those restrictions will be.
+
+Historically, top-level definitions in Scheme have
+had a different semantics from definitions in bodies.
+In a body, definitions serve as syntactic sugar for
+the bindings of a letrec (or letrec* in the R6RS)
+that is implicit at the head of every body.
+
+That semantics can be stretched to cover top-level
+bodies by converting expressions to definitions of
+ignored variables, but does not easily generalize
+to allow definitions to be placed anywhere within
+expressions.  The editors considered a different
+generalization of definition placement as proposed
+by format comment #117, but decided against that
+generalization in part because a survey of current
+Scheme code found surprisingly few places where the
+generalization would be useful.  The generalization
+proposed by this formal comment (#212) might be more
+useful, but there is no a priori reason to think so.
+
+If the generalization proposed by this formal comment
+were adopted, programmers who are familiar with Java
+and similar languages might expect definitions to be
+allowed in the same kinds of contexts that allow
+declarations in Java.  These programmers would have
+to be reminded that Scheme's definitions have letrec
+scope, while Java declarations (inside a method body)
+have let* scope and cannot be used to define recursive
+procedures; that Scheme's begin expressions do not
+introduce a new scope, while Java's curly braces do
+introduce a new scope; that flow analysis is nontrivial
+in higher order languages, while Java can use a trivial
+flow analysis to reject programs with undefined
+variables; that Scheme's macro expander must locate
+all definitions, while Java has no macro system; and
+so on.  Rather than explain how those facts justify
+restricting definitions to appear as top-level forms
+of a body, it is simpler to explain that definitions
+are just syntactic sugar for the bindings of an
+implicit letrec* at the head of each body, and to
+explain that the relaxation of that restriction for
+top-level bodies is (like several other features of
+top-level bodies) an ad hoc special case.

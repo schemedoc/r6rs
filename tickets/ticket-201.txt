@@ -34,17 +34,40 @@ access to large arrays of homogeneous numerical data).
 
 RESPONSE:
 
-Bytevectors were designed primarily to enable binary I/O, where
-aliasing is desirable.  The comment correctly identifies problems with
-bytevectors when used as unboxed storage for high-performance
-computation.  This suggests that bytevectors are not the right place
-to solve the problem described in the formal comment.   Also, even if
-the aliasing problems were addressed, bytevectors may be an
-inappropriate design for the problem, as high-performance storage of,
-say, flonums, would use the system's native representation, which may
-be different from IEEE 754.  As high-performance computation with
-large arrays of homogeneous numerical data is not among the primary
-goals for R6RS, the formal comment is rejected.
+Bytevectors are a general-purpose mechanism for
+representing sequences of bytes that may encode
+various things, including various sequences of
+numbers.  It is true that bytevectors are the
+only standard data type of R6RS that could be
+used to encode sequences of unboxed numbers.
+It is also true that the use of unencapsulated
+bytevectors for this purpose would lead to
+aliasing between bytevectors that are used for
+unrelated purposes, which would reduce the
+effectiveness of compiler optimizations.
 
+The solution to this problem is a general-purpose
+idiom that represents values of an abstract data
+type T as instances of a sealed and opaque record
+type that encapsulates bytevectors and/or other
+general-purpose structures that encode the state
+of the value.  Since the record type is sealed, it
+is impossible for non-record values or instances of
+other record types to alias to values of T.  Since
+the record type is opaque, it is impossible to get
+at the encapsulated state except by going through
+the operations of T.  If the operations of T that
+create values of T do not introduce aliasing between
+bytevectors, and none of the operations of T expose
+the encapsulated bytevectors, then aliasing between
+the bytevectors encapsulated within values of T will
+be impossible, and compilers can rely on that fact.
 
-
+The sealed and opaque features of R6RS records,
+together with R6RS bytevectors, make it possible to
+construct a portable reference implementation for new
+data types that provide fast and memory-efficient
+arrays of homogeneous numerical data.  The design and
+implementation of those data types is beyond the scope
+of R6RS, but the R6RS provides the machinery needed to
+implement them effectively.
