@@ -54,7 +54,7 @@ could be defined in terms of base library forms by the following macros:
 This section describes the \deflibrary{r6rs case-lambda} library.
 
 \begin{entry}{%
-\proto{case-lambda}{ \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
+\proto{case-lambda}{ \hyper{clause} \dotsfoo}{\exprtype}}
     
 \syntax
 Each \hyper{clause} should be of the form
@@ -69,7 +69,7 @@ report section~\extref{report:bodiessection}{Bodies and sequences}.
 
 \semantics A {\cf case-lambda} expression evaluates to a procedure.
 This procedure, when applied, tries to match its arguments to the
-\hyper{clause}s in order.  The arguments match a clause if one the
+\hyper{clause}s in order.  The arguments match a clause if one of the
 following conditions is fulfilled:
 %
 \begin{itemize}
@@ -107,14 +107,14 @@ type {\cf\&assertion} is raised.
 \end{scheme}
 
 The {\cf case-lambda} keyword
-could be defined in terms of base library forms by the following macros:
+can be defined in terms of {\cf lambda} by the following macros:
 %
 \begin{scheme}
 (define-syntax \ide{case-lambda}
   (syntax-rules ()
-    ((case-lambda (fmls b1 b2 ...))
+    ((_ (fmls b1 b2 ...))
      (lambda fmls b1 b2 ...))
-    ((case-lambda (fmls b1 b2 ...) ...)
+    ((_ (fmls b1 b2 ...) ...)
      (lambda args
        (let ((n (length args)))
          (case-lambda-help args n
@@ -122,18 +122,19 @@ could be defined in terms of base library forms by the following macros:
 
 (define-syntax \ide{case-lambda-help}
   (syntax-rules ()
-    ((case-lambda-help args n (fmls b1 b2 ...))
-     (apply (lambda fmls b1 b2 ...) args))
-    ((case-lambda-help args n ((x ...) b1 b2 ...) more ...)
+    ((_ args n)
+     (assertion-violation #f
+       "unexpected number of arguments"))
+    ((_ args n ((x ...) b1 b2 ...) more ...)
      (if (= n (length '(x ...)))
          (apply (lambda (x ...) b1 b2 ...) args)
          (case-lambda-help args n more ...)))
-    ((case-lambda-help args n ((x1 x2 ... . r) b1 b2 ...) more ...)
+    ((_ args n ((x1 x2 ... . r) b1 b2 ...) more ...)
      (if (>= n (length '(x1 x2 ...)))
          (apply (lambda (x1 x2 ... . r) b1 b2 ...)
-                args)
+                   args)
          (case-lambda-help args n more ...)))
-    ((case-lambda-help args n (r b1 b2 ...) more ...)
+    ((_ args n (r b1 b2 ...) more ...)
      (apply (lambda r b1 b2 ...) args))))
 \end{scheme}
 \end{entry}
