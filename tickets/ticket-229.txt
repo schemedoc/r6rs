@@ -489,3 +489,31 @@ Full Description:
                 is the same as the ordering of the corresponding
                 integers.
 
+
+DRAFT RESPONSE:
+
+We agree that implementations should be able to extend the set of
+characters beyond Unicode scalar values. However, we believe that such
+extensions can be added in libraries other than the standard ones, and
+made invisible to the standard operations, so that the standard need
+not specifically address the issue. At the same time, the editors are
+convinced that defining `character' to Unicode scalar values --- as
+far as the standard operations are concerned --- is an important step
+in promoting portability of Scheme programs.
+
+Discussion on the r6rs-discuss mailing list covered a broad range of
+issues. In addition to the above decision, the editors agreed on a
+several changes and non-changes:
+
+ - strings are mutable, but `string-set!' will be moved to a separate
+   library, much like the handling of `set-car!' and `set-cdr!'
+
+ - `string-ref' will remain in the standard
+
+ - `string-ref' and `string-set!' will be specified to provide
+   results in O(1) time
+
+ - `string-for-each' will be added
+
+ - characters correspond to Unicode scalar values (as opposed, in
+   particular, UTF-16 code units)
