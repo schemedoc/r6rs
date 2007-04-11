@@ -9,26 +9,24 @@ April 11 2007 8:00am-10:00am EDT 812-856-3600, PIN 001386#
    - draft concrete proposal for change in exception handling
      protocol---or not (ticket 221) (Mike)
    - redraft response for ticket 201 (Will) [done]
-   - revise (shorten) draft response for ticket 200 (Kent)
-   - draft responses for ticket numbers 202, 208, 209, 210, 217, 221, 229
-   - need final resolution in responses for ticket numbers 164
+   - revise (shorten) draft response for ticket 200 (Kent) [done]
+   - draft responses for ticket numbers
+     208: eliminate library export immutability loophole
+     209: Syntactic datums and datum values
+     210: Why are simple conditions so different from records
+     221: Recursive exception handling considered harmful
    - update ticket-nnn responses to reflect decisions:
-     150: reject formal comment
      151: reject formal comment
      204: go with option B
      211: move when and unless into base library
      214: reject suggestion to replace "lookahead" with "look-ahead"
+     216: reject comment; possibly add footnote acknowledging Boolean
      220: map should not modify earlier return values
-     229: strings are not immutable, string-set! in a separate
-          library, string-ref preserved, string-ref returns character
-          (aka Unicode scalar value), no variable-length strings
-          (encourage SRFIs), report should say that string-ref and
-          string-set! should be O(1), add string-for-each;
-          add Will's string <=> unicode conversion procedures with
-          "replace" semantics (possibly mention latter in 233 response)
-          mention that bytevectors can be used with record wrapper
-          and srfi can replicate string functionality
-          (Kent)
+     223: will add string <=> unicode conversion procedures with
+          "replace" semantics
+     229: mention that bytevectors can be used with record wrapper
+          and srfi can replicate string functionality; string-ref
+          and string-set *should* be O(1)
    - update r6rs to reflect additional decisions:
      - probably use "should" for programmer requirements that implementations
        are not required to enforce
@@ -36,7 +34,8 @@ April 11 2007 8:00am-10:00am EDT 812-856-3600, PIN 001386#
        string-titlecase to conform with Unicode 5?
        (http://lists.r6rs.org/pipermail/r6rs-discuss/2007-April/002250.html)
      - adopt Posix semantics for set-port-position! when underlying
-       object is a file, with unwritten bytes having unspecified values
+       object is a file or bytevector output port, with unwritten bytes
+       having unspecified values
      - move formal semantics to a nonnormative appendix
    - deferred until after April 15
      - add port-length and port-has-port-length? procedures
@@ -44,48 +43,37 @@ April 11 2007 8:00am-10:00am EDT 812-856-3600, PIN 001386#
 
 NOTE: tickets whose responses are not yet accepted and by whom:
 
- *135: Will, Matthew, Mike, Anton       141: Anton
-  145: Anton                            148: Anton
- +150: All                             +151: Will, Mike, Anton
-  152: Matthew, Mike, Anton             153: Anton
-  154: Anton                           -155: Will, Anton
-  156: Mike, Anton                      160: Will, Matthew, Mike, Anton
-  161: Kent, Matthew, Anton            -164: All
- -165: All                              166: Mike, Anton
- -170: Mike, Anton                      171: Anton
- -176: Will, Kent, Matthew, Anton       179: Anton
-  180: Anton                            182: Anton
-  183: Will, Matthew, Mike, Anton       184: Will, Matthew, Mike, Anton
-  185: Matthew, Anton                   186: Will, Matthew, Mike, Anton
- *189: Will, Matthew, Mike, Anton       191: Anton
-  194: Matthew                          195: Matthew
-  196: Anton                            197: Anton
-  198: Matthew, Mike                   *200: Will, Matthew, Mike, Anton
-  201: Matthew, Mike, Anton             202: All
- +204: All                              205: Mike, Anton
-  206: Anton                            207: Mike, Anton
- -208: All                             -209: All
- -210: All                             +211: Kent, Matthew, Mike, Anton
-  212: Matthew, Mike, Anton             213: Mike, Anton
-  214: All                              215: Mike, Anton
- -216: Kent, Matthew, Anton             217: All
-  218: Anton                            219: Anton
- +220: Will, Kent, Matthew, Anton      -221: Will, Kent, Matthew, Anton
- -222: Will, Matthew, Mike, Anton       223: Matthew, Mike, Anton
- -224: Will, Kent, Matthew, Anton       225: Matthew, Mike, Anton
- -226: Will, Kent, Matthew, Mike       -227: Will, Kent, Matthew, Mike
-  228: Matthew, Anton                  +229: All
-  230: Matthew, Anton                   231: Matthew, Anton
-  232: Matthew, Anton                   233: Matthew, Anton
+ *135: Will, Matthew, Mike, Anton      150: Will, Matthew, Mike, Anton
+ +151: Kent, Mike, Anton               152: Mike, Anton
+ -155: Will, Anton                     156: Mike
+  160: Mike, Anton                     161: Anton
+ -164: All                            -165: All
+  166: Mike, Anton                    -170: Will, Anton
+ -176: Will, Kent, Matthew, Anton      183: Mike
+  184: Mike                            186: Mike
+ *189: Will, Mike, Anton               198: Mike
+ *200: Will, Mike, Anton               201: Mike, Anton
+  202: Will, Matthew, Mike, Anton     +204: All
+  205: Mike                            207: Mike
+ -208: All                            -209: All
+ -210: All                            +211: All
+  212: Mike, Anton                     213: Mike, Anton
+  214: All                             215: Mike, Anton
+ +216: Will, Kent, Matthew, Anton      217: Will, Mike, Anton
+ +220: Will, Kent, Matthew, Anton     -221: Will, Kent, Matthew, Anton
+ -222: Will, Matthew, Mike, Anton      223: Mike, Anton
+ -224: Will, Kent, Matthew, Anton      225: Mike, Anton
+ -226: Will, Kent, Matthew, Anton     -227: Will, Kent, Matthew, Anton
+ +229: All
 
    - awaiting technical decision
 
    + response does not yet reflect technical decision
 
    * questions/comments:
-     135: Kent needs to fix first bullet point
+     135: Kent needs to fix first bullet point [done]
      189: Anton would like help with this response
-     200: Kent needs to shorten this response
+     200: Kent needs to shorten this response [done]
 
 2. end game
    - we have four days left to publish responses
@@ -103,7 +91,7 @@ NOTE: tickets whose responses are not yet accepted and by whom:
      - options: should or must raise exception?
 
 4. keep the other little library: (r6rs case-lambda)? (5 minutes)
-   - we moved when-unless into (r6rs base), what about case-lambda? 
+   - we moved when-unless into (r6rs base), what about case-lambda?
 
 5. Export bindings for various literals? (10 minutes)
    - ticket 164
@@ -117,6 +105,10 @@ NOTE: tickets whose responses are not yet accepted and by whom:
      - case else
      - define-record-type fields, mutable, etc.
      - others?
+   - literals in the library syntax not (presently) an issue
+     - export, import
+     - only, rename, etc.
+     - and, or, >, etc.
    - tabled last week when Matthew dropped out
 
 6. change formal semantics? (5 minutes)
