@@ -1,0 +1,217 @@
+telephone conference April 11 2007 8:00am-10:00am EDT
+
+Mike, Anton, Will, Kent present by about 8:02am;
+Matthew (in China) joined temporarily at 8:27am,
+on a very poor connection, and rejoined on a better
+connection a few minutes later.  We skipped around
+the agenda some to delay our consideration of agenda
+items that needed Matthew's expertise or vote, but
+my notes preserve the original order of the agenda,
+not the order in which we considered the items.
+
+0. finalize agenda (1 minute)
+
+1. action items (1 minute)
+   - record response votes (All)
+        ongoing
+   - draft concrete proposal for making conditions more like
+     records---or not (ticket 210) (Mike)
+        done
+   - draft concrete proposal for change in exception handling
+     protocol---or not (ticket 221) (Mike)
+        done
+   - redraft response for ticket 201 (Will) [done]
+        done
+   - revise (shorten) draft response for ticket 200 (Kent) [done]
+        done
+   - draft responses for ticket numbers
+     208: eliminate library export immutability loophole
+        to be done after today's meeting
+     209: Syntactic datums and datum values
+        done
+     210: Why are simple conditions so different from records
+        done
+     221: Recursive exception handling considered harmful
+        done
+     165:
+        done last night
+   - update ticket-nnn responses to reflect decisions:
+     151: reject formal comment
+     204: go with option B
+     211: move when and unless into base library
+     214: reject suggestion to replace "lookahead" with "look-ahead"
+     216: reject comment; possibly add footnote acknowledging Boolean
+     220: map should not modify earlier return values
+     223: will add string <=> unicode conversion procedures with
+          "replace" semantics
+     229: mention that bytevectors can be used with record wrapper
+          and srfi can replicate string functionality; string-ref
+          and string-set *should* be O(1)
+   - update r6rs to reflect additional decisions:
+     - probably use "should" for programmer requirements that implementations
+       are not required to enforce
+     - change the specifications of char-alphabetic?, char-whitespace?, and
+       string-titlecase to conform with Unicode 5?
+       (http://lists.r6rs.org/pipermail/r6rs-discuss/2007-April/002250.html)
+     - adopt Posix semantics for set-port-position! when underlying
+       object is a file or bytevector output port, with unwritten bytes
+       having unspecified values
+     - move formal semantics to a nonnormative appendix
+   - deferred until after April 15
+     - add port-length and port-has-port-length? procedures
+       and corresponding arguments to custom port makers?
+
+NOTE: tickets whose responses are not yet accepted and by whom:
+
+ *135: Will, Matthew, Mike, Anton      150: Will, Matthew, Mike, Anton
+ +151: Kent, Mike, Anton               152: Mike, Anton
+ -155: Will, Anton                     156: Mike
+  160: Mike, Anton                     161: Anton
+ -164: All                            -165: All
+  166: Mike, Anton                    -170: Will, Anton
+ -176: Will, Kent, Matthew, Anton      183: Mike
+  184: Mike                            186: Mike
+ *189: Will, Mike, Anton               198: Mike
+ *200: Will, Mike, Anton               201: Mike, Anton
+  202: Will, Matthew, Mike, Anton     +204: All
+  205: Mike                            207: Mike
+ -208: All                            -209: All
+ -210: All                            +211: All
+  212: Mike, Anton                     213: Mike, Anton
+  214: All                             215: Mike, Anton
+ +216: Will, Kent, Matthew, Anton      217: Will, Mike, Anton
+ +220: Will, Kent, Matthew, Anton     -221: Will, Kent, Matthew, Anton
+ -222: Will, Matthew, Mike, Anton      223: Mike, Anton
+ -224: Will, Kent, Matthew, Anton      225: Mike, Anton
+ -226: Will, Kent, Matthew, Anton     -227: Will, Kent, Matthew, Anton
+ +229: All
+
+   - awaiting technical decision
+
+   + response does not yet reflect technical decision
+
+   * questions/comments:
+     135: Kent needs to fix first bullet point [done]
+     189: Anton would like help with this response
+     200: Kent needs to shorten this response [done]
+
+2. end game
+   - we have four days left to publish responses
+   - same process as last time?
+   - volunteer to clean up tickets
+        Anton volunteered
+   - meetings before and after April 15
+        deferred to end of conference
+
+3. eliminate library export immutability loophole? (5 minutes)
+   - ticket 208
+   - motion 1: include implicit only-once wrapper around rhs of each
+     library definition
+     - options: should or must raise exception?
+   - motion 2: include implicit only-once wrapper around rhs of each
+     definition, letrec, and letrec* rhs
+     - options: should or must raise exception?
+        Kent makes motion 2 with "should"; Will seconded
+        vote:
+            yes: Will, Kent, Mike, Anton
+            no: Matthew
+
+4. keep the other little library: (r6rs case-lambda)? (5 minutes)
+   - we moved when-unless into (r6rs base), what about case-lambda?
+        no one here opposes putting all three into a separate library,
+        but what to name it?
+        Anton moved we name it (r6rs control), and put
+            when, unless, and case-lambda in it; Mike seconded
+        vote:
+            yes: Will, Matthew, Mike, Anton
+            abstain: Kent
+        Mike moved we move do from (r6rs base) into (r6rs control);
+        Matthew seconded
+        vote:
+            yes: Will, Kent, Matthew, Mike, Anton
+        Will moved we move call/cc and dynamic-wind into (r6rs control),
+            but the motion failed for lack of a second
+
+5. Export bindings for various literals? (10 minutes)
+   - ticket 164
+   - literals that can appear where non-literals are legitimate:
+     - syntax-rules underscore (_), ellipses (...)
+     - cond else
+     - quasiquote unquote, unquote-splicing
+     - quasisyntax unsyntax, unsyntax-splicing
+     - others?
+   - literals that can appear only where literals are legitimate:
+     - case else
+     - define-record-type fields, mutable, etc.
+     - others?
+   - literals in the library syntax not (presently) an issue
+     - export, import
+     - only, rename, etc.
+     - and, or, >, etc.
+   - tabled last week when Matthew dropped out
+        go with the simple solution: export bindings for all identifiers
+
+6. change formal semantics? (5 minutes)
+   - tickets 226 (drop library toplevel), 227 (drop define and begin^f)
+   - Will says we should do what the formal comment suggests
+        we can say we will pass the comment on
+            to the authors of the formal semantics
+
+7. should formal semantics contain "complicating optimizations"
+   - ticket 222
+        we can say we will pass the comment on
+            to the authors of the formal semantics
+
+8. eq? and eqv? should apply to all standardized objects (5 minutes)
+   - ticket 155
+   - Will believes the draft response is incorrect
+        but Will has no problem with the recently revised response
+
+9. asymmetry between fold-left and fold-right (5 minutes)
+   - ticket 170
+   - Will says procedure arguments should come first
+        Anton will draft another response and we'll discuss by email
+        when we came back to this later, we decided to keep the
+            current order of arguments, rejecting the formal comment
+
+10. rename named let? (5 minutes)
+   - ticket 165
+        Anton will reword with "a majority of the editors" and
+        "<bindings>" for "bindings"
+        vote
+            yes: Will, Kent, Matthew, Mike, Anton
+
+11. Syntactic datums and datum values (5 minutes)
+   - ticket 209
+        The first line of the current draft response is adequate.
+        The rest of the current draft response should be deleted.
+
+12. get-bytevector-some may be difficult to implement (5 minutes)
+   - ticket 224
+        response will be revised to agree with the second fix,
+        substituting "bytes" for "characters"
+
+13. Raising of exceptions should not be ambiguous or confusing (5 minutes)
+   - ticket 176
+   - Will says the response defends early arity checks
+        Will wouldn't have a problem with the current response
+        if the formal comment had not been truncated
+
+We'll plan to meet again next week (18 April) in case we
+haven't approved all of the responses to draft comments.
+
+Discussion of unapproved draft responses to various tickets.
+170: keep argument order consistent with Haskell etc;
+    point out that SRFI-1 doesn't use the name fold-left
+151: should refer to response to 212
+152: current draft response no longer explains our position(s)
+
+Will volunteers to draft response regarding text slices etc
+Kent will draft responses for the other two recent formal comments
+
+The response to formal comment 223 should mention our recent
+approval of bytevector <-> string conversions.
+
+14. adjourned about 9:45am
+
+Will
