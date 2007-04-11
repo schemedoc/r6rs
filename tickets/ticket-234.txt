@@ -71,3 +71,13 @@ Further outlaw multiple returns to macro definitions.
 This could perhaps also be succinctly expressed in the semantics by
 extending the current formal semantics, with the appropriate changes,
 to DEFINE in internal positions also.
+
+RESPONSE:
+
+The next draft will say that implementations should raise an exception if
+the continuation of a right-hand side of any variable definition, letrec,
+or letrec* is invoked more than once.
+
+While strange behavior can result for keyword definitions as well, the
+unspecified semantics of such an action already prevents portable programs
+from using keyword definitions to perform back-door keyword assignments.
