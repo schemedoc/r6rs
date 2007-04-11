@@ -65,74 +65,12 @@ altogether.
 
 RESPONSE:
 
-We do not feel that the behavior of the bytevector port's data extraction
-procedure is underspecified.  It is reasonable, however, to consider
-whether the current semantics is approriate.
-
 It is possible that a programmer would wish for a bytevector port's
 procedure to return only the accumulated data up to the current position
 (the proposed behavior).  It is also possible that a programmer would want
-all of the accumulated data (current behavior).  The proposed behavior can
-be simulated by the current using bytevector-copy! and put-bytevector. 
-Thus, we see no compelling reason to abandon the current behavior based on
-usage.
-
-Incidentally, the current behavior cannot be simulated by the proposed
-behavior without a new port-length procedure that reports the size of the
-object (file, string, etc.) that underlies the port.  The lack of such a
-procedure should be rectified.
-
-Implementation considerations may also come into play.  A typical
-high-performance implementation would use an internal bytevector buffer
-that is replaced with a longer buffer whenever a write operation would
-cause the buffer's capacity to be exceeded.  To allow room for future
-writes without excessive buffer allocation and copying, the size of the
-new buffer would be greater than is needed to hold just the old plus newly
-written data. 
-
-With the current semantics, the extraction procedure can simply return the
-buffer after truncating it (e.g., by altering its length) and replacing it
-in the port with an empty bytevector.  (A new buffer would then be
-allocated only if additional data is ever written to the port.)  With the
-proposed semantics, the extraction procedure must allocate a new
-bytevector to hold either the extracted data or the data that is
-accumulated past the current position, with some copying involved in
-either case, if the current position is not at the end of the accumulated
-data.  (It is possible that the existing buffer can be split in two if the
-length is stored in a separate header and alignment constraints are met
-for the tail of the buffer holding the unextracted data, but this is not
-likely to be the case in most implementations.)
-
-For the current semantics, the implementation must maintain a record of
-the end of accumulated data separate from the current position.  For the
-proposed semantics, it is useful to do so to avoid unnecessary copying and
-buffer allocation.  In systems that use a common internal representation
-for all ports, this might increase the size of every port by one word (two
-for input/output ports).
-
-To avoid this requirement, a third semantics is worth considering, which
-is a combination of the current and proposed:  the extraction procedure
-returns a bytevector containing the data accumulated up to the current
-position, yet still clears all of the accumulated data.  Despite the
-potential cost savings, we prefer the current semantics since it seems
-more in line with the way files work; files are never truncated implicitly
-to the current position, so this should not be the case with bytevectors
-either.
-
-The formal comment indirectly brings up another issue, which is that
-the behavior of set-file-position! is not specified when an attempt is
-made to set the position beyond the end of the underlying object (file,
-string, etc.).  We intend to adopt the Posix lseek behavior:  the position
-can be set beyond the end of the underlying object, but the object is not
-extended unless and until data is written at that position, in which case
-the intervening bytes are set to zero.
-
-Summary: 
-
-No change will be made in the semantics of the bytevector extraction
-procedure.
-
-Independently, however, the behavior of set-file-position! when an
-attempt is made to set the position beyond the end of the underlying
-object will be specified.  We will also add a port-length procedure and
-corresponding port-has-port-length? predicate.
+all of the accumulated data (current behavior).  The proposed behavior is
+more complex to implement and potentially more costly.  Furthermore, in
+cases where the proposed behavior is desired, it can be simulated via
+bytevector-copy! and put-bytevector.  Therefore, the current behavior
+will be retained in the next draft of R6RS.  The description will be
+clarified to make the behavior clear.
