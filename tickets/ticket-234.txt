@@ -1,0 +1,73 @@
+Formal comment #234 (enhancement)
+
+Disallow redefinitions macros/variables
+Reported by: 	Andre van Tonder
+Version: 	5.92
+
+Component : sections 9.1, 9.2 (definitions and syntax definitions)
+
+Pages : 27
+
+Dependencies: sections 8 (expansion) and 10 (semantics)
+
+Summary:
+
+Disallow redefinitions of macros and variables in case of multiple
+return to RHS continuations.
+
+Description:
+
+A prior thread
+
+        http://lists.r6rs.org/pipermail/r6rs-discuss/2007-March/001866.html
+
+discusses a problem that may be caused by multiple returns to library
+toplevel variable definitions.
+
+I would like to point out that strange behaviour might also be
+obtained in case of multiple returns to /macro/ definitions, also
+/internal/ macro definitions.
+
+I would therefore suggest outlawing multiple returns to macro
+defintions, library-toplevel and internal.
+
+I further suspect that allowing multiple returns to internal variable
+definitions are also bad, because
+
+    * I suspect that it may make certain optimizations (such as
+      detecting possibilities for inlining or direct substitution)
+      more difficult. It is no longer sufficient to detect set!
+      statements to determine mutability. Mutability detection becomes
+      undecidable.
+
+    * The intention of mutation does not get clearly expressed.
+
+I think it would be better if programmers were required to express all
+mutations using set!. In other words, I think programmers should be
+required to write
+
+    (let ()
+      (define x)
+      (set! x (call/cc (lambda (k) k))))
+      (unless (number? x)
+        (x 1)))
+
+instead of
+
+    (let ()
+     (define x (call-cc -----))
+     ----)
+
+Suggestion:
+
+Require a solution such as the one suggested in
+
+        http://lists.r6rs.org/pipermail/r6rs-discuss/2007-March/001866.html
+
+also for internal definitions.
+
+Further outlaw multiple returns to macro definitions.
+
+This could perhaps also be succinctly expressed in the semantics by
+extending the current formal semantics, with the appropriate changes,
+to DEFINE in internal positions also.

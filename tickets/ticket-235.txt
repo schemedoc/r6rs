@@ -1,0 +1,247 @@
+Formal comment #235 (enhancement)
+
+String positions and string slices
+Reported by: 	John Cowan
+Version: 	5.92
+
+Summary
+
+Proposes string positions and string slices to solve problems with
+O(n) Unicode string operations.
+
+Description
+
+This proposal is designed to provide a set of procedures for R6RS
+strings that will preserve the historic linear behavior of most R5RS
+implementations, while still providing the Unicode scalar value
+semantics of R6RS characters. These procedures are specifically
+designed to be equally applicable to representations using fixed-width
+arrays, variable-width arrays, and trees of various types.
+
+Internally, characters in strings may not be laid out in uniform-width
+cells in memory. Consequently, random access to characters by the
+natural number of their position in the sequence may not run in
+constant time. Positions in strings are therefore identified by opaque
+string-positions. Following the convention of string editors,
+string-positions identify not characters in the string but the
+positions between them. String-positions are *not* necessarily
+disjoint from existing Scheme data types; they may be identical to
+exact non-negative integers, for example. Each string-position is
+associated with a set of strings into which it is valid. Strings may
+be "sliced up" and seen in parts with the string-slice procedure or
+its derivatives; string-positions that were valid in a string are also
+valid at corresponding positions in slices of the string, because
+slices of the string still refer to the same underlying string
+structure. Because operating on a portion of string is such a common
+operation, the running time of string-slice is guaranteed to be
+sublinear in the number of characters within that slice of string;
+programmers are encouraged to use string-slice frequently.
+
+IMPORTANT NOTE: Any use of string-set! on a string invalidates all
+string positions associated with those string; it is an error to use
+any of them after that. There is no method by which to find the string
+associated with a position, primarily because there is no such unique
+string, but rather a set of strings, some of which are slices of
+others; and in part to permit efficient implementations of string in
+which positions are represented as offsets into the string storage
+that fit in machine registers and require no storage on the
+heap. Contrariwise, there is no guarantee that string positions are
+exact non-negative integers, so implementations less focussed on
+run-time performance may provide enough information to verify the
+correct use of positions.
+
+The following new procedures are proposed for the base library:
+
+      (string-start-position <string>) -> position
+
+    Returns the first position in <string>, before which there are no
+    characters.
+
+      (string-end-position <string>) -> position
+
+    Returns the last position in <string>, after which there are no
+    characters.
+
+      (position-in-string? <position> <string>) -> boolean
+
+    Returns true if <position> is a valid position in <string>, and
+    false if not. <Position> must be a string-position in either case.
+
+      (string-position=? <position-a> <position-b> <string>) -> boolean
+
+    Returns true if <position-a> and <position-b> identify the same
+    position in <string>. Returns false if they identify different
+    positions. It is an error if either of <position-a> or
+    <position-b> is not a valid position in <string>.
+
+      (string-position<?  <position-a> <position-b> <string>) -> boolean
+      (string-position>=? <position-a> <position-b> <string>) -> boolean
+      (string-position>?  <position-a> <position-b> <string>) -> boolean
+      (string-position<=? <position-a> <position-b> <string>) -> boolean
+
+    Procedures imposing a total ordering on string-positions. It is an
+    error if <position-a> and <position-b> are not valid positions
+    into <string>.
+
+      (string-forward <position> <string> [<count>]) -> position
+
+    Returns a string-position for the position in <string> that is
+    <count> characters after <position>, or false if there are fewer
+    than <count> characters after <position> in <string>. If <count>
+    is not supplied, its default value is 1. It is an error if
+    <position> is not a valid position in <string>.
+
+      (string-backward <position> <string> [<count>]) -> position
+
+    Returns a string-position for the position in <string> that is
+    <count> characters before <position>, or false if there are fewer
+    than <count> characters before <position> in <string>. If <count>
+    is not supplied, its default value is 1. It is an error if
+    <position> is not a valid position in <string>.
+
+      (string-slice <string> <start-position> <end-position>) -> string
+
+    Returns a string that contains the sequence of characters in
+    <string> between <start-position> and <end-position>. This slice
+    of the string may refer to storage shared by <string>. The running
+    time of string-slice on average must be sublinear in the number of
+    characters between <start-position> and <end-position>.
+
+    For example, string-slice may run in (amortized) constant time, if
+    a string is a triple of internal storage, a start bound, and an
+    end bound, and string-slice need only construct a new triple with
+    tighter bounds; or string-slice may run in logarithmic time, if a
+    string is structured as a tree of content. string-slice may *not*
+    simply copy all of the characters in <string>; programmers may
+    rely on its performance, and should not be afraid to use it
+    frequently.
+
+      (string-prefix <string> <end-position>) -> string
+      (string-suffix <string> <start-position>) -> string
+
+    string-prefix returns a slice of <string> that contains the
+    sequence of characters before <end-position>. string-suffix
+    returns a slice of <string> that contains the sequence of
+    characters after <start-position>.
+
+        (define (string-prefix string end-position)
+          (string-slice string (string-start-position string) end-position))
+
+        (define (string-suffix string start-position)
+          (string-slice string start-position (string-end-position string)))
+
+    Because a string comprises a sequence of characters, each
+    character in the sequence may be assigned an index (an exact and
+    non-negative number) as used in the string-ref and string-set!
+    procedures. There is an isomorphism between these indices and
+    string-positions; the following procedures deal with this
+    isomorphism.
+
+      (string-position->index <position> <string>) -> index
+
+    Returns the number of characters in <string> that precede
+    <position>, or the number of iterated applications of
+    string-forward to the starting position in <string> necessary to
+    find a position equal to <position>. This operation may run in
+    time proportional to the value of the index. It is an error if
+    <position> is not a valid position in <string>.
+
+        (define (string-position->index position string)
+          (do ((index 0 (+ index 1))
+               (position* (string-start-position string)
+                          (string-forward position* string)))
+              ((string-position=? position* position)
+               index)))
+
+(index->string-position <index> <string>) -> position
+
+    Returns a string-position after <index> characters in <string>, or
+    iteratively applies string-forward <index> times to the starting
+    position in <string>. This operation may run in time proportional
+    to the value of the index. It is an error if <index> exceeds the
+    number of characters in <string>.
+
+        (define (index->string-position index string)
+          (do ((index index (- index 1))
+               (position (string-start-position string)
+                       (string-forward position string)))
+              ((zero? index)
+               position)))
+
+      (string-position-difference <position-a> <position-b> <string>)
+          -> integer difference
+
+    Returns the number of characters after <position-b> and before
+    <position-a>. If <position-a> precedes <position-b> in <string>,
+    this is the additive inverse of the number of characters after
+    <position-a> and before <position-b>, i.e. (-
+    (string-position-difference <position-b> <position-a> <string>)).
+
+    This is provided separately so that implementations may provide a
+    more efficient implementation than counting up with
+    string-forward.
+
+The following procedures provide a portable interface to searching and
+functional editing. They are proposed as the (r6rs string) library,
+but could be moved to a SRFI instead.
+
+  (string-search-forward <string> <pattern>)
+      -> [match-start-position match-end-position] or [#F #F]
+  (string-search-backward <string> <pattern>)
+      -> [match-start-position match-end-position] or [#F #F]
+
+    string-search-forward searches forward through <string> for the
+    first occurrence of the pattern; string-search-backward searches
+    backward through <string> for the last occurrence of the
+    pattern. If a match is found, returns two positions identifying
+    the starting and ending positions of the match in <string>; if no
+    match is found, returns (values #f #f). If <pattern> is not a
+    string, the behavior is implementation-dependent.
+
+      (string-search-forward/ci <string> <pattern>)
+          -> [match-start-position match-end-position] or [#F #F]
+      (string-search-backward/ci <string> <pattern>)
+          -> [match-start-position match-end-position] or [#F #F]
+
+    Case-insensitive variants of the preceding two procedures.
+
+      (string-append <string> ...) -> string
+      (string-concatenate <list-of-strings>) -> string
+      (string-join <list-of-strings> <prefix> <infix> <suffix> [<empty>])
+          -> string
+
+    These return concatenations of string. string-append returns the
+    concatenation of each <string> .... string-concatenate returns the
+    concatenation of each element of <list-of-strings>. string-join
+    returns <empty>, or an empty string, if all elements of
+    <list-of-strings> are empty; or a string composed by concatenating
+    <prefix>, each of the elements of <list-of-strings> with <infix>
+    between each pair of consecutive elements, and <suffix>.
+
+      (string-replace <string> <start-position> <end-position> <replacement-string>)
+          -> string
+
+    Returns a string composed of the sequence of characters in
+    <string> before <start-position>, followed by the sequence of
+    characters in <replacement-string>, followed by the sequence of
+    characters in <string> after <end-position>. It is an error if
+    either of <start-position> and <end-position> is not a valid
+    position in <string>.
+
+      (string-insert <string> <position> <insertion-string>) -> string
+
+    Returns a string composed of the sequence of characters in
+    <string> before <position>, followed by the sequence of characters
+    in <insertion-string>, followed by the sequence of characters in
+    <string> after <position>. It is an error if <position> is not a
+    valid position in <string>.
+
+      (string-delete <string> <start-position> <end-position>) ->
+          [string deleted-string position]
+
+    Returns three values: a string composed by deleting the sequence
+    of characters in <string> between <start-position> and
+    <end-position>, as if with string-delete; the string that was
+    deleted; and a position identifying the position in the first
+    string where the second string was deleted.
+
