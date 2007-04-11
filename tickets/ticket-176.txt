@@ -87,6 +87,229 @@ not expose its procedures' arity at run time?
 The specification of call-with-values in section 9.17 has the same
 problem.
 
+****************************************************************
+
+The sixth paragraph (or thereabouts) of section 5.2 (Entry
+format) says:
+
+    Descriptions of syntax may express other restrictions on
+    the components of a form.  Typically, such a restriction is
+    formulated as a phrase of the form "x must be a ...".
+    As with implicit restrictions, such a phrase means that
+    an exception with condition type &syntax is raised if the
+    component does not meet the restriction.
+
+According to section 5.5 (Exceptional situations), this means
+an exception "must" be raised, but whether such syntactic
+restrictions are met is usually undecidable.  (It is already
+undecidable whether the macro expander will ever finish its
+expansion of the syntax.)
+
+Later in section 4.4, near the top of the left column of page
+21, we read:
+
+    A procedure that is called with an argument that it is not
+    specified to handle raises an exception with condition type
+    &assertion.  Also, if the number of arguments provided in
+    a procedure call does not match any argument count specified
+    for the called procedure, an exception with condition type
+    &assertion is raised.
+
+The first sentence does not match the magic pattern defined
+by section 5.5; is it must/should/may?  The discussion in
+section 4.4, together with the fact that the situations
+covered by that sentence are often undecidable, argue that
+the sentence is trying to say "should".  It should just say
+"should" and be done with it.
+
+According to section 5.5, the second sentence means "must",
+but the situation described in the second sentence cannot
+always be detected when calling procedures written in languages
+other than Scheme.  Again, are we to conclude that conforming
+implementations cannot permit calls to procedures written in
+other languages?
+
+****************************************************************
+
+Section 5.3 (Evaluation examples) does not match the magic
+language whose meaning is defined by section 5.5, and thus
+does not say whether examples such as
+
+    (integer->char #xD800)  ==>  &assertion exception
+
+mean the example must/should/may raise an exception, leaving
+that to be explained for each particular example.  I assume
+this was deliberate.
+
+****************************************************************
+
+The first four paragraphs of section 5.5 (Exceptional
+situations) are clear enough, but the last paragraph says:
+
+    For example, an exception with condition type &assertion
+    is raised if a procedure is passed an argument that the
+    procedure is not explicitly specified to handle, even
+    though such domain exceptions are not always mentioned
+    in this report.
+
+That means "must", but that's hard to square with section 4.4,
+which correctly notes that many of those domain exceptions are
+undecidable or impractical for implementations to detect.
+
+****************************************************************
+
+Section 9.5.6 (Binding constructs) says an exception must be
+raised if the letrec or letrec* restriction is violated.  Even
+apart from the fact that detecting those restrictions is an
+undecidable problem (as those restrictions are defined by 5.92),
+I think it is a terrible idea to require implementations to
+detect and to raise an exception in response to violations of
+those restrictions.  Doing so legitimizes situations that, in
+R5RS Scheme, are clearly an error.  Consider, for example:
+
+    (library (foolish)
+      (export raise-an-exception)
+      (define (raise-an-exception . args)
+        (letrec ((x x)) x)))
+
+According to the 5.92 draft, the library above is a perfectly
+legal way to define a procedure that raises an &assertion
+exception whenever it is called.
+
+The absurdity of allowing code such as the above is exceeded
+only by the absurdity of its rationale:  Some editors were
+unhappy that some R5RS-conformant implementations failed to
+detect violations of the letrec restriction, so they invented
+a semantics for the R5RS error situation and are proposing to
+require all implementations (1) to allow the error situation
+and (2) to give it the newly invented semantics.
+
+One could make similar arguments against many of the other
+R5RS error situations that are well on their way to being
+allowed by R6RS.
+
+****************************************************************
+
+Section 9.9 contains language that appears to be incompatible
+with the usage defined in sections 5.1 and 5.5.  Consider, for
+example, this sentence from the specification of expt:
+
+    For other cases in which the first argument is zero, an
+    exception is raised with condition type
+    &implementation-restriction or an unspecified number is
+    returned.
+
+In other words, it is an absolute requirement for those cases
+to raise an exception, but they don't have to.
+
+****************************************************************
+
+In section 9.14, two examples for string-set! say attempts to
+mutate an immutable string "should" raise an exception, but the
+corresponding example for vector-set! says "may".  The
+vector-set! example should say "should", not "may".
+
+****************************************************************
+
+I will deal with section 10 (Formal semantics) in a separate
+formal comment.  With respect to the raising of exceptions,
+I think most of the formal semantics' errors correspond to
+errors in the informal specifications.
+
+****************************************************************
+
+Library section 5.2 (Explicit-naming syntactic layer) contains
+another example of language that appears to be incompatible
+with the usage defined in sections 5.1 and 5.5:
+
+    If this condition is not met, it is either considered a
+    syntax violation or an exception with condition type
+    &assertion is raised.
+
+****************************************************************
+
+The first paragraph of library section 7.1 (Condition types)
+begins with
+
+    In exceptional situations arising from "I/O errors", the
+    procedures described in this chapter raise an exception
+    with condition type &i/o.
+
+I believe that should be "should raise".  Whether a situation
+arises from "I/O errors" is undecidable.  (I may have told
+some of you about the two-hour page fault my PowerBook 170
+completed after the power finally came back on and the external
+SCSI drive spun back up.  Where I now live, whether the power
+would have come back on is undecidable.)
+
+****************************************************************
+
+In library section 7.2.4, the specifications of eol-style and
+error-handling-mode are explicitly implementation-dependent,
+but then say:
+
+    Otherwise, an exception is raised.
+
+I think that should be "should be raised"; otherwise we have
+an absolute requirement that implementations are allowed to
+define in their own nefarious ways.
+
+****************************************************************
+
+In library section 12 (Enumerations), the specification of
+enum-set-constructor ends with:
+
+    If any value in the list is not a symbol that belongs to
+    the universe, then the unary procedure raises an exception
+    with condition type &assertion.
+
+Must/should/may?  I presume "must", but this should be explicit
+since it isn't covered by the magic phrasing defined in section
+5.5 of the main document.  (I probably missed several similar
+uses of "raises".)
+
+****************************************************************
+
+In library section 15 (eval), the specification of eval says:
+
+    If the first argument to eval is not a syntactically
+    correct expression, then eval must raise an exception
+    with condition type &syntax.
+
+Thanks to macro expansion, whether the first argument to
+eval is a syntactically correct expression is undecidable.
+The specification should say "should", not "must", else the
+language will be unimplementable.  Alternatively, the
+specification could be changed to say something like
+
+    If, during or after its macro expansion, the first argument
+    to eval is determined not to be a syntactically correct
+    expression, then eval must raise an exception with condition
+    type &syntax.
+
+I think the sentence that follows the one I quoted is okay.
+
+The second paragraph of the specification of environment says
+
+    If eval is applied to an expression that attempts to assign
+    to one of the variables of the environment, eval must raise
+    an exception with a condition type &assertion.
+
+That sounds too weak to me.  I think the intent of the editors
+was more like this:
+
+    If eval is applied to an expression that contains an
+    assignment to one of the variables of the environment,
+    then eval must raise an exception with a condition type
+    &assertion.
+
+Maybe I'm wrong.  That too is undecidable in general, although
+specific instances may be easily decided.
+
+****************************************************************
+
+Will
+
 RESPONSE:
 
 The editors will attempt to clarify most of the issues raised in the

@@ -22,7 +22,10 @@ RESPONSE:
 
 How efficient implementations based on `read' are depends on the
 implementation: Some storage manager allow allocating a vector-like
-object and shrinking it later.  Moreover, even if `get-bytes-some'
-isn't very efficient on custom ports, it may still be efficient for
-other kinds of ports.  Therefore, `get-bytevector-some' will be
-retained.
+object and shrinking it later.  Some operating systems might allow
+finding out the number of available bytes before actually requiring a
+buffer to be allocated.  Moreover, even if `get-bytes-some' isn't very
+efficient on custom ports, it may still be efficient for other kinds
+of ports.  In any case, the actual I/O overhead is likely to be
+significantly larger than the allocation overhead for a bytevector.
+Therefore, `get-bytevector-some' will be retained.
