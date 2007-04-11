@@ -18,67 +18,15 @@ value" in favor of simply returning zero values.
 RESPONSE:
 
 This formal comment was withdrawn by the author, but the editors have
-chosen to respond to make their rationale clear.
+decided to make changes to address the issues underlying the formal
+comment, and other related formal comments and discussion posts.
 
-Variations of two different and fundamentally incompatible positions on
-this issue exist, each with its own merits:
+In particular, the expressions specified in the current draft report
+to return "the unspecified value" will, in the next draft, be
+specified to return an unspecified number of unspecified values.  This
+allows implementations to follow R5RS and return a single unspecified
+value, as well as to return zero return values and other options.
 
-Position #1: Passing the wrong number of values to a continuation is
-typically an error, one that implementations ideally detect and report.
+The next revision of the report will also eliminate "the unspecified
+value".
 
-Position #2: There is no such thing as returning the wrong number of
-values to a continuation.  In particular, continuations not created by
-begin or call-with-values should ignore all but the first value, and
-treat zero values as one unspecified value.
-
-R5.92RS allows an implementation to take either position, with certain
-constraints.  First, continuations created by begin accept any number of
-values.  Second, continuations created by call-with-values effectively
-accept a given number of values only if the consumer accepts that number
-of values.  Third, continuations created by let-values and let*-values
-effectively accept a given number of values only if their formals "match"
-in a way analogous to a call-with-values consumer.
-
-For those who take Position 1, a palatable way of looking at the first
-constraint is that continuations created by begin are treated as if
-created by an implicit call-with-values with a consumer that accepts and
-ignores any number of arguments.
-
-For those who take Position 2, a palatable way of looking at the second
-constraint is that continuations created by call-with-values accept any
-number of values, apply the consumer to those values, and let apply and
-the procedure sort out whether an argument-count mismatch has occurred.  A
-palatable way of looking at the third constraint is to view let-values and
-let*-values in terms of their expansions into call-with-values calls.
-
-The formal comment proposes to switch entirely to Position 2, but we do
-not believe sufficient support exists in the community to disallow either
-Position 1 or Position 2.  So we feel implementations should be given
-enough latitude to take either position.
-
-The formal comment actually proposes to take Position 2 an additional step
-further, requiring that all continuations ignore extra values and default
-missing values to an unspecified value.  This behavior is problematic,
-however, when rest interfaces are used by a call-with-values consumer,
-let-values, or let*-values, or when certain case-lambda interfaces are
-used by a call-with-values consumer.
-
-Therefore, we have decided to retain the R5.92RS specification allowing
-either Position 1 or Position 2 with the constraints described above.
-
-On the other hand, we agree that it is cleaner for set!, vector-set!, and
-other effect-only operators to pass zero values to their continuations. 
-This would cause backward compatibility problems, however, for programs
-that expect a single (unspecified) return value.
-
-Because we believe that the benefit may or may not outweigh the
-backward-compatibility cost, the next version of the report will allow
-implementations the freedom to determine the number of values returned by
-such operators.  That is, such operators will be allowed to pass any
-number of unspecified values (including zero or one) to their
-continuations.  Programmers will be encouraged to avoid writing code that
-depends on the number of values passed by such operators, but
-implementations will be able to support backward compatibility if desired.
-
-Along with this change, the distinguished "unspecified value" will be
-dropped as well.

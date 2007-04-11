@@ -38,3 +38,39 @@ I propose, therefore, that the protocol for calling handlers be changed:
    handlers decline to handle the exception. The default value of this
    argument is system-dependent but does not return to the caller of
    "raise". The "raise-continuably" procedure is removed from R6RS.
+
+RESPONSE:
+
+The formal comment notes that the current draft's exception system
+requires exception handlers to decline to handle an exception by
+re-raising it via a call to `raise' (or to `raise-continuable').
+Since raise itself then calls the next handler via a non-tail call,
+the usual exceptional case (which is to pass the exception to the
+outermost default handler) requires time and continuation space
+proportional to O(n), where n is the number of active handlers.
+
+The time required to get to the outermost handler would remain O(n)
+even with the proposed change.  Indeed, the exception system is not
+designed to handle very large values of n, but these seem unlikely
+given the intended typical usage of the system, and precedents in
+other languages with similar systems.  Even if n were large, the space
+required to represent the sequence of handlers would already be O(n),
+so the O(n) non-tail calls wouldn't change the asympotic space
+requirements of the program.
+
+Also, if several exception handlers decline, the actual chain of
+invocations might contain useful information, which might be worth
+preserving in a system where `raise' tail-calls the exception handler.
+
+Removing `raise-continuably' would would require us to reconsider the
+semantics of &no-infinities, &no-nans, &i/o-decoding, and
+&i/o-encoding exceptions (since the specifications of those
+exceptions/conditions rely upon continuable exceptions).
+
+Except for the space usage issue, the exception system can be used to
+implement a system like the one described, for example by using a
+special condition type to direct an outermost exception handler to
+tail-call a procedure included in the condition object.
+
+For these reasons, the formal comment is rejected.
+
