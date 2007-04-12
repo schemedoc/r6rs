@@ -41,9 +41,7 @@ Agreed.
 
 Identifier matching is clearly the right choice for literals in
 positions where non-literals can appear; such is the case for `...'
-and `_' (see formal comment 159), as well as `=>' and `else'. We will
-revise the R6RS to clarify the binding of all such identifiers used as
-literals.
+and `_' (see formal comment 159), as well as `=>' and `else'.
 
 The choice is less clear for literals that appear in positions that
 can have only literals, such as `fields' and `mutable' in a
@@ -51,9 +49,15 @@ can have only literals, such as `fields' and `mutable' in a
 renaming on import and export, and it allows hiding to prevent access
 to certain constructs. A disadvantage is that binding may introduce
 collisions when literals overlap symbolically with other bindings and
-with the literals of other forms. Given the extra advantage of
-consistency with keywords used in expression positions, the advantages
-seem to outweight the disadvantages.
+with the literals of other forms.  The deciding advantage of binding,
+though, is that it's consistent with the right choice for literals in
+expression positions.
+
+Therefore, in the next draft of R6RS, every literal will correspond to
+an identifier that is exportd by an appropriate library. Using such an
+identifier out of place (i.e., as an expression where it is not
+specifically recognized as a literal) will be treated as a syntax
+violation.
 
 Note that `and', `or', `>', etc. in an `import' clause are not bound
 by imports or definitions, since the `import' clauses themselves
