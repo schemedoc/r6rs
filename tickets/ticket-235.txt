@@ -245,3 +245,40 @@ but could be moved to a SRFI instead.
     deleted; and a position identifying the position in the first
     string where the second string was deleted.
 
+
+RESPONSE:
+
+To preserve backwards compatibility for Scheme programs
+that manipulate characters and strings in a portable way,
+the editors have taken a conservative approach by retaining
+Scheme's traditional interfaces to characters and strings
+while expanding the character type to encompass Unicode
+scalar values.  The next draft will
+
+  - encourage implementors to make string-ref and string-set!
+    run in O(1) average time, as has traditionally been expected
+
+  - move string-set! and string-fill! into a separate library,
+    as was done with set-car! and set-cdr!
+
+  - add string-for-each
+
+  - add transformations between strings and their encodings
+    as bytevectors in UTF-8, UTF-16, and UTF-32
+
+The editors agree that Scheme needs higher-level operations
+on Unicode texts.  Scheme's traditional strings may assist
+when implementing those texts, but the editors suspect it
+would be better to add texts as a new data type than to
+extend Scheme's mutable strings.  The editors also believe
+the design and specification of this new data type is an
+important and delicate task that should be given at least
+as much time and public review as was given to SRFI 75 and
+to the specifications of strings in various drafts of the
+R6RS.
+
+The editors therefore reject this formal comment for R6RS,
+but would like to encourage the submission of a SRFI along
+these lines, and hope that a new data type of Unicode texts
+could be included in some future revision of the Scheme
+reports.
