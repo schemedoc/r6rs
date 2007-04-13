@@ -85,7 +85,7 @@ implementations are free to use IEEE arithmetic to implement
 non-IEEE arithmetic, the draft R6RS can only recommend how these
 operations should operate on inexact zeroes.
 
-As I write this, the IEEE-754 and IEEE-854 standards have
+As of this writing, the IEEE-754 and IEEE-854 standards have
 expired and their (combined) replacement has not yet received
 formal approval.
 
@@ -105,37 +105,3 @@ Following IEEE-754R Draft 1.2.5, the R6RS should recommend
 
 and should refer readers to the anticipated IEEE standard for
 more details.
-
-****************************************************************
-
-From IEEE-754R Draft 1.2.5, section 8.3:
-
-When neither the inputs nor result are NaN, the sign of a
-product or quotient is the exclusive OR of the operands' signs;
-the sign of a sum, or of a difference x-y regarded as as a sum
-x+(-y), differs from at most one of the addends' signs; and the
-sign of the result of roundToIntegral and roundToIntegralExact
-(see 7.3.1) is the sign of the operand.  These rules shall apply
-even when operands or result are zero or infinite.
-
-When the sum of two operands with opposite signs (or the
-difference of two operands with like signs) is exactly zero,
-the sign of that sum (or difference) shall be + in all rounding
-direction modes except roundTowardNegative; in that mode, the
-sign of an exact zero sum (or difference) shall be -.  However,
-x+x = x-(-x) retains the same sign as x even when x is zero.
-
-....
-
-Except that squareRoot(-0) shall be -0, every valid squareRoot
-shall have a positive sign.
-
-****************************************************************
-
-From IEEE-754R Draft 1.2.5, section 7.5.1:
-
-negate(x) copies a floating-point operand x to a destination in
-the same format, reversing the sign.  0-x is not the same as -x
-or negate(x).
-
-****************************************************************
