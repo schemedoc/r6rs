@@ -1879,7 +1879,22 @@ infinite nor NaN nor an exact 0:
 
 If any of these procedures are applied to mixed non-rational real and
 non-real complex arguments, they either raise an exception with
-condition type {\cf\&implementation-restriction} or return an unspecified number.
+condition type {\cf\&implementation-restriction} or return an
+unspecified number.
+
+Implementations that distinguish $-0.0$ should adopt behavior
+consistent with the following examples:
+
+\begin{scheme}
+(+ 0.0 -0.0)  \ev 0.0
+(+ -0.0 0.0)  \ev 0.0
+(+ 0.0 0.0)   \ev 0.0
+(+ -0.0 -0.0) \ev -0.0%
+\end{scheme}
+
+\begin{rationale}
+  This behavior is consistent with the IEEE floating point standard.
+\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -1916,6 +1931,22 @@ If any of these procedures are applied to mixed non-rational real and
 non-real complex arguments, they either raise an exception with
 condition type {\cf\&implementation-restriction} or return an
 unspecified number.
+
+Implementations that distinguish $-0.0$ should adopt behavior
+consistent with the following examples:
+
+\begin{scheme}
+(- 0.0)       \ev -0.0
+(- -0.0)      \ev 0.0
+(- 0.0 -0.0)  \ev 0.0
+(- -0.0 0.0)  \ev -0.0
+(- 0.0 0.0)   \ev 0.0
+(- -0.0 -0.0) \ev 0.0%
+\end{scheme}
+
+\begin{rationale}
+  This behavior is consistent with the IEEE floating point standard.
+\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -2125,6 +2156,17 @@ argument.
 (sqrt +inf.0)               \ev  +inf.0
 (sqrt -inf.0)               \ev  +inf.0i%
 \end{scheme}
+
+Implementations that distinguish $-0.0$ should adopt behavior
+consistent with the following example:
+
+\begin{scheme}
+(sqrt -0.0)   \ev -0.0%
+\end{scheme}
+
+\begin{rationale}
+  This behavior is consistent with the IEEE floating point standard.
+\end{rationale}
 \end{entry}
 
 \begin{entry}{%
