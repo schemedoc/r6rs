@@ -23,17 +23,16 @@ boolean?          pair?
 symbol?           number?
 char?             string?
 vector?           procedure?
-unspecified?      null?%
+null?%
 \end{scheme}
 
 These predicates define the base types {\em boolean}, {\em pair}, {\em
 symbol}, {\em number}, {\em char} (or {\em character}), {\em string}, {\em
 vector}, and {\em procedure}.  Moreover, the empty list is a special
-object of its own type, as is the unspecified value.
+object of its own type.
 \mainindex{type}\schindex{boolean?}\schindex{pair?}\schindex{symbol?}
 \schindex{number?}\schindex{char?}\schindex{string?}\schindex{vector?}
-\schindex{procedure?}\index{empty list}\index{unspecified value}
-\schindex{unspecified?}\schindex{null?}
+\schindex{procedure?}\index{empty list}\schindex{null?}
 
 Note that, although there is a separate Boolean type, any Scheme value
 can be used as a Boolean value for the purpose of a conditional test;
@@ -65,8 +64,10 @@ A \hyper{definition} must have one of the following forms:\mainschindex{define}\
 
 This form is equivalent to
 \begin{scheme}
-(define \hyper{variable} (unspecified))%
+(define \hyper{variable} \hyper{unspecified})%
 \end{scheme}
+where \hyper{unspecified} is a side-effect-free expression returning
+unspecified values.
 
 \item{\tt(define (\hyper{variable} \hyper{formals}) \hyper{body})}
 
@@ -352,8 +353,7 @@ An {\cf if} expression is evaluated as follows: first,
 section~\ref{booleanvaluessection}), then \hyper{consequent} is evaluated and
 its values are returned.  Otherwise \hyper{alternate} is evaluated and its
 values are returned.  If \hyper{test} yields a false value and no
-\hyper{alternate} is specified, then the result of the expression is
-the unspecified value.
+\hyper{alternate} is specified, then the result of the expression \isunspecified.
 
 \begin{scheme}
 (if (> 3 2) 'yes 'no)           \ev  yes
@@ -376,8 +376,8 @@ the unspecified value.
 \hyper{Expression} is evaluated, and the resulting value is stored in
 the location to which \hyper{variable} is bound.  \hyper{Variable} must
 be bound either in some region\index{region} enclosing the {\cf set!}\ expression
-or at the top level of a library body.  The result of the {\cf set!} expression is
-the unspecified value.
+or at the top level of a library body.  The result of the {\cf set!}
+expression \isunspecified.
 
 \begin{scheme}
 (let ((x 2))
@@ -430,7 +430,7 @@ called on the value of the \hyper{test} and the values returned by this
 procedure are returned by the {\cf cond} expression.
 If all \hyper{test}s evaluate
 to false values, and there is no else clause, then the result of
-the conditional expression is the unspecified value; if there is an else
+the conditional expression \isunspecified; if there is an else
 clause, then its \hyper{expression}s are evaluated, and the values of
 the last one are returned.
 
@@ -481,7 +481,7 @@ comparison process continues.  If the result of
 evaluating \hyper{key} is different from every datum in each set, then if
 there is an else clause its expressions are evaluated and the
 results of the last are the results of the {\cf case} expression;
-otherwise the result of the {\cf case} expression is the unspecified value.
+otherwise the result of the {\cf case} expression \isunspecified.
 
 \begin{scheme}
 (case (* 2 3)
@@ -1017,8 +1017,7 @@ The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
 character according to the {\cf char=?} procedure
 (section~\ref{charactersection}).
 
-\item Both \vari{obj} and \varii{obj} are the empty list, or the unspecified value,
-respectively.
+\item Both \vari{obj} and \varii{obj} are the empty list.
 
 \item \vari{Obj} and \varii{obj} are mutable objects such as pairs,
   vectors, strings, mutable records (library
@@ -1066,8 +1065,7 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 \item \vari{Obj} and \varii{obj} are characters for which the {\cf char=?}
   procedure returns \schfalse{}.
 
-\item One of \vari{obj} and \varii{obj} is the empty list, 
-  or the unspecified value, but the other is not.
+\item One of \vari{obj} and \varii{obj} is the empty list, but the other is not.
 
 \item \vari{Obj} and \varii{obj} are mutable objects such as pairs,
   vectors, strings, mutable records (library
@@ -1094,7 +1092,6 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 (eqv? 'a 'b)                     \ev  \schfalse
 (eqv? 2 2)                       \ev  \schtrue
 (eqv? '() '())                   \ev  \schtrue
-(eqv? (unspecified) (unspecified)) \lev  \schtrue
 (eqv? 100000000 100000000)       \ev  \schtrue
 (eqv? (cons 1 2) (cons 1 2))     \ev  \schfalse
 (eqv? (lambda () 1)
@@ -1196,7 +1193,7 @@ capable of discerning distinctions finer than those detectable by
 
 The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the same
 behavior on symbols, Booleans, the empty list, 
-the unspecified value, pairs, procedures,
+pairs, procedures,
 and non-empty
 strings and vectors.  The behavior of {\cf eq?} on numbers and characters is
 implementation-dependent, but it always returns either true or
@@ -1211,7 +1208,6 @@ vectors and empty strings.
 (eq? "a" "a")                   \ev  \unspecified
 (eq? "" "")                     \ev  \unspecified
 (eq? '() '())                   \ev  \schtrue
-(eq? (unspecified) (unspecified)) \lev  \schtrue
 (eq? 2 2)                       \ev  \unspecified
 (eq? \#\backwhack{}A \#\backwhack{}A) \ev  \unspecified
 (eq? car car)                   \ev  \schtrue
@@ -1294,28 +1290,6 @@ Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
                             \ev  \schfalse%
 \end{scheme}
 
-\end{entry}
-
-\section{Unspecified value}
-\label{unspecifiedvalue}
-
-\begin{entry}{%
-\proto{unspecified}{}{procedure}}
-
-Returns the unspecified value.\index{unspecified value} (See section
-\ref{disjointness}.)
-\end{entry}
-
-\begin{note}
-  The unspecified value is not a datum value, and thus has no external
-  representation.
-\end{note}
-
-\begin{entry}{%
-\proto{unspecified?}{ obj}{procedure}}
-
-Returns \schtrue{} if \var{obj} is the unspecified value, otherwise
-returns \schfalse.
 \end{entry}
 
 \section{Generic arithmetic}
@@ -2738,8 +2712,7 @@ element-wise to the elements of the
 last.
 \var{Proc} is always called in same dynamic environment 
 as {\cf for-each} itself.
-The return values of {\cf for-each} are 
-unspecified.
+The return values of {\cf for-each} \areunspecified.
 
 \begin{scheme}
 (let ((v (make-vector 5)))
@@ -2758,8 +2731,8 @@ have the same length.  The implementation must check the restrictions
 on \var{proc} to the extent performed by applying it as described.
 
 \begin{rationale}
-  The return values are unspecified to allow implementations of {\cf
-    for-each} to tail-call \var{proc} on the last elements.
+  Implementations of {\cf for-each} may or may not tail-call
+  \var{proc} on the last elements.
 \end{rationale}
 
 \end{entry}
@@ -2998,7 +2971,7 @@ The {\cf string-ref} procedure returns character \vr{k} of \var{string} using ze
 \vr{k} must be a valid index of \var{string}%, and \var{char} must be a character
 .}
 The {\cf string-set!} procedure stores \var{char} in element \vr{k} of \var{string}
-and returns the unspecified value.  % <!>
+and returns \unspecifiedreturn.  % <!>
 
 Passing an immutable string to {\cf string-set!} should cause an exception
 with condition type {\cf\&assertion} to be raised.
@@ -3097,8 +3070,7 @@ Returns a newly allocated copy of the given \var{string}.
 \begin{entry}{%
 \proto{string-fill!}{ string char}{procedure}}
 
-Stores \var{char} in every element of the given \var{string} and returns the
-unspecified value.  % <!>
+Stores \var{char} in every element of the given \var{string} and returns \unspecifiedreturn.  % <!>
 
 \end{entry}
 
@@ -3181,7 +3153,7 @@ The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 
 \domain{\var{K} must be a valid index of \var{vector}.}
 The {\cf vector-set!} procedure stores \var{obj} in element \vr{k} of \var{vector}.
-The value returned by {\cf vector-set!}\ is the unspecified value.  % <!>
+The value returned by {\cf vector-set!} \isunspecified.  % <!>
 
 Passing an immutable vector to {\cf vector-set!} should cause an exception
 with condition type {\cf\&assertion} to be raised.
@@ -3255,8 +3227,7 @@ element-wise to the elements of the
 last.
 \var{Proc} is always called in same dynamic environment 
 as {\cf vector-for-each} itself.
-The return values of {\cf vector-for-each} are 
-unspecified.
+The return values of {\cf vector-for-each} \areunspecified.
 
 Analogous to {\cf for-each}.
 \end{entry}
@@ -3709,8 +3680,7 @@ expressions are evaluated in some unspecified order, the
 \vest If \hyper{test} evaluates to a true value, then the
 \hyper{expression}s are evaluated from left to right and the values of
 the last \hyper{expression} are returned.  If no \hyper{expression}s
-are present, then the value of the {\cf do} expression is the
-unspecified value.
+are present, then the value of the {\cf do} expression \isunspecified.
 
 \vest The region\index{region} of the binding of a \hyper{variable}
 consists of the entire {\cf do} expression except for the \hyper{init}s.
@@ -3747,7 +3717,7 @@ of {\cf do} uses a trick to expand the variable clauses.
          (lambda (var ...)
            (if test
                (begin
-                 (unspecified)
+                 \schfalse ; avoid empty begin
                  expr ...)
                (begin
                  command

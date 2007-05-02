@@ -57,8 +57,9 @@ a simple translation into a library body:
 Each \hyper{expression} that appears before a
 definition in
 the top-level body is converted into a dummy definition 
-{\cf (define \hyper{variable} (begin \hyper{expression} (unspecified)))},
-where \hyper{variable} is a fresh identifier.
+{\cf (define \hyper{variable} (begin \hyper{expression} \hyper{unspecified}))},
+where \hyper{variable} is a fresh identifier and \hyper{unspecified}
+is a side-effect-free expression returning \unspecifiedreturn.
 (It is generally impossible to determine which forms are 
 definitions and expressions without concurrently expanding the body, so
 the actual translation is somewhat more complicated; see

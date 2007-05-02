@@ -231,17 +231,14 @@ means that the evaluation of the expression {\cf (integer->char
 
 \section{Unspecified behavior}
 
-\vest If the value of an expression is said to be ``unspecified'',
+\vest If the value of an expression is said to be ``unspecified'' or
+an expression is said to ``return unspecified values'',
 then the expression must evaluate without raising an exception, but
 the values returned depend on the implementation; this report
-explicitly does not say what values should be returned.
-\mainindex{unspecified behavior}
-
-Some expressions are specified to return \emph{the} unspecified value,
-which is a special value returned by the \texttt{unspecified}
-procedure.  (See section~\ref{unspecifiedvalue}.)  In this case, the
-return value is meaningless, and programmers are discouraged from
-relying on its specific nature.
+explicitly does not say how many or what values should be returned.
+Programmers should not rely on a specific number of return values or
+the specific values themselves.
+\mainindex{unspecified behavior}\mainindex{unspecified values}
 
 \section{Exceptional situations}
 
@@ -274,8 +271,8 @@ By convention, the names of procedures that store values into previously
 allocated locations (see section~\ref{storagemodel}) usually end in
 ``\ide{!}''.
 Such procedures are called mutation procedures.
-By convention, the value returned by a mutation procedure is
-\unspecifiedreturn{} (see section~\ref{unspecifiedvalue}),
+By convention, a mutation procedure returns
+\unspecifiedreturn,
 but this convention is not always followed.
 
 By convention, ``\ide{->}'' appears within the names of procedures that
