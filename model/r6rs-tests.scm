@@ -50,6 +50,7 @@
   
   (define p*-pattern (test-match lang p*))
   (define a*-pattern (test-match lang a*))
+  (define r*-pattern (test-match lang r*))
   (define verified-terms 0)
   (define ((verify-p* orig) sexp)
     (let ([m (p*-pattern sexp)])
@@ -66,7 +67,16 @@
   (define ((verify-a* orig-sexp) sexp)
     (unless (a*-pattern sexp)
       (newline) 
-      (error 'verify-a* "didn't match ~s\noriginal term ~s" sexp orig-sexp)))
+      (error 'verify-a* "didn't match ~s\noriginal term ~s" sexp orig-sexp))
+    
+    ;; verify that observable is defined for this value
+    (let ([candidate-r* (term-let ((sexp sexp))
+                          (term (observable sexp)))])
+    (unless (r*-pattern candidate-r*)
+      (error 'verify-a* "observable of ~s is ~s, but isn't an r*\noriginal term ~s"
+             sexp
+             candidate-r*
+             orig-sexp))))
   
   (define (remove-duplicates lst)
     (let ([ht (make-hash-table 'equal)])
@@ -153,11 +163,11 @@
      (make-r6test/e '((lambda (x y) x) (lambda (x) x))
                     "arity mismatch")
      
-     (make-r6test/v '(if #t 12) 12)
-     (make-r6test/v '(if #f 12) '(unspecified))
-     (make-r6test/v '(begin (if #f 12) 14) 14)
-     (make-r6test/v '((lambda (x) (if #t (set! x 45)) x) 1) 45)
-     (make-r6test/v '((lambda (x) (if #f (set! x 45)) x) 1) 1)
+     (make-r6test/v '(if #t 12 13) 12)
+     (make-r6test/v '(if #f 12 (unspecified)) '(unspecified))
+     (make-r6test/v '(begin (if #f 12 14) 14) 14)
+     (make-r6test/v '((lambda (x) (if #t (set! x 45) 'x) x) 1) 45)
+     (make-r6test/v '((lambda (x) (if #f (set! x 45) 'z) x) 1) 1)
      
      ;; begin0 tests
      (make-r6test/v '(begin0 (+ 1 1))
@@ -218,7 +228,9 @@
      (make-r6test/v ''null ''null)
      (make-r6test/v '(null? 'null) #f)
      (make-r6test/v ''unspecified ''unspecified)
-     (make-r6test/v '((lambda (x) (eqv? 'x 1)) 1) #f)))
+     (make-r6test/v '((lambda (x) (eqv? 'x 1)) 1) #f)
+     (make-r6test/v ''(dot 1) 1)
+     (make-r6test/v ''(dot x) ''x)))
      
   (define eqv-tests
     (list
@@ -876,7 +888,7 @@
                       (lambda () (values (+ 1 2) 2)))
                     3)
      
-     (make-r6test/v '((if #t call-with-values) (lambda () (+ 1 1)) (lambda (x) x))
+     (make-r6test/v '((if #t call-with-values +) (lambda () (+ 1 1)) (lambda (x) x))
                     2)
      
      (make-r6test/v '(call-with-values (lambda () (values (+ 1 2) (+ 2 3))) +) 8)
@@ -920,7 +932,8 @@
                          (begin
                            (set! first-time? #f)
                            (set! count (+ count 1))
-                           (k values))))
+                           (k values))
+                         1234))
                    #t
                    (call/cc values))
                   count)
@@ -1421,12 +1434,13 @@ of digits with deconv-base
                (set! x 2)
                (set! y 2)
                (if (procedure? k)
-                   (k 1))))
+                   (k 1)
+                   1234)))
       (list '(store ((x 2)
                      (k 1)
                      (y 2)) 
                     
-                    ((values (unspecified))))))
+                    ((values 1234)))))
      
      (make-r6test ; "top-level call/cc D->E" 
       '(store () 
@@ -1452,10 +1466,11 @@ of digits with deconv-base
                    ((lambda (y)
                       (set! x 3)
                       (y 17))
-                    x))))
+                    x)
+                   1234)))
       (list '(store ((x 3)
                      (y 34))
-                    ((values (unspecified))))))
+                    ((values 1234)))))
      
      (make-r6test ; "top-level call/cc E->D" 
       '(store () 
@@ -1568,7 +1583,8 @@ of digits with deconv-base
                      (set! count 1)
                      (k (lambda (x) (call/cc (lambda (k2)
                                                (begin (set! k k2)
-                                                      (lambda (x) x))))))))
+                                                      (lambda (x) x)))))))
+                   1234)
                (if (eqv? count 1)
                    (begin
                      (set! count 2)
@@ -1612,7 +1628,9 @@ of digits with deconv-base
                       (with-exception-handler 
                        (lambda (x) (k 1))
                        (lambda () (+ y 1))))))
-         (if first-time? (begin (set! first-time? #f) (x values)))
+         (if first-time? 
+             (begin (set! first-time? #f) (x values))
+             1234)
          (set! x (quote x))
          y))
       (list '(store ((first-time? #f) (x 'x) (y 2)) ((values 2)))))
@@ -1921,7 +1939,8 @@ of digits with deconv-base
                                       (if (eqv? phase 1)
                                           (begin
                                             (set! phase 2)
-                                            (k 1)))))
+                                            (k 1))
+                                          1234)))
                       (lambda ()
                         (dynamic-wind 
                          (lambda () (set! l (cons 1 l)))
@@ -1989,11 +2008,11 @@ of digits with deconv-base
   ;;
   
   (define the-sets 
-    (list (list "app" app-tests)
+    (list (list "quote" quote-tests)
+          (list "app" app-tests)
           (list "arith" arithmetic-tests)
           (list "basic" basic-form-tests)
           (list "pair" pair-tests)
-          (list "quote" quote-tests)
           (list "eqv" eqv-tests)
           (list "err" err-tests)
           (list "tl" tl-tests)

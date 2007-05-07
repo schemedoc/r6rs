@@ -3,7 +3,8 @@
   (require (planet "gui.ss" ("robby" "redex.plt" 3))
            (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
            "r6rs.scm")
-  (provide show show-expression)
+  (provide trace trace-expression
+           step step-expression)
 
   
   
@@ -17,7 +18,7 @@
   ;; show : sexp -> void
   ;; shows the reduction sequence for its argument; any terms
   ;; that don't match the script p (p*) non-terminal are turned pink
-  (define (show x)
+  (define (trace x)
     (traces/pred lang 
                  reductions
                  (list x) 
@@ -26,8 +27,10 @@
                      (and m
                           (= 1 (length m)))))))
   (define tm (test-match lang p*))
+  (define (trace-expression x) (trace `(store () (,x))))
 
-  (define (show-expression x) (show `(store () (,x))))
+  (define (step x) (stepper lang reductions x))
+  (define (step-expression x) (step `(store () (,x))))
 
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,6 +48,14 @@
   #;
   (show-expression '((lambda (x) ((call/cc call/cc) x)) (call/cc call/cc)))
 
+  (stepper
+   lang 
+   reductions
+   '(store () 
+           (((call/cc call/cc) 
+             (call/cc call/cc)))))
+          
+  
   ;; demonstrates sharing
   #;
   (show-expression
@@ -55,6 +66,8 @@
         c c))
      (cons 1 2)))
 
+  #;
+  (step '(store () ((eval '((lambda (dot x) (car x) 1))))))
   
   )
 

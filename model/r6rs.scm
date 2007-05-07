@@ -24,17 +24,20 @@ immutability: would somehow have to have Qtoc function produce a store, either w
            Multiple--values--and--call-with-values
            Quote
            Top--level--and--Variables
-           Underspecification)
+           Underspecification
+           observable)
 
   (define lang
     (language
      (p* (store (sf ...) (ds ...)) (uncaught-exception v) (unknown string))
      (a* (store (sf ...) ((values v ...))) (uncaught-exception v) (unknown string))
+     (r* (values r*v ...) exception unknown)
+     (r*v  unspecified pair null 'sym sqv condition procedure)
      (sf (x v) (pp (cons v v)))
      (ds (define x es) (beginF ds ...) es)
      
      (es 'snv (begin es es ...) (begin0 es es ...) (es es ...)
-         (if es es es) (if es es) (set! x es) x
+         (if es es es) (set! x es) x
          nonproc pproc
          (dw x es es es) (throw x (d d ...))
          (handlers es ... es)
@@ -51,7 +54,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (p (store (sf ...) (d ...)))
      (d (define x e) (beginF d ...) e)
      (e (begin e e ...) (begin0 e e ...)
-        (e e ...) (if e e e) (if e e)
+        (e e ...) (if e e e)
         (set! x e) (handlers e ... e)
         x nonproc proc (dw x e e e))
      (v (unspecified) nonproc proc)
@@ -109,7 +112,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (E* (hole multi) E)
      (Eo (hole single) E)
      
-     (F hole (v ... Fo v ...) (if Fo e e) (if Fo e) (set! x Fo) 
+     (F hole (v ... Fo v ...) (if Fo e e) (set! x Fo) 
         (begin F* e e ...) (begin0 F* e e ...) (begin0 (values v ...) F* e ...)
         (call-with-values (lambda () F* e ...) v))
      (F* (hole multi) F)
@@ -125,7 +128,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (SD S (define x S) (beginF d ... SD ds ...))
      (S hole (begin e e ... S es ...) (begin S es ...)
         (begin0 e e ... S es ...) (begin0 S es ...)
-        (e ... S es ...) (if e e S) (if e S es) (if S es es) (if e S) (if S es)
+        (e ... S es ...) (if S es es) (if e S es) (if e e S)
         (set! x S) (handlers s ... S es ... es) (handlers s ... S)
         (throw x (e e ...)) (lambda (x ...) S es ...) (lambda (x ...) e e ... S es ...)
         (lambda (x ... dot x) S es ...) (lambda (x ... dot x) e e ... S es ...))))
@@ -139,14 +142,6 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (in-hole P_1 (if #f e_1 e_2))
           (in-hole P_1 e_2)
           "6if3f")
-     
-     (--> (in-hole P_1 (if v_1 e_1))
-          (in-hole P_1 e_1)
-          "6if2t"
-          (side-condition (not (eq? (term v_1) #f))))
-     (--> (in-hole P_1 (if #f e_1))
-          (in-hole P_1 (unspecified))
-          "6if2f")
      
      ;; begin
      (--> (in-hole P_1 (begin (values v ...) e_1 e_2 ...))
@@ -236,15 +231,15 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (in-hole P_1 (eqv? v_1 v_1))
           (in-hole P_1 #t)
           "6eqt"
-          (side-condition (not (uproc? (term v_1))))
+          (side-condition (not (proc? (term v_1))))
           (side-condition (not (condition? (term v_1)))))
      
      
      (--> (in-hole P_1 (eqv? v_1 v_2))
           (in-hole P_1 #f)
           "6eqf"
-          (side-condition (not (uproc? (term v_1))))
-          (side-condition (not (uproc? (term v_2))))
+          (side-condition (not (proc? (term v_1))))
+          (side-condition (not (proc? (term v_2))))
           (side-condition (not (condition? (term v_1))))
           (side-condition (not (condition? (term v_2))))
           (side-condition (not (equal? (term v_1) (term v_2)))))))
@@ -439,9 +434,6 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      ,(or (term (Var-set!d? (x_1 e_1)))
           (term (Var-set!d? (x_1 e_2)))
           (term (Var-set!d? (x_1 e_3))))]
-    [(x_1 (if e_1 e_2))
-     ,(or (term (Var-set!d? (x_1 e_1)))
-          (term (Var-set!d? (x_1 e_2))))]
     [(x_1 (set! x_1 e)) #t]
     [(side-condition (x_1 (set! x_2 e_1))
                      (not (eq? (term x_1) (term x_2))))
@@ -680,7 +672,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
   (define Underspecification
     (reduction-relation
      lang
-     (--> (in-hole P (eqv? uproc uproc))
+     (--> (in-hole P (eqv? proc proc))
           (unknown "equivalence of procedures")
           "6ueqv")
      (--> (in-hole P (eqv? v_1 v_2))
@@ -716,8 +708,10 @@ immutability: would somehow have to have Qtoc function produce a store, either w
     [() null]
     [(s_1 s_2 ...) (cons (Qtoc s_1) (Qtoc (s_2 ...)))]
     [(s_1 dot sqv_1) (cons (Qtoc s_1) sqv_1)]
+    [(dot sqv_1) sqv_1]
     [(s_1 s_2 s_3 ... dot sqv_1) (cons (Qtoc s_1) (Qtoc (s_2 s_3 ... dot sqv_1)))]
     [(s_1 dot sym_1) (cons (Qtoc s_1) 'sym_1)]
+    [(dot sym_1) 'sym_1]
     [(s_1 s_2 s_3 ... dot sym_1) (cons (Qtoc s_1) (Qtoc (s_2 s_3 ... dot sym_1)))]
     [sym_1 'sym_1]
     [sqv_1 sqv_1])
@@ -838,6 +832,10 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (lambda (variable_2 ... dot variable_1) e_2 e_3 ...)]
     [(variable_1 e (lambda (variable_2 ... variable_1 variable_3 ... dot variable_4) e_2 e_3 ...))
      (lambda (variable_2 ... variable_1 variable_3 ... dot variable_4) e_2 e_3 ...)]
+    [(variable_1 variable_2 (lambda (variable_3 ... dot variable_4) e_1 e_2 ...))
+     (lambda (variable_3 ... dot variable_4) 
+       (r6rs-subst-one (variable_1 variable_2 e_1))
+       (r6rs-subst-one (variable_1 variable_2 e_2)) ...)]
     [(variable_1 e_1 (lambda (variable_2 ... dot variable_3) e_2 e_3 ...))
      ,(term-let ([(variable_new ... variable_new_dot) (variables-not-in (term e_1) (term (variable_2 ... variable_3)))])
         (term (lambda (variable_new ... dot variable_new_dot) 
@@ -850,6 +848,10 @@ immutability: would somehow have to have Qtoc function produce a store, either w
                 ...)))]
     [(variable_1 e_1 (lambda (variable_2 ... variable_1 variable_3 ...) e_2 e_3 ...))
      (lambda (variable_2 ... variable_1 variable_3 ...) e_2 e_3 ...)]
+    [(variable_1 variable_2 (lambda (variable_3 ...) e_1 e_2 ...))
+     (lambda (variable_3 ...) 
+       (r6rs-subst-one (variable_1 variable_2 e_1))
+       (r6rs-subst-one (variable_1 variable_2 e_2)) ...)]
     [(variable_1 e_1 (lambda (variable_2 ...) e_2 e_3 ...))
      ,(term-let ([(variable_new ...) (variables-not-in (term e_1) (term (variable_2 ...)))])
         (term (lambda (variable_new ...) 
@@ -867,10 +869,29 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 e_2) ... e_3))))]
     [(e_1) e_1])
   
+  (define-metafunction observable
+    lang
+    [(store (sf ...) ((values v_1 ...))) 
+     (values (observable-value v_1) ...)]
+    [(uncaught-exception v)
+     exception]
+    [(unknown string)
+     unknown])
+  
+  (define-metafunction observable-value
+    lang
+    [(unspecified) unspecified]
+    [pp_1 pair]
+    [null null]
+    ['sym_1 'sym_1]
+    [sqv_1 sqv_1]
+    [(condition string) condition]
+    [proc procedure])
+  
   (define unspec? (test-match lang (unspecified)))
   (define condition? (test-match lang (condition string)))
   (define v? (test-match lang v))
-  (define uproc? (test-match lang uproc))
+  (define proc? (test-match lang proc))
   (define null-v? (test-match lang null))
   (define lambda-null? (test-match lang (lambda () e)))
   (define lambda-one? (test-match lang (lambda (x) e)))

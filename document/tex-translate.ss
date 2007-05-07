@@ -1002,6 +1002,8 @@
           (printf (regexp-replace #rx"~a" str "\\\\#"))
           (printf "}")
           (loop v)]
+        [`(,(? (lambda (x) (memq x '(unknown error))) lab) string)
+          (printf "\\mbox{\\textbf{~a:} \\textit{description}}" lab)]
         [`(,(? (lambda (x) (memq x '(unknown error))) lab) ,s)
           (printf "\\mbox{\\textbf{~a:} ~a}" lab (quote-tex-specials s))]
         [`(,(? metafunction-name? mf) ,arg)
