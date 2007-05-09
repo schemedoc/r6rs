@@ -1005,15 +1005,11 @@ open to interpretation, but the following partial specification of
 The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
 
 \begin{itemize}
-\item \vari{Obj} and \varii{obj} are both \schtrue{} or both \schfalse.
+\item \vari{Obj} and \varii{obj} are both booleans and are the same
+  according to the {\cf boolean=?} procedure (section~\ref{boolean=?}).
 
-\item \vari{Obj} and \varii{obj} are both symbols and
-
-\begin{scheme}
-(string=? (symbol->string obj1)
-          (symbol->string obj2))
-    \ev  \schtrue%
-\end{scheme}
+\item \vari{Obj} and \varii{obj} are both symbols and are the same
+  according to the {\cf symbol=?} procedure (section~\ref{symbol=?}).
 
 \item \vari{Obj} and \varii{obj} are both exact\index{exact} numbers,
   and are numerically equal (see {\cf =}, 
@@ -1053,16 +1049,11 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 \item \vari{Obj} and \varii{obj} are of different types
 (section~\ref{disjointness}).
 
-\item One of \vari{obj} and \varii{obj} is \schtrue{} but the other is
-\schfalse{}.
+\item \vari{Obj} and \varii{obj} are booleans for which the {\cf
+    boolean=?} procedure returns \schfalse.
 
-\item \vari{Obj} and \varii{obj} are symbols but
-
-\begin{scheme}
-(string=? (symbol->string \vari{obj})
-          (symbol->string \varii{obj}))
-    \ev  \schfalse%
-\end{scheme}
+\item \vari{Obj} and \varii{obj} are symbols for which the {\cf
+    symbol=?} procedure returns \schfalse.
 
 \item One of \vari{obj} and \varii{obj} is an exact number but the other is
         an inexact number.
@@ -2385,6 +2376,13 @@ Returns \schtrue{} if \var{obj} is either \schtrue{} or
 (boolean? '())        \ev  \schfalse%
 \end{scheme}
 
+\begin{entry}{%
+\proto{boolean=?}{ \vari{bool} \varii{bool} \variii{bool}
+  \dotsfoo}{procedure}}
+
+Returns \schtrue{} if the booleans are the same.
+\end{entry}
+
 \end{entry}
 
  
@@ -2814,6 +2812,13 @@ The returned string may be immutable.
 \end{scheme}
 \end{entry}
 
+\begin{entry}{%
+\proto{symbol=?}{ \vari{symbol} \varii{symbol} \variii{symbol}
+  \dotsfoo}{procedure}}
+
+Returns \schtrue{} if the symbols are the same, i.e.\ if their names
+are spelled the same.
+\end{entry}
 
 \begin{entry}{%
 \proto{string->symbol}{ string}{procedure}}
