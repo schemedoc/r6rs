@@ -154,14 +154,9 @@ argument must be a transcoder.
 
 Every port has a single transcoder associated with it.
 
-A binary port is defined as a port whose associated transcoder
-is the \defining{binary transcoder}, which is a special
-pseudo-transcoder whose input and output directions translate
-no byte sequences to characters, and no character sequences to
-bytes.
-
-A textual port is defined as a port whose associated transcoder
-is not the binary transcoder.
+A \defining{binary port} is a port that does not have an associated
+transcoder: It does not support textual I/O.  A \defining{textual
+  port} is a port with an associated transcoder.
 
 \begin{entry}{%
 \proto{latin-1-codec}{}{procedure}
@@ -333,13 +328,11 @@ and \var{handling-mode} arguments are equal in the sense of {\cf
   eqv?}.
 \end{entry}
 
-\begin{entry}{%
-\proto{binary-transcoder}{}{procedure}}
+\begin{entry}{
+\proto{native-transcoder}{}{procedure}}
 
-Returns the binary transcoder, which is equal in the sense of
-{\cf eqv?} (but not necessarily in the sense of {\cf eq?}) to
-the result of any call to {\cf binary-transcoder}, and
-is not equal to the result of any call to {\cf make-transcoder}.
+Returns a port with an implementation-dependent transcoder that
+reprents a ``native'' transcoding of the locale.
 \end{entry}
 
 \begin{entry}{%
@@ -350,7 +343,6 @@ is not equal to the result of any call to {\cf make-transcoder}.
 These are accessors for transcoder objects; when applied to a
 transcoder returned by {\cf make-transcoder}, they return the
 \var{codec}, \var{eol-style}, \var{handling-mode} arguments.
-When applied to the binary transcoder, they return \schfalse{}.
 \end{entry}
 
 \begin{entry}{%
@@ -401,9 +393,6 @@ returns \schfalse.
 
 The operations described in this section are common to input and
 output ports, both binary and textual.
-Every port is associated with a transcoder;
-the transcoder of a binary port is the binary transcoder, and
-the transcoder of a textual port is not the binary transcoder.
 A port may also have an associated \defining{position} that
 specifies a particular place within its data sink or source as a byte
 count from the beginning of the sink or source, and may also provide
@@ -420,20 +409,19 @@ otherwise.
 \begin{entry}{%
 \proto{port-transcoder}{ port}{procedure}}
 
-Returns the transcoder associated with \var{port}.
+Returns the transcoder associated with \var{port} if \var{port} is
+textual and \schfalse{} if \var{port} is binary.
 \end{entry}
 
 \begin{entry}{%
 \proto{binary-port?}{ port}{procedure}}
 
-Returns \schtrue{} if the transcoder associated with the \var{port}
-is the binary transducer, and returns \schfalse{} otherwise.
+Returns \schtrue{} if \var{port} is binary.
 \end{entry}
 
 \begin{entry}{%
 \proto{transcoded-port}{ binary-port transcoder}{procedure}}
 
-\domain{\var{Transcoder} must not be the binary transcoder.}
 The {\cf transcoded-port} procedure
 returns a new textual port with the specified \var{transcoder}.
 Otherwise the new textual port's state is largely the same as
@@ -552,8 +540,10 @@ the end-of-file object, and returns \schfalse{} otherwise.
 \begin{entry}{%
 \proto{open-file-input-port}{ filename}{procedure}
 \rproto{open-file-input-port}{ filename file-options}{procedure}
-\rproto{open-file-input-port}{ filename file-options transcoder}{procedure}}
+\rproto{open-file-input-port}{ filename file-options maybe-transcoder}{procedure}}
    
+\domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
+
 Returns an input port for the named file. The \var{file-options} and
 \var{transcoder} arguments are optional.
 
@@ -563,15 +553,13 @@ defaults to {\cf (file-options)}.
 
 If \var{transcoder} is specified, it becomes the transcoder associated
 with the returned port.
-If no \var{transcoder} is specified, then an implementation-dependent
-(and possibly locale-dependent) transcoder is associated with the port.
 
-If the binary transcoder is passed as an explicit argument,
-then the port will be a binary port and will support the
-{\cf port-position} and {\cf set-port-position!}  operations.
-Otherwise the port will be a textual port, and whether it supports
-the {\cf port-position} and {\cf set-port-position!} operations
-will be implementation-dependent (and possibly transcoder-dependent).
+If {\cf maybe-transcoder} is absent or \schfalse{}, then the port will be a
+binary port and will support the {\cf port-position} and {\cf
+  set-port-position!}  operations.  If {\cf maybe-transcoder} is a
+transcoder the port will be a textual port, and whether it supports
+the {\cf port-position} and {\cf set-port-position!} operations will
+be implementation-dependent (and possibly transcoder-dependent).
 
 \begin{rationale}
   The byte position of a complexly transcoded port may not be
@@ -582,15 +570,17 @@ will be implementation-dependent (and possibly transcoder-dependent).
 
 \begin{entry}{%
 \proto{open-bytevector-input-port}{ bytevector}{procedure}
-\rproto{open-bytevector-input-port}{ bytevector transcoder}{procedure}}
+\rproto{open-bytevector-input-port}{ bytevector maybe-transcoder}{procedure}}
+
+\domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
    
-Returns an input port whose bytes are drawn from the
+The {\cf open-bytevector-input-port} procedure returns an input port whose bytes are drawn from the
 \var{bytevector}.
 If \var{transcoder} is specified, it becomes the transcoder associated
 with the returned port.
 
-If no \var{transcoder} argument is given, or
-if the binary transcoder is passed as an explicit argument,
+If no \var{maybe-transcoder} argument is given, or
+if \schfalse{} is passed as an explicit argument,
 then the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
@@ -606,8 +596,7 @@ port is unspecified.
 \proto{open-string-input-port}{ string}{procedure}}
 
 Returns a textual input port whose characters are drawn from
-\var{string}.  The port's transcoder is implementation-dependent,
-but is not the binary transcoder.
+\var{string}.  The port has an associated transcoder, which is implementation-dependent.
 Whether the port supports
 the {\cf port-position} and {\cf set-port-position!} operations
 is implementation-dependent.
@@ -932,9 +921,11 @@ Returns the symbol that represents the buffer-mode of
 \pproto{(open-file-output-port \var{filename}}{procedure}{\tt\obeyspaces%
 \hspace*{2em}\var{file-options} \var{buffer-mode})}\\
 \pproto{(open-file-output-port \var{filename}}{procedure}{\tt\obeyspaces%
-\hspace*{2em}\var{file-options} \var{buffer-mode} \var{transcoder})}}
+\hspace*{2em}\var{file-options} \var{buffer-mode} \var{maybe-transcoder})}}
 
-Returns an output port for the named file.
+\domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
+
+The {\cf open-file-output-port} procedure returns an output port for the named file.
 
 The \var{file-options} argument, which may determine
 various aspects of the returned port (see section~\ref{fileoptionssection}),
@@ -944,12 +935,10 @@ The \var{buffer-mode} argument, if supplied,
 must be one of the symbols that name a buffer mode.
 The \var{buffer-mode} argument defaults to {\cf block}.
 
-If \var{transcoder} is specified, it becomes the transcoder associated
-with the returned port.
-If no \var{transcoder} is specified, then an implementation-dependent
-(and possibly locale-dependent) transcoder is associated with the port.
+If \var{maybe-transcoder} is a transcoder, it becomes the transcoder
+associated with the port.
 
-If the binary transcoder is passed as an explicit argument,
+If \var{maybe-transcoder} is \schfalse{} or absent,
 then the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
@@ -965,16 +954,19 @@ will be implementation-dependent (and possibly transcoder-dependent).
 
 \begin{entry}{%
 \proto{open-bytevector-output-port}{}{procedure}
-\rproto{open-bytevector-output-port}{ transcoder}{procedure}}
+\rproto{open-bytevector-output-port}{ maybe-transcoder}{procedure}}
 
-Returns two values: an output port and a procedure.
+\domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
+
+The {\cf open-bytevector-output-port} procedure returns 
+two values: an output port and a procedure.
 The output port accumulates the data written to it for
 later extraction by the procedure.
 
-If \var{transcoder} is specified, it becomes
+If \var{maybe-transcoder} is a transcoder, it becomes
 the transcoder associated with the port.
-If no \var{transcoder} argument is given, or
-if the binary transcoder is passed as an explicit argument,
+If no \var{maybe-transcoder} argument is given, or
+if it is \schfalse,
 then the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
@@ -987,14 +979,16 @@ port's accumulated data and removes the accumulated data from the port.
 
 \begin{entry}{%
 \proto{call-with-bytevector-output-port}{ proc}{procedure}
-\rproto{call-with-bytevector-output-port}{ proc transcoder}{procedure}}
+\rproto{call-with-bytevector-output-port}{ proc maybe-transcoder}{procedure}}
 
-\domain{\var{Proc} must be a procedure accepting one argument.}
-Creates an output port that accumulates the data
-written to it and calls \var{proc} with that output port as an
-argument. Whenever \var{proc} returns, a bytevector consisting of the
-port's accumulated data is returned and the accumulated data is
-removed from the port.
+\domain{\var{Proc} must be a procedure accepting one argument.
+  \var{Maybe-transcoder} must either be a transcoder or \schfalse.}
+
+The {\cf call-with-bytevector-output-port} procedure creates an output
+port that accumulates the data written to it and calls \var{proc} with
+that output port as an argument. Whenever \var{proc} returns, a
+bytevector consisting of the port's accumulated data is returned and
+the accumulated data is removed from the port.
 
 The transcoder associated with the output port is determined
 as for a call to {\cf open-bytevector-output-port}.
@@ -1007,8 +1001,7 @@ Returns two values: a textual output port and a procedure.
 The output port accumulates the characters written to it for
 later extraction by the procedure.
 
-The port's transcoder is implementation-dependent,
-but is not the binary transcoder.
+The port has an associated transcoder, which is implementation-dependent.
 Whether the port supports
 the {\cf port-position} and {\cf set-port-position!} operations
 is implementation-dependent.
@@ -1027,8 +1020,7 @@ as an argument. Whenever \var{proc} returns, a string consisting of the
 port's accumulated characters is returned and the accumulated characters are
 removed from the port.
 
-The transcoder associated with the textual output port is
-implementation-dependent, but is not the binary transcoder.
+The port has an associated transcoder, which is implementation-dependent.
 Whether the port supports
 the {\cf port-position} and {\cf set-port-position!} operations
 is implementation-dependent.
