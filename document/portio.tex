@@ -611,17 +611,24 @@ has been called, the effect on the returned port is unspecified.
 \begin{entry}{%
 \proto{standard-input-port}{}{procedure}}
    
-Returns an input port connected to standard input, possibly a fresh
-one on each call.
+Returns a fresh binary input port connected to standard input.
 Whether the port is binary or textual is implementation-dependent,
 as is whether the port supports
 the {\cf port-position} and {\cf set-port-position!} operations.
 
-\begin{note}
-  Implementations are encouraged to return a textual port when
-  appropriate, and
-  to associate an appropriate transcoder with the port.
-\end{note}
+\begin{rationale}
+  The port is fresh so it can be safely closed or converted to a
+  textual port without risiking the usability of an existing port.
+\end{rationale}
+\end{entry}
+
+\begin{entry}{%
+\proto{current-input-port}{}{procedure}}
+ 
+This returns a default port for input.  Normally, this default port
+is associated with standard input, but can be dynamically re-assigned
+using the {\cf with-input-from-file} procedure from the \library{r6rs
+  i/o simple} library (see section~\ref{with-input-from-file}).
 \end{entry}
 
 \begin{entry}{%
@@ -1033,18 +1040,24 @@ is implementation-dependent.
 \proto{standard-output-port}{}{procedure}
 \proto{standard-error-port}{}{procedure}}
    
-Returns an output port connected to the standard output or standard error,
-respectively, possibly a fresh one on each call.
-Whether the port is binary or textual is implementation-dependent,
-as is whether the port supports
-the {\cf port-position} and {\cf set-port-position!} operations.
-
-\begin{note}
-  Implementations are encouraged to return a textual port when
-  appropriate, and
-  to associate an appropriate transcoder with the port.
-\end{note}
+Returns fresh an output port connected to the standard output or
+standard error, respectively.  Whether the port supports the {\cf
+  port-position} and {\cf set-port-position!} operations is
+implementation-dependent.
 \end{entry}
+
+\begin{entry}{%
+\proto{current-output-port}{}{procedure}
+\proto{current-error-port}{}{procedure}}
+ 
+These return default ports for regular output and error output.
+Normally, these default ports are associated with standard output, and
+standard error, respectively.  The return value of {\cf
+  current-output-port} can be dynamically re-assigned using the {\cf
+  with-output-to-file} procedure from the \library{r6rs i/o simple}
+library (see section~\ref{with-output-to-file}).
+\end{entry}
+
 
 \begin{entry}{%
 \pproto{(make-custom-binary-output-port \var{id}}{procedure}}
