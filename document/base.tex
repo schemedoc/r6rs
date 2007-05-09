@@ -1648,10 +1648,10 @@ true.
 \subsubsection{Generic conversions}
 
 \begin{entry}{%
-\proto{->inexact}{ z}{procedure}
-\proto{->exact}{ z}{procedure}}
+\proto{inexact}{ z}{procedure}
+\proto{exact}{ z}{procedure}}
 
-{\cf ->inexact} returns an inexact representation of \var{z}.  If
+The {\cf inexact} procedure returns an inexact representation of \var{z}.  If
 inexact numbers of the appropriate type have bounded precision, then
 the value returned is an inexact number that is nearest to the
 argument.  If an exact argument has no reasonably close inexact
@@ -1659,7 +1659,7 @@ equivalent, an exception with condition type
 {\cf\&implementation-violation} may be
 raised.
 
-{\cf ->exact} returns an exact representation of \var{z}.  The value
+The {\cf exact} procedure returns an exact representation of \var{z}.  The value
 returned is the exact number that is numerically closest to the
 argument; in most cases, the result of this procedure should be
 numerically equal to its argument.  If an inexact argument has no
@@ -1671,7 +1671,7 @@ These procedures implement the natural one-to-one correspondence
 between exact and inexact integers throughout an
 implementation-dependent range.
 
-{\cf ->inexact} and {\cf ->exact} are idempotent.
+The {\cf inexact} and {\cf exact} procedures are idempotent.
 \end{entry}
 
 \begin{entry}{%
@@ -2015,7 +2015,7 @@ mode specified by the IEEE floating point standard.
 \begin{note}
 If the argument to one of these procedures is inexact, then the result
 is also inexact.  If an exact value is needed, the
-result should be passed to the {\cf ->exact} procedure.
+result should be passed to the {\cf exact} procedure.
 \end{note}
 
 Although infinities and NaNs are not integers, these procedures return
@@ -2059,7 +2059,7 @@ all.
 
 \begin{scheme}
 (rationalize
-  (->exact .3) 1/10)                   \ev 1/3    ; exact
+  (exact .3) 1/10)                   \ev 1/3    ; exact
 (rationalize .3 1/10)                  \ev \sharpsign{}i1/3  ; inexact
 
 (rationalize +inf.0 3)                 \ev  +inf.0
@@ -3143,7 +3143,7 @@ The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 (vector-ref '\#(1 1 2 3 5 8 13 21)
             5)  \lev  8
 (vector-ref '\#(1 1 2 3 5 8 13 21)
-            (->exact (round (* 2 (acos -1))))) \lev 13%
+            (exact (round (* 2 (acos -1))))) \lev 13%
 \end{scheme}
 \end{entry}
 
