@@ -2981,33 +2981,6 @@ Returns the number of characters in the given \var{string}.
 The {\cf string-ref} procedure returns character \vr{k} of \var{string} using zero-origin indexing.
 \end{entry}
 
-
-\begin{entry}{%
-\proto{string-set!}{ string k char}{procedure}}
-
-\domain{%\var{string} must be a string, 
-\vr{k} must be a valid index of \var{string}%, and \var{char} must be a character
-.}
-The {\cf string-set!} procedure stores \var{char} in element \vr{k} of \var{string}
-and returns \unspecifiedreturn.  % <!>
-
-Passing an immutable string to {\cf string-set!} should cause an exception
-with condition type {\cf\&assertion} to be raised.
-\begin{scheme}
-(define (f) (make-string 3 \sharpsign\backwhack{}*))
-(define (g) "***")
-(string-set! (f) 0 \sharpsign\backwhack{}?)  \ev  \theunspecified
-(string-set! (g) 0 \sharpsign\backwhack{}?)  \ev  \unspecified
-             ; \textrm{should raise \exception{\&assertion}}
-(string-set! (symbol->string 'immutable)
-             0
-             \sharpsign\backwhack{}?)  \ev  \unspecified
-             ; \textrm{should raise \exception{\&assertion}}%
-\end{scheme}
-
-\end{entry}
-
-
 \begin{entry}{%
 \proto{string=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
 
@@ -3018,7 +2991,6 @@ characters in the same positions.  Otherwise, returns \schfalse.
 (string=? "Stra\ss{}e" "Strasse") \ev \schfalse%
 \end{scheme}
 \end{entry}
-
 
 \begin{entry}{%
 \proto{string<?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}
