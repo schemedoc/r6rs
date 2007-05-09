@@ -3312,6 +3312,24 @@ condition type {\cf \&assertion}.
 \end{rationale}
 \end{entry}
 
+\begin{entry}{%
+\proto{assert}{ \hyper{expression}}{\exprtype}}
+
+An {\cf assert} form is evaluated by evaluating \hyper{expression}.
+If \hyper{expression} returns a true value, that value is returned
+from the {\cf assert} expression.  If \hyper{expression} returns
+\schfalse, an exception with condition types {\cf \&assertion} and
+{\cf \&message} is raised.  The message provided in the condition
+object is implementation-dependent.
+
+\begin{rationale}
+  Implementations can (and are encouraged to) exploit the fact that
+  {\cf assert} is syntax to provide as much information as possible
+  about the location of the assertion failure in the condition object
+  of the raised exception.
+\end{rationale}
+\end{entry}
+
 \section{Control features}
 \label{controlsection}
 \label{valuessection}
