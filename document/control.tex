@@ -1,9 +1,7 @@
-\chapter{Miscellaneous libraries}
-\label{misclibchapter}
+\chapter{Control structures}
+\label{controllib}
 
-\section{{\tt when} and {\tt unless}}
-
-This section describes the \deflibrary{r6rs when-unless} library.
+This chapter describes the \deflibrary{r6rs control} library.
 
 \begin{entry}{%
 \proto{when}{ \hyper{test} \hyperi{expression} \hyperii{expression} \dotsfoo}{\exprtype}
@@ -49,9 +47,92 @@ could be defined in terms of base library forms by the following macros:
 
 \end{entry}
 
-\section{{\tt case-lambda}}
+\noindent%
+\pproto{(do ((\hyperi{variable} \hyperi{init} \hyperi{step})}{\exprtype}
+\mainschindex{do}{\tt\obeyspaces%
+     \dotsfoo)\\
+    (\hyper{test} \hyper{expression} \dotsfoo)\\
+  \hyper{expression} \dotsfoo)}
 
-This section describes the \deflibrary{r6rs case-lambda} library.
+\syntax
+The \hyper{init}s, \hyper{step}s, and \hyper{test}s must be
+expressions.  The \hyper{variable}s must be pairwise distinct variables.
+
+\semantics
+The {\cf do} expression is an iteration construct.  It specifies a set of variables to
+be bound, how they are to be initialized at the start, and how they are
+to be updated on each iteration.  When a termination condition is met,
+the loop exits after evaluating the \hyper{expression}s.
+
+A {\cf do} expression is evaluated as follows:
+The \hyper{init} expressions are evaluated (in some unspecified order),
+the \hyper{variable}s are bound to fresh locations, the results of the
+\hyper{init} expressions are stored in the bindings of the
+\hyper{variable}s, and then the iteration phase begins.
+
+\vest Each iteration begins by evaluating \hyper{test}; if the result is
+false (see report section~\ref{report:booleanvaluessection}), then the \hyper{expression}s
+are evaluated in order for effect, the \hyper{step}
+expressions are evaluated in some unspecified order, the
+\hyper{variable}s are bound to fresh locations, the results of the
+\hyper{step}s are stored in the bindings of the
+\hyper{variable}s, and the next iteration begins.
+
+\vest If \hyper{test} evaluates to a true value, then the
+\hyper{expression}s are evaluated from left to right and the values of
+the last \hyper{expression} are returned.  If no \hyper{expression}s
+are present, then the value of the {\cf do} expression \isunspecified.
+
+\vest The region\index{region} of the binding of a \hyper{variable}
+consists of the entire {\cf do} expression except for the \hyper{init}s.
+It is a syntax violation for a \hyper{variable} to appear more than once in the
+list of {\cf do} variables.
+
+\vest A \hyper{step} may be omitted, in which case the effect is the
+same as if {\cf(\hyper{variable} \hyper{init} \hyper{variable})} had
+been written instead of {\cf(\hyper{variable} \hyper{init})}.
+
+\begin{scheme}
+(do ((vec (make-vector 5))
+     (i 0 (+ i 1)))
+    ((= i 5) vec)
+  (vector-set! vec i i))          \ev  \#(0 1 2 3 4)
+
+(let ((x '(1 3 5 7 9)))
+  (do ((x x (cdr x))
+       (sum 0 (+ sum (car x))))
+      ((null? x) sum)))             \ev  25%
+\end{scheme}
+
+The following definition
+of {\cf do} uses a trick to expand the variable clauses.
+
+\begin{scheme}
+(define-syntax \ide{do}
+  (syntax-rules ()
+    ((do ((var init step ...) ...)
+         (test expr ...)
+         command ...)
+     (letrec
+       ((loop
+         (lambda (var ...)
+           (if test
+               (begin
+                 \schfalse ; avoid empty begin
+                 expr ...)
+               (begin
+                 command
+                 ...
+                 (loop (do "step" var step ...)
+                       ...))))))
+       (loop init ...)))
+    ((do "step" x)
+     x)
+    ((do "step" x y)
+     y)))%
+\end{scheme}
+
+%\end{entry}
 
 \begin{entry}{%
 \proto{case-lambda}{ \hyper{clause} \dotsfoo}{\exprtype}}
