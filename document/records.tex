@@ -603,6 +603,12 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
 All bindings created by {\cf define-record-type} (for the record type,
 the construction procedure, the predicate, the accessors, and the
 mutators) must have names that are pairwise distinct.
+
+The {\cf fields}, {\cf mutable}, {\cf immutable}, {\cf parent}, {\cf
+  protocol}, {\cf sealed}, {\cf opaque}, and {\cf nongenerative}
+identifiers are all exported by the \library{r6rs records explicit}
+library with level $0$.  Referring to one of these identifiers out of
+place is a syntax violation.
 \end{entry}
 
 \begin{entry}{%
@@ -741,6 +747,10 @@ accessor name is {\tt frob-widget} and the mutator name is
 
 Third, the syntax of \hyper{field-spec} is also extended to consist of
 just the field name.  The corresponding field is assumed to be immutable.
+
+As with the explicit-naming layer, the {\cf fields}, {\cf mutable},
+{\cf immutable}, {\cf parent}, {\cf protocol}, {\cf sealed}, {\cf
+  opaque}, and {\cf nongenerative} are exported with level $0$.
 
 Any definition that takes advantage of implicit naming can be
 rewritten trivially to a definition that conforms to the syntax of the
