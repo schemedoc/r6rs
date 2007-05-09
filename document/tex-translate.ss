@@ -28,6 +28,8 @@
     '(P var sym p* p v
         E F PG H SD))
   
+  (define otherwise-metafunctions '(pRe poSt Trim))
+  
   (define combine-metafunction-names '(pRe poSt Trim))
 
   (define (side-condition-below? x)
@@ -99,7 +101,7 @@
       (fprintf (current-error-port) "Writing file ~a ...\n" n)
       (with-output-to-file n
         (lambda () 
-          (let* ([rules (check (map reduction-translate reductions))]
+          (let* ([rules (check (map/last reduction-translate reductions))]
                  [boxes (apply append (map car rules))]
                  [reductions (apply append (map cadr rules))])
             (for-each display boxes) 
@@ -108,8 +110,15 @@
             (printf "~a\n" end)))
         'truncate)))
   
+  (define (map/last f lst)
+    (let loop ([lst lst])
+      (cond
+        [(null? lst) '()]
+        [(null? (cdr lst)) (list (f (car lst) #t))]
+        [else (cons (f (car lst) #f) (loop (cdr lst)))])))
+  
   (define (print-reductions name reductions left-right?)
-    (print-something (lambda (r) (reduction-translate r left-right?))
+    (print-something (lambda (r last-one?) (reduction-translate r left-right?))
                      name
                      reductions
                      "\\begin{displaymath}\n\\begin{array}{l@{}l@{}lr}"
@@ -157,13 +166,14 @@
   (define (metafunction-name? x) (memq x metafunction-names))
   (define (translate-mf-name name)
     (case name
-      [(Arity-zero?) "\\mathscr{A}_0"]
-      [(Arity-one?) "\\mathscr{A}_1"]
+      [(A_0) "\\mathscr{A}_{0}"]
+      [(A_1) "\\mathscr{A}_{1}"]
+      [(observable-value) "\\mathscr{O}_{v}"]
       [else
        (let ([char
               (let loop ([chars (string->list (format "~a" name))])
                 (cond
-                  [(null? chars) (car (string->list (format "~a" name)))]
+                  [(null? chars) (char-upcase (car (string->list (format "~a" name))))]
                   [else
                    (if (char-upper-case? (car chars))
                        (car chars)
@@ -186,9 +196,10 @@
          body)]))
   
   (define (print-metafunction name clauses)
-    (print-something (lambda (x) 
+    (print-something (lambda (x last-one?) 
                        (fmatch x
-                               [`(,left ,right) (p-case name left right)]
+                               [`(,left ,right) (p-case name left right 
+                                                        (and last-one? (memq name otherwise-metafunctions)))]
                                [else (error 'print-metafunction "mismatch ~s" x)]))
                      name
                      clauses
@@ -203,16 +214,18 @@
                    (if (eq? 'blank name/clauses)
                        (list 'blank)
                        (let ([name (car name/clauses)])
-                         (map (lambda (clause) (cons name clause))
-                              (cadr name/clauses)))))
+                         (map/last (lambda (clause last-one?) (list name clause last-one?))
+                                   (cadr name/clauses)))))
                  (add-between 'blank names/clauses)))])
-      (print-something (lambda (name/clause) 
+      (print-something (lambda (name/clause really-the-last-one?) 
                          (if (eq? name/clause 'blank)
                              (list '() (list "\\\\"))
-                             (let ([name (car name/clause)]
-                                   [clause (cdr name/clause)])
+                             (let ([name (list-ref name/clause 0)]
+                                   [clause (list-ref name/clause 1)]
+                                   [last-one? (list-ref name/clause 2)])
                                (fmatch clause
-                                       [`(,left ,right) (p-case name left right)]
+                                       [`(,left ,right) (p-case name left right
+                                                                (and last-one? (memq name otherwise-metafunctions)))]
                                        [else (error 'print-metafunctions "mismatch ~s" name)]))))
                        (apply string-append (map symbol->string (map car names/clauses)))
                        names/spread-out
@@ -228,7 +241,7 @@
                 [(null? next) (list fst)]
                 [else (list* fst x (loop (car next) (cdr next)))]))]))
   
-  (define (p-case name lhs rhs)
+  (define (p-case name lhs rhs show-otherwise?)
     (let*-values ([(l l-cl) (pattern->tex lhs)]
                   [(r r-cl) (pattern->tex rhs)])
       (let* ([cl (append l-cl r-cl)]
@@ -256,10 +269,13 @@
               side-conditions)]
             [else
              (format
-              "~a \\llbracket ~a \\rrbracket & = &\n~a \\\\\n"
+              "~a \\llbracket ~a \\rrbracket & = &\n~a ~a\\\\\n"
               (translate-mf-name name)
               (inline-tex lboxname l biggest-height #f)
-              (inline-tex rboxname r biggest-height #f))]))))))
+              (inline-tex rboxname r biggest-height #f)
+              (if show-otherwise?
+                  "~ ~ ~ ~ ~ ~ ~ \\mbox{\\textrm{(otherwise)}}"
+                  ""))]))))))
   
   (define TEX-NEWLINE "\\\\\n")
   ;; ============================================================
@@ -273,7 +289,7 @@
       [`(error string)           (format "\\textbf{error: } \\textit{error message}")]
       [`(unknown string)           (format "\\textbf{unknown: } \\textit{description}")]
       [`(uncaught-exception v)           (format "\\textbf{uncaught exception: } \\nt{v}")]
-      [_                         (pretty-format p)]))
+      [_                         (do-pretty-format p)]))
   
   (define (show-rewritten-nt lhs str) (display (string-append lhs " " str " " TEX-NEWLINE)))
   
@@ -429,6 +445,8 @@
     (cond
       [(= 1 biggest-height) ""]
       [else
+       (error 'setup-tex "cannot handle multiline stuff ~s"
+              (list boxname str biggest-height arrow?))
        (let ([height (count-lines str)])
          (boxstr boxname str (- biggest-height height) arrow?))]))
   
@@ -515,12 +533,12 @@
   
   (define (format-hole hole exp)
     (parameterize ([pretty-print-columns 'infinity])
-      (string-append (pretty-format hole)
+      (string-append (do-pretty-format hole)
                      "\\["
-                     (pretty-format exp)
+                     (do-pretty-format exp)
                      "\\]")))
   
-  (define (pretty-format p)
+  (define (do-pretty-format p)
     (let ((o (open-output-string)))
       (let loop ((p p))
 	(cond
@@ -545,17 +563,32 @@
 	    ((quote)
 	     (display "'" o)
 	     (loop (cadr p)))
-	    ((unquote term)
+            [(unquote)
+             (let ([unquoted (cadr p)])
+               (if (and (list? unquoted)
+                        (= 3 (length unquoted))
+                        (eq? (car unquoted) 'format))
+                   (begin
+                     (display "\\mbox{``" o)
+                     (display (regexp-replace "~a" (list-ref unquoted 1) "") o)
+                     (display "}" o)
+                     (loop (list-ref unquoted 2))
+                     (display "\\mbox{''}" o))
+                   (loop unquoted)))]
+            ((term)
 	     (loop (cadr p)))
 	    ((r6rs-subst-one)
-	     (let ((args (cadr p)))
-	       (display "\\{" o)
-	       (loop (car args))
-	       (display "\\mapsto " o)
-	       (loop (cadr args))
-	       (display "\\}" o)
-	       (loop (caddr args))
-	       (display "" o)))
+             (let* ([args (cadr p)]
+                    [var-arg (car args)]
+                    [becomes-arg (cadr args)]
+                    [exp-arg (caddr args)])
+               (display "\\{" o)
+               (loop var-arg)
+               (display "\\mapsto " o)
+               (loop becomes-arg)
+               (display "\\}" o)
+               (loop exp-arg)
+               (display "" o)))
 	    ((in-hole)
 	     (loop (cadr p))
 	     (display "[" o)
@@ -566,18 +599,26 @@
 	     (loop (cadr p))
 	     (display "\\rrbracket" o))
 	    ((Trim)
-	     (display "\\mathcal{T}\\llbracket" o)
+	     (display "\\mathscr{T}\\llbracket" o)
 	     (loop (cadr p))
 	     (display "\\rrbracket" o))
 	    ((pRe)
-	     (display "\\mathcal{R}\\llbracket" o)
+	     (display "\\mathscr{R}\\llbracket" o)
 	     (loop (cadr p))
 	     (display "\\rrbracket" o))
 	    ((poSt)
-	     (display "\\mathcal{S}\\llbracket" o)
+	     (display "\\mathscr{S}\\llbracket" o)
 	     (loop (cadr p))
 	     (display "\\rrbracket" o))
-	    (else
+            [(observable)
+             (display "\\mathscr{O}\\llbracket{}" o)
+             (loop (cadr p))
+             (display "\\rrbracket{}" o)]
+            [(observable-value)
+             (display "\\mathscr{O}_v\\llbracket{}" o)
+             (loop (cadr p))
+             (display "\\rrbracket{}" o)]
+            (else
 	     (display "(" o)
 	     (loop (car p))
 	     (for-each (lambda (el)
@@ -670,7 +711,9 @@
       [`(not (eq? (term ,t1) #f))
         (list (format "~a \\neq \\semfalse{}" (gps t1)))]
       [`(not (uproc? (term ,v)))
-        (list (format "~a \\not\\in \\nt{uproc}" (gps v)))]
+       (list (format "~a \\not\\in \\nt{uproc}" (gps v)))]
+      [`(not (proc? (term ,v)))
+       (list (format "~a \\not\\in \\nt{proc}" (gps v)))]
       [`(not (pp? (term ,v)))
         (list (format "~a \\not\\in \\nt{pp}" (gps v)))]
       [`(not (null-v? (term ,v)))
@@ -693,7 +736,7 @@
       [`(not (memq (term ,x) (term (,xs ,_))))
         (list (format "~a \\not\\in \\{ ~a \\cdots \\}" (gps x) (gps xs)))]
       [`(not (memq (term ,x) (term (,xs ,_ ,y))))
-        (list (format "~a \not\\in \\{ ~a \\cdots ~a \\}" (gps x) (gps xs) (gps y)))]
+       (list (format "~a \\not\\in \\{ ~a \\cdots ~a \\}" (gps x) (gps xs) (gps y)))]
       [`(not (memq (term ,x) (map car (term (,xs ,_)))))
         (list (format "~a \\not\\in \\dom(~a \\cdots)" (gps x) (gps xs)))]
       [`(not (defines? (term ,x) (term (,d ,'...))))
@@ -981,9 +1024,7 @@
               (begin (d "(\\sy{store} ") (loop `(,item1 ,item2 ,item3 ,item4 ,item5 ,item6 ,item7)) (d "\n  ")
                      (loop body) (d ")")))]
         [`(store ,store ,body)
-          (if lr?
-              (begin (d "(\\sy{store}~") (loop store) (d "\n  ") (loop body) (d ")"))
-              (begin (d "(\\sy{store}~") (loop store) (d "~") (loop body) (d ")")))]
+         (begin (d "(\\sy{store}~") (loop store) (d "~") (loop body) (d ")"))]
         
         [`(term ,p) (error 'pattern->tex/int "found term inside a pattern ~s, ~s" orig-pat p)]
         [`(side-condition ,p ,_) (loop p)]
@@ -1002,8 +1043,8 @@
           (printf (regexp-replace #rx"~a" str "\\\\#"))
           (printf "}")
           (loop v)]
-        [`(,(? (lambda (x) (memq x '(unknown error))) lab) string)
-          (printf "\\mbox{\\textbf{~a:} \\textit{description}}" lab)]
+        [`(unknown string)
+         (display (do-pretty-format pat))]
         [`(,(? (lambda (x) (memq x '(unknown error))) lab) ,s)
           (printf "\\mbox{\\textbf{~a:} ~a}" lab (quote-tex-specials s))]
         [`(,(? metafunction-name? mf) ,arg)
@@ -1028,7 +1069,7 @@
         ['v_car (d "v_{\\nt{car}}")]
         ['v_cdr (d "v_{\\nt{cdr}}")]
         [_ 
-	 (d (pretty-format pat))]))
+	 (d (do-pretty-format pat))]))
 
     (loop orig-pat))
 
@@ -1049,8 +1090,10 @@
     (case n
       [(p*) "\\mathcal{P}"]
       [(a*) "\\mathcal{A}"]
+      [(r*) "\\mathcal{R}"]
+      [(r*v) "\\ensuremath{\\mathcal{R}_v}"]
       [else
-       (pretty-format n)]))
+       (do-pretty-format n)]))
 
   ;; #### merge with format-symbol
   (define d-var
@@ -1072,7 +1115,12 @@
 	 (display "\\Istar")]
 	[(hole)
 	 (display "\\hole")]
-	['x_1 (display "x_1")]
+        [(exception) (display "\\sy{exception}")]
+        [(unknown) (display "\\sy{unknown}")]
+        [(procedure) (display "\\sy{procedure}")]
+        [(pair) (display "\\sy{pair}")]
+        [(r*v) (display (format-nonterm 'r*v))]
+        ['x_1 (display "x_1")]
 	['x_2 (display "x_2")]
 	['ptr_1 (display "\\nt{ptr}_i")]
 	['ptr_i+1 (display "\\nt{ptr}_{i+1}")]
