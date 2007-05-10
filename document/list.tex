@@ -346,6 +346,23 @@ applying it as described.
 
 \end{entry}
 
+\begin{entry}{%
+\proto{cons*}{ \vari{obj} \dotsfoo{} \varn{obj} \var{obj}}{procedure}
+\rproto{cons*}{ \var{obj}}{procedure}}
+
+If called with at least two arguments, {\cf cons*} returns a freshly
+allocated chain of pairs whose cars are \vari{obj}, \dotsfoo,
+\varn{obj}, and whose last cdr is \var{obj}.  If called with only one
+argument, {\cf cons*} returns that argument.
+
+\begin{scheme}
+(cons* 1 2 '(3 4 5)) \ev (1 2 3 4 5)
+(cons* 1 2 3) \ev (1 2 . 3)
+(cons* 1) \ev 1%
+\end{scheme}
+  
+\end{entry}
+
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "r6rs-lib"
