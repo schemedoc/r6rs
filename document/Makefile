@@ -76,6 +76,9 @@ r6rs.idx r6rs.aux : $(COMMON_TEX_FILES) $(REPORT_TEX_FILES)
 r6rs.dvi : r6rs.bbl r6rs.ind r6-fig-grammar-parti.tex
 	$(LATEX) r6rs
 
+r6rs.pdf: r6rs.dvi
+	dvipdf r6rs.dvi
+
 r6rs-lib.idx r6rs-lib.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
 	$(LATEX) r6rs-lib
 
