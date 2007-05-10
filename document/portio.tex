@@ -1037,8 +1037,14 @@ Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
 will be implementation-dependent (and possibly transcoder-dependent).
 
-When the procedure is called without arguments, it returns a bytevector consisting of the
-port's accumulated data and removes the accumulated data from the port.
+When the procedure is called without arguments, it returns a
+bytevector consisting of all the port's accumulated data and removes
+the accumulated data from the port.
+
+\begin{note}
+  When the returned procedure is called without arguments, the
+  returned data is independent of the port's current position.
+\end{note}
 \end{entry}
 
 \begin{entry}{%
