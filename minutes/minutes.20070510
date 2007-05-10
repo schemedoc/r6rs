@@ -1,0 +1,90 @@
+Telephone conference call May 10 2007 8:00am-10:00am
+Will, Matthew, Mike, Anton, Kent present by 8:02am
+
+0. finalize agenda (1 minute)
+
+1. action items (1 minute)
+   - update r6rs to reflect additional decisions:
+     - probably use "should" for programmer requirements that implementations
+       are not required to enforce
+     - change the specifications of char-alphabetic?, char-whitespace?, and
+       string-titlecase to conform with Unicode 5?
+       (http://lists.r6rs.org/pipermail/r6rs-discuss/2007-April/002250.html)
+     - adopt Posix semantics for set-port-position! when underlying
+       object is a file or bytevector output port, with unwritten bytes
+       having unspecified values
+     - move formal semantics to a nonnormative appendix
+     - help Mike fix "uniquely determined" wording for syntactic datums
+
+2. add port-length and port-has-port-length? procedures?
+   - and corresponding arguments to custom port makers
+        include them?
+        no: unanimously
+    should reconsider (file-options) defaults by email
+
+3. allow port positions to be "magic cookies"?
+    yes: Will, Kent, Matthew, Mike, Anton
+
+4. combine get-string and get-string-n?
+    yes: Will, Kent, Matthew, Mike, Anton
+
+5. final ticket 210 resolution
+   - http://lists.r6rs.org/pipermail/r6rs-discuss/2007-April/002256.html
+    that proposal is a little too vague;
+    we should all read it after it has been revised a bit,
+    and communicate by email
+
+6. library names
+    Mike moved we replace (r6rs ...) by (rnrs ... 6); Anton seconded.
+    yes: Matthew, Mike, Anton
+    no: 
+    abstain: Will, Kent
+
+7. eqv? coverage
+    doesn't have to be specified on transcoders
+    but should be (partially) specified on records
+
+8. bitwise-bit-count specification for negative inputs
+    shall we accept this change?
+    yes: Will, Kent, Matthew, Mike
+    abstain: Anton
+
+9. direction for Robby and Jacob on the semantics
+    sense of the committee is that we would like for them
+    to focus on the use of the semantics for specifying
+    meaning as opposed to its use as a tool for stepping
+    through example programs;
+    for example, we would appreciate an accurate semantics
+    for the library top level and other problematic issues,
+    but we do not need them a formal semantics for most
+    other features that are removed by macro expansion;
+    the complicating optimizations could be split off into
+    a separate paper that could be cited by the R6RS
+
+10. non-normative appendix document
+    how library source code is related to the filesystem (ticket 83)
+
+11. reference implementations
+
+12. (file-options) defaults
+    these apply to output files only
+    all three standard defaults should be reversed
+    Kent moved we use the following names for non-defaults
+    (Mike seconded):
+        no-create
+        no-fail
+        no-truncate
+    yes: Kent, Matthew, Mike, Anton
+    abstain: Will
+
+13. procedure going forward
+    Mike is done with most tickets; expects to finish this weekend
+    proofreading next week
+    release 5.93 to public on 22 May
+    more proofreading by public
+    public releases every two weeks or so
+    Kent will post a note to the R6RS discussion list
+
+14. adjourned at 9:49am
+
+Will
