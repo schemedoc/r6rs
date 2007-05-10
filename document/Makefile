@@ -1,7 +1,7 @@
 LATEX = latex
+# LATEX = pdflatex
 BIBTEX = bibtex
 MAKEINDEX = makeindex
-PDFLATEX = pdflatex
 SCHEME = scheme48 -a batch
 MZSCHEME = mzscheme
 
@@ -73,22 +73,39 @@ r6rs-app.ind : r6rs-app.idx
 r6rs.idx r6rs.aux : $(COMMON_TEX_FILES) $(REPORT_TEX_FILES)
 	$(LATEX) r6rs
 
+ifeq "$(LATEX)" "latex"
 r6rs.dvi : r6rs.bbl r6rs.ind r6-fig-grammar-parti.tex
 	$(LATEX) r6rs
-
-r6rs.pdf: r6rs.dvi
-	dvipdf r6rs.dvi
-
-r6rs-lib.idx r6rs-lib.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
-	$(LATEX) r6rs-lib
-
-r6rs-app.idx r6rs-app.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
-	$(LATEX) r6rs-app
 
 r6rs-lib.dvi : r6rs-lib.bbl r6rs-lib.ind
 	$(LATEX) r6rs-lib
 
 r6rs-app.dvi : r6rs-app.bbl r6rs-app.ind
+	$(LATEX) r6rs-app
+
+r6rs.pdf : r6rs.dvi
+	dvipdf r6rs.dvi
+
+r6rs-lib.pdf : r6rs-lib.dvi
+	dvipdf r6rs-lib.dvi
+
+r6rs-app.pdf : r6rs-app.dvi
+	dvipdf r6rs-app.dvi
+else
+r6rs.pdf : r6rs.bbl r6rs.ind r6-fig-grammar-parti.tex
+	$(LATEX) r6rs
+
+r6rs-lib.pdf : r6rs-lib.bbl r6rs-lib.ind
+	$(LATEX) r6rs-lib
+
+r6rs-app.pdf : r6rs-app.bbl r6rs-app.ind
+	$(LATEX) r6rs-app
+endif
+
+r6rs-lib.idx r6rs-lib.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
+	$(LATEX) r6rs-lib
+
+r6rs-app.idx r6rs-app.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
 	$(LATEX) r6rs-app
 
 r6-fig-grammar-parti.tex: tex-translate.ss ../model/r6rs.scm
