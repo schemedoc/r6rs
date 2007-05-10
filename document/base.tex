@@ -169,7 +169,7 @@ expression.
 \index{body}The body \hyper{body} of a \ide{lambda}, \ide{let}, \ide{let*},
 \ide{let-values}, \ide{let*-values}, \ide{letrec*}, \ide{letrec}
 expression or that of a
-definition with a body has the following form:
+definition with a body has the following form after expansion:
 
 {\cf \hyper{definition} \ldots{} \hyper{sequence}}
 
@@ -196,9 +196,11 @@ entire \hyper{body}.  For example,
   (foo (+ x 3)))                \ev  45%
 \end{scheme}
 
-When base-library {\cf begin} forms occur in a body prior to the first
+When base-library {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
+occur in a body prior to the first
 expression, they are spliced into the body; see section~\ref{begin}.
-Some or all of the body, including portions wrapped in {\cf begin}
+Some or all of the body, including portions wrapped in {\cf begin},
+{\cf let-syntax}, or {\cf letrec-syntax}
 forms, may be specified by a syntactic abstraction
 (see section~\ref{macrosection}).
 

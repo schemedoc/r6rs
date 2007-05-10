@@ -195,10 +195,10 @@ can be used to indicate structure.
 \section{Variables and binding}
 
 \mainindex{variable}\mainindex{binding}\mainindex{identifier}Scheme
-allows identifiers to denote values.  These
-identifiers are called variables. (More precisely, variables denote
-locations.  This distinction is not important, however, for a large
-proportion of Scheme code.)
+allows identifiers to denote denote locations containing values.
+These identifiers are called variables.  In many cases, specifically
+when the location's value is never modified after its creation, it is
+useful to think of the variable denoting the value directly.
 
 \begin{scheme}
 (let ((x 23)
@@ -334,10 +334,13 @@ the procedure.  In {\cf let} expressions, the first subform is a list
 of binding specifications, and the remaining subforms are a body of
 expressions.
 
-Procedure calls can be distinguished from these ``special forms'' by
+Procedure calls can generally be distinguished from these ``special forms'' by
 looking for a syntactic keyword in the first position of an
 expression: if it is not a syntactic keyword, the expression
-is a procedure call.  The set of syntactic keywords of Scheme is
+is a procedure call.  
+(So-called \textit{identifier macros} allow creating other kinds of
+special forms, but are comparatively rare.)
+The set of syntactic keywords of Scheme is
 fairly small, which usually makes this task fairly simple.
 It is possible, however, to create new bindings for syntactic keywords; see
 below.
@@ -383,7 +386,7 @@ expressions are equivalent:
 Special forms like {\cf let} expressions are called \textit{derived
   forms}\index{derived form} because their semantics can be
 derived from that of other kinds of forms by a syntactic
-transformation.  Procedure definitions are also derived forms.  The
+transformation.  Some procedure definitions are also derived forms.  The
 following two definitions are equivalent:
 
 \begin{scheme}

@@ -9,7 +9,7 @@ program.
 
 Top-level programs follow the convention of many common platforms of accepting 
 a list of string \defining{command-line arguments} that may be used to
-pass data to the script.
+pass data to the program.
 
 \section{Top-level program syntax}
 \label{programsyntaxsection}
@@ -42,9 +42,11 @@ imposing unnecessary organizational overhead on code which may not be
 intended for reuse.
 \end{rationale}
 
-When base-library {\cf begin} forms occur anywhere within a top-level body,
-they are spliced into the body; see section~\ref{begin}.
-Some or all of the top-level body, including portions wrapped in {\cf begin}
+When base-library {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
+occur in a top-level body prior to the first
+expression, they are spliced into the body; see section~\ref{begin}.
+Some or all of the body, including portions wrapped in {\cf begin},
+{\cf let-syntax}, or {\cf letrec-syntax}
 forms, may be specified by a syntactic abstraction
 (see section~\ref{macrosection}).
 

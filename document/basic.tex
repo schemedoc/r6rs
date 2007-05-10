@@ -22,8 +22,8 @@ Scheme.
 
 The division between the base library and other standard libraries is
 based on use, not on construction.  In particular, some facilities
-that are typically implemented as ``primitives'' by a compiler or
-run-time libraries rather than in terms of other standard procedures
+that are typically implemented as ``primitives'' by a compiler or the
+run-time system rather than in terms of other standard procedures
  or syntactic forms are not part of the base library, but are defined in
 separate libraries.  Examples include the fixnums and flonums libraries,
 the exceptions and conditions libraries, and the libraries for
@@ -33,13 +33,16 @@ records.
 \label{specialformsection}
 \label{variablesection}
 
-In a library body,
+In a library body or top-level program,
 an identifier\index{identifier} may name a type of syntax, or it may name
 a location where a value can be stored.  An identifier that names a type
-of syntax is called a {\em syntactic keyword}\mainindex{syntactic keyword}
-and is said to be {\em bound} to that syntax.  An identifier that names a
+of syntactic abstraction is called a {\em syntactic keyword}\mainindex{syntactic keyword}
+and is said to be {\em bound} to that syntactic abstraction.  An identifier that names a
 location is called a {\em variable}\mainindex{variable} and is said to be
-{\em bound} to that location.  The set of all visible
+{\em bound} to that location.  
+A variable that names a piece of syntax in a syntactic abstraction is
+called a \textit{pattern variable}\index{pattern variable}.
+The set of all visible
 bindings\mainindex{binding} in effect at some point in a top-level program or
 library body is
 known as the {\em environment} in effect at that point.  The value
@@ -55,18 +58,24 @@ variables are bound directly to the arguments.  Or:
 In programs without \ide{set!}, one can safely pretend that the
 variable is bound directly to the value. }
 
-\vest Certain expression types are used to create new kinds of syntax
-and to bind syntactic keywords to those new syntaxes, while other
+\vest Certain expression types are used to create new kinds of
+syntactic abstractions
+and to bind syntactic keywords to those new syntactic abstractions, while other
 expression types create new locations and bind variables to those
 locations.  These expression types are called {\em binding
   constructs}.\mainindex{binding construct} Scheme has two kinds of
-binding constructs: A \textit{definition}\index{definition} binds a
+binding constructs: A \textit{top-level
+  definition}\index{definition}\index{local definition} binds a
 variable in a top-level program or library body.  All other binding
 constructs create bindings that are only locally visible in the form
 that creates them.  Variable definitions are created by {\cf define}
 forms (see section~\ref{defines}), and definitions for syntactic
 keywords are created by {\cf define-syntax} forms (see
-section~\ref{syntaxdefinitionsection}).
+section~\ref{syntaxdefinitionsection}).  \textit{Local
+  definitions}\index{local definition} look syntactically like
+top-level definitions, but appear inside another form and create local
+bindings.  The binding created by a local definition is only visible
+inside its immediately surrounding form.
 
 The most fundamental of the local variable binding constructs is the
 {\cf lambda} expression, because all other local variable binding
@@ -90,9 +99,10 @@ binding construct that establishes the binding; if the binding is
 established by a {\cf lambda} expression, for example, then its region
 is the entire {\cf lambda} expression.  Every mention of an identifier
 refers to the binding of the identifier that established the
-innermost of the regions containing the use.  If there is no binding of
-the identifier whose region contains the use, then the use refers to the
-binding for the variable in the top level environment of the library
+innermost of the regions containing the use.  If a use of an
+identifier appears in a place where none of the surrounding forms
+contains contains a binding for the identifier, the use refers to the
+binding for the variable in the top-level environment of the library
 body or a binding imported from another library.  (See
 chapter~\ref{librarychapter}.)
 If there is no binding for the identifier,
