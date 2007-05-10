@@ -746,6 +746,13 @@ library.  The exact bitwise arithmetic provides generic operations on
 exact integers.  This section uses \var{ei}, \vari{ei}, \varii{ei},
 and \variii{ei} as parameter names that must be exact integers.
 
+Some procedures allow extracting \defining{bit fields}, i.e.\ numbers
+representing subsequences of the binary representation of an exact
+integer.  Bit fields are always positive, and always defined using a
+finite number of bits, contrary to 2's complement representation which
+implicitly uses an infinite extension of $0$ bits or $1$ bits to the
+left.
+
 \begin{entry}{%
 \proto{bitwise-not}{ ei}{procedure}}
 
@@ -788,11 +795,11 @@ representation of \var{ei}.
 \begin{entry}{%
 \proto{bitwise-length}{ ei}{procedure}}
 
-These procedures return the exact integer that is the result of the following
+Returns the exact integer that is the result of the following
 computation:
 \begin{scheme}
 (do ((result 0 (+ result 1))
-     (bits (if (bitwise-negative? \var{ei})
+     (bits (if (negative? \var{ei})
                (bitwise-not \var{ei})
                \var{ei})
            (bitwise-arithmetic-shift bits -1)))
@@ -818,10 +825,9 @@ If \var{ei} is $0$, then $-1$ is returned.
 \proto{bitwise-bit-set?}{ \vari{ei} \varii{ei}}{procedure}}
 
 \domain{\varii{Ei} must be non-negative.}
-
-Otherwise returns the result of the following computation:
+Returns the result of the following computation:
 \begin{scheme}
-(not (bitwise-zero?
+(not (zero?
       (bitwise-and
        (bitwise-arithmetic-shift-left 1 \varii{ei})
        \vari{ei})))%
@@ -890,8 +896,19 @@ The {\cf bitwise-copy-bit-field} procedure returns the result of the following c
 Returns the result of the following computation:
 %
 \begin{scheme}
-(* \vari{ei} (expt 2 \varii{ei}))%
+(exact (floor (* \vari{ei} (expt 2 \varii{ei}))))%
 \end{scheme}
+
+Examples:
+%
+\begin{schemenoindent}
+(bitwise-arithmetic-shift -6 -1) \ev -3
+(bitwise-arithmetic-shift -5 -1) \ev -3
+(bitwise-arithmetic-shift -4 -1) \ev -2
+(bitwise-arithmetic-shift -3 -1) \ev -2
+(bitwise-arithmetic-shift -2 -1) \ev -1
+(bitwise-arithmetic-shift -1 -1) \ev -1%
+\end{schemenoindent}
 \end{entry}
 
 \begin{entry}{%
@@ -908,8 +925,9 @@ Returns the result of the following computation:
 \begin{entry}{%
 \proto{bitwise-rotate-bit-field}{ \vari{ei} \varii{ei} \variii{ei} \variv{ei}}{procedure}}
 
-\domain{\varii{Ei}, \variii{ei}, \variv{ei} must be non-negative, and \variv{ei}
-must be less than the difference between \varii{ei} and \variii{ei}.}
+\domain{\varii{Ei}, \variii{ei}, \variv{ei} must be non-negative, 
+\varii{ei} must be less than or equal to \variii{ei}, and
+\variv{ei} must be non-negative.}
 The procedure returns the result of the following computation:
 %
 \begin{scheme}
@@ -938,7 +956,7 @@ The procedure returns the result of the following computation:
 
 \domain{\varii{Ei} and \variii{ei} must be non-negative, and
   \varii{ei} must be less than or equal to \variii{ei}.}  The {\cf bitwise-reverse-bit-field} procedure returns
-the result obtained from the \vari{ei} by reversing the bit field
+the result obtained from \vari{ei} by reversing the bit field
 specified by \varii{ei} and \variii{ei}.
 \begin{scheme}
 (bitwise-reverse-bit-field \sharpsign{}b1010010 1 4)   \lev  88 ; \sharpsign{}b1011000
