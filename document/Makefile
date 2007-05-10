@@ -126,6 +126,6 @@ clean:
 	-rm -f firstrun secondrun thirdrun
 
 reallyclean: clean
-	-rm -f r6rs.dvi r6rs-lib.dvi
-	-rm -f r6rs.pdf r6rs-lib.pdf
-	-rm -f r6rs-fig-*.tex
+	-rm -f r6rs.dvi r6rs-lib.dvi r6rs-app.dvi
+	-rm -f r6rs.pdf r6rs-lib.pdf r6rs-app.pdf
+	-rm -f r6-fig-*.tex
