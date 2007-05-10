@@ -106,12 +106,27 @@ note that this default seldom coincides with the desired semantics.
 
 \subsection{Buffer modes}
 
-Each output port has an associated buffer mode that defines when an
-output operation flushes the buffer associated with the output
-port. The possible buffer modes are the symbols {\cf none} for no buffering,
-{\cf line} for flushing upon line feeds and line separators (U+2028), and
-{\cf block} for arbitrary buffering.  This section uses the parameter name
-\var{buffer-mode} for arguments that must be buffer-mode symbols.
+Each port has an associated buffer mode.  For an output port, the
+buffer mode defines when an output operation flushes the buffer
+associated with the output port.  For an input port, the buffer mode
+defines how much data will be read to satisfy read operations.  The
+possible buffer modes are the symbols {\cf none} for no buffering,
+{\cf line} for flushing upon line endings or reading until line
+endings, and {\cf block} for arbitrary buffering.  This section uses
+the parameter name \var{buffer-mode} for arguments that must be
+buffer-mode symbols.
+
+If two ports are connected to the same mutable source, and both ports
+are unbuffered, and reading a byte or character from that shared
+source via one of the two ports would change the bytes or characters
+seen via the other port, then a lookahead operation on one port will
+render the peeked byte or character inaccessible via the other port,
+while a subsequent read operation on the peeked port will see the
+peeked byte or character even though the port is otherwise unbuffered.
+
+In other words, the semantics of buffering is defined in terms of side
+effects on shared mutable sources, and a lookahead operation has the
+same side effect on the shared source as read operation.
 
 \begin{entry}{%
 \proto{buffer-mode}{ \hyper{name}}{\exprtype}}
@@ -570,7 +585,10 @@ the end-of-file object, and returns \schfalse{} otherwise.
 \begin{entry}{%
 \proto{open-file-input-port}{ filename}{procedure}
 \rproto{open-file-input-port}{ filename file-options}{procedure}
-\rproto{open-file-input-port}{ filename file-options maybe-transcoder}{procedure}}
+\pproto{(open-file-input-port \var{filename}}{procedure}{\tt\obeyspaces%
+\hspace*{2em}\var{file-options} \var{buffer-mode})}\\
+\pproto{(open-file-input-port \var{filename}}{procedure}{\tt\obeyspaces%
+\hspace*{2em}\var{file-options} \var{buffer-mode} \var{maybe-transcoder})}}
    
 \domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
 
@@ -581,7 +599,11 @@ The \var{file-options} argument, which may determine
 various aspects of the returned port (see section~\ref{fileoptionssection}),
 defaults to {\cf (file-options)}.
 
-If \var{transcoder} is specified, it becomes the transcoder associated
+The \var{buffer-mode} argument, if supplied,
+must be one of the symbols that name a buffer mode.
+The \var{buffer-mode} argument defaults to {\cf block}.
+
+If \var{maybe-transcoder} is specified, it becomes the transcoder associated
 with the returned port.
 
 If {\cf maybe-transcoder} is absent or \schfalse{}, then the port will be a
