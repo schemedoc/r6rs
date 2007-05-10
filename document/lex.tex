@@ -86,12 +86,12 @@ concise:  \arbno{\meta{thing}} means zero or more occurrences of
 \meta{thing}; and \atleastone{\meta{thing}} means at least one
 \meta{thing}.
 
-Some non-terminal names refer to the Unicode scalar values of the
-same name: \meta{character tabulation} (U+0009), \meta{linefeed}
-(U+000A), \meta{line tabulation} (U+000B), \meta{form feed} (U+000C),
-\meta{carriage return} (U+000D), \meta{space} (U+0020),
-\meta{next line (nel)} (U+0085), \meta{line separator} (U+2028),
-and \meta{paragraph separator} (U+2029).
+Some non-terminal names refer to the Unicode scalar values of the same
+name: \meta{character tabulation} (U+0009), \meta{linefeed} (U+000A),
+\meta{carriage return} (U+000D), \meta{line tabulation} (U+000B),
+\meta{form feed} (U+000C), \meta{carriage return} (U+000D),
+\meta{space} (U+0020), \meta{next line} (U+0085), \meta{line
+  separator} (U+2028), and \meta{paragraph separator} (U+2029).
 
 \section{Lexical syntax}
 \label{lexicalsyntaxsection}
@@ -135,11 +135,13 @@ language: {\tt \verb"{" \verb"}"}
 \meta{delimiter} \: \meta{whitespace} \| ( \| ) \| \openbracket{} \| \closedbracket{} \| " \| ;
 \meta{whitespace} \: \meta{character tabulation}
 \> \| \meta{linefeed} \| \meta{line tabulation} \| \meta{form feed}
-\> \| \meta{carriage return} \| \meta{next line (nel)}
+\> \| \meta{carriage return} \| \meta{next line}
 \> \| \meta{any character whose category is Zs, Zl, or Zp}
+\meta{line ending} \: \meta{linefeed} \| \meta{carriage return}
+\> \| \meta{carriage return} \meta{linefeed} \| \meta{next line}
+\> \| \meta{carriage return} \meta{next line} \| \meta{line separator}
 \meta{comment} \: ; \= $\langle$\rm all subsequent characters up to a
-                    \>\ \rm \meta{linefeed}, \meta{line separator},
-                    \>\ \rm or \meta{paragraph separator}$\rangle$\index{comment}
+                    \>\ \rm \meta{line ending} or \meta{paragraph separator}$\rangle$\index{comment}
 \qquad \= \| \meta{nested comment}
 \> \| \#; \meta{datum}
 \> \| \#!r6rs
@@ -190,9 +192,10 @@ language: {\tt \verb"{" \verb"}"}
 \> \| space \| delete
 \meta{string} \: " \arbno{\meta{string element}} "
 \meta{string element} \: \meta{any character other than \doublequote{} or \backwhack}
+ \> \| \meta{line ending}
  \> \| \backwhack{}a \| \backwhack{}b \| \backwhack{}t \| \backwhack{}n \| \backwhack{}v \| \backwhack{}f \| \backwhack{}r
  \>  \| \backwhack\doublequote{} \| \backwhack\backwhack 
- \>  \| \backwhack\meta{linefeed} \| \backwhack\meta{space}
+ \>  \| \backwhack\meta{line ending} \| \backwhack\meta{space}
  \>  \| \meta{inline hex escape}
 \end{grammar}
 
@@ -266,6 +269,20 @@ decimal points or exponents must be in decimal radix.
 \meta{digit 16} \: \meta{hex digit}
 \end{grammar}
 
+\subsection{Line endings}
+\label{lineendings}
+
+Line endings are significant in Scheme in single-line comments (see
+section~\ref{whitespaceandcomments}) and within string literals.  In
+Scheme source code, and of the line endings in \meta{line ending}
+marks the end of a line.  Moreover, the two-character line endings
+\meta{carriage return} \meta{linefeed} and \meta{carriage return}
+\meta{next line} each count as a single line ending.
+
+In a string literal, a line ending not preceded by a {\cf\backwhack}
+denotes a linefeed character, which is the standard line-ending
+character of Scheme.
+
 \subsection{Whitespace and comments}
 \label{whitespaceandcomments}
 
@@ -284,8 +301,7 @@ so a comment cannot appear in the middle of an identifier or number.
 
 A semicolon ({\tt;}) indicates the start of a line
 comment.\mainindex{comment}\mainschindex{;} The comment continues to
-the end of the line on which the semicolon appears (i.e., it is
-terminated by a linefeed character).
+the end of the line on which the semicolon appears.
 
 Another way to indicate a comment is to prefix a \hyper{datum}
 (cf.\ Section~\ref{datumsyntax}) with {\tt \#;}, possibly with
@@ -482,11 +498,13 @@ themselves.  Escape sequences always start with a backslash (\backwhack{}):
 These escape sequences are case-sensitive, except that \hyper{digit
   16} can be an uppercase or lowercase hexadecimal digit.
 
-Any other character in a string after a backslash is an error. Any
+Any other character in a string after a backslash is an error. Except
+for a line ending, any
 character outside of an escape sequence and not a doublequote stands
 for itself in the string literal. For example the single-character
 string {\tt "$\lambda$"} (double quote, a lower case lambda, double
 quote) denotes the same string literal as {\tt "\backwhack{}x03bb;"}.
+A line ending stands for a linefeed character.
 
 Examples:
 
@@ -507,6 +525,9 @@ Examples:
 \>\>; \textrm{too many digits}
 "\backwhack{}xD800;" \ev \exception{\&lexical}
 \>\>; \textrm{in excluded range}
+"A
+bc" \ev \textrm{U+0041, U+000A, U+0062, U+0063}
+\>\>; \textrm{if no space occurs after the {\cf{}A}}
 \end{schemenoindent}
   
 \subsection{Numbers}

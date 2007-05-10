@@ -132,6 +132,7 @@ Returns \schtrue{} if the argument is a valid buffer-mode symbol,
 \end{entry}
 
 \subsection{Transcoders}
+\label{transcoderssection}
 
 Several different Unicode encoding schemes describe standard ways to
 encode characters and strings as byte sequences and to decode those
@@ -139,8 +140,12 @@ sequences~\cite{Unicode}.
 Within this document, a \defining{codec} is an immutable Scheme
 object that represents a Unicode or similar encoding scheme.
 
+An \defining{end-of-line style} is a symbol that, if it is not {\cf
+  none}, describes how a textual port transcodes representations of
+line endings.
+
 A \defining{transcoder} is an immutable Scheme object that combines
-a codec with an end-of-line convention and a method for handling
+a codec with an end-of-line style and a method for handling
 decoding errors.
 Each transcoder represents some specific bidirectional (but not
 necessarily lossless), possibly stateful translation between byte
@@ -151,8 +156,6 @@ but the composition of those directions need not be identity (and
 often isn't).  The composition of two transcoders is not defined.
 A \var{transcoder} parameter name means that the corresponding
 argument must be a transcoder.
-
-Every port has a single transcoder associated with it.
 
 A \defining{binary port} is a port that does not have an associated
 transcoder: It does not support textual I/O.  A \defining{textual
@@ -175,15 +178,39 @@ procedure.
 \proto{eol-style}{ name}{\exprtype}}
 
 If \var{name} is one of the \meta{identifier}s {\cf lf}, {\cf cr},
-{\cf crlf}, or {\cf ls}, then the form evaluates to the corresponding
-symbol.  If \var{name} is not one of these identifiers, effect and
-result are implementation-dependent: The result may be an
-eol-style symbol acceptable as an \var{eol-mode}
+{\cf crlf}, {\cf nel}, {\cf crnel}, {\cf ls}, or {\cf none}, then the form
+evaluates to the corresponding symbol.  If \var{name} is not one of
+these identifiers, effect and result are implementation-dependent: The
+result may be an eol-style symbol acceptable as an \var{eol-mode}
 argument to {\cf make-transcoder}.  Otherwise, an exception is raised.
 
+The line ending encodings corresponding to the eol-style symbols are:
+
+\noindent\begin{tabular}{ll}
+{\cf lf} & \meta{linefeed}\\
+{\cf cr} & \meta{carriage return}\\
+{\cf crlf} & \meta{carriage return} \meta{linefeed}\\
+{\cf nel} & \meta{next line}\\
+{\cf crnel} & \meta{carriage return} \meta{next line}\\
+{\cf ls} & \meta{line separator}
+\end{tabular}
+
+For a textual port whose transcoder has an eol-style symbol other than
+{\cf none}, the following holds: A textual output port with a
+transcoder encodes linefeed characters into line endings.  (All other
+characters that participate in possible line endings are encoded
+as-is.)  A textual input port decodes \emph{any} of the possible line
+endings into linefeed characters.
+
+For a textual output port, a {\cf none} eol-style symbol is equivalent
+to {\cf lf}.  For a textual input port, a {\cf none} eol-style symbol
+means that all characters participating in possible line endings are
+decoded as-is, i.e.\ only encodings of the linefeed character are
+decoded as the linefeed character.
+
 \begin{rationale}
-  End-of-line styles other than those listed might become commonplace
-  in the future.
+  The set is not closed because end-of-line styles other than those
+  listed might become commonplace in the future.
 \end{rationale}
 \end{entry}
 
@@ -856,20 +883,25 @@ returned.
 \begin{entry}{%
 \proto{get-line}{ textual-input-port}{procedure}}
    
-Reads from \var{textual-input-port} up to and including the next
-end-of-line encoding or line separator character (U+2028) or 
-end of file, decoding characters in the same manner as {\cf
-  get-string-n} and {\cf get-string-n!}.
+Reads from \var{textual-input-port} up to and including the linefeed
+character or end of file, decoding characters in the same manner as
+{\cf get-string-n} and {\cf get-string-n!}.
    
-If an end-of-line encoding or line separator is read, then a string
-containing all of the text up to (but not including) the end-of-line
-encoding is returned, and the port is updated to point just past the
-end-of-line encoding or line separator. If an end of file is
-encountered before any end-of-line encoding is read, but some data
+If a linefeed character is read, then a string
+containing all of the text up to (but not including) the linefeed
+character is returned, and the port is updated to point just past the
+linefeed character. If an end of file is
+encountered before any linefeed character is read, but some data
 have been read and decoded as characters, then a string containing
 those characters is returned. If an end of file is encountered before
 any data are read, then the end-of-file object is
 returned.
+
+\begin{note}
+  The end-of-line style, if not {\cf none}, will cause all line
+  endings to be read as linefeed characters.  See
+  section~\ref{transcoderssection}.
+\end{note}
 \end{entry}
 
 \begin{entry}{%
