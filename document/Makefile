@@ -40,7 +40,7 @@ LIB_TEX_FILES = r6rs-lib.tex \
 	iocond.tex \
 	libderived.tex \
 	list.tex \
-	misclib.tex \
+	control.tex \
 	portio.tex \
 	r5rscompat.tex \
 	records.tex \
