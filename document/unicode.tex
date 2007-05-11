@@ -173,11 +173,8 @@ The {\cf string-upcase} procedure converts a string to upper case;
   string-foldcase} procedure converts the string to its case-folded
 counterpart, using the full case-folding mapping, but without the
 special mappings for Turkic languages.  The {\cf string-titlecase}
-procedure converts the first character to title case in each
-contiguous sequence of cased characters within \var{string}, and it
-downcases all other cased characters; for the purposes of detecting
-cased-character sequences, case-ignorable characters are ignored
-(i.e., they do not interrupt the sequence).
+procedure converts the first cased character of each word to title
+case, and downcases all other cased characters.
 
 \begin{scheme}
 (string-upcase "Hi") \ev "HI"
@@ -217,6 +214,12 @@ cased-character sequences, case-ignorable characters are ignored
 
   Since these procedures are locale-independent, they may not
   be appropriate for some locales.
+\end{note}
+
+\begin{note}
+  Word breaking, as needed for the correct casing of $\Sigma$ and for
+  {\cf string-titlecase}, is specified in Unicode Annex
+  \#29~\cite{UnicodeUAX29}.
 \end{note}
 
 \end{entry}
