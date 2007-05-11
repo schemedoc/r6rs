@@ -513,6 +513,82 @@ elements \var{k} through $\var{k}+7$ of \var{bytevector}, and returns
 \unspecifiedreturn.
 \end{entry}
 
+\section{Operations on strings}
+
+This section describes procedures that convert between strings and
+bytevectors containing Unicode encodings of those strings.  When
+decoding bytevectors, encoding errors are handled as with the {\cf
+  replace} semantics of textual I/O (see
+section~\ref{transcoderssection}): If an invalid or incomplete
+character encoding is encountered, then the replacement character
+U+FFFD is appended to the string being generated, an appropriate
+number of bytes are ignored, and decoding continues with the following
+bytes.
+
+\begin{entry}{%
+\proto{string->utf8}{ string}{procedure}}
+
+Returns a newly allocated (unless empty) bytevector that
+contains the UTF-8 encoding of the given string.
+\end{entry}
+
+\begin{entry}{%
+\proto{string->utf16}{ string}{procedure}
+\rproto{string->utf16}{ string endianness}{procedure}}
+
+\domain{If \var{endianness} is specified, it must be the symbol {\cf
+    big} or the symbol {\cf little}.}  The {\cf string->utf16
+  procedure} returns a newly allocated (unless empty) bytevector that
+contains the UTF-16BE or UTF-16LE encoding of the given string (with
+no byte-order mark).  If endianness is not specified or is {\cf big},
+then UTF-16BE is used.  If endianness is {\cf little}, then UTF-16LE
+is used.
+\end{entry}
+
+\begin{entry}{%
+\proto{string->utf32}{ string}{procedure}
+\rproto{string->utf32 string endianness}{procedure}}
+
+\domain{If \var{endianness} is specified, it must be the symbol {\cf
+    big} or the symbol {\cf little}.}  The {\cf string->utf32} returns
+a newly allocated (unless empty) bytevector that contains the UTF-32BE
+or UTF-32LE encoding of the given string (with no byte mark).  If
+endianness is not specified or is {\cf big}, then UTF-32BE is used.
+If endianness is {\cf little}, then UTF-32LE is used.
+\end{entry}
+
+\begin{entry}{%
+\proto{utf8->string}{ bytevector}{procedure}}
+
+Returns a newly allocated (unless empty) string whose character
+sequence is encoded by the given bytevector.
+\end{entry}
+
+\begin{entry}{%
+\proto{utf16->string}{ bytevector}{procedure}
+\rproto{utf16->string}{ bytevector endianness}{procedure}}
+
+\domain{If \var{endianness} is specified, it must be the symbol {\cf
+    big} or the symbol {\cf little}.}  The {\cf utf16->string}
+procedure returns a newly allocated (unless empty) string whose
+character sequence is encoded by the given bytevector.
+If endianness is not specified or is {\cf big},
+then UTF-16BE is used.  If endianness is {\cf little}, then UTF-16LE
+is used.
+\end{entry}
+
+\begin{entry}{%
+\proto{utf32->string}{ bytevector}{procedure}
+\rproto{utf32->string}{ bytevector endianness}{procedure}}
+
+\domain{If \var{endianness} is specified, it must be the symbol {\cf
+    big} or the symbol {\cf little}.}  The {\cf utf32->string}
+procedure returns a newly allocated (unless empty) string whose
+character sequence is encoded by the given bytevector.
+If endianness is not specified or is {\cf big},
+then UTF-32BE is used.  If endianness is {\cf little}, then UTF-32LE
+is used.
+\end{entry}
 
 %%% Local Variables: 
 %%% mode: latex
