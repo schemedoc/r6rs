@@ -72,6 +72,14 @@ A \hyper{definition} must have one of the following forms:\mainschindex{define}\
 (define first car)
 (first '(1 2))                      \ev  1%
 \end{scheme}
+%
+The continuation of \hyper{expression} should not be invoked more than
+once.
+
+\implresp Implementations are not required to detect that the
+continuation of \hyper{expression} is invoked more than once.
+However, if the implementation detects this, it must raise an
+exception with condition type {\cf\&assertion}.
 
 \item{\tt(define \hyper{variable})}
 
@@ -747,6 +755,9 @@ Scheme passes arguments by value rather than by name.  In the most
 common uses of {\cf letrec}, all the \hyper{init}s are \lambdaexp{}s
 and the restriction is satisfied automatically.
 
+Moreover, the continuation of each \hyper{init} should not be invoked
+more than once.
+
 \implresp Implementations are only required to check this restriction
 to the extent that references to a \hyper{variable} during the
 evaluation of the \hyper{init} expressions (using one particular
@@ -754,6 +765,10 @@ evaluation order and order of evaluating the \hyper{init} expressions)
 must be detected.  If an implementation detects a violation of the
 restriction, it must either raise an exception with condition type
 {\cf\&assertion}, or abort the execution of the program.
+Implementations are not required to detect that the continuation of each
+\hyper{init} is invoked more than once.  However, if the
+implementation detects this, it must raise an exception with condition
+type {\cf\&assertion}.
 
 A sample definition of {\cf letrec} in terms of simpler forms is in
 appendix~\ref{derivedformsappendix}.
@@ -804,12 +819,19 @@ the bindings that follow it in \hyper{bindings}.
 The restriction is necessary because Scheme passes arguments by value
 rather than by name. 
 
+Moreover, the continuation of each \hyper{init} should not be invoked
+more than once.
+
 \implresp Implementations are only required to check this restriction to
 the extent that references to a \hyper{variable} during the evaluation
 of the \hyper{init} expressions (using one particular evaluation order)
 must be detected.  If an implementation detects a violation of the
 restriction, it must either raise an exception with condition type
 {\cf\&assertion}, or abort the execution of the program.
+Implementations are not required to detect that the continuation of each
+\hyper{init} is invoked more than once.  However, if the
+implementation detects this, it must raise an exception with condition
+type {\cf\&assertion}.
 
 The {\cf letrec*} keyword could be defined approximately in terms of {\cf let}
 and {\cf set!}
