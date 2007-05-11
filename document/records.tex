@@ -410,10 +410,10 @@ The mutator returns \unspecifiedreturn.
     \schfalse{} \schfalse{} \schfalse{} 
     '\sharpsign((mutable x) (mutable y))))
 
-(define make-point
-  (record-constructor
-    (make-record-constructor-descriptor :point
-      \schfalse{} \schfalse{})))
+(define :point-cd
+  (make-record-constructor-descriptor :point \schfalse{} \schfalse{}))
+
+(define make-point (record-constructor :point-cd))
 
 (define point? (record-predicate :point))
 (define point-x (record-accessor :point 0))
@@ -447,6 +447,51 @@ The mutator returns \unspecifiedreturn.
 (point-y p2) \ev 2
 (point2-xx p2) \ev 3
 (point2-yy p2) \ev 4
+
+(define :point-cd/abs
+  (make-record-constructor-descriptor
+   :point \schfalse{}
+   (lambda (new)
+     (lambda (x y)
+       (new (abs x) (abs y))))))
+
+(define make-point/abs
+  (record-constructor :point-cd/abs))
+
+(point-x (make-point/abs -1 -2) \lev 1
+(point-y (make-point/abs -1 -2) \lev 2
+
+(define :cpoint
+  (make-record-type-descriptor
+   'cpoint :point
+   \schfalse{} \schfalse{} \schfalse{}
+   '((mutable rgb))))
+
+(define make-cpoint
+  (record-constructor
+   (make-record-constructor-descriptor
+    :cpoint :point-cd
+    (lambda (p)
+      (lambda (x y c)
+	((p x y) (color->rgb c)))))))
+
+(define make-cpoint/abs
+  (record-constructor
+   (make-record-constructor-descriptor
+    :cpoint :point-cd/abs
+    (lambda (p)
+      (lambda (x y c)
+	((p x y) (color->rgb c)))))))
+
+(define cpoint-rgb
+  (record-accessor :cpoint 0))
+
+(define (color->rgb c)
+  (cons 'rgb c))
+
+(cpoint-rgb (make-cpoint -1 -3 'red) \lev (rgb . red)
+(point-x (make-cpoint -1 -3 'red)) \lev -1
+(point-x (make-cpoint/abs -1 -3 'red)) \lev 1%
 \end{scheme}
 
 \section{Syntactic layer}
@@ -643,7 +688,7 @@ is equivalent to the following explicit-naming record definition.
 \end{scheme}
 
 Also, the implicit-naming layer record definition:
-
+ 
 \begin{scheme}
 (define-record-type point (fields x y))%
 \end{scheme}
@@ -687,14 +732,14 @@ Evaluates to the record-constructor descriptor associated with
 \end{entry}
 
 \begin{scheme}
-(define-record-type (point3 make-point3 point3?)
-  (fields (immutable x point3-x)
-          (mutable y point3-y set-point3-y!))
+(define-record-type (point make-point point?)
+  (fields (immutable x point-x)
+          (mutable y point-y set-point-y!))
   (nongenerative
-    point3-4893d957-e00b-11d9-817f-00111175eb9e))
+    point-4893d957-e00b-11d9-817f-00111175eb9e))
 
 (define-record-type (cpoint make-cpoint cpoint?)
-  (parent point3)
+  (parent point)
   (protocol
    (lambda (p)
      (lambda (x y c) 
@@ -705,32 +750,32 @@ Evaluates to the record-constructor descriptor associated with
 (define (color->rgb c)
   (cons 'rgb c))
 
-(define p3-1 (make-point3 1 2))
-(define p3-2 (make-cpoint 3 4 'red))
+(define p1 (make-point 1 2))
+(define p2 (make-cpoint 3 4 'red))
 
-(point3? p3-1) \ev \schtrue{}
-(point3? p3-2) \ev \schtrue{}
-(point3? (vector)) \ev \schfalse{}
-(point3? (cons 'a 'b)) \ev \schfalse{}
-(cpoint? p3-1) \ev \schfalse{}
-(cpoint? p3-2) \ev \schtrue{}
-(point3-x p3-1) \ev 1
-(point3-y p3-1) \ev 2
-(point3-x p3-2) \ev 3
-(point3-y p3-2) \ev 4
-(cpoint-rgb p3-2) \ev '(rgb . red)
+(point? p1) \ev \schtrue{}
+(point? p2) \ev \schtrue{}
+(point? (vector)) \ev \schfalse{}
+(point? (cons 'a 'b)) \ev \schfalse{}
+(cpoint? p1) \ev \schfalse{}
+(cpoint? p2) \ev \schtrue{}
+(point-x p1) \ev 1
+(point-y p1) \ev 2
+(point-x p2) \ev 3
+(point-y p2) \ev 4
+(cpoint-rgb p2) \ev (rgb . red)
 
-(set-point3-y! p3-1 17)
-(point3-y p3-1) \ev 17)
+(set-point-y! p1 17)
+(point-y p1) \ev 17)
 
-(record-rtd p3-1) \lev (record-type-descriptor point3)
+(record-rtd p1) \lev (record-type-descriptor point)
 
 (define-record-type (ex1 make-ex1 ex1?)
   (protocol (lambda (new) (lambda a (new a))))
   (fields (immutable f ex1-f)))
 
 (define ex1-i1 (make-ex1 1 2 3))
-(ex1-f ex1-i1) \ev '(1 2 3)
+(ex1-f ex1-i1) \ev (1 2 3)
 
 (define-record-type (ex2 make-ex2 ex2?)
   (protocol
@@ -740,7 +785,7 @@ Evaluates to the record-constructor descriptor associated with
 
 (define ex2-i1 (make-ex2 1 2 3))
 (ex2-a ex2-i1) \ev 1
-(ex2-b ex2-i1) \ev '(2 3)
+(ex2-b ex2-i1) \ev (2 3)
 
 (define-record-type (unit-vector
                      make-unit-vector
@@ -773,7 +818,7 @@ Evaluates to the record-constructor descriptor associated with
 
 (define ex3-i1 (make-ex3 1 2 17))
 (ex3? ex3-i1) \ev \schtrue{}
-(cpoint-rgb ex3-i1) \ev '(rgb . red)
+(cpoint-rgb ex3-i1) \ev (rgb . red)
 (ex3-thickness ex3-i1) \ev 17
 (ex3-thickness-set! ex3-i1 18)
 (ex3-thickness ex3-i1) \ev 18
