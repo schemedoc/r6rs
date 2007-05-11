@@ -1,8 +1,18 @@
 %!TEX root = r6rs.tex
 
+%\noindent\textbf{TODO}
+%\begin{itemize}
+%\item mention things are not meant to be in original programs (handlers ...?)
+%\item exception handlers change
+%\end{itemize}
+
 This section gives a formal, operational semantics for Scheme. It does not cover the entire language. The notable missing features are the macro system, IO, and the numeric tower. The precise list of features included is given in section~\ref{sec:semantics:grammar}.
 
-The core of the specification is a single-step term rewriting relation that indicates how an (abstract) machine behaves. In general, the Report is not a complete specification, in order to give implementations freedom to behave differently, typically to allow optimizations. This underspecification shows up in a number of ways in our semantics, but the primary technique we use to model it is to have the single-step relation relate one program to multiple different programs, each corresponding to a legal transition that an abstract machine might take. Accordingly we use the transitive closure of the single step relation to define the semantics, $\mathcal{S}$, as a function from programs ($\mathcal{P}$) to sets of observable results ($\mathcal{R}$):
+The core of the specification is a single-step term rewriting relation that indicates how an (abstract) machine behaves. In general, the Report is not a complete specification, giving implementations freedom to behave differently, typically to allow optimizations. This underspecification shows up in two ways in our semantics. 
+
+The first is reduction rules that reduce to special ``\textbf{unknown:} \textit{string}'' states (where the string provides a description of the unknown state). The intention is that rules that reduce to such states can be replaced with arbitrary reduction rules. The precise specification of how to replace those rules is given in section~\ref{sec:semantics:underspecification}.
+
+The other is that the single-step relation relates one program to multiple different programs, each corresponding to a legal transition that an abstract machine might take. Accordingly we use the transitive closure of the single step relation to define the semantics, $\mathcal{S}$, as a function from programs ($\mathcal{P}$) to sets of observable results ($\mathcal{R}$):
 \begin{center}
 \begin{tabular}{l}
 $\mathcal{S} : \mathcal{P} \longrightarrow 2^{\mathcal{R}}$ \\
@@ -11,7 +21,7 @@ $\mathcal{S}(\mathcal{P}) = \{ \mathscr{O}(\mathcal{A}) \mid \mathcal{P} \righta
 \end{center}
 where the function $\mathscr{O}$ turns an answer from the semantics into an observable result. Intuitively, $\mathscr{O}$ is the identity function on simple base values, and returns a special tag for more complex values, like procedure and pairs.
 
-An implementation conforms to the semantics if, for every program $\mathcal{P}$, the implementation produces one of the results in $\mathcal{S}(\mathcal{P})$ or, if the implementation loops forever, then there is an infinite reduction sequence starting at $\mathcal{P}$. 
+So, an implementation conforms to the semantics if, for every program $\mathcal{P}$, the implementation produces one of the results in $\mathcal{S}(\mathcal{P})$ or, if the implementation loops forever, then there is an infinite reduction sequence starting at $\mathcal{P}$, where the reduction relation $\rightarrow$ has been adjusted to replace the \textbf{unknown:} states.
 
 The precise definitions of $\mathcal{P}$, $\mathcal{A}$, $\mathcal{R}$, and $\mathscr{O}$ are also given in section~\ref{sec:semantics:grammar}.
 
@@ -91,7 +101,7 @@ sophisticated ways.
 
 To help understand the semantics and how it behaves, we have
 implemented it in PLT Redex. The implementation is available at the
-report's website: \url{http://www.r6rs.org/}. All of the reduction
+Report's website: \url{http://www.r6rs.org/}. All of the reduction
 rules and the metafunctions shown in the figures in this semantics
 were generated automatically from the source code.
 
@@ -212,7 +222,7 @@ The values ($v$) are divided into five categories:
   (\va{pp}), \va{null}, symbols, self-quoting values
   (\nt{sqv}), and conditions. The self-quoting values are numbers,
   and the booleans \semtrue{} and \semfalse{}. Conditions represent
-  the report's condition values, but here just contain a message and
+  the Report's condition values, but here just contain a message and
   are otherwise inert.
 \item User procedure (\nt{uproc}) include multi-arity
   \sy{lambda} expressions and lambda expressions with dotted
@@ -249,7 +259,7 @@ re-use \nt{F} and have fine-grained control over the context to support
 exceptions and \va{dynamic-wind}. The starred and circled variants,
 \Estar{}, \Eo, \Fstar, and \Fo{} dictate where a single value is
 promoted to multiple values and where multiple values are demoted to a
-single value. Finally, \nt{SD} and $S$ are the contexts where quoted
+single value. The \nt{U} context is used to manage the Report's underspecification of the results of \sy{set!}, \va{set-car!}, and \va{set-cdr!}. Finally, \nt{SD} and $S$ are the contexts where quoted
 expressions can be simplified. The precise use of the evaluation
 contexts is explained along with the relevant rules.
 
@@ -722,7 +732,7 @@ their context. The \rulename{6var} rule extracts a value from the
 store and \rulename{6setd} updates a value in the store, returning the
 unspecified value. The next two rules, \rulename{6setu} and \rulename{6refu} handle reference and assignment of free variables. Finally, the last two rules dictate the behavior of the \va{unspecified?} predicate.
 
-\section{Underspecification}\label{sec:semantics:unspecification}
+\section{Underspecification}\label{sec:semantics:underspecification}
 
 \beginfig
 \begin{center}
@@ -733,12 +743,12 @@ unspecified value. The next two rules, \rulename{6setu} and \rulename{6refu} han
 
 The rules in figure~\ref{fig:underspecification} cover aspects of the
 semantics that are explicitly unspecified. Implementations can replace
-these rules with different rules that cover the left-hand sides and,
-as long as they follow the informal specification, any replacement is
-valid.
+the rules \rulename{6ueqv}, \rulename{6ueqc}, \rulename{6uval} and with different rules that cover the left-hand sides and, as long as they follow the informal specification, any replacement is valid. Those three situations correspond to the case when \va{eqv?} applied to two procedures or
+two conditions, and multiple values are used in a single-value context.
 
-The three situations are \va{eqv?} applied to two procedures or
-two conditions, and multiple values in a single-value context.
+The remaining rules in figure~\ref{fig:underspecification} cover the results from the assignment operations, \sy{set!}, \va{set-car!}, and \va{set-cdr!}. An implementation does not adjust those rules, but instead renders them useless by adjusting the rules that insert \va{unspecified}: \rulename{6setcar}, \rulename{6setcdr}, \rulename{6set}, and \rulename{6setd}. Those rules can be adjusted by replacing \va{unspecified} with any number of values in those rules.
+
+So, the remaining rules just specify the minimal behavior that we know that a value or values must have and otherwise reduce to an \textbf{unknown:} state. The rule \rulename{6udemand} drops \va{unspecified} in the \sy{U} context. See figure~\ref{fig:ec-grammar} for the precise definition of \sy{U}, but intuitively it is a context that is only a single expression layer deep that contains expressions whose value depends on the value of their subexpressions, like the first subexpression of a \sy{if}. Following that are rules that discard \va{unspecified} in expressions that discard the results of some of their subexpressions. The \rulename{6ubegin} shows how \sy{begin} discards its first expression when there are more expressions to evaluate. The next two rules, \rulename{6uhandlers} and \rulename{6udw} propagate \va{unspecified} to their context, since they also return any number of values to their context. Finally, the two \va{begin0} rules preserve \va{unspecified} until the rule \rulename{6begin01} can return it to its context.
 
 \section*{Acknowledgments}
 

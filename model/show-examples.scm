@@ -48,12 +48,12 @@
   #;
   (show-expression '((lambda (x) ((call/cc call/cc) x)) (call/cc call/cc)))
 
-  (stepper
-   lang 
-   reductions
-   '(store () 
-           (((call/cc call/cc) 
-             (call/cc call/cc)))))
+  ;; two infinite loops, one in left-to-right and one in right-to-left evaluation order
+  ;; one goes into a non-tail infinite loop, the other's reduction graph has a cycle
+  #;
+  (step '(store () 
+                (((call/cc call/cc) 
+                  (call/cc call/cc)))))
           
   
   ;; demonstrates sharing
@@ -69,5 +69,6 @@
   #;
   (step '(store () ((eval '((lambda (dot x) (car x) 1))))))
   
+  (step '(store () ((define x 1) (begin (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1)) 5))))
   )
 

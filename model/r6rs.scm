@@ -32,7 +32,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (p* (store (sf ...) (ds ...)) (uncaught-exception v) (unknown string))
      (a* (store (sf ...) ((values v ...))) (uncaught-exception v) (unknown string))
      (r* (values r*v ...) exception unknown)
-     (r*v  unspecified pair null 'sym sqv condition procedure)
+     (r*v  pair null 'sym sqv condition procedure)
      (sf (x v) (pp (cons v v)))
      (ds (define x es) (beginF ds ...) es)
      
@@ -40,6 +40,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
          (if es es es) (set! x es) x
          nonproc pproc
          (dw x es es es) (throw x (d d ...))
+         unspecified
          (handlers es ... es)
          (lambda (x ...) 
            es
@@ -56,15 +57,16 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (e (begin e e ...) (begin0 e e ...)
         (e e ...) (if e e e)
         (set! x e) (handlers e ... e)
-        x nonproc proc (dw x e e e))
-     (v (unspecified) nonproc proc)
+        x nonproc proc (dw x e e e)
+        unspecified)
+     (v nonproc proc)
      (nonproc pp null 'sym sqv (condition string))
      (sqv n #t #f)
      
      (proc uproc pproc (throw x (d d ...)))
      (uproc (lambda (x ...) e e ...) (lambda (x ... dot x) e e ...))
-     (pproc aproc proc1 proc2 list dynamic-wind apply values unspecified)
-     (proc1 null? pair? car cdr call/cc procedure? condition? unspecified? raise*)
+     (pproc aproc proc1 proc2 list dynamic-wind apply values)
+     (proc1 null? pair? car cdr call/cc procedure? condition? raise*)
      (proc2 cons set-car! set-cdr! eqv? call-with-values with-exception-handler)
      (aproc + - / *)
      (raise* raise-continuable raise)
@@ -87,7 +89,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
                 
                 beginF define               ; top-level stuff
                 
-                procedure? unspecified? condition?
+                procedure? condition?
                 cons pair? null? car cdr       ; list functions
                 set-car! set-cdr! list
                 + - * /                          ; math functions
@@ -113,11 +115,19 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (Eo (hole single) E)
      
      (F hole (v ... Fo v ...) (if Fo e e) (set! x Fo) 
-        (begin F* e e ...) (begin0 F* e e ...) (begin0 (values v ...) F* e ...)
+        (begin F* e e ...) (begin0 F* e e ...) 
+        (begin0 (values v ...) F* e ...) (begin0 unspecified F* e ...)
         (call-with-values (lambda () F* e ...) v))
+
      (F* (hole multi) F)
      (Fo (hole single) F)
      
+     ;; all of the one-layer contexts that "demand" their values, 
+     ;; (maybe just "demand" it enough to ensure it is the right # of values)
+     ;; which requires unspecified to blow up.
+     (U (v ... hole v ...) (if hole e e) (set! x hole) 
+        (call-with-values (lambda () hole) v))
+        
      ;; everything except exception handler bodies
      (PG (store (sf ...) ((define x G) d ...)) (store (sf ...) (G d ...)))
      (G (in-hole F (dw x e G e)) F)
@@ -203,7 +213,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (store (sf_1 ... (pp_1 (cons v_1 v_2)) sf_2 ...)
                  (in-hole W_1 (set-car! pp_1 v_3)))
           (store (sf_1 ... (pp_1 (cons v_3 v_2)) sf_2 ...)
-                 (in-hole W_1 (unspecified)))
+                 (in-hole W_1 unspecified))
           "6setcar")
 
      (--> (store (sf_1
@@ -215,7 +225,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
                   ... 
                   (pp_1 (cons v_1 v_3))
                   sf_2 ...)
-                 (in-hole W_1 (unspecified)))
+                 (in-hole W_1 unspecified))
           "6setcdr")
      
      (--> (in-hole P_1 (set-car! v_1 v_2))
@@ -362,15 +372,10 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      
      (--> (in-hole P_1 (procedure? proc)) (in-hole P_1 #t) "6proct")
      (--> (in-hole P_1 (procedure? nonproc)) (in-hole P_1 #f) "6procf")
-     (--> (in-hole P_1 (procedure? (unspecified))) (in-hole P_1 #f) "6procu")
      
      (--> (in-hole P_1 (nonproc v ...))
           (in-hole P_1 (raise (condition "can't call non-procedure")))
           "6appe")
-     
-     (--> (in-hole P_1 ((unspecified) v ...))
-          (in-hole P_1 (raise (condition "can't call non-procedure")))
-          "6appun")
      
      (--> (in-hole P_1 (proc1 v_1 ...))
           (in-hole P_1 (raise (condition "arity mismatch")))
@@ -379,10 +384,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (in-hole P_1 (proc2 v_1 ...))
           (in-hole P_1 (raise (condition "arity mismatch")))
           "62arity"
-          (side-condition (not (= (length (term (v_1 ...))) 2))))
-     (--> (in-hole P_1 (unspecified v_1 v_2 ...))
-          (in-hole P_1 (raise (condition "arity mismatch")))
-          "6unarity")))
+          (side-condition (not (= (length (term (v_1 ...))) 2))))))
   
   (define Apply
     (reduction-relation
@@ -409,10 +411,6 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (in-hole P_1 (apply nonproc v ...))
           (in-hole P_1 (raise (condition "can't apply non-procedure")))
           "6applynf")
-     
-     (--> (in-hole P_1 (apply (unspecified) v ...))
-          (in-hole P_1 (raise (condition "can't apply non-procedure")))
-          "6applyun")
      
      (--> (in-hole P_1 (apply proc v_1 ... v_2))
           (in-hole P_1 (raise (condition "apply's last argument non-list")))
@@ -575,8 +573,9 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           (in-hole P_1 (handlers 
                         v_1 ... v_2 
                         (in-hole G_1 
-                                 (begin (handlers v_1 ... (v_2 v_3))
-                                        (raise (condition "handler returned"))))))
+                                 (handlers v_1 ... 
+                                           (begin (v_2 v_3)
+                                                  (raise (condition "handler returned")))))))
           "6xraise")
      
      (--> (in-hole P_1 (condition? (condition string)))
@@ -602,7 +601,6 @@ immutability: would somehow have to have Qtoc function produce a store, either w
   (define-metafunction A_0
     lang
     [nonproc #f]
-    [(unspecified) #f]
     [(lambda () e e ...) #t]
     [(lambda (x x ...) e e ...) #f]
     [(lambda (dot x) e e ...) #t]
@@ -622,7 +620,6 @@ immutability: would somehow have to have Qtoc function produce a store, either w
   (define-metafunction A_1
     lang
     [nonproc #f]
-    [(unspecified) #f]
     [(lambda () e e ...) #f]
     [(lambda (x) e e ...) #t]
     [(lambda (x y z ...) e e ...) #f]
@@ -659,10 +656,6 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           (in-hole P_1 (v_1 v_2 ...))
           "6cwvd")
      
-     (--> (in-hole P_1 (call-with-values (lambda () (values v_1 ...) e_1 e_2 ...) v_2))
-          (in-hole P_1 (call-with-values (lambda () e_1 e_2 ...) v_2))
-          "6cwvc")
-     
      (--> (in-hole P_1 (call-with-values v_1 v_2))
           (in-hole P_1 (call-with-values (lambda () (v_1)) v_2))
           "6cwvw"
@@ -683,7 +676,32 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (in-named-hole single P (values v_1 ...))
           (unknown ,(format "context expected one value, received ~a" (length (term (v_1 ...)))))
           "6uval"
-          (side-condition (not (= (length (term (v_1 ...))) 1))))))
+          (side-condition (not (= (length (term (v_1 ...))) 1))))
+     (--> (in-hole P (in-hole U unspecified))
+          (unknown "unspecified result")
+          "6udemand")
+     (--> (store (sf ...) (unspecified))
+          (unknown "unspecified result")
+          "6udemandtl")
+     
+     (--> (store (sf_1 ...) (unspecified d_1 d_2 ...))
+          (store (sf_1 ...) (d_1 d_2 ...))
+          "6utl")
+     (--> (in-hole P_1 (begin unspecified e_1 e_2 ...))
+          (in-hole P_1 (begin e_1 e_2 ...))
+          "6ubegin")
+     (--> (in-hole P_1 (handlers v ... unspecified))
+          (in-hole P_1 unspecified)
+          "6uhandlers")
+     (--> (in-hole P_1 (dw x e unspecified e))
+          (in-hole P_1 unspecified)
+          "6udw")
+     (--> (in-hole P_1 (begin0 (values v_1 ...) unspecified e_1 ...))
+          (in-hole P_1 (begin0 (values v_1 ...) e_1 ...))
+          "6ubegin0")
+     (--> (in-hole P_1 (begin0 unspecified (values v_2 ...) e_2 ...))
+          (in-hole P_1 (begin0 unspecified e_2 ...))
+          "6ubegin0u")))
   
   (define Quote
     (reduction-relation
@@ -736,11 +754,6 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           (store (sf_1 ...) (d_1 d_2 ...))
           "6valdrop")
      
-     ;; if there are no expressions, make one up
-     (--> (store (sf_1 ...) ())
-          (store (sf_1 ...) ((values (unspecified))))
-          "6valadd")
-
      ;; splice out begin
      (--> (store (sf_1 ...) ((beginF d_1 ...)  d_2 ...))
           (store (sf_1 ...) (d_1 ... d_2 ...))
@@ -769,11 +782,11 @@ immutability: would somehow have to have Qtoc function produce a store, either w
                   ...
                   (x_1 v_2)
                   sf_2 ...)
-                 (in-hole W_1 (unspecified)))
+                 (in-hole W_1 unspecified))
           "6set")
      
      (--> (store (sf_1 ...) ((in-hole D_1 (set! x_1 v_2)) d_1 ... (define x_1 e_1) d_2 ...))
-          (store (sf_1 ... (x_1 v_2)) ((in-hole D_1 (unspecified)) d_1 ... (define x_1 e_1) d_2 ...))
+          (store (sf_1 ... (x_1 v_2)) ((in-hole D_1 unspecified) d_1 ... (define x_1 e_1) d_2 ...))
           "6setd"
           (side-condition (not (memq (term x_1) (map car (term (sf_1 ...)))))))
      
@@ -790,15 +803,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           "6setu"
           (side-condition 
            (and (not (memq (term x_1) (map car (term (sf_1 ...)))))
-                (not (defines? (term x_1) (term (d_1 ...)))))))
-     
-     (--> (in-hole P_1 (unspecified? (unspecified)))
-          (in-hole P_1 #t)
-          "6unspec?t")
-     (--> (in-hole P_1 (unspecified? v_1))
-          (in-hole P_1 #f)
-          "6unspec?f"
-          (side-condition (not (unspec? (term v_1)))))))
+                (not (defines? (term x_1) (term (d_1 ...)))))))))
   
   (define (defines? var defs)
     (ormap (lambda (def) 
@@ -880,7 +885,6 @@ immutability: would somehow have to have Qtoc function produce a store, either w
   
   (define-metafunction observable-value
     lang
-    [(unspecified) unspecified]
     [pp_1 pair]
     [null null]
     ['sym_1 'sym_1]
@@ -888,7 +892,6 @@ immutability: would somehow have to have Qtoc function produce a store, either w
     [(condition string) condition]
     [proc procedure])
   
-  (define unspec? (test-match lang (unspecified)))
   (define condition? (test-match lang (condition string)))
   (define v? (test-match lang v))
   (define proc? (test-match lang proc))
