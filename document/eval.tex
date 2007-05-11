@@ -1,7 +1,7 @@
 \chapter{\tt{eval}}
 \label{evalchapter}
 
-The \library{r6rs eval} library allows a program to create Scheme
+The \rsixlibrary{eval} library allows a program to create Scheme
 expressions as data at run time and evaluate them.
 
 \begin{entry}{%
@@ -39,19 +39,19 @@ raise an exception with a condition type {\cf\&assertion}.
 \begin{scheme}
 (library (foo)
   (export)
-  (import (r6rs))
+  (import (rnrs (6)))
   (write
     (eval '(let ((x 3)) x)
-          (environment '(r6rs))))) \\\> {\it writes} 3
+          (environment '(rnrs (6)))))) \\\> {\it writes} 3
 
 (library (foo)
   (export)
-  (import (r6rs))
+  (import (rnrs (6)))
   (write
     (eval
       '(eval:car (eval:cons 2 4))
       (environment
-        '(prefix (only (r6rs) car cdr cons null?)
+        '(prefix (only (rnrs (6)) car cdr cons null?)
                  eval:))))) \\\> {\it writes} 2
 \end{scheme}
 \end{entry}

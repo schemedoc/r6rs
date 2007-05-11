@@ -406,14 +406,14 @@ library.
 For the libraries defined in the library report, the export level is
 $0$ for nearly all bindings. The exceptions are {\cf syntax-rules}
 and {\cf identifier-syntax} 
-from the {\cf (r6rs base)} library, which are exported
-with level $1$, and all bindings from the composite {\cf (r6rs)}
+from the \rsixlibrary{base} library, which are exported
+with level $1$, and all bindings from the composite \thersixlibrary{}
 library (see library chapter~\extref{lib:complibchapter}{Composite library}), which are
 exported with levels $0$ and $1$.
 
 \begin{rationale} 
-The {\cf (r6rs)} library is intended as a convenient import for libraries where fine
-control over imported bindings is not necessary or desirable. The {\cf (r6rs)} library
+The \thersixlibrary{} library is intended as a convenient import for libraries where fine
+control over imported bindings is not necessary or desirable. The \thersixlibrary{} library
 exports all bindings for {\cf expand} as well as {\cf run} so that it is convenient
 for writing {\cf syntax-case} macros as well as run-time code.
 \end{rationale}
@@ -474,8 +474,8 @@ identifier uses to particular phases. This report therefore leaves
 considerable latitude to implementations, while attempting to
 provide enough guarantees to make portable libraries practical.
 
-In particular, if a program and its libraries avoid the {\cf (r6rs)}
-and {\cf (r6rs syntax-case)} libraries, and if the program and libraries
+In particular, if a program and its libraries avoid the \thersixlibrary{}
+and \rsixlibrary{syntax-case} libraries, and if the program and libraries
 never use the {\cf for} import form, then the program does not depend
 on whether instances are distinguished across phases, and the phase of
 an identifier's use cannot be inconsistent with the identifier's level.
@@ -673,7 +673,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 \begin{scheme}
 (library (stack)
   (export make push! pop! empty!)
-  (import (r6rs))
+  (import (rnrs (6)))
 
   (define (make) (list '()))
   (define (push! s v) (set-car! s (cons v (car s))))
@@ -684,7 +684,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 
 (library (balloons)
   (export make push pop)
-  (import (r6rs))
+  (import (rnrs (6)))
 
   (define (make w h) (cons w h))
   (define (push b amt)
@@ -701,7 +701,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
           push!
           make-party
           (rename (party-pop! pop!)))
-  (import (r6rs)
+  (import (rnrs (6))
           (only (stack) make push! pop!) ; not empty!
           (prefix (balloons) balloon:))
 
@@ -718,7 +718,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 
 (library (main)
   (export)
-  (import (r6rs) (party))
+  (import (rnrs (6)) (party))
 
   (define p (make-party))
   (pop! p)        ; displays "Boom! 108"
@@ -731,7 +731,7 @@ Examples for macros and phases:
 \begin{schemenoindent}
 (library (my-helpers id-stuff)
   (export find-dup)
-  (import (r6rs))
+  (import (rnrs (6)))
 
   (define (find-dup l)
     (and (pair? l)
@@ -744,7 +744,7 @@ Examples for macros and phases:
 
 (library (my-helpers values-stuff)
   (export mvlet)
-  (import (r6rs) (for (my-helpers id-stuff) expand))
+  (import (rnrs (6)) (for (my-helpers id-stuff) expand))
 
   (define-syntax mvlet
     (lambda (stx)
@@ -758,9 +758,9 @@ Examples for macros and phases:
 
 (library (let-div)
   (export let-div)
-  (import (r6rs)
+  (import (rnrs (6))
           (my-helpers values-stuff)
-          (r6rs r5rs))
+          (rnrs r5rs (6)))
 
   (define (quotient+remainder n d)
     (let ([q (quotient n d)])
