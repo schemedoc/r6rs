@@ -72,6 +72,38 @@ parameter names for arguments that must be record-type descriptors
 and constructor descriptors, respectively (see
 section~\ref{recordsproceduralsection}).
 
+\section{Mutability and equivalence}
+\label{recordsmutabilitysection}
+
+The fields of a record type are designated \textit{mutable} or
+\textit{immutable}.  Correspondingly, a record type with no mutable
+field is called \textit{immutable}\mainindex{immutable record
+  type}\mainindex{mutable record type}, and all records of that type
+are immutable objects.  All other record types are \textit{mutable},
+and so are their records.
+
+FIXME
+
+For any \var{constructor} returned by {\cf record-constructor},
+the following holds:
+
+\begin{scheme}
+(let ((r (\var{constructor} v \ldots)))
+  (eqv? r r))                \ev \schtrue
+\end{scheme}
+
+For mutable records, but not necessarily for immutable ones, the following
+hold.
+
+\begin{scheme}
+(let ((r (\var{constructor} v \ldots)))
+  (eq? r r))                 \ev \schtrue
+
+(let ((f (lambda () (\var{constructor} v \ldots))))
+  (eq? (f) (f)))             \ev \schfalse
+\end{scheme}
+
+
 \section{Procedural layer}
 \label{recordsproceduralsection}
 
@@ -347,32 +379,6 @@ Calls the \var{protocol} of \var{constructor-descriptor} (as described for
 {\cf make-record-constructor-descriptor}) and returns the resulting
 construction procedure \var{constructor} for instances of the record type
 associated with \var{constructor-descriptor}.
-
-Two values created by \var{constructor} are equal according to {\cf
-  equal?} iff they are {\cf eqv?}, provided their record type is not
-used to implement any of the types explicitly mentioned in the
-definition of {\cf equal?}.
-
-For any \var{constructor} returned by {\cf record-constructor},
-the following holds:
-
-\begin{scheme}
-(let ((r (\var{constructor} v \ldots)))
-  (eqv? r r))                \ev \schtrue
-\end{scheme}
-
-For mutable records, but not necessarily for immutable ones, the following
-hold.
-(A record of a mutable record type is mutable;
-a record of an immutable record type is immutable.)
-
-\begin{scheme}
-(let ((r (\var{constructor} v \ldots)))
-  (eq? r r))                 \ev \schtrue
-
-(let ((f (lambda () (\var{constructor} v \ldots))))
-  (eq? (f) (f)))             \ev \schfalse
-\end{scheme}
 \end{entry}
 
 \begin{entry}{%

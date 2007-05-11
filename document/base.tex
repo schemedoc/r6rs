@@ -1168,6 +1168,7 @@ implementation-dependent.
 
 \begin{scheme}
 (eqv? '(a) '(a))                 \ev  \unspecified
+\>\>\textrm{but see below}
 (eqv? "a" "a")                   \ev  \unspecified
 (eqv? '(b) (cdr '(a b)))         \ev  \unspecified
 (let ((x '(a)))
@@ -1175,7 +1176,7 @@ implementation-dependent.
 \end{scheme}
 
 \begin{note}
-  Library section~\extref{lib:recordsproceduralsection}{Procedural
+  Library section~\extref{lib:recordsmutabilitysection}{Procedural
     layer} elaborates on the semantics of {\cf eqv?} on record
   objects.
 \end{note}
@@ -1186,7 +1187,9 @@ their treatment of procedures and literals:  implementations are free
 either to detect or to fail to detect that two procedures or two literals
 are equivalent to each other, and can decide whether or not to
 merge representations of equivalent objects by using the same pointer or
-bit pattern to represent both.
+bit pattern to represent both.  As mentioned in section~\ref{quote},
+however, a quoted literal should evaluate to the same value according
+to {\cf eqv?} each time it is evaluated.
 \end{rationale}
 
 \end{entry}
@@ -1202,8 +1205,8 @@ capable of discerning distinctions finer than those detectable by
 The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the same
 behavior on symbols, Booleans, the empty list, 
 pairs, procedures,
-and non-empty
-strings and vectors.  The behavior of {\cf eq?} on numbers and characters is
+non-empty
+strings and vectors, and mutable records.  The behavior of {\cf eq?} on numbers and characters is
 implementation-dependent, but it always returns either true or
 false, and returns true only when {\cf eqv?}\ would also return
 true.  The {\cf eq?} predicate may also behave differently from {\cf eqv?} on empty
