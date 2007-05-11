@@ -9,14 +9,10 @@ mechanism comes in four libraries:
 \item the \library{r6rs records procedural} library,
   a procedural layer for creating and manipulating record types and record
   instances,
-\item the \library{r6rs records explicit} library,
-  an explicit-naming syntactic layer for defining record types and
-  explicitly named bindings for various procedures to manipulate the record
+\item the \library{r6rs records syntactic} library,
+  a syntactic layer for defining record types and
+  various procedures to manipulate the record
   type,
-\item the \library{r6rs records implicit} library,
-  an implicit-naming syntactic layer that extends the explicit-naming
-  syntactic layer, allowing the names of the defined procedures to be
-  determined implicitly from the names of the record type and fields, and
 \item the \library{r6rs records inspection} library,
   a set of inspection procedures.
 \end{itemize}
@@ -28,29 +24,13 @@ It is particularly useful for writing interpreters that construct
 host-compatible record types.  It may also serve as a target for expansion
 of the syntactic layers.
 
-The explicit-naming syntactic layer provides a basic syntactic interface
+The syntactic layer provides a basic syntactic interface
 whereby a single record definition serves as a shorthand for the definition of
-several record creation and manipulation routines: a construction procedure, a
-predicate, field accessors, and field mutators. As the name suggests, the
-explicit-naming syntactic layer requires the programmer to name each of these
-procedures explicitly.
-
-The implicit-naming syntactic layer extends the explicit-naming syntactic layer
-by allowing the names for the construction procedure, predicate, accessors, and
-mutators to be determined automatically from the name of the record and names
-of the fields. This establishes a standard naming convention and allows
-record-type definitions to be more succinct, with the downside that the
-procedure
-definitions cannot easily be located via a simple search for the 
-procedure name.
-The programmer may override some or all of the default names by specifying them
-explicitly, as in the explicit-naming syntactic layer.
-
-The two syntactic layers are designed to be fully compatible; the
-implicit-naming layer is simply a conservative extension of the
-explicit-naming layer.  The design makes both explicit-naming and
-implicit-naming definitions natural while allowing a seamless
-transition between explicit and implicit naming.
+several record creation and manipulation routines: a constructor, a
+predicate, field accessors, and field mutators.  The
+layer allows the programmer to name each of these
+procedures explicitly, but also provides shorthands for naming them
+implicitly through a set of naming conventions.
 
 Each of these layers permits record types to be extended via single
 inheritance, allowing record types to model hierarchies that occur in
@@ -209,7 +189,7 @@ uid arguments.
 
 \begin{rationale}
   The record and field names passed to
-  {\cf make-record-type-descriptor} and appearing in the explicit-naming
+  {\cf make-record-type-descriptor} and appearing in the 
   syntactic layer are for informational purposes only, e.g., for
   printers and debuggers.
   In particular, the accessor and mutator creation routines do not use
@@ -377,7 +357,7 @@ described when the constructor is called.
    
 Calls the \var{protocol} of \var{constructor-descriptor} (as described for
 {\cf make-record-constructor-descriptor}) and returns the resulting
-construction procedure \var{constructor} for instances of the record type
+constructor \var{constructor} for instances of the record type
 associated with \var{constructor-descriptor}.
 \end{entry}
 
@@ -469,11 +449,11 @@ The mutator returns \unspecifiedreturn.
 (point2-yy p2) \ev 4
 \end{scheme}
 
-\section{Explicit-naming syntactic layer}
-\label{recordsexplicitnamingsection}
+\section{Syntactic layer}
+\label{recordssyntacticsection}
 
-The explicit-naming syntactic layer is provided by the
-\deflibrary{r6rs records explicit} library.
+The syntactic layer is provided by the \deflibrary{r6rs records
+  syntactic} library.
 
 The record-type-defining form {\cf define-record-type} is a definition and
 can appear anywhere any other \hyper{definition} can appear.
@@ -489,11 +469,12 @@ appears; hence, it is possible to refer to the bindings (except for
 that of the record type itself) recursively.
 
 The \hyper{name spec} specifies the names of the record type,
-construction procedure, and predicate. It must take the following
-form.
+constructor, and predicate. It must take one of the following
+forms:
 
 \begin{scheme}
 (\hyper{record name} \hyper{constructor name} \hyper{predicate name})
+\hyper{record name}
 \end{scheme}
 
 \hyper{Record name}, \hyper{constructor name}, and \hyper{predicate
@@ -516,19 +497,30 @@ details, see the description of the {\cf protocol} clause below.
 \hyper{Predicate name} is defined by this definition to a predicate
 for the defined record type.
 
+The second form of \hyper{name spec} is an abbreviation for the first
+form, where the name of the constructor is generated by prefixing the
+record name with {\tt make-}, and the predicate name is generated by
+adding a question mark ({\tt ?}) to the end of the record name. For
+example, if the record name is {\tt frob}, the name of the
+constructor is {\tt make-frob}, and the predicate name is
+{\tt frob?}.
+
 Each \hyper{record clause} must take one of the following forms; it is
 a syntax violation if multiple \hyper{record clause}s of the same kind appear in a
 {\cf define-record-type} form.
 
 \begin{itemize}
-\item {\tt (fields \arbno{\hyper{field-spec}})}
+\item {\tt (fields \arbno{\hyper{field spec}})}
    
-  where each \hyper{field-spec} has one of the following forms
+  where each \hyper{field spec} has one of the following forms
   
 \begin{scheme}
 (immutable \hyper{field name} \hyper{accessor name})
 (mutable \hyper{field name}
          \hyper{accessor name} \hyper{mutator name})
+(immutable \hyper{field name})
+(mutable \hyper{field name})
+\hyper{field name}%
 \end{scheme}
 
   \hyper{Field name}, \hyper{accessor name}, and \hyper{mutator name}
@@ -537,7 +529,18 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
   name}. The second form declares a mutable field called \hyper{field name},
   with the corresponding accessor named \hyper{accessor name}, and with the
   corresponding mutator named \hyper{mutator name}.
-   
+
+  If \hyper{field spec} takes the second or third form, the accessor name
+  is generated by appending the record name and field name with a hyphen
+  separator, and the mutator name (for a mutable field) is generated by
+  adding a {\tt -set!} suffix to the accessor name. For example, if the
+  record name is {\tt frob} and the field name is {\tt widget}, the
+  accessor name is {\tt frob-widget} and the mutator name is
+  {\tt frob-widget-set!}.
+
+  If \hyper{field spec} is just a \hyper{field name} form, it is an
+  abbreviation for {\cf (immutable \hyper{field name})}.
+
   The \hyper{field name}s become, as symbols, the names of the fields of the
   record type being created, in the same order. They are not used in any
   other way.
@@ -607,15 +610,64 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
 \end{itemize}
 
 All bindings created by {\cf define-record-type} (for the record type,
-the construction procedure, the predicate, the accessors, and the
+the constructor, the predicate, the accessors, and the
 mutators) must have names that are pairwise distinct.
 
 The {\cf fields}, {\cf mutable}, {\cf immutable}, {\cf parent}, {\cf
   protocol}, {\cf sealed}, {\cf opaque}, and {\cf nongenerative}
-identifiers are all exported by the \library{r6rs records explicit}
+identifiers are all exported by the \library{r6rs records syntactic}
 library with level $0$.  Referring to one of these identifiers out of
 place is a syntax violation.
 \end{entry}
+
+Any definition that takes advantage of implicit naming for the
+constructor, predicate, accessor, and mutator names, can be rewritten
+trivially to a definition that specifies all names explicitly. For
+example, the implicit-naming layer record definition:
+
+\begin{scheme}
+(define-record-type frob
+  (fields (mutable widget))
+  (protocol
+    (lambda (c) (c (make-widget n)))))
+\end{scheme}
+
+is equivalent to the following explicit-naming record definition.
+
+\begin{scheme}
+(define-record-type (frob make-frob frob?)
+  (fields (mutable widget
+                   frob-widget frob-widget-set!))
+  (protocol
+    (lambda (c) (c (make-widget n)))))
+\end{scheme}
+
+Also, the implicit-naming layer record definition:
+
+\begin{scheme}
+(define-record-type point (fields x y))%
+\end{scheme}
+
+is equivalent to the following explicit-naming record
+definition:
+
+\begin{scheme}
+(define-record-type (point make-point point?)
+  (fields 
+    (immutable x point-x)
+    (immutable y point-y)))%
+\end{scheme}
+
+With implicit naming, one can choose to specify just some of
+the names explicitly; for example, the following overrides the choice
+of accessor and mutator names for the widget field.
+
+\begin{scheme}
+(define-record-type frob
+  (fields (mutable widget getwid setwid!))
+  (protocol
+    (lambda (c) (c (make-widget n)))))
+\end{scheme}
 
 \begin{entry}{%
 \proto{record-type-descriptor}{ \hyper{record name}}{\exprtype}}
@@ -633,8 +685,6 @@ types.
 Evaluates to the record-constructor descriptor associated with
 \hyper{record name}.
 \end{entry}
-
-Explicit-naming syntactic-layer examples:
 
 \begin{scheme}
 (define-record-type (point3 make-point3 point3?)
@@ -706,108 +756,7 @@ Explicit-naming syntactic-layer examples:
   (fields (immutable x unit-vector-x)
           (immutable y unit-vector-y)
           (immutable z unit-vector-z)))
-\end{scheme}
 
-\section{Implicit-naming syntactic layer}
-
-The implicit-naming syntactic layer is provided by the
-\deflibrary{r6rs records implicit} library.
-
-The {\cf define-record-type} form of the implicit-naming syntactic
-layer is a conservative extension of the {\cf define-record-type} form
-of the explicit-naming layer: a {\cf define-record-type} form that
-conforms to the syntax of the explicit-naming layer also conforms to
-the syntax of the implicit-naming layer, and any definition in the
-implicit-naming layer can be understood by its translation into the
-explicit-naming layer.
-
-This means that a record type defined by the {\cf define-record-type}
-form of either layer can be used by the other.
-
-The implicit-naming syntactic layer extends the explicit-naming layer
-in two ways. First, \hyper{name-spec} may be a single identifier
-representing just the record name. In this case, the name of the
-construction procedure is generated by prefixing the record name with
-{\tt make-}, and the predicate name is generated by adding a question
-mark ({\tt ?}) to the end of the record name. For example, if the
-record name is {\tt frob}, the name of the construction procedure is
-{\tt make-frob}, and the predicate name is {\tt frob?}.
-
-Second, the syntax of \hyper{field-spec} is extended to allow the
-accessor and mutator names to be omitted. That is, \hyper{field-spec}
-can take one of the following forms as well as the forms described in
-the preceding section.
-
-\begin{scheme}
-(immutable \hyper{field name})
-(mutable \hyper{field name})%
-\end{scheme}
-
-If \hyper{field-spec} takes one of these forms, the accessor name
-is generated by appending the record name and field name with a hyphen
-separator, and the mutator name (for a mutable field) is generated by
-adding a {\tt -set!} suffix to the accessor name. For example, if the
-record name is {\tt frob} and the field name is {\tt widget}, the
-accessor name is {\tt frob-widget} and the mutator name is
-{\tt frob-widget-set!}.
-
-Third, the syntax of \hyper{field-spec} is also extended to consist of
-just the field name.  The corresponding field is assumed to be immutable.
-
-As with the explicit-naming layer, the {\cf fields}, {\cf mutable},
-{\cf immutable}, {\cf parent}, {\cf protocol}, {\cf sealed}, {\cf
-  opaque}, and {\cf nongenerative} are exported with level $0$.
-
-Any definition that takes advantage of implicit naming can be
-rewritten trivially to a definition that conforms to the syntax of the
-explicit-naming layer merely by specifying the names explicitly. For
-example, the implicit-naming layer record definition:
-
-\begin{scheme}
-(define-record-type frob
-  (fields (mutable widget))
-  (protocol
-    (lambda (c) (c (make-widget n)))))
-\end{scheme}
-
-is equivalent to the following explicit-naming layer record definition.
-
-\begin{scheme}
-(define-record-type (frob make-frob frob?)
-  (fields (mutable widget
-                   frob-widget frob-widget-set!))
-  (protocol
-    (lambda (c) (c (make-widget n)))))
-\end{scheme}
-
-Also, the implicit-naming layer record definition:
-
-\begin{scheme}
-(define-record-type point (fields x y))%
-\end{scheme}
-
-is equivalent to the following explicit-naming layer record
-definition:
-
-\begin{scheme}
-(define-record-type (point make-point point?)
-  (fields 
-    (immutable x point-x)
-    (immutable y point-y)))%
-\end{scheme}
-
-With the implicit-naming layer, one can choose to specify just some of
-the names explicitly; for example, the following overrides the choice
-of accessor and mutator names for the widget field.
-
-\begin{scheme}
-(define-record-type frob
-  (fields (mutable widget getwid setwid!))
-  (protocol
-    (lambda (c) (c (make-widget n)))))
-\end{scheme}
-
-\begin{scheme}
 (define *ex3-instance* \schfalse{})
 
 (define-record-type ex3
@@ -833,23 +782,9 @@ of accessor and mutator names for the widget field.
 (record? ex3-i1) \ev \schfalse{}
 \end{scheme}
 
-\begin{entry}{%
-\rproto{record-type-descriptor}{ \hyper{record name}}{\exprtype}}
-
-This is the same as {\cf record-type-descriptor} from the
-\library{r6rs records explicit} library.
-\end{entry}
-
-\begin{entry}{%
-\rproto{record-constructor-descriptor}{ \hyper{record name}}{\exprtype}}
-   
-This is the same as {\cf record-constructor-descriptor} from the
-\library{r6rs records explicit} library.
-\end{entry}
-
 \section{Inspection}
 
-The implicit-naming syntactic layer is provided by the
+The inspection layer is provided by the
 \deflibrary{r6rs records inspection} library.
 
 A set of procedures are provided for inspecting records and their
