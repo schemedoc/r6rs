@@ -115,7 +115,8 @@ inspection operations if \var{t} is opaque but \var{p} is not. An exception with
 condition type {\cf\&assertion} is raised if \var{parent} is sealed (see below).
    
 The extension relationship is transitive in the sense that a type extends
-its parent's parent, if any, and so on.
+its parent's parent, if any, and so on.  A record type that does not
+extend another record type is called a \defining{base record type}.
    
 The \var{uid} argument must be either \schfalse{} or a symbol.
 If \var{uid} is a symbol, the record-creation operation is
@@ -237,95 +238,110 @@ Returns \schtrue{} if the argument is a record-type descriptor,
         \var{parent-constructor-descriptor} \var{protocol})}
 
 Returns a \defining{record-constructor descriptor} (or
-\defining{constructor descriptor} for short) that can be used to
-create record constructors (via {\cf record-constructor}; see below)
-or other constructor descriptors.  \var{Rtd} must be a record-type
+\defining{constructor descriptor} for short) that specifies a \defining{record
+constructor} (or \textit{constructor} for short),
+that can be used to construct record values of the type
+specified bx \var{rtd}, and which can be obtained
+via {\cf record-constructor}.   A constructor descriptor can
+also be used to create other constructor descriptors for subtypes of
+its own record type.  \var{Rtd} must be a record-type
 descriptor.  \var{Protocol}\mainindex{protocol} must be a procedure or \schfalse.
 If it is \schfalse, a default \var{protocol} procedure is supplied.
+
 If \var{protocol} is a procedure, it is called by {\cf record-constructor}
 with a single argument \var{p} and should return a procedure that creates
 and returns an instance of the record type using \var{p} as described
-below.
+below.  The role of \var{p} differs depending on the kind record type
+respresented by \var{rtd}:
 
-If \var{rtd} is not an extension of another record type, then
+If \var{rtd} is a base record type, then
 \var{parent-constructor-descriptor} must be \schfalse.
-In this case, \var{protocol}'s argument \var{p} is a procedure \var{new}
-that expects one parameter for every field of \var{rtd} and returns a
-record instance with the fields of \var{rtd} initialized to its arguments.
-The procedure returned by \var{protocol} may take any number of arguments
-but should call \var{new} with the number of arguments it expects and return
-the resulting record instance, as shown in the simple example below.
-
+In this case, \var{protocol}'s argument \var{p} is a procedure
+that expects one argument for every field of \var{rtd} and returns a
+record with the fields of \var{rtd} initialized to these arguments.
+The procedure returned by \var{protocol} 
+should call \var{p} once with the number of arguments it expects and return
+the resulting record as shown in the simple example below:
+%
 \begin{scheme}
-(lambda (\var{new})
-  (lambda (v1 \ldots)
-    (\var{new} v1 \ldots)))
+(lambda (p)
+  (lambda (v1 v2 v3)
+    (p v1 v2 v3)))%
 \end{scheme}
+%
+Here, the call to {\cf p} returns a record whose fields are
+initialized with the values of {\cf v1}, {\cf v2}, and {\cf v3}.  The
+expression above is equivalent to {\cf (lambda (p) p)}.  Note that the
+procedure returned by \var{protocol} is otherwise unconstrained;
+specifically, it can take any number of arguments.-
 
-Here, the call to \var{new} returns a record whose fields
-are simply initialized with the arguments {\tt v1 \ldots}.
-The expression above is equivalent to
-{\cf (lambda (\var{new}) \var{new})}.
+\medskip
 
 If \var{rtd} is an extension of another record type \var{parent-rtd},
 \var{parent-constructor-descriptor} must be a constructor descriptor
 of \var{parent-rtd} or \schfalse.
-If it is \schfalse, a default constructor descriptor is assumed, whose
-constructor accepts as many values as there are fields and initializes
-the fields to the arguments.
-In the extension case, \var{p} is a procedure that accepts the same number
+If \var{parent-constructor-descriptor} or \var{protocol} is \schfalse,
+\var{protocol} must also be \schfalse, and
+a default constructor descriptor is assumed as described below.
+
+If \var{parent-constructor-descriptor} is a constructor descriptor
+and \var{protocol} is a procedure, then its argument \var{p} is a
+procedure that accepts the same number
 of arguments as the constructor of \var{parent-constructor-descriptor}
-and returns a procedure \var{new}, which, as above,
-expects one parameter for every field of \var{rtd} (not including parent
-fields) and returns a record instance with the fields of \var{rtd}
-initialized to its arguments and the fields of \var{parent-rtd} and
-its parents initialized by the constructor of
+and returns a procedure \var{new} that, when called, constructs the
+record itself. The \var{new} procedure
+expects one argument for every field of \var{rtd} (not including parent
+fields) and returns a record with the fields of \var{rtd}
+initialized to these arguments, and the fields of \var{parent-rtd} and
+its parents initialized as specified by
 \var{parent-constructor-descriptor}.
-A simple \var{protocol} in this case might be written as follows.
 
+The procedure returned by \var{protocol} should call \var{p} once with
+the number of arguments it expects, call the procedure it returns once
+with number of arguments it expects and return the resulting record.
+A simple \var{protocol} in this case might be written as follows:
+%
 \begin{scheme}
-(lambda (\var{p})
-  (lambda (x1 \ldots v1 \ldots)
-    (let ((\var{new} (\var{p} x \ldots)))
-      (\var{new} v1 \ldots))))
+(lambda (p)
+  (lambda (v1 v2 v3 x1 x2 x3 x4)
+    (let ((new (p v1 v2 v3)))
+      (new x1 x2 x3 x4))))%
 \end{scheme}
+%
+This passes arguments {\cf v1}, {\cf v2}, {\cf v3} to \var{p} for 
+\var{parent-constructor-descriptor} and calls {\cf new}
+with {\cf x1}, \ldots, {\cf x4} to initialize the fields of \var{rtd} itself.
 
-This passes some number of arguments {\tt x1 \ldots} to \var{p} for the
-constructor of \var{parent-constructor-descriptor} and calls \var{new}
-with {\tt v1 \ldots} to initialize the child fields.
-
-The constructor descriptors for a record type form a chain of
+Thus, the constructor descriptors for a record type form a chain of
 protocols exactly parallel to the chain of record-type parents. Each
 constructor descriptor in the chain determines the field values for the
 associated record type.
 Child record constructors need not know the number or contents of parent
 fields, only the number of arguments required by the parent constructor.
 
-\var{protocol} may be \schfalse, specifying a default, only
-if \var{rtd} is not an extension of another record
-type, or, if it is, if the parent constructor-descriptor
-encapsulates a default protocol. In the first case, the
-default \var{protocol} procedure is equivalent to the following:
-
+\var{Protocol} may be \schfalse, specifying a default value that
+accepts one argument for each field of \var{rtd} (not including the
+fields of its parent type, if any).  Specifically, if \var{rtd} is a
+base type, the default \var{protocol} procedure behaves as if it were
+{\cf (lambda (p) p)}.  If \var{rtd} is an extension of another type,
+then \var{parent-constructor-descriptor} must be either \schfalse{} or
+itself specify a default constructor.  In this case, the default
+\var{protocol} procedure behaves as if it were:
+%
 \begin{scheme}
 (lambda (p)
-  (lambda field-values
-    (apply p field-values)))
+  (lambda (\vari{v} \ldots \varj{v} \vari{x} \ldots \vark{x})
+    (let ((new (p \vari{v} \ldots \varj{v})))
+      (new \vari{x} \ldots \vark{x}))))%
 \end{scheme}
-
-or, simply, {\cf (lambda (\var{p}) \var{p})}.
-
-In the second case, the default \var{protocol} procedure returns a
-constructor that accepts one argument for each of the record type's
-complete set of 
-fields (including those of the parent record type, the parent's parent 
-record type, etc.) and returns a record with the fields initialized to
-those arguments, with the field values for the parent coming before
-those of the extension in the argument list.
-
-Even if \var{rtd} extends another record type,
-\var{parent-constructor-descriptor} may also be \schfalse, in which case a
-constructor with default protocol is supplied.
+%
+The resulting constructor accepts one argument for each of the record
+type's complete set of fields (including those of the parent record
+type, the parent's parent record type, etc.) and returns a record with
+the fields initialized to those arguments, with the field values for
+the parent coming before those of the extension in the argument list.
+(In the example, $j$ is the complete number of fields of the parent
+type, and $k$ is the number of fields of \var{rtd} itself.)
 
 \implresp If \var{protocol} is a procedure, the implementation must
 check the restrictions on it to the extent performed by applying it as
@@ -360,7 +376,7 @@ described when the constructor is called.
    
 Calls the \var{protocol} of \var{constructor-descriptor} (as described for
 {\cf make-record-constructor-descriptor}) and returns the resulting
-constructor \var{constructor} for instances of the record type
+constructor \var{constructor} for records of the record type
 associated with \var{constructor-descriptor}.
 \end{entry}
 
@@ -843,7 +859,7 @@ Note that {\cf record?} and {\cf record-rtd} treat records of opaque
 record types as if they were not records. On the other hand, the
 inspection procedures that operate on record-type descriptors
 themselves are not affected by opacity. In other words, opacity
-controls whether a program can obtain an rtd from an instance. If the
+controls whether a program can obtain an rtd from a record. If the
 program has access to the original rtd via {\cf
   make-record-type-descriptor} or {\cf record-type-descriptor}, it can
 still make use of the inspection procedures.
