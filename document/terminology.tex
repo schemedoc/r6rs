@@ -223,12 +223,29 @@ The ``\evalsto'' symbol is also used when the evaluation of an
 expression causes a violation.  For example,
 
 \begin{scheme}
-(integer->char \sharpsign{}xD800) \ev \exception{\&assertion}
+(integer->char \sharpsign{}xD800) \ev \exception{\&assertion}%
 \end{scheme}
-
+%
 means that the evaluation of the expression {\cf (integer->char
   \sharpsign{}xD800)} must raise an exception with condition type
 {\cf\&assertion} or abort the execution of the program.
+
+Moreover, the ``\evalsto'' symbol is also used to explicitly say that
+the value of an expression in unspecified.  For example:
+%
+\begin{scheme}
+(eqv? "" "")             \ev  \unspecified%
+\end{scheme}
+
+Mostly, examples merely illustrate the behavior specified in the
+entry.  In some cases, however, they disambiguate otherwise ambiguous
+specifications and are thus normative.  Note that, in some cases,
+specifically in the case of inexact numbers, the return value is only
+specified conditionally or approximately.  For example:
+%
+\begin{scheme}
+(atan -inf.0)                  \lev -1.5707963267948965 ; approximately%
+\end{scheme}
 
 \section{Unspecified behavior}
 
