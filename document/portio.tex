@@ -681,6 +681,64 @@ using the {\cf with-input-from-file} procedure from the
 \end{entry}
 
 \begin{entry}{%
+\pproto{(make-custom-textual-input-port \var{id} \var{read!}}{procedure}}
+\mainschindex{make-custom-textual-input-port}{\tt\obeyspaces\\
+  \var{get-position} \var{set-position!} \var{close})}
+
+Returns a newly created textual input port whose byte source is
+an arbitrary algorithm represented by the \var{read!} procedure.
+\var{Id} must be a string naming the new port,
+provided for informational purposes only.
+\var{Read!} must be a procedure, and should behave as specified
+below; it will be called by operations that perform textual input.
+
+Each of the remaining arguments may be \schfalse{}; if any of
+those arguments is not \schfalse{}, it must be a procedure and
+should behave as specified below.
+   
+\begin{itemize}
+\item {\cf (\var{read!} \var{string} \var{start} \var{count})}
+       
+  \domain{\var{Start} will be a non-negative exact integer,
+  \var{count} will be a positive exact integer,}
+  and \var{string} will be a string whose length is at least
+  $\var{start} + \var{count}$.
+  The \var{read!} procedure should obtain up to \var{count} characters
+  from the character source, and should write those characters
+  into \var{string} starting at index \var{start}.
+  The \var{read!} procedure must return an exact integer.  This
+  integer should be the number of characters that it has written.
+  To indicate an end of file condition, the \var{read!}
+  procedure should write no bytes and return 0.
+
+\item {\cf (\var{get-position})}
+       
+  The \var{get-position} procedure (if supplied) must return an exact
+  integer.  The return value should represent the current position of
+  the input port.  If not supplied, the custom port will not support
+  the {\cf port-position} operation.
+  
+\item {\cf (\var{set-position!} \var{k})}
+       
+  The \var{set-position!} procedure (if supplied) should set the
+  position of the input port to \var{k}.  If not supplied, the custom
+  port will not support the {\cf set-port-position!} operation.
+       
+\item {\cf (\var{close})}
+       
+  The \var{close} procedure (if supplied) should perform any actions
+  that are necessary when the input port is closed.
+\end{itemize}
+
+\implresp The implementation is only required to check the return
+values of \var{read!} and \var{get-position} when it actually calls
+them as part of an I/O operation requested by the program.  The
+implementation is not required to check that these procedures
+otherwise behave as described.  If they do not, however, the behavior
+of the resulting port is unspecified.
+\end{entry}
+
+\begin{entry}{%
 \pproto{(make-custom-binary-input-port \var{id} \var{read!}}{procedure}}
 \mainschindex{make-custom-binary-input-port}{\tt\obeyspaces\\
   \var{get-position} \var{set-position!} \var{close})}
@@ -706,14 +764,14 @@ should behave as specified below.
   The \var{read!} procedure should obtain up to \var{count} bytes
   from the byte source, and should write those bytes
   into \var{bytevector} starting at index \var{start}.
-  The \var{read!} procedure must return an exact integer.  This
+  The \var{read!} procedure should return an exact integer.  This
   integer should be the number of bytes that it has written.
   To indicate an end of file condition, the \var{read!}
   procedure should write no bytes and return 0.
 
 \item {\cf (\var{get-position})}
        
-  The \var{get-position} procedure (if supplied) must return an exact
+  The \var{get-position} procedure (if supplied) should return an exact
   integer.  The return value should represent the current position of
   the input port.  If not supplied, the custom port will not support
   the {\cf port-position} operation.
@@ -1071,10 +1129,9 @@ Returns two values: a textual output port and a procedure.
 The output port accumulates the characters written to it for
 later extraction by the procedure.
 
-The port has an associated transcoder, which is implementation-dependent.
-Whether the port supports
-the {\cf port-position} and {\cf set-port-position!} operations
-is implementation-dependent.
+The port has an associated transcoder, which is
+implementation-dependent.  The port should support the {\cf
+  port-position} and {\cf set-port-position!} operations.
 
 When the procedure is called without arguments, it returns a string consisting of the port's
 accumulated characters and removes the accumulated characters from the port.
@@ -1147,8 +1204,48 @@ should behave as specified in the description of
   them to the byte sink.
   If \var{count} is 0, then the \var{write!} procedure should
   have the effect of passing an end-of-file object to the byte sink.
-  In any case, the \var{write!} procedure must return the number of
-  bytes that it reads, as an exact integer.
+  In any case, the \var{write!} procedure should return the number of
+  bytes that it wrote, as an exact integer.
+\end{itemize}
+
+\implresp The implementation is only required to check the return
+values of \var{write!} when it actually calls \var{write!} as part of
+an I/O operation requested by the program.  The implementation is not
+required to check that \var{write!} otherwise behaves as described.
+If it does not, however, the behavior of the resulting port is
+unspecified.
+\end{entry}
+
+\begin{entry}{%
+\pproto{(make-custom-textual-output-port \var{id}}{procedure}}
+\mainschindex{make-custom-textual-output-port}{\tt\obeyspaces\\
+  \var{write!} \var{get-position} \var{set-position!} \var{close})}
+
+Returns a newly created textual output port whose byte sink is
+an arbitrary algorithm represented by the \var{write!} procedure.
+\var{Id} must be a string naming the new port,
+provided for informational purposes only.
+\var{Write!} must be a procedure, and should behave as specified
+below; it will be called by operations that perform textual output.
+
+Each of the remaining arguments may be \schfalse{}; if any of
+those arguments is not \schfalse{}, it must be a procedure and
+should behave as specified in the description of
+{\cf make-custom-textual-input-port}.
+   
+\begin{itemize}
+\item {\cf (\var{write!} \var{string} \var{start} \var{count})}
+       
+  \domain{\var{Start} and \var{count} will be non-negative exact integers,
+  and \var{string} will be a string whose length is at least
+  $\var{start} + \var{count}$.}
+  The \var{write!} procedure should read up to \var{count} characters
+  from \var{string} starting at index \var{start}, and forward
+  them to the character sink.
+  If \var{count} is 0, then the \var{write!} procedure should
+  have the effect of passing an end-of-file object to the character sink.
+  In any case, the \var{write!} procedure should return the number of
+  characters that it wrote, as an exact integer.
 \end{itemize}
 
 \implresp The implementation is only required to check the return
