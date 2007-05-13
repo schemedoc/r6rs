@@ -571,10 +571,16 @@ sequence is encoded by the given bytevector.
 \domain{If \var{endianness} is specified, it must be the symbol {\cf
     big} or the symbol {\cf little}.}  The {\cf utf16->string}
 procedure returns a newly allocated (unless empty) string whose
-character sequence is encoded by the given bytevector.
-If endianness is not specified or is {\cf big},
-then UTF-16BE is used.  If endianness is {\cf little}, then UTF-16LE
-is used.
+character sequence is encoded by the given bytevector.  If \var{endianness}
+is {\cf big}, then UTF-16BE is used.  If \var{endianness} is {\cf little},
+then UTF-16LE is used.  If \var{endianness} is not specified,
+\var{bytevector} is decoded according to UTF-16: If it starts with the
+bytes \sharpsign{}xFE, \sharpsign{}xFF (a big-endian byte-order mark),
+then UTF-16BE is used for the remaining contents of \var{bytevector};
+if it starts with the bytes \sharpsign{}xFF, \sharpsign{}xFE (a
+little-endian byte-order mark), then UTF-16LE is used for the
+remaining contents of \var{bytevector}; otherwise the entire contents
+of \var{bytevector} are decoded according to UTF-16BE.
 \end{entry}
 
 \begin{entry}{%
@@ -584,10 +590,18 @@ is used.
 \domain{If \var{endianness} is specified, it must be the symbol {\cf
     big} or the symbol {\cf little}.}  The {\cf utf32->string}
 procedure returns a newly allocated (unless empty) string whose
-character sequence is encoded by the given bytevector.
-If endianness is not specified or is {\cf big},
-then UTF-32BE is used.  If endianness is {\cf little}, then UTF-32LE
-is used.
+character sequence is encoded by the given bytevector.  If
+\var{endianness} is {\cf big}, then UTF-32BE is used.  If
+\var{endianness} is {\cf little}, then UTF-32LE is used.  If
+\var{endianness} is not specified, \var{bytevector} is decoded
+according to UTF-32: If it starts with the bytes \sharpsign{}x00,
+\sharpsign{}x00, \sharpsign{}xFE, \sharpsign{}xFF (a big-endian
+byte-order mark), then UTF-32BE is used for the remaining contents of
+\var{bytevector}; if it starts with the bytes \sharpsign{}xFF,
+\sharpsign{}xFE, \sharpsign{}x00, \sharpsign{}x00 (a little-endian
+byte-order mark), then UTF-32LE is used for the remaining contents of
+\var{bytevector}; otherwise the entire contents of \var{bytevector}
+are decoded according to UTF-32BE.
 \end{entry}
 
 %%% Local Variables: 
