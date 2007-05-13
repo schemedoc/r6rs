@@ -75,25 +75,24 @@ specified options. The following options, which affect output
 only, have standard meanings:
 
 \begin{itemize}   
-\item {\cf create} create file if it does not already exist
-\item {\cf exclusive} an exception with condition type
-  {\cf\&i/o-file-already-exists} is raised if this
-  option and {\cf create} are both set and the file already exists
-\item {\cf truncate}
-  file is truncated to zero length
+\item {\cf no-create} do not create file if it does not already exist
+  (if this options is absent, the file is created)
+\item {\cf no-fail} do not fail if this options is set and {\cf
+    no-create} is absent (if this option and {\cf no-create} is
+  absent, an exception with condition type
+  {\cf\&i/o-file-already-exists} is raised if the file already exists)
+\item {\cf no-truncate}
+  file is not truncated to zero length (if absent, the file is truncated)
 \end{itemize}
 
 \meta{Identifiers}s
 other than those listed above may be used as \hyper{file-options name}s;
 they have implementation-specific meaning, if any.
 
-When supplied to an operation that opens a file for output,
-the file-options object returned by {\cf (file-options)} specifies
-that the file
-must already exist (otherwise an exception with condition type
-{\cf\&i/o-file-exists-not} is raised) and its data are unchanged by the
-operation;
-note that this default seldom coincides with the desired semantics.
+When supplied to an operation that opens a file for output, the
+file-options object returned by {\cf (file-options)} specifies that
+the file is created if it does not exist, and is truncated and
+overwritten if it exists.
 
 \begin{rationale}
   The flags specified above represent only a common subset of
