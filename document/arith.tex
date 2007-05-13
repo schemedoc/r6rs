@@ -788,8 +788,11 @@ Returns the exact integer that is the result of the following computation:
  
 If \var{ei} is non-negative, this procedure returns the number of
 1 bits in the two's complement representation of \var{ei}.
-Otherwise it returns the number of 0 bits in the two's complement
-representation of \var{ei}.
+Otherwise it returns the result of the following computation:
+%
+\begin{scheme}
+(bitwise-not (bitwise-bit-count (bitwise-not \var{ei})))%
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%
