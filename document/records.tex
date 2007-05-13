@@ -53,6 +53,7 @@ and constructor descriptors, respectively (see
 section~\ref{recordsproceduralsection}).
 
 \section{Mutability and equivalence}
+\label{recordsequivalencesection}
 \label{recordsmutabilitysection}
 
 The fields of a record type are designated \textit{mutable} or
@@ -62,27 +63,29 @@ field is called \textit{immutable}\mainindex{immutable record
 are immutable objects.  All other record types are \textit{mutable},
 and so are their records.
 
-FIXME
+For two records \vari{obj} and \varii{obj}, the return value of {\cf
+  (eqv \vari{obj} \varii{obj})}, is specified as follows:
 
-For any \var{constructor} returned by {\cf record-constructor},
-the following holds:
+\begin{itemize}
+\item If \vari{obj} and \varii{obj} have different record types (i.e.\
+  their record-type descriptors are not {\cf eqv?}), {\cf eqv?}
+  returns false.
+\item If \vari{obj} and \varii{obj} are both immutable records, then
+  {\cf eqv?} may return \schfalse.  
+\end{itemize}
 
-\begin{scheme}
-(let ((r (\var{constructor} v \ldots)))
-  (eqv? r r))                \ev \schtrue
-\end{scheme}
+\begin{rationale}
+  For immutable records, either \vari{obj} and \varii{obj} may have
+  been subjected to boxing and unboxing since they were created, and
+  implementors are not required to implement immutable records with
+  locations, serial numbers, or any other notion of object identity.
+\end{rationale}
 
-For mutable records, but not necessarily for immutable ones, the following
-hold.
-
-\begin{scheme}
-(let ((r (\var{constructor} v \ldots)))
-  (eq? r r))                 \ev \schtrue
-
-(let ((f (lambda () (\var{constructor} v \ldots))))
-  (eq? (f) (f)))             \ev \schfalse
-\end{scheme}
-
+Moreover, if \vari{obj} and \varii{obj} are both immutable records,
+and {\cf (eqv? \vari{obj} \varii{obj})} returns \schtrue, then
+\vari{obj} and \varii{obj} behave the same when passed as arguments to
+any procedure that can be written as a finite composition of Scheme's
+standard procedures.
 
 \section{Procedural layer}
 \label{recordsproceduralsection}
