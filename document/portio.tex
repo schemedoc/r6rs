@@ -502,24 +502,35 @@ The {\cf port-has-port-position?} procedure returns \schtrue{} if the
 port supports the {\cf port-position} operation, and \schfalse{}
 otherwise.
 
-The {\cf port-position} procedure
-returns the exact non-negative integer index of the position at which the
-next byte would be read from or written to the port.
-An exception with condition type {\cf\&assertion}
-is raised if the port does not support the operation.
+For a binary port, the {\cf port-position} procedure returns the exact
+non-negative integer index of the position at which the next byte
+would be read from or written to the port.  For a textual port, {\cf
+  port-position} returns an arbitrary value that is acceptable as
+input for {\cf set-port-position} (see below).
+
+If the port does not support the operation, {\cf port-position} raises
+an exception with condition type {\cf\&assertion}.
+
+\begin{note}
+  For a textual port, the port position may or may not be an integer.
+  If it is an integer, the integer does not necessarily correspond to
+  a byte or character position.
+\end{note}
 \end{entry}   
 
 \begin{entry}{%
 \proto{port-has-set-port-position!?}{ port}{procedure}
 \proto{set-port-position!}{ port pos}{procedure}}
 
-\domain{\var{Pos} must be a non-negative exact integer.}
+\domain{If \var{port} is a binary port, \var{pos} must be a
+  non-negative exact integer.  If \var{port} is a textual port,
+  \var{pos} should be the return value of a call to {\cf port-position}.}
    
 The {\cf port-has-set-port-position?} procedure returns \schtrue{} if the port
 supports the {\cf set-port-position!} operation, and \schfalse{}
 otherwise.
    
-The {\cf set-port-position!} procedure sets the current byte position
+The {\cf set-port-position!} procedure sets the current position
 of the port to \var{pos}.  If \var{port} is an output or combined
 input and output port, this first flushes \var{port}.  (See {\cf
   flush-output-port}, section~\ref{flush-output-port}.)
@@ -614,7 +625,7 @@ the {\cf port-position} and {\cf set-port-position!} operations will
 be implementation-dependent (and possibly transcoder-dependent).
 
 \begin{rationale}
-  The byte position of a complexly transcoded port may not be
+  The position of a transcoded port may not be
   well-defined, and may be hard to calculate even when defined,
   especially when transcoding is buffered.
 \end{rationale}
@@ -681,64 +692,6 @@ using the {\cf with-input-from-file} procedure from the
 \end{entry}
 
 \begin{entry}{%
-\pproto{(make-custom-textual-input-port \var{id} \var{read!}}{procedure}}
-\mainschindex{make-custom-textual-input-port}{\tt\obeyspaces\\
-  \var{get-position} \var{set-position!} \var{close})}
-
-Returns a newly created textual input port whose byte source is
-an arbitrary algorithm represented by the \var{read!} procedure.
-\var{Id} must be a string naming the new port,
-provided for informational purposes only.
-\var{Read!} must be a procedure, and should behave as specified
-below; it will be called by operations that perform textual input.
-
-Each of the remaining arguments may be \schfalse{}; if any of
-those arguments is not \schfalse{}, it must be a procedure and
-should behave as specified below.
-   
-\begin{itemize}
-\item {\cf (\var{read!} \var{string} \var{start} \var{count})}
-       
-  \domain{\var{Start} will be a non-negative exact integer,
-  \var{count} will be a positive exact integer,}
-  and \var{string} will be a string whose length is at least
-  $\var{start} + \var{count}$.
-  The \var{read!} procedure should obtain up to \var{count} characters
-  from the character source, and should write those characters
-  into \var{string} starting at index \var{start}.
-  The \var{read!} procedure must return an exact integer.  This
-  integer should be the number of characters that it has written.
-  To indicate an end of file condition, the \var{read!}
-  procedure should write no bytes and return 0.
-
-\item {\cf (\var{get-position})}
-       
-  The \var{get-position} procedure (if supplied) must return an exact
-  integer.  The return value should represent the current position of
-  the input port.  If not supplied, the custom port will not support
-  the {\cf port-position} operation.
-  
-\item {\cf (\var{set-position!} \var{k})}
-       
-  The \var{set-position!} procedure (if supplied) should set the
-  position of the input port to \var{k}.  If not supplied, the custom
-  port will not support the {\cf set-port-position!} operation.
-       
-\item {\cf (\var{close})}
-       
-  The \var{close} procedure (if supplied) should perform any actions
-  that are necessary when the input port is closed.
-\end{itemize}
-
-\implresp The implementation is only required to check the return
-values of \var{read!} and \var{get-position} when it actually calls
-them as part of an I/O operation requested by the program.  The
-implementation is not required to check that these procedures
-otherwise behave as described.  If they do not, however, the behavior
-of the resulting port is unspecified.
-\end{entry}
-
-\begin{entry}{%
 \pproto{(make-custom-binary-input-port \var{id} \var{read!}}{procedure}}
 \mainschindex{make-custom-binary-input-port}{\tt\obeyspaces\\
   \var{get-position} \var{set-position!} \var{close})}
@@ -780,6 +733,65 @@ should behave as specified below.
        
   The \var{set-position!} procedure (if supplied) should set the
   position of the input port to \var{k}.  If not supplied, the custom
+  port will not support the {\cf set-port-position!} operation.
+       
+\item {\cf (\var{close})}
+       
+  The \var{close} procedure (if supplied) should perform any actions
+  that are necessary when the input port is closed.
+\end{itemize}
+
+\implresp The implementation is only required to check the return
+values of \var{read!} and \var{get-position} when it actually calls
+them as part of an I/O operation requested by the program.  The
+implementation is not required to check that these procedures
+otherwise behave as described.  If they do not, however, the behavior
+of the resulting port is unspecified.
+\end{entry}
+
+\begin{entry}{%
+\pproto{(make-custom-textual-input-port \var{id} \var{read!}}{procedure}}
+\mainschindex{make-custom-textual-input-port}{\tt\obeyspaces\\
+  \var{get-position} \var{set-position!} \var{close})}
+
+Returns a newly created textual input port whose character source is
+an arbitrary algorithm represented by the \var{read!} procedure.
+\var{Id} must be a string naming the new port,
+provided for informational purposes only.
+\var{Read!} must be a procedure, and should behave as specified
+below; it will be called by operations that perform textual input.
+
+Each of the remaining arguments may be \schfalse{}; if any of
+those arguments is not \schfalse{}, it must be a procedure and
+should behave as specified below.
+   
+\begin{itemize}
+\item {\cf (\var{read!} \var{string} \var{start} \var{count})}
+       
+  \domain{\var{Start} will be a non-negative exact integer,
+  \var{count} will be a positive exact integer,}
+  and \var{string} will be a string whose length is at least
+  $\var{start} + \var{count}$.
+  The \var{read!} procedure should obtain up to \var{count} characters
+  from the character source, and should write those characters
+  into \var{string} starting at index \var{start}.
+  The \var{read!} procedure must return an exact integer.  This
+  integer should be the number of characters that it has written.
+  To indicate an end of file condition, the \var{read!}
+  procedure should write no bytes and return 0.
+
+\item {\cf (\var{get-position})}
+       
+  The \var{get-position} procedure (if supplied) should return a single
+  value.  The return value should represent the current position of
+  the input port.  If not supplied, the custom port will not support
+  the {\cf port-position} operation.
+  
+\item {\cf (\var{set-position!} \var{pos})}
+       
+  The \var{set-position!} procedure (if supplied) should set the
+  position of the input port to \var{pos} if \var{pos} is the return
+  value of a call to \var{get-position}.  If not supplied, the custom
   port will not support the {\cf set-port-position!} operation.
        
 \item {\cf (\var{close})}
@@ -1068,7 +1080,7 @@ the {\cf port-position} and {\cf set-port-position!} operations
 will be implementation-dependent (and possibly transcoder-dependent).
 
 \begin{rationale}
-  The byte position of a complexly transcoded port may not be
+  The byte position of a transcoded port may not be
   well-defined, and may be hard to calculate even when defined,
   especially when transcoding is buffered.
 \end{rationale}
@@ -1107,7 +1119,8 @@ the accumulated data from the port.
 
 \begin{entry}{%
 \proto{call-with-bytevector-output-port}{ proc}{procedure}
-\rproto{call-with-bytevector-output-port}{ proc maybe-transcoder}{procedure}}
+\pproto{(call-with-bytevector-output-port \var{proc}}{procedure}{\tt\obeyspaces%
+\hspace*{2em}\var{maybe-transcoder})}}
 
 \domain{\var{Proc} must be a procedure accepting one argument.
   \var{Maybe-transcoder} must either be a transcoder or \schfalse.}
@@ -1148,9 +1161,8 @@ port's accumulated characters is returned and the accumulated characters are
 removed from the port.
 
 The port has an associated transcoder, which is implementation-dependent.
-Whether the port supports
-the {\cf port-position} and {\cf set-port-position!} operations
-is implementation-dependent.
+The port should support
+the {\cf port-position} and {\cf set-port-position!} operations.
 \end{entry}
 
 \begin{entry}{%
