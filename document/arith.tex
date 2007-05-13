@@ -232,7 +232,7 @@ computation:
      (bits (if (fxnegative? \var{fx})
                (fxnot \var{fx})
                \var{fx})
-           (fxlogical-shift-right bits 1)))
+           (fxarithmetic-shift-right bits 1)))
     ((fxzero? bits)
      result))%
 \end{scheme}
@@ -262,7 +262,7 @@ fixnum result of the following computation:
 (not
   (fxzero?
     (fxand \vari{fx}
-           (fxlogical-shift-left 1 \varii{fx}))))%
+           (fxarithmetic-shift-left 1 \varii{fx}))))%
 \end{scheme}
 %
 \end{entry}
@@ -277,9 +277,9 @@ returns the fixnum result of the following computation:
 %
 \begin{scheme}
 (let* ((mask (fxnot
-              (fxlogical-shift-left -1 \variii{fx}))))
-  (fxlogical-shift-right (fxand \vari{fx} mask)
-                         \varii{fx}))%
+              (fxarithmetic-shift-left -1 \variii{fx}))))
+  (fxarithmetic-shift-right (fxand \vari{fx} mask)
+                            \varii{fx}))%
 \end{scheme}
 %
 \end{entry}
@@ -294,9 +294,9 @@ returns the fixnum result of the following computation:
 %
 \begin{scheme}
 (let* ((mask (fxnot
-              (fxlogical-shift-left -1 \variii{fx}))))
-  (fxlogical-shift-right (fxand \vari{fx} mask)
-                         \varii{fx}))%
+              (fxarithmetic-shift-left -1 \variii{fx}))))
+  (fxarithmetic-shift-right (fxand \vari{fx} mask)
+                            \varii{fx}))%
 \end{scheme}
 %
 \end{entry}
@@ -314,12 +314,12 @@ returns the fixnum result of the following computation:
        (start \varii{fx})
        (end   \variii{fx})
        (from  \variv{fx})
-       (mask1 (fxlogical-shift-left -1 start))
+       (mask1 (fxarithmetic-shift-left -1 start))
        (mask2 (fxnot
-               (fxlogical-shift-left -1 end)))
+               (fxarithmetic-shift-left -1 end)))
        (mask (fxand mask1 mask2)))
   (fxif mask
-        (fxlogical-shift-left from start)
+        (fxarithmetic-shift-left from start)
         to))%
 \end{scheme}
 \end{entry}
@@ -327,7 +327,7 @@ returns the fixnum result of the following computation:
 \begin{entry}{%
 \proto{fxarithmetic-shift}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{The absolute value of the \varii{fx} must be less than 
+\domain{The absolute value of \varii{fx} must be less than 
 {\cf (fixnum-width)}.}  If
 %
 \begin{scheme}
@@ -368,10 +368,10 @@ raised.
              (field0
                (fxbit-field n start end))
              (field1
-               (fxlogical-shift-left
+               (fxarithmetic-shift-left
                  field0 count))
              (field2
-               (fxlogical-shift-right
+               (fxarithmetic-shift-right
                  field0 (fx- width count)))
              (field (fxior field1 field2)))
         (fxcopy-bit-field n start end field))
