@@ -32,50 +32,61 @@
   (files exception-internal))
 
 (define-structure r6rs-conditions
-  (export make-condition-type
-	  condition-type?
-	  make-condition
+  (export condition
 	  condition?
-	  condition-has-type?
-	  condition-ref
-	  make-compound-condition
-	  condition->list
-	  (define-condition-type :syntax)
-	  (condition :syntax)
+	  condition-predicate
+	  condition-accessor
+	  simple-conditions
+	  define-condition-type
 	  &condition
 	  &message
+	  make-message-condition
 	  message-condition?
 	  condition-message
 	  &warning
+	  make-warning
 	  warning?
 	  &serious
+	  make-serious-condition
 	  serious-condition?
 	  &error
+	  make-error
 	  error?
 	  &violation
+	  make-violation
 	  violation?
 	  &non-continuable
+	  make-noncontinuable
 	  non-continuable?
 	  &implementation-restriction
+	  make-implementation-restriction
 	  implementation-restriction?
-	  &defect
-	  defect?
 	  &lexical
+	  make-lexical-violation
 	  lexical-violation?
 	  &syntax
+	  make-syntax-violation
 	  syntax-violation?
 	  &undefined
+	  make-undefined-violation
 	  undefined-violation?
 	  &assertion
+	  make-assertion-violation
 	  assertion-violation?
 	  &irritants
+	  make-irritants-condition
 	  irritants-condition?
 	  condition-irritants
 	  &who
+	  make-who-condition
 	  who-condition?
-	  condition-who)
+	  condition-who
+	  
+	  assertion-violation)
   (open scheme
 	r6rs-mockup
 	r6rs-exceptions-internal
-	syntactic-record-types/explicit)
+	procedural-record-types
+	syntactic-record-types/explicit
+	record-reflection)
   (files condition))
