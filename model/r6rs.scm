@@ -1,8 +1,3 @@
-#|
-
-immutability: would somehow have to have Qtoc function produce a store, either with identifiers that mean mutable, or with identifiers that mean immutable. not sure how to do that nicely. it would have to produce two "values", but then how to destructure them in the rule?
-
-|#
 
 (module r6rs mzscheme
   (require (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
@@ -11,6 +6,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
   (provide lang 
            reductions
            r6rs-subst-one
+           r6rs-subst-many
            Var-set!d?)
   
   (provide Arithmetic
@@ -24,17 +20,18 @@ immutability: would somehow have to have Qtoc function produce a store, either w
            Multiple--values--and--call-with-values
            Quote
            Top--level--and--Variables
+           Letrec
            Underspecification
            observable)
 
   (define lang
     (language
-     (p* (store (sf ...) (ds ...)) (uncaught-exception v) (unknown string))
-     (a* (store (sf ...) ((values v ...))) (uncaught-exception v) (unknown string))
+     (p* (store (sf ...) ds ...) (uncaught-exception v) (unknown string))
+     (a* (store (sf ...) (values v ...)) (uncaught-exception v) (unknown string))
      (r* (values r*v ...) exception unknown)
      (r*v  pair null 'sym sqv condition procedure)
-     (sf (x v) (pp (cons v v)))
-     (ds (define x es) (beginF ds ...) es)
+     (sf (x v) (x dont-touch) (pp (cons v v)))
+     (ds (define x es) es)
      
      (es 'snv (begin es es ...) (begin0 es es ...) (es es ...)
          (if es es es) (set! x es) x
@@ -47,18 +44,22 @@ immutability: would somehow have to have Qtoc function produce a store, either w
            es ...)
          (lambda (x ... dot x)
            es
-           es ...))
+           es ...)
+         (letrec ([x es] ...) es)
+         (letrec* ([x es] ...) es))
      
      (s snv sym)
      (snv (s ...) (s ... dot sqv) (s ... dot sym) sqv)
      
-     (p (store (sf ...) (d ...)))
-     (d (define x e) (beginF d ...) e)
+     (p (store (sf ...) d ...))
+     (d (define x e) e)
      (e (begin e e ...) (begin0 e e ...)
         (e e ...) (if e e e)
         (set! x e) (handlers e ... e)
         x nonproc proc (dw x e e e)
-        unspecified)
+        unspecified
+        (letrec ([x e] ...) e)
+        (letrec* ([x e] ...) e))
      (v nonproc proc)
      (nonproc pp null 'sym sqv (condition string))
      (sqv n #t #f)
@@ -87,7 +88,9 @@ immutability: would somehow have to have Qtoc function produce a store, either w
                 
                 error                       ; signal an error
                 
-                beginF define               ; top-level stuff
+                define               ; top-level stuff
+                
+                letrec letrec*
                 
                 procedure? condition?
                 cons pair? null? car cdr       ; list functions
@@ -106,8 +109,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      
      (n number)
      
-     (P (store (sf ...) W))
-     (W (D d ...))
+     (P (store (sf ...) D d ...))
      (D (define x Eo) E*)
      
      (E (in-hole F (handlers v ... E*)) (in-hole F (dw x e E* e)) F)
@@ -129,13 +131,15 @@ immutability: would somehow have to have Qtoc function produce a store, either w
         (call-with-values (lambda () hole) v))
         
      ;; everything except exception handler bodies
-     (PG (store (sf ...) ((define x G) d ...)) (store (sf ...) (G d ...)))
-     (G (in-hole F (dw x e G e)) F)
+     (PG (store (sf ...) (define x G) d ...)
+         (store (sf ...) G d ...))
+     (G (in-hole F (dw x e G e))
+        F)
      
      ;; everything except dw
      (H (in-hole F (handlers v ... H)) F)
      
-     (SD S (define x S) (beginF d ... SD ds ...))
+     (SD S (define x S))
      (S hole (begin e e ... S es ...) (begin S es ...)
         (begin0 e e ... S es ...) (begin0 S es ...)
         (e ... S es ...) (if S es es) (if e S es) (if e e S)
@@ -211,21 +215,19 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      lang
      
      (--> (store (sf_1 ... (pp_1 (cons v_1 v_2)) sf_2 ...)
-                 (in-hole W_1 (set-car! pp_1 v_3)))
+            (in-hole D_1 (set-car! pp_1 v_3))
+            d_1 ...)
           (store (sf_1 ... (pp_1 (cons v_3 v_2)) sf_2 ...)
-                 (in-hole W_1 unspecified))
+            (in-hole D_1 unspecified)
+            d_1 ...)
           "6setcar")
 
-     (--> (store (sf_1
-                  ...
-                  (pp_1 (cons v_1 v_2))
-                  sf_2 ...)
-                 (in-hole W_1 (set-cdr! pp_1 v_3)))
-          (store (sf_1 
-                  ... 
-                  (pp_1 (cons v_1 v_3))
-                  sf_2 ...)
-                 (in-hole W_1 unspecified))
+     (--> (store (sf_1 ... (pp_1 (cons v_1 v_2)) sf_2 ...)
+            (in-hole D_1 (set-cdr! pp_1 v_3))
+            d_1 ...)
+          (store (sf_1 ... (pp_1 (cons v_1 v_3)) sf_2 ...)
+            (in-hole D_1 unspecified)
+            d_1 ...)
           "6setcdr")
      
      (--> (in-hole P_1 (set-car! v_1 v_2))
@@ -259,9 +261,11 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      lang
   
      (--> (store (sf_1 ...)
-                 (in-hole W_1 (cons v_1 v_2)))
+            (in-hole D_1 (cons v_1 v_2))
+            d_1 ...)
           (store (sf_1 ... (pp (cons v_1 v_2)))
-                 (in-hole W_1 pp))
+            (in-hole D_1 pp)
+            d_1 ...)
           "6cons"
           (fresh pp))
      
@@ -274,16 +278,20 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      
      ;; car
      (--> (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...)
-                 (in-hole W_1 (car pp_i)))
+            (in-hole D_1 (car pp_i))
+            d_1 ...)
           (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...)
-                 (in-hole W_1 v_1))
+            (in-hole D_1 v_1)
+            d_1 ...)
           "6car")
 
      ;; cdr
      (--> (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...)
-                 (in-hole W_1 (cdr pp_i)))
+            (in-hole D_1 (cdr pp_i))
+            d_1 ...)
           (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...)
-                 (in-hole W_1 v_2))
+            (in-hole D_1 v_2)
+            d_1 ...)
           "6cdr")
 
      ;; null?
@@ -325,11 +333,14 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           (side-condition 
            (ormap (lambda (e) (not (v? e))) (term (e_1 ... e_i+1 ...)))))
      
-     (--> (store (sf_1 ...) (in-hole W_1 ((lambda (x_1 x_2 ...) e_1 e_2 ...) v_1 v_2 ...)))
+     (--> (store (sf_1 ...) 
+            (in-hole D_1 ((lambda (x_1 x_2 ...) e_1 e_2 ...) v_1 v_2 ...))
+            d_1 ...)
           (store (sf_1 ... (bp v_1))
-                 (in-hole W_1
+                 (in-hole D_1
                           ((r6rs-subst-one (x_1 bp (lambda (x_2 ...) e_1 e_2 ...)))
-                            v_2 ...)))
+                            v_2 ...))
+            d_1 ...)
           "6appN!"
           (fresh bp)
           (side-condition
@@ -394,17 +405,12 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           (in-hole P_1 (proc_1 v_1 ...))
           "6applyf")
      
-     (--> (store (sf_1
-                  ...
-                  (pp_i (cons v_2 v_3))
-                  sf_2 ...)
-                 (in-hole W_1 (apply proc_1 v_1 ... pp_i)))
-          (store (sf_1
-                  ...
-                  (pp_i (cons v_2 v_3))
-                  sf_2 ...)
-                 (in-hole  W_1
-                           (apply proc_1 v_1 ... v_2 v_3)))
+     (--> (store (sf_1 ... (pp_i (cons v_2 v_3)) sf_2 ...)
+            (in-hole D_1 (apply proc_1 v_1 ... pp_i))
+            d_1 ...)
+          (store (sf_1 ... (pp_i (cons v_2 v_3)) sf_2 ...)
+            (in-hole  D_1 (apply proc_1 v_1 ... v_2 v_3))
+            d_1 ...)
           "6applyc")
      
      
@@ -499,15 +505,21 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           (in-hole P_1 (values v_1 ...))
           "6dwdone")
      
-     (--> (store (sf_1 ...) (in-hole W_1 (call/cc v_1)))
-          (store (sf_1 ...) (in-hole W_1 (v_1 (throw x (in-hole W_1 x)))))
+     (--> (store (sf_1 ...) 
+            (in-hole D_1 (call/cc v_1))
+            d_1 ...)
+          (store (sf_1 ...)
+            (in-hole D_1 (v_1 (throw x ((in-hole D_1 x) d_1 ...))))
+            d_1 ...)
           "6call/cc"
           (fresh x))
      
-     (--> (store (sf_1 ...) ((in-hole D_1 ((throw x_1 ((in-hole D_2 x_1) d_1 ...)) v_1 ...)) d_2 ...))
-           (store (sf_1 ...) 
-                  ((in-hole (Trim (D_1 D_2)) (values v_1 ...))
-                  d_1 ...))
+     (--> (store (sf_1 ...)
+            (in-hole D_1 ((throw x_1 ((in-hole D_2 x_1) d_1 ...)) v_1 ...))
+            d_2 ...)
+          (store (sf_1 ...) 
+            (in-hole (Trim (D_1 D_2)) (values v_1 ...))
+            d_1 ...)
           "6throw")))
   
   (define-metafunction pRe
@@ -661,6 +673,43 @@ immutability: would somehow have to have Qtoc function produce a store, either w
           "6cwvw"
           (side-condition (not (lambda-null? (term v_1)))))))
   
+  ;; r6rs-subst
+  (define Letrec
+    (reduction-relation
+     lang
+     (--> (store (sf_1 ...) (in-hole D_1 (letrec ([x_1 e_1] ...) e_2)) d_1 ...)
+          (store (sf_1 ... (lx dont-touch) ...)
+            (in-hole D_1 
+                     ((lambda (x_1 ...) (set! lx x_1) ... (r6rs-subst-many ((x_1 lx) ... e_2)))
+                      (r6rs-subst-many ((x_1 lx) ... e_1)) ...))
+            d_1 ...)
+          "6letrec"
+          (fresh ((x_1 ...) (lx ...))))
+     (--> (store (sf_1 ...) (in-hole D_1 (letrec* ([x_1 e_1] ...) e_2)) d_1 ...)
+          (store (sf_1 ... (lx dont-touch) ...)
+            (in-hole D_1 
+                     (r6rs-subst-many 
+                      ((x_1 lx) ...
+                       (begin
+                         (set! lx e_1) ...
+                         e_2))))
+            d_1 ...)
+          "6letrec*"
+          (fresh ((x_1 ...) (lx ...))))
+     (--> (store (sf_1 ... (x_1 dont-touch) sf_2 ...)
+            (in-hole D_1 (set! x_1 v_2))
+            d_1 ...)
+          (store (sf_1 ... (x_1 v_2) sf_2 ...)
+            (in-hole D_1 unspecified)
+            d_1 ...)
+          "6setdt")
+     (--> (store (sf_1 ... (x_1 dont-touch) sf_2 ...)
+            (in-hole D_1 x_1)
+            d_1 ...)
+          (store (sf_1 ... (x_1 dont-touch) sf_2 ...)
+            (in-hole D_1 (raise (condition "letrec variable touched")))
+            d_1 ...)
+          "6dt")))
   
   (define Underspecification
     (reduction-relation
@@ -680,12 +729,12 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      (--> (in-hole P (in-hole U unspecified))
           (unknown "unspecified result")
           "6udemand")
-     (--> (store (sf ...) (unspecified))
+     (--> (store (sf ...) unspecified)
           (unknown "unspecified result")
           "6udemandtl")
      
-     (--> (store (sf_1 ...) (unspecified d_1 d_2 ...))
-          (store (sf_1 ...) (d_1 d_2 ...))
+     (--> (store (sf_1 ...) unspecified d_1 d_2 ...)
+          (store (sf_1 ...) d_1 d_2 ...)
           "6utl")
      (--> (in-hole P_1 (begin unspecified e_1 e_2 ...))
           (in-hole P_1 (begin e_1 e_2 ...))
@@ -708,16 +757,16 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      lang
      ;; compile time quote removal
      (--> (store (sf_1 ...) 
-                 (d_1
-                  ...
-                  (in-hole SD_1 'snv_1)
-                  ds_1 ...))
+            d_1
+            ...
+            (in-hole SD_1 'snv_1)
+            ds_1 ...)
           (store (sf_1 ...)
-                 ((define qp (Qtoc snv_1))
-                  d_1
-                  ...
-                  (in-hole SD_1 qp)
-                  ds_1 ...))
+            (define qp (Qtoc snv_1))
+            d_1
+            ...
+            (in-hole SD_1 qp)
+            ds_1 ...)
           "6qcons"
           (fresh qp))))
   
@@ -738,68 +787,59 @@ immutability: would somehow have to have Qtoc function produce a store, either w
     (reduction-relation
      lang
      
-     (--> (store (sf_1 ...) ((define x_1 v_1) d_1 ...))
-          (store (sf_1 ... (x_1 v_1)) (d_1 ...))
+     (--> (store (sf_1 ...) (define x_1 v_1) d_1 ...)
+          (store (sf_1 ... (x_1 v_1)) d_1 ...)
           "6def"
           (side-condition (not (memq (term x_1) (map car (term (sf_1 ...)))))))
 
            
      ;; need redef in order to handle continuation jumps.
-     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) ((define x_1 v_2) d_1 ...))
-          (store (sf_1 ... (x_1 v_2) sf_2 ...) (d_1 ...))
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (define x_1 v_2) d_1 ...)
+          (store (sf_1 ... (x_1 v_2) sf_2 ...) d_1 ...)
           "6redef")
 
      ;; drop values (except the last one)
-     (--> (store (sf_1 ...) ((values v_1 ...) d_1 d_2 ...))
-          (store (sf_1 ...) (d_1 d_2 ...))
+     (--> (store (sf_1 ...) (values v_1 ...) d_1 d_2 ...)
+          (store (sf_1 ...) d_1 d_2 ...)
           "6valdrop")
      
-     ;; splice out begin
-     (--> (store (sf_1 ...) ((beginF d_1 ...)  d_2 ...))
-          (store (sf_1 ...) (d_1 ... d_2 ...))
-          "6beginF")
-    
      ;; variable lookup
-     (--> (store (sf_1
-                  ...
-                  (x_1 v_1)
-                  sf_2 ...)
-                 (in-hole W_1 x_1))
-          (store (sf_1
-                  ...
-                  (x_1 v_1)
-                  sf_2 ...)
-                 (in-hole W_1 v_1))
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...)
+            (in-hole D_1 x_1)
+            d_1 ...)
+          (store (sf_1 ... (x_1 v_1) sf_2 ...)
+            (in-hole D_1 v_1)
+            d_1 ...)
           "6var")
      
      ;; set!
-     (--> (store (sf_1
-                  ...
-                  (x_1 v_1)
-                  sf_2 ...)
-                 (in-hole W_1 (set! x_1 v_2)))
-          (store (sf_1
-                  ...
-                  (x_1 v_2)
-                  sf_2 ...)
-                 (in-hole W_1 unspecified))
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...)
+            (in-hole D_1 (set! x_1 v_2))
+            d_1 ...)
+          (store (sf_1 ... (x_1 v_2) sf_2 ...)
+            (in-hole D_1 unspecified)
+            d_1 ...)
           "6set")
      
-     (--> (store (sf_1 ...) ((in-hole D_1 (set! x_1 v_2)) d_1 ... (define x_1 e_1) d_2 ...))
-          (store (sf_1 ... (x_1 v_2)) ((in-hole D_1 unspecified) d_1 ... (define x_1 e_1) d_2 ...))
+     (--> (store (sf_1 ...) (in-hole D_1 (set! x_1 v_2)) d_1 ... (define x_1 e_1) d_2 ...)
+          (store (sf_1 ... (x_1 v_2)) (in-hole D_1 unspecified) d_1 ... (define x_1 e_1) d_2 ...)
           "6setd"
           (side-condition (not (memq (term x_1) (map car (term (sf_1 ...)))))))
      
-     (--> (store (sf_1 ...) ((in-hole D_1 x_1) d_1 ...))
-          (store (sf_1 ...) ((in-hole D_1 (raise (condition ,(format "reference to undefined identifier: ~a" (term x_1)))))
-                             d_1 ...))
+     (--> (store (sf_1 ...) (in-hole D_1 x_1) d_1 ...)
+          (store (sf_1 ...) 
+            (in-hole D_1 (raise (condition ,(format "reference to undefined identifier: ~a" (term x_1)))))
+            d_1 ...)
           "6refu"
           (side-condition 
            (not (memq (term x_1) (map car (term (sf_1 ...)))))))
      
-     (--> (store (sf_1 ...) ((in-hole D_1 (set! x_1 v_2)) d_1 ...))
-          (store (sf_1 ...) ((in-hole D_1 (raise (condition ,(format "set!: cannot set undefined identifier: ~a" (term x_1)))))
-                             d_1 ...))
+     (--> (store (sf_1 ...)
+            (in-hole D_1 (set! x_1 v_2))
+            d_1 ...)
+          (store (sf_1 ...) 
+            (in-hole D_1 (raise (condition ,(format "set!: cannot set undefined identifier: ~a" (term x_1)))))
+            d_1 ...)
           "6setu"
           (side-condition 
            (and (not (memq (term x_1) (map car (term (sf_1 ...)))))
@@ -826,39 +866,56 @@ immutability: would somehow have to have Qtoc function produce a store, either w
      Multiple--values--and--call-with-values
      Quote
      Top--level--and--Variables
+     Letrec
      Underspecification))
   
   (define-metafunction r6rs-subst-one
     lang
+
+    ;; variable cases
     [(variable_1 e_1 variable_1) e_1]
     [(variable_1 e_1 variable_2) variable_2]
+    
+    ;; dont substitute inside quoted expressions
     [(variable_1 e_1 'any_1) 'any_1]
+    
+    ;; when the lambda binds the variable, stop stubstituting
+    [(variable_1 e (lambda (variable_2 ... variable_1 variable_3 ...) e_2 e_3 ...))
+     (lambda (variable_2 ... variable_1 variable_3 ...) e_2 e_3 ...)]
     [(variable_1 e (lambda (variable_2 ... dot variable_1) e_2 e_3 ...))
      (lambda (variable_2 ... dot variable_1) e_2 e_3 ...)]
     [(variable_1 e (lambda (variable_2 ... variable_1 variable_3 ... dot variable_4) e_2 e_3 ...))
      (lambda (variable_2 ... variable_1 variable_3 ... dot variable_4) e_2 e_3 ...)]
-    [(variable_1 variable_2 (lambda (variable_3 ... dot variable_4) e_1 e_2 ...))
-     (lambda (variable_3 ... dot variable_4) 
-       (r6rs-subst-one (variable_1 variable_2 e_1))
-       (r6rs-subst-one (variable_1 variable_2 e_2)) ...)]
+    
+    ;; next 2 cases: we know no capture can occur, so we just recur
+    [(variable_1 e_1 (lambda (variable_2 ...) e_2 e_3 ...))
+     (lambda (variable_2 ...) 
+       (r6rs-subst-one (variable_1 e_1 e_2))
+       (r6rs-subst-one (variable_1 e_1 e_3)) ...)
+     (side-condition (andmap (λ (x) (equal? (variable-not-in (term e_1) x) x))
+                             (term (variable_2 ...))))]
     [(variable_1 e_1 (lambda (variable_2 ... dot variable_3) e_2 e_3 ...))
-     ,(term-let ([(variable_new ... variable_new_dot) (variables-not-in (term e_1) (term (variable_2 ... variable_3)))])
+     (lambda (variable_2 ...) 
+       (r6rs-subst-one (variable_1 e_1 e_2))
+       (r6rs-subst-one (variable_1 e_1 e_3)) ...)
+     (side-condition (andmap (λ (x) (equal? (variable-not-in (term e_1) x) x))
+                             (term (variable_2 ... variable_3))))]
+    
+    ;; capture avoiding cases
+    [(variable_1 e_1 (lambda (variable_2 ... dot variable_3) e_2 e_3 ...))
+     ,(term-let ([(variable_new ... variable_new_dot) (variables-not-in (term (variable_1 e_1 e_2 e_3 ...))
+                                                                        (term (variable_2 ... variable_3)))])
         (term (lambda (variable_new ... dot variable_new_dot) 
                 (r6rs-subst-one (variable_1 
                                  e_1
-                                 (r6rs-subst-many ((variable_2 variable_new) ... (variable_new_dot variable_3) e_2))))
+                                 (r6rs-subst-many ((variable_2 variable_new) ... (variable_3 variable_new_dot) e_2))))
                 (r6rs-subst-one (variable_1 
                                  e_1
-                                 (r6rs-subst-many ((variable_2 variable_new) ... (variable_new_dot variable_3) e_3))))
+                                 (r6rs-subst-many ((variable_2 variable_new) ... (variable_3 variable_new_dot) e_3))))
                 ...)))]
-    [(variable_1 e_1 (lambda (variable_2 ... variable_1 variable_3 ...) e_2 e_3 ...))
-     (lambda (variable_2 ... variable_1 variable_3 ...) e_2 e_3 ...)]
-    [(variable_1 variable_2 (lambda (variable_3 ...) e_1 e_2 ...))
-     (lambda (variable_3 ...) 
-       (r6rs-subst-one (variable_1 variable_2 e_1))
-       (r6rs-subst-one (variable_1 variable_2 e_2)) ...)]
     [(variable_1 e_1 (lambda (variable_2 ...) e_2 e_3 ...))
-     ,(term-let ([(variable_new ...) (variables-not-in (term e_1) (term (variable_2 ...)))])
+     ,(term-let ([(variable_new ...) (variables-not-in (term (variable_1 e_1 e_2 e_3 ...))
+                                                       (term (variable_2 ...)))])
         (term (lambda (variable_new ...) 
                 (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_2))))
                 (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_3)))) ...)))]
@@ -876,7 +933,7 @@ immutability: would somehow have to have Qtoc function produce a store, either w
   
   (define-metafunction observable
     lang
-    [(store (sf ...) ((values v_1 ...))) 
+    [(store (sf ...) (values v_1 ...))
      (values (observable-value v_1) ...)]
     [(uncaught-exception v)
      exception]

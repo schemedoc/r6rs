@@ -27,10 +27,10 @@
                      (and m
                           (= 1 (length m)))))))
   (define tm (test-match lang p*))
-  (define (trace-expression x) (trace `(store () (,x))))
+  (define (trace-expression x) (trace `(store () ,x)))
 
   (define (step x) (stepper lang reductions x))
-  (define (step-expression x) (step `(store () (,x))))
+  (define (step-expression x) (step `(store () ,x)))
 
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,8 +52,8 @@
   ;; one goes into a non-tail infinite loop, the other's reduction graph has a cycle
   #;
   (step '(store () 
-                (((call/cc call/cc) 
-                  (call/cc call/cc)))))
+           ((call/cc call/cc) 
+            (call/cc call/cc))))
           
   
   ;; demonstrates sharing
@@ -64,11 +64,5 @@
           (set-car! x 3)
           (car y))
         c c))
-     (cons 1 2)))
-
-  #;
-  (step '(store () ((eval '((lambda (dot x) (car x) 1))))))
-  
-  (step '(store () ((define x 1) (begin (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1)) 5))))
-  )
+     (cons 1 2))))
 

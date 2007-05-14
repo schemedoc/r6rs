@@ -31,9 +31,13 @@
   (define otherwise-metafunctions '(pRe poSt Trim))
   
   (define combine-metafunction-names '(pRe poSt Trim))
+  
+  (define metafunctions-to-skip '(r6rs-subst-one r6rs-subst-many))
 
   (define (side-condition-below? x)
-    (member x '("6appN!" "6refu" "6setu" "6xref" "6xset")))
+    (member x '("6appN!" "6refu" "6setu" "6xref" "6xset" 
+                         "6letrec"
+                         "6letrec*")))
   
   (define (two-line-name? x) (not (one-line-name? x)))
   
@@ -53,11 +57,12 @@
                 [`(define ,lang (language ,productions ...))
                   (print-language productions)]
                 [`(define-metafunction ,name ,lang ,clauses ...)
-                  (if (member name combine-metafunction-names)
-                      (set! names/clauses
-                            (cons (list name clauses) 
-                                  names/clauses))
-                      (print-metafunction name clauses))]
+                 (unless (member name metafunctions-to-skip) 
+                   (if (member name combine-metafunction-names)
+                       (set! names/clauses
+                             (cons (list name clauses) 
+                                   names/clauses))
+                       (print-metafunction name clauses)))]
                 [`(define ,name (reduction-relation ,lang ,r ...))
                   (print-reductions name r (one-line-name? name))]
                 [else (void)]))
@@ -148,7 +153,10 @@
         [(null? extras) null]
         [else 
          (match (car extras)
-           [`(fresh ,vars ...)
+           [`(fresh ((,(? symbol?) ,'...)
+                     (,(? symbol? var) ,'...)))
+            (append (format-side-cond `(fresh ,var ...)) (loop (cdr extras)))]
+           [`(fresh ,(? symbol? vars) ...)
              (append (format-side-cond `(fresh ,vars)) (loop (cdr extras)))]
            [`(side-condition ,sc ...)
              (append (apply append (map format-side-cond sc))
@@ -589,6 +597,21 @@
                (display "\\}" o)
                (loop exp-arg)
                (display "" o)))
+            ((r6rs-subst-many)
+             (let* ([args (cadr p)]
+                    [var-arg (caar args)]
+                    [becomes-arg (cadar args)]
+                    [dots (cadr args)]
+                    [exp-arg (caddr args)])
+               (unless (eq? '... dots)
+                 (error 'tex-translate.ss "cannot handle use of r6rs-subst-many"))
+               (display "\\{" o)
+               (loop var-arg)
+               (display "\\cdots \\mapsto " o)
+               (loop becomes-arg)
+               (display "\\cdots \\}" o)
+               (loop exp-arg)
+               (display "" o)))
 	    ((in-hole)
 	     (loop (cadr p))
 	     (display "[" o)
@@ -704,6 +727,8 @@
                                  strs))])))]
       [`(fresh ,xs)
         (list (format "~a \\textrm{ fresh}" (string-join (map (lambda (x) (format "~a" (gps x))) xs) ", ")))]
+      [`(fresh ,(? symbol? x) ,'...)
+        (list (format "~a \\cdots \\textrm{ fresh}" (gps x)))]
       [`(freshS ,xs)        
         (list (format "~a \\cdots \\textrm{ fresh}" (string-join (map (lambda (x) (format "~a" (gps x))) xs) ", ")))]
       [`(not (eq? (term ,t1) (term ,t2)))

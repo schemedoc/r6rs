@@ -12,10 +12,10 @@
   (define-struct r6test (test expected))
   
   (define (make-r6test/v t expected) 
-    (make-r6test `(store () (,t))
-                 (list `(store () ((values ,expected))))))
+    (make-r6test `(store () ,t)
+                 (list `(store () (values ,expected)))))
   (define (make-r6test/e t err)
-    (make-r6test `(store () (,t))
+    (make-r6test `(store () ,t)
                  (list `(uncaught-exception (condition ,err)))))
   
   (define (run-a-test test verbose?)
@@ -39,7 +39,7 @@
                                   (verify-p* t))]
                [rewritten-results (remove-duplicates (map rewrite-actual results))])
           (for-each (verify-a* t) results)
-	  (unless (set-same? expected rewritten-results equal?)
+          (unless (set-same? expected rewritten-results equal?)
 	    (set! failed-tests (+ failed-tests 1))
             (unless verbose? 
               (printf "\ntesting ~s ... " t))
@@ -72,11 +72,11 @@
     ;; verify that observable is defined for this value
     (let ([candidate-r* (term-let ((sexp sexp))
                           (term (observable sexp)))])
-    (unless (r*-pattern candidate-r*)
-      (error 'verify-a* "observable of ~s is ~s, but isn't an r*\noriginal term ~s"
-             sexp
-             candidate-r*
-             orig-sexp))))
+      (unless (r*-pattern candidate-r*)
+        (error 'verify-a* "observable of ~s is ~s, but isn't an r*\noriginal term ~s"
+               sexp
+               candidate-r*
+               orig-sexp))))
   
   (define (remove-duplicates lst)
     (let ([ht (make-hash-table 'equal)])
@@ -90,41 +90,70 @@
       [`(unknown ,str) actual]
       [`(uncaught-exception ,v) actual]
       [`(store ,@(xs ...)) 
-        (let loop ([actual actual])
-          (subst-:-vars actual))]
+       (let loop ([actual actual])
+         (subst-:-vars actual))]
       [_
        (error 'rewrite-actual "unknown actual ~s\n" actual)]))
   
   (define (subst-:-vars exp)
     (match exp
-      [`(store ,str ,exps)
-        (let* ([sub-thru? (λ (x) (regexp-match #rx"^[bpq]p" (format "~a" (car x))))]
-               [sub-vars (filter sub-thru? str)])
-          ;; have to substitute to a fixed point
-          (let loop ([term `(store ,(filter (λ (x) (not (sub-thru? x))) str) ,exps)])
-            (let ([next (do-one-subst sub-vars term)])
-              (cond 
-                [(equal? term next) next]
-                [else (loop next)]))))]
+      [`(store ,str ,exps ...)
+       (let* ([pp-var? (λ (x) (regexp-match #rx"^[qp]p" (format "~a" (car x))))]
+              [pp-bindings (filter pp-var? str)]
+              [with-out-pp (fp-sub pp-bindings `(store ,(filter (λ (x) (not (pp-var? x))) str) ,@exps))]
+              [with-out-app-vars (remove-unassigned-app-vars with-out-pp)])
+         with-out-app-vars)]
       [`(unknown ,string) string]
       [_ (error 'subst-:-vars "unknown exp ~s" exp)]))
   
-  (define (r6rs-subst-all params args body) 
-    (foldl (λ (x y z) (term-let ((x x) (y y) (z z)) (term (r6rs-subst-one (x y z)))))
-           #;r6rs-subst-one
-           body params args))
+  (define (remove-unassigned-app-vars term)
+    (match term 
+      [`(store ,bindings ,body)
+       (let* ([binding-rhss (map cadr bindings)]
+              [bindings-to-sub 
+               (filter (λ (binding) (not (appears-in-set? (car binding) body)))
+                       (filter (λ (binding) (regexp-match #rx"^bp" (format "~a" (car binding)))) bindings))]
+              [vars-to-sub (map car bindings-to-sub)])
+         `(store ,(filter (λ (binding) (not (memq (car binding) vars-to-sub))) bindings)
+            ,(r6-all bindings-to-sub body)))]))
+  
+  (define (not-in var e)
+    (cond
+      [(pair? e) (and (not-in var (car e))
+                      (not-in var (cdr e)))]
+      [else (not (eq? var e))]))
+  
+  (define (appears-in-set? x e)
+    (let loop ([e e])
+      (match e
+        [`(set! ,x2 ,e2) (or (eq? x x2)
+                             (loop e2))]
+        [else
+         (and (list? e) 
+              (ormap loop e))])))
+           
+  
+  (define (fp-sub bindings term)
+    (let loop ([term term])
+      (let ([next (do-one-subst bindings term)])
+        (cond 
+          [(equal? term next) next]
+          [else (loop next)]))))
+  
+  (define (r6-all sub-vars body)
+    (term-let ([(sub-vars ...) sub-vars]
+               [body body])
+      (term (r6rs-subst-many (sub-vars ... body)))))
+  
   (define (do-one-subst sub-vars term)
     (match term
-      [`(store ,str ,exps)
-        (let* ([keep-vars 
-                (map (λ (pr)
-                       `(,(car pr)
-                          ,(r6rs-subst-all (map car sub-vars)
-                                           (map cadr sub-vars)
-                                           (cadr pr))))
-                     str)])
-          `(store ,keep-vars ,(r6rs-subst-all (map car sub-vars) (map cadr sub-vars) exps)))]))
-  
+      [`(store ,str ,exps ...)
+       (let* ([keep-vars 
+               (map (λ (pr)
+                      `(,(car pr)
+                        ,(r6-all sub-vars (cadr pr))))
+                    str)])
+         `(store ,keep-vars ,@(r6-all sub-vars exps)))]))
   
   (define test-count 0)
   (define failed-tests 0)
@@ -154,7 +183,7 @@
      (make-r6test/e '(/ 1 2 3 4 5 0 6) "divison by zero")
      (make-r6test/e '(/ 0) "divison by zero")
      
-     (make-r6test '(store () (((lambda (x) (+ x x)) #f)))
+     (make-r6test '(store () ((lambda (x) (+ x x)) #f))
                   (list '(uncaught-exception (condition "arith-op applied to non-number"))))))
   
   (define assignment-results-tests
@@ -163,48 +192,48 @@
      ;; begin0 
      (make-r6test/v '((lambda (x) (begin0 x (set! x 2))) 3)
                     3)
-     (make-r6test '(store () ((define x 1) (begin0 (set! x 2) 2 3)))
+     (make-r6test '(store () (define x 1) (begin0 (set! x 2) 2 3))
                   (list '(unknown "unspecified result")))
      
      ;; begin
      (make-r6test/v '((lambda (x) (begin x (set! x 2) x)) 3)
                     2)
-     (make-r6test '(store () ((define x 1) (begin 2 (set! x 2))))
+     (make-r6test '(store () (define x 1) (begin 2 (set! x 2)))
                   (list '(unknown "unspecified result")))
      
      ;; application
-     (make-r6test '(store () ((define x 1) ((lambda (x) 1) (set! x 2))))
+     (make-r6test '(store () (define x 1) ((lambda (x) 1) (set! x 2)))
                   (list '(unknown "unspecified result")))
-     (make-r6test '(store () ((define x 1) ((set! x 2) 2)))
+     (make-r6test '(store () (define x 1) ((set! x 2) 2))
                   (list '(unknown "unspecified result")))
      
      ;; if
-     (make-r6test '(store () ((define x 1) (if (set! x 2) 2 3)))
+     (make-r6test '(store () (define x 1) (if (set! x 2) 2 3))
                   (list '(unknown "unspecified result")))
      
      ;; set!
-     (make-r6test '(store () ((define x 1) (set! x (set! x 2))))
+     (make-r6test '(store () (define x 1) (set! x (set! x 2)))
                   (list '(unknown "unspecified result")))
      
-     (make-r6test '(store () ((define x '(1)) (set! x (set-car! x 2))))
+     (make-r6test '(store () (define x '(1)) (set! x (set-car! x 2)))
                   (list '(unknown "unspecified result")))
      
      ;; handlers
-     (make-r6test '(store () ((define x 1) (with-exception-handler (lambda (e) (set! x 2)) (lambda () (car 'x)))))
+     (make-r6test '(store () (define x 1) (with-exception-handler (lambda (e) (set! x 2)) (lambda () (car 'x))))
                   (list '(uncaught-exception (condition "handler returned"))))
      
      ;; call with values
-     (make-r6test '(store () ((define x 1) (call-with-values (lambda () (set! x 2)) +)))
+     (make-r6test '(store () (define x 1) (call-with-values (lambda () (set! x 2)) +))
                   (list '(unknown "unspecified result")))
      
      ;; dynamic-wind
      (make-r6test/v '((lambda (x) (dynamic-wind (lambda () (set! x 0)) (lambda () x) (lambda () (set! x 2)))) 1)
                     0)
-     (make-r6test '(store () ((define x 1) (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1))))
+     (make-r6test '(store () (define x 1) (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1)))
                   (list '(unknown "unspecified result")))
-     (make-r6test '(store () ((define x 1) (begin (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1)) 5)))
-                  (list '(store ((x 2)) ((values 5)))))))
-   
+     (make-r6test '(store () (define x 1) (begin (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1)) 5))
+                  (list '(store ((x 2)) (values 5))))))
+  
   (define basic-form-tests
     (list
      
@@ -249,15 +278,15 @@
                       (cons 1 (cons 2 null))) 
                     400)
      (make-r6test '(store ()
-                          ((define first-time? #t)
-                           (define f (lambda (dot y) (if first-time?
-                                                         (begin
-                                                           (set! first-time? #f)
-                                                           (set-car! y 2))
-                                                         (car y))))
-                           (define g (lambda () (apply f '(1))))
-                           (g)
-                           (g)))
+                     (define first-time? #t)
+                     (define f (lambda (dot y) (if first-time?
+                                                   (begin
+                                                     (set! first-time? #f)
+                                                     (set-car! y 2))
+                                                   (car y))))
+                     (define g (lambda () (apply f '(1))))
+                     (g)
+                     (g))
                   (list '(store ((first-time? #f)
                                  (f (lambda (dot y) (if first-time?
                                                         (begin
@@ -265,7 +294,7 @@
                                                           (set-car! y 2))
                                                         (car y))))
                                  (g (lambda () (apply f (cons 1 null)))))
-                                ((values 1)))))))
+                           (values 1))))))
   
   (define quote-tests
     (list
@@ -279,25 +308,25 @@
      (make-r6test/v '((lambda (x) (eqv? 'x 1)) 1) #f)
      (make-r6test/v ''(dot 1) 1)
      (make-r6test/v ''(dot x) ''x)))
-     
+  
   (define eqv-tests
     (list
-     (make-r6test '(store () ((eqv? (lambda (x) x) (lambda (x) x))))
+     (make-r6test '(store () (eqv? (lambda (x) x) (lambda (x) x)))
                   (list '(unknown "equivalence of procedures")))
-     (make-r6test '(store () ((eqv? (lambda (x) x) (lambda (x) x))))
+     (make-r6test '(store () (eqv? (lambda (x) x) (lambda (x) x)))
                   (list '(unknown "equivalence of procedures")))
      
      (make-r6test/v '(eqv? (cons 1 2) (cons 1 2)) #f)
      (make-r6test/v '((lambda (x) (eqv? x x)) (cons 1 2)) #t)
-     (make-r6test '(store () (((lambda (x) (eqv? x x)) (lambda (x) x))))
+     (make-r6test '(store () ((lambda (x) (eqv? x x)) (lambda (x) x)))
                   (list '(unknown "equivalence of procedures")))
      
-     (make-r6test '(store () ((apply apply values '(()))))
-                  (list '(store () ((values)))))
+     (make-r6test '(store () (apply apply values '(())))
+                  (list '(store () (values))))
      
      (make-r6test/v '(eqv? #t #t) #t)
      (make-r6test/v '(eqv? #t #f) #f)))
-     
+  
   (define err-tests
     (list
      
@@ -342,9 +371,9 @@
      ; ----
      ; 4.1.1
      (make-r6test '(store () 
-                          ((define x 28)
-                           x))
-                  (list '(store ((x 28)) ((values 28)))))
+                     (define x 28)
+                     x)
+                  (list '(store ((x 28)) (values 28))))
      
      
      ; ----
@@ -359,28 +388,25 @@
      (make-r6test/v '((lambda (x) (+ x x)) 4) 8)
      
      (make-r6test '(store ()
-                          
-                             ((define reverse-subtract
-                                 (lambda (x y) (- y x)))
-                               (reverse-subtract 7 10)))
+                     (define reverse-subtract
+                       (lambda (x y) (- y x)))
+                     (reverse-subtract 7 10))
                   (list
                    '(store ((reverse-subtract
                              (lambda (x y) (- y x))))
-                           
-                              ((values 3)))))
+                      
+                      (values 3))))
      
      (make-r6test '(store ()
-                          
-                             ((define add4
-                                 ((lambda (x)
-                                    (lambda (y)
-                                      (+ x y)))
-                                  4))
-                               (add4 6)))
+                     (define add4
+                       ((lambda (x)
+                          (lambda (y)
+                            (+ x y)))
+                        4))
+                     (add4 6))
                   (list
                    '(store ((add4 (lambda (y) (+ 4 y))))
-                           
-                              ((values 10)))))
+                      (values 10))))
      
      (make-r6test/v '((lambda (dot x) x) 3 4 5 6)
                     '(cons 3 (cons 4 (cons 5 (cons 6 null)))))
@@ -400,80 +426,76 @@
      ; 4.1.6
      
      (make-r6test '(store () 
-                                ((define x 2)
-                                  (+ x 1)))
+                     (define x 2)
+                     (+ x 1))
                   (list
                    '(store ((x 2)) 
-                            
-                              ((values 3)))))
+                      (values 3))))
      
      (make-r6test '(store () 
-                          ((define x 2)
-                           (+ x 1) 
-                           (set! x 4)
-                           x))
+                     (define x 2)
+                     (+ x 1) 
+                     (set! x 4)
+                     x)
                   (list
                    '(store ((x 4)) 
-                           ((values 4)))))
+                      (values 4))))
      
      (make-r6test '(store () 
-                                ((define x 2)
-                                  (+ x 1) 
-                                  (set! x 4)
-                                  (+ x 1)))
+                     (define x 2)
+                     (+ x 1) 
+                     (set! x 4)
+                     (+ x 1))
                   (list
                    '(store ((x 4)) 
-                            
-                              ((values 5)))))
+                      (values 5))))
      
      
      ; ----
      ; 4.2.2 
      
-     (make-r6test '(store
-                    ()
-                     ((define even?
-                        (lambda (n)
-                          (if (eqv? 0 n)
-                              #t
-                              (odd? (- n 1)))))
-                      (define odd?
-                        (lambda (n)
-                          (if (eqv? 0 n)
-                              #f
-                              (even? (- n 1)))))
-                      ;; using 88 here runs, but isn't really much more useful
-                      ;; for testing purposes (it also takes > 1000 reductions)
-                      (even? 2)))
-                  (list
-                   '(store
-                     ((even?
+     (make-r6test '(store ()
+                     (define even?
                        (lambda (n)
                          (if (eqv? 0 n)
                              #t
                              (odd? (- n 1)))))
-                      (odd?
+                     (define odd?
                        (lambda (n)
                          (if (eqv? 0 n)
                              #f
-                             (even? (- n 1))))))
-                     
-                        ((values #t)))))
+                             (even? (- n 1)))))
+                     ;; using 88 here runs, but isn't really much more useful
+                     ;; for testing purposes (it also takes > 1000 reductions)
+                     (even? 2))
+                  (list
+                   '(store ((even?
+                             (lambda (n)
+                               (if (eqv? 0 n)
+                                   #t
+                                   (odd? (- n 1)))))
+                            (odd?
+                             (lambda (n)
+                               (if (eqv? 0 n)
+                                   #f
+                                   (even? (- n 1))))))
+                      
+                      (values #t))))
      
      
      ; ----
      ; 4.2.3
-     (make-r6test '(store () ((define x 0) (begin (set! x 5) (+ x 1))))
-                  (list '(store ((x 5)) ((values 6)))))
+     (make-r6test '(store () (define x 0) (begin (set! x 5) (+ x 1)))
+                  (list '(store ((x 5)) (values 6))))
      
      
      ; ----
      ; 5.2.1
      
-     (make-r6test '(store () ((define add3 (lambda (x) (+ x 3))) (add3 3)))
-                  (list '(store ((add3 (lambda (x) (+ x 3)))) ((values 6)))))
-     (make-r6test '(store () ((define first car) (first '(1 2))))
-                  (list '(store ((first car)) ((values 1)))))
+     (make-r6test '(store () (define add3 (lambda (x) (+ x 3))) (add3 3))
+                  (list '(store ((add3 (lambda (x) (+ x 3)))) (values 6))))
+     (make-r6test '(store () (define first car) (first '(1 2)))
+                  (list '(store ((first car)) (values 1))))
      
      
      ; ----
@@ -485,32 +507,32 @@
      (make-r6test/v '(eqv? '() '()) #t)
      (make-r6test/v '(eqv? 100000000 100000000) #t)
      (make-r6test/v '(eqv? (cons 1 2) (cons 1 2)) #f)
-     (make-r6test '(store () ((eqv? (lambda () 1) (lambda () 2))))
+     (make-r6test '(store () (eqv? (lambda () 1) (lambda () 2)))
                   (list '(unknown "equivalence of procedures")))
      (make-r6test/v '(eqv? #f 'nil) #f)
      (make-r6test/v '(eqv? #f '()) #f)
-     (make-r6test '(store () (((lambda (p) (eqv? p p)) (lambda (x) x))))
+     (make-r6test '(store () ((lambda (p) (eqv? p p)) (lambda (x) x)))
                   (list '(unknown "equivalence of procedures")))
      
      (make-r6test 
       '(store () 
-                    ((define gen-counter
-                        (lambda ()
-                          ((lambda (n) 
-                             (lambda () (set! n (+ n 1)) n))
-                           0)))
-                      ((lambda (g) (eqv? g g))
-                       (gen-counter))))
+         (define gen-counter
+           (lambda ()
+             ((lambda (n) 
+                (lambda () (set! n (+ n 1)) n))
+              0)))
+         ((lambda (g) (eqv? g g))
+          (gen-counter)))
       (list '(unknown "equivalence of procedures")))
      
      (make-r6test 
       '(store () 
-                    ((define gen-counter
-                        (lambda ()
-                          ((lambda (n) 
-                             (lambda () (set! n (+ n 1)) n))
-                           0)))
-                      (eqv? (gen-counter) (gen-counter))))
+         (define gen-counter
+           (lambda ()
+             ((lambda (n) 
+                (lambda () (set! n (+ n 1)) n))
+              0)))
+         (eqv? (gen-counter) (gen-counter)))
       (list '(unknown "equivalence of procedures")))
      
      
@@ -519,51 +541,43 @@
      ; 6.3.2
      
      (make-r6test '(store ()
-                          
-                             ((define x (list 'a 'b 'c))
-                               (define y x)
-                               y))
+                     (define x (list 'a 'b 'c))
+                     (define y x)
+                     y)
                   (list
                    '(store ((x (cons 'a (cons 'b (cons 'c null))))
                             (y (cons 'a (cons 'b (cons 'c null)))))
-                           
-                              ((values (cons 'a (cons 'b (cons 'c null))))))))
+                      (values (cons 'a (cons 'b (cons 'c null)))))))
      
      (make-r6test '(store ()
-                          
-                             ((define x (list 'a 'b 'c))
-                               (define y x)
-                               (set-cdr! x 4)
-                               x))
+                     (define x (list 'a 'b 'c))
+                     (define y x)
+                     (set-cdr! x 4)
+                     x)
                   (list
                    '(store ((x (cons 'a 4))
                             (y (cons 'a 4)))
-                           
-                              ((values (cons 'a 4))))))
+                      (values (cons 'a 4)))))
      
      (make-r6test '(store ()
-                          
-                             ((define x (list 'a 'b 'c))
-                               (define y x)
-                               (set-cdr! x 4)
-                               (eqv? x y)))
+                     (define x (list 'a 'b 'c))
+                     (define y x)
+                     (set-cdr! x 4)
+                     (eqv? x y))
                   (list
                    '(store ((x (cons 'a 4))
                             (y (cons 'a 4)))
-                           
-                              ((values #t)))))
+                      (values #t))))
      
      (make-r6test '(store ()
-                          
-                             ((define x (list 'a 'b 'c))
-                               (define y x)
-                               (set-cdr! x 4)
-                               y))
+                     (define x (list 'a 'b 'c))
+                     (define y x)
+                     (set-cdr! x 4)
+                     y)
                   (list
                    '(store ((x (cons 'a 4))
                             (y (cons 'a 4)))
-                           
-                              ((values (cons 'a 4))))))
+                      (values (cons 'a 4)))))
      
      ; ----
      ; 6.4
@@ -571,21 +585,19 @@
      
      (make-r6test
       '(store ()
-              
-                 ((define compose
-                     (lambda (f g)
-                       (lambda (dot args)
-                         (f (apply g args)))))
-                   
-                   (define sqrt (lambda (x) (if (eqv? x 900) 30 #f)))
-                   
-                   ((compose sqrt *) 12 75)))
+         (define compose
+           (lambda (f g)
+             (lambda (dot args)
+               (f (apply g args)))))
+         
+         (define sqrt (lambda (x) (if (eqv? x 900) 30 #f)))
+         
+         ((compose sqrt *) 12 75))
       (list '(store ((compose (lambda (f g)
                                 (lambda (dot args)
                                   (f (apply g args)))))
                      (sqrt (lambda (x) (if (eqv? x 900) 30 #f))))
-                    
-                       ((values 30)))))))
+               (values 30))))))
   
   (define (conv-base base vec)
     (let loop ([i (vector-length vec)]
@@ -595,7 +607,7 @@
         [else (loop (- i 1)
                     (+ acc (* (expt base (- i 1))
                               (vector-ref vec (- i 1)))))])))
-      
+  
   (define (deconv-base base number)
     (list->vector
      (let loop ([i number])
@@ -631,37 +643,35 @@
      (make-r6test/v '((lambda (dot args) (car (cdr args))) 1 2 3 4 5 6) 2)
      (make-r6test/v '((lambda (dot args) (eqv? args args)) 1 2) #t)
      (make-r6test/v '((lambda (dot args) ((lambda (y) args) (begin (set! args 50) 123)))) 50)
-     (make-r6test '(store () (((lambda (dot args) ((lambda (y) args) (set! args 50)))))) 
+     (make-r6test '(store () ((lambda (dot args) ((lambda (y) args) (set! args 50)))))
                   (list '(unknown "unspecified result")))
      (make-r6test/v '(if ((lambda (x) x) 74) ((lambda () 6)) (6 54)) 6)
      (make-r6test/e '(1 1) "can't call non-procedure")
      (make-r6test/e '(if ((lambda (x) x) #f) ((lambda () 6)) (6 54))
                     "can't call non-procedure")
      
-     (make-r6test '(store () ((- 1)))
-                  (list '(store () ((values -1)))))
+     (make-r6test '(store () (- 1))
+                  (list '(store () (values -1))))
      
-     (make-r6test '(store () ((- (- 1))))
-                  (list '(store () ((values 1)))))
+     (make-r6test '(store () (- (- 1)))
+                  (list '(store () (values 1))))
      
-     (make-r6test '(store ((x 1)) ((begin (set! x (begin (set! x (- x)) (- x))) x)))
-                  (list '(store ((x 1)) ((values 1)))))
+     (make-r6test '(store ((x 1)) (begin (set! x (begin (set! x (- x)) (- x))) x))
+                  (list '(store ((x 1)) (values 1))))
      
      (make-r6test '(store ((x 1))
-                          (((lambda (p q) x)
-                            (begin (set! x (- x)) 1)
-                            (begin (set! x (- x)) 1))))
+                     ((lambda (p q) x)
+                      (begin (set! x (- x)) 1)
+                      (begin (set! x (- x)) 1)))
                   (list '(store ((x 1))
-                                ((values 1)))))
+                           (values 1))))
      
      (make-r6test '(store ((x 1))
-                          (((lambda (p q) 1)
-                            (begin (set! x 5) 1)
-                            (begin (set! x 6) 2))))
-                  (list '(store ((x 5))
-                                ((values 1)))
-                        '(store ((x 6))
-                                ((values 1)))))
+                     ((lambda (p q) 1)
+                      (begin (set! x 5) 1)
+                      (begin (set! x 6) 2)))
+                  (list '(store ((x 5)) (values 1))
+                        '(store ((x 6)) (values 1))))
      
      (make-r6test/v '(call/cc
                       (lambda (k)
@@ -671,26 +681,25 @@
                     '(condition "arity mismatch"))
      
      (make-r6test/v '((lambda (x) ((lambda (y) x) (begin (set! x 5) 'whatever))) 3) 5)
-     (make-r6test '(store 
-                    ()
-                    ((((lambda (a b ret) ((lambda (x y) ret) (begin (set! ret a) #f)
+     (make-r6test '(store ()
+                     (((lambda (a b ret) ((lambda (x y) ret) (begin (set! ret a) #f)
                                                              (begin (set! ret b) #t)))
                        (lambda () 1)
                        (lambda () 3)
-                       5))))
-                  '((store () ((values 1)))
-                    (store () ((values 3)))))
+                       5)))
+                  '((store () (values 1))
+                    (store () (values 3))))
      
      (make-r6test/v (let ([Y '(lambda (le)
                                 ((lambda (f) (f f))
                                  (lambda (f)
                                    (le (lambda (z) ((f f) z))))))])
                       `((,Y
-                          (lambda (length)
-                            (lambda (l)
-                              (if (null? l)
-                                  0
-                                  (+ (length (cdr l)) 1)))))
+                         (lambda (length)
+                           (lambda (l)
+                             (if (null? l)
+                                 0
+                                 (+ (length (cdr l)) 1)))))
                         (cons 1 null)))
                     1)
      (make-r6test/v '((lambda (x y) (+ x y)) ((lambda (x) x) 3) ((lambda (x) x) 4)) 
@@ -704,77 +713,77 @@
      (make-r6test/v '((lambda (x y) (x y)) + 0) 0)
      (make-r6test/v '(apply + (cons 1 (cons 2 null))) 3)
      
-          ;; app
+     ;; app
      (make-r6test/v '((lambda (dot args) (apply + args)) 1 2 3 4) 10)
      (make-r6test/v '((lambda (f) (eqv? (f 1) (f 1))) (lambda (dot args) (car args))) #t)
      (make-r6test '(store () 
-                          ((define length
-                             (lambda (l)
-                               (if (null? l)
-                                   0
-                                   (+ 1 (length (cdr l))))))
-                           (length (list 1 2 3))))
+                     (define length
+                       (lambda (l)
+                         (if (null? l)
+                             0
+                             (+ 1 (length (cdr l))))))
+                     (length (list 1 2 3)))
                   (list '(store ((length
                                   (lambda (l)
                                     (if (null? l)
                                         0
                                         (+ 1 (length (cdr l)))))))
-                                
-                                ((values 3)))))
-     (make-r6test '(store () (((lambda (x) 
-                                 (set! x (x 
-                                          (begin (set! x +) 4)
-                                          (begin (set! x *) 2)))
-                                 x)
-                               /)))
-                  (list '(store () ((values 2)))
-                        '(store () ((values 6)))
-                        '(store () ((values 8)))))
+                           (values 3))))
+     (make-r6test '(store () ((lambda (x) 
+                                (set! x (x 
+                                         (begin (set! x +) 4)
+                                         (begin (set! x *) 2)))
+                                x)
+                              /))
+                  (list '(store () (values 2))
+                        '(store () (values 6))
+                        '(store () (values 8))))
      
-     (make-r6test '(store () (((lambda (x) 
-                                 (set! x (x 
-                                          (begin (set! x +) 12)
-                                          (begin (set! x *) 2)
-                                          (begin (set! x -) 2)))
-                                 x)
-                               /)))
-                  (list '(store () ((values 3)))
-                        '(store () ((values 16)))
-                        '(store () ((values 8)))
-                        '(store () ((values 48)))))
+     (make-r6test '(store () ((lambda (x) 
+                                (set! x (x 
+                                         (begin (set! x +) 12)
+                                         (begin (set! x *) 2)
+                                         (begin (set! x -) 2)))
+                                x)
+                              /))
+                  (list '(store () (values 3))
+                        '(store () (values 16))
+                        '(store () (values 8))
+                        '(store () (values 48))))
      
-     (make-r6test '(store () (((lambda (x) 
-                                 (set! x (x (begin (set! x *) 2)))
-                                 x)
-                               /)))
-                  (list '(store () ((values 2)))
-                        '(store () ((values 1/2)))))
+     (make-r6test '(store () 
+                     ((lambda (x) 
+                        (set! x (x (begin (set! x *) 2)))
+                        x)
+                      /))
+                  (list '(store () (values 2))
+                        '(store () (values 1/2))))
      
      ;; test non-determinism in spec (a single application can go two different ways
      ;; at two different times)
      (make-r6test '(store ()  
-                          ((define x null)
-                           (define twice (lambda (f) (f) (f)))
-                           (twice
-                            (lambda ()
-                              ((lambda (p q) 1)
-                               (begin (set! x (cons 1 x)) 'foo)
-                               (begin (set! x (cons 2 x)) 'bar))))))
+                     (define x null)
+                     (define twice (lambda (f) (f) (f)))
+                     (twice
+                      (lambda ()
+                        ((lambda (p q) 1)
+                         (begin (set! x (cons 1 x)) 'foo)
+                         (begin (set! x (cons 2 x)) 'bar)))))
                   (list
                    '(store ((x (cons 1 (cons 2 (cons 1 (cons 2 null)))))
                             (twice (lambda (f) (f) (f))))
-                           ((values 1)))
+                      (values 1))
                    '(store ((x (cons 2 (cons 1 (cons 1 (cons 2 null)))))
                             (twice (lambda (f) (f) (f))))
-                           ((values 1)))
+                      (values 1))
                    '(store ((x (cons 1 (cons 2 (cons 2 (cons 1 null)))))
                             (twice (lambda (f) (f) (f))))
-                           ((values 1)))
+                      (values 1))
                    '(store ((x (cons 2 (cons 1 (cons 2 (cons 1 null)))))
                             (twice (lambda (f) (f) (f))))
-                           ((values 1)))))
+                      (values 1))))
      
-          (make-r6test/v '(condition? (condition "xyz")) #t)
+     (make-r6test/v '(condition? (condition "xyz")) #t)
      (make-r6test/v '(condition? 1) #f)
      (make-r6test/v '(procedure?
                       (call/cc
@@ -788,147 +797,161 @@
                     #t)
      
      ;; test capture avoiding substitution
-     (make-r6test '(store () ((define x 1) 
-                              (((lambda (f) (lambda (x) (+ x (f))))
-                                (lambda () x))
-                               2)))
-                  (list '(store ((x 1)) ((values 3)))))
+     (make-r6test '(store () 
+                     (define x 1) 
+                     (((lambda (f) (lambda (x) (+ x (f))))
+                       (lambda () x))
+                      2))
+                  (list '(store ((x 1)) (values 3))))
      
-     (make-r6test '(store () ((define x 1) 
-                              (((lambda (f) (lambda (y dot x) (f)))
-                                (lambda () x))
-                               2)))
-                  (list '(store ((x 1)) ((values 1)))))
+     (make-r6test '(store ()
+                     (((lambda (x1) (lambda (x) x))
+                       3)
+                      4))
+                  (list '(store () (values 4))))
+     (make-r6test '(store ()
+                     (((lambda (x)
+                         (lambda (dot args) (car args)))
+                       1)
+                      2))
+                  (list '(store () (values 2))))
+     
+     (make-r6test '(store () 
+                     (define x 1) 
+                     (((lambda (f) (lambda (y dot x) (f)))
+                       (lambda () x))
+                      2))
+                  (list '(store ((x 1)) (values 1))))
      
      (make-r6test/v '((lambda (x y dot z) (set! z (cons x z)) (set! z (cons y z)) (apply + z))
                       1 2 3 4)
                     '10)
      
      (make-r6test '(store () 
-                          ((define g (lambda (x) x))
-                           (define f (lambda (x) (g 1)))
-                           (((lambda (x) (lambda (g) (g x))) f)
-                            (lambda (x) 17))))
+                     (define g (lambda (x) x))
+                     (define f (lambda (x) (g 1)))
+                     (((lambda (x) (lambda (g) (g x))) f)
+                      (lambda (x) 17)))
                   (list '(store ((g (lambda (x) x))
                                  (f (lambda (x) (g 1))))
-                                ((values 17)))))
-     
-     ))
+                           (values 17))))))
   
   (define mv-tests
     (list
      (make-r6test
-      '(store () (((lambda (x) x) (values (lambda (y) y)))))
-      (list '(store () ((values (lambda (y) y))))))
+      '(store () ((lambda (x) x) (values (lambda (y) y))))
+      (list '(store () (values (lambda (y) y)))))
      (make-r6test
-      '(store () ((call-with-values (lambda () (lambda (y) y)) (lambda (x) x))))
-      (list '(store () ((values (lambda (y) y))))))
+      '(store () (call-with-values (lambda () (lambda (y) y)) (lambda (x) x)))
+      (list '(store () (values (lambda (y) y)))))
      (make-r6test
-      '(store () ((call-with-values 
-                   (lambda ()
-                     (call-with-values
-                      (lambda () ((lambda (z) z) (lambda (q) q)))
-                      (lambda (y) y))) 
-                   (lambda (x) x))))
-      (list '(store () ((values (lambda (q) q))))))
+      '(store () (call-with-values 
+                  (lambda ()
+                    (call-with-values
+                     (lambda () ((lambda (z) z) (lambda (q) q)))
+                     (lambda (y) y))) 
+                  (lambda (x) x)))
+      (list '(store () (values (lambda (q) q)))))
      (make-r6test
-      '(store () ((call-with-values 
-                   (lambda ()
-                     (call-with-values (lambda () (values (lambda (p) p)))
-                                       (((lambda (z) z) (lambda (a) (a a))) (lambda (m) m))))
-                   (call-with-values (lambda () (values (lambda (q) q))) (lambda (x) (lambda (y) x))))))
-      (list '(store () ((values (lambda (q) q))))))
+      '(store () (call-with-values 
+                  (lambda ()
+                    (call-with-values (lambda () (values (lambda (p) p)))
+                                      (((lambda (z) z) (lambda (a) (a a))) (lambda (m) m))))
+                  (call-with-values (lambda () (values (lambda (q) q))) (lambda (x) (lambda (y) x)))))
+      (list '(store () (values (lambda (q) q)))))
      
      
      (make-r6test
-      '(store () (((lambda (x) x) call-with-values)))
-      (list '(store () ((values call-with-values)))))
+      '(store () ((lambda (x) x) call-with-values))
+      (list '(store () (values call-with-values))))
      (make-r6test
-      '(store () ((values)))
-      (list '(store () ((values)))))
+      '(store () (values))
+      (list '(store () (values))))
      (make-r6test
-      '(store () ((values (lambda (x) x))))
-      (list '(store () ((values (lambda (x) x))))))
+      '(store () (values (lambda (x) x)))
+      (list '(store () (values (lambda (x) x)))))
      (make-r6test
-      '(store () ((values (lambda (x) x) (lambda (q) q))))
-      (list '(store () ((values (lambda (x) x) (lambda (q) q))))))
+      '(store () (values (lambda (x) x) (lambda (q) q)))
+      (list '(store () (values (lambda (x) x) (lambda (q) q)))))
      
      (make-r6test
-      '(store () ((call-with-values (values values) (lambda () (lambda (x) x)))))
-      (list '(store () ((values (lambda (x) x))))))
+      '(store () (call-with-values (values values) (lambda () (lambda (x) x))))
+      (list '(store () (values (lambda (x) x)))))
      (make-r6test
-      '(store () (((lambda (x) x) (values (lambda (y) y)))))
-      (list '(store () ((values (lambda (y) y))))))
+      '(store () ((lambda (x) x) (values (lambda (y) y))))
+      (list '(store () (values (lambda (y) y)))))
      (make-r6test
-      '(store () ((call-with-values (lambda () (lambda (y) y)) (lambda (x) x))))
-      (list '(store () ((values (lambda (y) y))))))
+      '(store () (call-with-values (lambda () (lambda (y) y)) (lambda (x) x)))
+      (list '(store () (values (lambda (y) y)))))
      
      (make-r6test
-      '(store () ((call-with-values 
-                   (lambda ()
-                     (call-with-values
-                      (lambda ()
-                        ((lambda (z) z) (lambda (q) q)))
-                      (lambda (y) y)))
-                   (lambda (x) x))))
-      (list '(store () ((values (lambda (q) q))))))
+      '(store () 
+         (call-with-values 
+          (lambda ()
+            (call-with-values
+             (lambda ()
+               ((lambda (z) z) (lambda (q) q)))
+             (lambda (y) y)))
+          (lambda (x) x)))
+      (list '(store () (values (lambda (q) q)))))
      
      (make-r6test
-      '(store () ((call-with-values 
-                   (lambda ()
-                     (call-with-values (lambda ()
-                                         (values (lambda (p) p)))
-                                       (((lambda (x) x) (lambda (x) (x x))) (lambda (m) m))))
-                   (call-with-values (lambda () (values (lambda (q) q))) 
-                                     (lambda (x) (lambda (y) x))))))
-      (list '(store () ((values (lambda (q) q))))))
+      '(store () 
+         (call-with-values 
+          (lambda ()
+            (call-with-values (lambda ()
+                                (values (lambda (p) p)))
+                              (((lambda (x) x) (lambda (x) (x x))) (lambda (m) m))))
+          (call-with-values (lambda () (values (lambda (q) q))) 
+                            (lambda (x) (lambda (y) x)))))
+      (list '(store () (values (lambda (q) q)))))
      
      (make-r6test
-      '(store () ((call-with-values (lambda () (values values values)) call-with-values)))
-      (list '(store () ((values)))))
+      '(store () (call-with-values (lambda () (values values values)) call-with-values))
+      (list '(store () (values))))
      
      (make-r6test
-      '(store () (((lambda (x y) x) (values (lambda (z) z) (lambda (q) q)))))
+      '(store () ((lambda (x y) x) (values (lambda (z) z) (lambda (q) q))))
       (list '(unknown "context expected one value, received 2")))
      
      (make-r6test
-      '(store () ((begin (if #t 1 2) 3)))
-      (list '(store () ((values 3)))))
+      '(store () (begin (if #t 1 2) 3))
+      (list '(store () (values 3))))
      
      
      (make-r6test
-      '(store () (((if (values 1 2 3 4 5 6 7 8 9 10) 11 12))))
+      '(store () ((if (values 1 2 3 4 5 6 7 8 9 10) 11 12)))
       (list '(unknown "context expected one value, received 10")))
      
      
      (make-r6test
-      '(store () ((if (begin 1 2) 1 2)))
-      (list '(store () ((values 1)))))
+      '(store () (if (begin 1 2) 1 2))
+      (list '(store () (values 1))))
      
      (make-r6test
-      '(store () (((lambda (x) (begin (set! x (begin 1 2)) x)) 1)))
-      (list '(store () ((values 2)))))
+      '(store () ((lambda (x) (begin (set! x (begin 1 2)) x)) 1))
+      (list '(store () (values 2))))
      
      (make-r6test/v '(call/cc (lambda (k) (cons 1 (cons 2 (cons 3 (k 5)))))) 5)
      (make-r6test/v '(call-with-values (lambda () (call/cc (lambda (k) (k)))) +) 0)
      (make-r6test/v '(call-with-values (lambda () (call/cc (lambda (k) (k 1 2)))) +) 3)
      (make-r6test/v '((call/cc values) values) 'values)
-     (make-r6test '(store () ((define x ((lambda () (values 1 2 3))))))
+     (make-r6test '(store () (define x ((lambda () (values 1 2 3)))))
                   (list '(unknown "context expected one value, received 3")))
      (make-r6test '(store ()
-                          ((define x 0)
-                           (define f
-                             (lambda ()
-                               (set! x (+ x 1))
-                               (values x x)))
-                           (call-with-values f (lambda (x y) x))
-                           (call-with-values f (lambda (x y) x))))
+                     (define x 0)
+                     (define f
+                       (lambda ()
+                         (set! x (+ x 1))
+                         (values x x)))
+                     (call-with-values f (lambda (x y) x))
+                     (call-with-values f (lambda (x y) x)))
                   (list
                    '(store ((x 2)
                             (f (lambda ()
                                  (set! x (+ x 1))
                                  (values x x))))
-                           ((values 2)))))
+                      (values 2))))
      (make-r6test/v '((lambda (x) (call-with-values x (lambda (x y) x)))
                       (lambda () (values (+ 1 2) 2)))
                     3)
@@ -951,83 +974,83 @@
       "arity mismatch")
      
      (make-r6test/v '((lambda (x) x) (values 1)) 1)
-     (make-r6test '(store () ((values 1 2)))
-                  (list '(store () ((values 1 2)))))
-     (make-r6test '(store () (((lambda (x) (values x x x)) 1) 1))
-                  (list '(store () ((values 1)))))
+     (make-r6test '(store () (values 1 2))
+                  (list '(store () (values 1 2))))
+     (make-r6test '(store () ((lambda (x) (values x x x)) 1) 1)
+                  (list '(store () (values 1))))
      
      (make-r6test/v '(begin (values) 1) 1)
      (make-r6test/v '(+ 1 (begin (values 1 2 3) 1)) 2)))
-    
+  
   (define dw-tests
     (list 
      
      ;; an infinite loop that produces a finite (circular) reduction graph
      (make-r6test
       '(store ()
-              (((lambda (x) ((call/cc call/cc) x)) (call/cc call/cc))))
+         ((lambda (x) ((call/cc call/cc) x)) (call/cc call/cc)))
       (list))
      
      ;; next examples is one a continuation example that mz gets wrong
      (make-r6test 
       '(store ()
-              (((lambda (count)
-                  ((lambda (first-time? k)
-                     (if first-time?
-                         (begin
-                           (set! first-time? #f)
-                           (set! count (+ count 1))
-                           (k values))
-                         1234))
-                   #t
-                   (call/cc values))
-                  count)
-                0)))
-      (list '(store () ((values 2)))))
+         ((lambda (count)
+            ((lambda (first-time? k)
+               (if first-time?
+                   (begin
+                     (set! first-time? #f)
+                     (set! count (+ count 1))
+                     (k values))
+                   1234))
+             #t
+             (call/cc values))
+            count)
+          0))
+      (list '(store () (values 2))))
      
      (make-r6test
-      '(store ([x 2]) (x))
-      (list '(store ((x 2)) ((values 2)))))
+      '(store ([x 2]) x)
+      (list '(store ((x 2)) (values 2))))
      (make-r6test
-      '(store ([x 2]) ((begin (set! x (+ x 1)) x)))
-      (list '(store ((x 3)) ((values 3)))))
+      '(store ([x 2]) (begin (set! x (+ x 1)) x))
+      (list '(store ((x 3)) (values 3))))
      
      (make-r6test
-      '(store () ((begin ((lambda (x) (+ x x)) 1) 2)))
-      (list '(store () ((values 2)))))
+      '(store () (begin ((lambda (x) (+ x x)) 1) 2))
+      (list '(store () (values 2))))
      
      (make-r6test
-      '(store () ((+ (call/cc (lambda (k) (+ (k 1) 1))) 1)))
-      (list '(store () ((values 2)))))
+      '(store () (+ (call/cc (lambda (k) (+ (k 1) 1))) 1))
+      (list '(store () (values 2))))
      (make-r6test
-      '(store () (((call/cc (lambda (x) x)) (lambda (y) 1))))
-      (list '(store () ((values 1)))))
+      '(store () ((call/cc (lambda (x) x)) (lambda (y) 1)))
+      (list '(store () (values 1))))
      
      (make-r6test
       '(store ((x 0))
-              ((begin
-                 (dynamic-wind (lambda () (set! x 1))
-                               (lambda () (begin (set! x 2) 'whatever))
-                               (lambda () (set! x 3)))
-                 x)))
-      (list '(store ((x 3)) ((values 3)))))
+         (begin
+           (dynamic-wind (lambda () (set! x 1))
+                         (lambda () (begin (set! x 2) 'whatever))
+                         (lambda () (set! x 3)))
+           x))
+      (list '(store ((x 3)) (values 3))))
      
      
      (make-r6test
-      '(store ((x 0)) ((dynamic-wind (lambda () (set! x (+ x 1)))
-                                     (lambda () (begin (set! x (+ x 1)) x))
-                                     (lambda () (set! x (+ x 1))))))
-      (list '(store ((x 3)) ((values 2)))))
+      '(store ((x 0)) (dynamic-wind (lambda () (set! x (+ x 1)))
+                                    (lambda () (begin (set! x (+ x 1)) x))
+                                    (lambda () (set! x (+ x 1)))))
+      (list '(store ((x 3)) (values 2))))
      
      ;; dynamic wind and multiple values
-     (make-r6test '(store () ((dynamic-wind values (lambda () (values 1 2)) values)))
-                  (list '(store () ((values 1 2)))))
+     (make-r6test '(store () (dynamic-wind values (lambda () (values 1 2)) values))
+                  (list '(store () (values 1 2))))
      
      ;; dynamic-wind given non-lambda procedure values
-     (make-r6test '(store () ((dynamic-wind values values values)))
-                  (list '(store () ((values)))))
-     (make-r6test '(store () ((dynamic-wind values (lambda (dot x) x) values)))
-                  (list '(store () ((values null)))))
+     (make-r6test '(store () (dynamic-wind values values values))
+                  (list '(store () (values))))
+     (make-r6test '(store () (dynamic-wind values (lambda (dot x) x) values))
+                  (list '(store () (values null))))
      
      
      (make-r6test/e '(dynamic-wind 1 1 1) "dynamic-wind expects arity 0 procs")
@@ -1049,66 +1072,66 @@
      
      (make-r6test ; "in thunk isn't really in"
       '(store ((n 0))
-              
-              ((begin
-                 (call/cc
-                  (lambda (k)
-                    (dynamic-wind
-                     (lambda () (begin
-                                  (set! n (+ n 1))
-                                  (k 11)))
-                     +
-                     (lambda () (set! n (+ n 1))))))
-                 n)))
-      (list '(store ((n 1)) ((values 1)))))
+         
+         (begin
+           (call/cc
+            (lambda (k)
+              (dynamic-wind
+               (lambda () (begin
+                            (set! n (+ n 1))
+                            (k 11)))
+               +
+               (lambda () (set! n (+ n 1))))))
+           n))
+      (list '(store ((n 1)) (values 1))))
      
      (make-r6test ; "out thunk is really out"
       '(store ((n 0)
                (do-jump? #t)
                (k-out #f))
-              
-              ((begin
-                 (call/cc
-                  (lambda (k)
-                    (dynamic-wind
-                     (lambda () (set! n (+ n 1)))
-                     +
-                     (lambda ()
-                       (begin
-                         (set! n (+ n 1))
-                         (call/cc (lambda (k) (set! k-out k))))))))
-                 (if do-jump?
-                     (begin
-                       (set! do-jump? #f)
-                       (k-out 0))
-                     11)
-                 (set! k-out #f)
-                 n)))
-      (list '(store ((n 2) (do-jump? #f) (k-out #f)) ((values 2)))))
+         
+         (begin
+           (call/cc
+            (lambda (k)
+              (dynamic-wind
+               (lambda () (set! n (+ n 1)))
+               +
+               (lambda ()
+                 (begin
+                   (set! n (+ n 1))
+                   (call/cc (lambda (k) (set! k-out k))))))))
+           (if do-jump?
+               (begin
+                 (set! do-jump? #f)
+                 (k-out 0))
+               11)
+           (set! k-out #f)
+           n))
+      (list '(store ((n 2) (do-jump? #f) (k-out #f)) (values 2))))
      
      (make-r6test ; "out thunk is really out during trimming"
       '(store ((n 0)
                (do-jump? #t)
                (k-out #f))
-              
-              ((begin
-                 (call/cc
-                  (lambda (k)
-                    (dynamic-wind
-                     (lambda () (set! n (+ n 1)))
-                     +
-                     (lambda ()
-                       (begin
-                         (set! n (+ n 1))
-                         (call/cc (lambda (k) (set! k-out k))))))))
-                 (if do-jump?
-                     (begin
-                       (set! do-jump? #f)
-                       (k-out 0))
-                     11)
-                 (set! k-out #f)
-                 n)))
-      (list '(store ((n 2) (do-jump? #f) (k-out #f)) ((values 2)))))
+         
+         (begin
+           (call/cc
+            (lambda (k)
+              (dynamic-wind
+               (lambda () (set! n (+ n 1)))
+               +
+               (lambda ()
+                 (begin
+                   (set! n (+ n 1))
+                   (call/cc (lambda (k) (set! k-out k))))))))
+           (if do-jump?
+               (begin
+                 (set! do-jump? #f)
+                 (k-out 0))
+               11)
+           (set! k-out #f)
+           n))
+      (list '(store ((n 2) (do-jump? #f) (k-out #f)) (values 2))))
      
      (make-r6test ; "jumping during the results of trimming, pre-thunk"
       '(store ((pre-count 0)
@@ -1116,36 +1139,36 @@
                (after-jump? #t)
                (grab? #t)
                (the-k #f))
-              
-              ((begin
-                 (dynamic-wind
-                  (lambda ()
+         
+         (begin
+           (dynamic-wind
+            (lambda ()
+              (begin
+                (set! pre-count (+ pre-count 1))
+                (if pre-jump?
                     (begin
-                      (set! pre-count (+ pre-count 1))
-                      (if pre-jump?
-                          (begin
-                            (set! pre-jump? #f)
-                            (set! after-jump? #f)
-                            (the-k 999))
-                          999)))
-                  (lambda () 
-                    (if grab?
-                        (call/cc
-                         (lambda (k)
-                           (begin
-                             (set! grab? #f)
-                             (set! the-k k)
-                             'ignoreme)))
-                        999))
-                  +)
-                 (if after-jump?
+                      (set! pre-jump? #f)
+                      (set! after-jump? #f)
+                      (the-k 999))
+                    999)))
+            (lambda () 
+              (if grab?
+                  (call/cc
+                   (lambda (k)
                      (begin
-                       (set! pre-jump? #t)
-                       (the-k 999))
-                     999)
-                 (set! the-k #f) ;; just to make testing simpler
-                 pre-count)))
-      (list '(store ((pre-count 3) (pre-jump? #f) (after-jump? #f) (grab? #f) (the-k #f)) ((values 3)))))
+                       (set! grab? #f)
+                       (set! the-k k)
+                       'ignoreme)))
+                  999))
+            +)
+           (if after-jump?
+               (begin
+                 (set! pre-jump? #t)
+                 (the-k 999))
+               999)
+           (set! the-k #f) ;; just to make testing simpler
+           pre-count))
+      (list '(store ((pre-count 3) (pre-jump? #f) (after-jump? #f) (grab? #f) (the-k #f)) (values 3))))
      
      (make-r6test ; "jumping during the results of trimming, post-thunk"
       '(store ((post-count 0)
@@ -1153,38 +1176,38 @@
                (jump-main? #t)
                (grab? #t)
                (the-k #f))
-              
-              ((begin
-                 (if grab?
-                     (call/cc
-                      (lambda (k)
-                        (begin
-                          (set! grab? #f)
-                          (set! the-k k))))
-                     999)
-                 (dynamic-wind
-                  +
-                  (lambda () 
-                    (if jump-main?
-                        (begin
-                          (set! jump-main? #f)
-                          (the-k 999))
-                        999))
-                  (lambda () 
+         
+         (begin
+           (if grab?
+               (call/cc
+                (lambda (k)
+                  (begin
+                    (set! grab? #f)
+                    (set! the-k k))))
+               999)
+           (dynamic-wind
+            +
+            (lambda () 
+              (if jump-main?
+                  (begin
+                    (set! jump-main? #f)
+                    (the-k 999))
+                  999))
+            (lambda () 
+              (begin
+                (set! post-count (+ post-count 1))
+                (if post-jump?
                     (begin
-                      (set! post-count (+ post-count 1))
-                      (if post-jump?
-                          (begin
-                            (set! post-jump? #f)
-                            (the-k 999))
-                          999))))
-                 (set! the-k #f) ;; just to make testing simpler
-                 post-count)))
-      (list '(store ((post-count 2) (post-jump? #f) (jump-main? #f) (grab? #f) (the-k #f)) ((values 2)))))
+                      (set! post-jump? #f)
+                      (the-k 999))
+                    999))))
+           (set! the-k #f) ;; just to make testing simpler
+           post-count))
+      (list '(store ((post-count 2) (post-jump? #f) (jump-main? #f) (grab? #f) (the-k #f)) (values 2))))
      
      (make-r6test ; "dynamic-wind gets a continuation"
-      '(store () ((call/cc (lambda (k) (dynamic-wind + k +)))))
-      (list '(store () ((values)))))
+      '(store () (call/cc (lambda (k) (dynamic-wind + k +))))
+      (list '(store () (values))))
      
      #|
 
@@ -1200,19 +1223,19 @@ of digits with deconv-base
                (one 0)
                (two 0)
                (three 0)) 
-              
-              ((begin
-                 (set! one (lambda () (set! x (+ (* x 2) 0))))
-                 (set! two (lambda () (call/cc (lambda (k) k))))
-                 (set! three (lambda () (set! x (+ (* x 2) 1))))
-                 ((dynamic-wind one two three)
-                  (lambda (y) x)))))
+         
+         (begin
+           (set! one (lambda () (set! x (+ (* x 2) 0))))
+           (set! two (lambda () (call/cc (lambda (k) k))))
+           (set! three (lambda () (set! x (+ (* x 2) 1))))
+           ((dynamic-wind one two three)
+            (lambda (y) x))))
       (list (let ([final-x (conv-base 2 #(1 0 1 0))])
               `(store ((x ,final-x)
                        (one (lambda () (set! x (+ (* x 2) 0))))
                        (two (lambda () (call/cc (lambda (k) k))))
                        (three (lambda () (set! x (+ (* x 2) 1)))))
-                      ((values ,final-x))))))
+                 (values ,final-x)))))
      
      (make-r6test ;"hop out two levels"
       '(store ((x 0)
@@ -1220,21 +1243,21 @@ of digits with deconv-base
                (two 0)
                (three 0)
                (four 0))
-              
-              ((begin
-                 (set! one   (lambda () (set! x (+ (* x 5) 1))))
-                 (set! two   (lambda () (set! x (+ (* x 5) 2))))
-                 (set! three (lambda () (set! x (+ (* x 5) 3))))
-                 (set! four  (lambda () (set! x (+ (* x 5) 4))))
-                 ((dynamic-wind 
-                   one
-                   (lambda () 
-                     (dynamic-wind
-                      two
-                      (lambda () (call/cc (lambda (k) k)))
-                      three))
-                   four)
-                  (lambda (y) x)))))
+         
+         (begin
+           (set! one   (lambda () (set! x (+ (* x 5) 1))))
+           (set! two   (lambda () (set! x (+ (* x 5) 2))))
+           (set! three (lambda () (set! x (+ (* x 5) 3))))
+           (set! four  (lambda () (set! x (+ (* x 5) 4))))
+           ((dynamic-wind 
+             one
+             (lambda () 
+               (dynamic-wind
+                two
+                (lambda () (call/cc (lambda (k) k)))
+                three))
+             four)
+            (lambda (y) x))))
       (list 
        (let ([final-x (conv-base 5 #(4 3 2 1 4 3 2 1))])
          `(store ((x ,final-x)
@@ -1242,7 +1265,7 @@ of digits with deconv-base
                   (two   (lambda () (set! x (+ (* x 5) 2))))
                   (three (lambda () (set! x (+ (* x 5) 3))))
                   (four  (lambda () (set! x (+ (* x 5) 4)))))
-                 ((values ,final-x))))))
+            (values ,final-x)))))
      
      (make-r6test ; "don't duplicate tail"
       '(store ((x 0)
@@ -1250,27 +1273,27 @@ of digits with deconv-base
                (two 0)
                (three 0)
                (four 0))
-              
-              ((begin
-                 (set! one (lambda () (set! x (+ (* x 5) 1))))
-                 (set! two (lambda () (set! x (+ (* x 5) 2))))
-                 (set! three (lambda () (set! x (+ (* x 5) 3))))
-                 (set! four (lambda () (set! x (+ (* x 5) 4))))
-                 (dynamic-wind 
-                  one
-                  (lambda () 
-                    ((dynamic-wind two
-                                   (lambda () (call/cc (lambda (k) k)))
-                                   three)
-                     (lambda (y) x)))
-                  four))))
+         
+         (begin
+           (set! one (lambda () (set! x (+ (* x 5) 1))))
+           (set! two (lambda () (set! x (+ (* x 5) 2))))
+           (set! three (lambda () (set! x (+ (* x 5) 3))))
+           (set! four (lambda () (set! x (+ (* x 5) 4))))
+           (dynamic-wind 
+            one
+            (lambda () 
+              ((dynamic-wind two
+                             (lambda () (call/cc (lambda (k) k)))
+                             three)
+               (lambda (y) x)))
+            four)))
       (list `(store ((x ,(conv-base 5 #(4 3 2 3 2 1)))
                      (one (lambda () (set! x (+ (* x 5) 1))))
                      (two (lambda () (set! x (+ (* x 5) 2))))
                      (three (lambda () (set! x (+ (* x 5) 3))))
                      (four (lambda () (set! x (+ (* x 5) 4)))))
-                    
-                    ((values ,(conv-base 5 #(3 2 3 2 1)))))))
+               
+               (values ,(conv-base 5 #(3 2 3 2 1))))))
      
      (make-r6test ; "dont' duplicate tail, 2 deep"
       '(store ((x 0)
@@ -1280,26 +1303,26 @@ of digits with deconv-base
                (four 0)
                (five 0)
                (six 0))
-              
-              ((begin
-                 (set! one (lambda () (set! x (+ (* x 7) 1))))
-                 (set! two (lambda () (set! x (+ (* x 7) 2))))
-                 (set! three (lambda () (set! x (+ (* x 7) 3))))
-                 (set! four (lambda () (set! x (+ (* x 7) 4))))
-                 (set! five (lambda () (set! x (+ (* x 7) 5))))
-                 (set! six (lambda () (set! x (+ (* x 7) 6))))
-                 (dynamic-wind 
-                  one
-                  (lambda () 
-                    (dynamic-wind 
-                     two
-                     (lambda () 
-                       ((dynamic-wind three
-                                      (lambda () (call/cc (lambda (k) k)))
-                                      four)
-                        (lambda (y) x)))
-                     five))
-                  six))))
+         
+         (begin
+           (set! one (lambda () (set! x (+ (* x 7) 1))))
+           (set! two (lambda () (set! x (+ (* x 7) 2))))
+           (set! three (lambda () (set! x (+ (* x 7) 3))))
+           (set! four (lambda () (set! x (+ (* x 7) 4))))
+           (set! five (lambda () (set! x (+ (* x 7) 5))))
+           (set! six (lambda () (set! x (+ (* x 7) 6))))
+           (dynamic-wind 
+            one
+            (lambda () 
+              (dynamic-wind 
+               two
+               (lambda () 
+                 ((dynamic-wind three
+                                (lambda () (call/cc (lambda (k) k)))
+                                four)
+                  (lambda (y) x)))
+               five))
+            six)))
       
       (list `(store ((x ,(conv-base 7 #(6 5 4 3 4 3 2 1)))
                      (one (lambda () (set! x (+ (* x 7) 1))))
@@ -1308,7 +1331,7 @@ of digits with deconv-base
                      (four (lambda () (set! x (+ (* x 7) 4))))
                      (five (lambda () (set! x (+ (* x 7) 5))))
                      (six (lambda () (set! x (+ (* x 7) 6)))))
-                    ((values ,(conv-base 7 #(4 3 4 3 2 1)))))))
+               (values ,(conv-base 7 #(4 3 4 3 2 1))))))
      
      (make-r6test ; "hop out and back into another one"
       '(store ((x 0)
@@ -1316,25 +1339,25 @@ of digits with deconv-base
                (two 0)
                (three 0)
                (four 0))
-              
-              ((begin
-                 (set! one (lambda () (set! x (+ (* x 5) 1))))
-                 (set! two (lambda () (set! x (+ (* x 5) 2))))
-                 (set! three (lambda () (set! x (+ (* x 5) 3))))
-                 (set! four (lambda () (set! x (+ (* x 5) 4))))
-                 ((lambda (ok)
-                    (dynamic-wind one
-                                  (lambda () (ok (lambda (y) x)))
-                                  two))
-                  (dynamic-wind three
-                                (lambda () (call/cc (lambda (k) k)))
-                                four)))))
+         
+         (begin
+           (set! one (lambda () (set! x (+ (* x 5) 1))))
+           (set! two (lambda () (set! x (+ (* x 5) 2))))
+           (set! three (lambda () (set! x (+ (* x 5) 3))))
+           (set! four (lambda () (set! x (+ (* x 5) 4))))
+           ((lambda (ok)
+              (dynamic-wind one
+                            (lambda () (ok (lambda (y) x)))
+                            two))
+            (dynamic-wind three
+                          (lambda () (call/cc (lambda (k) k)))
+                          four))))
       (list `(store ((x ,(conv-base 5 #(2 1 4 3 2 1 4 3)))
                      (one (lambda () (set! x (+ (* x 5) 1))))
                      (two (lambda () (set! x (+ (* x 5) 2))))
                      (three (lambda () (set! x (+ (* x 5) 3))))
                      (four (lambda () (set! x (+ (* x 5) 4)))))
-                    ((values ,(conv-base 5 #(1 4 3 2 1 4 3)))))))
+               (values ,(conv-base 5 #(1 4 3 2 1 4 3))))))
      
      (make-r6test ; "hop out one level and back in two levels"
       '(store ((x 0)
@@ -1342,28 +1365,28 @@ of digits with deconv-base
                (two 0)
                (three 0)
                (four 0))
-              
-              ((begin
-                 (set! one (lambda () (set! x (+ (* x 5) 1))))
-                 (set! two (lambda () (set! x (+ (* x 5) 2))))
-                 (set! three (lambda () (set! x (+ (* x 5) 3))))
-                 (set! four (lambda () (set! x (+ (* x 5) 4))))
-                 ((lambda (ok)
-                    (dynamic-wind
-                     one
-                     (lambda ()
-                       (dynamic-wind
-                        two
-                        (lambda () (ok (lambda (y) x)))
-                        three))
-                     four))
-                  (call/cc (lambda (k) k))))))
+         
+         (begin
+           (set! one (lambda () (set! x (+ (* x 5) 1))))
+           (set! two (lambda () (set! x (+ (* x 5) 2))))
+           (set! three (lambda () (set! x (+ (* x 5) 3))))
+           (set! four (lambda () (set! x (+ (* x 5) 4))))
+           ((lambda (ok)
+              (dynamic-wind
+               one
+               (lambda ()
+                 (dynamic-wind
+                  two
+                  (lambda () (ok (lambda (y) x)))
+                  three))
+               four))
+            (call/cc (lambda (k) k)))))
       (list `(store ((x ,(conv-base 5 #(4 3 2 1 4 3 2 1)))
                      (one (lambda () (set! x (+ (* x 5) 1))))
                      (two (lambda () (set! x (+ (* x 5) 2))))
                      (three (lambda () (set! x (+ (* x 5) 3))))
                      (four (lambda () (set! x (+ (* x 5) 4)))))
-                    ((values ,(conv-base 5 #(2 1 4 3 2 1)))))))
+               (values ,(conv-base 5 #(2 1 4 3 2 1))))))
      
      (make-r6test ; "hop out two levels and back in two levels"
       '(store ((x 0)
@@ -1375,33 +1398,33 @@ of digits with deconv-base
                (six 0)
                (seven 0)
                (eight 0))
-              
-              ((begin
-                 (set! one (lambda () (set! x (+ (* x 9) 1))))
-                 (set! two (lambda () (set! x (+ (* x 9) 2))))
-                 (set! three (lambda () (set! x (+ (* x 9) 3))))
-                 (set! four (lambda () (set! x (+ (* x 9) 4))))
-                 (set! five (lambda () (set! x (+ (* x 9) 5))))
-                 (set! six (lambda () (set! x (+ (* x 9) 6))))
-                 (set! seven (lambda () (set! x (+ (* x 9) 7))))
-                 (set! eight (lambda () (set! x (+ (* x 9) 8))))
-                 ((lambda (ok)
-                    (dynamic-wind
-                     one
-                     (lambda () 
-                       (dynamic-wind
-                        two
-                        (lambda () (ok (lambda (y) x)))
-                        three))
-                     four))
-                  (dynamic-wind
-                   five
-                   (lambda () 
-                     (dynamic-wind
-                      six
-                      (lambda () (call/cc (lambda (k) k)))
-                      seven))
-                   eight)))))
+         
+         (begin
+           (set! one (lambda () (set! x (+ (* x 9) 1))))
+           (set! two (lambda () (set! x (+ (* x 9) 2))))
+           (set! three (lambda () (set! x (+ (* x 9) 3))))
+           (set! four (lambda () (set! x (+ (* x 9) 4))))
+           (set! five (lambda () (set! x (+ (* x 9) 5))))
+           (set! six (lambda () (set! x (+ (* x 9) 6))))
+           (set! seven (lambda () (set! x (+ (* x 9) 7))))
+           (set! eight (lambda () (set! x (+ (* x 9) 8))))
+           ((lambda (ok)
+              (dynamic-wind
+               one
+               (lambda () 
+                 (dynamic-wind
+                  two
+                  (lambda () (ok (lambda (y) x)))
+                  three))
+               four))
+            (dynamic-wind
+             five
+             (lambda () 
+               (dynamic-wind
+                six
+                (lambda () (call/cc (lambda (k) k)))
+                seven))
+             eight))))
       (list `(store ((x ,(conv-base 9 #(4 3 2 1 8 7 6 5 4 3 2 1 8 7 6 5)))
                      (one (lambda () (set! x (+ (* x 9) 1))))
                      (two (lambda () (set! x (+ (* x 9) 2))))
@@ -1411,189 +1434,188 @@ of digits with deconv-base
                      (six (lambda () (set! x (+ (* x 9) 6))))
                      (seven (lambda () (set! x (+ (* x 9) 7))))
                      (eight (lambda () (set! x (+ (* x 9) 8)))))
-                    ((values ,(conv-base 9 #(2 1 8 7 6 5 4 3 2 1 8 7 6 5)))))))))
+               (values ,(conv-base 9 #(2 1 8 7 6 5 4 3 2 1 8 7 6 5))))))))
   
   (define tl-tests
     (list 
      
      (make-r6test ;"Basic define 1"
-      '(store () ((define x 1) (set! x 2) 12))
-      (list '(store ((x 2)) ((values 12)))))
+      '(store () (define x 1) (set! x 2) 12)
+      (list '(store ((x 2)) (values 12))))
      
      (make-r6test ;"Basic define 2"
-      '(store () ((define x 1) (define y x) 131))
-      (list '(store ((x 1) (y 1)) ((values 131)))))
+      '(store () (define x 1) (define y x) 131)
+      (list '(store ((x 1) (y 1)) (values 131))))
      
      (make-r6test ; "Basic define 3"
-      '(store () ((define x 1) (define y (+ x x)) 'ha))
-      (list '(store ((x 1) (y 2)) ((values 'ha)))))
+      '(store () (define x 1) (define y (+ x x)) 'ha)
+      (list '(store ((x 1) (y 2)) (values 'ha))))
      
      (make-r6test ; "Basic fn app 1"
-      '(store () ((lambda (x) x) 1))
-      (list '(store () ((values 1)))))
+      '(store () (lambda (x) x) 1)
+      (list '(store () (values 1))))
      
      (make-r6test ; "top-level call/cc 1"
-      '(store () ((define k (call/cc (lambda (x) x)))
-                  (define y (if (procedure? k)
-                                (k 1)
-                                k))
-                  123))
-      (list '(store ((k 1) (y 1)) ((values 123)))))
+      '(store () (define k (call/cc (lambda (x) x)))
+         (define y (if (procedure? k)
+                       (k 1)
+                       k))
+         123)
+      (list '(store ((k 1) (y 1)) (values 123))))
      
      (make-r6test ; "top-level call/cc 2" 
       '(store () 
-              ((define x 1)
-               (define k (call/cc (lambda (x) x)))
-               (define y 1)
-               (set! x 2)
-               (set! y 2)
-               (if (procedure? k)
-                   (k 1)
-                   1234)))
+         (define x 1)
+         (define k (call/cc (lambda (x) x)))
+         (define y 1)
+         (set! x 2)
+         (set! y 2)
+         (if (procedure? k)
+             (k 1)
+             1234))
       (list '(store ((x 2)
                      (k 1)
                      (y 2)) 
-                    
-                    ((values 1234)))))
+               
+               (values 1234))))
      
      (make-r6test ; "top-level call/cc D->E" 
       '(store () 
-              ((define x (call/cc values))
-               (x values)))
+         (define x (call/cc values))
+         (x values))
       (list '(store ((x values))
-                    ((values values)))))
+               (values values))))
      
      (make-r6test ; "top-level call/cc D->D" 
       '(store () 
-              ((define x (call/cc values))
-               (define y (x (lambda (x) x)))
-               123))
+         (define x (call/cc values))
+         (define y (x (lambda (x) x)))
+         123)
       (list '(store ((x (lambda (x) x))
                      (y (lambda (x) x)))
-                    ((values 123)))))
+               (values 123))))
      
      (make-r6test ; "top-level call/cc E->E" 
       '(store () 
-              ((define x #f)
-               (define y #f)
-               (set! y (* 2 (call/cc (lambda (k) (set! x k) 2))))
-               (if (procedure? x)
-                   ((lambda (y)
-                      (set! x 3)
-                      (y 17))
-                    x)
-                   1234)))
+         (define x #f)
+         (define y #f)
+         (set! y (* 2 (call/cc (lambda (k) (set! x k) 2))))
+         (if (procedure? x)
+             ((lambda (y)
+                (set! x 3)
+                (y 17))
+              x)
+             1234))
       (list '(store ((x 3)
                      (y 34))
-                    ((values 1234)))))
+               (values 1234))))
      
      (make-r6test ; "top-level call/cc E->D" 
       '(store () 
-              ((define z (call/cc values))
-               (define x #f)
-               (define y (if (procedure? x)
-                             (x 2)
-                             x))
-               (call/cc (lambda (k) (set! x k)))
-               (z values)
-               (set! x 17)
-               123))
+         (define z (call/cc values))
+         (define x #f)
+         (define y (if (procedure? x)
+                       (x 2)
+                       x))
+         (call/cc (lambda (k) (set! x k)))
+         (z values)
+         (set! x 17)
+         123)
       (list '(store ((z values)
                      (x 17)
                      (y #f))
-                    ((values 123)))))
+               (values 123))))
      
      (make-r6test ; "call/cc treated as a value"
-      '(store () ((define x (((lambda (x) call/cc) call/cc) (lambda (k) (k 1)))) 123))
-      (list '(store ((x 1)) ((values 123)))))
+      '(store () (define x (((lambda (x) call/cc) call/cc) (lambda (k) (k 1)))) 123)
+      (list '(store ((x 1)) (values 123))))
      
      
      ;; test recursive definitions
      (make-r6test ; "self-referential defs 1"
       '(store () 
-              
-              ((define f
-                 (lambda (x y)
-                   (x (lambda () (f y x)))))
-               (f (lambda (fc) (fc))
-                  (lambda (fc) 1))))
+         
+         (define f
+           (lambda (x y)
+             (x (lambda () (f y x)))))
+         (f (lambda (fc) (fc))
+            (lambda (fc) 1)))
       (list '(store ((f
                       (lambda (x y)
                         (x (lambda () (f y x)))))) 
-                    
-                    ((values 1)))))
+               
+               (values 1))))
      
      (make-r6test ; "begin w/set! following continuation grab"
       '(store () 
-              ((define count 0)
-               (define k (call/cc (lambda (x) x)))
-               (define dummy (begin (set! count (+ count 1)) 123))
-               (k (lambda (x) x))))
+         (define count 0)
+         (define k (call/cc (lambda (x) x)))
+         (define dummy (begin (set! count (+ count 1)) 123))
+         (k (lambda (x) x)))
       (list '(store ((count 2)
                      (k (lambda (x) x))
                      (dummy 123))
-                    
-                    ((values (lambda (x) x))))))
+               
+               (values (lambda (x) x)))))
      
      (make-r6test ; "inner define becomes top-level"
       '(store () 
-              
-              ((define count 0)
-               (define x 1)
-               (define k 0)
-               ((lambda (ignore) 
-                  (begin ((call/cc (lambda (k1) 
-                                     (begin
-                                       (set! k k1)
-                                       (lambda (x) x))))
-                          1)
-                         (set! x (+ x 1))))
-                0)
-               (if (eqv? count 0)
-                   (begin
-                     (set! count 1)
-                     (k (lambda (x) (call/cc (lambda (k2)
-                                               (begin (set! k k2)
-                                                      (lambda (x) x)))))))
-                   1234)
-               (if (eqv? count 1)
-                   (begin
-                     (set! count 2)
-                     (k (lambda (x) x)))
-                   (set! k 11))
-               123))
+         (define count 0)
+         (define x 1)
+         (define k 0)
+         ((lambda (ignore) 
+            (begin ((call/cc (lambda (k1) 
+                               (begin
+                                 (set! k k1)
+                                 (lambda (x) x))))
+                    1)
+                   (set! x (+ x 1))))
+          0)
+         (if (eqv? count 0)
+             (begin
+               (set! count 1)
+               (k (lambda (x) (call/cc (lambda (k2)
+                                         (begin (set! k k2)
+                                                (lambda (x) x)))))))
+             1234)
+         (if (eqv? count 1)
+             (begin
+               (set! count 2)
+               (k (lambda (x) x)))
+             (set! k 11))
+         123)
       (list '(store 
-              ((count 2)
-               (x 4)
-               (k 11)) 
-              ((values 123)))))
+                 ((count 2)
+                  (x 4)
+                  (k 11)) 
+               (values 123))))
      
      (make-r6test ; "ref to a var before filled in"
       '(store ()
-              ((define y x)
-               (define x 1)
-               x))
+         (define y x)
+         (define x 1)
+         x)
       (list '(uncaught-exception (condition "reference to undefined identifier: x"))))
      
      (make-r6test ; "ref to a var before filled in"
-      '(store () (x))
+      '(store () x)
       (list '(uncaught-exception (condition "reference to undefined identifier: x"))))
      
      (make-r6test ; "ref to a var before filled in"
-      '(store () ((set! x 2)))
+      '(store () (set! x 2))
       (list '(uncaught-exception (condition "set!: cannot set undefined identifier: x"))))
      
      (make-r6test ; "bang a var before filled in"
       '(store ()
-              ((define y (begin (set! x 2) 123))
-               (define x (+ x 1))
-               x))
-      (list '(store ((x 3) (y 123)) ((values 3)))))
+         (define y (begin (set! x 2) 123))
+         (define x (+ x 1))
+         x)
+      (list '(store ((x 3) (y 123)) (values 3))))
      
      (make-r6test ; "make sure all locations are allocated up front, rather than one at a time"
       '(store
-        () 
-        ((define first-time? #t)
+           () 
+         (define first-time? #t)
          (define x (call/cc values))
          (define y (call/cc 
                     (lambda (k) 
@@ -1604,45 +1626,45 @@ of digits with deconv-base
              (begin (set! first-time? #f) (x values))
              1234)
          (set! x (quote x))
-         y))
-      (list '(store ((first-time? #f) (x 'x) (y 2)) ((values 2)))))
+         y)
+      (list '(store ((first-time? #f) (x 'x) (y 2)) (values 2))))
      
      (make-r6test '(store ()  
-                          ((define x1 2)
-                           ((if + + +) x1)))
-                  (list '(store ((x1 2)) ((values 2)))))
+                     (define x1 2)
+                     ((if + + +) x1))
+                  (list '(store ((x1 2)) (values 2))))
      
      ;; testing implicit begin & substitution
      (make-r6test/v '(((lambda (x) x (lambda () x x)) 1)) 1)
      (make-r6test '(store ()
-                          ((define q 1)
-                           (((lambda (x) (lambda (q dot y) (x))) (lambda (dot x) q)) 2)))
-                  (list '(store ((q 1)) ((values 1)))))
+                     (define q 1)
+                     (((lambda (x) (lambda (q dot y) (x))) (lambda (dot x) q)) 2))
+                  (list '(store ((q 1)) (values 1))))
      
      ;; sexp contexts for the top-level
-     (make-r6test '(store () ((define x '2) '(define x '1) x))
-                  (list '(store ((x 2)) ((values 2)))))
+     (make-r6test '(store () (define x '2) '(define x '1) x)
+                  (list '(store ((x 2)) (values 2))))
      
      (make-r6test '(store () 
-                          ((define k #f)
-                           (define x 0)
-                           (define first-time? #t)
-                           (set! x (+ 1 (call/cc (lambda (k2) (set! k k2) 1))))
-                           (if first-time? 
-                               (begin (set! first-time? #f)
-                                      (k 3))
-                               (begin (set! k #f)
-                                      x))))
+                     (define k #f)
+                     (define x 0)
+                     (define first-time? #t)
+                     (set! x (+ 1 (call/cc (lambda (k2) (set! k k2) 1))))
+                     (if first-time? 
+                         (begin (set! first-time? #f)
+                                (k 3))
+                         (begin (set! k #f)
+                                x)))
                   (list '(store ((k #f)
                                  (x 4)
                                  (first-time? #f))
-                                ((values 4)))))))
-
+                           (values 4))))))
+  
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;
   ;; exception tests
   ;;
-
+  
   (define exn-tests
     (list
      (make-r6test/v '(with-exception-handler (lambda (x) 1) (lambda () 2))
@@ -1653,22 +1675,22 @@ of digits with deconv-base
                     2)
      (make-r6test/v '(with-exception-handler values (lambda () (raise-continuable 2)))
                     2)
-     (make-r6test '(store () ((with-exception-handler (lambda (x) x) values)))
-                  (list '(store () ((values)))))
-     (make-r6test '(store () ((with-exception-handler (lambda (x) (values x x)) (lambda () (raise-continuable 1)))))
-                  (list '(store () ((values 1 1)))))
+     (make-r6test '(store () (with-exception-handler (lambda (x) x) values))
+                  (list '(store () (values))))
+     (make-r6test '(store () (with-exception-handler (lambda (x) (values x x)) (lambda () (raise-continuable 1))))
+                  (list '(store () (values 1 1))))
      (make-r6test/v '(+ 1 (with-exception-handler
                            (lambda (x) (+ 2 x))
                            (lambda () (+ 3 (raise-continuable (+ 2 2))))))
                     10)
      
      (make-r6test '(store ()
-                          ((with-exception-handler
-                            (lambda (x)
-                              (with-exception-handler
-                               (lambda (y) (eqv? x y))
-                               (lambda () (car 1))))
-                            (lambda () (car 1)))))
+                     (with-exception-handler
+                      (lambda (x)
+                        (with-exception-handler
+                         (lambda (y) (eqv? x y))
+                         (lambda () (car 1))))
+                      (lambda () (car 1))))
                   (list '(unknown "equivalence of conditions")))
      
      ;; nested handlers
@@ -1696,31 +1718,31 @@ of digits with deconv-base
                     1)
      
      (make-r6test '(store ()
-                          ((with-exception-handler 
-                            (lambda (y) (raise-continuable y))
-                            (lambda () (raise 2)))))
+                     (with-exception-handler 
+                      (lambda (y) (raise-continuable y))
+                      (lambda () (raise 2))))
                   (list '(uncaught-exception 2)))
      
      (make-r6test '(store ()
-                          ((with-exception-handler 
-                            (lambda (y) (raise y))
-                            (lambda () (raise-continuable 2)))))
+                     (with-exception-handler 
+                      (lambda (y) (raise y))
+                      (lambda () (raise-continuable 2))))
                   (list '(uncaught-exception 2)))
      
-     (make-r6test '(store () ((raise 2)))
+     (make-r6test '(store () (raise 2))
                   (list '(uncaught-exception 2)))
      
-     (make-r6test '(store () ((raise-continuable 2)))
+     (make-r6test '(store () (raise-continuable 2))
                   (list '(uncaught-exception 2)))
      
-     (make-r6test '(store () ((define w 3) (define x (+ 1 (raise-continuable 2))) (define y 2)))
+     (make-r6test '(store () (define w 3) (define x (+ 1 (raise-continuable 2))) (define y 2))
                   (list '(uncaught-exception 2)))
      
      ;; used to say "exception handler returned". now it is an infinite loop
      (make-r6test '(store ()
-                          ((with-exception-handler
-                            (lambda (x) x)
-                            (lambda () (raise 2)))))
+                     (with-exception-handler
+                      (lambda (x) x)
+                      (lambda () (raise 2))))
                   (list '(uncaught-exception (condition "handler returned"))))
      
      (make-r6test/e '((lambda (c e)
@@ -1735,7 +1757,7 @@ of digits with deconv-base
                       0 #f)
                     "handler returned")
      
-     (make-r6test '(store () ((with-exception-handler (lambda (x) (eqv? x 2)) (lambda () (car 1)))))
+     (make-r6test '(store () (with-exception-handler (lambda (x) (eqv? x 2)) (lambda () (car 1))))
                   (list '(unknown "equivalence of conditions")))
      
      (make-r6test/v '((lambda (sx first-time?)
@@ -1779,13 +1801,13 @@ of digits with deconv-base
                     2)
      
      (make-r6test '(store ()
-                          ((with-exception-handler
-                            (lambda (x) (raise (+ x 1)))
-                            (lambda ()
-                              (dynamic-wind
-                               +
-                               (lambda () (raise 1))
-                               +)))))
+                     (with-exception-handler
+                      (lambda (x) (raise (+ x 1)))
+                      (lambda ()
+                        (dynamic-wind
+                         +
+                         (lambda () (raise 1))
+                         +))))
                   (list '(uncaught-exception 2)))
      
      (make-r6test/v '(with-exception-handler
@@ -1840,7 +1862,7 @@ of digits with deconv-base
      (make-r6test/e '(with-exception-handler 1 2)
                     "with-exception-handler bad argument")
      
-     (make-r6test '(store () ((raise 2) (define x 2)))
+     (make-r6test '(store () (raise 2) (define x 2))
                   (list '(uncaught-exception 2)))
      
      (make-r6test/v '((lambda (y)
@@ -1854,38 +1876,38 @@ of digits with deconv-base
                     3)
      
      (make-r6test '(store ()
-                          ((with-exception-handler
-                            (lambda (x) (raise x))
-                            (lambda () (raise 1)))))
+                     (with-exception-handler
+                      (lambda (x) (raise x))
+                      (lambda () (raise 1))))
                   (list '(uncaught-exception 1)))
      
      (make-r6test 
       '(store ()
-              ((define k #f)
-               (define ans #f)
-               (define first-time? #t)
-               (with-exception-handler
-                (lambda (x)
-                  (begin
-                    (call/cc (lambda (k2) (set! k k2)))
-                    (set! x (+ x 1))
-                    (set! ans x)))
-                (lambda ()
-                  (raise-continuable 1)))
-               (if first-time?
-                   (begin
-                     (set! first-time? #f)
-                     (k 1))
-                   (set! k #f))
-               ans))
+         (define k #f)
+         (define ans #f)
+         (define first-time? #t)
+         (with-exception-handler
+          (lambda (x)
+            (begin
+              (call/cc (lambda (k2) (set! k k2)))
+              (set! x (+ x 1))
+              (set! ans x)))
+          (lambda ()
+            (raise-continuable 1)))
+         (if first-time?
+             (begin
+               (set! first-time? #f)
+               (k 1))
+             (set! k #f))
+         ans)
       (list '(store ((k #f) (ans 3) (first-time? #f))
-                    ((values 3)))))
+               (values 3))))
      
      ;; test trimming function in the presence of exceptions when trimming handlers
      ;; this test belongs in the dw section. have to move it there after changing its syntax
      (make-r6test '(store 
-                    ()
-                    ((define phase 0)
+                       ()
+                     (define phase 0)
                      (define k #f)
                      (define l '())
                      (with-exception-handler
@@ -1912,17 +1934,72 @@ of digits with deconv-base
                             (lambda () (set! l (cons 5 l)))))
                          (lambda () (set! l (cons 6 l))))))
                      (set! k #f)
-                     (apply values l)))
+                     (apply values l))
                   (list '(store ((phase 2) 
                                  (k #f)
                                  (l (cons 6 (cons 5 (cons 4 (cons 3 (cons 2 (cons 5 (cons 4 (cons 3 (cons 2 (cons 1 null))))))))))))
-                                ((values 6 5 4 3 2 5 4 3 2 1)))))))
+                           (values 6 5 4 3 2 5 4 3 2 1))))))
+  
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;
+  ;; letrec tests
+  ;;
+  
+  (define letrec-tests
+    (list 
+     (make-r6test '(store () (letrec ([x 1] [y 2]) (+ x y)))
+                  (list '(store ((lx 1) (lx1 2)) (values 3))))
+     (make-r6test '(store ()
+                     (letrec ([flip (lambda (x) (if x (flop #f) #t))]
+                              [flop (lambda (x) (if x (flip x) x))])
+                       (begin0 (flop #t)
+                               (set! flip 1)
+                               (set! flop 2))))
+                  (list '(store ((lx 1)
+                                 (lx1 2))
+                           (values #f))))
+     (make-r6test '(store () (letrec ([x (begin (set! x 1) 2)]) x))
+                  (list '(store ((lx 2)) (values 2))))
+     (make-r6test '(store ()
+                     (letrec ([x (begin (set! y 2) 5)]
+                              [y (begin (set! x 3) 7)])
+                       (* x y)))
+                  (list '(store ((lx 5) (lx1 7)) (values 35))))
+     (make-r6test '(store () (letrec ([x x]) x))
+                  (list '(uncaught-exception (condition "letrec variable touched"))))
+     (make-r6test '(store () (letrec ([x y] [y x]) x))
+                  (list '(uncaught-exception (condition "letrec variable touched"))))
+     (make-r6test '(store () (letrec ([x 1] [y x]) y))
+                  (list '(uncaught-exception (condition "letrec variable touched"))))
+     
+     (make-r6test '(store () (letrec* ([x 1] [y 2]) (+ x y)))
+                  (list '(store ((lx 1) (lx1 2)) (values 3))))
+     (make-r6test '(store ()
+                     (letrec* ([flip (lambda (x) (if x (flop #f) #t))]
+                               [flop (lambda (x) (if x (flip x) x))])
+                              (begin0 (flop #t)
+                                      (set! flip 1)
+                                      (set! flop 2))))
+                  (list '(store ((lx 1) (lx1 2)) (values #f))))
+     (make-r6test '(store () (letrec* ([x (begin (set! x 1) 2)]) x))
+                  (list '(store ((lx 2)) (values 2))))
+     (make-r6test '(store ()
+                     (letrec* ([x (begin (set! y 2) 5)]
+                               [y (begin (set! x 3) 7)])
+                              (* x y)))
+                  (list '(store ((lx 3) (lx1 7)) (values 21))))
+     (make-r6test '(store () (letrec* ([x x]) x))
+                  (list '(uncaught-exception (condition "letrec variable touched"))))
+     (make-r6test '(store () (letrec* ([x y] [y x]) x))
+                  (list '(uncaught-exception (condition "letrec variable touched"))))
+     (make-r6test '(store () (letrec* ([x 1] [y x]) y))
+                  (list '(store ((lx 1) (lx1 1)) (values 1))))))
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;
   ;; testing functions
   ;;
-
+  
   
   (define-syntax (test-fn stx)
     (syntax-case stx ()
@@ -1958,16 +2035,17 @@ of digits with deconv-base
                #f)
       (test-fn (term (Var-set!d? (x (dw x1 1 2 3)))) #f)
       (test-fn (term (Var-set!d? (y (throw x ((set! x 2)))))) #f)))
-    
+  
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;
   ;; all of the tests
   ;;
   
   (define the-sets 
-    (list (list "unspec" assignment-results-tests)
-          (list "quote" quote-tests)
+    (list (list "letrec" letrec-tests)
           (list "app" app-tests)
+          (list "unspec" assignment-results-tests)
+          (list "quote" quote-tests)
           (list "arith" arithmetic-tests)
           (list "basic" basic-form-tests)
           (list "pair" pair-tests)
