@@ -63,7 +63,7 @@ A \hyper{definition} must have one of the following forms:\mainschindex{define}\
 \begin{itemize}
 
 \item{\tt(define \hyper{variable} \hyper{expression})}
-  This binds \hyper{variable} to a new
+  Binds \hyper{variable} to a new
   location before assigning the value of \hyper{expression} to it.
 \begin{scheme}
 (define add3
@@ -88,7 +88,7 @@ This form is equivalent to
 (define \hyper{variable} \hyper{unspecified})%
 \end{scheme}
 where \hyper{unspecified} is a side-effect-free expression returning
-unspecified values.
+an unspecified value.
 
 \item{\tt(define (\hyper{variable} \hyper{formals}) \hyper{body})}
 
@@ -123,9 +123,9 @@ anywhere other definitions may appear.
 \begin{entry}{%
 \proto{define-syntax}{ \hyper{variable} \hyper{expression}}{\exprtype}}
 
-This binds the keyword \hyper{variable} to the value of
+Binds the keyword \hyper{variable} to the value of
 \hyper{expression}, which must evaluate, at macro-expansion
-time, to a transformer.  (See library section~\extref{lib:transformerssection}{Transformers}).
+time, to a transformer (see library section~\extref{lib:transformerssection}{Transformers}).
 
 Keyword bindings established by {\cf define-syntax} are visible
 throughout the body in which they appear, except where shadowed by
@@ -185,10 +185,9 @@ definition with a body has the following form after expansion:
 
 {\cf \hyperi{expression} \hyperii{expression} \ldots}
 
-Definitions may occur in a \hyper{body}.
-Such definitions are known as {\em internal definitions}
-\mainindex{internal definition} as opposed to library body
-definitions. 
+A \hyper{definition} in a \hyper{body} is known as an {\em internal definition}
+\mainindex{internal definition}, as opposed to a library body
+definition. 
 
 With \ide{lambda}, \ide{let}, \ide{let*}, \ide{let-values},
 \ide{let*-values}, \ide{letrec*}, and \ide{letrec},
@@ -244,9 +243,9 @@ section~\ref{primitiveexpressionsection}.
 
 \semantics
 {\cf (quote \hyper{datum})} evaluates to the datum
-denoted by \hyper{datum}.
-(See
-section~\ref{readsyntaxsection}.).  This notation is used to include literal
+denoted by \hyper{datum}
+(see
+section~\ref{readsyntaxsection}).  This notation is used to include literal
 constants in Scheme code.
 
 \begin{scheme}%
@@ -1636,7 +1635,7 @@ affect the result.
 
 These numerical type predicates can be applied to any kind of
 argument, including non-numbers.  The {\cf real-valued?} procedure
-They return \schtrue{} if the object is a number and is equal in the
+returns \schtrue{} if the object is a number and is equal in the
 sense of {\cf =} to some real number, or if the object is a NaN, or a
 complex number whose real part is a NaN and whose imaginary part zero
 in the sense of {\cf zero?}.  The {\cf rational-valued?} and {\cf

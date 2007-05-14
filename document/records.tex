@@ -3,16 +3,16 @@
 \mainindex{record}
 This section describes abstractions for creating new data types
 representing records---data structures with named fields. The record
-mechanism comes in four libraries:
+mechanism comes in three libraries:
 
 \begin{itemize}
 \item the \rsixlibrary{records procedural} library,
   a procedural layer for creating and manipulating record types and record
-  instances,
+  instances;
 \item the \rsixlibrary{records syntactic} library,
   a syntactic layer for defining record types and
   various procedures to manipulate the record
-  type,
+  type; and
 \item the \rsixlibrary{records inspection} library,
   a set of inspection procedures.
 \end{itemize}
@@ -41,9 +41,9 @@ Each of the layers also supports generative and nongenerative record types.
 
 The inspection procedures allow programs to obtain from a record instance a
 descriptor for the type and from there obtain access to the fields of the
-record instance. This allows the creation of portable printers and inspectors.
-A program may prevent access to a record's type and thereby protect the
-information stored in the record from the inspection mechanism by declaring the
+record instance. This facility allows the creation of portable printers and inspectors.
+A program may prevent access to a record's type---and thereby protect the
+information stored in the record from the inspection mechanism---by declaring the
 type opaque. Thus, opacity as presented here can be used to enforce abstraction
 barriers.
 
@@ -64,7 +64,7 @@ are immutable objects.  All other record types are \textit{mutable},
 and so are their records.
 
 For two records \vari{obj} and \varii{obj}, the return value of {\cf
-  (eqv \vari{obj} \varii{obj})}, is specified as follows:
+  (eqv? \vari{obj} \varii{obj})}, is specified as follows:
 
 \begin{itemize}
 \item If \vari{obj} and \varii{obj} have different record types (i.e.\
@@ -273,7 +273,7 @@ Here, the call to {\cf p} returns a record whose fields are
 initialized with the values of {\cf v1}, {\cf v2}, and {\cf v3}.  The
 expression above is equivalent to {\cf (lambda (p) p)}.  Note that the
 procedure returned by \var{protocol} is otherwise unconstrained;
-specifically, it can take any number of arguments.-
+specifically, it can take any number of arguments.
 
 \medskip
 
@@ -611,7 +611,7 @@ a syntax violation if multiple \hyper{record clause}s of the same kind appear in
    
 \item {\tt (parent \hyper{parent name})}
    
-  This specifies that the record type is to have parent type
+ Specifies that the record type is to have parent type
   \hyper{parent name}, where \hyper{parent name} is the \hyper{record
       name} of a record type previously defined using {\cf
       define-record-type}. The absence of a {\cf parent} clause implies a
@@ -855,7 +855,7 @@ A set of procedures are provided for inspecting records and their
 record-type descriptors. These procedures are designed to allow the
 writing of portable printers and inspectors.
 
-Note that {\cf record?} and {\cf record-rtd} treat records of opaque
+On the one hand, {\cf record?} and {\cf record-rtd} treat records of opaque
 record types as if they were not records. On the other hand, the
 inspection procedures that operate on record-type descriptors
 themselves are not affected by opacity. In other words, opacity
