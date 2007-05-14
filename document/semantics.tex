@@ -154,7 +154,7 @@ represents a final result of a program. It is just like $\mathcal{P}$
 except that all of the definitions have been evaluated and the
 value(s) of the last one is retained.
 
-The $\mathcal{R}$ and $\mathcal{R}_v$ non-terminals specify the observable results of a program. Each $\mathcal{R}$ is either a sequence of values that correspond to the values produced by the program that terminates normally, or a tag indicating an uncaught exception was raised, or \sy{unknown} if the program encounters a situation the semantics does not cover (see section~\ref{sec:semantics:unspecification} for details of those situations). The $\mathcal{R}_v$ non-terminal specifies what the observable results are for a particular value: the unspecified value, a pair, the empty list, a symbol, a self-quoting value (true, false, and numbers), a condition, or a procedure.
+The $\mathcal{R}$ and $\mathcal{R}_v$ non-terminals specify the observable results of a program. Each $\mathcal{R}$ is either a sequence of values that correspond to the values produced by the program that terminates normally, or a tag indicating an uncaught exception was raised, or \sy{unknown} if the program encounters a situation the semantics does not cover (see section~\ref{sec:semantics:underspecification} for details of those situations). The $\mathcal{R}_v$ non-terminal specifies what the observable results are for a particular value: the unspecified value, a pair, the empty list, a symbol, a self-quoting value (true, false, and numbers), a condition, or a procedure.
 
 The $\mathit{sf}$ non-terminal generates individual elements of the
 store. The store holds all of the mutable state of a program. It is
@@ -285,7 +285,7 @@ into lists before those rules apply.
 
 Although the identifier \nt{qp} does not have a subscript, the semantics of PLT Redex's ``fresh'' declaration takes special care to ensures that the \nt{qp} on the right-hand side of the rule is indeed the same as the one in the side-condition.
 
-\section{Multiple Values}
+\section{Multiple values}
 
 \beginfig
 \begin{center}
@@ -443,7 +443,7 @@ guarantee that this rule only applies when the arguments are not
 suitable functions. Their definitions are given in
 figure~\ref{fig:arity}.
 
-\section{Arithmetic \& Basic Forms}
+\section{Arithmetic \& basic forms}
 
 \beginfig
 \begin{center}
@@ -496,7 +496,7 @@ Eventually, there is only a single expression in the \sy{begin0},
 at which point the \rulename{begin01} rule fires, and removes the
 \sy{begin0} expression.
 
-\section{Pairs \& Eqv}
+\section{Pairs \& eqv}
 
 \beginfig
 \begin{center}
@@ -523,7 +523,7 @@ It moves $(\va{cons}~v_1~v_2)$ into the store, bound to a fresh
 
 The rules \rulename{6car} and \rulename{6cdr} extract the components of a pair from the store when presented with a pair pointer. The next four rules handle the \va{null?} predicate and the \va{pair?} predicate, and the final two rules raise exceptions when \va{car} or \va{cdr} receive non pairs.
 
-\section{Procedures \& Application}
+\section{Procedures \& application}
 
 \beginfig
 \begin{center}
@@ -609,7 +609,7 @@ various errors that can occur when using \va{apply}: applying a
 non-procedure, passing a non-list as the last argument, and supplying
 too few arguments to \va{apply}.
 
-\section{Call/cc and Dynamic Wind}
+\section{Call/cc and dynamic wind}
 
 \beginfig
 \begin{center}
@@ -684,7 +684,7 @@ continuation occured. In contrast, the $\mathscr{R}$ metafunction
 receives the destination context, and thus keeps the intermediate
 parts of the context in its result.
 
-\section{Library Top Level}
+\section{Library top level}
 
 \beginfig
 \begin{center}
