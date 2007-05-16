@@ -142,49 +142,74 @@ name and optionally by its version.  It has the following form:
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version~reference})%
 \end{scheme}
 
-A \hyper{version reference} is empty or has the following form:
-
+A \hyper{version~reference} specifies a set of \hyper{version}s that
+it matches.  The \hyper{library~reference} identifies all libraries of
+the same name and whose version is matched by the
+\hyper{version~reference} A \hyper{version~reference} is empty or has
+the following form:
+%
 \begin{scheme}
-(\hyper{version spec} \ldots)%
+(\hyperi{sub-version reference} \ldots \hypern{sub-version reference})
+(and \hyper{version reference} \ldots)
+(or \hyper{version reference} \ldots)
+(not \hyper{version reference})%
 \end{scheme}
-
-A \hyper{version spec} has one of the following forms:
-
-\begin{scheme}
-(\hyper{sub-version reference} \ldots)
-(and \hyper{version spec} \ldots)
-(or \hyper{version spec} \ldots)
-(not \hyper{version spec} \ldots)%
-\end{scheme}
-
-An empty \hyper{version reference} is equivalent to {\cf ()}.
+%
+An empty \hyper{version reference} is equivalent to {\cf ()}.  A
+\hyper{version reference} of the first form matches a \hyper{version}
+with at least $n$ elements, whose \hyper{sub-version reference}s match
+the corresponding \hyper{sub-version}s.  An {\cf and} \hyper{version
+  reference} matches a version if all \hyper{version references}
+following the {\cf and} match it.  Correspondingly, an {\cf
+  or} \hyper{version reference} matches a version if one of
+\hyper{version references} following the {\cf or} match it,
+and a {\cf not} \hyper{version reference} matches a version if the
+\hyper{version reference} following it does not match it.
 
 A \hyper{sub-version reference} has one of the following forms:
 
 \begin{scheme}
 \hyper{sub-version}
-\hyper{sub-version~condition}%
-\end{scheme}
-
-where a \hyper{sub-version condition} must have one of these forms:
-
-\begin{scheme}
 (>= \hyper{sub-version})
 (<= \hyper{sub-version})
-(and \hyper{sub-version~condition} \ldots)
-(or \hyper{sub-version~condition} \ldots)
-(not \hyper{sub-version~condition})%
+(and \hyper{sub-version~reference} \ldots)
+(or \hyper{sub-version~reference} \ldots)
+(not \hyper{sub-version~reference})%
 \end{scheme}
 
+A \hyper{sub-version reference} of the first form matches a
+\hyper{sub-version} if it is equal to it.  A {\cf >=}
+\hyper{sub-version reference} of the first form matches a sub-version
+if it is greater or equal to the \hyper{sub-version} following it;
+analogously for {\cf <=}.  An {\cf and} \hyper{sub-version reference}
+matches a sub-version if all of the subsequent \hyper{sub-version
+  reference}s match it.  Correspondingly, an {\cf or}
+\hyper{sub-version reference} matches a sub-version if one of the
+subsequent \hyper{sub-version reference}s match it, and a {\cf not}
+\hyper{sub-version reference} matches a sub-version if the subsequent
+\hyper{sub-version reference} does not match it.
 
-The sequence of identifiers in the importing library's
-\hyper{library~reference} must match the sequence of identifiers in the
-imported library's \hyper{library~name}.
-The importing library's \hyper{version~reference} specifies a predicate on a
-prefix of the imported library's \hyper{version}.
-Each integer must match exactly and each condition has the expected meaning.
-Everything beyond the prefix specified in the version reference matches
-unconditionally.
+Examples:
+
+\begin{center}
+  \begin{tabular}{lll}
+    version reference & version & match?
+    \\
+    {\cf ()} & {\cf (1)} & yes\\
+    {\cf (1)} & {\cf (1)} & yes\\
+    {\cf (1)} & {\cf (2)} & no\\
+    {\cf (2 3)} & {\cf (2)} & no\\
+    {\cf (2 3)} & {\cf (2 3)} & yes\\
+    {\cf (2 3)} & {\cf (2 3 5)} & yes\\
+    {\cf (or (1 (>= 1)) (2))} & {\cf (2)} & yes\\
+    {\cf (or (1 (>= 1)) (2))} & {\cf (1 1)} & yes\\
+    {\cf (or (1 (>= 1)) (2))} & {\cf (1 0)} & no\\
+    {\cf ((or 1 2 3))} & {\cf (1)} & yes\\
+    {\cf ((or 1 2 3))} & {\cf (2)} & yes\\
+    {\cf ((or 1 2 3))} & {\cf (3)} & yes\\
+    {\cf ((or 1 2 3))} & {\cf (4)} & no
+  \end{tabular}
+\end{center}
 When more than one library is identified by a library reference, the
 choice of libraries is determined in some implementation-dependent manner.
 
