@@ -64,5 +64,16 @@
           (set-car! x 3)
           (car y))
         c c))
-     (cons 1 2))))
+     (cons 1 2)))
+  
+  (step '(store ()
+           ((lambda (flag)
+              (letrec ([k (call/cc (lambda (x) x))]
+                       [x (if flag
+                              'nothing-doing
+                              (car 'not-a-pair))])
+                (set! flag #f)
+                (k (lambda (x) x))
+                (k 2)))
+            #t))))
 

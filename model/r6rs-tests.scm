@@ -101,10 +101,27 @@
        (let* ([pp-var? (λ (x) (regexp-match #rx"^[qp]p" (format "~a" (car x))))]
               [pp-bindings (filter pp-var? str)]
               [with-out-pp (fp-sub pp-bindings `(store ,(filter (λ (x) (not (pp-var? x))) str) ,@exps))]
-              [with-out-app-vars (remove-unassigned-app-vars with-out-pp)])
-         with-out-app-vars)]
+              [with-out-app-vars (remove-unassigned-app-vars with-out-pp)]
+              [without-lxri-vars (remove-unused-lxri-vars with-out-app-vars)])
+         without-lxri-vars)]
       [`(unknown ,string) string]
       [_ (error 'subst-:-vars "unknown exp ~s" exp)]))
+  
+  (define (is-lxri-var? x) (regexp-match #rx"^lxri" (symbol->string x)))
+  
+  (define (remove-unused-lxri-vars exp)
+    (match exp
+      [`(store ,str ,exps ...)
+       (let ([lxri-vars (filter is-lxri-var? (map car str))]
+             [str-without-lxri-binders 
+              (filter (λ (binding) (not (is-lxri-var? (car binding)))) str)])
+         `(store ,(filter (λ (binding) 
+                            (cond
+                              [(is-lxri-var? (car binding)) 
+                               (not (not-in (car binding) (cons str-without-lxri-binders exps)))]
+                              [else #t]))
+                          str)
+            ,@exps))]))
   
   (define (remove-unassigned-app-vars term)
     (match term 
@@ -188,51 +205,53 @@
   
   (define assignment-results-tests
     (list
-     
-     ;; begin0 
-     (make-r6test/v '((lambda (x) (begin0 x (set! x 2))) 3)
-                    3)
-     (make-r6test '(store () (define x 1) (begin0 (set! x 2) 2 3))
-                  (list '(unknown "unspecified result")))
-     
      ;; begin
      (make-r6test/v '((lambda (x) (begin x (set! x 2) x)) 3)
                     2)
-     (make-r6test '(store () (define x 1) (begin 2 (set! x 2)))
+     (make-r6test '(store () (letrec ([x 1]) (begin 2 (set! x 2))))
                   (list '(unknown "unspecified result")))
+
+     ;; begin0 
+     (make-r6test/v '((lambda (x) (begin0 x (set! x 2))) 3)
+                    3)
+     (make-r6test '(store () (letrec ([x 1]) (begin0 (set! x 2) 2 3)))
+                  (list '(unknown "unspecified result")))
+     (make-r6test/v '((lambda (x) (begin (begin0 (set! x 1) (set! x 2)) x)) 3)
+                    2)
+     
      
      ;; application
-     (make-r6test '(store () (define x 1) ((lambda (x) 1) (set! x 2)))
+     (make-r6test '(store () (letrec ([x 1]) ((lambda (x) 1) (set! x 2))))
                   (list '(unknown "unspecified result")))
-     (make-r6test '(store () (define x 1) ((set! x 2) 2))
+     (make-r6test '(store () (letrec ([x 1]) ((set! x 2) 2)))
                   (list '(unknown "unspecified result")))
      
      ;; if
-     (make-r6test '(store () (define x 1) (if (set! x 2) 2 3))
+     (make-r6test '(store () (letrec ([x 1]) (if (set! x 2) 2 3)))
                   (list '(unknown "unspecified result")))
      
      ;; set!
-     (make-r6test '(store () (define x 1) (set! x (set! x 2)))
+     (make-r6test '(store () (letrec ([x 1]) (set! x (set! x 2))))
                   (list '(unknown "unspecified result")))
      
-     (make-r6test '(store () (define x '(1)) (set! x (set-car! x 2)))
+     (make-r6test '(store () (letrec ([x '(1)]) (set! x (set-car! x 2))))
                   (list '(unknown "unspecified result")))
      
      ;; handlers
-     (make-r6test '(store () (define x 1) (with-exception-handler (lambda (e) (set! x 2)) (lambda () (car 'x))))
+     (make-r6test '(store () (letrec ([x 1]) (with-exception-handler (lambda (e) (set! x 2)) (lambda () (car 'x)))))
                   (list '(uncaught-exception (condition "handler returned"))))
      
      ;; call with values
-     (make-r6test '(store () (define x 1) (call-with-values (lambda () (set! x 2)) +))
+     (make-r6test '(store () (letrec ([x 1]) (call-with-values (lambda () (set! x 2)) +)))
                   (list '(unknown "unspecified result")))
      
      ;; dynamic-wind
      (make-r6test/v '((lambda (x) (dynamic-wind (lambda () (set! x 0)) (lambda () x) (lambda () (set! x 2)))) 1)
                     0)
-     (make-r6test '(store () (define x 1) (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1)))
+     (make-r6test '(store () (letrec ([x 1]) (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1))))
                   (list '(unknown "unspecified result")))
-     (make-r6test '(store () (define x 1) (begin (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1)) 5))
-                  (list '(store ((x 2)) (values 5))))))
+     (make-r6test '(store () (letrec ([x 1]) (begin (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1)) 5)))
+                  (list '(store ((lx-x 2)) (values 5))))))
   
   (define basic-form-tests
     (list
@@ -278,22 +297,22 @@
                       (cons 1 (cons 2 null))) 
                     400)
      (make-r6test '(store ()
-                     (define first-time? #t)
-                     (define f (lambda (dot y) (if first-time?
-                                                   (begin
-                                                     (set! first-time? #f)
-                                                     (set-car! y 2))
-                                                   (car y))))
-                     (define g (lambda () (apply f '(1))))
-                     (g)
-                     (g))
-                  (list '(store ((first-time? #f)
-                                 (f (lambda (dot y) (if first-time?
-                                                        (begin
-                                                          (set! first-time? #f)
-                                                          (set-car! y 2))
-                                                        (car y))))
-                                 (g (lambda () (apply f (cons 1 null)))))
+                     (letrec ([first-time? #t]
+                              [f (lambda (dot y) (if first-time?
+                                                     (begin
+                                                       (set! first-time? #f)
+                                                       (set-car! y 2))
+                                                     (car y)))]
+                              [g (lambda () (apply f '(1)))])
+                       (g)
+                       (g)))
+                  (list '(store ((lx-first-time? #f)
+                                 (lx-f (lambda (dot y) (if lx-first-time?
+                                                           (begin
+                                                             (set! lx-first-time? #f)
+                                                             (set-car! y 2))
+                                                           (car y))))
+                                 (lx-g (lambda () (apply lx-f (cons 1 null)))))
                            (values 1))))))
   
   (define quote-tests
@@ -369,14 +388,6 @@
      ;;
      
      ; ----
-     ; 4.1.1
-     (make-r6test '(store () 
-                     (define x 28)
-                     x)
-                  (list '(store ((x 28)) (values 28))))
-     
-     
-     ; ----
      ; 4.1.3
      (make-r6test/v '(+ 3 4) 7)
      (make-r6test/v '((if #f + *) 3 4) 12)
@@ -388,24 +399,22 @@
      (make-r6test/v '((lambda (x) (+ x x)) 4) 8)
      
      (make-r6test '(store ()
-                     (define reverse-subtract
-                       (lambda (x y) (- y x)))
-                     (reverse-subtract 7 10))
+                     (letrec* ([reverse-subtract
+                                (lambda (x y) (- y x))])
+                       (reverse-subtract 7 10)))
                   (list
-                   '(store ((reverse-subtract
-                             (lambda (x y) (- y x))))
-                      
+                   '(store ((lx-reverse-subtract (lambda (x y) (- y x))))
                       (values 3))))
      
      (make-r6test '(store ()
-                     (define add4
-                       ((lambda (x)
-                          (lambda (y)
-                            (+ x y)))
-                        4))
-                     (add4 6))
+                     (letrec* ([add4
+                                ((lambda (x)
+                                   (lambda (y)
+                                     (+ x y)))
+                                 4)])
+                       (add4 6)))
                   (list
-                   '(store ((add4 (lambda (y) (+ 4 y))))
+                   '(store ((lx-add4 (lambda (y) (+ 4 y))))
                       (values 10))))
      
      (make-r6test/v '((lambda (dot x) x) 3 4 5 6)
@@ -413,89 +422,53 @@
      (make-r6test/v '((lambda (x y dot z) z) 3 4 5 6)
                     '(cons 5 (cons 6 null)))
      
-     
-     ; ----
-     ; 4.1.5
-     
-     ; (if (> 3 2) 'yes 'no)                   ===>  yes
-     ; (if (> 2 3) 'yes 'no)                   ===>  no
-     
-     ; (make-r6test/v '(if (> 3 2) (- 3 2) (+ 3 2)) 1)
-     
-     ; ----
-     ; 4.1.6
-     
-     (make-r6test '(store () 
-                     (define x 2)
-                     (+ x 1))
-                  (list
-                   '(store ((x 2)) 
-                      (values 3))))
-     
-     (make-r6test '(store () 
-                     (define x 2)
-                     (+ x 1) 
-                     (set! x 4)
-                     x)
-                  (list
-                   '(store ((x 4)) 
-                      (values 4))))
-     
-     (make-r6test '(store () 
-                     (define x 2)
-                     (+ x 1) 
-                     (set! x 4)
-                     (+ x 1))
-                  (list
-                   '(store ((x 4)) 
-                      (values 5))))
-     
-     
      ; ----
      ; 4.2.2 
      
      (make-r6test '(store ()
-                     (define even?
-                       (lambda (n)
-                         (if (eqv? 0 n)
-                             #t
-                             (odd? (- n 1)))))
-                     (define odd?
-                       (lambda (n)
-                         (if (eqv? 0 n)
-                             #f
-                             (even? (- n 1)))))
-                     ;; using 88 here runs, but isn't really much more useful
-                     ;; for testing purposes (it also takes > 1000 reductions)
-                     (even? 2))
+                     (letrec* ([even?
+                                (lambda (n)
+                                  (if (eqv? 0 n)
+                                      #t
+                                      (odd? (- n 1))))]
+                               [odd?
+                                (lambda (n)
+                                  (if (eqv? 0 n)
+                                      #f
+                                      (even? (- n 1))))])
+                       ;; using 88 here runs, but isn't really much more useful
+                       ;; for testing purposes (it also takes > 1000 reductions)
+                       (even? 2)))
                   (list
-                   '(store ((even?
+                   '(store ((lx-even?
                              (lambda (n)
                                (if (eqv? 0 n)
                                    #t
-                                   (odd? (- n 1)))))
-                            (odd?
+                                   (lx-odd? (- n 1)))))
+                            (lx-odd?
                              (lambda (n)
                                (if (eqv? 0 n)
                                    #f
-                                   (even? (- n 1))))))
+                                   (lx-even? (- n 1))))))
                       
                       (values #t))))
      
-     
      ; ----
      ; 4.2.3
-     (make-r6test '(store () (define x 0) (begin (set! x 5) (+ x 1)))
-                  (list '(store ((x 5)) (values 6))))
+     (make-r6test '(store () (letrec* ([x 0]) (begin (set! x 5) (+ x 1))))
+                  (list '(store ((lx-x 5)) (values 6))))
      
      
      ; ----
      ; 5.2.1
      
-     (make-r6test '(store () (define add3 (lambda (x) (+ x 3))) (add3 3))
-                  (list '(store ((add3 (lambda (x) (+ x 3)))) (values 6))))
-     (make-r6test '(store () (define first car) (first '(1 2)))
-                  (list '(store ((first car)) (values 1))))
+     (make-r6test '(store () 
+                     (letrec* ([add3 (lambda (x) (+ x 3))])
+                       (add3 3)))
+                  (list '(store ((lx-add3 (lambda (x) (+ x 3)))) (values 6))))
+     (make-r6test '(store () (letrec* ((first car))
+                               (first '(1 2))))
+                  (list '(store ((lx-first car)) (values 1))))
      
      
      ; ----
@@ -1735,10 +1708,12 @@ of digits with deconv-base
      (make-r6test '(store () (raise-continuable 2))
                   (list '(uncaught-exception 2)))
      
-     (make-r6test '(store () (define w 3) (define x (+ 1 (raise-continuable 2))) (define y 2))
+     (make-r6test '(store () (letrec* ([w 3]
+                                       [x (+ 1 (raise-continuable 2))]
+                                       [y 2])
+                               1))
                   (list '(uncaught-exception 2)))
      
-     ;; used to say "exception handler returned". now it is an infinite loop
      (make-r6test '(store ()
                      (with-exception-handler
                       (lambda (x) x)
@@ -1862,9 +1837,6 @@ of digits with deconv-base
      (make-r6test/e '(with-exception-handler 1 2)
                     "with-exception-handler bad argument")
      
-     (make-r6test '(store () (raise 2) (define x 2))
-                  (list '(uncaught-exception 2)))
-     
      (make-r6test/v '((lambda (y)
                         (with-exception-handler
                          (lambda (x) (set! y (+ x y)))
@@ -1883,61 +1855,60 @@ of digits with deconv-base
      
      (make-r6test 
       '(store ()
-         (define k #f)
-         (define ans #f)
-         (define first-time? #t)
-         (with-exception-handler
-          (lambda (x)
-            (begin
-              (call/cc (lambda (k2) (set! k k2)))
-              (set! x (+ x 1))
-              (set! ans x)))
-          (lambda ()
-            (raise-continuable 1)))
-         (if first-time?
-             (begin
-               (set! first-time? #f)
-               (k 1))
-             (set! k #f))
-         ans)
-      (list '(store ((k #f) (ans 3) (first-time? #f))
+         (letrec* ([k #f]
+                   [ans #f]
+                   [first-time? #t])
+           (with-exception-handler
+            (lambda (x)
+              (begin
+                (call/cc (lambda (k2) (set! k k2)))
+                (set! x (+ x 1))
+                (set! ans x)))
+            (lambda ()
+              (raise-continuable 1)))
+           (if first-time?
+               (begin
+                 (set! first-time? #f)
+                 (k 1))
+               (set! k #f))
+           ans))
+      (list '(store ((lx-k #f) (lx-ans 3) (lx-first-time? #f))
                (values 3))))
      
      ;; test trimming function in the presence of exceptions when trimming handlers
      ;; this test belongs in the dw section. have to move it there after changing its syntax
-     (make-r6test '(store 
-                       ()
-                     (define phase 0)
-                     (define k #f)
-                     (define l '())
-                     (with-exception-handler
-                      (lambda (x) (if (eqv? phase 0)
-                                      (begin
-                                        (set! phase 1)
-                                        (call/cc (lambda (k2) (begin (set! k k2) 'whatever))))
-                                      (if (eqv? phase 1)
-                                          (begin
-                                            (set! phase 2)
-                                            (k 1))
-                                          1234)))
-                      (lambda ()
-                        (dynamic-wind 
-                         (lambda () (set! l (cons 1 l)))
-                         (lambda () 
-                           (dynamic-wind 
-                            (lambda () (set! l (cons 2 l)))
-                            (lambda () (raise-continuable 1))
-                            (lambda () (set! l (cons 3 l))))
-                           (dynamic-wind 
-                            (lambda () (set! l (cons 4 l)))
-                            (lambda () (raise-continuable 1))
-                            (lambda () (set! l (cons 5 l)))))
-                         (lambda () (set! l (cons 6 l))))))
-                     (set! k #f)
-                     (apply values l))
-                  (list '(store ((phase 2) 
-                                 (k #f)
-                                 (l (cons 6 (cons 5 (cons 4 (cons 3 (cons 2 (cons 5 (cons 4 (cons 3 (cons 2 (cons 1 null))))))))))))
+     (make-r6test '(store ()
+                     (letrec* ((phase 0)
+                               (k #f)
+                               (l '()))
+                       (with-exception-handler
+                        (lambda (x) (if (eqv? phase 0)
+                                        (begin
+                                          (set! phase 1)
+                                          (call/cc (lambda (k2) (begin (set! k k2) 'whatever))))
+                                        (if (eqv? phase 1)
+                                            (begin
+                                              (set! phase 2)
+                                              (k 1))
+                                            1234)))
+                        (lambda ()
+                          (dynamic-wind 
+                           (lambda () (set! l (cons 1 l)))
+                           (lambda () 
+                             (dynamic-wind 
+                              (lambda () (set! l (cons 2 l)))
+                              (lambda () (raise-continuable 1))
+                              (lambda () (set! l (cons 3 l))))
+                             (dynamic-wind 
+                              (lambda () (set! l (cons 4 l)))
+                              (lambda () (raise-continuable 1))
+                              (lambda () (set! l (cons 5 l)))))
+                           (lambda () (set! l (cons 6 l))))))
+                       (set! k #f)
+                       (apply values l)))
+                  (list '(store ((lx-phase 2) 
+                                 (lx-k #f)
+                                 (lx-l (cons 6 (cons 5 (cons 4 (cons 3 (cons 2 (cons 5 (cons 4 (cons 3 (cons 2 (cons 1 null))))))))))))
                            (values 6 5 4 3 2 5 4 3 2 1))))))
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1948,23 +1919,25 @@ of digits with deconv-base
   (define letrec-tests
     (list 
      (make-r6test '(store () (letrec ([x 1] [y 2]) (+ x y)))
-                  (list '(store ((lx 1) (lx1 2)) (values 3))))
+                  (list '(store ((lx-x 1) (lx-y 2)) (values 3))))
      (make-r6test '(store ()
                      (letrec ([flip (lambda (x) (if x (flop #f) #t))]
                               [flop (lambda (x) (if x (flip x) x))])
                        (begin0 (flop #t)
                                (set! flip 1)
                                (set! flop 2))))
-                  (list '(store ((lx 1)
-                                 (lx1 2))
+                  (list '(store ((lx-flip 1)
+                                 (lx-flop 2))
                            (values #f))))
      (make-r6test '(store () (letrec ([x (begin (set! x 1) 2)]) x))
-                  (list '(store ((lx 2)) (values 2))))
+                  (list '(store ((lx-x 2)) (values 2))
+                        '(uncaught-exception (condition "letrec variable touched"))))
      (make-r6test '(store ()
                      (letrec ([x (begin (set! y 2) 5)]
                               [y (begin (set! x 3) 7)])
                        (* x y)))
-                  (list '(store ((lx 5) (lx1 7)) (values 35))))
+                  (list '(store ((lx-x 5) (lx-y 7)) (values 35))
+                        '(uncaught-exception (condition "letrec variable touched"))))
      (make-r6test '(store () (letrec ([x x]) x))
                   (list '(uncaught-exception (condition "letrec variable touched"))))
      (make-r6test '(store () (letrec ([x y] [y x]) x))
@@ -1972,28 +1945,114 @@ of digits with deconv-base
      (make-r6test '(store () (letrec ([x 1] [y x]) y))
                   (list '(uncaught-exception (condition "letrec variable touched"))))
      
+     (make-r6test '(store () (letrec ([x 1] [y 2]) (set! x 3) (set! y 4) (+ x y)))
+                  (list '(store ((lx-x 3) (lx-y 4)) (values 7))))
+     
      (make-r6test '(store () (letrec* ([x 1] [y 2]) (+ x y)))
-                  (list '(store ((lx 1) (lx1 2)) (values 3))))
+                  (list '(store ((lx-x 1) (lx-y 2)) (values 3))))
      (make-r6test '(store ()
                      (letrec* ([flip (lambda (x) (if x (flop #f) #t))]
                                [flop (lambda (x) (if x (flip x) x))])
                               (begin0 (flop #t)
                                       (set! flip 1)
                                       (set! flop 2))))
-                  (list '(store ((lx 1) (lx1 2)) (values #f))))
+                  (list '(store ((lx-flip 1) (lx-flop 2)) (values #f))))
      (make-r6test '(store () (letrec* ([x (begin (set! x 1) 2)]) x))
-                  (list '(store ((lx 2)) (values 2))))
+                  (list '(store ((lx-x 2)) (values 2))
+                        '(uncaught-exception (condition "letrec variable touched"))))
      (make-r6test '(store ()
                      (letrec* ([x (begin (set! y 2) 5)]
                                [y (begin (set! x 3) 7)])
                               (* x y)))
-                  (list '(store ((lx 3) (lx1 7)) (values 21))))
+                  (list '(store ((lx-x 3) (lx-y 7)) (values 21))
+                        '(uncaught-exception (condition "letrec variable touched"))))
      (make-r6test '(store () (letrec* ([x x]) x))
                   (list '(uncaught-exception (condition "letrec variable touched"))))
      (make-r6test '(store () (letrec* ([x y] [y x]) x))
                   (list '(uncaught-exception (condition "letrec variable touched"))))
      (make-r6test '(store () (letrec* ([x 1] [y x]) y))
-                  (list '(store ((lx 1) (lx1 1)) (values 1))))))
+                  (list '(store ((lx-x 1) (lx-y 1)) (values 1))))
+     
+     (make-r6test '(store () ((lambda (x y) (letrec ([q (begin (set! x 2) 23)]) (begin (set! y 3) (* x y))))
+                              5 7))
+                  (list '(store ((lx-q 23)) (values 6))))
+     (make-r6test '(store () ((lambda (x y) (letrec* ([q (begin (set! x 2) 23)]) (begin (set! y 3) (* x y))))
+                              5 7))
+                  (list '(store ((lx-q 23)) (values 6))))
+     (make-r6test '(store () (letrec* ([x 1] [y 2]) (set! x 3) (set! y 4) (+ x y)))
+                  (list '(store ((lx-x 3) (lx-y 4)) (values 7))))
+     
+     
+     (make-r6test '(store ()
+                     (letrec* ([k (call/cc (lambda (x) x))])
+                       (k (lambda (x) x))
+                       (k 2)))
+                  (list '(uncaught-exception (condition "reinvoked continuation of letrec init"))
+                        '(store ((lx-k (lambda (x) x))) (values 2))))
+     (make-r6test '(store ()
+                     (letrec ([k (call/cc (lambda (x) x))])
+                       (k (lambda (x) x))
+                       (k 2)))
+                  (list '(uncaught-exception (condition "reinvoked continuation of letrec init"))
+                        '(store ((lx-k (lambda (x2) x2))) (values 2))))
+     
+     (make-r6test '(store ()
+                     ((lambda (flag)
+                        (letrec* ([k
+                                   ((lambda (k)
+                                      (if flag
+                                          'nothing-doing
+                                          (car 'not-a-pair))
+                                      k) 
+                                    (call/cc (lambda (x) x)))])
+                          (set! flag #f)
+                          (k (lambda (x) x))
+                          (k 2)))
+                      #t))
+                  (list '(uncaught-exception (condition "can't take car of non-pair"))))
+     (make-r6test '(store ()
+                     ((lambda (flag)
+                        (letrec ([k
+                                  ((lambda (k)
+                                     (if flag
+                                         'nothing-doing
+                                         (car 'not-a-pair))
+                                     k) 
+                                   (call/cc (lambda (x) x)))])
+                          (set! flag #f)
+                          (k (lambda (x) x))
+                          (k 2)))
+                      #t))
+                  (list '(uncaught-exception (condition "can't take car of non-pair"))))
+     
+     
+     (make-r6test '(store ()
+                     ((lambda (flag)
+                        (letrec ([k (call/cc (lambda (x) x))]
+                                 [x (if flag
+                                        'nothing-doing
+                                        (car 'not-a-pair))])
+                          (set! flag #f)
+                          (k (lambda (x) x))
+                          (k 2)))
+                      #t))
+                  (list '(uncaught-exception (condition "reinvoked continuation of letrec init"))
+                        '(uncaught-exception (condition "can't take car of non-pair"))
+                        '(store ((lx-k (lambda (x2) x2)) (lx-x 'nothing-doing)) (values 2))))
+     
+     (make-r6test '(store ()
+                     ((lambda (flag)
+                        (letrec* ([k (call/cc (lambda (x) x))]
+                                  [x (if flag
+                                         'nothing-doing
+                                         (car 'not-a-pair))])
+                          (set! flag #f)
+                          (k (lambda (x) x))
+                          (k 2)))
+                      #t))
+                  (list '(uncaught-exception (condition "reinvoked continuation of letrec init"))
+                        '(uncaught-exception (condition "can't take car of non-pair"))))
+     ))
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;

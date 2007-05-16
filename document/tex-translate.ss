@@ -153,8 +153,12 @@
         [(null? extras) null]
         [else 
          (match (car extras)
-           [`(fresh ((,(? symbol?) ,'...)
-                     (,(? symbol? var) ,'...)))
+           [`(fresh ((,(? symbol? var) ,'...)
+                     (,(? symbol?) ,'...)))
+            (append (format-side-cond `(fresh ,var ...)) (loop (cdr extras)))]
+           [`(fresh ((,(? symbol? var) ,'...)
+                     (,(? symbol?) ,'...)
+                     ,whatever))
             (append (format-side-cond `(fresh ,var ...)) (loop (cdr extras)))]
            [`(fresh ,(? symbol? vars) ...)
              (append (format-side-cond `(fresh ,vars)) (loop (cdr extras)))]
@@ -663,7 +667,7 @@
 	   (case op
 	     ((language
 	       name subst reduction reduction/context red term apply-values store dot ccons throw push pop trim dw mark condition handlers
-	       define beginF throw lambda set! if begin0 quote begin)
+	       define beginF throw lambda set! if begin0 quote begin letrec letrec* reinit l!)
 	      "\\sy")
 	     ((cons unspecified null list dynamic-wind apply values null? pair? car cdr call/cc procedure? condition? unspecified? set-car! set-cdr! eqv? call-with-values with-exception-handler raise-continuable raise)
 	      "\\va")
@@ -999,7 +1003,6 @@
         
         [(list 'unquote e) (rhs->tex/int e lr?)]
             
-        
         [`(store ,s (dw ,dw (in-hole ,c (,v (lambda (dot ,x1) (throw ,name ,stack ,'... ,e)))) ,defn ,'...))
           (d "(\\sy{store}~") (loop s) (d "~(\\sy{dw}~") (loop dw) (d "\n")
           (d "  ") (loop c) (d "[(") (loop v) (d "~(\\sy{lambda}~(\\sy{dot}~") (loop x1) (d ")\n")

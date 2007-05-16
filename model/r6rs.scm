@@ -30,23 +30,24 @@
      (a* (store (sf ...) (values v ...)) (uncaught-exception v) (unknown string))
      (r* (values r*v ...) exception unknown)
      (r*v  pair null 'sym sqv condition procedure)
-     (sf (x v) (x dont-touch) (pp (cons v v)))
+     (sf (x v) (x bh) (pp (cons v v)))
      (ds (define x es) es)
      
      (es 'snv (begin es es ...) (begin0 es es ...) (es es ...)
          (if es es es) (set! x es) x
          nonproc pproc
-         (dw x es es es) (throw x (d d ...))
+         (lambda (x ...) es es ...)
+         (lambda (x ... dot x) es es ...)
+         (letrec ([x es] ...) es es ...) 
+         (letrec* ([x es] ...) es es ...)
+         
+         ;; intermediate states
+         (dw x es es es) 
+         (throw x (d d ...))
          unspecified
          (handlers es ... es)
-         (lambda (x ...) 
-           es
-           es ...)
-         (lambda (x ... dot x)
-           es
-           es ...)
-         (letrec ([x es] ...) es)
-         (letrec* ([x es] ...) es))
+         (l! x es)
+         (reinit x))
      
      (s snv sym)
      (snv (s ...) (s ... dot sqv) (s ... dot sym) sqv)
@@ -58,8 +59,10 @@
         (set! x e) (handlers e ... e)
         x nonproc proc (dw x e e e)
         unspecified
-        (letrec ([x e] ...) e)
-        (letrec* ([x e] ...) e))
+        (letrec ([x e] ...) e e ...)
+        (letrec* ([x e] ...) e e ...)
+        (l! x es)
+        (reinit x))
      (v nonproc proc)
      (nonproc pp null 'sym sqv (condition string))
      (sqv n #t #f)
@@ -90,7 +93,7 @@
                 
                 define               ; top-level stuff
                 
-                letrec letrec*
+                letrec letrec* l! reinit
                 
                 procedure? condition?
                 cons pair? null? car cdr       ; list functions
@@ -116,10 +119,11 @@
      (E* (hole multi) E)
      (Eo (hole single) E)
      
-     (F hole (v ... Fo v ...) (if Fo e e) (set! x Fo) 
+     (F hole (v ... Fo v ...) (if Fo e e) (set! x Fo)  
         (begin F* e e ...) (begin0 F* e e ...) 
         (begin0 (values v ...) F* e ...) (begin0 unspecified F* e ...)
-        (call-with-values (lambda () F* e ...) v))
+        (call-with-values (lambda () F* e ...) v)
+        (l! x Fo))
 
      (F* (hole multi) F)
      (Fo (hole single) F)
@@ -145,7 +149,13 @@
         (e ... S es ...) (if S es es) (if e S es) (if e e S)
         (set! x S) (handlers s ... S es ... es) (handlers s ... S)
         (throw x (e e ...)) (lambda (x ...) S es ...) (lambda (x ...) e e ... S es ...)
-        (lambda (x ... dot x) S es ...) (lambda (x ... dot x) e e ... S es ...))))
+        (lambda (x ... dot x) S es ...) (lambda (x ... dot x) e e ... S es ...)
+        (letrec ([x e] ... [x S] [x es] ...) es es ...)
+        (letrec ([x e] ...) S es ...)
+        (letrec ([x e] ...) e e ... S es ...)
+        (letrec* ([x e] ... [x S] [x es] ...) es es ...)
+        (letrec* ([x e] ...) S es ...)
+        (letrec* ([x e] ...) e e ... S es ...))))
 
   (define Basic--syntactic--forms
     (reduction-relation
@@ -461,6 +471,21 @@
     [(side-condition (x_1 (lambda (x_2 ... dot x_3) e_1 e_2 ...)) 
                      (not (memq (term x_1) (term (x_2 ... x_3)))))
      (Var-set!d? (x_1 (begin e_1 e_2 ...)))]
+    [(x_1 (letrec ([x e] ... [x_1 e] [x e] ...) e e ...)) #f]
+    [(x_1 (letrec ([x_2 e_2] [x_3 e_3] ...) e_4 e_5 ...))
+     ,(or (term (Var-set!d? (x_1 e_2)))
+          (term (Var-set!d? (x_1 (letrec ([x_3 e_3] ...) e_4 e_5 ...)))))]
+    [(x_1 (letrec () e_1 e_2 ...))
+     (Var-set!d? (x_1 (begin e_1 e_2 ...)))]
+    [(x_1 (letrec () e_1))
+     (Var-set!d? (x_1 e_1))]
+    [(x_1 (letrec* ([x_2 e_2] ...) e_3 e_4 ...))
+     (Var-set!d? (x_1 (letrec ([x_2 e_2] ...) e_3 e_4 ...)))]
+    [(x_1 (l! x_1 e)) #t]
+    [(x_1 (l! x_2 e_1)) 
+     (Var-set!d? (x_1 e_1))]
+    [(x_1 (reinit x_1)) #t]
+    [(x_1 (reinit x_2)) #f]
     [(x_1 x_2) #f]
     [(x_1 v) #f]
     [(x_1 (dw x_2 e_1 e_2 e_3))
@@ -677,36 +702,86 @@
   (define Letrec
     (reduction-relation
      lang
-     (--> (store (sf_1 ...) (in-hole D_1 (letrec ([x_1 e_1] ...) e_2)) d_1 ...)
-          (store (sf_1 ... (lx dont-touch) ...)
+     (--> (store (sf_1 ...) (in-hole D_1 (letrec ([x_1 e_1] ...) e_2 e_3 ...)) d_1 ...)
+          (store (sf_1 ... (lx bh) ... (lxri #f) ...)
             (in-hole D_1 
-                     ((lambda (x_1 ...) (set! lx x_1) ... (r6rs-subst-many ((x_1 lx) ... e_2)))
-                      (r6rs-subst-many ((x_1 lx) ... e_1)) ...))
+                     ((lambda (x_1 ...) 
+                        (l! lx x_1) ...
+                        (r6rs-subst-many ((x_1 lx) ... e_2))
+                        (r6rs-subst-many ((x_1 lx) ... e_3)) ...)
+                      (begin0
+                        (r6rs-subst-many ((x_1 lx) ... e_1))
+                        (reinit lxri))
+                      ...))
             d_1 ...)
           "6letrec"
-          (fresh ((x_1 ...) (lx ...))))
-     (--> (store (sf_1 ...) (in-hole D_1 (letrec* ([x_1 e_1] ...) e_2)) d_1 ...)
-          (store (sf_1 ... (lx dont-touch) ...)
+          (fresh ((lx ...) 
+                  (x_1 ...)
+                  ,(map (λ (x) (string->symbol (format "lx-~a" x))) (term (x_1 ...)))))
+          (fresh ((lxri ...) 
+                  (x_1 ...)
+                  ,(map (λ (x) (string->symbol (format "lxri-~a" x))) (term (x_1 ...))))))
+     (--> (store (sf_1 ...) (in-hole D_1 (letrec* ([x_1 e_1] ...) e_2 e_3 ...)) d_1 ...)
+          (store (sf_1 ... (lx bh) ... (lxri #f) ...)
             (in-hole D_1 
                      (r6rs-subst-many 
                       ((x_1 lx) ...
                        (begin
-                         (set! lx e_1) ...
-                         e_2))))
+                         (begin
+                           (l! lx e_1)
+                           (reinit lxri)) 
+                         ...
+                         e_2
+                         e_3 ...))))
             d_1 ...)
           "6letrec*"
-          (fresh ((x_1 ...) (lx ...))))
-     (--> (store (sf_1 ... (x_1 dont-touch) sf_2 ...)
-            (in-hole D_1 (set! x_1 v_2))
+          (fresh ((lx ...)
+                  (x_1 ...)
+                  ,(map (λ (x) (string->symbol (format "lx-~a" x))) (term (x_1 ...)))))
+          (fresh ((lxri ...) 
+                  (x_1 ...)
+                  ,(map (λ (x) (string->symbol (format "lxri-~a" x))) (term (x_1 ...))))))
+     (--> (store (sf_1 ... (x_1 #f) sf_2 ...) (in-hole D_1 (reinit x_1)) d_1 ...)
+          (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 'ignore) d_1 ...)
+          "6init")
+    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 (reinit x_1)) d_1 ...)
+         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 'ignore) d_1 ...)
+         "6reinit")
+    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 (reinit x_1)) d_1 ...)
+         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 (raise (condition "reinvoked continuation of letrec init"))) d_1 ...)
+         "6reinite")
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...)
+            (in-hole D_1 (l! x_1 v_2))
             d_1 ...)
           (store (sf_1 ... (x_1 v_2) sf_2 ...)
             (in-hole D_1 unspecified)
             d_1 ...)
+          "6initdt")
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...)
+            (in-hole D_1 (l! x_1 v_2))
+            d_1 ...)
+          (store (sf_1 ... (x_1 v_2) sf_2 ...)
+            (in-hole D_1 unspecified)
+            d_1 ...)
+          "6initv")
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...)
+            (in-hole D_1 (set! x_1 v_1))
+            d_1 ...)
+          (store (sf_1 ... (x_1 v_1) sf_2 ...)
+            (in-hole D_1 unspecified)
+            d_1 ...)
           "6setdt")
-     (--> (store (sf_1 ... (x_1 dont-touch) sf_2 ...)
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...)
+            (in-hole D_1 (set! x_1 v_1))
+            d_1 ...)
+          (store (sf_1 ... (x_1 bh) sf_2 ...)
+            (in-hole D_1 (raise (condition "letrec variable touched")))
+            d_1 ...)
+          "6setdte")
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...)
             (in-hole D_1 x_1)
             d_1 ...)
-          (store (sf_1 ... (x_1 dont-touch) sf_2 ...)
+          (store (sf_1 ... (x_1 bh) sf_2 ...)
             (in-hole D_1 (raise (condition "letrec variable touched")))
             d_1 ...)
           "6dt")))
@@ -750,7 +825,10 @@
           "6ubegin0")
      (--> (in-hole P_1 (begin0 unspecified (values v_2 ...) e_2 ...))
           (in-hole P_1 (begin0 unspecified e_2 ...))
-          "6ubegin0u")))
+          "6ubegin0u")
+     (--> (in-hole P_1 (begin0 unspecified unspecified e_2 ...))
+          (in-hole P_1 (begin0 unspecified e_2 ...))
+          "6ubegin0uu")))
   
   (define Quote
     (reduction-relation
