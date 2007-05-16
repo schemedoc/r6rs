@@ -66,14 +66,5 @@
         c c))
      (cons 1 2)))
   
-  (step '(store ()
-           ((lambda (flag)
-              (letrec ([k (call/cc (lambda (x) x))]
-                       [x (if flag
-                              'nothing-doing
-                              (car 'not-a-pair))])
-                (set! flag #f)
-                (k (lambda (x) x))
-                (k 2)))
-            #t))))
+  (step '(store () (letrec ((g (lambda (x) x)) (f (lambda (x) (g 1)))) (((lambda (x) (lambda (g) (g x))) f) (lambda (x) 17))))))
 

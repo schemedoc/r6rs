@@ -26,12 +26,11 @@
 
   (define lang
     (language
-     (p* (store (sf ...) ds ...) (uncaught-exception v) (unknown string))
+     (p* (store (sf ...) es) (uncaught-exception v) (unknown string))
      (a* (store (sf ...) (values v ...)) (uncaught-exception v) (unknown string))
      (r* (values r*v ...) exception unknown)
      (r*v  pair null 'sym sqv condition procedure)
      (sf (x v) (x bh) (pp (cons v v)))
-     (ds (define x es) es)
      
      (es 'snv (begin es es ...) (begin0 es es ...) (es es ...)
          (if es es es) (set! x es) x
@@ -43,7 +42,7 @@
          
          ;; intermediate states
          (dw x es es es) 
-         (throw x (d d ...))
+         (throw x es)
          unspecified
          (handlers es ... es)
          (l! x es)
@@ -52,8 +51,7 @@
      (s snv sym)
      (snv (s ...) (s ... dot sqv) (s ... dot sym) sqv)
      
-     (p (store (sf ...) d ...))
-     (d (define x e) e)
+     (p (store (sf ...) e))
      (e (begin e e ...) (begin0 e e ...)
         (e e ...) (if e e e)
         (set! x e) (handlers e ... e)
@@ -67,7 +65,7 @@
      (nonproc pp null 'sym sqv (condition string))
      (sqv n #t #f)
      
-     (proc uproc pproc (throw x (d d ...)))
+     (proc uproc pproc (throw x e))
      (uproc (lambda (x ...) e e ...) (lambda (x ... dot x) e e ...))
      (pproc aproc proc1 proc2 list dynamic-wind apply values)
      (proc1 null? pair? car cdr call/cc procedure? condition? raise*)
@@ -112,8 +110,7 @@
      
      (n number)
      
-     (P (store (sf ...) D d ...))
-     (D (define x Eo) E*)
+     (P (store (sf ...) E*))
      
      (E (in-hole F (handlers v ... E*)) (in-hole F (dw x e E* e)) F)
      (E* (hole multi) E)
@@ -143,12 +140,11 @@
      ;; everything except dw
      (H (in-hole F (handlers v ... H)) F)
      
-     (SD S (define x S))
      (S hole (begin e e ... S es ...) (begin S es ...)
         (begin0 e e ... S es ...) (begin0 S es ...)
         (e ... S es ...) (if S es es) (if e S es) (if e e S)
         (set! x S) (handlers s ... S es ... es) (handlers s ... S)
-        (throw x (e e ...)) (lambda (x ...) S es ...) (lambda (x ...) e e ... S es ...)
+        (throw x e) (lambda (x ...) S es ...) (lambda (x ...) e e ... S es ...)
         (lambda (x ... dot x) S es ...) (lambda (x ... dot x) e e ... S es ...)
         (letrec ([x e] ... [x S] [x es] ...) es es ...)
         (letrec ([x e] ...) S es ...)
@@ -224,20 +220,12 @@
     (reduction-relation
      lang
      
-     (--> (store (sf_1 ... (pp_1 (cons v_1 v_2)) sf_2 ...)
-            (in-hole D_1 (set-car! pp_1 v_3))
-            d_1 ...)
-          (store (sf_1 ... (pp_1 (cons v_3 v_2)) sf_2 ...)
-            (in-hole D_1 unspecified)
-            d_1 ...)
+     (--> (store (sf_1 ... (pp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-car! pp_1 v_3)))
+          (store (sf_1 ... (pp_1 (cons v_3 v_2)) sf_2 ...) (in-hole E_1 unspecified))
           "6setcar")
 
-     (--> (store (sf_1 ... (pp_1 (cons v_1 v_2)) sf_2 ...)
-            (in-hole D_1 (set-cdr! pp_1 v_3))
-            d_1 ...)
-          (store (sf_1 ... (pp_1 (cons v_1 v_3)) sf_2 ...)
-            (in-hole D_1 unspecified)
-            d_1 ...)
+     (--> (store (sf_1 ... (pp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-cdr! pp_1 v_3)))
+          (store (sf_1 ... (pp_1 (cons v_1 v_3)) sf_2 ...) (in-hole E_1 unspecified))
           "6setcdr")
      
      (--> (in-hole P_1 (set-car! v_1 v_2))
@@ -270,12 +258,8 @@
     (reduction-relation
      lang
   
-     (--> (store (sf_1 ...)
-            (in-hole D_1 (cons v_1 v_2))
-            d_1 ...)
-          (store (sf_1 ... (pp (cons v_1 v_2)))
-            (in-hole D_1 pp)
-            d_1 ...)
+     (--> (store (sf_1 ...) (in-hole E_1 (cons v_1 v_2)))
+          (store (sf_1 ... (pp (cons v_1 v_2))) (in-hole E_1 pp))
           "6cons"
           (fresh pp))
      
@@ -287,21 +271,13 @@
           "6listn")
      
      ;; car
-     (--> (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...)
-            (in-hole D_1 (car pp_i))
-            d_1 ...)
-          (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...)
-            (in-hole D_1 v_1)
-            d_1 ...)
+     (--> (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (car pp_i)))
+          (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...) (in-hole E_1 v_1))
           "6car")
 
      ;; cdr
-     (--> (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...)
-            (in-hole D_1 (cdr pp_i))
-            d_1 ...)
-          (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...)
-            (in-hole D_1 v_2)
-            d_1 ...)
+     (--> (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (cdr pp_i)))
+          (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...) (in-hole E_1 v_2))
           "6cdr")
 
      ;; null?
@@ -338,19 +314,16 @@
      (--> (in-hole P_1 (e_1 ... e_i e_i+1 ...))
           (in-hole P_1 ((lambda (x) (e_1 ... x e_i+1 ...)) e_i))
           "6mark"
-          (fresh x)
+          (fresh (x lifted))
           (side-condition (not (v? (term e_i))))
           (side-condition 
            (ormap (lambda (e) (not (v? e))) (term (e_1 ... e_i+1 ...)))))
      
-     (--> (store (sf_1 ...) 
-            (in-hole D_1 ((lambda (x_1 x_2 ...) e_1 e_2 ...) v_1 v_2 ...))
-            d_1 ...)
+     (--> (store (sf_1 ...) (in-hole E_1 ((lambda (x_1 x_2 ...) e_1 e_2 ...) v_1 v_2 ...)))
           (store (sf_1 ... (bp v_1))
-                 (in-hole D_1
-                          ((r6rs-subst-one (x_1 bp (lambda (x_2 ...) e_1 e_2 ...)))
-                            v_2 ...))
-            d_1 ...)
+            (in-hole E_1
+                     ((r6rs-subst-one (x_1 bp (lambda (x_2 ...) e_1 e_2 ...)))
+                      v_2 ...)))
           "6appN!"
           (fresh bp)
           (side-condition
@@ -415,12 +388,8 @@
           (in-hole P_1 (proc_1 v_1 ...))
           "6applyf")
      
-     (--> (store (sf_1 ... (pp_i (cons v_2 v_3)) sf_2 ...)
-            (in-hole D_1 (apply proc_1 v_1 ... pp_i))
-            d_1 ...)
-          (store (sf_1 ... (pp_i (cons v_2 v_3)) sf_2 ...)
-            (in-hole  D_1 (apply proc_1 v_1 ... v_2 v_3))
-            d_1 ...)
+     (--> (store (sf_1 ... (pp_i (cons v_2 v_3)) sf_2 ...) (in-hole E_1 (apply proc_1 v_1 ... pp_i)))
+          (store (sf_1 ... (pp_i (cons v_2 v_3)) sf_2 ...) (in-hole  E_1 (apply proc_1 v_1 ... v_2 v_3)))
           "6applyc")
      
      
@@ -530,21 +499,13 @@
           (in-hole P_1 (values v_1 ...))
           "6dwdone")
      
-     (--> (store (sf_1 ...) 
-            (in-hole D_1 (call/cc v_1))
-            d_1 ...)
-          (store (sf_1 ...)
-            (in-hole D_1 (v_1 (throw x ((in-hole D_1 x) d_1 ...))))
-            d_1 ...)
+     (--> (store (sf_1 ...) (in-hole E_1 (call/cc v_1)))
+          (store (sf_1 ...) (in-hole E_1 (v_1 (throw x (in-hole E_1 x)))))
           "6call/cc"
           (fresh x))
      
-     (--> (store (sf_1 ...)
-            (in-hole D_1 ((throw x_1 ((in-hole D_2 x_1) d_1 ...)) v_1 ...))
-            d_2 ...)
-          (store (sf_1 ...) 
-            (in-hole (Trim (D_1 D_2)) (values v_1 ...))
-            d_1 ...)
+     (--> (store (sf_1 ...) (in-hole E_1 ((throw x_1 (in-hole E_2 x_1)) v_1 ...)))
+          (store (sf_1 ...) (in-hole (Trim (E_1 E_2)) (values v_1 ...)))
           "6throw")))
   
   (define-metafunction pRe
@@ -563,12 +524,6 @@
   
   (define-metafunction Trim
     lang
-    [((define x_1 E_1) (define x_2 E_2))
-     (define x_2 (Trim (E_1 E_2)))]
-    [(E_1 (define x_2 E_2))
-     (define x_2 (Trim (E_1 E_2)))]
-    [((define x_1 E_1) E_2)
-     (Trim (E_1 E_2))]
     [((in-hole H_1 (dw x_1 e_1 E_1 e_2))
       (in-hole H_2 (dw x_1 e_3 E_2 e_4)))
      (in-hole H_2 (dw x_1 e_3 (Trim (E_1 E_2)) e_4))]
@@ -652,7 +607,7 @@
     [dynamic-wind #f]     
     [apply #f]
     [values #t]
-    [(throw x (d d ...)) #t])
+    [(throw x e) #t])
   
   (define-metafunction A_1
     lang
@@ -673,7 +628,7 @@
     [dynamic-wind #f]
     [apply #f]
     [values #t]
-    [(throw x (d d ...)) #t])
+    [(throw x e) #t])
   
   (define Multiple--values--and--call-with-values
     (reduction-relation
@@ -698,92 +653,69 @@
           "6cwvw"
           (side-condition (not (lambda-null? (term v_1)))))))
   
-  ;; r6rs-subst
   (define Letrec
     (reduction-relation
      lang
-     (--> (store (sf_1 ...) (in-hole D_1 (letrec ([x_1 e_1] ...) e_2 e_3 ...)) d_1 ...)
-          (store (sf_1 ... (lx bh) ... (lxri #f) ...)
-            (in-hole D_1 
+     (--> (store (sf_1 ...) (in-hole E_1 (letrec ([x_1 e_1] ...) e_2 e_3 ...)))
+          (store (sf_1 ... (lx bh) ... (ri #f) ...)
+            (in-hole E_1 
                      ((lambda (x_1 ...) 
                         (l! lx x_1) ...
                         (r6rs-subst-many ((x_1 lx) ... e_2))
                         (r6rs-subst-many ((x_1 lx) ... e_3)) ...)
                       (begin0
                         (r6rs-subst-many ((x_1 lx) ... e_1))
-                        (reinit lxri))
-                      ...))
-            d_1 ...)
+                        (reinit ri))
+                      ...)))
           "6letrec"
           (fresh ((lx ...) 
                   (x_1 ...)
                   ,(map (λ (x) (string->symbol (format "lx-~a" x))) (term (x_1 ...)))))
-          (fresh ((lxri ...) 
+          (fresh ((ri ...) 
                   (x_1 ...)
-                  ,(map (λ (x) (string->symbol (format "lxri-~a" x))) (term (x_1 ...))))))
-     (--> (store (sf_1 ...) (in-hole D_1 (letrec* ([x_1 e_1] ...) e_2 e_3 ...)) d_1 ...)
-          (store (sf_1 ... (lx bh) ... (lxri #f) ...)
-            (in-hole D_1 
+                  ,(map (λ (x) (string->symbol (format "ri-~a" x))) (term (x_1 ...))))))
+     (--> (store (sf_1 ...) (in-hole E_1 (letrec* ([x_1 e_1] ...) e_2 e_3 ...)))
+          (store (sf_1 ... (lx bh) ... (ri #f) ...)
+            (in-hole E_1 
                      (r6rs-subst-many 
                       ((x_1 lx) ...
                        (begin
                          (begin
                            (l! lx e_1)
-                           (reinit lxri)) 
+                           (reinit ri)) 
                          ...
                          e_2
-                         e_3 ...))))
-            d_1 ...)
+                         e_3 ...)))))
           "6letrec*"
           (fresh ((lx ...)
                   (x_1 ...)
                   ,(map (λ (x) (string->symbol (format "lx-~a" x))) (term (x_1 ...)))))
-          (fresh ((lxri ...) 
+          (fresh ((ri ...) 
                   (x_1 ...)
-                  ,(map (λ (x) (string->symbol (format "lxri-~a" x))) (term (x_1 ...))))))
-     (--> (store (sf_1 ... (x_1 #f) sf_2 ...) (in-hole D_1 (reinit x_1)) d_1 ...)
-          (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 'ignore) d_1 ...)
+                  ,(map (λ (x) (string->symbol (format "ri-~a" x))) (term (x_1 ...))))))
+     (--> (store (sf_1 ... (x_1 #f) sf_2 ...) (in-hole E_1 (reinit x_1)))
+          (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 'ignore))
           "6init")
-    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 (reinit x_1)) d_1 ...)
-         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 'ignore) d_1 ...)
+    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (reinit x_1)))
+         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 'ignore))
          "6reinit")
-    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 (reinit x_1)) d_1 ...)
-         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole D_1 (raise (condition "reinvoked continuation of letrec init"))) d_1 ...)
+    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (reinit x_1)))
+         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (raise (condition "reinvoked continuation of letrec init"))))
          "6reinite")
-     (--> (store (sf_1 ... (x_1 bh) sf_2 ...)
-            (in-hole D_1 (l! x_1 v_2))
-            d_1 ...)
-          (store (sf_1 ... (x_1 v_2) sf_2 ...)
-            (in-hole D_1 unspecified)
-            d_1 ...)
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (l! x_1 v_2)))
+          (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
           "6initdt")
-     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...)
-            (in-hole D_1 (l! x_1 v_2))
-            d_1 ...)
-          (store (sf_1 ... (x_1 v_2) sf_2 ...)
-            (in-hole D_1 unspecified)
-            d_1 ...)
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 (l! x_1 v_2)))
+          (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
           "6initv")
-     (--> (store (sf_1 ... (x_1 bh) sf_2 ...)
-            (in-hole D_1 (set! x_1 v_1))
-            d_1 ...)
-          (store (sf_1 ... (x_1 v_1) sf_2 ...)
-            (in-hole D_1 unspecified)
-            d_1 ...)
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (set! x_1 v_1)))
+          (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 unspecified))
           "6setdt")
-     (--> (store (sf_1 ... (x_1 bh) sf_2 ...)
-            (in-hole D_1 (set! x_1 v_1))
-            d_1 ...)
-          (store (sf_1 ... (x_1 bh) sf_2 ...)
-            (in-hole D_1 (raise (condition "letrec variable touched")))
-            d_1 ...)
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (set! x_1 v_1)))
+          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (condition "letrec variable touched"))))
           "6setdte")
-     (--> (store (sf_1 ... (x_1 bh) sf_2 ...)
-            (in-hole D_1 x_1)
-            d_1 ...)
-          (store (sf_1 ... (x_1 bh) sf_2 ...)
-            (in-hole D_1 (raise (condition "letrec variable touched")))
-            d_1 ...)
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 x_1))
+          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (condition "letrec variable touched"))))
           "6dt")))
   
   (define Underspecification
@@ -808,9 +740,6 @@
           (unknown "unspecified result")
           "6udemandtl")
      
-     (--> (store (sf_1 ...) unspecified d_1 d_2 ...)
-          (store (sf_1 ...) d_1 d_2 ...)
-          "6utl")
      (--> (in-hole P_1 (begin unspecified e_1 e_2 ...))
           (in-hole P_1 (begin e_1 e_2 ...))
           "6ubegin")
@@ -834,17 +763,8 @@
     (reduction-relation
      lang
      ;; compile time quote removal
-     (--> (store (sf_1 ...) 
-            d_1
-            ...
-            (in-hole SD_1 'snv_1)
-            ds_1 ...)
-          (store (sf_1 ...)
-            (define qp (Qtoc snv_1))
-            d_1
-            ...
-            (in-hole SD_1 qp)
-            ds_1 ...)
+     (--> (store (sf_1 ...) (in-hole S_1 'snv_1))
+          (store (sf_1 ...) ((lambda (qp) (in-hole S_1 qp)) (Qtoc snv_1)))
           "6qcons"
           (fresh qp))))
   
@@ -865,63 +785,15 @@
     (reduction-relation
      lang
      
-     (--> (store (sf_1 ...) (define x_1 v_1) d_1 ...)
-          (store (sf_1 ... (x_1 v_1)) d_1 ...)
-          "6def"
-          (side-condition (not (memq (term x_1) (map car (term (sf_1 ...)))))))
-
-           
-     ;; need redef in order to handle continuation jumps.
-     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (define x_1 v_2) d_1 ...)
-          (store (sf_1 ... (x_1 v_2) sf_2 ...) d_1 ...)
-          "6redef")
-
-     ;; drop values (except the last one)
-     (--> (store (sf_1 ...) (values v_1 ...) d_1 d_2 ...)
-          (store (sf_1 ...) d_1 d_2 ...)
-          "6valdrop")
-     
      ;; variable lookup
-     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...)
-            (in-hole D_1 x_1)
-            d_1 ...)
-          (store (sf_1 ... (x_1 v_1) sf_2 ...)
-            (in-hole D_1 v_1)
-            d_1 ...)
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 x_1))
+          (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 v_1))
           "6var")
      
      ;; set!
-     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...)
-            (in-hole D_1 (set! x_1 v_2))
-            d_1 ...)
-          (store (sf_1 ... (x_1 v_2) sf_2 ...)
-            (in-hole D_1 unspecified)
-            d_1 ...)
-          "6set")
-     
-     (--> (store (sf_1 ...) (in-hole D_1 (set! x_1 v_2)) d_1 ... (define x_1 e_1) d_2 ...)
-          (store (sf_1 ... (x_1 v_2)) (in-hole D_1 unspecified) d_1 ... (define x_1 e_1) d_2 ...)
-          "6setd"
-          (side-condition (not (memq (term x_1) (map car (term (sf_1 ...)))))))
-     
-     (--> (store (sf_1 ...) (in-hole D_1 x_1) d_1 ...)
-          (store (sf_1 ...) 
-            (in-hole D_1 (raise (condition ,(format "reference to undefined identifier: ~a" (term x_1)))))
-            d_1 ...)
-          "6refu"
-          (side-condition 
-           (not (memq (term x_1) (map car (term (sf_1 ...)))))))
-     
-     (--> (store (sf_1 ...)
-            (in-hole D_1 (set! x_1 v_2))
-            d_1 ...)
-          (store (sf_1 ...) 
-            (in-hole D_1 (raise (condition ,(format "set!: cannot set undefined identifier: ~a" (term x_1)))))
-            d_1 ...)
-          "6setu"
-          (side-condition 
-           (and (not (memq (term x_1) (map car (term (sf_1 ...)))))
-                (not (defines? (term x_1) (term (d_1 ...)))))))))
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 (set! x_1 v_2)))
+          (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
+          "6set")))
   
   (define (defines? var defs)
     (ormap (lambda (def) 
@@ -1035,5 +907,4 @@
   (define lambda-one? (test-match lang (lambda (x) e)))
   (define pp? (test-match lang pp))
   (define es? (test-match lang es))
-  (define ds? (test-match lang ds))
   (define (list-v? v) (or (pp? v) (null-v? v))))

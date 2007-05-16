@@ -160,6 +160,8 @@
                      (,(? symbol?) ,'...)
                      ,whatever))
             (append (format-side-cond `(fresh ,var ...)) (loop (cdr extras)))]
+           [`(fresh (,(? symbol? var) ,whatever))
+            (append (format-side-cond `(fresh (,var))) (loop (cdr extras)))]
            [`(fresh ,(? symbol? vars) ...)
              (append (format-side-cond `(fresh ,vars)) (loop (cdr extras)))]
            [`(side-condition ,sc ...)
@@ -611,7 +613,7 @@
                  (error 'tex-translate.ss "cannot handle use of r6rs-subst-many"))
                (display "\\{" o)
                (loop var-arg)
-               (display "\\cdots \\mapsto " o)
+               (display " \\mapsto " o)
                (loop becomes-arg)
                (display "\\cdots \\}" o)
                (loop exp-arg)

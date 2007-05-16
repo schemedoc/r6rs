@@ -102,23 +102,23 @@
               [pp-bindings (filter pp-var? str)]
               [with-out-pp (fp-sub pp-bindings `(store ,(filter (λ (x) (not (pp-var? x))) str) ,@exps))]
               [with-out-app-vars (remove-unassigned-app-vars with-out-pp)]
-              [without-lxri-vars (remove-unused-lxri-vars with-out-app-vars)])
-         without-lxri-vars)]
+              [without-ri-vars (remove-unused-ri-vars with-out-app-vars)])
+         without-ri-vars)]
       [`(unknown ,string) string]
       [_ (error 'subst-:-vars "unknown exp ~s" exp)]))
   
-  (define (is-lxri-var? x) (regexp-match #rx"^lxri" (symbol->string x)))
+  (define (is-ri-var? x) (regexp-match #rx"^ri" (symbol->string x)))
   
-  (define (remove-unused-lxri-vars exp)
+  (define (remove-unused-ri-vars exp)
     (match exp
       [`(store ,str ,exps ...)
-       (let ([lxri-vars (filter is-lxri-var? (map car str))]
-             [str-without-lxri-binders 
-              (filter (λ (binding) (not (is-lxri-var? (car binding)))) str)])
+       (let ([ri-vars (filter is-ri-var? (map car str))]
+             [str-without-ri-binders 
+              (filter (λ (binding) (not (is-ri-var? (car binding)))) str)])
          `(store ,(filter (λ (binding) 
                             (cond
-                              [(is-lxri-var? (car binding)) 
-                               (not (not-in (car binding) (cons str-without-lxri-binders exps)))]
+                              [(is-ri-var? (car binding)) 
+                               (not (not-in (car binding) (cons str-without-ri-binders exps)))]
                               [else #t]))
                           str)
             ,@exps))]))
@@ -489,23 +489,23 @@
      
      (make-r6test 
       '(store () 
-         (define gen-counter
-           (lambda ()
-             ((lambda (n) 
-                (lambda () (set! n (+ n 1)) n))
-              0)))
-         ((lambda (g) (eqv? g g))
-          (gen-counter)))
+         (letrec* ([gen-counter
+                    (lambda ()
+                      ((lambda (n) 
+                         (lambda () (set! n (+ n 1)) n))
+                       0))])
+                  ((lambda (g) (eqv? g g))
+                   (gen-counter))))
       (list '(unknown "equivalence of procedures")))
      
      (make-r6test 
       '(store () 
-         (define gen-counter
-           (lambda ()
-             ((lambda (n) 
-                (lambda () (set! n (+ n 1)) n))
-              0)))
-         (eqv? (gen-counter) (gen-counter)))
+         (letrec* ((gen-counter
+                    (lambda ()
+                      ((lambda (n) 
+                         (lambda () (set! n (+ n 1)) n))
+                       0))))
+         (eqv? (gen-counter) (gen-counter))))
       (list '(unknown "equivalence of procedures")))
      
      
@@ -514,42 +514,42 @@
      ; 6.3.2
      
      (make-r6test '(store ()
-                     (define x (list 'a 'b 'c))
-                     (define y x)
-                     y)
+                     (letrec* ([x (list 'a 'b 'c)]
+                               [y x])
+                       y))
                   (list
-                   '(store ((x (cons 'a (cons 'b (cons 'c null))))
-                            (y (cons 'a (cons 'b (cons 'c null)))))
+                   '(store ((lx-x (cons 'a (cons 'b (cons 'c null))))
+                            (lx-y (cons 'a (cons 'b (cons 'c null)))))
                       (values (cons 'a (cons 'b (cons 'c null)))))))
      
      (make-r6test '(store ()
-                     (define x (list 'a 'b 'c))
-                     (define y x)
-                     (set-cdr! x 4)
-                     x)
+                     (letrec* ((x (list 'a 'b 'c))
+                               (y x))
+                       (set-cdr! x 4)
+                       x))
                   (list
-                   '(store ((x (cons 'a 4))
-                            (y (cons 'a 4)))
+                   '(store ((lx-x (cons 'a 4))
+                            (lx-y (cons 'a 4)))
                       (values (cons 'a 4)))))
      
      (make-r6test '(store ()
-                     (define x (list 'a 'b 'c))
-                     (define y x)
-                     (set-cdr! x 4)
-                     (eqv? x y))
+                     (letrec* ((x (list 'a 'b 'c))
+                               (y x))
+                       (set-cdr! x 4)
+                       (eqv? x y)))
                   (list
-                   '(store ((x (cons 'a 4))
-                            (y (cons 'a 4)))
+                   '(store ((lx-x (cons 'a 4))
+                            (lx-y (cons 'a 4)))
                       (values #t))))
      
      (make-r6test '(store ()
-                     (define x (list 'a 'b 'c))
-                     (define y x)
-                     (set-cdr! x 4)
-                     y)
+                     (letrec* ((x (list 'a 'b 'c))
+                               (y x))
+                       (set-cdr! x 4)
+                       y))
                   (list
-                   '(store ((x (cons 'a 4))
-                            (y (cons 'a 4)))
+                   '(store ((lx-x (cons 'a 4))
+                            (lx-y (cons 'a 4)))
                       (values (cons 'a 4)))))
      
      ; ----
@@ -558,18 +558,17 @@
      
      (make-r6test
       '(store ()
-         (define compose
-           (lambda (f g)
-             (lambda (dot args)
-               (f (apply g args)))))
-         
-         (define sqrt (lambda (x) (if (eqv? x 900) 30 #f)))
-         
-         ((compose sqrt *) 12 75))
-      (list '(store ((compose (lambda (f g)
-                                (lambda (dot args)
-                                  (f (apply g args)))))
-                     (sqrt (lambda (x) (if (eqv? x 900) 30 #f))))
+         (letrec* ([compose
+                    (lambda (f g)
+                      (lambda (dot args)
+                        (f (apply g args))))]
+                   
+                   [sqrt (lambda (x) (if (eqv? x 900) 30 #f))])
+           ((compose sqrt *) 12 75)))
+      (list '(store ((lx-compose (lambda (f g)
+                                   (lambda (dot args)
+                                     (f (apply g args)))))
+                     (lx-sqrt (lambda (x) (if (eqv? x 900) 30 #f))))
                (values 30))))))
   
   (define (conv-base base vec)
@@ -690,17 +689,17 @@
      (make-r6test/v '((lambda (dot args) (apply + args)) 1 2 3 4) 10)
      (make-r6test/v '((lambda (f) (eqv? (f 1) (f 1))) (lambda (dot args) (car args))) #t)
      (make-r6test '(store () 
-                     (define length
-                       (lambda (l)
-                         (if (null? l)
-                             0
-                             (+ 1 (length (cdr l))))))
-                     (length (list 1 2 3)))
-                  (list '(store ((length
+                     (letrec* ((length
+                                (lambda (l)
+                                  (if (null? l)
+                                      0
+                                      (+ 1 (length (cdr l)))))))
+                       (length (list 1 2 3))))
+                  (list '(store ((lx-length
                                   (lambda (l)
                                     (if (null? l)
                                         0
-                                        (+ 1 (length (cdr l)))))))
+                                        (+ 1 (lx-length (cdr l)))))))
                            (values 3))))
      (make-r6test '(store () ((lambda (x) 
                                 (set! x (x 
@@ -735,25 +734,25 @@
      ;; test non-determinism in spec (a single application can go two different ways
      ;; at two different times)
      (make-r6test '(store ()  
-                     (define x null)
-                     (define twice (lambda (f) (f) (f)))
-                     (twice
-                      (lambda ()
-                        ((lambda (p q) 1)
-                         (begin (set! x (cons 1 x)) 'foo)
-                         (begin (set! x (cons 2 x)) 'bar)))))
+                     (letrec ((x null)
+                              (twice (lambda (f) (f) (f))))
+                       (twice
+                        (lambda ()
+                          ((lambda (p q) 1)
+                           (begin (set! x (cons 1 x)) 'foo)
+                           (begin (set! x (cons 2 x)) 'bar))))))
                   (list
-                   '(store ((x (cons 1 (cons 2 (cons 1 (cons 2 null)))))
-                            (twice (lambda (f) (f) (f))))
+                   '(store ((lx-x (cons 1 (cons 2 (cons 1 (cons 2 null)))))
+                            (lx-twice (lambda (f) (f) (f))))
                       (values 1))
-                   '(store ((x (cons 2 (cons 1 (cons 1 (cons 2 null)))))
-                            (twice (lambda (f) (f) (f))))
+                   '(store ((lx-x (cons 2 (cons 1 (cons 1 (cons 2 null)))))
+                            (lx-twice (lambda (f) (f) (f))))
                       (values 1))
-                   '(store ((x (cons 1 (cons 2 (cons 2 (cons 1 null)))))
-                            (twice (lambda (f) (f) (f))))
+                   '(store ((lx-x (cons 1 (cons 2 (cons 2 (cons 1 null)))))
+                            (lx-twice (lambda (f) (f) (f))))
                       (values 1))
-                   '(store ((x (cons 2 (cons 1 (cons 2 (cons 1 null)))))
-                            (twice (lambda (f) (f) (f))))
+                   '(store ((lx-x (cons 2 (cons 1 (cons 2 (cons 1 null)))))
+                            (lx-twice (lambda (f) (f) (f))))
                       (values 1))))
      
      (make-r6test/v '(condition? (condition "xyz")) #t)
@@ -761,21 +760,21 @@
      (make-r6test/v '(procedure?
                       (call/cc
                        (lambda (k)
-                         (with-exception-handler k (lambda () x)))))
+                         (with-exception-handler k (lambda () (car 'x))))))
                     #f)
      (make-r6test/v '(condition?
                       (call/cc
                        (lambda (k)
-                         (with-exception-handler k (lambda () x)))))
+                         (with-exception-handler k (lambda () (car 'x))))))
                     #t)
      
      ;; test capture avoiding substitution
      (make-r6test '(store () 
-                     (define x 1) 
-                     (((lambda (f) (lambda (x) (+ x (f))))
-                       (lambda () x))
-                      2))
-                  (list '(store ((x 1)) (values 3))))
+                     (letrec ((x 1))
+                       (((lambda (f) (lambda (x) (+ x (f))))
+                         (lambda () x))
+                        2)))
+                  (list '(store ((lx-x 1)) (values 3))))
      
      (make-r6test '(store ()
                      (((lambda (x1) (lambda (x) x))
@@ -790,23 +789,23 @@
                   (list '(store () (values 2))))
      
      (make-r6test '(store () 
-                     (define x 1) 
-                     (((lambda (f) (lambda (y dot x) (f)))
-                       (lambda () x))
-                      2))
-                  (list '(store ((x 1)) (values 1))))
+                     (letrec ((x 1))
+                       (((lambda (f) (lambda (y dot x) (f)))
+                         (lambda () x))
+                        2)))
+                  (list '(store ((lx-x 1)) (values 1))))
      
      (make-r6test/v '((lambda (x y dot z) (set! z (cons x z)) (set! z (cons y z)) (apply + z))
                       1 2 3 4)
                     '10)
      
      (make-r6test '(store () 
-                     (define g (lambda (x) x))
-                     (define f (lambda (x) (g 1)))
-                     (((lambda (x) (lambda (g) (g x))) f)
-                      (lambda (x) 17)))
-                  (list '(store ((g (lambda (x) x))
-                                 (f (lambda (x) (g 1))))
+                     (letrec ((g (lambda (y) y))
+                              (f (lambda (x) (g 1))))
+                       (((lambda (x) (lambda (g) (g x))) f)
+                        (lambda (x) 17))))
+                  (list '(store ((lx-g (lambda (y) y))
+                                 (lx-f (lambda (x) (lx-g 1))))
                            (values 17))))))
   
   (define mv-tests
@@ -909,21 +908,19 @@
      (make-r6test/v '(call-with-values (lambda () (call/cc (lambda (k) (k)))) +) 0)
      (make-r6test/v '(call-with-values (lambda () (call/cc (lambda (k) (k 1 2)))) +) 3)
      (make-r6test/v '((call/cc values) values) 'values)
-     (make-r6test '(store () (define x ((lambda () (values 1 2 3)))))
-                  (list '(unknown "context expected one value, received 3")))
      (make-r6test '(store ()
-                     (define x 0)
-                     (define f
-                       (lambda ()
-                         (set! x (+ x 1))
-                         (values x x)))
-                     (call-with-values f (lambda (x y) x))
-                     (call-with-values f (lambda (x y) x)))
-                  (list
-                   '(store ((x 2)
-                            (f (lambda ()
+                     (letrec ((x 0)
+                              (f
+                               (lambda ()
                                  (set! x (+ x 1))
                                  (values x x))))
+                     (call-with-values f (lambda (x y) x))
+                     (call-with-values f (lambda (x y) x))))
+                  (list
+                   '(store ((lx-x 2)
+                            (lx-f (lambda ()
+                                    (set! lx-x (+ lx-x 1))
+                                    (values lx-x lx-x))))
                       (values 2))))
      (make-r6test/v '((lambda (x) (call-with-values x (lambda (x y) x)))
                       (lambda () (values (+ 1 2) 2)))
@@ -949,8 +946,10 @@
      (make-r6test/v '((lambda (x) x) (values 1)) 1)
      (make-r6test '(store () (values 1 2))
                   (list '(store () (values 1 2))))
-     (make-r6test '(store () ((lambda (x) (values x x x)) 1) 1)
+     (make-r6test '(store () (begin ((lambda (x) (values x x x)) 1) 1))
                   (list '(store () (values 1))))
+     (make-r6test '(store () ((lambda (x) (values x x x)) 1))
+                  (list '(store () (values 1 1 1))))
      
      (make-r6test/v '(begin (values) 1) 1)
      (make-r6test/v '(+ 1 (begin (values 1 2 3) 1)) 2)))
@@ -1408,230 +1407,6 @@ of digits with deconv-base
                      (seven (lambda () (set! x (+ (* x 9) 7))))
                      (eight (lambda () (set! x (+ (* x 9) 8)))))
                (values ,(conv-base 9 #(2 1 8 7 6 5 4 3 2 1 8 7 6 5))))))))
-  
-  (define tl-tests
-    (list 
-     
-     (make-r6test ;"Basic define 1"
-      '(store () (define x 1) (set! x 2) 12)
-      (list '(store ((x 2)) (values 12))))
-     
-     (make-r6test ;"Basic define 2"
-      '(store () (define x 1) (define y x) 131)
-      (list '(store ((x 1) (y 1)) (values 131))))
-     
-     (make-r6test ; "Basic define 3"
-      '(store () (define x 1) (define y (+ x x)) 'ha)
-      (list '(store ((x 1) (y 2)) (values 'ha))))
-     
-     (make-r6test ; "Basic fn app 1"
-      '(store () (lambda (x) x) 1)
-      (list '(store () (values 1))))
-     
-     (make-r6test ; "top-level call/cc 1"
-      '(store () (define k (call/cc (lambda (x) x)))
-         (define y (if (procedure? k)
-                       (k 1)
-                       k))
-         123)
-      (list '(store ((k 1) (y 1)) (values 123))))
-     
-     (make-r6test ; "top-level call/cc 2" 
-      '(store () 
-         (define x 1)
-         (define k (call/cc (lambda (x) x)))
-         (define y 1)
-         (set! x 2)
-         (set! y 2)
-         (if (procedure? k)
-             (k 1)
-             1234))
-      (list '(store ((x 2)
-                     (k 1)
-                     (y 2)) 
-               
-               (values 1234))))
-     
-     (make-r6test ; "top-level call/cc D->E" 
-      '(store () 
-         (define x (call/cc values))
-         (x values))
-      (list '(store ((x values))
-               (values values))))
-     
-     (make-r6test ; "top-level call/cc D->D" 
-      '(store () 
-         (define x (call/cc values))
-         (define y (x (lambda (x) x)))
-         123)
-      (list '(store ((x (lambda (x) x))
-                     (y (lambda (x) x)))
-               (values 123))))
-     
-     (make-r6test ; "top-level call/cc E->E" 
-      '(store () 
-         (define x #f)
-         (define y #f)
-         (set! y (* 2 (call/cc (lambda (k) (set! x k) 2))))
-         (if (procedure? x)
-             ((lambda (y)
-                (set! x 3)
-                (y 17))
-              x)
-             1234))
-      (list '(store ((x 3)
-                     (y 34))
-               (values 1234))))
-     
-     (make-r6test ; "top-level call/cc E->D" 
-      '(store () 
-         (define z (call/cc values))
-         (define x #f)
-         (define y (if (procedure? x)
-                       (x 2)
-                       x))
-         (call/cc (lambda (k) (set! x k)))
-         (z values)
-         (set! x 17)
-         123)
-      (list '(store ((z values)
-                     (x 17)
-                     (y #f))
-               (values 123))))
-     
-     (make-r6test ; "call/cc treated as a value"
-      '(store () (define x (((lambda (x) call/cc) call/cc) (lambda (k) (k 1)))) 123)
-      (list '(store ((x 1)) (values 123))))
-     
-     
-     ;; test recursive definitions
-     (make-r6test ; "self-referential defs 1"
-      '(store () 
-         
-         (define f
-           (lambda (x y)
-             (x (lambda () (f y x)))))
-         (f (lambda (fc) (fc))
-            (lambda (fc) 1)))
-      (list '(store ((f
-                      (lambda (x y)
-                        (x (lambda () (f y x)))))) 
-               
-               (values 1))))
-     
-     (make-r6test ; "begin w/set! following continuation grab"
-      '(store () 
-         (define count 0)
-         (define k (call/cc (lambda (x) x)))
-         (define dummy (begin (set! count (+ count 1)) 123))
-         (k (lambda (x) x)))
-      (list '(store ((count 2)
-                     (k (lambda (x) x))
-                     (dummy 123))
-               
-               (values (lambda (x) x)))))
-     
-     (make-r6test ; "inner define becomes top-level"
-      '(store () 
-         (define count 0)
-         (define x 1)
-         (define k 0)
-         ((lambda (ignore) 
-            (begin ((call/cc (lambda (k1) 
-                               (begin
-                                 (set! k k1)
-                                 (lambda (x) x))))
-                    1)
-                   (set! x (+ x 1))))
-          0)
-         (if (eqv? count 0)
-             (begin
-               (set! count 1)
-               (k (lambda (x) (call/cc (lambda (k2)
-                                         (begin (set! k k2)
-                                                (lambda (x) x)))))))
-             1234)
-         (if (eqv? count 1)
-             (begin
-               (set! count 2)
-               (k (lambda (x) x)))
-             (set! k 11))
-         123)
-      (list '(store 
-                 ((count 2)
-                  (x 4)
-                  (k 11)) 
-               (values 123))))
-     
-     (make-r6test ; "ref to a var before filled in"
-      '(store ()
-         (define y x)
-         (define x 1)
-         x)
-      (list '(uncaught-exception (condition "reference to undefined identifier: x"))))
-     
-     (make-r6test ; "ref to a var before filled in"
-      '(store () x)
-      (list '(uncaught-exception (condition "reference to undefined identifier: x"))))
-     
-     (make-r6test ; "ref to a var before filled in"
-      '(store () (set! x 2))
-      (list '(uncaught-exception (condition "set!: cannot set undefined identifier: x"))))
-     
-     (make-r6test ; "bang a var before filled in"
-      '(store ()
-         (define y (begin (set! x 2) 123))
-         (define x (+ x 1))
-         x)
-      (list '(store ((x 3) (y 123)) (values 3))))
-     
-     (make-r6test ; "make sure all locations are allocated up front, rather than one at a time"
-      '(store
-           () 
-         (define first-time? #t)
-         (define x (call/cc values))
-         (define y (call/cc 
-                    (lambda (k) 
-                      (with-exception-handler 
-                       (lambda (x) (k 1))
-                       (lambda () (+ y 1))))))
-         (if first-time? 
-             (begin (set! first-time? #f) (x values))
-             1234)
-         (set! x (quote x))
-         y)
-      (list '(store ((first-time? #f) (x 'x) (y 2)) (values 2))))
-     
-     (make-r6test '(store ()  
-                     (define x1 2)
-                     ((if + + +) x1))
-                  (list '(store ((x1 2)) (values 2))))
-     
-     ;; testing implicit begin & substitution
-     (make-r6test/v '(((lambda (x) x (lambda () x x)) 1)) 1)
-     (make-r6test '(store ()
-                     (define q 1)
-                     (((lambda (x) (lambda (q dot y) (x))) (lambda (dot x) q)) 2))
-                  (list '(store ((q 1)) (values 1))))
-     
-     ;; sexp contexts for the top-level
-     (make-r6test '(store () (define x '2) '(define x '1) x)
-                  (list '(store ((x 2)) (values 2))))
-     
-     (make-r6test '(store () 
-                     (define k #f)
-                     (define x 0)
-                     (define first-time? #t)
-                     (set! x (+ 1 (call/cc (lambda (k2) (set! k k2) 1))))
-                     (if first-time? 
-                         (begin (set! first-time? #f)
-                                (k 3))
-                         (begin (set! k #f)
-                                x)))
-                  (list '(store ((k #f)
-                                 (x 4)
-                                 (first-time? #f))
-                           (values 4))))))
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;
@@ -2101,8 +1876,10 @@ of digits with deconv-base
   ;;
   
   (define the-sets 
-    (list (list "letrec" letrec-tests)
-          (list "app" app-tests)
+    (list (list "app" app-tests)
+          (list "r5" r5-tests)
+          (list "mv" mv-tests)
+          (list "letrec" letrec-tests)
           (list "unspec" assignment-results-tests)
           (list "quote" quote-tests)
           (list "arith" arithmetic-tests)
@@ -2110,11 +1887,8 @@ of digits with deconv-base
           (list "pair" pair-tests)
           (list "eqv" eqv-tests)
           (list "err" err-tests)
-          (list "tl" tl-tests)
           (list "dw" dw-tests)
-          (list "exn" exn-tests)
-          (list "r5" r5-tests)
-          (list "mv" mv-tests)))
+          (list "exn" exn-tests)))
   
   (define the-tests (apply append (map cadr the-sets)))
   
