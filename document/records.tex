@@ -200,11 +200,11 @@ uid arguments.
   names, but rather field indices, to identify fields.
   
   Thus, field names are not required to be distinct in the procedural or
-  implicit-naming syntactic layers.
+  syntactic layers.
   This relieves macros and other code generators from the need to
   generate distinct names.
 
-  The record and field names are used in the implicit-naming syntactic
+  The record and field names are used in the syntactic
   layer for the generation of accessor and mutator names, and duplicate
   field names may lead to accessor and mutator naming conflicts.
 \end{rationale}
@@ -687,7 +687,7 @@ place is a syntax violation.
 Any definition that takes advantage of implicit naming for the
 constructor, predicate, accessor, and mutator names, can be rewritten
 trivially to a definition that specifies all names explicitly. For
-example, the implicit-naming layer record definition:
+example, the implicit-naming record definition:
 
 \begin{scheme}
 (define-record-type frob
@@ -706,7 +706,7 @@ is equivalent to the following explicit-naming record definition.
     (lambda (c) (c (make-widget n)))))
 \end{scheme}
 
-Also, the implicit-naming layer record definition:
+Also, the implicit-naming record definition:
  
 \begin{scheme}
 (define-record-type point (fields x y))%
