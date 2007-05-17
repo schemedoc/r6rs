@@ -29,19 +29,22 @@ separate libraries.  Examples include the fixnums and flonums libraries,
 the exceptions and conditions libraries, and the libraries for
 records.
 
-\section{Variables, syntactic keywords, and regions}
+\section{Variables, keywords, and regions}
 \label{specialformsection}
 \label{variablesection}
 
 In a library body or top-level program,
-an identifier\index{identifier} may name a type of syntax, or it may name
-a location where a value can be stored.  An identifier that names a type
-of syntactic abstraction is called a {\em syntactic keyword}\mainindex{syntactic keyword}
-and is said to be {\em bound} to that syntactic abstraction.  An identifier that names a
+an identifier\index{identifier} may name a kind of syntax, or it may name
+a location where a value can be stored.  An identifier that names a kind
+of syntax is called a {\em keyword}\mainindex{keyword}, or {\em syntactic keyword}\mainindex{syntactic keyword},
+and is said to be {\em bound} to that kind of syntax (or, in the case of a
+syntactic abstraction, a {\em transformer} that translates the syntax into more
+primitive forms; see section~\ref{macrosection}).  An identifier that names a
 location is called a {\em variable}\mainindex{variable} and is said to be
 {\em bound} to that location.  
 A variable that names a piece of syntax in a syntactic abstraction is
-called a \textit{pattern variable}\index{pattern variable}.
+called a \textit{pattern variable}\index{pattern variable} and is said
+to be bound to that piece of syntax.
 The set of all visible
 bindings\mainindex{binding} in effect at some point in a top-level program or
 library body is
@@ -58,38 +61,42 @@ variables are bound directly to the arguments.  Or:
 In programs without \ide{set!}, one can safely pretend that the
 variable is bound directly to the value. }
 
-\vest Certain expression types are used to create new kinds of
-syntactic abstractions
-and to bind syntactic keywords to those new syntactic abstractions, while other
-expression types create new locations and bind variables to those
-locations.  These expression types are called {\em binding
-  constructs}.\mainindex{binding construct} Scheme has two kinds of
-binding constructs: A \textit{top-level
-  definition}\index{definition}\index{local definition} binds a
-variable in a top-level program or library body.  All other binding
-constructs create bindings that are only locally visible in the form
-that creates them.  Variable definitions are created by {\cf define}
-forms (see section~\ref{defines}), and definitions for syntactic
-keywords are created by {\cf define-syntax} forms (see
-section~\ref{syntaxdefinitionsection}).  \textit{Local
-  definitions}\index{local definition} look syntactically like
-top-level definitions, but appear inside another form and create local
-bindings.  The binding created by a local definition is only visible
-inside its immediately surrounding form.
+\vest Certain forms are used to create syntactic abstractions,
+and to bind keywords to transformers for those new syntactic abstractions, while other
+forms create new locations and bind variables to those
+locations.  Collectively, these forms are called {\em binding
+  constructs}.\mainindex{binding construct}
+Some binding constructs take the form of
+\textit{definitions}\index{definition}, while others are
+expressions.
+A base-library {\cf define} form creates a variable binding that
+is visible only within the scope of the body in which it appears,
+e.g., the body of a library, top-level program, or base-library
+{\cf lambda} expression (see section~\ref{defines}).
+Similarly, a base-library {\cf define-syntax} form creates a keyword
+binding that is visible only within the scope of the body in which it
+appears (see section~\ref{syntaxdefinitionsection}).
 
-The most fundamental of the local variable binding constructs is the
-{\cf lambda} expression, because all other local variable binding
-constructs can be explained in terms of {\cf lambda} expressions.  The
-other variable binding constructs are {\cf let}, {\cf let*}, {\cf
-  letrec*}, {\cf letrec}, {\cf let-values}, {\cf let*-values}, {\cf
-  do}, and {\cf case-lambda} expressions (see sections~\ref{lambda},
-\ref{letrec}, and library chapter
+Expressions that bind variables include the base-library {\cf lambda},
+{\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*}, {\cf let-values},
+and {\cf let*-values} forms along with the control-library {\cf do} and
+{\cf case-lambda} forms
+(see sections~\ref{lambda}, \ref{letrec}, and library chapter
 \extref{lib:controllib}{{\cf Control structures}}).
-The constructs in the base library that bind syntactic keywords are
-listed in section~\ref{bindsyntax}.  Local bindings can
-also be created in the form of internal {\cf define} and {\cf
-  define-syntax} forms that appear inside another form rather than at
-the top level of a program or a library body.
+Of these, {\cf lambda} is the most fundamental, since all of the
+others can be implemented in terms of {\cf lambda}.
+Sets of variable definitions appearing within the bodies of any of
+these constructs, or within the bodies of a library or top-level
+program, are treated as the equivalent of a set of
+{\cf letrec*} bindings and can therefore also be implemented in
+terms of {\cf lambda}.
+For library bodies, however, some additional mechanism is required to
+allow the variables that are exported from the library to be referenced by
+importing libraries and top-level programs.
+
+Expressions that bind keywords include the base-library {\cf let-syntax}
+and {\cf letrec-syntax} forms.
+(see section~\ref{bindsyntax}).
 
 \vest Scheme is a statically scoped language with
 block structure.  To each place in a top-level program or library body where an identifier is bound 
@@ -100,11 +107,11 @@ established by a {\cf lambda} expression, for example, then its region
 is the entire {\cf lambda} expression.  Every mention of an identifier
 refers to the binding of the identifier that established the
 innermost of the regions containing the use.  If a use of an
-identifier appears in a place where none of the surrounding forms
-contains contains a binding for the identifier, the use refers to the
-binding for the variable in the top-level environment of the library
-body or a binding imported from another library.  (See
-chapter~\ref{librarychapter}.)
+identifier appears in a place where none of the surrounding expressions
+contains a binding for the identifier, the use may refer to a
+binding established by a definition or import at the top of the
+enclosing library or top-level program
+(see chapter~\ref{librarychapter}).
 If there is no binding for the identifier,
 it is said to be \defining{unbound}.\mainindex{bound}
 
@@ -143,46 +150,48 @@ section~\ref{infinitiesnanssection}) are anticipated by this report,
 and implementations typically must raise an exception of the
 appropriate condition type if they encounter such a situation.
 
-\section{Argument checking}
+\section{Argument and subform checking}
 \label{argumentcheckingsection}
 
 \mainindex{argument checking}
-Many procedures and forms specified in this report or as part of a
-standard library only accept arguments of specific types or adhering
-to other restrictions.  These restrictions imply responsibilities\mainindex{responsibility} for
-both the programmer and the implementation of the specified forms and
-procedures.  Specifically, the programmer is responsible for ensuring
-that the arguments passed indeed adhere to the restrictions described
+Many procedures specified in this report or as part of a
+standard library accept only specific numbers and types of arguments
+or restrict their arguments in other ways.
+Many syntactic forms similarly restrict the values to which one or
+more of their subforms can evaluate.
+These restrictions imply responsibilities\mainindex{responsibility} for
+both the programmer and the implementation.
+Specifically, the programmer is responsible for ensuring
+that the values indeed adhere to the restrictions described
 in the specification.  The implementation must check
 that the restrictions in the specification are indeed met, to the
-extent that it is reasonable, possible and necessary to allow the
+extent that it is reasonable, possible, and necessary to allow the
 specified operation to complete successfully.
 
 It is not always possible for an implementation to completely check
-the restrictions set forth in the specifications.  Specifically, if an
+the restrictions set forth in the specifications.  For example, if an
 operation is specified to accept a procedure with specific properties,
-checking of these properties is undecidable in general.  Moreover,
+checking of these properties is undecidable in general.  Similarly,
 some operations accept both list arguments and procedures that are
-called by these operations.  As lists are mutable in programs that
+called by these operations.  Since lists are mutable in programs that
 make use of the \rsixlibrary{mutable-pairs} library (see library
 chapter~\extref{lib:pairmutationchapter}{Mutable pairs}), an argument that is a list
 when the operation starts may be mutated by the passed procedure so
 that it becomes a non-list during the execution of the operation.
 Also, the procedure might escape to a different continuation,
 preventing the operation from performing more checks.
-Even if not, requiring the operation to check that the argument is a list after
+In any case, requiring the operation to check that the argument is a list after
 each call to such a procedure would be impractical.  Furthermore, some
-operations that accept list arguments only need to traverse the lists
-partially to perform their function---requiring the implementation to
-check that the arguments are lists would be impractical or potentially
+operations that accept list arguments need only traverse the lists
+partially to perform their function; requiring the implementation to
+traverse the remainder of the list to verify that all specified
+restrictions have been met would potentially
 violate reasonable performance assumptions.  For these reasons, the
 programmer's obligations may exceed the checking obligations of the
-implementation.  Implementations should, however, perform
-as much checking as possible and give detailed feedback about
-violations.
+implementation.
 
-When an implementation detects a violation of an argument
-specification at run time, it must raise an exception with
+When an implementation detects a violation of an argument or
+subexpression value restriction, it must raise an exception with
 condition type {\cf\&violation} in a way
 consistent with the safety of execution as described in the next
 section.
@@ -192,15 +201,15 @@ section.
 
 The standard libraries whose exports are described by this document
 are said to be \defining{safe libraries}.  Libraries and top-level
-program that import only from safe libraries are also said to be safe.
+programs that import only from safe libraries are also said to be safe.
 
 As defined by this document, the Scheme programming language
 is safe in the following sense:
-The execution of a safe top-level program consisting
+The execution of a safe top-level program
 cannot go so badly wrong as to crash or to continue to
 execute while behaving in ways that are
 inconsistent with the semantics described in this document,
-unless said execution first encounters some implementation
+unless the execution first encounters some implementation
 restriction or other defect in the implementation of Scheme
 that is executing the program.
 
@@ -212,8 +221,8 @@ integrity in ways that might result in execution that is
 inconsistent with the semantics described in this document.
 
 The above safety properties are guaranteed only for top-level programs
-and libraries that are said to be safe.  In particular, Implementations
-may provide access to unsafe libraries, and may interpret
+and libraries that are said to be safe.  In particular, implementations
+may provide access to unsafe libraries and may interpret
 implementation-specific declarations in ways that
 cannot guarantee safety.
 
@@ -269,7 +278,8 @@ An object fetched from a location, by a variable reference or by
 a procedure such as {\cf car}, {\cf vector-ref}, or {\cf string-ref}, is
 equivalent in the sense of \ide{eqv?} % and \ide{eq?} ??
 (section~\ref{equivalencesection})
-to the object last stored in the location before the fetch.
+to the object last stored in the location before the fetch, whenever
+the behavior of \ide{eqv?} is fully specified for the object.
 
 Every location is marked to show whether it is in use.
 No variable or object ever refers to a location that is not in use.
@@ -279,18 +289,23 @@ chosen from the set of locations that are not in use, and the chosen
 locations are marked to indicate that they are now in use before the variable
 or object is made to denote them.
 
-It is desirable for constants\index{constant} (i.e. the values of
-literal expressions) to reside in read-only-memory.  To express this,
+In many systems it is desirable for constants\index{constant} (i.e., the values of
+literal expressions) to reside in read-only memory.  To express this,
 it is convenient to imagine that every object that denotes locations
 is associated with a flag telling whether that object is
 mutable\index{mutable} or immutable\index{immutable}.  Literal
 constants, the strings returned by \ide{symbol->string}, records with
 no mutable fields, and other values explicitly designated as immutable
-are immutable objects, while all objects created by the other
-procedures listed in this report are mutable.  
-An immutable object may or may not denote a specific location.
+are immutable objects, while other objects that denote locations
+are mutable.  
 An attempt to mutate an immutable object
 should raise an exception with condition type {\cf\&assertion}.
+An immutable object may not denote a specific set of locations, i.e.,
+it may be copied at any time by the implementation so as to exist
+simultaneously in different sets of locations.
+This may be detected in the failure of {\cf eqv?} or {\cf eq?}
+(section~\ref{equivalencesection}) to
+recognize two occurrences of the object as equivalent.
 
 \section{Proper tail recursion}
 \label{proper tail recursion}
@@ -298,7 +313,7 @@ should raise an exception with condition type {\cf\&assertion}.
 Implementations of Scheme are required to be
 {\em properly tail-recursive}\mainindex{proper tail recursion}.
 Procedure calls that occur in certain syntactic
-contexts defined below are `tail calls'.  A Scheme implementation is
+contexts are `tail calls'.  A Scheme implementation is
 properly tail-recursive if it supports an unbounded number of active
 tail calls.  A call is {\em active} if the called procedure may still
 return.  Note that this includes calls that may be returned from either
