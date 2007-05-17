@@ -530,13 +530,12 @@ otherwise the result of the {\cf case} expression \isunspecified.
 
 \syntax The \hyper{test}s must be expressions.
 
-\semantics
-The \hyper{test} expressions are evaluated from left to right, and the
-value of the first expression that evaluates to a false value (see
-section~\ref{booleanvaluessection}) is returned.  Any remaining expressions
-are not evaluated.  If all the expressions evaluate to true values, the
-value of the last expression is returned.  If there are no expressions
-then \schtrue{} is returned.
+\semantics If there are no \hyper{test}s then \schtrue{} is returned.
+Otherwise, the \hyper{test} expressions are evaluated from left to
+right until either a \hyper{test} expression returns \schfalse, or
+until the last one is reached.  Any remaining expressions are not
+evaluated.  If all but the last expressions evaluate to true values,
+the values of the last expression are returned.
 
 \begin{scheme}
 (and (= 2 2) (> 2 1))           \ev  \schtrue
@@ -564,13 +563,13 @@ The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
 
 \syntax The \hyper{test}s must be expressions.
 
-\semantics
-The \hyper{test} expressions are evaluated from left to right, and the value of the
-first expression that evaluates to a true value (see
-section~\ref{booleanvaluessection}) is returned.  Any remaining expressions
-are not evaluated.  If all expressions evaluate to false values, the
-value of the last expression is returned.  If there are no
-expressions then \schfalse{} is returned.
+\semantics If there are no \hyper{test}s then \schfalse{} is returned.
+Otherwise, The \hyper{test} expressions are evaluated from left to
+right until either a a \hyper{test} expression returns a true value
+(see section~\ref{booleanvaluessection}), or until the last one is
+reached.  Any remaining expressions are not evaluated.  If all but the
+last expressions evaluate to \schfalse, the values of the last
+expression are returned.
 
 \begin{scheme}
 (or (= 2 2) (> 2 1))            \ev  \schtrue
