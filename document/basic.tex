@@ -61,7 +61,7 @@ variables are bound directly to the arguments.  Or:
 In programs without \ide{set!}, one can safely pretend that the
 variable is bound directly to the value. }
 
-\vest Certain forms are used to create syntactic abstractions,
+\vest Certain forms are used to create syntactic abstractions
 and to bind keywords to transformers for those new syntactic abstractions, while other
 forms create new locations and bind variables to those
 locations.  Collectively, these forms are called {\em binding
@@ -69,13 +69,16 @@ locations.  Collectively, these forms are called {\em binding
 Some binding constructs take the form of
 \textit{definitions}\index{definition}, while others are
 expressions.
-A base-library {\cf define} form creates a variable binding that
-is visible only within the scope of the body in which it appears,
-e.g., the body of a library, top-level program, or base-library
-{\cf lambda} expression (see section~\ref{defines}).
-Similarly, a base-library {\cf define-syntax} form creates a keyword
-binding that is visible only within the scope of the body in which it
-appears (see section~\ref{syntaxdefinitionsection}).
+A base-library {\cf define} form creates a variable binding (see
+section~\ref{defines}), and a base-library {\cf define-syntax} form
+creates a keyword binding (see section~\ref{syntaxdefinitionsection}).
+With the exception of exported library bindings, a binding created
+by a definition is visible only within the body in which the
+definition appears, e.g., the body of a library, top-level program,
+or base-library {\cf lambda} expression.
+Exported library bindings are also visible within the bodies of
+the libraries and top-level programs that import them (see
+chapter~\ref{librarychapter}).
 
 Expressions that bind variables include the base-library {\cf lambda},
 {\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*}, {\cf let-values},
