@@ -257,9 +257,10 @@ discarding these values accept any number of values.
 \section{Storage model}
 \label{storagemodel}
 
-Variables and objects such as pairs, vectors, strings, and mutable records implicitly
-denote locations\mainindex{location} or sequences of locations.  A string, for
-example, denotes as many locations as there are characters in the string. 
+Variables and objects such as mutable pairs, vectors, mutable strings,
+and mutable records implicitly
+denote locations\mainindex{location} or sequences of locations.  A
+mutable string, for example, denotes as many locations as there are characters in the string. 
 (These locations need not correspond to a full machine word.) A new value may be
 stored into one of these locations using the {\tt string-set!} procedure, but
 the string continues to denote the same locations as before.
@@ -286,8 +287,9 @@ mutable\index{mutable} or immutable\index{immutable}.  Literal
 constants, the strings returned by \ide{symbol->string}, records with
 no mutable fields, and other values explicitly designated as immutable
 are immutable objects, while all objects created by the other
-procedures listed in this report are mutable.  An attempt to store a
-new value into a location that is denoted by an immutable object
+procedures listed in this report are mutable.  
+An immutable object may or may not denote a specific location.
+An attempt to mutate an immutable object
 should raise an exception with condition type {\cf\&assertion}.
 
 \section{Proper tail recursion}

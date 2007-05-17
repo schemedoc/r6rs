@@ -352,12 +352,6 @@ arguments have been matched up against the other formal arguments.
 
 It is a syntax violation for a \hyper{variable} to appear more than once in
 \hyper{formals}.
-
-Each procedure created as the result of evaluating a \lambdaexp{} is
-(conceptually) tagged
-with a storage location, in order to make \ide{eqv?} and
-\ide{eq?} work on procedures (see section~\ref{equivalencesection}).
-
 \end{entry}
 
 
@@ -1067,9 +1061,6 @@ character according to the {\cf char=?} procedure
 \item \vari{Obj} and \varii{obj} are record-type descriptors that are
   specified to be {\cf eqv?} in library
   section~\extref{lib:recordsproceduralsection}{Procedural layer}.
-
-\item \vari{Obj} and \varii{obj} are procedures whose location tags are
-equal (section~\ref{lambda}).
 \end{itemize}
 
 The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
@@ -1139,7 +1130,7 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
       (lambda () 2))             \ev  \schfalse
 (eqv? \#f 'nil)                  \ev  \schfalse
 (let ((p (lambda (x) x)))
-  (eqv? p p))                    \ev  \schtrue%
+  (eqv? p p))                    \ev  \unspecified%
 \end{scheme}
 
 The following examples illustrate cases in which the above rules do
@@ -1158,11 +1149,11 @@ boolean.
 \end{scheme}
 
 The next set of examples shows the use of {\cf eqv?}\ with procedures
-that have local state.  Calls to {\cf gen-counter} must return a distinct
-procedure every time, since each procedure has its own internal counter.
-The {\cf gen-loser} procedure, however, returns equivalent procedures each time, since
-the local state does not affect the value or side effects of the
-procedures.
+that have local state.  Calls to {\cf gen-counter} must return a
+distinct procedure every time, since each procedure has its own
+internal counter.  Calls to {\cf gen-loser} return procedures that
+behave pairwise equivalent when called.  However, {\cf eqv?} is not
+required to detect this equivalence.
 
 \begin{scheme}
 (define gen-counter
@@ -1170,7 +1161,7 @@ procedures.
     (let ((n 0))
       (lambda () (set! n (+ n 1)) n))))
 (let ((g (gen-counter)))
-  (eqv? g g))           \ev  \schtrue
+  (eqv? g g))           \ev  \unspecified
 (eqv? (gen-counter) (gen-counter))
                         \ev  \schfalse
 (define gen-loser
@@ -1178,7 +1169,7 @@ procedures.
     (let ((n 0))
       (lambda () (set! n (+ n 1)) 27))))
 (let ((g (gen-loser)))
-  (eqv? g g))           \ev  \schtrue
+  (eqv? g g))           \ev  \unspecified
 (eqv? (gen-loser) (gen-loser))
                         \ev  \unspecified
 
@@ -1205,7 +1196,7 @@ implementation-dependent.
 (eqv? "a" "a")                   \ev  \unspecified
 (eqv? '(b) (cdr '(a b)))         \ev  \unspecified
 (let ((x '(a)))
-  (eqv? x x))                    \ev  \schtrue%
+  (eqv? x x))                    \ev  \unspecified%
 \end{scheme}
 
 \begin{note}
@@ -1220,7 +1211,10 @@ their treatment of procedures and literals:  implementations are free
 either to detect or to fail to detect that two procedures or two literals
 are equivalent to each other, and can decide whether or not to
 merge representations of equivalent objects by using the same pointer or
-bit pattern to represent both.  As mentioned in section~\ref{quote},
+bit pattern to represent both.   Moreover, they can, in certain cases,
+use implementation techniques such as inlining and beta reduction to
+duplicate otherwise equivalent objects.
+As mentioned in section~\ref{quote},
 however, a quoted literal should evaluate to the same value according
 to {\cf eqv?} each time it is evaluated.
 \end{rationale}
@@ -1258,11 +1252,11 @@ vectors and empty strings.
 (let ((n (+ 2 3)))
   (eq? n n))      \ev  \unspecified
 (let ((x '(a)))
-  (eq? x x))      \ev  \schtrue
+  (eq? x x))      \ev  \unspecified
 (let ((x '\#()))
-  (eq? x x))      \ev  \schtrue
+  (eq? x x))      \ev  \unspecified
 (let ((p (lambda (x) x)))
-  (eq? p p))      \ev  \schtrue%
+  (eq? p p))      \ev  \unspecified%
 \end{scheme}
 
 \todo{Needs to be explained better above.  How can this be made to be
