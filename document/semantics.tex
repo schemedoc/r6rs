@@ -201,7 +201,7 @@ expressions are either sequences, symbols, or self-quoting values
 \begin{center}
 \input{r6-fig-Quote.tex}
 
-\input{r6-fig-Qtoc.tex}
+\input{r6-fig-QtocQtoic.tex}
 \end{center}
 \caption{Quote}\label{fig:quote}
 \endfig
@@ -409,21 +409,21 @@ context ensures that there are no other \sy{handler} expressions
 between this one and the raise.
 
 The next two rules handle calls to \va{with-exception-handler}.
-The \rulename{6xweh1} rule applies when there are no \sy{handler}
+The \rulename{6xwh1} rule applies when there are no \sy{handler}
 expressions. It constructs a new one and applies $v_2$ as a
 thunk in the \sy{handler} body. If there already is a handler
-expression, the \rulename{6xwehn} applies. It collects the current
+expression, the \rulename{6xwhn} applies. It collects the current
 handlers and adds the new one into a new \sy{handlers} expression
 and, as with the previous rule, invokes the second argument to
 \va{with-exception-handlers}.
 
 The next two rules cover exceptions that are raised in the context of
 a \sy{handlers} expression. If a continuable exception is raised,
-\rulename{6xraisec} applies. It takes the most recently installed
+\rulename{6xrc} applies. It takes the most recently installed
 handler from the nearest enclosing \sy{handlers} expression and
 applies it to the argument to \va{raise-continuable}, but in a
 context where the exception handlers do not include that latest
-handler. The \rulename{6xraise} rule behaves similarly, except it
+handler. The \rulename{6xr} rule behaves similarly, except it
 raises a new exception if the handler returns. The new exception is
 created with the \sy{condition} special form.
 
@@ -507,9 +507,9 @@ at which point the \rulename{begin01} rule fires, and removes the
 
 \beginfig
 \begin{center}
-\input{r6-fig-Cons-cell--mutation.tex}
+\input{r6-fig-Eqv.tex}
 \end{center}
-\caption{Cons Cell Mutation}\label{fig:cons-cell-mutation}
+\caption{Eqv}\label{fig:cons-cell-mutation}
 \endfig
 
 The rules in figure~\ref{fig:cons-cells} handle the pure subset of
@@ -614,7 +614,7 @@ too few arguments to \va{apply}.
 \beginfig
 \begin{center}
 \input{r6-fig-Call-cc--and--dynamic-wind.tex} \\
-\input{r6-fig-TrimpoStpRe.tex}
+\input{r6-fig-pRepoStTrim.tex}
 \end{center}
 \caption{Call/cc and Dynamic Wind}\label{fig:call-cc-and-dynamic-wind}
 \endfig
@@ -764,7 +764,7 @@ So, the remaining rules just specify the minimal behavior that we know that a va
 
 \section*{Acknowledgments}
 
-Thanks to Will Clinger and Mike Sperber for many helpful discussions of the semantics, and for careful readings of earlier drafts of the semantics.
+Thanks to Michael Sperber for many helpful discussions of specific points in the semantics, for spotting many mistakes and places where the formal semantics diverged from the informal semantics, and for generally making it possible for us to keep up with changes to the informal semantics as it developed. Thanks also to Will Clinger for a careful reading of the semantics and its explanation.
 
 %%% Local Variables: 
 %%% mode: latex

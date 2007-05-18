@@ -12,7 +12,7 @@
   (provide Arithmetic
            Basic--syntactic--forms
            Cons 
-           Cons-cell--mutation
+           Eqv
            Procedure--application
            Apply
            Call-cc--and--dynamic-wind
@@ -32,7 +32,8 @@
      (r*v  pair null 'sym sqv condition procedure)
      (sf (x v) (x bh) (pp (cons v v)))
      
-     (es 'snv (begin es es ...) (begin0 es es ...) (es es ...)
+     (es 'seq 'sqv '() '(dot s)
+         (begin es es ...) (begin0 es es ...) (es es ...)
          (if es es es) (set! x es) x
          nonproc pproc
          (lambda (x ...) es es ...)
@@ -48,8 +49,8 @@
          (l! x es)
          (reinit x))
      
-     (s snv sym)
-     (snv (s ...) (s ... dot sqv) (s ... dot sym) sqv)
+     (s seq () (dot s) sqv sym)
+     (seq (s s ...) (s s ... dot sqv) (s s ... dot sym))
      
      (p (store (sf ...) e))
      (e (begin e e ...) (begin0 e e ...)
@@ -69,9 +70,14 @@
      (uproc (lambda (x ...) e e ...) (lambda (x ... dot x) e e ...))
      (pproc aproc proc1 proc2 list dynamic-wind apply values)
      (proc1 null? pair? car cdr call/cc procedure? condition? raise*)
-     (proc2 cons set-car! set-cdr! eqv? call-with-values with-exception-handler)
+     (proc2 cons consi set-car! set-cdr! eqv? call-with-values with-exception-handler)
      (aproc + - / *)
      (raise* raise-continuable raise)
+     
+     ; pair pointers, both mutable and immutable
+     (pp ip mp)
+     (ip (variable-prefix ip))
+     (mp (variable-prefix mp))
      
      (sym (variable-except dot))
      
@@ -89,12 +95,10 @@
                 
                 error                       ; signal an error
                 
-                define               ; top-level stuff
-                
                 letrec letrec* l! reinit
                 
                 procedure? condition?
-                cons pair? null? car cdr       ; list functions
+                cons consi pair? null? car cdr       ; list functions
                 set-car! set-cdr! list
                 + - * /                          ; math functions
                 call/cc throw dw dynamic-wind  ; call/cc functions
@@ -105,14 +109,11 @@
                 raise-continuable raise))
          (not (pp? (term var_none)))))
      
-     ; pair pointer
-     (pp (variable-prefix pp))
-     
      (n number)
      
      (P (store (sf ...) E*))
      
-     (E (in-hole F (handlers v ... E*)) (in-hole F (dw x e E* e)) F)
+     (E (in-hole F (handlers proc ... E*)) (in-hole F (dw x e E* e)) F)
      (E* (hole multi) E)
      (Eo (hole single) E)
      
@@ -132,13 +133,12 @@
         (call-with-values (lambda () hole) v))
         
      ;; everything except exception handler bodies
-     (PG (store (sf ...) (define x G) d ...)
-         (store (sf ...) G d ...))
+     (PG (store (sf ...) G))
      (G (in-hole F (dw x e G e))
         F)
      
      ;; everything except dw
-     (H (in-hole F (handlers v ... H)) F)
+     (H (in-hole F (handlers proc ... H)) F)
      
      (S hole (begin e e ... S es ...) (begin S es ...)
         (begin0 e e ... S es ...) (begin0 S es ...)
@@ -216,52 +216,56 @@
   (define (sum-of x) (apply + x))
   (define (product-of x) (apply * x))
   
-  (define Cons-cell--mutation
+  (define Eqv
     (reduction-relation
      lang
-     
-     (--> (store (sf_1 ... (pp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-car! pp_1 v_3)))
-          (store (sf_1 ... (pp_1 (cons v_3 v_2)) sf_2 ...) (in-hole E_1 unspecified))
-          "6setcar")
-
-     (--> (store (sf_1 ... (pp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-cdr! pp_1 v_3)))
-          (store (sf_1 ... (pp_1 (cons v_1 v_3)) sf_2 ...) (in-hole E_1 unspecified))
-          "6setcdr")
-     
-     (--> (in-hole P_1 (set-car! v_1 v_2))
-          (in-hole P_1 (raise (condition "can't set-car! on a non-pair")))
-          "6scare"
-          (side-condition (not (pp? (term v_1)))))
-     
-     (--> (in-hole P_1 (set-cdr! v_1 v_2))
-          (in-hole P_1 (raise (condition "can't set-cdr! on a non-pair")))
-          "6scdre"
-          (side-condition (not (pp? (term v_1)))))
      
      (--> (in-hole P_1 (eqv? v_1 v_1))
           (in-hole P_1 #t)
           "6eqt"
           (side-condition (not (proc? (term v_1))))
-          (side-condition (not (condition? (term v_1)))))
-     
+          (side-condition (not (condition? (term v_1))))
+          (side-condition (not (ip? (term v_1)))))
      
      (--> (in-hole P_1 (eqv? v_1 v_2))
           (in-hole P_1 #f)
           "6eqf"
-          (side-condition (not (proc? (term v_1))))
-          (side-condition (not (proc? (term v_2))))
-          (side-condition (not (condition? (term v_1))))
-          (side-condition (not (condition? (term v_2))))
-          (side-condition (not (equal? (term v_1) (term v_2)))))))
+          (side-condition (not (equal? (term v_1) (term v_2))))
+          (side-condition (or (not (proc? (term v_1)))
+                              (not (proc? (term v_2)))))
+          (side-condition (or (not (condition? (term v_1)))
+                              (not (condition? (term v_2)))))
+          (side-condition (or (not (ip? (term v_1)))
+                              (not (ip? (term v_2))))))
+     
+     (--> (in-hole P_1 (eqv? ip_1 ip_2))
+          (in-hole P_1 #t)
+          "6eqipt")
+     
+     (--> (in-hole P_1 (eqv? ip_1 ip_2))
+          (in-hole P_1 #f)
+          "6eqipf")
+     
+     (--> (in-hole P_1 (eqv? (condition string) (condition string)))
+          (in-hole P_1 #t)
+          "6eqct")
+     (--> (in-hole P_1 (eqv? (condition string) (condition string)))
+          (in-hole P_1 #f)
+          "6eqcf")))
   
   (define Cons
     (reduction-relation
      lang
   
      (--> (store (sf_1 ...) (in-hole E_1 (cons v_1 v_2)))
-          (store (sf_1 ... (pp (cons v_1 v_2))) (in-hole E_1 pp))
+          (store (sf_1 ... (mp (cons v_1 v_2))) (in-hole E_1 mp))
           "6cons"
-          (fresh pp))
+          (fresh mp))
+     
+     (--> (store (sf_1 ...) (in-hole E_1 (consi v_1 v_2)))
+          (store (sf_1 ... (ip (cons v_1 v_2))) (in-hole E_1 ip))
+          "6consi"
+          (fresh ip))
      
      (--> (in-hole P_1 (list v_1 v_2 ...))
           (in-hole P_1 (cons v_1 (list v_2 ...)))
@@ -305,7 +309,25 @@
      (--> (in-hole P_1 (cdr v_i))
           (in-hole P_1 (raise (condition "can't take cdr of non-pair")))
           "6cdre"
-          (side-condition (not (pp? (term v_i)))))))
+          (side-condition (not (pp? (term v_i)))))
+     
+     (--> (store (sf_1 ... (mp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-car! mp_1 v_3)))
+          (store (sf_1 ... (mp_1 (cons v_3 v_2)) sf_2 ...) (in-hole E_1 unspecified))
+          "6setcar")
+
+     (--> (store (sf_1 ... (mp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-cdr! mp_1 v_3)))
+          (store (sf_1 ... (mp_1 (cons v_1 v_3)) sf_2 ...) (in-hole E_1 unspecified))
+          "6setcdr")
+     
+     (--> (in-hole P_1 (set-car! v_1 v_2))
+          (in-hole P_1 (raise (condition "can't set-car! on a non-pair or a mutable pair")))
+          "6scare"
+          (side-condition (not (mp? (term v_1)))))
+     
+     (--> (in-hole P_1 (set-cdr! v_1 v_2))
+          (in-hole P_1 (raise (condition "can't set-cdr! on a non-pair or a mutable pair")))
+          "6scdre"
+          (side-condition (not (mp? (term v_1)))))))
   
   (define Procedure--application
     (reduction-relation
@@ -469,26 +491,20 @@
   (define Call-cc--and--dynamic-wind
     (reduction-relation
      lang
-     (--> (in-hole P_1 (dynamic-wind v_1 v_2 v_3))
+     (--> (in-hole P_1 (dynamic-wind proc_1 proc_2 proc_3))
           (in-hole P_1 
-                   (begin (v_1)
+                   (begin (proc_1)
                           (begin0
-                            (dw x (v_1) (v_2) (v_3))
-                            (v_3))))
+                            (dw x (proc_1) (proc_2) (proc_3))
+                            (proc_3))))
           "6wind"
-          (fresh x)
-          (side-condition 
-           (and (term (A_0 v_1))
-                (term (A_0 v_2))
-                (term (A_0 v_3)))))
-     
+          (fresh x))
      (--> (in-hole P_1 (dynamic-wind v_1 v_2 v_3))
-          (in-hole P_1 (raise (condition "dynamic-wind expects arity 0 procs")))
-          "6dwerr"
-          (side-condition 
-           (or (not (term (A_0 v_1)))
-               (not (term (A_0 v_2)))
-               (not (term (A_0 v_3))))))
+          (in-hole P_1 (raise (condition "dynamic-wind expects procs")))
+          "6winde"
+          (side-condition (or (not (proc? (term v_1)))
+                              (not (proc? (term v_2)))
+                              (not (proc? (term v_3))))))
      
      (--> (in-hole P_1 (dynamic-wind v_1 ...))
           (in-hole P_1 (raise (condition "arity mismatch")))
@@ -543,32 +559,40 @@
           (uncaught-exception v_1)
           "6xuneh")
      
+     (--> (in-hole PG_1 (with-exception-handler proc_1 proc_2))
+          (in-hole PG_1 (handlers proc_1 (proc_2)))
+          "6xwh1")
+     
      (--> (in-hole PG_1 (with-exception-handler v_1 v_2))
-          (in-hole PG_1 (handlers v_1 (v_2)))
-          "6xweh1"
-          (side-condition (term (A_1 v_1)))
-          (side-condition (term (A_0 v_2))))
+          (in-hole PG_1 (raise (condition "with-exception-handler expects procs")))
+          "6xwh1e"
+          (side-condition (or (not (proc? (term v_1)))
+                              (not (proc? (term v_2))))))
      
-     (--> (in-hole P_1 (handlers v_1 ... (in-hole G_1 (with-exception-handler v_2 v_3))))
-          (in-hole P_1 (handlers v_1 ... (in-hole G_1 (handlers v_1 ... v_2 (v_3)))))
-          "6xwehn"
-          (side-condition (term (A_1 v_2)))
-          (side-condition (term (A_0 v_3))))
+     (--> (in-hole P_1 (handlers proc_1 ... (in-hole G_1 (with-exception-handler proc_2 proc_3))))
+          (in-hole P_1 (handlers proc_1 ... (in-hole G_1 (handlers proc_1 ... proc_2 (proc_3)))))
+          "6xwhn")
      
-     (--> (in-hole P_1 (handlers v_1 ... v_2 (in-hole G_1 (raise-continuable v_3))))
-          (in-hole P_1 (handlers v_1 ... v_2 (in-hole G_1 (handlers v_1 ... (v_2 v_3)))))
-          "6xraisec")
+     (--> (in-hole P_1 (handlers proc_1 ... (in-hole G_1 (with-exception-handler v_1 v_2))))
+          (in-hole P_1 (handlers proc_1 ... (in-hole G_1 (raise (condition "with-exception-handler expects procs")))))
+          "6xwhne"
+          (side-condition (or (not (proc? (term v_1)))
+                              (not (proc? (term v_2))))))
+     
+     (--> (in-hole P_1 (handlers proc_1 ... proc_2 (in-hole G_1 (raise-continuable v_1))))
+          (in-hole P_1 (handlers proc_1 ... proc_2 (in-hole G_1 (handlers proc_1 ... (proc_2 v_1)))))
+          "6xrc")
      
      (--> (in-hole P_1 (handlers 
-                        v_1 ... v_2
-                        (in-hole G_1 (raise v_3))))
+                        proc_1 ... proc_2
+                        (in-hole G_1 (raise v_1))))
           (in-hole P_1 (handlers 
-                        v_1 ... v_2 
+                        proc_1 ... proc_2 
                         (in-hole G_1 
-                                 (handlers v_1 ... 
-                                           (begin (v_2 v_3)
+                                 (handlers proc_1 ... 
+                                           (begin (proc_2 v_1)
                                                   (raise (condition "handler returned")))))))
-          "6xraise")
+          "6xr")
      
      (--> (in-hole P_1 (condition? (condition string)))
           (in-hole P_1 #t)
@@ -579,16 +603,9 @@
           "6cf"
           (side-condition (not (condition? (term v_1)))))
      
-     (--> (in-hole P_1 (handlers v_1 ... (values v_3 ...)))
-          (in-hole P_1 (values v_3 ...))
-          "6xdone")
-     
-     (--> (in-hole P_1 (with-exception-handler v_1 v_2))
-          (in-hole P_1 (raise (condition "with-exception-handler bad argument")))
-          "6weherr"
-          (side-condition 
-           (or (not (term (A_1 v_1)))
-               (not (term (A_0 v_2))))))))
+     (--> (in-hole P_1 (handlers proc_1 ... (values v_1 ...)))
+          (in-hole P_1 (values v_1 ...))
+          "6xdone")))
 
   (define-metafunction A_0
     lang
@@ -724,11 +741,6 @@
      (--> (in-hole P (eqv? proc proc))
           (unknown "equivalence of procedures")
           "6ueqv")
-     (--> (in-hole P (eqv? v_1 v_2))
-          (unknown "equivalence of conditions")
-          "6ueqc"
-          (side-condition (or (condition? (term v_1))
-                              (condition? (term v_2)))))
      (--> (in-named-hole single P (values v_1 ...))
           (unknown ,(format "context expected one value, received ~a" (length (term (v_1 ...)))))
           "6uval"
@@ -763,10 +775,23 @@
     (reduction-relation
      lang
      ;; compile time quote removal
-     (--> (store (sf_1 ...) (in-hole S_1 'snv_1))
-          (store (sf_1 ...) ((lambda (qp) (in-hole S_1 qp)) (Qtoc snv_1)))
+     (--> (store (sf_1 ...) (in-hole S_1 'seq_1))
+          (store (sf_1 ...) ((lambda (qp) (in-hole S_1 qp)) (Qtoc seq_1)))
           "6qcons"
-          (fresh qp))))
+          (fresh qp))
+     (--> (store (sf_1 ...) (in-hole S_1 'seq_1))
+          (store (sf_1 ...) ((lambda (qp) (in-hole S_1 qp)) (Qtoic seq_1)))
+          "6qconsi"
+          (fresh qp))
+     (--> (store (sf_1 ...) (in-hole S_1 'sqv_1))
+          (store (sf_1 ...) (in-hole S_1 sqv_1))
+          "6sqv")
+     (--> (store (sf_1 ...) (in-hole S_1 '()))
+          (store (sf_1 ...) (in-hole S_1 null))
+          "6eseq")
+     (--> (store (sf_1 ...) (in-hole S_1 '(dot s_1)))
+          (store (sf_1 ...) (in-hole S_1 's_1))
+          "6edot")))
   
   (define-metafunction Qtoc
     lang
@@ -778,6 +803,19 @@
     [(s_1 dot sym_1) (cons (Qtoc s_1) 'sym_1)]
     [(dot sym_1) 'sym_1]
     [(s_1 s_2 s_3 ... dot sym_1) (cons (Qtoc s_1) (Qtoc (s_2 s_3 ... dot sym_1)))]
+    [sym_1 'sym_1]
+    [sqv_1 sqv_1])
+  
+  (define-metafunction Qtoic 
+    lang
+    [() null]
+    [(s_1 s_2 ...) (consi (Qtoic s_1) (Qtoic (s_2 ...)))]
+    [(s_1 dot sqv_1) (consi (Qtoic s_1) sqv_1)]
+    [(dot sqv_1) sqv_1]
+    [(s_1 s_2 s_3 ... dot sqv_1) (consi (Qtoic s_1) (Qtoic (s_2 s_3 ... dot sqv_1)))]
+    [(s_1 dot sym_1) (consi (Qtoic s_1) 'sym_1)]
+    [(dot sym_1) 'sym_1]
+    [(s_1 s_2 s_3 ... dot sym_1) (consi (Qtoic s_1) (Qtoic (s_2 s_3 ... dot sym_1)))]
     [sym_1 'sym_1]
     [sqv_1 sqv_1])
   
@@ -795,20 +833,12 @@
           (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
           "6set")))
   
-  (define (defines? var defs)
-    (ormap (lambda (def) 
-             (match def
-               [`(define ,x ,e)
-                 (eq? x var)]
-               [else #f]))
-           defs))
-  
   (define reductions
     (union-reduction-relations
      Arithmetic
      Basic--syntactic--forms
      Cons 
-     Cons-cell--mutation
+     Eqv
      Procedure--application
      Apply
      Call-cc--and--dynamic-wind
@@ -906,5 +936,7 @@
   (define lambda-null? (test-match lang (lambda () e)))
   (define lambda-one? (test-match lang (lambda (x) e)))
   (define pp? (test-match lang pp))
+  (define mp? (test-match lang mp))
+  (define ip? (test-match lang ip))
   (define es? (test-match lang es))
   (define (list-v? v) (or (pp? v) (null-v? v))))

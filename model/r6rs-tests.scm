@@ -98,7 +98,7 @@
   (define (subst-:-vars exp)
     (match exp
       [`(store ,str ,exps ...)
-       (let* ([pp-var? (λ (x) (regexp-match #rx"^[qp]p" (format "~a" (car x))))]
+       (let* ([pp-var? (λ (x) (regexp-match #rx"^[qmi]p" (format "~a" (car x))))]
               [pp-bindings (filter pp-var? str)]
               [with-out-pp (fp-sub pp-bindings `(store ,(filter (λ (x) (not (pp-var? x))) str) ,@exps))]
               [with-out-app-vars (remove-unassigned-app-vars with-out-pp)]
@@ -235,7 +235,8 @@
                   (list '(unknown "unspecified result")))
      
      (make-r6test '(store () (letrec ([x '(1)]) (set! x (set-car! x 2))))
-                  (list '(unknown "unspecified result")))
+                  (list '(unknown "unspecified result")
+                        '(uncaught-exception (condition "can't set-car! on a non-pair or a mutable pair"))))
      
      ;; handlers
      (make-r6test '(store () (letrec ([x 1]) (with-exception-handler (lambda (e) (set! x 2)) (lambda () (car 'x)))))
@@ -296,6 +297,13 @@
      (make-r6test/v '((lambda (x) ((lambda (y) (cdr (cdr x))) (begin (set-cdr! (cdr x) 400) 12)))
                       (cons 1 (cons 2 null))) 
                     400)
+     (make-r6test '(store () ((lambda (x) (set-cdr! x 4) (cdr x)) '(3)))
+                  (list '(store () (values 4))
+                        '(uncaught-exception (condition "can't set-cdr! on a non-pair or a mutable pair"))))
+     (make-r6test '(store () ((lambda (x) (set-car! x 4) (car x)) '(3)))
+                  (list '(store () (values 4))
+                        '(uncaught-exception (condition "can't set-car! on a non-pair or a mutable pair"))))
+                        
      (make-r6test '(store ()
                      (letrec ([first-time? #t]
                               [f (lambda (dot y) (if first-time?
@@ -334,17 +342,90 @@
                   (list '(unknown "equivalence of procedures")))
      (make-r6test '(store () (eqv? (lambda (x) x) (lambda (x) x)))
                   (list '(unknown "equivalence of procedures")))
+     (make-r6test '(store () ((lambda (x) (eqv? x x)) (lambda (x) x)))
+                  (list '(unknown "equivalence of procedures")))
      
      (make-r6test/v '(eqv? (cons 1 2) (cons 1 2)) #f)
      (make-r6test/v '((lambda (x) (eqv? x x)) (cons 1 2)) #t)
-     (make-r6test '(store () ((lambda (x) (eqv? x x)) (lambda (x) x)))
-                  (list '(unknown "equivalence of procedures")))
      
      (make-r6test '(store () (apply apply values '(())))
                   (list '(store () (values))))
      
      (make-r6test/v '(eqv? #t #t) #t)
-     (make-r6test/v '(eqv? #t #f) #f)))
+     (make-r6test/v '(eqv? #t #f) #f)
+     
+     (make-r6test/v '(eqv? 'x 'y) #f)
+     (make-r6test/v '(eqv? 'y 'y) #t)
+     
+     (make-r6test/v '(eqv? (lambda (x) x) #t) #f)
+     (make-r6test/v '(eqv? #t (lambda (x) x)) #f)
+     (make-r6test/v '(eqv? '() null) #t)
+     
+     (make-r6test '(store () (eqv? '(a) '(a))) 
+                  (list '(store () (values #f))
+                        '(store () (values #t))))
+     (make-r6test '(store () (eqv? '(a) '(b))) 
+                  (list '(store () (values #f))
+                        '(store () (values #t))))
+     (make-r6test '(store () ((lambda (x) (eqv? x x)) '(a)))
+                  (list '(store () (values #f))
+                        '(store () (values #t))))
+     (make-r6test '(store ()
+                     (eqv?
+                      (call/cc
+                       (lambda (k)
+                         (with-exception-handler
+                          k
+                          (lambda () (car 'x)))))
+                      (call/cc
+                       (lambda (k)
+                         (with-exception-handler
+                          k
+                          (lambda () (car)))))))
+                  (list '(store () (values #f))
+                        '(store () (values #t))))
+     (make-r6test '(store ()
+                     ((lambda (x) (eqv? x x))
+                      (call/cc
+                       (lambda (k)
+                         (with-exception-handler
+                          k
+                          (lambda () (car 'x)))))))
+                  (list '(store () (values #f))
+                        '(store () (values #t))))
+     
+     (make-r6test/v '(eqv?
+                      (call/cc
+                       (lambda (k)
+                         (with-exception-handler
+                          k
+                          (lambda () (car 'x)))))
+                      #f)
+                    #f)
+     (make-r6test/v '(eqv?
+                      #f
+                      (call/cc
+                       (lambda (k)
+                         (with-exception-handler
+                          k
+                          (lambda () (car 'x))))))
+                    #f)
+     (make-r6test/v '(eqv?
+                      (lambda (x) x)
+                      (call/cc
+                       (lambda (k)
+                         (with-exception-handler
+                          k
+                          (lambda () (car 'x))))))
+                    #f)
+     (make-r6test/v '(eqv?
+                      (call/cc
+                       (lambda (k)
+                         (with-exception-handler
+                          k
+                          (lambda () (car 'x)))))
+                      (lambda (x) x))
+                    #f)))
   
   (define err-tests
     (list
@@ -373,8 +454,8 @@
      (make-r6test/e '(apply values 2) "apply's last argument non-list")
      (make-r6test/e '(car 1) "can't take car of non-pair")
      (make-r6test/e '(cdr 1) "can't take cdr of non-pair")
-     (make-r6test/e '(set-car! 2 1) "can't set-car! on a non-pair")
-     (make-r6test/e '(set-cdr! 1 2) "can't set-cdr! on a non-pair")
+     (make-r6test/e '(set-car! 2 1) "can't set-car! on a non-pair or a mutable pair")
+     (make-r6test/e '(set-cdr! 1 2) "can't set-cdr! on a non-pair or a mutable pair")
      
      (make-r6test/e '(call/cc 1) "can't call non-procedure")
      (make-r6test/e '(call-with-values 1 2) "can't call non-procedure")))
@@ -1025,17 +1106,18 @@
                   (list '(store () (values null))))
      
      
-     (make-r6test/e '(dynamic-wind 1 1 1) "dynamic-wind expects arity 0 procs")
+     (make-r6test/e '(dynamic-wind 1 1 1) "dynamic-wind expects procs")
+     (make-r6test/e '(dynamic-wind (lambda () (car 'x)) 1 1) "dynamic-wind expects procs")
      
      ;; make sure that dynamic wind signals non-proc errors directly
      ;; instead of calling procedures
-     (make-r6test/e '(dynamic-wind (lambda () (car 1)) 1 2)
-                    "dynamic-wind expects arity 0 procs")
+     (make-r6test/e '(dynamic-wind (lambda () (car 'x)) 1 2)
+                    "dynamic-wind expects procs")
      (make-r6test/e '(dynamic-wind (lambda () (car 1)) (lambda (x) x) (lambda (y) y))
-                    "dynamic-wind expects arity 0 procs")
+                    "can't take car of non-pair")
      
      (make-r6test/e '(dynamic-wind (lambda () (car 1)) (lambda (x dot y) x) (lambda () 1))
-                    "dynamic-wind expects arity 0 procs")
+                    "can't take car of non-pair")
      (make-r6test/v '(dynamic-wind + (lambda (dot y) 2) *)
                     2)
      (make-r6test/v '(dynamic-wind values list (lambda (dot y) y))
@@ -1433,13 +1515,16 @@ of digits with deconv-base
                     10)
      
      (make-r6test '(store ()
-                     (with-exception-handler
-                      (lambda (x)
+                     (call/cc
+                      (lambda (k)
                         (with-exception-handler
-                         (lambda (y) (eqv? x y))
-                         (lambda () (car 1))))
-                      (lambda () (car 1))))
-                  (list '(unknown "equivalence of conditions")))
+                         (lambda (x)
+                           (with-exception-handler
+                            (lambda (y) (k (eqv? x y)))
+                            (lambda () (car 1))))
+                         (lambda () (car 1))))))
+                  (list '(store () (values #t))
+                        '(store () (values #f))))
      
      ;; nested handlers
      (make-r6test/v '(with-exception-handler
@@ -1507,8 +1592,12 @@ of digits with deconv-base
                       0 #f)
                     "handler returned")
      
-     (make-r6test '(store () (with-exception-handler (lambda (x) (eqv? x 2)) (lambda () (car 1))))
-                  (list '(unknown "equivalence of conditions")))
+     (make-r6test/v '(call/cc 
+                      (lambda (k) 
+                        (with-exception-handler 
+                         (lambda (x) (k (eqv? x 2)))
+                         (lambda () (car 1)))))
+                    #f)
      
      (make-r6test/v '((lambda (sx first-time?)
                         ((lambda (k)
@@ -1606,11 +1695,17 @@ of digits with deconv-base
                     1)
      
      (make-r6test/e '(with-exception-handler 2 +)
-                    "with-exception-handler bad argument")
+                    "with-exception-handler expects procs")
      (make-r6test/e '(with-exception-handler + 2)
-                    "with-exception-handler bad argument")
+                    "with-exception-handler expects procs")
      (make-r6test/e '(with-exception-handler 1 2)
-                    "with-exception-handler bad argument")
+                    "with-exception-handler expects procs")
+     (make-r6test/v '(with-exception-handler (lambda (wrench crowbar) wrench) (lambda () 1))
+                    1)
+     (make-r6test/e '(with-exception-handler (lambda (wrench crowbar) wrench) (lambda () (raise 1)))
+                    "arity mismatch")
+     (make-r6test/e '(with-exception-handler 3 (lambda () 1))
+                    "with-exception-handler expects procs")
      
      (make-r6test/v '((lambda (y)
                         (with-exception-handler
@@ -1876,7 +1971,10 @@ of digits with deconv-base
   ;;
   
   (define the-sets 
-    (list (list "app" app-tests)
+    (list (list "exn" exn-tests)
+          (list "dw" dw-tests)
+          (list "eqv" eqv-tests)
+          (list "app" app-tests)
           (list "r5" r5-tests)
           (list "mv" mv-tests)
           (list "letrec" letrec-tests)
@@ -1885,10 +1983,7 @@ of digits with deconv-base
           (list "arith" arithmetic-tests)
           (list "basic" basic-form-tests)
           (list "pair" pair-tests)
-          (list "eqv" eqv-tests)
-          (list "err" err-tests)
-          (list "dw" dw-tests)
-          (list "exn" exn-tests)))
+          (list "err" err-tests)))
   
   (define the-tests (apply append (map cadr the-sets)))
   

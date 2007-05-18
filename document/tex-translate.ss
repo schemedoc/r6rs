@@ -25,12 +25,12 @@
       (tex-translate r)))
   
   (define nonterminals-break-before
-    '(P var sym p* p v
-        E F PG H SD))
+    '(P var pp sym p* p v
+        E F PG S))
   
   (define otherwise-metafunctions '(pRe poSt Trim))
   
-  (define combine-metafunction-names '(pRe poSt Trim))
+  (define combine-metafunction-names '((pRe poSt Trim) (Qtoc Qtoic)))
   
   (define metafunctions-to-skip '(r6rs-subst-one r6rs-subst-many))
 
@@ -49,24 +49,31 @@
   
   ;; tex-translate : sexp -> void
   (define (tex-translate exp)
-    (let ([names/clauses '()])
+    (let ([names/clauses combine-metafunction-names])
       (let loop ([exp exp])
         (fmatch exp
                 [`(module ,_ ,_ ,body ...)
-                  (for-each loop body)]
+                 (for-each loop body)]
                 [`(define ,lang (language ,productions ...))
-                  (print-language productions)]
+                 (print-language productions)]
                 [`(define-metafunction ,name ,lang ,clauses ...)
                  (unless (member name metafunctions-to-skip) 
-                   (if (member name combine-metafunction-names)
-                       (set! names/clauses
-                             (cons (list name clauses) 
-                                   names/clauses))
-                       (print-metafunction name clauses)))]
+                   (let ([in (ormap (λ (x) (member name x)) names/clauses)])
+                     (if in
+                         (set! names/clauses (replace-in-list name names/clauses (list name clauses)))
+                         (print-metafunction name clauses))))]
                 [`(define ,name (reduction-relation ,lang ,r ...))
-                  (print-reductions name r (one-line-name? name))]
+                 (print-reductions name r (one-line-name? name))]
                 [else (void)]))
-      (print-metafunctions names/clauses)))
+      (for-each print-metafunctions names/clauses)))
+  
+  (define (replace-in-list sym lst new-thing)
+    (map (λ (l)
+           (map (λ (s) (if (eq? sym s)
+                           new-thing
+                           s))
+                l))
+         lst))
 
   (define (print-language productions)
     (let loop ([productions productions]
@@ -180,6 +187,8 @@
   (define (metafunction-name? x) (memq x metafunction-names))
   (define (translate-mf-name name)
     (case name
+      [(Qtoc) "\\mathscr{Q}_{i}"]
+      [(Qtoic) "\\mathscr{Q}_{m}"]
       [(A_0) "\\mathscr{A}_{0}"]
       [(A_1) "\\mathscr{A}_{1}"]
       [(observable-value) "\\mathscr{O}_{v}"]
@@ -315,7 +324,8 @@
         (display TEX-NEWLINE))
       
       (case nonterm        
-        [(pp) (show-rewritten-nt lhs "\\textrm{[pair pointers]}")]
+        [(ip) (show-rewritten-nt lhs "\\textrm{[immutable pair pointers]}")]
+        [(mp) (show-rewritten-nt lhs "\\textrm{[mutable pair pointers]}")]
         [(sym) (show-rewritten-nt lhs "\\textrm{[variables except \\sy{dot}]}")]
         [(x)  (show-rewritten-nt lhs "\\textrm{[variables except \\sy{dot} and keywords]}")]
         [(n)  (show-rewritten-nt lhs "\\textrm{[numbers]}")]
@@ -623,30 +633,11 @@
 	     (display "[" o)
 	     (loop (caddr p))
 	     (display "]" o))
-	    ((Qtoc)
-	     (display "\\mathscr{Q}\\llbracket" o)
+            [(Qtoc Qtoic Trim pRe poSt ovservable observable-value)
+             (display (translate-mf-name (car p)) o)
+	     (display "\\llbracket{}" o)
 	     (loop (cadr p))
-	     (display "\\rrbracket" o))
-	    ((Trim)
-	     (display "\\mathscr{T}\\llbracket" o)
-	     (loop (cadr p))
-	     (display "\\rrbracket" o))
-	    ((pRe)
-	     (display "\\mathscr{R}\\llbracket" o)
-	     (loop (cadr p))
-	     (display "\\rrbracket" o))
-	    ((poSt)
-	     (display "\\mathscr{S}\\llbracket" o)
-	     (loop (cadr p))
-	     (display "\\rrbracket" o))
-            [(observable)
-             (display "\\mathscr{O}\\llbracket{}" o)
-             (loop (cadr p))
-             (display "\\rrbracket{}" o)]
-            [(observable-value)
-             (display "\\mathscr{O}_v\\llbracket{}" o)
-             (loop (cadr p))
-             (display "\\rrbracket{}" o)]
+	     (display "\\rrbracket" o)]
             (else
 	     (display "(" o)
 	     (loop (car p))
@@ -671,19 +662,16 @@
 	       name subst reduction reduction/context red term apply-values store dot ccons throw push pop trim dw mark condition handlers
 	       define beginF throw lambda set! if begin0 quote begin letrec letrec* reinit l!)
 	      "\\sy")
-	     ((cons unspecified null list dynamic-wind apply values null? pair? car cdr call/cc procedure? condition? unspecified? set-car! set-cdr! eqv? call-with-values with-exception-handler raise-continuable raise)
+	     ((cons unspecified null list dynamic-wind apply values null? pair? car cdr call/cc procedure? condition? unspecified? set-car! set-cdr! eqv? call-with-values with-exception-handler raise-continuable raise + * - /)
 	      "\\va")
 	     (else
 	      "\\nt")))
 	  (o (open-output-string)))
       (parameterize ((current-output-port o))
-	  (d-var op command))
+        (d-var op command))
       (close-output-port o)
       (get-output-string o)))
 
-  (define (truncate-string str)
-    str)
-  
   ;; pattern->tex : pattern -> (values string (listof string))
   ;; given a pattern, returns a string representation and some strings of side constraints
   (define (pattern->tex pat)
@@ -694,7 +682,7 @@
           (s (open-output-string)))
       (parameterize ((current-output-port s))
         (pattern->tex/int pat left-to-right?)
-        (values (truncate-string (get-output-string s)) 
+        (values (get-output-string s) 
                 (apply append (map format-side-cond side-conds))))))
   
   (define (getpatstr pat lr?)
@@ -718,19 +706,20 @@
       [`(and ,@(list sc ...))
         (apply append (map format-side-cond sc))]
       [`(or ,sc ...)
-        (let ([scs (map format-side-cond sc)])
-          (for-each (lambda (x) 
-                      (unless (= 1 (length x))
-                        (error 'format-side-cond "or with and inside: ~s" sc)))
-                    scs)
-          (let loop ([lst (cdr scs)]
-                     [strs (list (car (car scs)))])
-            (cond
-              [(null? lst) (list (apply string-append (reverse strs)))]
-              [else (loop (cdr lst)
-                          (list* (car (car lst)) 
-                                 "\\textrm{ or }" 
-                                 strs))])))]
+       (let* ([scs (map format-side-cond sc)]
+              [single-lines
+               (map (λ (x) (if (null? (cdr x))
+                               (car x)
+                               (apply string-append (add-between " \\textrm{ and }" x))))
+                    scs)])
+         (let loop ([lst (cdr single-lines)]
+                    [strs (list (car single-lines))])
+           (cond
+             [(null? lst) (list (apply string-append (reverse strs)))]
+             [else (loop (cdr lst)
+                         (list* (car lst) 
+                                "\\textrm{ or }" 
+                                strs))])))]
       [`(fresh ,xs)
         (list (format "~a \\textrm{ fresh}" (string-join (map (lambda (x) (format "~a" (gps x))) xs) ", ")))]
       [`(fresh ,(? symbol? x) ,'...)
@@ -738,19 +727,23 @@
       [`(freshS ,xs)        
         (list (format "~a \\cdots \\textrm{ fresh}" (string-join (map (lambda (x) (format "~a" (gps x))) xs) ", ")))]
       [`(not (eq? (term ,t1) (term ,t2)))
-        (list (format "~a \\neq ~a" (gps t1) (gps t2)))] 
+        (list (format "~a \\neq ~a" (gps t1) (gps t2)))]
       [`(not (eq? (term ,t1) #f))
         (list (format "~a \\neq \\semfalse{}" (gps t1)))]
-      [`(not (uproc? (term ,v)))
-       (list (format "~a \\not\\in \\nt{uproc}" (gps v)))]
-      [`(not (proc? (term ,v)))
-       (list (format "~a \\not\\in \\nt{proc}" (gps v)))]
-      [`(not (pp? (term ,v)))
-        (list (format "~a \\not\\in \\nt{pp}" (gps v)))]
       [`(not (null-v? (term ,v)))
         (list (format "~a \\neq \\nt{null}" (gps v)))]
       [`(not (prefixed-by? (term ,v) (quote p:)))
         (list (format "~a \\not\\in \\nt{pp}" (gps v)))]
+      [`(not (condition? (term ,v)))
+        (list (format "~a \\neq (\\sy{condition}~~\\nt{string})" (gps v)))]
+      [`(not (,(? (λ (x) 
+                    (and (symbol? x) 
+                         (regexp-match #rx"\\?$" (symbol->string x))))
+                  sym)
+              (term ,v)))
+        (list (format "~a \\not\\in \\nt{~a}"
+                      (gps v)
+                      (regexp-replace ".$" (symbol->string sym) "")))]
       [`(= (length (term (,arg1 ,dots))) (length (term (,arg2 ,dots))))
         (list (arglen-str "=" arg1 arg2))]
       [`(not (= (length (term (,arg1 ,dots))) (length (term (,arg2 ,dots)))))
@@ -804,6 +797,8 @@
         (list (format "~a \\in \\nt{ds}" (getrhsstr exp #t)))]
       [`(es? ,exp)
         (list (format "~a \\in \\nt{es}" (getrhsstr exp #t)))]
+      [`(proc? ,exp)
+        (list (format "~a \\in \\nt{proc}" (getrhsstr exp #t)))]
       [`(not (,(? (lambda (x) (assoc x test-matches)) func) (term ,t)))
        (let ([test-match (assoc func test-matches)])
          (list (format "~a \\neq ~a"
@@ -934,9 +929,9 @@
            args)]
         [`(,(? metafunction-name? mf) ,arg)
           (d (translate-mf-name mf))
-          (d " \\llbracket ")
+          (d " \\llbracket{}")
           (loop arg)
-          (d " \\rrbracket ")]
+          (d " \\rrbracket{}")]
         [`(format "context expected one value, received ~a" (length ,arg))
           (d "``context expected one value, received #")
           (loop arg)
@@ -960,7 +955,7 @@
   
   (define (arith-exp->tex/int pat)
     (define d display)
-    (d " \\gopen ")
+    (d " \\gopen~")
     (let loop ([pat pat])
       (fmatch pat
         [`(term ,(? symbol? a))
@@ -988,7 +983,7 @@
                       (loop arg))
                     args)]
         [else (error 'arith-exp->tex/int "unknown pattern ~s" pat)]))
-    (d " \\gclose "))
+    (d "~\\gclose "))
     
   (define (pattern->tex/int orig-pat lr?)
     (define d display)
@@ -1074,12 +1069,12 @@
           (printf "}")
           (loop v)]
         [`(unknown string)
-         (display (do-pretty-format pat))]
+         (printf "\\textbf{unknown: } \\textit{description}")]
         [`(,(? (lambda (x) (memq x '(unknown error))) lab) ,s)
           (printf "\\mbox{\\textbf{~a:} ~a}" lab (quote-tex-specials s))]
         [`(,(? metafunction-name? mf) ,arg)
           (d (translate-mf-name mf))
-          (d " \\llbracket ")
+          (d " \\llbracket{}")
           (loop arg)
           (d " \\rrbracket ")]
         ['x_1 (d "x_1")]

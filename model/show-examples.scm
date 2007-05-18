@@ -66,5 +66,6 @@
         c c))
      (cons 1 2)))
   
-  (step '(store () (letrec ((g (lambda (x) x)) (f (lambda (x) (g 1)))) (((lambda (x) (lambda (g) (g x))) f) (lambda (x) 17))))))
-
+  (step (term (store ((ip (cons 'a null))
+                      (ip1 (cons 'a null)))
+                (eqv? ip1 ip)))))
