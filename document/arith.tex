@@ -707,20 +707,22 @@ result is zero.  For positive $\mathit{fl}_1$,% LaTeX kludge
 
 \begin{entry}{%
 \ctproto{no-infinities}
-\proto{no-infinities?}{ obj}{procedure}
+\proto{make-no-infinities-violation}{ obj}{procedure}
+\proto{no-infinities-violation?}{ obj}{procedure}
 \ctproto{no-nans}
-\proto{no-nans?}{ obj}{procedure}}
+\proto{make-no-nans-violation}{ obj}{procedure}
+\proto{no-nans-violation?}{ obj}{procedure}}
 
 These condition types could be defined by the following code:
 
 \begin{scheme}
 (define-condition-type \&no-infinities
     \&implementation-restriction
-  no-infinities?)
+  make-no-infinities-violation no-infinities-violation?)
 
 (define-condition-type \&no-nans
     \&implementation-restriction
-  no-nans?)%
+  make-no-nans-violation no-nans-violation?)%
 \end{scheme}
 
 These types describe that a program has executed an arithmetic

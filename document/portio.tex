@@ -237,11 +237,12 @@ Returns the default end-of-line style of the underlying platform, e.g.
 
 \begin{entry}{%
 \ctproto{i/o-decoding}
+\proto{make-i/o-decoding-error}{ port}{procedure}
 \proto{i/o-decoding-error?}{ obj}{procedure}}
 
 \begin{scheme}
 (define-condition-type \&i/o-decoding \&i/o-port
-  i/o-decoding-error?
+  make-i/o-decoding-error i/o-decoding-error?
   (transcoder i/o-decoding-error-transcoder))
 \end{scheme}
 
@@ -266,6 +267,7 @@ returns a character or a string only if it actually returns.
 
 \begin{entry}{% 
 \ctproto{i/o-encoding}
+\proto{make-i/o-encoding-error}{ port char transcoder}{procedure}
 \proto{i/o-encoding-error?}{ obj}{procedure}
 \proto{i/o-encoding-error-char}{ condition}{procedure}
 \proto{i/o-encoding-error-transcoder}{ condition}{procedure}}
@@ -274,7 +276,7 @@ This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&i/o-encoding \&i/o-port
-  i/o-encoding-error?
+  make-i/o-encoding-error i/o-encoding-error?
   (char i/o-encoding-error-char)
   (transcoder i/o-encoding-error-transcoder))
 \end{scheme}

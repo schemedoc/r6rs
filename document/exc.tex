@@ -194,11 +194,6 @@ about an exceptional situation\mainindex{exceptional situation}, or
 \defining{exception}. Scheme also defines a
 number of basic condition types.
 
-\begin{note}
-  This specification is similar to, but not identical with
-  SRFI~35~\cite{srfi35}.
-\end{note}
-
 Scheme conditions provides two mechanisms to enable communication
 about exceptional situation: subtyping among condition types allows
 handling code to determine the general nature of an exception even
@@ -220,107 +215,153 @@ occurred.
 
 \subsection{Condition objects}
 
-Conditions are objects with named fields. Each condition belongs to
-one or more condition types. Each condition type specifies a set of
-field names. A condition belonging to a condition type includes a
-value for each of the type's field names. These values can be
-extracted from the condition by using the appropriate field name.
-
-The condition system distinguishes between \textit{simple
-  conditions}\index{simple condition} and \textit{compound
-  conditions}\index{compound condition}.  A compound condition
-consists of an ordered set of simple conditions.  Thus, every
-condition can be viewed as an ordered set of simple component
-conditions: If it is simple, the set consists of the condition itself;
-if it is compound, it consists of the simple conditions that compose
-it.
-
-There is a tree of condition types with the distinguished {\tt
-  \&condition} as its root. All other condition types have a parent
-condition type.
+Conceptually, there are two different kinds of condition objects:
+\textit{simple conditions}\mainindex{simple condition} and
+\textit{compound conditions}\mainindex{compound condition}.  An object
+that is either a simple condition or a compound condition is called
+simply \defining{condition}.  Compound conditions form a type disjoint
+from the base types described in report
+section~\extref{report:disjointness}{Base types}.  A simple condition
+describes a single aspect of an exceptional situation.  A compound
+condition represents multiple aspects of an exceptional situation as a
+list of simple conditions, its \textit{components}.  Most of the
+operations described in this section treat a simple condition
+identically to a compound condition consisting of only the simple
+condition.  Thus, a simple condition is its own sole component.  For a
+subtype \var{t} of {\cf\&condition}, a \textit{condition of type
+  \var{t}} is either a record of type \var{t} or a compound condition
+containing a component of type \var{t}.
 
 \begin{entry}{%
-\proto{make-condition-type}{ \var{id} \var{parent} \var{field-names}}{procedure}}
+\ctproto{condition}}
 
-Returns a new condition type. \var{Id} must
-be a symbol that serves as a symbolic name for the condition type.
-\var{Parent} must itself be a condition type. \var{Field-names} must
-be a list of symbols. It identifies the fields of the conditions
-associated with the condition type.
-
-\var{Field-names} must be disjoint from the field names of
-\var{parent} and its ancestors. 
+Simple conditions are records of subtypes of the {\cf\&condition}
+record type.  The {\cf\&condition} type is neither sealed nor opaque.
 \end{entry}
 
 \begin{entry}{%
-\proto{condition-type?}{ \var{thing}}{procedure}}
+\proto{condition}{ \vari{cond} \dotsfoo}{procedure}}
 
-Returns \schtrue{} if \var{thing} is a condition type, and \schfalse{}
-otherwise.
+\domain{The \var{cond}s must be conditions.}  The {\cf condition}
+procedure returns a condition object with the components of the
+\var{cond}s as its components, in the same order, i.e.\ with the
+components of \vari{cond} appearing first in the same order as in
+\vari{cond}, then with the components of \varii{cond}, and so on.  The
+returned condition is compound if the total number of components is
+zero or greater than one.  Otherwise, it may be compound or simple.
 \end{entry}
 
 \begin{entry}{%
-\proto{make-condition}{ \var{type} \var{alist}}{procedure}}
+\proto{simple-conditions}{ cond}{procedure}}
 
-Returns a simple condition value belonging to condition
-type \var{type}. \var{Alist} must be an association list mapping
-field names to arbitrary values.  There must be a pair in the
-association list for each field of \var{type} and its direct and indirect
-supertypes. The {\cf make-condition} procedure returns the condition
-value, which fields and values as indicated by \var{alist}.
+\domain{\var{Cond} must be a condition.}  The {\cf simple-condition}
+procedure returns a list of the components of \var{cond}, in the same
+order as they appeared in the construction of \var{cond}.  The
+returned list may be immutable.  If the returned list is modified, the
+effect on \var{cond} is unspecified.
+
+\begin{note}
+  Because {\cf condition} decomposes its arguments into simple
+  conditions, {\cf simple-conditions} always returns a ``flattened''
+  list of simple conditions.
+\end{note}
+\end{entry}
+
+
+\begin{entry}{%
+\proto{condition?}{ obj}{procedure}}
+
+Returns \schtrue{} if \var{obj} is a (simple or compound) condition,
+otherwise returns \schfalse.
 \end{entry}
 
 \begin{entry}{%
-\proto{condition?}{ \var{obj}}{procedure}}
+\proto{condition-predicate}{ rtd}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a condition object, and \schfalse{}
-otherwise.
+\domain{\var{Rtd} must be a record-type descriptor of a subtype of
+  {\cf\&condition}.}  The {\cf condition-predicate} procedure returns
+a procedure that accepts a single argument.  This procedure returns
+\schtrue{} if its argument is a condition of the condition type
+represented by \var{rtd}, i.e. if it is either a simple condition of
+that record type (or one of its subtypes) or a compound conditition
+with such a simple condition as one of its components.
 \end{entry}
 
 \begin{entry}{%
-\proto{condition-has-type?}{ \var{condition} \var{condition-type}}{procedure}}
+\proto{condition-accessor}{ rtd proc}{procedure}}
 
-The {\cf condition-has-type?} procedure tests if condition condition belongs to
-condition type \var{condition-type}. It returns \schtrue{} if any of
-condition's types includes \var{condition-type}, either directly or as
-an ancestor, and \schfalse{} otherwise.
+\domain{\var{Rtd} must be a record-type descriptor of a subtype of
+  {\cf\&condition}.  \var{Proc} must be a procedure that should accept
+  a record of the record type of \var{rtd}.}  The {\cf
+  condition-accessor} procedure returns a procedure that accepts a
+single argument, which must be a condition of the type represented by
+\var{rtd}.  This procedure extracts the first component of the
+condition of the type represented by \var{rtd}, and returns the result
+of applying \var{proc} to that component.
 \end{entry}
 
-\begin{entry}{%
-\proto{condition->list}{ \var{condition}}{procedure}}
+\begin{scheme}
+(define-record-type (\&cond1 make-cond1 real-cond1?)
+  (parent \&condition)
+  (fields
+   (immutable x real-cond1-x)))
 
-Returns a list of the component conditions of \var{condition}.
-\end{entry}
+(define cond1?
+  (condition-predicate
+    (record-type-descriptor \&cond1)))
+(define cond1-x
+  (condition-accessor
+    (record-type-descriptor \&cond1)
+    real-cond1-x))
 
-\begin{entry}{%
-\proto{condition-ref}{ \var{condition} \var{type} \var{field-name}}{procedure}}
+(define foo (make-cond1 'foo))
 
-\domain{\var{Condition} must be a condition, \var{type} a condition
-  type, and \var{field-name} a symbol naming a field of type or its
-  direct or indirect supertypes.  Moreover, condition must be a simple
-  condition of type \var{type}, or a compound condition containing a
-  simple condition of type \var{type}.}  The {\cf condition-ref}
-procedure returns the value of the field named by \var{field-name} in
-the first component condition of \var{condition} that has type \var{type}.
-\end{entry}
+(condition? foo) \ev \schtrue
+(cond1? foo) \ev \schtrue
+(cond1-x foo) \ev foo
 
-\begin{entry}{%
-\proto{make-compound-condition}{ \vari{condition} \dotsfoo}{procedure}}
+(define-record-type (\&cond2 make-cond2 real-cond2?)
+  (parent \&condition)
+  (fields
+   (immutable y real-cond2-y)))
 
-Returns a compound condition consisting of the component conditions of
-\vari{condition}, \dotsfoo, in that order.
-\end{entry}
+(define cond2?
+  (condition-predicate
+    (record-type-descriptor \&cond2)))
+(define cond2-y
+  (condition-accessor
+     (record-type-descriptor \&cond2)
+     real-cond2-y))
+
+(define bar (make-cond2 'bar))
+
+(condition? (condition foo bar)) \lev \schtrue
+(cond1? (condition foo bar)) \lev \schtrue
+(cond2? (condition foo bar)) \lev \schtrue
+(cond1? (condition foo)) \ev \schtrue
+(real-cond1? (condition foo)) \lev \unspecified
+(real-cond1? (condition foo bar)) \lev \schfalse
+(cond1-x (condition foo bar) \lev foo
+(cond2-y (condition foo bar) \lev bar
+ 
+(equal? (simple-conditions (condition foo bar))
+        (list foo bar)) \ev \schtrue
+
+(equal? (simple-conditions
+          (condition foo (condition bar)))
+        (list foo bar)) \ev \schtrue%
+\end{scheme}
 
 \begin{entry}{%
 \pproto{(define-condition-type \hyper{condition-type}}{\exprtype}}
 {\tt\obeyspaces\\
     \hyper{supertype}\\
-  \hyper{predicate}\\
+  \hyper{constructor} \hyper{predicate}\\
   \hyperi{field-spec} \dotsfoo)}
 \mainschindex{define-condition-type}
 
-\syntax \hyper{Condition-type},
-\hyper{supertypes}, and \hyper{predicate} must all be identifiers.
+\syntax \hyper{Condition-type}, \hyper{supertypes},
+\hyper{constructor}, and \hyper{predicate} must all be identifiers.
 Each \hyper{field-spec} must be of the form
 %
 \begin{scheme}
@@ -330,91 +371,48 @@ Each \hyper{field-spec} must be of the form
 where both \hyper{field} and \hyper{accessor} must be identifiers.
 
 \semantics
-The {\cf define-condition-type} form expands into a set of
-definitions:
+The {\cf define-condition-type} form expands into a record-type
+definition for a record type {\cf\&condition-type} (see
+section~\ref{recordssyntacticsection}).  The record type will be
+non-opaque, non-sealed, and its fields will be immutable.
+It will have \hyper{supertype} has its parent type.  The remaining
+identifiers will be bound as follows:
+% 
 
 \begin{itemize}
-\item \hyper{Condition-type}, which is bound to some value describing a new condition type.
-\hyper{Supertype} must be the name of a previously defined condition
-type.
 
-\item \hyper{Predicate} is bound to a
-predicate that identifies conditions associated with that type, or
-with any of its subtypes.
+\item \hyper{Constructor} is bound to a default constructor for the
+  type (see section~\ref{recordsproceduralsection}): It accepts one
+  argument for each of the record type's complete set of fields
+  (including parent types) and returns a condition object initialized
+  to those arguments, with the field values for the parent coming
+  before those of the extension in the argument list.
 
-\item Each \hyper{accessor} is bound to a
-procedure which extracts the value of the named field from a condition
-associated with this condition type.  An \hyper{accessor} associated
-with \hyper{field} behaves as defined via
-%
-\begin{scheme}
-(define \hyper{accessor}
-  (lambda (c)
-    (condition-ref c \hyper{condition-type} '\hyper{field})))
-\end{scheme}
+\item \hyper{Predicate} is bound to a predicate that identifies
+  conditions of type \hyper{condition-type}, or with any of its
+  subtypes.
+
+\item Each \hyper{accessor} is bound to a procedure that extracts the
+  corresponding field from a condition of type \hyper{condition-type}.
 \end{itemize}
-\end{entry}
-
-\begin{entry}{%
-\proto{condition}{ \hyperi{type-field-binding} \dotsfoo}{\exprtype}}
-
-Returns a condition value. Each \hyper{type-field-binding} must be of
-the form
-%
-\begin{scheme}
-(\hyper{condition-type} \hyperi{field-binding} \dotsfoo)%
-\end{scheme}
-%
-Each \hyper{field-binding}
-must be of the form
-%
-\begin{scheme}
-(\hyper{field} \hyper{expression})  %
-\end{scheme}
-%
-where \hyper{field} is a field identifier from the definition of
-\hyper{condition-type}.
-
-The condition returned by condition is created by a call of the form
-%
-\begin{schemenoindent}
-(make-compound-condition
-  (make-condition \hyper{condition-type}
-                  (list (cons '\hyper{field-name} \hyper{expression})
-                        \dotsfoo))
-  \dotsfoo)
-\end{schemenoindent}
-%
-with the condition types retaining their order from the condition
-form.
-\end{entry}
-
-\begin{entry}{%
-\ctproto{condition}}
-
-This is the root of the entire condition type hierarchy. It has no
-fields.
 \end{entry}
 
 \begin{scheme}
 (define-condition-type \&c \&condition
-  c?
+  make-c c?
   (x c-x))
 
 (define-condition-type \&c1 \&c
-  c1?
+  make-c1 c1?
   (a c1-a))
 
 (define-condition-type \&c2 \&c
-  c2?
+  make-c2 c2?
   (b c2-b))%
 \end{scheme}
 
 \begin{scheme}
-(define v1
-  (make-condition \&c1
-    (list (cons 'x "V1")
-          (cons 'a "a1"))))
+(define v1 (make-c1 "V1" "a1"))
 
 (c? v1)        \ev \schtrue
 (c1? v1)       \ev \schtrue
@@ -424,9 +422,7 @@ fields.
 \end{scheme}
 
 \begin{scheme}
-(define v2 (condition (\&c2
-                        (x "V2")
-                        (b "b2"))))
+(define v2 (make-c2 "V2" "b2"))
 
 (c? v2)        \ev \schtrue
 (c1? v2)       \ev \schfalse
@@ -436,12 +432,9 @@ fields.
 \end{scheme}
 
 \begin{scheme}
-(define v3 (condition (\&c1
-                       (x "V3/1")
-                       (a "a3"))
-                      (\&c2
-                       (x "V3/2")
-                       (b "b3"))))
+(define v3 (condition
+             (make-c1 "V3/1" "a3")
+             (make-c2 "V3/2" "b3")))
 
 (c? v3)        \ev \schtrue
 (c1? v3)       \ev \schtrue
@@ -452,7 +445,7 @@ fields.
 \end{scheme}
 
 \begin{scheme}
-(define v4 (make-compound-condition v1 v2))
+(define v4 (condition v1 v2))
 
 (c? v4)        \ev \schtrue
 (c1? v4)       \ev \schtrue
@@ -463,7 +456,7 @@ fields.
 \end{scheme}
 
 \begin{scheme}
-(define v5 (make-compound-condition v2 v3))
+(define v5 (condition v2 v3))
 
 (c? v5)        \ev \schtrue
 (c1? v5)       \ev \schtrue
@@ -477,6 +470,7 @@ fields.
 
 \begin{entry}{%
 \ctproto{message}
+\proto{make-message-condition}{ message}{procedure}
 \proto{message-condition?}{ obj}{procedure}
 \proto{condition-message}{ condition}{procedure}}
 
@@ -484,7 +478,7 @@ This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&message \&condition
-  message-condition?
+  make-message-condition message-condition?
   (message condition-message))%
 \end{scheme}
 %
@@ -494,13 +488,14 @@ humans.
 
 \begin{entry}{%
 \ctproto{warning}
+\proto{make-warning}{}{procedure}
 \proto{warning?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&warning \&condition
-  warning?)%
+  make-warning warning?)%
 \end{scheme}
 %
 This type describes conditions that do not, in
@@ -510,13 +505,14 @@ may interfere with the program's execution later.
 
 \begin{entry}{%
 \ctproto{serious}
+\proto{make-serious-condition}{}{procedure}
 \proto{serious-condition?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&serious \&condition
-  serious-condition?)%
+  make-serious-condition serious-condition?)%
 \end{scheme}
 
 This type describes conditions serious enough that they cannot safely
@@ -526,13 +522,14 @@ of other condition types.
 
 \begin{entry}{%
 \ctproto{error}
+\proto{make-error}{}{procedure}
 \proto{error?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&error \&serious
-  error?)%
+  make-error error?)%
 \end{scheme}
 %
 This type describes errors, typically caused by something that
@@ -542,13 +539,14 @@ world or the user.
 
 \begin{entry}{%
 \ctproto{violation}
+\proto{make-violation}{}{procedure}
 \proto{violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&violation \&serious
-  violation?)%
+  make-violation violation?)%
 \end{scheme}
 %
 This type describes violations of the language standard or a
@@ -557,13 +555,15 @@ library standard, typically caused by a programming error.
 
 \begin{entry}{%
 \ctproto{non-continuable}
-\proto{non-continuable?}{ obj}{procedure}}
+\proto{make-non-continuable-violation}{}{procedure}
+\proto{non-continuable-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&non-continuable \&violation
-  non-continuable?)%
+  make-non-continuable-violation
+  non-continuable-violation?)%
 \end{scheme}
 %
 This type denotes that an exception handler invoked via
@@ -572,14 +572,16 @@ This type denotes that an exception handler invoked via
 
 \begin{entry}{%
 \ctproto{implementation-restriction}
-\proto{implementation-restriction?}{ obj}{procedure}}
+\proto{make-implementation-restriction-violation}{}{procedure}
+\proto{implementation-restriction-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&implementation-restriction
     \&violation
-  implementation-restriction?)%
+  make-implementation-restriction-violation
+  implementation-restriction-violation?)%
 \end{scheme}
 %
 This type describes a violation of an implementation restriction
@@ -589,13 +591,14 @@ for NaNs and infinities.  (See section~\ref{flonumssection}.)
 
 \begin{entry}{%
 \ctproto{lexical}
+\proto{make-lexical-violation}{}{procedure}
 \proto{lexical-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&lexical \&violation
-  lexical-violation?)%
+  make-lexical-violation lexical-violation?)%
 \end{scheme}
 %
 This type describes syntax violations at the level of the read syntax.
@@ -603,13 +606,14 @@ This type describes syntax violations at the level of the read syntax.
 
 \begin{entry}{%
 \ctproto{syntax}
+\proto{make-syntax-violation}{ form subform}{procedure}
 \proto{syntax-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&syntax \&violation
-  syntax-violation?
+  make-syntax-violation syntax-violation?
   (form syntax-violation-form)
   (subform syntax-violation-subform))%
 \end{scheme}
@@ -625,13 +629,14 @@ information.
 
 \begin{entry}{%
 \ctproto{undefined}
+\proto{make-undefined-violation}{}{procedure}
 \proto{undefined-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&undefined \&violation
-  undefined-violation?)%
+  make-undefined-violation undefined-violation?)%
 \end{scheme}
 % 
 This type describes unbound identifiers in the program.
@@ -639,13 +644,14 @@ This type describes unbound identifiers in the program.
 
 \begin{entry}{%
 \ctproto{assertion}
+\proto{make-assertion-violation}{ obj}{procedure}
 \proto{assertion-violation?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&assertion \&violation
-  assertion-violation?)%
+  make-assertion-violation assertion-violation?)%
 \end{scheme}
 % 
 This type describes an invalid call to a procedure, either passing an
@@ -654,6 +660,7 @@ invalid number of arguments, or passing an argument of the wrong type.
 
 \begin{entry}{%
 \ctproto{irritants}
+\proto{make-irritants-condition}{ irritants}{procedure}
 \proto{irritants-condition?}{ obj}{procedure}
 \proto{condition-irritants}{ condition}{procedure}}
 
@@ -661,7 +668,7 @@ This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&irritants \&condition
-  irritants-condition?
+  make-irritants-condition irritants-condition?
   (irritants condition-irritants))%
 \end{scheme}
 %
@@ -675,6 +682,7 @@ section~\extref{report:errorviolation}{Errors and violations}.
  
 \begin{entry}{%
 \ctproto{who}
+\proto{make-who-condition}{ who}{procedure}
 \proto{who-condition?}{ obj}{procedure}
 \proto{condition-who}{ condition}{procedure}}
 
@@ -682,7 +690,7 @@ This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&who \&condition
-  who-condition?
+  make-who-condition who-condition?
   (who condition-who))%
 \end{scheme}
 %
