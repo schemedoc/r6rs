@@ -56,11 +56,11 @@
 	  make-violation
 	  violation?
 	  &non-continuable
-	  make-noncontinuable
-	  non-continuable?
+	  make-noncontinuable-violation
+	  non-continuable-violation?
 	  &implementation-restriction
-	  make-implementation-restriction
-	  implementation-restriction?
+	  make-implementation-restriction-violation
+	  implementation-restriction-violation?
 	  &lexical
 	  make-lexical-violation
 	  lexical-violation?
