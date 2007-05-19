@@ -256,12 +256,13 @@ example is equivalent to
 
 The entries in this section describe the expressions of the base
 language, which may occur in the position of the \hyper{expression}
-syntactic variable.  The expressions also include constant literals,
-variable references and procedure calls as described in
+syntactic variable.  The expressions also include the primitive
+expression types: constant literals,
+variable references, and procedure calls, as described in
 section~\ref{primitiveexpressionsection}.
 
-\subsection{Literal expressions}\unsection
-\label{literalsection}
+\subsection{Quotation}\unsection
+\label{quotesection}
 
 \begin{entry}{%
 \proto{quote}{ \hyper{datum}}{\exprtype}}
@@ -269,11 +270,11 @@ section~\ref{primitiveexpressionsection}.
 \syntax \hyper{Datum} should be a datum value.
 
 \semantics
-{\cf (quote \hyper{datum})} evaluates to the datum
+{\cf (quote \hyper{datum})} evaluates to the datum value
 denoted by \hyper{datum}
 (see
-section~\ref{readsyntaxsection}).  This notation is used to include literal
-constants in Scheme code.
+section~\ref{readsyntaxsection}).  This notation is used to include
+constants, including list and vector constants, in Scheme code.
 
 \begin{scheme}%
 (quote a)                     \ev  a
@@ -281,7 +282,7 @@ constants in Scheme code.
 (quote (+ 1 2))               \ev  (+ 1 2)%
 \end{scheme}
 
-As noted in section~\ref{quotesection}, {\cf (quote \hyper{datum})}
+As noted in section~\ref{abbreviationsection}, {\cf (quote \hyper{datum})}
 may be abbreviated as \singlequote\hyper{datum}:
 
 \begin{scheme}
@@ -295,10 +296,7 @@ may be abbreviated as \singlequote\hyper{datum}:
 ''a                  \ev  (quote a)%
 \end{scheme}
 
-As noted in section~\ref{storagemodel}, the value of a literal
-expression may be immutable.  Within the same phase, a quoted literal
-should evaluate to the same value (according to {\cf eqv?}) each time
-it is evaluated.
+As noted in section~\ref{storagemodel}, constants are immutable.
 \end{entry}
 
 \subsection{Procedures}\unsection
@@ -309,7 +307,7 @@ it is evaluated.
 
 \syntax
 \hyper{Formals} must be a formal arguments list as described below,
-and \hyper{body} must be according to section~\ref{bodiessection}.
+and \hyper{body} is as described in section~\ref{bodiessection}.
 
 \semantics
 \vest A \lambdaexp{} evaluates to a procedure.  The environment in
@@ -551,12 +549,13 @@ otherwise the result of the {\cf case} expression \isunspecified.
 
 \syntax The \hyper{test}s must be expressions.
 
-\semantics If there are no \hyper{test}s then \schtrue{} is returned.
+\semantics If there are no \hyper{test}s, \schtrue{} is returned.
 Otherwise, the \hyper{test} expressions are evaluated from left to
-right until either a \hyper{test} expression returns \schfalse, or
-until the last one is reached.  Any remaining expressions are not
-evaluated.  If all but the last expressions evaluate to true values,
-the values of the last expression are returned.
+right until a \hyper{test} returns \schfalse{} or the last
+\hyper{test} is reached.  In the former case, the {\cf and} expression
+returns \schfalse{} without evaluating the remaining expressions.
+In the latter case, the last expression is evaluated and its values
+returned.
 
 \begin{scheme}
 (and (= 2 2) (> 2 1))           \ev  \schtrue
@@ -584,13 +583,14 @@ The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
 
 \syntax The \hyper{test}s must be expressions.
 
-\semantics If there are no \hyper{test}s then \schfalse{} is returned.
-Otherwise, The \hyper{test} expressions are evaluated from left to
-right until either a a \hyper{test} expression returns a true value
-(see section~\ref{booleanvaluessection}), or until the last one is
-reached.  Any remaining expressions are not evaluated.  If all but the
-last expressions evaluate to \schfalse, the values of the last
-expression are returned.
+\semantics If there are no \hyper{test}s, \schfalse{} is returned.
+Otherwise, the \hyper{test} expressions are evaluated from left to
+right until a \hyper{test} returns a true value \var{val}
+(see section~\ref{booleanvaluessection}) or the last
+\hyper{test} is reached.  In the former case, the {\cf and} expression
+returns \var{val} without evaluating the remaining expressions.
+In the latter case, the last expression is evaluated and its values
+returned.
 
 \begin{scheme}
 (or (= 2 2) (> 2 1))            \ev  \schtrue
@@ -618,7 +618,8 @@ The {\cf or} keyword could be defined in terms of {\cf if} using {\cf
 
 The four binding constructs {\cf let}, {\cf let*}, {\cf letrec}, and {\cf letrec*}
 give Scheme a block structure, like Algol 60.  The syntax of the four
-constructs is identical, but they differ in the regions\index{region} they establish
+constructs is identical, but they differ in the regions\index{region}
+(see section~\ref{variablesection}) they establish
 for their variable bindings.  In a {\cf let} expression, the initial
 values are computed before any of the variables become bound; in a
 {\cf let*} expression, the bindings and evaluations are performed
@@ -631,8 +632,10 @@ in a {\cf letrec*}, the evaluations and assignments are performed
 sequentially.
 
 In addition, the binding constructs {\cf let-values} and {\cf
-  let*-values} allow the binding of results of expression returning
-multiple values.  They are analogous to {\cf let} and {\cf let*} in the
+  let*-values} generalize {\cf let} and {\cf let*} to allow multiple
+variables to be bound to the results of expressions that evaluate to
+multiple values.
+They are analogous to {\cf let} and {\cf let*} in the
 way they establish regions: in a {\cf let-values} expression, the
 initial values are computed before any of the variables become bound;
 in a {\cf let*-values} expression, the bindings are performed
@@ -687,15 +690,16 @@ See also named {\cf let}, section \ref{namedlet}.
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} must be a sequence of
-one or more expressions.
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.
 
 \semantics
-The {\cf let*} form is similar to {\cf let}, but the bindings are performed
-sequentially from left to right, and the region\index{region} of a binding indicated
-by {\cf(\hyper{variable} \hyper{init})} is that part of the {\cf let*}
-expression to the right of the binding.  Thus the second binding is done
-in an environment in which the first binding is visible, and so on.
+The {\cf let*} form is similar to {\cf let}, but the \hyper{init}s are
+evaluated and bindings created sequentially from left to right, with
+the region\index{region} of each binding including the bindings to
+its right as well as \hyper{body}.  Thus the second \hyper{init} is evaluated
+in an environment in which the first binding is visible and initialized,
+and so on.
 
 \begin{scheme}
 (let ((x 2) (y 3))
@@ -705,8 +709,8 @@ in an environment in which the first binding is visible, and so on.
 \end{scheme}
 
 \begin{note}
-  While a {\cf let} expression must not contain duplicate
-  variables, a {\cf let*} expression can.
+  While the variables bound by a {\cf let} expression must be distinct,
+  the variables bound by a {\cf let*} expression need not be distinct.
 \end{note}
 
 The {\cf let*} keyword could be defined in terms of {\cf let} using {\cf
@@ -734,9 +738,10 @@ The {\cf let*} keyword could be defined in terms of {\cf let} using {\cf
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} must be a sequence of
-one or more expressions. It is a syntax violation for a \hyper{variable} to appear more
-than once in the list of variables being bound.
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.  It is a
+syntax violation for a \hyper{variable} to appear more than once in the list of variables
+being bound.
 
 \semantics
 The \hyper{variable}s are bound to fresh locations, the \hyper{init}s
@@ -774,9 +779,6 @@ Scheme passes arguments by value rather than by name.  In the most
 common uses of {\cf letrec}, all the \hyper{init}s are \lambdaexp{}s
 and the restriction is satisfied automatically.
 
-Moreover, the continuation of each \hyper{init} should not be invoked
-more than once.
-
 \implresp Implementations are only required to check this restriction
 to the extent that references to a \hyper{variable} during the
 evaluation of the \hyper{init} expressions (using one particular
@@ -788,6 +790,9 @@ Implementations are not required to detect that the continuation of each
 \hyper{init} is invoked more than once.  However, if the
 implementation detects this, it must raise an exception with condition
 type {\cf\&assertion}.
+
+Another restriction is that the continuation of each \hyper{init} should not be invoked
+more than once.
 
 A sample definition of {\cf letrec} in terms of simpler forms is in
 appendix~\ref{derivedformsappendix}.
@@ -801,12 +806,13 @@ appendix~\ref{derivedformsappendix}.
 \begin{scheme}
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} must be a sequence of
-one or more expressions. It is a syntax violation for a \hyper{variable} to appear more
-than once in the list of variables being bound.
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.  It is a
+syntax violation for a \hyper{variable} to appear more than once in the list of variables
+being bound.
 
 \semantics
-The \hyper{variable}s are bound to fresh locations  undefined,
+The \hyper{variable}s are bound to fresh locations,
 each \hyper{variable} is assigned in left-to-right order to the
 result of evaluating the corresponding \hyper{init}, the \hyper{body} is
 evaluated in the resulting environment, and the values of the last
@@ -838,9 +844,6 @@ the bindings that follow it in \hyper{bindings}.
 The restriction is necessary because Scheme passes arguments by value
 rather than by name. 
 
-Moreover, the continuation of each \hyper{init} should not be invoked
-more than once.
-
 \implresp Implementations are only required to check this restriction to
 the extent that references to a \hyper{variable} during the evaluation
 of the \hyper{init} expressions (using one particular evaluation order)
@@ -851,6 +854,9 @@ Implementations are not required to detect that the continuation of each
 \hyper{init} is invoked more than once.  However, if the
 implementation detects this, it must raise an exception with condition
 type {\cf\&assertion}.
+
+Another restriction is that the continuation of each \hyper{init} should not be invoked
+more than once.
 
 The {\cf letrec*} keyword could be defined approximately in terms of {\cf let}
 and {\cf set!}
@@ -883,7 +889,8 @@ assignments generated by the {\cf letrec*} transformation take place.
 \begin{scheme}
 ((\hyperi{formals} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
-and \hyper{body} is as described in section~\ref{bodiessection}. It is
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.  It is
 a syntax violation for a variable to appear more
 than once in the list of variables that appear as part of the formals.
 
@@ -921,12 +928,20 @@ appendix~\ref{derivedformsappendix}.
 \begin{entry}{%
 \proto{let*-values}{ \hyper{mv-bindings} \hyper{body}}{\exprtype}}
 
-The {\cf let*-values} form is the same as with {\cf let-values}, but the bindings are
-processed sequentially from left to right, and the
-region\index{region} of the bindings indicated by {\cf(\hyper{formals}
-  \hyper{init})} is that part of the {\cf let*-values} expression to
-the right of the bindings.  Thus, the second set of bindings is evaluated in
-an environment in which the first set of bindings is visible, and so
+\syntax
+\hyper{Mv-bindings} must have the form
+\begin{scheme}
+((\hyperi{formals} \hyperi{init}) \dotsfoo)\rm,%
+\end{scheme}
+where each \hyper{init} is an expression, and \hyper{body} 
+is as described in section~\ref{bodiessection}.
+
+The {\cf let*-values} form is similar to {\cf let-values}, but the \hyper{init}s are
+evaluated and bindings created sequentially from left to right, with
+the region\index{region} of the bindings of each \hyper{formals} including
+the bindings to its right as well as \hyper{body}. 
+Thus the second \hyper{init} is evaluated in an environment in which the
+bindings of the first \hyper{formals} is visible and initialized, and so
 on.
 
 \begin{scheme}
@@ -935,6 +950,12 @@ on.
                 ((x y) (values a b)))
     (list a b x y)))  \ev (x y x y)%
 \end{scheme}
+
+\begin{note}
+  While all of the variables bound by a {\cf let-values} expression
+  must be distinct, the variables bound by different \hyper{formals} of a
+  {\cf let*-values} expression need not be distinct.
+\end{note}
 
 The following macro defines {\cf let*-values} in terms of {\cf let}
 and {\cf let-values}:
@@ -997,18 +1018,18 @@ context:
 
 The following macro, which uses {\cf syntax-rules} (see
 section~\ref{syntaxrulessection}), defines {\cf begin} in terms of {\cf
-  lambda}.  Note that it only covers the expression case of {\cf begin}.
+  lambda}.  Note that it covers only the expression case of {\cf begin}.
 %
 \begin{scheme}
 (define-syntax \ide{begin}
   (syntax-rules ()
-    ((begin exp ...)
-     ((lambda () exp ...)))))%
+    ((begin exp1 exp2 ...)
+     ((lambda () exp1 exp2 ...)))))%
 \end{scheme}
 
 The following alternative expansion for {\cf begin} does not make use of
 the ability to write more than one expression in the body of a lambda
-expression.  It, too, only covers the expression case of {\cf begin}.
+expression.  It, too, covers only the expression case of {\cf begin}.
 
 \begin{scheme}
 (define-syntax begin
@@ -1056,7 +1077,7 @@ The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
 \item \vari{Obj} and \varii{obj} are both symbols and are the same
   according to the {\cf symbol=?} procedure (section~\ref{symbol=?}).
 
-\item \vari{Obj} and \varii{obj} are both exact\index{exact} numbers,
+\item \vari{Obj} and \varii{obj} are both exact\index{exact} numbers
   and are numerically equal (see {\cf =}, 
   section~\ref{genericarithmeticsection}).
 
@@ -1076,7 +1097,7 @@ character according to the {\cf char=?} procedure
 \item \vari{Obj} and \varii{obj} are mutable objects such as pairs,
   vectors, strings, mutable records (library
   chapter~\extref{lib:recordschapter}{Records}), ports (library
-  section~\extref{lib:portsiosection}{Port I/O}), hashtables (library
+  section~\extref{lib:portsiosection}{Port I/O}), and hashtables (library
   chapter~\extref{lib:hashtablechapter}{Hash tables}) that denote the
   same locations in the store (section~\ref{storagemodel}).
 
@@ -1129,7 +1150,7 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 \item \vari{Obj} and \varii{obj} are mutable objects such as pairs,
   vectors, strings, mutable records (library
   chapter~\extref{lib:recordschapter}{Records}), ports (library
-  section~\extref{lib:portsiosection}{Port I/O}), hash tables (library
+  section~\extref{lib:portsiosection}{Port I/O}), and hashtables (library
   chapter~\extref{lib:hashtablechapter}{Hashtables}) that denote
   distinct locations.
 
@@ -1213,8 +1234,11 @@ required to detect this equivalence.
 
 Since the effect of trying to modify constant objects (those returned by
 literal expressions) is unspecified, implementations are permitted, though not
-required, to share structure between constants where appropriate.  Thus
-the value of {\cf eqv?} on constants is sometimes
+required, to share structure between constants where appropriate.
+Furthermore, a constant may be copied at any time by the implementation so
+as to exist simultaneously in different sets of locations, as noted in
+section~\ref{storagemodel}.
+Thus the value of {\cf eqv?} on constants is sometimes
 implementation-dependent.
 
 \begin{scheme}
@@ -1238,12 +1262,9 @@ their treatment of procedures and literals:  implementations are free
 either to detect or to fail to detect that two procedures or two literals
 are equivalent to each other, and can decide whether or not to
 merge representations of equivalent objects by using the same pointer or
-bit pattern to represent both.   Moreover, they can, in certain cases,
-use implementation techniques such as inlining and beta reduction to
+bit pattern to represent both.   Moreover, they can
+use implementation techniques such as inlining and beta reduction that
 duplicate otherwise equivalent objects.
-As mentioned in section~\ref{quote},
-however, a quoted literal should evaluate to the same value according
-to {\cf eqv?} each time it is evaluated.
 \end{rationale}
 
 \end{entry}
@@ -3775,7 +3796,7 @@ place of the {\cf unquote-splicing} form.
 {\cf unquote-splicing} and multi-operand {\cf unquote} forms must
 appear only within a list or vector \hyper{qq template}.
 
-As noted in section~\ref{quotesection},
+As noted in section~\ref{abbreviationsection},
 {\cf (quasiquote \hyper{qq template})} may be abbreviated
 \backquote\hyper{qq template},
 {\cf (unquote \hyper{expression})} may be abbreviated

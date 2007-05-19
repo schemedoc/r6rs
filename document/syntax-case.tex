@@ -880,29 +880,26 @@ The number of temporaries generated is the number of elements in \var{l}.
 Each temporary is guaranteed to be unique, i.e., different from all other
 identifiers.
 
-A definition of {\cf letrec} that
-uses {\cf generate-temporaries} is shown below.
+A definition of {\cf letrec} equivalent to the one using
+{\cf syntax-rules} given in report
+appendix~\extref{report:derivedformsappendix}{Sample definitions for
+derived forms} is shown below.
 
-\begin{schemenoindent}\label{defn:letrec}
+\begin{schemenoindent}
 (define-syntax letrec
   (lambda (x)
     (syntax-case x ()
-      ((\_ ((i v) ...) e1 e2 ...)
-       (with-syntax
-            (((t ...)
-              (generate-temporaries (syntax (i ...)))))
-          (syntax (let ((i \schfalse{}) ...)
-                    (let ((t v) ...)
-                      (set! i t) ...
-                      (let () e1 e2 ...)))))))))
+      ((\_ ((i e) ...) b1 b2 ...)
+       (with-syntax (((t ...) (generate-temporaries
+                                \#'(i ...))))
+         \#'(let ((i <undefined>) ...)
+             (let ((t e) ...)
+               (set! i t) ...
+               (let () b1 b2 ...))))))))
 \end{schemenoindent}
 
-Any transformer that uses {\cf generate-temporaries} in this fashion can
-be rewritten to avoid using it, albeit with a loss of clarity.
-The trick is to use a recursively defined intermediate form that
-generates one temporary per expansion step and completes the
-expansion after enough temporaries have been generated. See the
-definition for {\cf letrec} in report appendix~\extref{report:derivedformsappendix}{Sample definitions for derived forms}.
+This version uses {\cf generate-temporaries} instead of recursively defined
+helper to generate the necessary temporaries.
 \end{entry}
 
 \section{Derived forms and procedures}
@@ -976,13 +973,6 @@ one-armed {\cf if} expressions where appropriate.
 \begin{entry}{%
 \proto{quasisyntax}{ \hyper{template}}{\exprtype}}
 
-\begin{note}
-{\cf \#`\hyper{template}} is equivalent to {\cf (quasisyntax
-  \hyper{template})}, {\cf \#,\hyper{template}} is equivalent to {\cf (unsyntax
-  \hyper{template})}, and {\cf \#,@\hyper{template}} is equivalent to {\cf (unsyntax-splicing
-  \hyper{template})}.
-\end{note}
-
 The {\cf quasisyntax} form is similar to {\cf syntax}, but it allows parts
 of the quoted text to be evaluated, in a manner similar to the operation
 of {\cf quasiquote} (report section~\extref{report:quasiquotesection}{Quasiquotation}).
@@ -1004,6 +994,12 @@ introducing a new level of syntax quotation and each {\cf unsyntax} or
 An expression nested within $n$ {\cf quasisyntax} expressions must
 be within $n$ {\cf unsyntax} or {\cf unsyntax-splicing} expressions to
 be evaluated.
+
+As noted in section~\ref{abbreviationsection},
+{\cf \#`\hyper{template}} is equivalent to {\cf (quasisyntax
+  \hyper{template})}, {\cf \#,\hyper{template}} is equivalent to {\cf (unsyntax
+  \hyper{template})}, and {\cf \#,@\hyper{template}} is equivalent to {\cf (unsyntax-splicing
+  \hyper{template})}.
 
 The {\cf quasisyntax} keyword can be used in place of {\cf with-syntax} in many
 cases.
