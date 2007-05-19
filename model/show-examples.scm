@@ -66,6 +66,26 @@
         c c))
      (cons 1 2)))
   
-  (step (term (store ((ip (cons 'a null))
-                      (ip1 (cons 'a null)))
-                (eqv? ip1 ip)))))
+  (step 
+   (term 
+    (store ()
+      ((lambda (x)
+         (set-cdr! x x)
+         (apply + x))
+       (cons 1 #f)))))
+  
+  (step 
+   (term 
+    (store ()
+      ((lambda (x)
+         (set-cdr! (cdr x) x)
+         (apply + x))
+       (cons 1 (cons 2 #f))))))
+  
+  (step 
+   (term 
+    (store ()
+      ((lambda (x)
+         (set-car! (cdr x) x)
+         (apply + x))
+       (cons 1 (cons 2 null)))))))

@@ -32,12 +32,11 @@
      (r*v  pair null 'sym sqv condition procedure)
      (sf (x v) (x bh) (pp (cons v v)))
      
-     (es 'seq 'sqv '() '(dot s)
+     (es 'seq 'sqv '()
          (begin es es ...) (begin0 es es ...) (es es ...)
          (if es es es) (set! x es) x
          nonproc pproc
-         (lambda (x ...) es es ...)
-         (lambda (x ... dot x) es es ...)
+         (lambda f es es ...)
          (letrec ([x es] ...) es es ...) 
          (letrec* ([x es] ...) es es ...)
          
@@ -48,8 +47,11 @@
          (handlers es ... es)
          (l! x es)
          (reinit x))
+     (f (x ...)
+        (x x ... dot x)
+        x)
      
-     (s seq () (dot s) sqv sym)
+     (s seq () sqv sym)
      (seq (s s ...) (s s ... dot sqv) (s s ... dot sym))
      
      (p (store (sf ...) e))
@@ -67,7 +69,7 @@
      (sqv n #t #f)
      
      (proc uproc pproc (throw x e))
-     (uproc (lambda (x ...) e e ...) (lambda (x ... dot x) e e ...))
+     (uproc (lambda f e e ...))
      (pproc aproc proc1 proc2 list dynamic-wind apply values)
      (proc1 null? pair? car cdr call/cc procedure? condition? raise*)
      (proc2 cons consi set-car! set-cdr! eqv? call-with-values with-exception-handler)
@@ -144,8 +146,8 @@
         (begin0 e e ... S es ...) (begin0 S es ...)
         (e ... S es ...) (if S es es) (if e S es) (if e e S)
         (set! x S) (handlers s ... S es ... es) (handlers s ... S)
-        (throw x e) (lambda (x ...) S es ...) (lambda (x ...) e e ... S es ...)
-        (lambda (x ... dot x) S es ...) (lambda (x ... dot x) e e ... S es ...)
+        (throw x e) 
+        (lambda f S es ...) (lambda f e e ... S es ...)
         (letrec ([x e] ... [x S] [x es] ...) es es ...)
         (letrec ([x e] ...) S es ...)
         (letrec ([x e] ...) e e ... S es ...)
@@ -320,12 +322,12 @@
           "6setcdr")
      
      (--> (in-hole P_1 (set-car! v_1 v_2))
-          (in-hole P_1 (raise (make-cond "can't set-car! on a non-pair or a mutable pair")))
+          (in-hole P_1 (raise (make-cond "can't set-car! on a non-pair or an immutable pair")))
           "6scare"
           (side-condition (not (mp? (term v_1)))))
      
      (--> (in-hole P_1 (set-cdr! v_1 v_2))
-          (in-hole P_1 (raise (make-cond "can't set-cdr! on a non-pair or a mutable pair")))
+          (in-hole P_1 (raise (make-cond "can't set-cdr! on a non-pair or an immutable pair")))
           "6scdre"
           (side-condition (not (mp? (term v_1)))))))
   
@@ -372,19 +374,23 @@
            (not (= (length (term (x_1 ...)))
                    (length (term (v_1 ...)))))))
      
-     (--> (in-hole P_1 ((lambda (x_1 ... dot x_r) e_1 e_2 ...) v_1 ... v_2 ...))
-          (in-hole P_1 ((lambda (x_1 ... x_r) e_1 e_2 ...) v_1 ... (list v_2 ...)))
+     (--> (in-hole P_1 ((lambda (x_1 x_2 ... dot x_r) e_1 e_2 ...) v_1 v_2 ... v_3 ...))
+          (in-hole P_1 ((lambda (x_1 x_2 ... x_r) e_1 e_2 ...) v_1 v_2 ... (list v_3 ...)))
           "6μapp"
           (side-condition
-           (= (length (term (v_1 ...))) (length (term (x_1 ...))))))
+           (= (length (term (x_2 ...))) (length (term (v_2 ...))))))
      
      ;; mu-lambda too few arguments case
-     (--> (in-hole P_1 ((lambda (x_1 ... dot x) e e ...) v_1 ...))
+     (--> (in-hole P_1 ((lambda (x_1 x_2 ... dot x) e e ...) v_1 ...))
           (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6μarity"
           (side-condition
            (< (length (term (v_1 ...)))
-              (length (term (x_1 ...))))))
+              (length (term (x_1 x_2 ...))))))
+     
+     (--> (in-hole P_1 ((lambda x_1 e_1 e_2 ...) v_1 ...))
+          (in-hole P_1 ((lambda (x_1) e_1 e_2 ...) (list v_1 ...)))
+          "6μapp1")
      
      (--> (in-hole P_1 (procedure? proc)) (in-hole P_1 #t) "6proct")
      (--> (in-hole P_1 (procedure? nonproc)) (in-hole P_1 #f) "6procf")
@@ -410,10 +416,15 @@
           (in-hole P_1 (proc_1 v_1 ...))
           "6applyf")
      
-     (--> (store (sf_1 ... (pp_i (cons v_2 v_3)) sf_2 ...) (in-hole E_1 (apply proc_1 v_1 ... pp_i)))
-          (store (sf_1 ... (pp_i (cons v_2 v_3)) sf_2 ...) (in-hole  E_1 (apply proc_1 v_1 ... v_2 v_3)))
-          "6applyc")
+     (--> (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole E_1 (apply proc_1 v_1 ... pp_1)))
+          (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole  E_1 (apply proc_1 v_1 ... v_2 v_3)))
+          "6applyc"
+          (side-condition (not (term (circular? (pp_1 v_3 (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...)))))))
      
+     (--> (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole E_1 (apply proc_1 v_1 ... pp_1)))
+          (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole  E_1 (raise (make-cond "apply called on circular list"))))
+          "6applyce"
+          (side-condition (term (circular? (pp_1 v_3 (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...))))))
      
      (--> (in-hole P_1 (apply nonproc v ...))
           (in-hole P_1 (raise (make-cond "can't apply non-procedure")))
@@ -427,51 +438,53 @@
      (--> (in-hole P_1 (apply)) (in-hole P_1 (raise (make-cond "arity mismatch"))) "6apparity0")
      (--> (in-hole P_1 (apply v)) (in-hole P_1 (raise (make-cond "arity mismatch"))) "6apparity1")))
   
+  ;; circular? : pp val store -> boolean
+  ;; returns #t if pp is reachable via val in the store
+  (define-metafunction circular?
+    lang
+    [(pp_1 pp_2 (sf_1 ... (pp_2 (cons v_1 pp_1)) sf_2 ...))
+     #t]
+    [(pp_1 pp_2 (sf_1 ... (pp_2 (cons v_1 v_2)) sf_2 ...))
+     (circular? (pp_1 v_2 (sf_1 ... (pp_2 (cons v_1 v_2)) sf_2 ...)))]
+    [(pp_1 v_1 (sf_1 ...))
+     #f]) ;; otherwise
+  
   ;; Var-set!d? : e -> boolean
   (define-metafunction Var-set!d?
     lang
-    [(x_1 (e_1 e_2 e_3 ...)) 
-     ,(or (term (Var-set!d? (x_1 e_1)))
-          (term (Var-set!d? (x_1 (e_2 e_3 ...)))))]
-    [(x_1 (e_1)) 
-     (Var-set!d? (x_1 e_1))]
-    [(x_1 (if e_1 e_2 e_3))
-     ,(or (term (Var-set!d? (x_1 e_1)))
-          (term (Var-set!d? (x_1 e_2)))
-          (term (Var-set!d? (x_1 e_3))))]
     [(x_1 (set! x_1 e)) #t]
-    [(side-condition (x_1 (set! x_2 e_1))
-                     (not (eq? (term x_1) (term x_2))))
+    [(x_1 (set! x_2 e_1))
      (Var-set!d? (x_1 e_1))]
+    
     [(x_1 (begin e_1 e_2 e_3 ...))
      ,(or (term (Var-set!d? (x_1 e_1)))
           (term (Var-set!d? (x_1 (begin e_2 e_3 ...)))))]
     [(x_1 (begin e_1))
      (Var-set!d? (x_1 e_1))]
-    [(x_1 (begin0 e_1 e_2 e_3 ...))
-     ,(or (term (Var-set!d? (x_1 e_1)))
-          (term (Var-set!d? (x_1 (begin0 e_2 e_3 ...)))))]
-    [(x_1 (begin0 e_1))
-     (Var-set!d? (x_1 e_1))]
-    [(x_1 (lambda (x ... x_1 x ...) e e ...)) #f]
-    [(side-condition (x_1 (lambda (x_2 ...) e_1 e_2 ...)) 
-                     (not (memq (term x_1) (term (x_2  ...)))))
+    
+    [(x_1 (e_1 e_2 ...)) 
      (Var-set!d? (x_1 (begin e_1 e_2 ...)))]
+    [(x_1 (if e_1 e_2 e_3))
+     ,(or (term (Var-set!d? (x_1 e_1)))
+          (term (Var-set!d? (x_1 e_2)))
+          (term (Var-set!d? (x_1 e_3))))]
+    
+    [(x_1 (begin0 e_1 e_2 ...))
+     (Var-set!d? (x_1 (begin e_1 e_2 ...)))]
+    
+    [(x_1 (lambda (x ... x_1 x ...) e e ...)) #f]
     [(x_1 (lambda (x ... x_1 x ... dot x) e e ...)) #f]
     [(x_1 (lambda (x ... dot x_1) e e ...)) #f]
-    [(side-condition (x_1 (lambda (x_2 ... dot x_3) e_1 e_2 ...)) 
-                     (not (memq (term x_1) (term (x_2 ... x_3)))))
+    [(x_1 (lambda x_1 e e ...)) #f]
+    [(x_1 (lambda f e_1 e_2 ...))
      (Var-set!d? (x_1 (begin e_1 e_2 ...)))]
+    
     [(x_1 (letrec ([x e] ... [x_1 e] [x e] ...) e e ...)) #f]
-    [(x_1 (letrec ([x_2 e_2] [x_3 e_3] ...) e_4 e_5 ...))
-     ,(or (term (Var-set!d? (x_1 e_2)))
-          (term (Var-set!d? (x_1 (letrec ([x_3 e_3] ...) e_4 e_5 ...)))))]
-    [(x_1 (letrec () e_1 e_2 ...))
-     (Var-set!d? (x_1 (begin e_1 e_2 ...)))]
-    [(x_1 (letrec () e_1))
-     (Var-set!d? (x_1 e_1))]
+    [(x_1 (letrec ([x_2 e_1] ...) e_2 e_3 ...))
+     (Var-set!d? (x_1 (begin e_1 ... e_2 e_3 ...)))]
     [(x_1 (letrec* ([x_2 e_2] ...) e_3 e_4 ...))
      (Var-set!d? (x_1 (letrec ([x_2 e_2] ...) e_3 e_4 ...)))]
+    
     [(x_1 (l! x_1 e)) #t]
     [(x_1 (l! x_2 e_1)) 
      (Var-set!d? (x_1 e_1))]
@@ -748,20 +761,15 @@
           "6sqv")
      (--> (store (sf_1 ...) (in-hole S_1 '()))
           (store (sf_1 ...) (in-hole S_1 null))
-          "6eseq")
-     (--> (store (sf_1 ...) (in-hole S_1 '(dot s_1)))
-          (store (sf_1 ...) (in-hole S_1 's_1))
-          "6edot")))
+          "6eseq")))
   
   (define-metafunction Qtoc
     lang
     [() null]
     [(s_1 s_2 ...) (cons (Qtoc s_1) (Qtoc (s_2 ...)))]
     [(s_1 dot sqv_1) (cons (Qtoc s_1) sqv_1)]
-    [(dot sqv_1) sqv_1]
     [(s_1 s_2 s_3 ... dot sqv_1) (cons (Qtoc s_1) (Qtoc (s_2 s_3 ... dot sqv_1)))]
     [(s_1 dot sym_1) (cons (Qtoc s_1) 'sym_1)]
-    [(dot sym_1) 'sym_1]
     [(s_1 s_2 s_3 ... dot sym_1) (cons (Qtoc s_1) (Qtoc (s_2 s_3 ... dot sym_1)))]
     [sym_1 'sym_1]
     [sqv_1 sqv_1])
@@ -771,10 +779,8 @@
     [() null]
     [(s_1 s_2 ...) (consi (Qtoic s_1) (Qtoic (s_2 ...)))]
     [(s_1 dot sqv_1) (consi (Qtoic s_1) sqv_1)]
-    [(dot sqv_1) sqv_1]
     [(s_1 s_2 s_3 ... dot sqv_1) (consi (Qtoic s_1) (Qtoic (s_2 s_3 ... dot sqv_1)))]
     [(s_1 dot sym_1) (consi (Qtoic s_1) 'sym_1)]
-    [(dot sym_1) 'sym_1]
     [(s_1 s_2 s_3 ... dot sym_1) (consi (Qtoic s_1) (Qtoic (s_2 s_3 ... dot sym_1)))]
     [sym_1 'sym_1]
     [sqv_1 sqv_1])
@@ -826,8 +832,10 @@
      (lambda (variable_2 ... dot variable_1) e_2 e_3 ...)]
     [(variable_1 e (lambda (variable_2 ... variable_1 variable_3 ... dot variable_4) e_2 e_3 ...))
      (lambda (variable_2 ... variable_1 variable_3 ... dot variable_4) e_2 e_3 ...)]
+    [(variable_1 e (lambda variable_1 e_2 e_3 ...))
+     (lambda variable_1 e_2 e_3 ...)]
     
-    ;; next 2 cases: we know no capture can occur, so we just recur
+    ;; next 3 cases: we know no capture can occur, so we just recur
     [(variable_1 e_1 (lambda (variable_2 ...) e_2 e_3 ...))
      (lambda (variable_2 ...) 
        (r6rs-subst-one (variable_1 e_1 e_2))
@@ -840,6 +848,12 @@
        (r6rs-subst-one (variable_1 e_1 e_3)) ...)
      (side-condition (andmap (λ (x) (equal? (variable-not-in (term e_1) x) x))
                              (term (variable_2 ... variable_3))))]
+    [(variable_1 e_1 (lambda variable_2 e_2 e_3 ...))
+     (lambda variable_2
+       (r6rs-subst-one (variable_1 e_1 e_2))
+       (r6rs-subst-one (variable_1 e_1 e_3)) ...)
+     (side-condition (equal? (variable-not-in (term e_1) (term variable_2)) 
+                             (term variable_2)))]
     
     ;; capture avoiding cases
     [(variable_1 e_1 (lambda (variable_2 ... dot variable_3) e_2 e_3 ...))
@@ -859,6 +873,12 @@
         (term (lambda (variable_new ...) 
                 (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_2))))
                 (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_3)))) ...)))]
+    [(variable_1 e_1 (lambda variable_2 e_2 e_3 ...))
+     ,(term-let ([variable_new (variable-not-in (term (variable_1 e_1 e_2 e_3 ...))
+                                                (term variable_2))])
+        (term (lambda variable_new
+                (r6rs-subst-one (variable_1 e_1 (r6rs-subst-one (variable_2 variable_new e_2))))
+                (r6rs-subst-one (variable_1 e_1 (r6rs-subst-one (variable_2 variable_new e_3)))) ...)))]
     
     ;; last two cases cover all other expressions -- they don't have any variables, 
     ;; so we don't care about their structure. 
@@ -894,7 +914,6 @@
   (define proc? (test-match lang proc))
   (define null-v? (test-match lang null))
   (define lambda-null? (test-match lang (lambda () e)))
-  (define lambda-one? (test-match lang (lambda (x) e)))
   (define pp? (test-match lang pp))
   (define mp? (test-match lang mp))
   (define ip? (test-match lang ip))

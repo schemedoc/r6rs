@@ -2,8 +2,13 @@
 
 %\noindent\textbf{TODO}
 %\begin{itemize}
-%\item mention things are not meant to be in original programs (handlers ...?)
-%\item exception handlers change
+%\item mention things are not meant to be in original programs (handlers, etc.)
+%\item the semantics covers ``should''s as if they were ``musts''.
+%\item discuss modeling of unspecified results
+%\item letrec and lambda bodies do not allow definitions
+%\item the script V metafunction description needs to say that the cases are ordered (to save space in its presentation)
+%\item need to explain why 6appN makes 6mark work.
+%\item begin is only there as the expression form variant
 %\end{itemize}
 
 This section gives a formal, operational semantics for Scheme. It does not cover the entire language. The notable missing features are the macro system, IO, and the numeric tower. The precise list of features included is given in section~\ref{sec:semantics:grammar}.
@@ -519,6 +524,7 @@ The rules \rulename{6car} and \rulename{6cdr} extract the components of a pair f
 \beginfig
 \begin{center}
 \input{r6-fig-Apply.tex}
+\input{r6-fig-circular_.tex}
 \end{center}
 \caption{Apply}\label{fig:Apply}
 \endfig
@@ -749,8 +755,6 @@ So, the remaining rules just specify the minimal behavior that we know that a va
 \section*{Acknowledgments}
 
 Thanks to Michael Sperber for many helpful discussions of specific points in the semantics, for spotting many mistakes and places where the formal semantics diverged from the informal semantics, and for generally making it possible for us to keep up with changes to the informal semantics as it developed. Thanks also to Will Clinger for a careful reading of the semantics and its explanation.
-
-\input{semantics-index}
 
 %%% Local Variables: 
 %%% mode: latex

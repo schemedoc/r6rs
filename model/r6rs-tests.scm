@@ -236,7 +236,7 @@
      
      (make-r6test '(store () (letrec ([x '(1)]) (set! x (set-car! x 2))))
                   (list '(unknown "unspecified result")
-                        '(uncaught-exception (make-cond "can't set-car! on a non-pair or a mutable pair"))))
+                        '(uncaught-exception (make-cond "can't set-car! on a non-pair or an immutable pair"))))
      
      ;; handlers
      (make-r6test '(store () (letrec ([x 1]) (with-exception-handler (lambda (e) (set! x 2)) (lambda () (car 'x)))))
@@ -299,27 +299,27 @@
                     400)
      (make-r6test '(store () ((lambda (x) (set-cdr! x 4) (cdr x)) '(3)))
                   (list '(store () (values 4))
-                        '(uncaught-exception (make-cond "can't set-cdr! on a non-pair or a mutable pair"))))
+                        '(uncaught-exception (make-cond "can't set-cdr! on a non-pair or an immutable pair"))))
      (make-r6test '(store () ((lambda (x) (set-car! x 4) (car x)) '(3)))
                   (list '(store () (values 4))
-                        '(uncaught-exception (make-cond "can't set-car! on a non-pair or a mutable pair"))))
-                        
+                        '(uncaught-exception (make-cond "can't set-car! on a non-pair or an immutable pair"))))
+     
      (make-r6test '(store ()
                      (letrec ([first-time? #t]
-                              [f (lambda (dot y) (if first-time?
-                                                     (begin
-                                                       (set! first-time? #f)
-                                                       (set-car! y 2))
-                                                     (car y)))]
+                              [f (lambda y (if first-time?
+                                               (begin
+                                                 (set! first-time? #f)
+                                                 (set-car! y 2))
+                                               (car y)))]
                               [g (lambda () (apply f '(1)))])
                        (g)
                        (g)))
                   (list '(store ((lx-first-time? #f)
-                                 (lx-f (lambda (dot y) (if lx-first-time?
-                                                           (begin
-                                                             (set! lx-first-time? #f)
-                                                             (set-car! y 2))
-                                                           (car y))))
+                                 (lx-f (lambda y (if lx-first-time?
+                                                     (begin
+                                                       (set! lx-first-time? #f)
+                                                       (set-car! y 2))
+                                                     (car y))))
                                  (lx-g (lambda () (apply lx-f (cons 1 null)))))
                            (values 1))))))
   
@@ -332,9 +332,7 @@
      (make-r6test/v ''null ''null)
      (make-r6test/v '(null? 'null) #f)
      (make-r6test/v ''unspecified ''unspecified)
-     (make-r6test/v '((lambda (x) (eqv? 'x 1)) 1) #f)
-     (make-r6test/v ''(dot 1) 1)
-     (make-r6test/v ''(dot x) ''x)))
+     (make-r6test/v '((lambda (x) (eqv? 'x 1)) 1) #f)))
   
   (define eqv-tests
     (list
@@ -454,8 +452,8 @@
      (make-r6test/e '(apply values 2) "apply's last argument non-list")
      (make-r6test/e '(car 1) "can't take car of non-pair")
      (make-r6test/e '(cdr 1) "can't take cdr of non-pair")
-     (make-r6test/e '(set-car! 2 1) "can't set-car! on a non-pair or a mutable pair")
-     (make-r6test/e '(set-cdr! 1 2) "can't set-cdr! on a non-pair or a mutable pair")
+     (make-r6test/e '(set-car! 2 1) "can't set-car! on a non-pair or an immutable pair")
+     (make-r6test/e '(set-cdr! 1 2) "can't set-cdr! on a non-pair or an immutable pair")
      
      (make-r6test/e '(call/cc 1) "can't call non-procedure")
      (make-r6test/e '(call-with-values 1 2) "can't call non-procedure")))
@@ -498,7 +496,7 @@
                    '(store ((lx-add4 (lambda (y) (+ 4 y))))
                       (values 10))))
      
-     (make-r6test/v '((lambda (dot x) x) 3 4 5 6)
+     (make-r6test/v '((lambda x x) 3 4 5 6)
                     '(cons 3 (cons 4 (cons 5 (cons 6 null)))))
      (make-r6test/v '((lambda (x y dot z) z) 3 4 5 6)
                     '(cons 5 (cons 6 null)))
@@ -641,13 +639,13 @@
       '(store ()
          (letrec* ([compose
                     (lambda (f g)
-                      (lambda (dot args)
+                      (lambda args
                         (f (apply g args))))]
                    
                    [sqrt (lambda (x) (if (eqv? x 900) 30 #f))])
            ((compose sqrt *) 12 75)))
       (list '(store ((lx-compose (lambda (f g)
-                                   (lambda (dot args)
+                                   (lambda args
                                      (f (apply g args)))))
                      (lx-sqrt (lambda (x) (if (eqv? x 900) 30 #f))))
                (values 30))))))
@@ -693,10 +691,10 @@
      (make-r6test/v '((lambda (x dot y) x) 1) 1)
      (make-r6test/e '((lambda (x y dot z) x) 1)
                     "arity mismatch")
-     (make-r6test/v '((lambda (dot args) (car (cdr args))) 1 2 3 4 5 6) 2)
-     (make-r6test/v '((lambda (dot args) (eqv? args args)) 1 2) #t)
-     (make-r6test/v '((lambda (dot args) ((lambda (y) args) (begin (set! args 50) 123)))) 50)
-     (make-r6test '(store () ((lambda (dot args) ((lambda (y) args) (set! args 50)))))
+     (make-r6test/v '((lambda args (car (cdr args))) 1 2 3 4 5 6) 2)
+     (make-r6test/v '((lambda args (eqv? args args)) 1 2) #t)
+     (make-r6test/v '((lambda args ((lambda (y) args) (begin (set! args 50) 123)))) 50)
+     (make-r6test '(store () ((lambda args ((lambda (y) args) (set! args 50)))))
                   (list '(unknown "unspecified result")))
      (make-r6test/v '(if ((lambda (x) x) 74) ((lambda () 6)) (6 54)) 6)
      (make-r6test/e '(1 1) "can't call non-procedure")
@@ -765,10 +763,21 @@
      (make-r6test/v '((lambda (x) (begin (set! x 5) (set! x 4) (set! x 3) x)) 0) 3)
      (make-r6test/v '((lambda (x y) (x y)) + 0) 0)
      (make-r6test/v '(apply + (cons 1 (cons 2 null))) 3)
+     (make-r6test '(store ()
+                     ((lambda (x) (set-cdr! x x) (apply + x))
+                      (cons 1 #f)))
+                  (list '(uncaught-exception (make-cond "apply called on circular list"))))
+  
+     (make-r6test '(store ()
+                     ((lambda (x)
+                        (set-cdr! (cdr x) x)
+                        (apply + x))
+                      (cons 1 (cons 2 #f))))
+                  (list '(uncaught-exception (make-cond "apply called on circular list"))))
      
      ;; app
-     (make-r6test/v '((lambda (dot args) (apply + args)) 1 2 3 4) 10)
-     (make-r6test/v '((lambda (f) (eqv? (f 1) (f 1))) (lambda (dot args) (car args))) #t)
+     (make-r6test/v '((lambda args (apply + args)) 1 2 3 4) 10)
+     (make-r6test/v '((lambda (f) (eqv? (f 1) (f 1))) (lambda args (car args))) #t)
      (make-r6test '(store () 
                      (letrec* ((length
                                 (lambda (l)
@@ -864,7 +873,7 @@
                   (list '(store () (values 4))))
      (make-r6test '(store ()
                      (((lambda (x)
-                         (lambda (dot args) (car args)))
+                         (lambda args (car args)))
                        1)
                       2))
                   (list '(store () (values 2))))
@@ -1102,7 +1111,7 @@
      ;; dynamic-wind given non-lambda procedure values
      (make-r6test '(store () (dynamic-wind values values values))
                   (list '(store () (values))))
-     (make-r6test '(store () (dynamic-wind values (lambda (dot x) x) values))
+     (make-r6test '(store () (dynamic-wind values (lambda x x) values))
                   (list '(store () (values null))))
      
      
@@ -1118,9 +1127,9 @@
      
      (make-r6test/e '(dynamic-wind (lambda () (car 1)) (lambda (x dot y) x) (lambda () 1))
                     "can't take car of non-pair")
-     (make-r6test/v '(dynamic-wind + (lambda (dot y) 2) *)
+     (make-r6test/v '(dynamic-wind + (lambda y 2) *)
                     2)
-     (make-r6test/v '(dynamic-wind values list (lambda (dot y) y))
+     (make-r6test/v '(dynamic-wind values list (lambda y y))
                     'null)
      
      
@@ -1971,10 +1980,10 @@ of digits with deconv-base
   ;;
   
   (define the-sets 
-    (list (list "exn" exn-tests)
+    (list (list "app" app-tests)
+          (list "exn" exn-tests)
           (list "dw" dw-tests)
           (list "eqv" eqv-tests)
-          (list "app" app-tests)
           (list "r5" r5-tests)
           (list "mv" mv-tests)
           (list "letrec" letrec-tests)

@@ -19,6 +19,9 @@
   
   (define filename-prefix "r6-fig")
   
+  (define latex-negation "\\ensuremath{\\neg}")
+
+  
   (define (translate file)
     (let ((r (with-input-from-file file read)))
       (initialize-metafunctions/matches r)
@@ -28,7 +31,9 @@
     '(P var pp sym p* p v
         E F PG S))
   
-  (define otherwise-metafunctions '(pRe poSt Trim))
+  (define flatten-args-metafunctions '(Var-set!d? circular?))
+  
+  (define otherwise-metafunctions '(pRe poSt Trim reachable))
   
   (define combine-metafunction-names '((pRe poSt Trim) (Qtoc Qtoic)))
   
@@ -36,8 +41,8 @@
 
   (define (side-condition-below? x)
     (member x '("6appN!" "6refu" "6setu" "6xref" "6xset" 
-                         "6letrec"
-                         "6letrec*")))
+                         "6letrec" "6letrec*"
+                         "6applyc" "6applyce")))
   
   (define (two-line-name? x) (not (one-line-name? x)))
   
@@ -220,11 +225,24 @@
          body)]))
   
   (define (print-metafunction name clauses)
-    (print-something (lambda (x last-one?) 
-                       (fmatch x
-                               [`(,left ,right) (p-case name left right 
-                                                        (and last-one? (memq name otherwise-metafunctions)))]
-                               [else (error 'print-metafunction "mismatch ~s" x)]))
+    (print-something 
+     (cond
+       [(memq name flatten-args-metafunctions)
+        (lambda (x last-one?) 
+          (match x
+            [`(,left ,right) 
+             (p-flatten-case name 
+                             left
+                             right 
+                             (and last-one? (memq name otherwise-metafunctions)))]
+            [else (error 'print-metafunction "mismatch ~s" x)]))]
+       [else
+        (lambda (x last-one?) 
+          (match x
+            [`(,left ,right) 
+             (p-case name left right 
+                     (and last-one? (memq name otherwise-metafunctions)))]
+            [else (error 'print-metafunction "mismatch ~s" x)]))])
                      name
                      clauses
                      "\\begin{displaymath}\n\\begin{array}{lcl}"
@@ -264,6 +282,36 @@
               (cond
                 [(null? next) (list fst)]
                 [else (list* fst x (loop (car next) (cdr next)))]))]))
+  
+  (define (p-flatten-case name lhs rhs show-otherwise?)
+    (let ([ls (map (λ (x) (let-values ([(a b) (pattern->tex x)])
+                            (unless (null? b)
+                              (error 'p-flatten-case "found side conditions, but don't support them here"))
+                            a))
+                   lhs)])
+      (let-values ([(r cl) (pattern->tex rhs)])
+        (let ([side-conditions
+               (if (null? cl)
+                   #f
+                   (format "(~a)" (string-join cl ", ")))])
+          (list 
+           (cond
+             [side-conditions
+              (format
+               "~a \\llbracket ~a \\rrbracket & = &\n~a \\\\\n\\multicolumn{3}{l}{\\hbox to .2in{} ~a}\\\\\n"
+               (translate-mf-name name)
+               (apply string-append (add-between ", " (map (λ (l) (inline-tex l #f)) ls)))
+               (inline-tex r #f)
+               side-conditions)]
+             [else
+              (format
+               "~a \\llbracket ~a \\rrbracket & = &\n~a ~a\\\\\n"
+               (translate-mf-name name)
+               (apply string-append (add-between ", " (map (λ (l) (inline-tex l #f)) ls)))
+               (inline-tex r #f)
+               (if show-otherwise?
+                   "~ ~ ~ ~ ~ ~ ~ \\mbox{\\textrm{(otherwise)}}"
+                   ""))]))))))
   
   (define (p-case name lhs rhs show-otherwise?)
     (let*-values ([(l l-cl) (pattern->tex lhs)]
@@ -328,6 +376,7 @@
                   [(e) 60]
                   [(es) 65]
                   [(a*) 90]
+                  [(S) 75]
                   [else 70])])
            (printf "~a & ::=~~~~& " (format-nonterm nonterm))
            (let loop ([prods (map prod->string (cdr p))]
@@ -370,7 +419,7 @@
   (define (p-rule arrow lwrap rwrap)
     (opt-lambda (lhs rhs raw-name left-right? [extra-side-conditions '()])
       (record-index-entries raw-name lhs)
-      (record-index-entries raw-name rhs)
+      ;(record-index-entries raw-name rhs) ;; right-hand side has too much junk. Only index left-hand side stuff
       (let*-values ([(l l-cl) (pattern->tex* (lwrap lhs) left-right?)]
                     [(r r-cl) (pattern->tex* (rwrap rhs) left-right?)])
         (let* ([arrow-tex 
@@ -559,9 +608,13 @@
 	  (display "''}" o))
 	 ((list? p)
 	  (case (car p)
-	    ((quote)
+	    [(hole)
+             (case (list-ref p 1)
+               [(multi) (display "\\holes{}" o)]
+               [(single) (display "\\holeone{}" o)])]
+            [(quote)
 	     (display "'" o)
-	     (loop (cadr p)))
+	     (loop (cadr p))]
             [(unquote)
              (let ([unquoted (cadr p)])
                (if (and (list? unquoted)
@@ -608,25 +661,25 @@
 	     (display "[" o)
 	     (loop (caddr p))
 	     (display "]" o))
-            [(Qtoc Qtoic Trim pRe poSt ovservable observable-value)
+            [(Qtoc Qtoic Trim pRe poSt observable observable-value)
              (display (translate-mf-name (car p)) o)
 	     (display "\\llbracket{}" o)
 	     (loop (cadr p))
 	     (display "\\rrbracket" o)]
             (else
-	     (display "(" o)
+	     (display "\\texttt{(}" o)
 	     (loop (car p))
 	     (for-each (lambda (el)
 			 (display "~" o)
 			 (loop el))
 		       (cdr p))
-	     (display ")" o))))
+	     (display "\\texttt{)}" o))))
 	 ((pair? p)
-	  (display "(" o)
+	  (display "\\texttt{(}" o)
 	  (loop (car p))
-	  (display " . " o)
+	  (display " \\texttt{.} " o)
 	  (loop (cdr p))
-	  (display ")" o))))
+	  (display "\\texttt{)}" o))))
       (close-output-port o)
       (get-output-string o)))
 
@@ -641,7 +694,7 @@
   (define (categorize-symbol op)
     (case op
       [(language
-        name subst reduction reduction/context red term apply-values store dot ccons throw push pop trim dw mark make-cond handlers
+        name subst reduction reduction/context red term apply-values store dot consi throw push pop trim dw mark condition make-cond handlers
         define beginF throw lambda set! if begin0 quote begin letrec letrec* reinit l!)
        'sy]
       [(cons unspecified null list dynamic-wind apply values null? pair? car cdr call/cc procedure? condition? unspecified? set-car! set-cdr! eqv? call-with-values with-exception-handler raise-continuable raise + * - /)
@@ -726,6 +779,8 @@
         (list (arglen-str "\\neq" arg1 arg2))]
       [`(< (length (term (,arg1 ,dots))) (length (term (,arg2 ,dots))))
         (list (arglen-str "<" arg1 arg2))]
+      [`(< (length (term (,arg1 ,dots))) (length (term (,arg2 ,arg3 ,dots))))
+        (list (string-append (arglen-str "<" arg1 arg3) " + 1"))]
       [`(>= (length (term (,arg1 ,dots))) (length (term (,arg2 ,dots))))
         (list (arglen-str "\\geq" arg1 arg2))]
       [`(not (= (length (term (,v ,_))) ,(? number? n)))
@@ -786,12 +841,22 @@
                        (gps t)
                        (gps (cadr test-match)))))]
       
+      [`(term (,(? (λ (x) (memq x flatten-args-metafunctions)) name) ,args))
+       (list (format "~a \\llbracket ~a \\rrbracket"
+                     (translate-mf-name name)
+                     (apply string-append (add-between ", " (map gps args)))))]
+      [`(not (term (,(? (λ (x) (memq x flatten-args-metafunctions)) name) ,args)))
+       (list (format "~a ~a \\llbracket ~a \\rrbracket"
+                     latex-negation
+                     (translate-mf-name name)
+                     (apply string-append (add-between ", " (map gps args)))))]
       [`(term (,(? metafunction-name? mf) ,arg))
         (list (format "~a \\llbracket ~a \\rrbracket"
                       (translate-mf-name mf)
                       (gps arg)))]
       [`(not (term (,(? metafunction-name? mf) ,arg)))
-        (list (format "! ~a \\llbracket ~a \\rrbracket"
+        (list (format "~a ~a \\llbracket ~a \\rrbracket"
+                      latex-negation
                       (translate-mf-name mf)
                       (gps arg)))]
       [`(> (length (term (e_1 ,dots e_i e_i+1 ,dots))) 2)
@@ -896,6 +961,9 @@
              (d "\\textrm{ or }")
              (loop x))
            args)]
+        
+        [`(,(? (λ (x) (memq x flatten-args-metafunctions)) name) ,arg)
+         (error 'flatten-args-metafunction "1")]
         [`(,(? metafunction-name? mf) ,arg)
          (d (translate-mf-name mf))
          (d " \\llbracket{}")
@@ -969,16 +1037,13 @@
         [(list 'quote e)
          (d "\\sy{'") (d (format "~s" e)) (d "}")]
         [(list 'unquote-splicing expr) (rhs->tex/int expr lr?)]
-        
+
         [`(store (,sf1 ,sf2 ,sf3 ,sf4 (ri #f) ,sf6) (in-hole ,e ((lambda ,bodies ...) ,args ...)))
          (let ([store `(,sf1 ,sf2 ,sf3 ,sf4 (ri #f) ,sf6)]
                [func `(lambda ,@bodies)])
-           (d "(\\sy{store}~") (loop store) (d "\n")
-           (d "~~~") (loop e) (d "[(") (loop func) (d "\n")
-           (d "~~~\\hphantom{") (loop e) (d "[(}") (loop-eles args) (d ")])"))]
-        
-        [`(store ,store ,body)
-         (begin (d "(\\sy{store}~") (loop store) (d "~") (loop body) (d ")"))]
+           (d "\\texttt{(}\\sy{store}~") (loop store) (d "\n")
+           (d "~~~") (loop e) (d "[\\texttt{(}") (loop func) (d "\n")
+           (d "~~~\\hphantom{") (loop e) (d "[\\texttt{(}}") (loop-eles args) (d "\\texttt{)])}"))]
         
         [`(term ,p) (error 'pattern->tex/int "found term inside a pattern ~s, ~s" orig-pat p)]
         [`(side-condition ,p ,_) (loop p)]
@@ -1003,6 +1068,15 @@
           (printf "\\mbox{\\textbf{~a:} ~a}" lab (quote-tex-specials s))]
         [`(,(or 'r6rs-subst-many 'r6rs-subst-one) ,arg)
          (d (do-pretty-format pat))]
+        [`(,(? (λ (x) (memq x flatten-args-metafunctions)) name) (,arg1 ,args ...))
+         (d (translate-mf-name name))
+         (d " \\llbracket{}")
+         (loop arg1)
+         (for-each (λ (arg)
+                     (d ", ")
+                     (loop arg))
+                   args)
+         (d " \\rrbracket ")]
         [`(,(? metafunction-name? mf) ,arg)
          (d (translate-mf-name mf))
          (d " \\llbracket{}")
@@ -1093,20 +1167,22 @@
 	['v_car (display "v_{\\nt{car}}")]
 	['v_cdr (display "v_{\\nt{cdr}}")]
 	[else
-	 (let ([str (symbol->string x)])
+	 (let ([str (regexp-replace* #rx"-"
+                                     (symbol->string x)
+                                     "\\\\mbox{-}")])
 	   (cond
-	    [(regexp-match #rx"^([^_]*)_none$" str)
-	     =>
-	     (lambda (m)
-	       (let ([name (cadr m)])
-		 (printf "~a{~a}" command name)))]
-	    [(regexp-match #rx"^([^_]*)_([^_]*)$" str)
-	     =>
-	     (lambda (m)
-	       (let-values ([(_ name subscript) (apply values m)])
-		 (printf "~a{~a}_{~a}" command name subscript)))]
-	    [else 
-	     (printf "~a{~a}" command str)]))])))
+             [(regexp-match #rx"^([^_]*)_none$" str)
+              =>
+              (lambda (m)
+                (let ([name (cadr m)])
+                  (printf "~a{~a}" command name)))]
+             [(regexp-match #rx"^([^_]*)_([^_]*)$" str)
+              =>
+              (lambda (m)
+                (let-values ([(_ name subscript) (apply values m)])
+                  (printf "~a{~a}_{~a}" command name subscript)))]
+             [else 
+              (printf "~a{~a}" command str)]))])))
   
   (define only-once-ht (make-hash-table))
   (define (only-once x exp)
