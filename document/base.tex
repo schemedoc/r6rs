@@ -17,14 +17,35 @@ of {\cf syntax-rules}\schindex{syntax-rules} and {\cf
   identifier-syntax}\schindex{syntax-rules}, which are exported with
 level $1$.
 
+\begin{rationale} 
+The {\cf syntax-rules} and {\cf identifier-syntax} forms are
+used to create macro transformers and are thus needed only at
+expansion time, i.e., meta level $1$.  
+\end{rationale}
+
 In addition, the identifiers {\cf unquote}\schindex{unquote}, {\cf
   unquote-splicing}\schindex{unquote-splicing}, {\cf =>}\schindex{=>},
-{\cf else}\schindex{else} are exported for level $0$, and the
+{\cf else}\schindex{else} are exported with level $0$, and the
 identifiers {\cf ...}\schindex{...} and {\cf \_}\schindex{\_} are
-exported for level $1$.  The identifier {\cf set!} (section~\ref{set!})
-is exported at both levels $0$ and $1$.  Except for {\cf set!},
-referring to one of these identifiers out of place is a syntax
+exported with level $1$.
+A reference to any of these identifiers out of place is a syntax
 violation.
+The identifier {\cf set!} (section~\ref{set!})
+is exported at both levels $0$ and $1$.
+
+\begin{rationale}
+The identifiers {\cf unquote}, {\cf unquote-splicing}, {\cf =>}, and
+{\cf else} serve as literals in the syntax of one or more
+base-library syntactic forms; e.g., {\cf else} serves as a
+literal in the syntax of {\cf cond} and {\cf case}.
+Bindings of these identifiers are exported from the base library so
+that they can be distinguished from other bindings of these identifiers
+or renamed on import.
+The identifiers {\cf ...}, {\cf \_}, and {\cf set!} serve as
+literals in the syntax of {\cf syntax-rules} and
+{\cf identifier-syntax} forms and are thus exported along with those
+forms with level $1$.
+\end{rationale}
 
 \section{Base types}
 \label{disjointness}
@@ -54,11 +75,28 @@ see section~\ref{booleanvaluessection}.
 \section{Definitions}
 \label{defines}
 
-The {\cf define} forms described in this section are definitions for
-value bindings and may appear anywhere other definitions may appear.
-See section~\ref{librarybodysection}.
+Definitions\mainindex{definition} may appear within a
+\meta{toplevel body} (section~\ref{programsyntaxsection}),
+at the top of a \meta{library body} (section~\ref{librarysyntaxsection}),
+or at the top of a \meta{body} (section~\ref{bodiessection}).
 
-A \hyper{definition} must have one of the following forms:\mainschindex{define}\mainindex{definition}
+A \hyper{definition} may be a variable definition
+(section~\ref{variabledefinitionsection} or
+keyword definition
+(section~\ref{variabledefinitionsection}.
+Syntactic abstractions that expand into definitions or groups of
+definitions (packaged in a base-library {\cf begin}, {\cf let-syntax}, or
+{\cf letrec-syntax} form; see section~\ref{begin}) may also appear
+wherever other definitions may appear.
+
+\subsection{Variable definitions}
+\label{variabledefinitionsection}
+
+The {\cf define} form described in this section is a
+\hyper{definition}\mainindex{definition} used to create variable bindings
+and may appear anywhere other definitions may appear.
+
+A variable definition has one of the following forms:\mainschindex{define}
 
 \begin{itemize}
 
@@ -78,7 +116,7 @@ once.
 
 \implresp Implementations are not required to detect that the
 continuation of \hyper{expression} is invoked more than once.
-However, if the implementation detects this, it must raise an
+If the implementation detects this, it must raise an
 exception with condition type {\cf\&assertion}.
 
 \item{\tt(define \hyper{variable})}
@@ -109,21 +147,19 @@ variable.  This form is equivalent to
 (define \hyper{variable}
   (lambda \hyper{formal} \hyper{body}))\rm.%
 \end{scheme}
-
-\item a syntax definition (see section~\ref{define-syntax})
 \end{itemize}
 
-\section{Syntax definitions}
+\subsection{Syntax definitions}
 \label{syntaxdefinitionsection}
 
-Syntax definitions are established with {\cf define-syntax}.
-A {\cf define-syntax} form is a \hyper{definition} and may appear
-anywhere other definitions may appear.
+The {\cf define-syntax} form described in this section is a
+\hyper{definition}\mainindex{definition} used to create keyword bindings
+and may appear anywhere other definitions may appear.
 
 \begin{entry}{%
-\proto{define-syntax}{ \hyper{variable} \hyper{expression}}{\exprtype}}
+\proto{define-syntax}{ \hyper{keyword} \hyper{expression}}{\exprtype}}
 
-Binds the keyword \hyper{variable} to the value of
+Binds \hyper{keyword} to the value of
 \hyper{expression}, which must evaluate, at macro-expansion
 time, to a transformer (see library section~\extref{lib:transformerssection}{Transformers}).
 
@@ -131,7 +167,7 @@ Keyword bindings established by {\cf define-syntax} are visible
 throughout the body in which they appear, except where shadowed by
 other bindings, and nowhere else, just like variable bindings established
 by {\cf define}.
-All bindings established by a set of internal definitions, whether
+All bindings established by a set of definitions, whether
 keyword or variable definitions, are visible within the definitions
 themselves.
 
@@ -153,7 +189,7 @@ For example:
 \end{scheme}
 
 An implication of the left-to-right processing order
-(section~\ref{expansionchapter}) is that one internal definition can
+(section~\ref{expansionchapter}) is that one definition can
 affect whether a subsequent form is also a definition.  For example,
 the expression
 
@@ -166,7 +202,7 @@ the expression
   x) \ev 0%
 \end{scheme}
 
-This behavior is irrespective of any binding for
+The behavior is unaffected by any binding for
 {\cf bind-to-zero} that might appear outside of the {\cf let}
 expression.
 \end{entry}
@@ -174,27 +210,18 @@ expression.
 \section{Bodies and sequences}
 \label{bodiessection}
 
-\index{body}The body \hyper{body} of a \ide{lambda}, \ide{let}, \ide{let*},
-\ide{let-values}, \ide{let*-values}, \ide{letrec*}, \ide{letrec}
-expression or that of a
-definition with a body has the following form after expansion:
+\index{body}The \hyper{body} of a \ide{lambda}, \ide{let}, \ide{let*},
+\ide{let-values}, \ide{let*-values}, \ide{letrec}, \ide{letrec*}
+expression or that of a definition with a body
+consists of zero or more definitions followed by one or more
+expressions.
 
-{\cf \hyper{definition} \ldots{} \hyper{sequence}}
+{\cf \hyper{definition} \ldots{} \hyperi{expression} \hyperii{expression} \ldots}
 
-\hyper{Sequence} has the following form:
-
-{\cf \hyperi{expression} \hyperii{expression} \ldots}
-
-A \hyper{definition} in a \hyper{body} is known as an {\em internal definition}
-\mainindex{internal definition}, as opposed to a library body
-definition. 
-
-With \ide{lambda}, \ide{let}, \ide{let*}, \ide{let-values},
-\ide{let*-values}, \ide{letrec*}, and \ide{letrec},
-the identifier defined by an internal
+Each identifier defined by a
 definition is local to the \hyper{body}.  That is, the identifier is
 bound, and the region of the binding is the
-entire \hyper{body}.  For example,
+entire \hyper{body} (see section~\ref{variablesection}).  For example,
 
 \begin{scheme}
 (let ((x 5))
@@ -212,7 +239,7 @@ forms, may be specified by a syntactic abstraction
 (see section~\ref{macrosection}).
 
 An expanded \hyper{body} (see chapter~\ref{expansionchapter})
-containing internal definitions can
+containing variable definitions can
 always be converted into an equivalent {\cf letrec*}
 expression.  For example, the {\cf let} expression in the above
 example is equivalent to
@@ -292,7 +319,7 @@ arguments, the environment in which the \lambdaexp{} was evaluated is
 extended by binding the variables in the formal argument list to
 fresh locations, and the resulting actual argument values are stored
 in those locations.  Then, the expressions in the body of the \lambdaexp{}
-(which may contain internal definitions and thus represent a {\cf
+(which may contain definitions and thus represent a {\cf
   letrec*} form, see section~\ref{bodiessection}) are evaluated
 sequentially in the extended environment.
 The results of the last expression in the body are returned as
@@ -1016,7 +1043,7 @@ why there's more than one predicate.}
 
 The {\cf eqv?} procedure defines a useful equivalence relation on objects.
 Briefly, it returns \schtrue{} if \vari{obj} and \varii{obj} should
-normally be regarded as the same object.  This relation is left slightly
+normally be regarded as the same object and \schfalse{} otherwise.  This relation is left slightly
 open to interpretation, but the following partial specification of
 {\cf eqv?} holds for all implementations of Scheme.
 
@@ -3895,7 +3922,7 @@ Each binding of a \hyper{keyword} has the \hyper{form}s as its region.
 The \hyper{form}s of a {\cf let-syntax}
 form are treated, whether in definition or expression context, as if
 wrapped in an implicit {\cf begin}.  See section~\ref{begin}.
-Thus, internal definitions in the result of expanding the \hyper{form}s have
+Thus, definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   let-syntax} form would have.
 
@@ -3953,7 +3980,7 @@ introduced by the {\cf letrec-syntax} form.
 The \hyper{form}s of a {\cf letrec-syntax}
 form are treated, whether in definition or expression context, as if
 wrapped in an implicit {\cf begin}, see section~\ref{begin}.
-Thus, internal definitions in the result of expanding the \hyper{form}s have
+Thus, definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   letrec-syntax} form would have.
 

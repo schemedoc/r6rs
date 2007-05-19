@@ -76,7 +76,8 @@ expressions to be evaluated for their effects.
 The exported bindings may be defined within the library or imported into
 the library.
 
-An identifier can be imported from two or more libraries or for two
+An identifier can be imported with the same local name
+from two or more libraries or for two
 levels from the same library only if the
 binding exported by each library is the same (i.e., the binding is
 defined in one library, and it arrives through the imports only by
@@ -123,7 +124,7 @@ As an \hyper{import level}, {\cf run} is an abbreviation for {\cf
   (meta 0)}, and {\cf expand} is an abbreviation for {\cf (meta 1)}.
 Levels and phases are discussed in section~\ref{phasessection}.
 
-An \hyper{import~set} names a set of bindings from another library, and
+An \hyper{import~set} names a set of bindings from another library and
 possibly specifies local names for the imported bindings.  It must be
 one of the following:
 
@@ -145,7 +146,7 @@ name and optionally by its version.  It has the following form:
 A \hyper{version~reference} specifies a set of \hyper{version}s that
 it matches.  The \hyper{library~reference} identifies all libraries of
 the same name and whose version is matched by the
-\hyper{version~reference} A \hyper{version~reference} is empty or has
+\hyper{version~reference}.  A \hyper{version~reference} is empty or has
 the following form:
 %
 \begin{scheme}
@@ -268,8 +269,8 @@ external name.
 
 \label{librarybodysection}
 The \hyper{library~body} of a {\cf library} form consists of forms
-that are classified into 
-\textit{definitions}\mainindex{definition}, and
+that are classified as 
+\textit{definitions}\mainindex{definition} or
 \textit{expressions}\mainindex{expression}.  Which forms belong to
 which class depends on the imported libraries and the result of
 expansion---see chapter~\ref{expansionchapter}.  Generally, forms that
@@ -293,7 +294,7 @@ Some or all of the body, including portions wrapped in {\cf begin},
 forms, may be specified by a syntactic abstraction
 (see section~\ref{macrosection}).
 
-The transformer expressions and transformer bindings are created
+The transformer expressions and bindings are evaluated and created
 from left to right, as described in chapter~\ref{expansionchapter}.
 The variable-definition right-hand-side expressions are evaluated
 from left to right, as if in an implicit {\cf letrec*},
@@ -309,7 +310,7 @@ The names {\cf library}, {\cf export}, {\cf import},
 {\cf import}, {\cf export}, {\cf only}, {\cf except}, {\cf
   prefix}, {\cf rename}, {\cf and}, {\cf or}, {\cf >=}, and {\cf <=}
 appearing in the library syntax are part of the
-syntax and are not reserved, i.e, the same can be used for other
+syntax and are not reserved, i.e., the same names can be used for other
 purposes within the library or even exported from or imported 
 into a library with different meanings, without affecting their
 use in the {\cf library} form.
@@ -328,7 +329,6 @@ exporting and importing libraries.
 It is thus a syntax violation if an
 explicitly exported variable appears on the left-hand side of a {\cf set!}
 expression, either in the exporting or importing libraries.
-All other variables defined within a library are mutable.
 
 All implicitly exported variables are also immutable in both the
 exporting and importing libraries.
@@ -342,12 +342,14 @@ an exported macro outside of the library in which the variable is defined,
 where an assigned variable is one that appears on the left-hand
 side of a {\cf set!} expression in the exporting library.
 
-\begin{note}
+All other variables defined within a library are mutable.
+
+\begin{rationale}
 The asymmetry in the prohibitions against assignments to
 explicitly and implicitly exported variables reflects the fact that the
 violation can be determined for implicitly exported variables only when the
 importing library is expanded.
-\end{note}
+\end{rationale}
 
 \section{Import and export levels}
 \label{phasessection}
@@ -455,7 +457,7 @@ another library (so the phase $1$ instance of the library is used);
 suppose further that the value of the binding is a syntax object
 representing an identifier with only a level-$n$ binding; then, the
 identifier must be used only in a phase $n+1$ expression in the
-library being expanded. This combination of level and phases is why
+library being expanded. This combination of levels and phases is why
 negative levels on identifiers can be useful, even though libraries
 exist only at non-negative phases.
 
@@ -466,7 +468,7 @@ expressions are evaluated. This rule applies transitively: if the
 expanded form of one library references at phase $0$ an identifier
 from another library, then before the referencing library is
 instantiated at phase $n$, the referenced library must be instantiated
-for at phase $n$. When an identifier is referenced at any phase $n$
+at phase $n$. When an identifier is referenced at any phase $n$
 greater than $0$, in contrast, then the defining library is
 instantiated at phase $n$ at some unspecified time before the
 reference is evaluated. Similarly, when a macro keyword is referenced at
@@ -498,13 +500,15 @@ and whether levels should be declared so that they constrain
 identifier uses to particular phases. This report therefore leaves
 considerable latitude to implementations, while attempting to
 provide enough guarantees to make portable libraries practical.
+\end{rationale} 
 
-In particular, if a program and its libraries avoid the \thersixlibrary{}
+\begin{note}
+If a program and its libraries avoid the \thersixlibrary{}
 and \rsixlibrary{syntax-case} libraries, and if the program and libraries
 never use the {\cf for} import form, then the program does not depend
 on whether instances are distinguished across phases, and the phase of
 an identifier's use cannot be inconsistent with the identifier's level.
-\end{rationale} 
+\end{note} 
 
 \section{Primitive syntax}
 
