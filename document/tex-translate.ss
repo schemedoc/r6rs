@@ -108,9 +108,12 @@
         (error 'check "not a list of strings: ~s" v))
       r))
   
+  (define current-filename #f)
+  
   (define (print-something reduction-translate name reductions start end)
     (let ((n (format "~a-~a.tex" filename-prefix (regexp-replace* #rx"[?*]" (format "~a" name) "_"))))
       (fprintf (current-error-port) "Writing file ~a ...\n" n)
+      (set! current-filename name)
       (with-output-to-file n
         (lambda () 
           (let* ([rules (check (map/last reduction-translate reductions))]
@@ -118,7 +121,8 @@
             (printf "~a\n" start)
             (for-each display reductions)
             (printf "~a\n" end)))
-        'truncate)))
+        'truncate)
+      (set! current-filename #f)))
   
   (define (map/last f lst)
     (let loop ([lst lst])
@@ -265,9 +269,6 @@
     (let*-values ([(l l-cl) (pattern->tex lhs)]
                   [(r r-cl) (pattern->tex rhs)])
       (let* ([cl (append l-cl r-cl)]
-             [lboxname (format "lhsbox~a" (next))]
-             [arrowboxname (format "arrowbox~a" (next))]
-             [rboxname (format "rhsbox~a" (next))]
              [side-conditions
               (if (null? cl)
                   #f
@@ -278,15 +279,15 @@
             (format
              "~a \\llbracket ~a \\rrbracket & = &\n~a \\\\\n\\multicolumn{3}{l}{\\hbox to .2in{} ~a}\\\\\n"
              (translate-mf-name name)
-             (inline-tex lboxname l #f)
-             (inline-tex rboxname r #f)
+             (inline-tex l #f)
+             (inline-tex r #f)
              side-conditions)]
            [else
             (format
              "~a \\llbracket ~a \\rrbracket & = &\n~a ~a\\\\\n"
              (translate-mf-name name)
-             (inline-tex lboxname l #f)
-             (inline-tex rboxname r #f)
+             (inline-tex l #f)
+             (inline-tex r #f)
              (if show-otherwise?
                  "~ ~ ~ ~ ~ ~ ~ \\mbox{\\textrm{(otherwise)}}"
                  ""))])))))
@@ -363,28 +364,13 @@
   ;; REDUCTION RULE PRINTING
   ;; ============================================================
   
-  (define num->str
-    (let ((chars (string->list "abcdefghijklmnopqrstuvwxyz")))
-      (lambda (n)
-        (let loop ((n n)
-                   (acc '()))
-          (cond
-            [(< n 26)
-             (list->string (reverse (cons (list-ref chars n) acc)))]
-            [else
-             (loop (quotient n 26)
-                   (cons (list-ref chars (modulo n 26)) acc))])))))
-                 
-  (define next 
-    (let ((i 0)) 
-      (lambda ()
-        (begin0 (num->str i) (set! i (add1 i))))))
-  
   (define (count-lines str)
     (add1 (length (regexp-match* "\n." str))))
   
   (define (p-rule arrow lwrap rwrap)
     (opt-lambda (lhs rhs raw-name left-right? [extra-side-conditions '()])
+      (record-index-entries raw-name lhs)
+      (record-index-entries raw-name rhs)
       (let*-values ([(l l-cl) (pattern->tex* (lwrap lhs) left-right?)]
                     [(r r-cl) (pattern->tex* (rwrap rhs) left-right?)])
         (let* ([arrow-tex 
@@ -393,10 +379,6 @@
                   ((*->) "\\ovserset{\\rightarrow}{\ast}"))]
                [name (format "\\rulename{~a}" (quote-tex-specials raw-name))]
                [cl (append extra-side-conditions l-cl r-cl)]
-               [lboxname (format "lhsbox~a" (next))]
-               [arrowboxname (format "arrowbox~a" (next))]
-               [rboxname (format "rhsbox~a" (next))]
-               [nboxname (format "namebox~a" (next))]
                [lbox-height (count-lines l)]
                [rbox-height (count-lines r)]
                [extra-inlined-arrow? #f]
@@ -410,28 +392,27 @@
               (let ([lines (regexp-split #rx"\n" r)])
                 (format
                  "\\threelinescruleB\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n\n"
-                 (inline-tex lboxname l extra-inlined-arrow?)
+                 (inline-tex l extra-inlined-arrow?)
                  (list-ref lines 0)
                  (list-ref lines 1)
-                 (inline-tex nboxname name #f)
+                 (inline-tex name #f)
                  side-conditions
                  (if extra-inlined-arrow?
                      ""
-                     (inline-tex arrowboxname arrow-tex #f))))]
+                     (inline-tex arrow-tex #f))))]
              [(= 3 rbox-height)
-              (fprintf (current-error-port) "rulename ~s\n" name)
               (let ([lines (regexp-split #rx"\n" r)])
                 (format
                  "\\fourlinescruleB\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n\n"
-                 (inline-tex lboxname l extra-inlined-arrow?)
+                 (inline-tex l extra-inlined-arrow?)
                  (list-ref lines 0)
                  (list-ref lines 1)
                  (list-ref lines 2)
-                 (inline-tex nboxname name #f)
+                 (inline-tex name #f)
                  side-conditions
                  (if extra-inlined-arrow?
                      ""
-                     (inline-tex arrowboxname arrow-tex #f))))]
+                     (inline-tex arrow-tex #f))))]
              [side-conditions
               (format
                (if left-right?
@@ -439,40 +420,40 @@
                    (if (side-condition-below? raw-name)
                        "\\twolinescruleB\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n\n"
                        "\\twolinescruleA\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n\n"))
-               (inline-tex lboxname l extra-inlined-arrow?)
-               (inline-tex rboxname r #f)
-               (inline-tex nboxname name #f)
+               (inline-tex l extra-inlined-arrow?)
+               (inline-tex r #f)
+               (inline-tex name #f)
                side-conditions
                (if extra-inlined-arrow?
                    ""
-                   (inline-tex arrowboxname arrow-tex #f)))]
+                   (inline-tex arrow-tex #f)))]
              [else
               (format 
                (if left-right?
                    "\\onelineruleA\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n\n"
                    "\\twolineruleA\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n\n")
-               (inline-tex lboxname l extra-inlined-arrow?)
-               (inline-tex rboxname r #f)
-               (inline-tex nboxname name #f)
+               (inline-tex l extra-inlined-arrow?)
+               (inline-tex r #f)
+               (inline-tex name #f)
                (if extra-inlined-arrow?
                    ""
-                   (inline-tex arrowboxname arrow-tex #f)))]))))))
+                   (inline-tex arrow-tex #f)))]))))))
   
   (define (quote-tex-specials name)
     (let ([ans (regexp-replace*
 		#rx"~"
 		(regexp-replace*
-		 #rx"¼"
+		 #rx"μ"
 		 (regexp-replace*
 		  #rx"[#]"
 		  name
                  "\\\\#")
-		 "\\\\mu")
+		 "\\\\ensuremath{\\\\mu}")
 		"\\\\~{}")])
       ; (fprintf (current-error-port) "~s -> ~s\n" name ans)
       ans))
   
-  (define (inline-tex boxname str arrow?)
+  (define (inline-tex str arrow?)
     (format "~a~a" 
             str 
             (if arrow? " \\rightarrow" "")))
@@ -650,21 +631,22 @@
       (get-output-string o)))
 
   (define (format-symbol op)
-    (let ((command
-	   (case op
-	     ((language
-	       name subst reduction reduction/context red term apply-values store dot ccons throw push pop trim dw mark condition handlers
-	       define beginF throw lambda set! if begin0 quote begin letrec letrec* reinit l!)
-	      "\\sy")
-	     ((cons unspecified null list dynamic-wind apply values null? pair? car cdr call/cc procedure? condition? unspecified? set-car! set-cdr! eqv? call-with-values with-exception-handler raise-continuable raise + * - /)
-	      "\\va")
-	     (else
-	      "\\nt")))
-	  (o (open-output-string)))
+    (let ([command (format "\\~a" (categorize-symbol op))]
+	  [o (open-output-string)])
       (parameterize ((current-output-port o))
         (d-var op command))
       (close-output-port o)
       (get-output-string o)))
+  
+  (define (categorize-symbol op)
+    (case op
+      [(language
+        name subst reduction reduction/context red term apply-values store dot ccons throw push pop trim dw mark make-cond handlers
+        define beginF throw lambda set! if begin0 quote begin letrec letrec* reinit l!)
+       'sy]
+      [(cons unspecified null list dynamic-wind apply values null? pair? car cdr call/cc procedure? condition? unspecified? set-car! set-cdr! eqv? call-with-values with-exception-handler raise-continuable raise + * - /)
+       'va]
+      [else 'nt]))
 
   ;; pattern->tex : pattern -> (values string (listof string))
   ;; given a pattern, returns a string representation and some strings of side constraints
@@ -729,7 +711,7 @@
       [`(not (prefixed-by? (term ,v) (quote p:)))
         (list (format "~a \\not\\in \\nt{pp}" (gps v)))]
       [`(not (condition? (term ,v)))
-        (list (format "~a \\neq (\\sy{condition}~~\\nt{string})" (gps v)))]
+        (list (format "~a \\neq (\\sy{make-cond}~~\\nt{string})" (gps v)))]
       [`(not (,(? (λ (x) 
                     (and (symbol? x) 
                          (regexp-match #rx"\\?$" (symbol->string x))))
@@ -1150,4 +1132,49 @@
   (define (mark tex)
     (format "~a^{\\mrk}" tex))
 
+  ;; ============================================================
+  ;; INDEX
+  ;; ============================================================
+  
+  (define (record-index-entries raw-name term)
+    (let ([table (make-hash-table 'equal)])
+      (extract-names term
+                     (λ (id)
+                       (hash-table-put! table id #t)))
+      (hash-table-for-each
+       table
+       (λ (id _)
+         (printf "\\semanticsindex{~a}{~a}\n"
+                 id
+                 (quote-tex-specials raw-name))))))
+  
+  (define ignore-in-index '(l! make-cond reinit handlers unspecified))
+  
+  (define (extract-names term f)
+    (define (q-loop term)
+      (fmatch term
+        [`(in-hole ,a ,b) (q-loop b)]
+        [`(,'quote ,a) (void)]
+        [`(store ,s ,exp) (q-loop exp)]
+        [`(,'unquote ,e) (unq-loop exp)]
+        [(? symbol?) 
+         (unless (regexp-match #rx"_" (symbol->string term))
+           (unless (eq? 'nt (categorize-symbol term))
+             (unless (memq term ignore-in-index)
+               (f term))))]
+        [(? list?) (for-each q-loop term)]
+        [else (void)]))
+    (define (unq-loop term)
+      (match term
+        [`(,'term ,e) (q-loop e)]
+        [(? list?) (for-each unq-loop term)]
+        [else (void)]))
+    
+    (q-loop term))
+ 
+  ;; ============================================================
+  ;; GO
+  ;; ============================================================
+  
   (translate "../model/r6rs.scm"))
+  

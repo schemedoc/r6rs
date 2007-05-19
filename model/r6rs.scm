@@ -63,7 +63,7 @@
         (l! x es)
         (reinit x))
      (v nonproc proc)
-     (nonproc pp null 'sym sqv (condition string))
+     (nonproc pp null 'sym sqv (make-cond string))
      (sqv n #t #f)
      
      (proc uproc pproc (throw x e))
@@ -187,7 +187,7 @@
           (in-hole P_1 ,(- (term n_1) (sum-of (term (n_2 n_3 ...)))))
           "6-")
      (--> (in-hole P_1 (-))
-          (in-hole P_1 (raise (condition "arity mismatch")))
+          (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6-arity")
      
      (--> (in-hole P_1 (*)) (in-hole P_1 1) "6*1")
@@ -200,14 +200,14 @@
           "6/"
           (side-condition (not (member 0 (term (n_2 n_3 ...))))))
      (--> (in-hole P_1 (/ n n ... 0 n ...))
-          (in-hole P_1 (raise (condition "divison by zero")))
+          (in-hole P_1 (raise (make-cond "divison by zero")))
           "6/0")
      (--> (in-hole P_1 (/))
-          (in-hole P_1 (raise (condition "arity mismatch")))
+          (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6/arity")
      
      (--> (in-hole P_1 (aproc v_1 ...))
-          (in-hole P_1 (raise (condition "arith-op applied to non-number")))
+          (in-hole P_1 (raise (make-cond "arith-op applied to non-number")))
           "6ae"
           (side-condition
            (ormap (lambda (v) (not (number? v)))
@@ -246,10 +246,10 @@
           (in-hole P_1 #f)
           "6eqipf")
      
-     (--> (in-hole P_1 (eqv? (condition string) (condition string)))
+     (--> (in-hole P_1 (eqv? (make-cond string) (make-cond string)))
           (in-hole P_1 #t)
           "6eqct")
-     (--> (in-hole P_1 (eqv? (condition string) (condition string)))
+     (--> (in-hole P_1 (eqv? (make-cond string) (make-cond string)))
           (in-hole P_1 #f)
           "6eqcf")))
   
@@ -302,12 +302,12 @@
           (side-condition (not (pp? (term v_1)))))
      
      (--> (in-hole P_1 (car v_i))
-          (in-hole P_1 (raise (condition "can't take car of non-pair")))
+          (in-hole P_1 (raise (make-cond "can't take car of non-pair")))
           "6care"
           (side-condition (not (pp? (term v_i)))))
      
      (--> (in-hole P_1 (cdr v_i))
-          (in-hole P_1 (raise (condition "can't take cdr of non-pair")))
+          (in-hole P_1 (raise (make-cond "can't take cdr of non-pair")))
           "6cdre"
           (side-condition (not (pp? (term v_i)))))
      
@@ -320,12 +320,12 @@
           "6setcdr")
      
      (--> (in-hole P_1 (set-car! v_1 v_2))
-          (in-hole P_1 (raise (condition "can't set-car! on a non-pair or a mutable pair")))
+          (in-hole P_1 (raise (make-cond "can't set-car! on a non-pair or a mutable pair")))
           "6scare"
           (side-condition (not (mp? (term v_1)))))
      
      (--> (in-hole P_1 (set-cdr! v_1 v_2))
-          (in-hole P_1 (raise (condition "can't set-cdr! on a non-pair or a mutable pair")))
+          (in-hole P_1 (raise (make-cond "can't set-cdr! on a non-pair or a mutable pair")))
           "6scdre"
           (side-condition (not (mp? (term v_1)))))))
   
@@ -366,7 +366,7 @@
           "6app0")
      
      (--> (in-hole P_1 ((lambda (x_1 ...) e e ...) v_1 ...))
-          (in-hole P_1 (raise (condition "arity mismatch")))
+          (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6arity"
           (side-condition
            (not (= (length (term (x_1 ...)))
@@ -380,7 +380,7 @@
      
      ;; mu-lambda too few arguments case
      (--> (in-hole P_1 ((lambda (x_1 ... dot x) e e ...) v_1 ...))
-          (in-hole P_1 (raise (condition "arity mismatch")))
+          (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6μarity"
           (side-condition
            (< (length (term (v_1 ...)))
@@ -390,15 +390,15 @@
      (--> (in-hole P_1 (procedure? nonproc)) (in-hole P_1 #f) "6procf")
      
      (--> (in-hole P_1 (nonproc v ...))
-          (in-hole P_1 (raise (condition "can't call non-procedure")))
+          (in-hole P_1 (raise (make-cond "can't call non-procedure")))
           "6appe")
      
      (--> (in-hole P_1 (proc1 v_1 ...))
-          (in-hole P_1 (raise (condition "arity mismatch")))
+          (in-hole P_1 (raise (make-cond "arity mismatch")))
           "61arity"
           (side-condition (not (= (length (term (v_1 ...))) 1))))
      (--> (in-hole P_1 (proc2 v_1 ...))
-          (in-hole P_1 (raise (condition "arity mismatch")))
+          (in-hole P_1 (raise (make-cond "arity mismatch")))
           "62arity"
           (side-condition (not (= (length (term (v_1 ...))) 2))))))
   
@@ -416,16 +416,16 @@
      
      
      (--> (in-hole P_1 (apply nonproc v ...))
-          (in-hole P_1 (raise (condition "can't apply non-procedure")))
+          (in-hole P_1 (raise (make-cond "can't apply non-procedure")))
           "6applynf")
      
      (--> (in-hole P_1 (apply proc v_1 ... v_2))
-          (in-hole P_1 (raise (condition "apply's last argument non-list")))
+          (in-hole P_1 (raise (make-cond "apply's last argument non-list")))
           "6applye"
           (side-condition (not (list-v? (term v_2)))))
      
-     (--> (in-hole P_1 (apply)) (in-hole P_1 (raise (condition "arity mismatch"))) "6apparity0")
-     (--> (in-hole P_1 (apply v)) (in-hole P_1 (raise (condition "arity mismatch"))) "6apparity1")))
+     (--> (in-hole P_1 (apply)) (in-hole P_1 (raise (make-cond "arity mismatch"))) "6apparity0")
+     (--> (in-hole P_1 (apply v)) (in-hole P_1 (raise (make-cond "arity mismatch"))) "6apparity1")))
   
   ;; Var-set!d? : e -> boolean
   (define-metafunction Var-set!d?
@@ -500,14 +500,14 @@
           "6wind"
           (fresh x))
      (--> (in-hole P_1 (dynamic-wind v_1 v_2 v_3))
-          (in-hole P_1 (raise (condition "dynamic-wind expects procs")))
+          (in-hole P_1 (raise (make-cond "dynamic-wind expects procs")))
           "6winde"
           (side-condition (or (not (proc? (term v_1)))
                               (not (proc? (term v_2)))
                               (not (proc? (term v_3))))))
      
      (--> (in-hole P_1 (dynamic-wind v_1 ...))
-          (in-hole P_1 (raise (condition "arity mismatch")))
+          (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6dwarity"
           (side-condition (not (= (length (term (v_1 ...))) 3))))
      
@@ -564,7 +564,7 @@
           "6xwh1")
      
      (--> (in-hole PG_1 (with-exception-handler v_1 v_2))
-          (in-hole PG_1 (raise (condition "with-exception-handler expects procs")))
+          (in-hole PG_1 (raise (make-cond "with-exception-handler expects procs")))
           "6xwh1e"
           (side-condition (or (not (proc? (term v_1)))
                               (not (proc? (term v_2))))))
@@ -574,7 +574,7 @@
           "6xwhn")
      
      (--> (in-hole P_1 (handlers proc_1 ... (in-hole G_1 (with-exception-handler v_1 v_2))))
-          (in-hole P_1 (handlers proc_1 ... (in-hole G_1 (raise (condition "with-exception-handler expects procs")))))
+          (in-hole P_1 (handlers proc_1 ... (in-hole G_1 (raise (make-cond "with-exception-handler expects procs")))))
           "6xwhne"
           (side-condition (or (not (proc? (term v_1)))
                               (not (proc? (term v_2))))))
@@ -591,10 +591,10 @@
                         (in-hole G_1 
                                  (handlers proc_1 ... 
                                            (begin (proc_2 v_1)
-                                                  (raise (condition "handler returned")))))))
+                                                  (raise (make-cond "handler returned")))))))
           "6xr")
      
-     (--> (in-hole P_1 (condition? (condition string)))
+     (--> (in-hole P_1 (condition? (make-cond string)))
           (in-hole P_1 #t)
           "6ct")
      
@@ -607,46 +607,6 @@
           (in-hole P_1 (values v_1 ...))
           "6xdone")))
 
-  (define-metafunction A_0
-    lang
-    [nonproc #f]
-    [(lambda () e e ...) #t]
-    [(lambda (x x ...) e e ...) #f]
-    [(lambda (dot x) e e ...) #t]
-    [(lambda (x x ... dot x) e e ...) #f]
-    [+ #t]
-    [* #t]
-    [/ #f]
-    [- #f]
-    [proc1 #f]
-    [proc2 #f]
-    [list #t]
-    [dynamic-wind #f]     
-    [apply #f]
-    [values #t]
-    [(throw x e) #t])
-  
-  (define-metafunction A_1
-    lang
-    [nonproc #f]
-    [(lambda () e e ...) #f]
-    [(lambda (x) e e ...) #t]
-    [(lambda (x y z ...) e e ...) #f]
-    [(lambda (dot x) e e ...) #t]
-    [(lambda (x dot x) e e ...) #t]
-    [(lambda (x x x ... dot x) e e ...) #f]
-    [+ #t]
-    [* #t]
-    [/ #t]
-    [- #t]
-    [proc1 #t]
-    [proc2 #f]
-    [list #t]
-    [dynamic-wind #f]
-    [apply #f]
-    [values #t]
-    [(throw x e) #t])
-  
   (define Multiple--values--and--call-with-values
     (reduction-relation
      lang
@@ -717,7 +677,7 @@
          (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 'ignore))
          "6reinit")
     (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (reinit x_1)))
-         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (raise (condition "reinvoked continuation of letrec init"))))
+         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (raise (make-cond "reinvoked continuation of letrec init"))))
          "6reinite")
      (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (l! x_1 v_2)))
           (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
@@ -729,10 +689,10 @@
           (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 unspecified))
           "6setdt")
      (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (set! x_1 v_1)))
-          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (condition "letrec variable touched"))))
+          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (make-cond "letrec variable touched"))))
           "6setdte")
      (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 x_1))
-          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (condition "letrec variable touched"))))
+          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (make-cond "letrec variable touched"))))
           "6dt")))
   
   (define Underspecification
@@ -926,10 +886,10 @@
     [null null]
     ['sym_1 'sym_1]
     [sqv_1 sqv_1]
-    [(condition string) condition]
+    [(make-cond string) condition]
     [proc procedure])
   
-  (define condition? (test-match lang (condition string)))
+  (define condition? (test-match lang (make-cond string)))
   (define v? (test-match lang v))
   (define proc? (test-match lang proc))
   (define null-v? (test-match lang null))

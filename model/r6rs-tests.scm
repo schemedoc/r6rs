@@ -16,7 +16,7 @@
                  (list `(store () (values ,expected)))))
   (define (make-r6test/e t err)
     (make-r6test `(store () ,t)
-                 (list `(uncaught-exception (condition ,err)))))
+                 (list `(uncaught-exception (make-cond ,err)))))
   
   (define (run-a-test test verbose?)
     (unless verbose?
@@ -201,7 +201,7 @@
      (make-r6test/e '(/ 0) "divison by zero")
      
      (make-r6test '(store () ((lambda (x) (+ x x)) #f))
-                  (list '(uncaught-exception (condition "arith-op applied to non-number"))))))
+                  (list '(uncaught-exception (make-cond "arith-op applied to non-number"))))))
   
   (define assignment-results-tests
     (list
@@ -236,11 +236,11 @@
      
      (make-r6test '(store () (letrec ([x '(1)]) (set! x (set-car! x 2))))
                   (list '(unknown "unspecified result")
-                        '(uncaught-exception (condition "can't set-car! on a non-pair or a mutable pair"))))
+                        '(uncaught-exception (make-cond "can't set-car! on a non-pair or a mutable pair"))))
      
      ;; handlers
      (make-r6test '(store () (letrec ([x 1]) (with-exception-handler (lambda (e) (set! x 2)) (lambda () (car 'x)))))
-                  (list '(uncaught-exception (condition "handler returned"))))
+                  (list '(uncaught-exception (make-cond "handler returned"))))
      
      ;; call with values
      (make-r6test '(store () (letrec ([x 1]) (call-with-values (lambda () (set! x 2)) +)))
@@ -299,10 +299,10 @@
                     400)
      (make-r6test '(store () ((lambda (x) (set-cdr! x 4) (cdr x)) '(3)))
                   (list '(store () (values 4))
-                        '(uncaught-exception (condition "can't set-cdr! on a non-pair or a mutable pair"))))
+                        '(uncaught-exception (make-cond "can't set-cdr! on a non-pair or a mutable pair"))))
      (make-r6test '(store () ((lambda (x) (set-car! x 4) (car x)) '(3)))
                   (list '(store () (values 4))
-                        '(uncaught-exception (condition "can't set-car! on a non-pair or a mutable pair"))))
+                        '(uncaught-exception (make-cond "can't set-car! on a non-pair or a mutable pair"))))
                         
      (make-r6test '(store ()
                      (letrec ([first-time? #t]
@@ -731,7 +731,7 @@
                         (with-exception-handler
                          (lambda (e) (k e))
                          (lambda () (apply (lambda (x y) x) 1 null)))))
-                    '(condition "arity mismatch"))
+                    '(make-cond "arity mismatch"))
      
      (make-r6test/v '((lambda (x) ((lambda (y) x) (begin (set! x 5) 'whatever))) 3) 5)
      (make-r6test '(store ()
@@ -836,7 +836,7 @@
                             (lx-twice (lambda (f) (f) (f))))
                       (values 1))))
      
-     (make-r6test/v '(condition? (condition "xyz")) #t)
+     (make-r6test/v '(condition? (make-cond "xyz")) #t)
      (make-r6test/v '(condition? 1) #f)
      (make-r6test/v '(procedure?
                       (call/cc
@@ -1578,7 +1578,7 @@ of digits with deconv-base
                      (with-exception-handler
                       (lambda (x) x)
                       (lambda () (raise 2))))
-                  (list '(uncaught-exception (condition "handler returned"))))
+                  (list '(uncaught-exception (make-cond "handler returned"))))
      
      (make-r6test/e '((lambda (c e)
                         (with-exception-handler
@@ -1801,19 +1801,19 @@ of digits with deconv-base
                            (values #f))))
      (make-r6test '(store () (letrec ([x (begin (set! x 1) 2)]) x))
                   (list '(store ((lx-x 2)) (values 2))
-                        '(uncaught-exception (condition "letrec variable touched"))))
+                        '(uncaught-exception (make-cond "letrec variable touched"))))
      (make-r6test '(store ()
                      (letrec ([x (begin (set! y 2) 5)]
                               [y (begin (set! x 3) 7)])
                        (* x y)))
                   (list '(store ((lx-x 5) (lx-y 7)) (values 35))
-                        '(uncaught-exception (condition "letrec variable touched"))))
+                        '(uncaught-exception (make-cond "letrec variable touched"))))
      (make-r6test '(store () (letrec ([x x]) x))
-                  (list '(uncaught-exception (condition "letrec variable touched"))))
+                  (list '(uncaught-exception (make-cond "letrec variable touched"))))
      (make-r6test '(store () (letrec ([x y] [y x]) x))
-                  (list '(uncaught-exception (condition "letrec variable touched"))))
+                  (list '(uncaught-exception (make-cond "letrec variable touched"))))
      (make-r6test '(store () (letrec ([x 1] [y x]) y))
-                  (list '(uncaught-exception (condition "letrec variable touched"))))
+                  (list '(uncaught-exception (make-cond "letrec variable touched"))))
      
      (make-r6test '(store () (letrec ([x 1] [y 2]) (set! x 3) (set! y 4) (+ x y)))
                   (list '(store ((lx-x 3) (lx-y 4)) (values 7))))
@@ -1829,17 +1829,17 @@ of digits with deconv-base
                   (list '(store ((lx-flip 1) (lx-flop 2)) (values #f))))
      (make-r6test '(store () (letrec* ([x (begin (set! x 1) 2)]) x))
                   (list '(store ((lx-x 2)) (values 2))
-                        '(uncaught-exception (condition "letrec variable touched"))))
+                        '(uncaught-exception (make-cond "letrec variable touched"))))
      (make-r6test '(store ()
                      (letrec* ([x (begin (set! y 2) 5)]
                                [y (begin (set! x 3) 7)])
                               (* x y)))
                   (list '(store ((lx-x 3) (lx-y 7)) (values 21))
-                        '(uncaught-exception (condition "letrec variable touched"))))
+                        '(uncaught-exception (make-cond "letrec variable touched"))))
      (make-r6test '(store () (letrec* ([x x]) x))
-                  (list '(uncaught-exception (condition "letrec variable touched"))))
+                  (list '(uncaught-exception (make-cond "letrec variable touched"))))
      (make-r6test '(store () (letrec* ([x y] [y x]) x))
-                  (list '(uncaught-exception (condition "letrec variable touched"))))
+                  (list '(uncaught-exception (make-cond "letrec variable touched"))))
      (make-r6test '(store () (letrec* ([x 1] [y x]) y))
                   (list '(store ((lx-x 1) (lx-y 1)) (values 1))))
      
@@ -1857,13 +1857,13 @@ of digits with deconv-base
                      (letrec* ([k (call/cc (lambda (x) x))])
                        (k (lambda (x) x))
                        (k 2)))
-                  (list '(uncaught-exception (condition "reinvoked continuation of letrec init"))
+                  (list '(uncaught-exception (make-cond "reinvoked continuation of letrec init"))
                         '(store ((lx-k (lambda (x) x))) (values 2))))
      (make-r6test '(store ()
                      (letrec ([k (call/cc (lambda (x) x))])
                        (k (lambda (x) x))
                        (k 2)))
-                  (list '(uncaught-exception (condition "reinvoked continuation of letrec init"))
+                  (list '(uncaught-exception (make-cond "reinvoked continuation of letrec init"))
                         '(store ((lx-k (lambda (x2) x2))) (values 2))))
      
      (make-r6test '(store ()
@@ -1879,7 +1879,7 @@ of digits with deconv-base
                           (k (lambda (x) x))
                           (k 2)))
                       #t))
-                  (list '(uncaught-exception (condition "can't take car of non-pair"))))
+                  (list '(uncaught-exception (make-cond "can't take car of non-pair"))))
      (make-r6test '(store ()
                      ((lambda (flag)
                         (letrec ([k
@@ -1893,7 +1893,7 @@ of digits with deconv-base
                           (k (lambda (x) x))
                           (k 2)))
                       #t))
-                  (list '(uncaught-exception (condition "can't take car of non-pair"))))
+                  (list '(uncaught-exception (make-cond "can't take car of non-pair"))))
      
      
      (make-r6test '(store ()
@@ -1906,8 +1906,8 @@ of digits with deconv-base
                           (k (lambda (x) x))
                           (k 2)))
                       #t))
-                  (list '(uncaught-exception (condition "reinvoked continuation of letrec init"))
-                        '(uncaught-exception (condition "can't take car of non-pair"))
+                  (list '(uncaught-exception (make-cond "reinvoked continuation of letrec init"))
+                        '(uncaught-exception (make-cond "can't take car of non-pair"))
                         '(store ((lx-k (lambda (x2) x2)) (lx-x 'nothing-doing)) (values 2))))
      
      (make-r6test '(store ()
@@ -1920,8 +1920,8 @@ of digits with deconv-base
                           (k (lambda (x) x))
                           (k 2)))
                       #t))
-                  (list '(uncaught-exception (condition "reinvoked continuation of letrec init"))
-                        '(uncaught-exception (condition "can't take car of non-pair"))))
+                  (list '(uncaught-exception (make-cond "reinvoked continuation of letrec init"))
+                        '(uncaught-exception (make-cond "can't take car of non-pair"))))
      ))
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

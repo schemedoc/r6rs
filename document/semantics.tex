@@ -291,7 +291,7 @@ Although the identifier \nt{qp} does not have a subscript, the semantics of PLT 
 \begin{center}
 \input{r6-fig-Multiple--values--and--call-with-values.tex}
 \end{center}
-\caption{Multiple Values and Call-with-values}\label{fig:multiple-values-and-call-with-values}
+\caption{Multiple Values and Call-with-values}\label{fig:Multiple--values--and--call-with-values}
 \endfig
 
 The basic strategy for multiple values is to add a rule that demotes
@@ -342,7 +342,7 @@ Similarly, the rule for \sy{begin} does not need to consider the
 case of a single value as its first subexpression.
 
 The other three rules in
-figure~\ref{fig:multiple-values-and-call-with-values} handle
+figure~\ref{fig:Multiple--values--and--call-with-values} handle
 \va{call-with-values}. The evaluation contexts for
 \va{call-with-values} (in the $F$ non-terminal) allow
 evaluation in the body of a thunk that has been passed as the first
@@ -364,20 +364,7 @@ but is not of the form $(\sy{lambda}~()~e)$, the rule
 \begin{center}
 \input{r6-fig-Exceptions}
 \end{center}
-\caption{Exceptions}\label{fig:exceptions}
-\endfig
-
-\beginfig
-\begin{center}
-\begin{minipage}{0.45\textwidth}
-\input{r6-fig-A_0.tex}
-\end{minipage}
-~
-\begin{minipage}{0.45\textwidth}
-\input{r6-fig-A_1.tex}
-\end{minipage}
-\end{center}
-\caption{Arity Testing Functions}\label{fig:arity}
+\caption{Exceptions}\label{fig:Exceptions}
 \endfig
 
 The workhorses for the exception system are $$(\sy{handlers}~v~\cdots{}~e)$$ expressions and the \nt{G} and \nt{PG} evaluation contexts (shown in
@@ -438,10 +425,7 @@ whose semantics are given by the two rules \rulename{6ct} and
 Finally, the rule \rulename{6xdone} drops a \sy{handlers} expression
 when its body is fully evaluated, and the rule \rulename{6weherr}
 raises an exception when \va{with-exception-handler} is supplied with
-incorrect arguments.  The metafunctions in the side-condition
-guarantee that this rule only applies when the arguments are not
-suitable functions. Their definitions are given in
-figure~\ref{fig:arity}.
+incorrect arguments.
 
 \section{Arithmetic \& basic forms}
 
@@ -449,19 +433,19 @@ figure~\ref{fig:arity}.
 \begin{center}
 \input{r6-fig-Arithmetic.tex}
 \end{center}
-\caption{Arithmetic}\label{fig:arithmetic}
+\caption{Arithmetic}\label{fig:Arithmetic}
 \endfig
 
 \beginfig
 \begin{center}
 \input{r6-fig-Basic--syntactic--forms.tex}
 \end{center}
-\caption{Basic Syntactic Forms}\label{fig:basic-syntactic-forms}
+\caption{Basic Syntactic Forms}\label{fig:Basic--syntactic--forms}
 \endfig
 
 This model does not include the Report's arithmetic, but does include
 an idealized form in order to make experimentation with other features
-simpler. Figure~\ref{fig:arithmetic} shows the reduction rules for the
+simpler. Figure~\ref{fig:Arithmetic} shows the reduction rules for the
 primitive procedures that implement addition, subtraction,
 multiplication, and division. They defer to their mathematical
 analogues. In addition, when the subtraction or divison operator are
@@ -469,7 +453,7 @@ applied to no arguments, or when division receives a zero as a
 divisor, or when any of the arithmetic operations receive a
 non-number, an exception is raised.
 
-Figure~\ref{fig:basic-syntactic-forms} shows the rules for
+Figure~\ref{fig:Basic--syntactic--forms} shows the rules for
 \sy{if}, \sy{begin}, and \sy{begin0}. The relevant
 evaluation contexts are given by the $F$ non-terminal.
 
@@ -502,17 +486,17 @@ at which point the \rulename{begin01} rule fires, and removes the
 \begin{center}
 \input{r6-fig-Cons.tex}
 \end{center}
-\caption{Lists}\label{fig:cons-cells}
+\caption{Lists}\label{fig:Cons}
 \endfig
 
 \beginfig
 \begin{center}
 \input{r6-fig-Eqv.tex}
 \end{center}
-\caption{Eqv}\label{fig:cons-cell-mutation}
+\caption{Eqv}\label{fig:Eqv}
 \endfig
 
-The rules in figure~\ref{fig:cons-cells} handle the pure subset of
+The rules in figure~\ref{fig:Cons} handle the pure subset of
 lists (although they do use the store, to pave the way for mutation).
 The first two rules handle \va{list} by reducing it to a
 succession of calls to \va{cons}, followed by \va{null}.
@@ -529,14 +513,14 @@ The rules \rulename{6car} and \rulename{6cdr} extract the components of a pair f
 \begin{center}
 \input{r6-fig-Procedure--application.tex}
 \end{center}
-\caption{Procedures \& Application}\label{fig:procedure-application}
+\caption{Procedures \& Application}\label{fig:Procedure--application}
 \endfig
 
 \beginfig
 \begin{center}
 \input{r6-fig-Apply.tex}
 \end{center}
-\caption{Apply}\label{fig:apply}
+\caption{Apply}\label{fig:Apply}
 \endfig
 
 \beginfig
@@ -595,7 +579,7 @@ The next three rules \rulename{6proct}, \rulename{6procf}, and
 remaining rules cover applications of non-procedures and other arity
 errors.
 
-The rules in figure~\ref{fig:apply} cover 
+The rules in figure~\ref{fig:Apply} cover 
 cover \va{apply}. The first
 rule, \rulename{6applyf}, covers the case where the last argument to
 \va{apply} is the empty list, and simply reduces by erasing the
@@ -616,7 +600,7 @@ too few arguments to \va{apply}.
 \input{r6-fig-Call-cc--and--dynamic-wind.tex} \\
 \input{r6-fig-pRepoStTrim.tex}
 \end{center}
-\caption{Call/cc and Dynamic Wind}\label{fig:call-cc-and-dynamic-wind}
+\caption{Call/cc and Dynamic Wind}\label{fig:Call-cc--and--dynamic-wind}
 \endfig
 
 The specification of \va{dynamic-wind} uses $(\sy{dw}~x~e~e~e)$
@@ -633,7 +617,7 @@ continuation switch. Accordingly, the reduction rule for an
 application of \va{dynamic-wind} reduces to a call to the
 pre-thunk, a \sy{dw} expression and a call to the post-thunk, as
 shown in rule \rulename{6wind} in
-figure~\ref{fig:call-cc-and-dynamic-wind}. The next two rules cover
+figure~\ref{fig:Call-cc--and--dynamic-wind}. The next two rules cover
 abuses of the \va{dynamic-wind} procedure: calling it with
 non-thunks, and calling it with the wrong number of arguments. The
 \rulename{6dwdone} rule erases a \sy{dw} expression when its second
@@ -668,7 +652,7 @@ each have matching identifiers ($x_1$). The final rule is a
 catchall; it only applies when all the others fail and thus applies
 either when there are no \sy{dw}s in the context, or when the
 \sy{dw} expressions do not match. It calls the two other
-metafunctions defined in figure~\ref{fig:call-cc-and-dynamic-wind} and
+metafunctions defined in figure~\ref{fig:Call-cc--and--dynamic-wind} and
 puts their results together into a \sy{begin} expression.
 
 The $\mathscr{S}$ metafunction extracts all of the post thunks from
@@ -691,7 +675,7 @@ parts of the context in its result.
 \input{r6-fig-Letrec.tex}
 \end{center}
 \caption{Letrec and Letrec*}
-\label{fig:letrec}
+\label{fig:Letrec}
 \endfig
 
 
@@ -702,7 +686,7 @@ parts of the context in its result.
 \begin{center}
 \input{r6-fig-Top--level--and--Variables.tex}
 \end{center}
-\caption{Library Top Level}\label{fig:top-level-and-variables}
+\caption{Library Top Level}\label{fig:Top--level--and--Variables}
 \endfig
 
 The sequence of definitions in the body of a $p$ models the
@@ -731,7 +715,7 @@ The only other departure from standard top-level library syntax is the
 distinguish a \sy{begin} expression whose subexpressions can be
 forms from one whose subexpressions are ordinary expressions.
 
-The first rule in figure~\ref{fig:top-level-and-variables} covers the
+The first rule in figure~\ref{fig:Top--level--and--Variables} covers the
 definition of a variable, and merely moves it into the store. The
 second rule covers re-definition of a variable, and it updates the
 store with the new value. The third rule drops a fully evaluated
@@ -750,21 +734,23 @@ unspecified value. The next two rules, \rulename{6setu} and \rulename{6refu} han
 \begin{center}
 \input{r6-fig-Underspecification.tex}
 \end{center}
-\caption{Explicitly Unspecified Behavior}\label{fig:underspecification}
+\caption{Explicitly Unspecified Behavior}\label{fig:Underspecification}
 \endfig
 
-The rules in figure~\ref{fig:underspecification} cover aspects of the
+The rules in figure~\ref{fig:Underspecification} cover aspects of the
 semantics that are explicitly unspecified. Implementations can replace
 the rules \rulename{6ueqv}, \rulename{6ueqc}, \rulename{6uval} and with different rules that cover the left-hand sides and, as long as they follow the informal specification, any replacement is valid. Those three situations correspond to the case when \va{eqv?} applied to two procedures or
 two conditions, and multiple values are used in a single-value context.
 
-The remaining rules in figure~\ref{fig:underspecification} cover the results from the assignment operations, \sy{set!}, \va{set-car!}, and \va{set-cdr!}. An implementation does not adjust those rules, but instead renders them useless by adjusting the rules that insert \va{unspecified}: \rulename{6setcar}, \rulename{6setcdr}, \rulename{6set}, and \rulename{6setd}. Those rules can be adjusted by replacing \va{unspecified} with any number of values in those rules.
+The remaining rules in figure~\ref{fig:Underspecification} cover the results from the assignment operations, \sy{set!}, \va{set-car!}, and \va{set-cdr!}. An implementation does not adjust those rules, but instead renders them useless by adjusting the rules that insert \va{unspecified}: \rulename{6setcar}, \rulename{6setcdr}, \rulename{6set}, and \rulename{6setd}. Those rules can be adjusted by replacing \va{unspecified} with any number of values in those rules.
 
 So, the remaining rules just specify the minimal behavior that we know that a value or values must have and otherwise reduce to an \textbf{unknown:} state. The rule \rulename{6udemand} drops \va{unspecified} in the \sy{U} context. See figure~\ref{fig:ec-grammar} for the precise definition of \sy{U}, but intuitively it is a context that is only a single expression layer deep that contains expressions whose value depends on the value of their subexpressions, like the first subexpression of a \sy{if}. Following that are rules that discard \va{unspecified} in expressions that discard the results of some of their subexpressions. The \rulename{6ubegin} shows how \sy{begin} discards its first expression when there are more expressions to evaluate. The next two rules, \rulename{6uhandlers} and \rulename{6udw} propagate \va{unspecified} to their context, since they also return any number of values to their context. Finally, the two \va{begin0} rules preserve \va{unspecified} until the rule \rulename{6begin01} can return it to its context.
 
 \section*{Acknowledgments}
 
 Thanks to Michael Sperber for many helpful discussions of specific points in the semantics, for spotting many mistakes and places where the formal semantics diverged from the informal semantics, and for generally making it possible for us to keep up with changes to the informal semantics as it developed. Thanks also to Will Clinger for a careful reading of the semantics and its explanation.
+
+\input{semantics-index}
 
 %%% Local Variables: 
 %%% mode: latex
