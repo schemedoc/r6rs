@@ -169,9 +169,11 @@ that the values indeed adhere to the restrictions described
 in the specification.  The implementation must check
 that the restrictions in the specification are indeed met, to the
 extent that it is reasonable, possible, and necessary to allow the
-specified operation to complete successfully.
+specified operation to complete successfully.  The implementation's
+responsibilities are specified in more detail in
+section~\ref{entryformatsection} and throughout the report.
 
-It is not always possible for an implementation to completely check
+Note that it is not always possible for an implementation to completely check
 the restrictions set forth in the specifications.  For example, if an
 operation is specified to accept a procedure with specific properties,
 checking of these properties is undecidable in general.  Similarly,
@@ -319,14 +321,14 @@ Procedure calls that occur in certain syntactic
 contexts are `tail calls'.  A Scheme implementation is
 properly tail-recursive if it supports an unbounded number of active
 tail calls.  A call is {\em active} if the called procedure may still
-return.  Note that this includes calls that may be returned from either
-by the current continuation or by continuations captured earlier by
+return.  Note that this includes regular returns as well as returns
+through continuations captured earlier by
 {\cf call-with-current-continuation} that are later invoked.
 In the absence of captured continuations, calls could
 return at most once and the active calls would be those that had not
 yet returned.
 A formal definition of proper tail recursion can be found
-in~\cite{propertailrecursion}.  The rules for identifying tail calls
+in Clinger's paper~\cite{propertailrecursion}.  The rules for identifying tail calls
 in base-library constructs are described in
 section~\ref{basetailcontextsection}.
 
