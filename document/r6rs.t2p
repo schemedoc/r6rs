@@ -7,6 +7,8 @@
 
 \evalh{(!definitely-latex)}
 
+\evalh{(set! *ghostscript-options* (string-append " -r144x144 " *ghostscript-options*))}
+
 \htmlcolophon{dont-credit-tex2page}
 
 \def\bibname{References}
@@ -177,7 +179,7 @@
 \def\todo#1{}
 
 \let\latexdocument\document
-\def\document{\latexdocument\LARGE\enlargethispage{10in}}
+\def\document{\latexdocument\textwidth 663pt\textwidth 523pt\oddsidemargin -1in\evensidemargin -1in}
 
 \endimgpreamble
 
@@ -262,7 +264,7 @@
 
 \renewenvironment{entry}[1]{\par##1}{\par}
 
-\def\pproto##1##2{\leftline{\underline{##2:}\enspace{\tt{}##1}}}
+\def\pproto##1##2{\leftline{{\tt{}##1}\enspace\enspace{##2}}}
 
 \def\proto##1##2##3{\pproto{(\mainschindex{##1}##1{\it{}##2\/})}{##3}}
 \def\rproto##1##2##3{\proto{##1}{##2}{##3}}
