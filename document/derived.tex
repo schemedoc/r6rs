@@ -203,6 +203,25 @@ create temporary names for the formals.
            body1 body2 ...))))))
 \end{scheme}
 
+\subsubsection*{{\tt let}}
+
+The {\cf let} keyword could be defined in terms of {\cf lambda} and {\cf letrec}
+using {\cf syntax-rules} (see section~\ref{syntaxrulessection}) as
+follows:
+
+\begin{scheme}
+(define-syntax \ide{let}
+  (syntax-rules ()
+    ((let ((name val) ...) body1 body2 ...)
+     ((lambda (name ...) body1 body2 ...)
+      val ...))
+    ((let tag ((name val) ...) body1 body2 ...)
+     ((letrec ((tag (lambda (name ...)
+                      body1 body2 ...)))
+        tag)
+      val ...))))%
+\end{scheme}
+
 
 %%% Local Variables: 
 %%% mode: latex

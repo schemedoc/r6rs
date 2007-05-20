@@ -9,8 +9,9 @@ used to implement the Scheme numbers, and notations used to write numbers.
 This report uses the types \type{number}, \type{complex}, \type{real},
 \type{rational}, and \type{integer} to refer to both mathematical numbers
 and Scheme numbers.
-The \type{fixnum} and \type{flonum} types refer to certain
-subtypes of the Scheme numbers, as explained below.
+The \type{fixnum} and \type{flonum} types refer to special
+subtypes of the Scheme numbers, as determined by common machine
+representations, as explained below.
 
 \section{Numerical types}
 \label{numericaltypes}
@@ -53,18 +54,6 @@ In order to catch uses of inexact numbers where exact numbers are
 required, Scheme explicitly distinguishes exact from inexact numbers.
 This distinction is orthogonal to the dimension of type.
 
-A \defining{fixnum} is an exact integer whose value lies
-within a certain implementation-dependent subrange of the
-exact integers. (Library section \extref{lib:fixnumssection}{Fixnums} describes a
-library for computing with fixnums.)
-Likewise, every implementation is required
-to designate a subset of its inexact reals as \defining{flonum}s, and
-to convert certain external representations into flonums.  
-(Library section \extref{lib:flonumssection}{Flonums} describes a library for
-computing with flonums.)  Note that
-this does not imply that an implementation is required to use
-floating point representations.
-
 \section{Exactness}
 \label{exactly}
 
@@ -85,6 +74,20 @@ computations involving inexact numbers because approximate methods
 such as floating point arithmetic may be used, but it is the duty of
 each implementation to make the result as close as practical to the
 mathematically ideal result.
+
+\section{Fixnums and flonums}
+
+A \defining{fixnum} is an exact integer whose value lies
+within a certain implementation-dependent subrange of the
+exact integers. (Library section \extref{lib:fixnumssection}{Fixnums} describes a
+library for computing with fixnums.)
+Likewise, every implementation is required
+to designate a subset of its inexact reals as \defining{flonum}s, and
+to convert certain external representations into flonums.  
+(Library section \extref{lib:flonumssection}{Flonums} describes a library for
+computing with flonums.)  Note that
+this does not imply that an implementation is required to use
+floating point representations.
 
 \section{Implementation restrictions}
 

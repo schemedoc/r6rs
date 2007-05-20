@@ -52,10 +52,10 @@ could be defined in terms of base library forms by the following macros:
 \mainschindex{do}{\tt\obeyspaces%
      \dotsfoo)\\
     (\hyper{test} \hyper{expression} \dotsfoo)\\
-  \hyper{expression} \dotsfoo)}
+  \hyper{command} \dotsfoo)}
 
 \syntax
-The \hyper{init}s, \hyper{step}s, and \hyper{test}s must be
+The \hyper{init}s, \hyper{step}s, \hyper{test}s, and \hyper{command}s must be
 expressions.  The \hyper{variable}s must be pairwise distinct variables.
 
 \semantics
@@ -71,8 +71,7 @@ the \hyper{variable}s are bound to fresh locations, the results of the
 \hyper{variable}s, and then the iteration phase begins.
 
 \vest Each iteration begins by evaluating \hyper{test}; if the result is
-false (see report section~\extref{report:booleanvaluessection}{Boolean
-  values}), then the \hyper{expression}s
+\schfalse, then the \hyper{command}s
 are evaluated in order for effect, the \hyper{step}
 expressions are evaluated in some unspecified order, the
 \hyper{variable}s are bound to fresh locations, the results of the
@@ -82,7 +81,7 @@ expressions are evaluated in some unspecified order, the
 \vest If \hyper{test} evaluates to a true value, then the
 \hyper{expression}s are evaluated from left to right and the values of
 the last \hyper{expression} are returned.  If no \hyper{expression}s
-are present, then the value of the {\cf do} expression \isunspecified.
+are present, then the values of the {\cf do} expression \areunspecified.
 
 \vest The region\index{region} of the binding of a \hyper{variable}
 consists of the entire {\cf do} expression except for the \hyper{init}s.
@@ -92,6 +91,11 @@ list of {\cf do} variables.
 \vest A \hyper{step} may be omitted, in which case the effect is the
 same as if {\cf(\hyper{variable} \hyper{init} \hyper{variable})} had
 been written instead of {\cf(\hyper{variable} \hyper{init})}.
+
+If a {\cf do} expression appears in a tail context, the
+\hyper{expression}s are a \hyper{tail sequence} in the sense of report
+section~\extref{report:basetailcontextsection}{Tail calls and tail contexts},
+i.e.\ the last \hyper{expression} is also in a tail context.
 
 \begin{scheme}
 (do ((vec (make-vector 5))

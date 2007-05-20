@@ -48,15 +48,15 @@ and {\cf letrec-syntax} to be visible only in the inner body forms.
 
 \item[expression, i.e., nondefinition]
 The expander completes the expansion of the deferred right-hand-side forms
-and the current and remaining expressions in the body, then
+and the current and remaining expressions in the body, and then
 creates the equivalent of a {\cf letrec*} form from the defined variables,
 expanded right-hand-side expressions, and expanded body expressions.
 \end{description}
 
-Expansion of each variable definition right-hand side is deferred until
-after all of the definitions have been seen so that each keyword and
-variable reference within the right-hand side resolves to the local
-binding, if any.
+For the right-hand side of the definition of a variable, expansion is
+deferred until after all of the definitions have been seen.  Consequently,
+each keyword and variable reference within the right-hand side
+resolves to the local binding, if any.
 
 A definition in the sequence of forms must not define any identifier whose
 binding is used to determine the meaning of the undeferred portions of the

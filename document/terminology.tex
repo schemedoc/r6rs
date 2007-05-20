@@ -30,16 +30,16 @@ RFC~2119~\cite{mustard}.  Specifically:
 
 In particular, this report occasionally uses ``should'' to designate
 circumstances that are outside the specification of this report, but
-cannot be practically enforced by an implementation; see
+cannot be practically detected by an implementation; see
 section~\ref{argumentcheckingsection}.  In such circumstances, a
 particular implementation may allow the programmer to ignore the
-recommendation of the report, and even exhibit reasonable behavior.
+recommendation of the report; it may even exhibit reasonable behavior.
 However, as the report does not specify the behavior,
 these programs may be unportable.
 
 \section{Entry format}
 
-The chapters describing bindings in the base library and the standard
+The chapters that describe bindings in the base library and the standard
 libraries are organized
 into entries.  Each entry describes one language feature or a group of
 related features, where a feature is either a syntactic construct or a
@@ -162,7 +162,7 @@ parameter variables for the various subsets of the numbers.
 
 With the listed type restrictions, it is the programmer's responsibility to
 ensure that the corresponding argument is of the specified type.
-It is the implementation's responsibility to checking for
+It is the implementation's responsibility to check for
 that type; see section~\ref{argumentcheckingsection}.
 
 The \var{list} parameter naming conventions means that it is the
@@ -175,19 +175,20 @@ argument is either an empty list or a pair.
 
 Descriptions of procedures may express other restrictions on the
 arguments of a procedure.  Typically, such a restriction is formulated
-as a phrase of the form ``\var{x} must be a \ldots''. (or otherwise
-using the word ``must''.) 
+as a phrase of the form ``\var{x} must be a \ldots'' (or otherwise
+using the word ``must'').
 
-If the description does not explicitly distinguish between the
-programmer's and the implementation's responsibilities, the
-restrictions describe both the programmer's responsibility, who must
-ensure that an appropriate argument is passed, and the
-implementation's responsibilities, which must check that the argument
-is appropriate.  A description may explicitly list the
-implementation's responsibilities for some arguments in a paragraph
-labelled ``\textit{Implementation responsibilities}''.  In that case,
-the responsibilities specified for these arguments in the rest of the
-description are only for the programmer.
+In addition to the restrictions implied by naming conventions, an
+entries may list additional explicit restrictions.
+These explicit restrictions usually describe both the
+programmer's responsibilities, who must ensure that an appropriate
+argument is passed, and the implementation's responsibilities, which
+must check that the argument is appropriate.  Additionally, a description
+may explicitly list the implementation's responsibilities for some
+arguments in a paragraph labelled ``\textit{Implementation
+  responsibilities}''.  In that case, the responsibilities specified
+for these arguments in the rest of the description are only for the
+programmer.
 
 If \var{category} is something other than ``syntax'' and
 ``procedure'', then the entry describes a non-procedural value, and

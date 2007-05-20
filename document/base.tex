@@ -436,19 +436,19 @@ immutable binding.
 \subsection{Derived conditionals}\unsection
 
 \begin{entry}{%
-\proto{cond}{ \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
+\proto{cond}{ \hyperi{cond clause} \hyperii{cond clause} \dotsfoo}{\exprtype}}
 
 \syntax
-Each \hyper{clause} must be of the form
+Each \hyper{cond clause} must be of the form
 \begin{scheme}
 (\hyper{test} \hyperi{expression} \dotsfoo)%
 \end{scheme}
-where \hyper{test} is any expression.  Alternatively, a \hyper{clause} may be
+where \hyper{test} is any expression.  Alternatively, a \hyper{cond clause} may be
 of the form
 \begin{scheme}
 (\hyper{test} => \hyper{expression})%
 \end{scheme}
-The last \hyper{clause} may be
+The last \hyper{cond clause} may be
 an ``else clause'', which has the form
 \begin{scheme}
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
@@ -458,15 +458,15 @@ an ``else clause'', which has the form
 
 \semantics
 A {\cf cond} expression is evaluated by evaluating the \hyper{test}
-expressions of successive \hyper{clause}s in order until one of them
+expressions of successive \hyper{cond clause}s in order until one of them
 evaluates to a true value\index{true} (see
 section~\ref{booleanvaluessection}).  When a \hyper{test} evaluates to a true
-value, then the remaining \hyper{expression}s in its \hyper{clause} are
+value, then the remaining \hyper{expression}s in its \hyper{cond clause} are
 evaluated in order, and the results of the last \hyper{expression} in the
-\hyper{clause} are returned as the results of the entire {\cf cond}
-expression.  If the selected \hyper{clause} contains only the
+\hyper{cond clause} are returned as the results of the entire {\cf cond}
+expression.  If the selected \hyper{cond clause} contains only the
 \hyper{test} and no \hyper{expression}s, then the value of the
-\hyper{test} is returned as the result.  If the selected \hyper{clause} uses the
+\hyper{test} is returned as the result.  If the selected \hyper{cond clause} uses the
 \ide{=>} alternate form, then the \hyper{expression} is evaluated.
 Its value must be a procedure that accepts one argument; this procedure is then
 called on the value of the \hyper{test} and the values returned by this
@@ -495,10 +495,10 @@ appendix~\ref{derivedformsappendix}.
 
 
 \begin{entry}{%
-\proto{case}{ \hyper{key} \hyperi{clause} \hyperii{clause} \dotsfoo}{\exprtype}}
+\proto{case}{ \hyper{key} \hyperi{case clause} \hyperii{case clause} \dotsfoo}{\exprtype}}
 
 \syntax
-\hyper{Key} must be an expression.  Each \hyper{clause} has one of
+\hyper{Key} must be an expression.  Each \hyper{case clause} has one of
 the following forms:
 \begin{scheme}
 ((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)
@@ -506,19 +506,19 @@ the following forms:
 \end{scheme}
 \schindex{else}
 The second form, which specifies an ``else clause'',
-may only appear as the last \hyper{clause}.
+may only appear as the last \hyper{case clause}.
 Each \hyper{datum} is an external representation of some object.
 The datums denoted by the \hyper{datum}s need not be distinct.
 
 \semantics
 A {\cf case} expression is evaluated as follows.  \hyper{Key} is
 evaluated and its result is compared against the datums
-denoted by the \hyper{datum}s of each \hyper{clause} in turn, proceding
+denoted by the \hyper{datum}s of each \hyper{case clause} in turn, proceding
 in order from left to right through the set of clauses.  If the
 result of evaluating \hyper{key} is equivalent (in the sense of
-{\cf eqv?}; see section~\ref{eqv?}) to a datum of a \hyper{clause}, the
+{\cf eqv?}; see section~\ref{eqv?}) to a datum of a \hyper{case clause}, the
 corresponding \hyper{expression}s are evaluated from left
-to right and the results of the last expression in the \hyper{clause} are
+to right and the results of the last expression in the \hyper{case clause} are
 returned as the results of the {\cf case} expression.  Otherwise, the
 comparison process continues.  If the result of
 evaluating \hyper{key} is different from every datum in each set, then if
@@ -2674,7 +2674,7 @@ Returns a possibly improper list consisting of the elements of the first \var{li
 followed by the elements of the other \var{list}s, with \var{obj} as
 the cdr of the final pair.
 An improper list results if \var{obj} is not a
-proper list.
+list.
 
 \begin{scheme}
 (append '(x) '(y))              \ev  (x y)
@@ -2716,40 +2716,15 @@ obtained by omitting the first \var{k} elements.
 \end{scheme}
 
 \implresp The implementation must check that \var{list} is a chain of
-pairs of size at least \var{k}.  It should not check that it is a chain
-of pairs beyond this size.
-
-{\cf List-tail} could be defined by
-
-\begin{scheme}
-(define (list-tail l k)
-  (if (and (not (null? l))
-           (not (pair? l)))
-      (assertion-violation
-       'list-tail
-       "not a list"
-       l))
-  (if (or (not (exact? k))
-          (not (integer? k))
-          (negative? k))
-      (assertion-violation
-       'list-tail
-       "not an exact non-negative integer"
-       l))
-  
-  (let loop ((l l) (k k))
-    (if (zero? k)
-        l
-        (loop (cdr l) (- k 1)))))%
-\end{scheme} 
-
+pairs whose length is at least \var{k}.  It should not check that it is a chain
+of pairs beyond this length.
 \end{entry}
 
 
 \begin{entry}{%
 \proto{list-ref}{ list k}{procedure}}
 
-\domain{\var{List} must be a list of size at least $\var{k}+1$.}
+\domain{\var{List} must be a list whose length is at least $\var{k}+1$.}
 
 Returns the \var{k}th element of \var{list}.
 
@@ -2758,8 +2733,8 @@ Returns the \var{k}th element of \var{list}.
 \end{scheme}
 
 \implresp The implementation must check that \var{list} is a chain of
-pairs of size at least $\var{k}+1$.  It should not check that it is a list
-of pairs beyond this size.
+pairs whose length is at least $\var{k}+1$.  It should not check that it is a list
+of pairs beyond this length.
 \end{entry}
 
 
@@ -2773,12 +2748,12 @@ of pairs beyond this size.
 
 The {\cf map} procedure applies \var{proc} element-wise to the elements of the
 \var{list}s and returns a list of the results, in order.
-\var{Proc} is always called in same dynamic environment 
+\var{Proc} is always called in the same dynamic environment 
 as {\cf map} itself.
 The dynamic order in which \var{proc} is applied to the elements of the
 \var{list}s is unspecified.
-If multiple returns occur from {\cf map}, the return
-values of earlier returns are not mutated.
+If multiple returns occur from {\cf map}, the 
+values returned by earlier returns are not mutated.
 
 \begin{scheme}
 (map cadr '((a b) (d e) (g h)))   \lev  (b e h)
@@ -2813,7 +2788,7 @@ The {\cf for-each} procedure applies \var{proc}
 element-wise to the elements of the
 \var{list}s for its side effects,  in order from the first elements to the
 last.
-\var{Proc} is always called in same dynamic environment 
+\var{Proc} is always called in the same dynamic environment 
 as {\cf for-each} itself.
 The return values of {\cf for-each} \areunspecified.
 
@@ -2891,8 +2866,7 @@ Returns \schtrue{} if \var{obj} is a symbol, otherwise returns \schfalse.
 \begin{entry}{%
 \proto{symbol->string}{ symbol}{procedure}}
 
-Returns the name of \var{symbol} as a string.  
-The returned string may be immutable.
+Returns the name of \var{symbol} as an immutable string.  
 
 \begin{scheme}
 (symbol->string 'flying-fish)     
@@ -2956,7 +2930,7 @@ values~\cite{Unicode}.
 
   Despite this complexity, most things that a literate human would
   call a ``character'' can be represented by a single code point in
-  Unicode (though there may exist code-point sequences that represent
+  Unicode (though several code-point sequences may represent
   that same character). For example, Roman letters, Cyrillic letters,
   Hebrew consonants, and most Chinese characters fall into this
   category. Thus, the ``code point'' approximation of ``character''
@@ -2993,7 +2967,7 @@ returns its associated character.
 (integer->char 32) \ev \sharpsign\backwhack{}space
 (char->integer (integer->char 5000))
 \ev 5000
-(integer->char \sharpsign{}xD800) \ev \exception{\&assertion}%
+(integer->char \sharpsign{}\backwhack{}xD800) \ev \exception{\&assertion}%
 \end{scheme}
 \end{entry}
 
@@ -3169,14 +3143,6 @@ Returns a newly allocated copy of the given \var{string}.
 
 \end{entry}
 
-
-\begin{entry}{%
-\proto{string-fill!}{ string char}{procedure}}
-
-Stores \var{char} in every element of the given \var{string} and returns \unspecifiedreturn.  % <!>
-
-\end{entry}
-
 \section{Vectors}
 \label{vectorsection}
 
@@ -3201,7 +3167,8 @@ Like list constants, vector constants must be quoted:
 \begin{entry}{%
 \proto{vector?}{ obj}{procedure}}
  
-Returns \schtrue{} if \var{obj} is a vector.  Otherwise, returns \schfalse.
+Returns \schtrue{} if \var{obj} is a vector.  Otherwise the procedure
+returns \schfalse.
 \end{entry}
 
 
@@ -3343,7 +3310,7 @@ Analogous to {\cf for-each}.
 \proto{assertion-violation}{ who message \vari{irritant} \dotsfoo}{procedure}}
 
 \domain{\var{Who} must be a string or a symbol or \schfalse{}.
-  \var{message} must be a string.
+  \var{Message} must be a string.
   The \var{irritant}s are arbitrary objects.}
 
 These procedures raise an exception.  Calling the {\cf error}
@@ -3417,8 +3384,7 @@ object is implementation-dependent.
 \begin{rationale}
   Implementations can (and are encouraged to) exploit the fact that
   {\cf assert} is syntax to provide as much information as possible
-  about the location of the assertion failure in the condition object
-  of the raised exception.
+  about the location of the assertion failure.
 \end{rationale}
 \end{entry}
 
@@ -3646,11 +3612,11 @@ and after thunks of any other calls to {\cf dynamic-wind} that occur
 within the dynamic extent of the call to \var{thunk} are considered to be
 within the dynamic extent of the call to \var{thunk}.
 
-More precisely, an escape procedure used to transfer control out of the
+More precisely, an escape procedure transfers control out of the
 dynamic extent of a set of zero or more active {\cf dynamic-wind}
 \var{thunk} calls $x\ \dots$ and transfer control into the dynamic extent
 of a set of zero or more active {\cf dynamic-wind} \var{thunk} calls
-$y\ \dots$ proceeds as follows.
+$y\ \dots$.  
 It leaves the dynamic extent of the most recent $x$ and calls without
 arguments the corresponding \var{after} thunk.
 If the \var{after} thunk returns, the escape procedure proceeds to
@@ -3748,23 +3714,6 @@ invoking the procedure named by \hyper{variable}.
   \lev  ((6 1 3) (-5 -2))%
 \end{scheme}
 
-The {\cf let} keyword could be defined in terms of {\cf lambda} and {\cf letrec}
-using {\cf syntax-rules} (see section~\ref{syntaxrulessection}) as
-follows:
-
-\begin{scheme}
-(define-syntax \ide{let}
-  (syntax-rules ()
-    ((let ((name val) ...) body1 body2 ...)
-     ((lambda (name ...) body1 body2 ...)
-      val ...))
-    ((let tag ((name val) ...) body1 body2 ...)
-     ((letrec ((tag (lambda (name ...)
-                      body1 body2 ...)))
-        tag)
-      val ...))))%
-\end{scheme}
-
 \end{entry}
 
 \section{Quasiquotation}\unsection
@@ -3772,7 +3721,7 @@ follows:
 
 \begin{entry}{%
 \proto{quasiquote}{ \hyper{qq template}}{\exprtype}}
-
+p
 ``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
 for constructing a list or vector structure when some but not all of the
 desired structure is known in advance.  If no
@@ -3876,7 +3825,7 @@ production rules.  Imagine a copy of the following rules for $D = 1, 2,
 3, \ldots$.  $D$ keeps track of the nesting depth.
 
 \begin{grammar}%
-\meta{quasiquotation} \: \meta{quasiquotation 1}
+\meta{qq template} \: \meta{qq template 1}
 \meta{qq template 0} \: \meta{expression}
 \meta{quasiquotation $D$} \: (quasiquote \meta{qq template $D$})
 \meta{qq template $D$} \: \meta{lexeme datum}
@@ -3910,7 +3859,7 @@ The {\cf let-syntax} and {\cf letrec-syntax} forms are analogous to {\cf let}
 and {\cf letrec} but bind keywords rather than variables.
 Like a {\cf begin} form, a {\cf let-syntax} or {\cf letrec-syntax} form
 may appear in a definition context, in which case it is treated as a
-definition, and the forms in the body of the form must also be
+definition, and the forms in the body must also be
 definitions.
 A {\cf let-syntax} or {\cf letrec-syntax} form may also appear in an
 expression context, in which case the forms within their bodies must be
@@ -3925,13 +3874,12 @@ expressions.
 ((\hyper{keyword} \hyper{expression}) \dotsfoo)%
 \end{scheme}
 Each \hyper{keyword} is an identifier,
-each \hyper{expression} is 
+and each \hyper{expression} is 
 an expression that evaluates, at macro-expansion
 time, to a transformer (see
 library chapter~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}).  It is a
 syntax violation for \hyper{keyword} to appear more than once in the list of keywords
 being bound.
-The \hyper{form}s are arbitrary forms.
 
 \semantics
 The \hyper{form}s are expanded in the syntactic environment
@@ -3942,8 +3890,8 @@ Each binding of a \hyper{keyword} has the \hyper{form}s as its region.
 
 The \hyper{form}s of a {\cf let-syntax}
 form are treated, whether in definition or expression context, as if
-wrapped in an implicit {\cf begin}.  See section~\ref{begin}.
-Thus, definitions in the result of expanding the \hyper{form}s have
+wrapped in an implicit {\cf begin}; see section~\ref{begin}.
+Thus definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   let-syntax} form would have.
 
@@ -4000,14 +3948,14 @@ introduced by the {\cf letrec-syntax} form.
 
 The \hyper{form}s of a {\cf letrec-syntax}
 form are treated, whether in definition or expression context, as if
-wrapped in an implicit {\cf begin}, see section~\ref{begin}.
-Thus, definitions in the result of expanding the \hyper{form}s have
+wrapped in an implicit {\cf begin}; see section~\ref{begin}.
+Thus definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   letrec-syntax} form would have.
 
 \implresp The implementation must check that the value of each
-\hyper{expression} is a transformer when the evaluation produces a
-value.
+\hyper{expression} is a transformer when the \hyper{expression}
+evaluates to a value.
 
 \begin{scheme}
 (letrec-syntax
@@ -4178,7 +4126,7 @@ whose $n$th cdr matches $P_x$.
 \item $P$ is of the form
 {\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
-and $F$ is a proper list of $n$
+and $F$ is a list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
 whose next $m-k$ elements each match $P_e$,
 and
@@ -4338,7 +4286,7 @@ expression.
 
 \item If one of the following expressions is in a tail context,
 then the subexpressions shown as \meta{tail expression} are in a tail context.
-These were derived from rules for the syntax of the forms described in
+These were derived from specifications of the syntax of the forms described in
 this chapter by replacing some occurrences of \meta{expression}
 with \meta{tail expression}.  Only those rules that contain tail contexts
 are shown here.
@@ -4359,22 +4307,18 @@ are shown here.
 (and \arbno{\meta{expression}} \meta{tail expression})
 (or \arbno{\meta{expression}} \meta{tail expression})
 
-(let (\arbno{\meta{binding spec}}) \meta{tail body})
-(let \meta{variable} (\arbno{\meta{binding spec}}) \meta{tail body})
-(let* (\arbno{\meta{binding spec}}) \meta{tail body})
-(letrec* (\arbno{\meta{binding spec}}) \meta{tail body})
-(letrec (\arbno{\meta{binding spec}}) \meta{tail body})
-(let-values (\arbno{\meta{mv binding spec}}) \meta{tail body})
-(let*-values (\arbno{\meta{mv binding spec}}) \meta{tail body})
+(let \hyper{bindings} \meta{tail body})
+(let \meta{variable} \hyper{bindings} \meta{tail body})
+(let* \hyper{bindings} \meta{tail body})
+(letrec* \hyper{bindings} \meta{tail body})
+(letrec \hyper{bindings} \meta{tail body})
+(let-values \hyper{mv-bindings} \meta{tail body})
+(let*-values \hyper{mv-bindings} \meta{tail body})
 
-(let-syntax (\arbno{\meta{syntax spec}}) \meta{tail body})
-(letrec-syntax (\arbno{\meta{syntax spec}}) \meta{tail body})
+(let-syntax \hyper{bindings} \meta{tail body})
+(letrec-syntax \hyper{bindings} \meta{tail body})
 
 (begin \meta{tail sequence})
-
-(d\=o \=(\arbno{\meta{iteration spec}})
-  \>  \>(\meta{test} \meta{tail sequence})
-  \>\arbno{\meta{expression}})
 
 {\rm where}
 
