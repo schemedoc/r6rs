@@ -1550,7 +1550,7 @@ undefined.
 The value of $\log z$ for non-real $z$ is defined in terms of log on real numbers as 
 
 \begin{displaymath}
-\log z = \log |z| + \mathrm{angle}~z
+\log z = \log |z| + (\mathrm{angle}~z)i
 \end{displaymath}
 %
 where $\mathrm{angle}~z$ is the angle of $z = a\cdot e^{ib}$ specified
@@ -1941,11 +1941,15 @@ For any real number \var{x} that is neither infinite nor NaN:
 \begin{scheme}
 (+ +inf.0 \var{x})                           \ev  +inf.0
 (+ -inf.0 \var{x})                           \ev  -inf.0
+\end{scheme}
+
+For any real number \var{x}:
+
+\begin{scheme}
 (+ +nan.0 \var{x})                           \ev  +nan.0%
 \end{scheme}
 
-For any real number \var{x} that is neither
-infinite nor NaN nor an exact 0:
+For any real number \var{x} that is not an exact 0:
 
 \begin{scheme}
 (* +nan.0 \var{x})                           \ev  +nan.0%
@@ -2230,13 +2234,6 @@ argument.
 (sqrt -5)                   \lev  0.0+2.23606797749979i ; approximately
 (sqrt +inf.0)               \ev  +inf.0
 (sqrt -inf.0)               \ev  +inf.0i%
-\end{scheme}
-
-Implementations that distinguish $-0.0$ should adopt behavior
-consistent with the following example:
-
-\begin{scheme}
-(sqrt -0.0)   \ev -0.0%
 \end{scheme}
 
 \begin{rationale}
