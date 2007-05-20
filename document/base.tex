@@ -1443,7 +1443,7 @@ infinities and NaNs are representable, and specifies many operations
 with respect to these numbers in ways that are consistent with the
 IEEE 754 standard for binary floating point arithmetic.  
 An implementation of Scheme is not required to represent infinities and
-NaNs, however;
+NaNs; however,
 an implementation must raise a continuable exception with
 condition type {\cf\&no-infinities} or {\cf\&no-nans} (respectively;
 see library section~\extref{lib:flonumssection}{Flonums})
@@ -1665,7 +1665,8 @@ then {\cf (integer? \var{q})} is false.
 \end{scheme}
 
 \begin{note}
-The behavior of these type predicates on inexact numbers is
+Except for {\cf number?}, the behavior of these type predicates
+on inexact numbers is
 unreliable, because any inaccuracy may
 affect the result.
 \end{note}
@@ -1839,7 +1840,7 @@ languages are not transitive.
 \begin{note}
 While it is possible to compare inexact numbers using these
 predicates, the results may be unreliable because a small inaccuracy
-may affect the result; this is especially true of {\cf =} and {\cf zero?}.
+may affect the result; this is especially true of {\cf =} and {\cf zero?} (below).
 
 When in doubt, consult a numerical analyst.
 \end{note}
@@ -1866,8 +1867,13 @@ greater than zero, {\cf negative?} tests whether it is less than zero, {\cf
 NaN.
 
 \begin{scheme}
+(zero? +0.0)                  \ev  \schtrue{}
+(zero? -0.0)                  \ev  \schtrue{}
+(zero? +nan.0)                \ev  \schfalse{}
 (positive? +inf.0)            \ev  \schtrue{}
 (negative? -inf.0)            \ev  \schtrue{}
+(positive? +nan.0)            \ev  \schfalse{}
+(negative? +nan.0)            \ev  \schfalse{}
 (finite? +inf.0)              \ev  \schfalse{}
 (finite? 5)                   \ev  \schtrue{}
 (finite? 5.0)                 \ev  \schtrue{}
@@ -1988,7 +1994,8 @@ of their argument.
 (/ 1.0 0)                              \ev  +inf.0
 (/ -1 0.0)                             \ev  -inf.0
 (/ +inf.0)                             \ev  0.0
-(/ 0 0)                                \lev \exception{\&assertion} \textit{or} +nan.0
+(/ 0 0)                                \lev \exception{\&assertion}
+(/ 3 0)                                \lev \exception{\&assertion}
 (/ 0 3.5)                              \ev  0.0 ; inexact
 (/ 0 0.0)                              \ev  +nan.0
 (/ 0.0 0)                              \ev  +nan.0
@@ -2081,7 +2088,7 @@ denominator of $0$ is defined to be $1$.
 (numerator (/ 6 4))                    \ev  3
 (denominator (/ 6 4))                  \ev  2
 (denominator
- (->inexact (/ 6 4)))                  \ev  2.0%
+  (inexact (/ 6 4)))                   \ev  2.0%
 \end{scheme}
 \end{entry}
 
@@ -2091,8 +2098,8 @@ denominator of $0$ is defined to be $1$.
 \proto{truncate}{ x}{procedure}
 \proto{round}{ x}{procedure}}
 
-These procedures return inexact integers on inexact arguments that are
-not infinities or NaNs, and exact integers on exact rational
+These procedures return inexact integers for inexact arguments that are
+not infinities or NaNs, and exact integers for exact rational
 arguments.  For such arguments, {\cf floor} returns the largest
 integer not larger than \var{x}.  The {\cf ceiling} procedure returns the smallest
 integer not smaller than \var{x}.  The {\cf truncate} procedure returns the integer
@@ -2241,8 +2248,13 @@ consistent with the following example:
 \proto{exact-integer-sqrt}{ k}{procedure}}
 
 The {\cf exact-integer-sqrt} procedure returns two non-negative exact
-integers $s$ and $r$ where $\var{ei} = s^2 +
-r$ and $\var{ei} < (s+1)^2$.
+integers $s$ and $r$ where $\var{k} = s^2 +
+r$ and $\var{k} < (s+1)^2$.
+
+\begin{scheme}
+(exact-integer-sqrt 4) \ev 2, 0
+(exact-integer-sqrt 5) \ev 2, 1
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%
@@ -2312,8 +2324,10 @@ some integer $n$.
 
 \begin{scheme}
 (angle -1.0)         \ev \(\pi\)
-(angle -1.0+0.0)     \ev \(\pi\)
-(angle -1.0-0.0)     \ev -\(\pi\)\\\>; \textrm{if -0.0 is distinguished}%
+(angle -1.0+0.0i)    \ev \(\pi\)
+(angle -1.0-0.0i)    \ev -\(\pi\)\\\>; \textrm{if -0.0 is distinguished}
+(angle +inf.0)       \ev 0.0
+(angle -inf.0)       \ev \(\pi\)%
 \end{scheme}
 
 Moreover, suppose \vari{x}, \varii{x} are such that either \vari{x}
@@ -2331,10 +2345,6 @@ arguments.
 
 \begin{scheme}
 (angle -1)                    \ev \(\pi\)
-(angle +inf.0)                \ev 0.0
-(angle -inf.0)                \ev \(\pi\)
-(angle -1.0+0.0)              \ev \(\pi\)
-(angle -1.0-0.0)              \ev \(-\pi\)\\\>; \textrm{if -0.0 is distinguished}%
 \end{scheme}
 \end{entry}
 
@@ -2354,17 +2364,21 @@ radix and returns as a string an external representation of the given
 number in the given radix such that
 %
 \begin{scheme}
-(let ((number \var{number})
-      (radix \var{radix}))
-  (eqv? number
-        (string->number (number->string number
-                                        radix)
-                        radix)))%
+(let ((number \var{z}) (radix \var{radix}))
+  (eqv? (string->number
+          (number->string number radix)
+          radix)
+        number))%
 \end{scheme}
 %
 is true.  If no possible result makes this expression
 true, an exception with condition type
 {\cf\&implementation-restriction} is raised.
+
+\begin{note}
+The error case can occur only when \var{z} is not a complex number
+or is a complex number with a non-rational real or imaginary part.
+\end{note}
 
 If a \var{precision} is specified, then the representations of the
 inexact real components of the result, unless they are infinite or
@@ -2380,14 +2394,6 @@ mantissa width) needed to make the above expression and condition
 true~\cite{howtoprint,howtoread}; otherwise the format of the result
 is unspecified.
 
-The result returned by {\cf number->string} never contains an explicit
-radix prefix.
-
-\begin{note}
-The error case can occur only when \var{z} is not a complex number
-or is a complex number with a non-rational real or imaginary part.
-\end{note}
-
 \begin{rationale}
 If \var{z} is an inexact number represented using binary floating
 point, and the radix is 10, then the above expression is normally satisfied by
@@ -2395,6 +2401,9 @@ a result containing a decimal point.  The unspecified case
 allows for infinities, NaNs, and representations other than binary
 floating point.
 \end{rationale}
+
+The result returned by {\cf number->string} never contains an explicit
+radix prefix.
 \end{entry}
 
 \begin{entry}{%
