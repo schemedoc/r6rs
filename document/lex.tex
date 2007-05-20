@@ -30,16 +30,17 @@ Each syntactic datum uniquely determines a corresponding \defining{datum value}.
 A syntactic datum can be used in a program to obtain the corresponding
 datum value using {\cf quote} (see section~\ref{quote}).
 
-The Scheme program consists of syntactic entities called
-\textit{forms}\mainindex{form}, which, when they occur in source code, 
-are a subset of the syntactic datums.
+Scheme source code consists of syntactic datums and (non-significant) comments
+Syntactic datums in Scheme source code are called
+\textit{forms}\mainindex{form}.
 Consequently, Scheme's syntax has the property that any sequence of
-characters that is an expression is also a syntactic datum representing
+characters that is a form is also a syntactic datum representing
 some object.  This can lead to confusion, since it may not be obvious
 out of context whether a given sequence of characters is intended to
 denote data or program. It is also a source of power, since it
 facilitates writing programs such as interpreters and compilers that
-treat programs as data (or vice versa).
+treat programs as data (or vice versa).  A form nested inside another form is
+called a \defining{subform}.
 
 A datum value may have several different external representations.
 For example, both ``{\tt \#e28.000}'' and
