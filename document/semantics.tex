@@ -24,11 +24,17 @@ $\mathcal{S} : \mathcal{P} \longrightarrow 2^{\mathcal{R}}$ \\
 $\mathcal{S}(\mathcal{P}) = \{ \mathscr{O}(\mathcal{A}) \mid \mathcal{P} \rightarrow^* \mathcal{A} \}$
 \end{tabular}
 \end{center}
-where the function $\mathscr{O}$ turns an answer from the semantics into an observable result. Intuitively, $\mathscr{O}$ is the identity function on simple base values, and returns a special tag for more complex values, like procedure and pairs.
+where the function $\mathscr{O}$ turns an answer ($\mathcal{A}$) from the semantics into an observable result. Roughly, $\mathscr{O}$ is the identity function on simple base values, and returns a special tag for more complex values, like procedure and pairs.
 
-So, an implementation conforms to the semantics if, for every program $\mathcal{P}$, the implementation produces one of the results in $\mathcal{S}(\mathcal{P})$ or, if the implementation loops forever, then there is an infinite reduction sequence starting at $\mathcal{P}$, where the reduction relation $\rightarrow$ has been adjusted to replace the \textbf{unknown:} states.
+So, an implementation conforms to the semantics if, for every program $\mathcal{P}$, the implementation produces one of the results in $\mathcal{S}(\mathcal{P})$ or, if the implementation loops forever, then there is an infinite reduction sequence starting at $\mathcal{P}$, assuming that the reduction relation $\rightarrow$ has been adjusted to replace the \textbf{unknown:} states.
 
 The precise definitions of $\mathcal{P}$, $\mathcal{A}$, $\mathcal{R}$, and $\mathscr{O}$ are also given in section~\ref{sec:semantics:grammar}.
+
+To help understand the semantics and how it behaves, we have
+implemented it in PLT Redex. The implementation is available at the
+Report's website: \url{http://www.r6rs.org/}. All of the reduction
+rules and the metafunctions shown in the figures in this semantics
+were generated automatically from the source code.
 
 \section{Background}
 
@@ -87,6 +93,11 @@ Sometimes we use equality in the side-conditions; when we do it merely
 means simple term equality, {\it i.e.} the two terms must have the
 same syntactic shape.
 
+\beginfig
+\input{r6-fig-grammar-parti.tex}
+\caption{Program Grammar}\label{fig:grammar}
+\endfig
+
 Making the evaluation context $E$ explicit in the rule allows
 us to define relations that manipulate their context. As a simple
 example, we can add another rule that signals an error when a
@@ -104,20 +115,9 @@ the evaluation context on the right-hand side of a rule:
 Later we take advantage of the explicit evaluation context in more
 sophisticated ways.
 
-To help understand the semantics and how it behaves, we have
-implemented it in PLT Redex. The implementation is available at the
-Report's website: \url{http://www.r6rs.org/}. All of the reduction
-rules and the metafunctions shown in the figures in this semantics
-were generated automatically from the source code.
-
 
 
 \section{Grammar}\label{sec:semantics:grammar}
-
-\beginfig
-\input{r6-fig-grammar-parti.tex}
-\caption{Program Grammar}\label{fig:grammar}
-\endfig
 
 \beginfig
 \input{r6-fig-grammar-partii.tex}
@@ -126,9 +126,7 @@ were generated automatically from the source code.
 
 \beginfig
 \begin{center}
-\parbox{3.6in}{\input{r6-fig-observable}
-
-~
+\parbox{3.8in}{\input{r6-fig-observable}
 
 ~
 

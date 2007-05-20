@@ -20,7 +20,6 @@
   (define filename-prefix "r6-fig")
   
   (define latex-negation "\\ensuremath{\\neg}")
-
   
   (define (translate file)
     (let ((r (with-input-from-file file read)))
@@ -31,7 +30,7 @@
     '(P var pp sym p* p v
         E F PG S))
   
-  (define flatten-args-metafunctions '(Var-set!d? circular?))
+  (define flatten-args-metafunctions '(Var-set!d? circular? Trim))
   
   (define otherwise-metafunctions '(pRe poSt Trim reachable))
   
@@ -61,6 +60,9 @@
                  (for-each loop body)]
                 [`(define ,lang (language ,productions ...))
                  (print-language productions)]
+                [`(metafunction-type ,name ,type)
+                 (unless (member name metafunctions-to-skip) 
+                   (set! metafunction-types (cons (list name type) metafunction-types)))]
                 [`(define-metafunction ,name ,lang ,clauses ...)
                  (unless (member name metafunctions-to-skip) 
                    (let ([in (ormap (λ (x) (member name x)) names/clauses)])
@@ -190,6 +192,8 @@
   ;; ============================================================
   
   (define metafunction-names '())
+  (define metafunction-types '())
+  
   (define (metafunction-name? x) (memq x metafunction-names))
   (define (translate-mf-name name)
     (case name
@@ -245,7 +249,9 @@
             [else (error 'print-metafunction "mismatch ~s" x)]))])
                      name
                      clauses
-                     "\\begin{displaymath}\n\\begin{array}{lcl}"
+                     (string-append
+                      "\\begin{displaymath}\n\\begin{array}{lcl}\n"
+                      (metafunction-type-line name))
                      "\\end{array}\n\\end{displaymath}"))
   
   (define (print-metafunctions names/clauses)
@@ -256,23 +262,51 @@
                    (if (eq? 'blank name/clauses)
                        (list 'blank)
                        (let ([name (car name/clauses)])
-                         (map/last (lambda (clause last-one?) (list name clause last-one?))
-                                   (cadr name/clauses)))))
+                         (cons 
+                          name
+                          (map/last (lambda (clause last-one?) (list name clause last-one?))
+                                    (cadr name/clauses))))))
                  (add-between 'blank names/clauses)))])
       (print-something (lambda (name/clause really-the-last-one?) 
-                         (if (eq? name/clause 'blank)
-                             (list "\\\\")
-                             (let ([name (list-ref name/clause 0)]
-                                   [clause (list-ref name/clause 1)]
-                                   [last-one? (list-ref name/clause 2)])
-                               (fmatch clause
-                                       [`(,left ,right) (p-case name left right
-                                                                (and last-one? (memq name otherwise-metafunctions)))]
-                                       [else (error 'print-metafunctions "mismatch ~s" name)]))))
+                         (cond
+                           [(eq? name/clause 'blank)
+                            (list "\\\\")]
+                           [(symbol? name/clause)
+                            (list (metafunction-type-line name/clause))]
+                           [else
+                            (let ([name (list-ref name/clause 0)]
+                                  [clause (list-ref name/clause 1)]
+                                  [last-one? (list-ref name/clause 2)])
+                              (fmatch clause
+                                      [`(,left ,right) 
+                                       (if (memq name flatten-args-metafunctions)
+                                           (p-flatten-case name
+                                                           left
+                                                           right
+                                                           (and last-one? (memq name otherwise-metafunctions)))
+                                           (p-case name left right
+                                                   (and last-one? (memq name otherwise-metafunctions))))]
+                                      [else (error 'print-metafunctions "mismatch ~s" name)]))]))
                        (apply string-append (map symbol->string (map car names/clauses)))
                        names/spread-out
                        "\\begin{displaymath}\n\\begin{array}{lcl}"
                        "\\end{array}\n\\end{displaymath}")))
+  
+  (define (metafunction-type-line name)
+    (let ([type-pr (assoc name metafunction-types)])
+      (unless type-pr 
+        (error 'metafunction-type "cannot find type for ~s" name))
+      (let* ([type (cadr type-pr)]
+             [_ (unless (eq? '-> (car type))
+                  (error "no arrow at front of type for ~a: ~s"
+                         name
+                         type))]
+             [doms (cdr (all-but-last type))]
+             [rng (car (last-pair type))])
+        (format "\\multicolumn{3}{l}{~a : ~a \\rightarrow ~a}\\\\" 
+                (translate-mf-name name)
+                (apply string-append (add-between " \\times " (map format-nonterm doms)))
+                (format-nonterm rng)))))
   
   (define (add-between x lst)
     (cond
@@ -661,19 +695,37 @@
 	     (display "[" o)
 	     (loop (caddr p))
 	     (display "]" o))
-            [(Qtoc Qtoic Trim pRe poSt observable observable-value)
-             (display (translate-mf-name (car p)) o)
-	     (display "\\llbracket{}" o)
-	     (loop (cadr p))
-	     (display "\\rrbracket" o)]
             (else
-	     (display "\\texttt{(}" o)
-	     (loop (car p))
-	     (for-each (lambda (el)
-			 (display "~" o)
-			 (loop el))
-		       (cdr p))
-	     (display "\\texttt{)}" o))))
+	     (cond
+               [(memq (car p) flatten-args-metafunctions)
+                (display (translate-mf-name (car p)) o)
+                (display "\\llbracket{}" o)
+                (let ([lst (cadr p)])
+                  (cond
+                    [(null? lst) (void)]
+                    [else
+                     (loop (car lst))
+                     (let i-loop ([lst (cdr lst)])
+                       (cond
+                         [(null? lst) (void)]
+                         [else 
+                          (display ", " o)
+                          (loop (car lst))
+                          (i-loop (cdr lst))]))]))
+                (display "\\rrbracket" o)]
+               [(metafunction-name? (car p))
+                (display (translate-mf-name (car p)) o)
+                (display "\\llbracket{}" o)
+                (loop (cadr p))
+                (display "\\rrbracket" o)]
+               [else
+                (display "\\texttt{(}" o)
+                (loop (car p))
+                (for-each (lambda (el)
+                            (display "~" o)
+                            (loop el))
+                          (cdr p))
+                (display "\\texttt{)}" o)]))))
 	 ((pair? p)
 	  (display "\\texttt{(}" o)
 	  (loop (car p))
@@ -1103,10 +1155,6 @@
 
     (loop orig-pat))
 
-  (define ((sreg reg) x) 
-    (fprintf (current-error-port) "comparing ~s and ~s, ~s\n" reg x (regexp-match reg (symbol->string x)))
-    (regexp-match reg (symbol->string x)))
-  
   (define (flatten-loop loop bodies)
     (cond
       [(null? bodies) (void)]

@@ -23,6 +23,10 @@
            Letrec
            Underspecification
            observable)
+  
+  (define-syntax (metafunction-type stx)
+    ;; these are only used in the figures
+    #''ignore)
 
   (define lang
     (language
@@ -440,6 +444,7 @@
   
   ;; circular? : pp val store -> boolean
   ;; returns #t if pp is reachable via val in the store
+  (metafunction-type circular? (-> pp val (sf ...) boolean))
   (define-metafunction circular?
     lang
     [(pp_1 pp_2 (sf_1 ... (pp_2 (cons v_1 pp_1)) sf_2 ...))
@@ -450,6 +455,7 @@
      #f]) ;; otherwise
   
   ;; Var-set!d? : e -> boolean
+  (metafunction-type Var-set!d? (-> x e boolean))
   (define-metafunction Var-set!d?
     lang
     [(x_1 (set! x_1 e)) #t]
@@ -537,6 +543,7 @@
           (store (sf_1 ...) (in-hole (Trim (E_1 E_2)) (values v_1 ...)))
           "6throw")))
   
+  (metafunction-type pRe (-> E E))
   (define-metafunction pRe
     lang
     [(in-hole H_1 (dw x_1 e_1 E_1 e_2)) 
@@ -545,12 +552,14 @@
                      (dw x_1 e_1 (pRe E_1) e_2)))]
     [H_1 H_1])
   
+  (metafunction-type poSt (-> E E))
   (define-metafunction poSt
     lang
     [(in-hole E_1 (dw x_1 e_1 H_2 e_2))
      (in-hole (poSt E_1) (begin0 (dw x_1 e_1 hole e_2) e_2))]
     [H_1 hole])
   
+  (metafunction-type Trim (-> E E E))
   (define-metafunction Trim
     lang
     [((in-hole H_1 (dw x_1 e_1 E_1 e_2))
@@ -763,6 +772,7 @@
           (store (sf_1 ...) (in-hole S_1 null))
           "6eseq")))
   
+  (metafunction-type Qtoc (-> seq e))
   (define-metafunction Qtoc
     lang
     [() null]
@@ -774,6 +784,7 @@
     [sym_1 'sym_1]
     [sqv_1 sqv_1])
   
+  (metafunction-type Qtoic (-> seq e))
   (define-metafunction Qtoic 
     lang
     [() null]
@@ -891,6 +902,7 @@
      (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 e_2) ... e_3))))]
     [(e_1) e_1])
   
+  (metafunction-type observable (-> a* r*))
   (define-metafunction observable
     lang
     [(store (sf ...) (values v_1 ...))
@@ -900,6 +912,7 @@
     [(unknown string)
      unknown])
   
+  (metafunction-type observable-value (-> v r*v))
   (define-metafunction observable-value
     lang
     [pp_1 pair]
