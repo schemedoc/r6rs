@@ -1,62 +1,37 @@
 \chapter{Libraries}
 \label{librarychapter}
 \mainindex{library}
-The library system presented here is designed to let programmers share
-libraries, i.e., code that is intended to be incorporated into larger
+Libraries are pieces of
+code that can be incorporated into larger
 programs, and especially into programs that use library code from multiple
 sources.  The library system supports macro definitions within libraries,
 allows macro exports, and distinguishes the phases in which definitions
-and imports are needed.  This chapter defines the notation for
-libraries and a semantics for library expansion and execution.
+and imports are needed.
 
 Libraries address the following specific goals:
 
-\begin{itemize}
-\item Separate compilation and analysis; no two libraries have to be
+\begin{description}
+\item[Separate compilation and analysis] No two libraries have to be
   compiled at the same time (i.e., the meanings of two libraries
   cannot depend on each other cyclically, and compilation of two
   different libraries cannot rely on state shared across
   compilations), and significant program analysis
   can be performed without examining a whole program.
-\item Independent compilation/analysis of unrelated libraries, where
-  ``unrelated'' means that neither depends on the other through a
+\item[Independent compilation/analysis of unrelated libraries] 
+  ``Unrelated'' means that neither depends on the other through a
   transitive closure of imports.
-\item Explicit declaration of dependencies, so that the meaning of
-  each identifier is clear at compile time, and so that there is no
+\item[Explicit declaration of dependencies] The meaning of
+  each identifier is clear at compile time.  Hence, there is no
   ambiguity about whether a library needs to be executed for another
   library's compile time and/or run time.
-\item Namespace management, to help prevent name conflicts.
-\end{itemize}
+\item[Namespace management] This helps prevent name conflicts.
+\end{description}
 
-It does not address the following:
-
-\begin{itemize}
-\item Mutually dependent libraries.
-\item Separation of library interface from library implementation.
-\item Code outside of a library (e.g., {\cf 5} by itself as a program).
-\item Local modules and local imports. 
-\end{itemize}
+This chapter defines the notation for
+libraries and a semantics for library expansion and execution.
 
 \section{Library form}
 \label{librarysyntaxsection}
-
-A library declaration contains the following elements:
-
-\begin{itemize}
-\item a name for the library (possibly with versioning),
-\item a list of exports, which name a subset of the bindings defined
-      within or imported into the library,
-\item a list of import dependencies, where each dependency specifies:
-\begin{itemize}
-\item the imported library's name,
-\item the relevant levels, e.g., expand or run time, and
-\item the subset of the library's exports to make available within the
-      importing library, and the local names to use within the importing
-      library for each of the library's exports, and
-\end{itemize}
-\item a library body, consisting of a sequence of definitions 
-      followed by a sequence of expressions.
-\end{itemize}
 
 A library definition must have the following form:\mainschindex{library}\mainschindex{import}\mainschindex{export}
 
@@ -67,24 +42,38 @@ A library definition must have the following form:\mainschindex{library}\mainsch
   \hyper{library~body})%
 \end{scheme}
 
-The \hyper{library~name} specifies the name of the library, the
-{\cf export} form specifies the exported bindings, and the
-{\cf import} form specifies the imported bindings.
-The \hyper{library~body} specifies the set of definitions, both for local
-(unexported) and exported bindings, and the set of initialization
-expressions to be evaluated for their effects.
-The exported bindings may be defined within the library or imported into
-the library.
+A library declaration contains the following elements:
 
-An identifier can be imported with the same local name
-from two or more libraries or for two
-levels from the same library only if the
+\begin{itemize}
+\item The \hyper{library~name} specifies the name of the library
+  (possibly with versioning).
+\item The {\cf export} subform specifies a list of exports, which name
+  a subset of the bindings defined within or imported into the
+  library.
+\item The {\cf import} subform specifies the imported bindings as a
+  list of import dependencies, where each dependency specifies:
+\begin{itemize}
+\item the imported library's name,
+\item the relevant levels, e.g., expand or run time, and
+\item the subset of the library's exports to make available within the
+      importing library, and the local names to use within the importing
+      library for each of the library's exports, and
+\end{itemize}
+\item The \hyper{library body} is the library body, consisting of a
+  sequence of definitions followed by a sequence of expressions.  The
+  definitions may be both for local (unexported) and exported
+  bindings, and the set of initialization expressions to be evaluated
+  for their effects.
+\end{itemize}
+
+An identifier can be imported with the same local name from two or
+more libraries or for two levels from the same library only if the
 binding exported by each library is the same (i.e., the binding is
 defined in one library, and it arrives through the imports only by
 exporting and re-exporting).  Otherwise, no identifier can be imported
 multiple times, defined multiple times, or both defined and imported.
-No identifiers are visible within a library except for those explicitly
-imported into the library or defined within the library.
+No identifiers are visible within a library except for those
+explicitly imported into the library or defined within the library.
 
 A \hyper{library name} has the following form:
 
@@ -163,7 +152,7 @@ the corresponding \hyper{sub-version}s.  An {\cf and} \hyper{version
   reference} matches a version if all \hyper{version references}
 following the {\cf and} match it.  Correspondingly, an {\cf
   or} \hyper{version reference} matches a version if one of
-\hyper{version references} following the {\cf or} match it,
+\hyper{version references} following the {\cf or} matches it,
 and a {\cf not} \hyper{version reference} matches a version if the
 \hyper{version reference} following it does not match it.
 
@@ -186,7 +175,7 @@ analogously for {\cf <=}.  An {\cf and} \hyper{sub-version reference}
 matches a sub-version if all of the subsequent \hyper{sub-version
   reference}s match it.  Correspondingly, an {\cf or}
 \hyper{sub-version reference} matches a sub-version if one of the
-subsequent \hyper{sub-version reference}s match it, and a {\cf not}
+subsequent \hyper{sub-version reference}s matches it, and a {\cf not}
 \hyper{sub-version reference} matches a sub-version if the subsequent
 \hyper{sub-version reference} does not match it.
 
@@ -238,14 +227,14 @@ All of the excluded \hyper{identifier}s must be in
 the original \hyper{import~set}.
 \item A {\cf prefix} form adds the \hyper{identifier} prefix to each
 name from another \hyper{import~set}.
-\item A {\cf rename} form, {\cf (rename (\hyper{oldid} \hyper{newid}) \ldots)},
-removes the bindings for {\cf \hyper{oldid} \ldots} to form an
+\item A {\cf rename} form, {\cf (rename (\hyperi{identifier} \hyperii{identifier}) \ldots)},
+removes the bindings for {\cf \hyperi{identifier} \ldots} to form an
 intermediate \hyper{import~set}, then adds the bindings back for the
-corresponding {\cf \hyper{newid} \ldots} to form the final
+corresponding {\cf \hyperii{identifier} \ldots} to form the final
 \hyper{import~set}.
-Each \hyper{oldid} must be in the original \hyper{import~set},
-each \hyper{newid} must not be in the intermediate \hyper{import~set},
-and the \hyper{newid}s must be distinct.
+Each \hyperi{identifier} must be in the original \hyper{import~set},
+each \hyperii{identifier} must not be in the intermediate \hyper{import~set},
+and the \hyperii{identifier}s must be distinct.
 \end{itemize}
 It is a syntax violation if a constraint given above is not met.
 
@@ -256,7 +245,7 @@ following forms:
 
 \begin{scheme}
 \hyper{identifier}
-(rename (\hyper{identifier} \hyper{identifier}) \ldots)%
+(rename (\hyperi{identifier} \hyperii{identifier}) \ldots)%
 \end{scheme}
 
 In an \hyper{export~spec}, an \hyper{identifier} names a single binding defined
@@ -279,7 +268,7 @@ definitions (see section~\ref{defines} for definitions available
 through the base library) are expressions.
 
 A \hyper{library~body} is like a \hyper{body} (see section~\ref{bodiessection}) except that
-\hyper{library~body}s need not include any expressions.  It must
+a \hyper{library~body}s need not include any expressions.  It must
 have the following form:
 
 \begin{scheme}

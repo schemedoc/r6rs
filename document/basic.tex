@@ -9,8 +9,8 @@ together with a set of \textit{libraries\index{library}}, each
 of which defines a part of the program connected to the others through
 explicitly specified exports and imports.  A library consists of a set
 of export and import specifications and a body, which consists of
-definitions, and expressions;
-a top-level program is similar to a library, but
+definitions, and expressions.
+A top-level program is similar to a library, but
 has no export specifications.
 Chapters~\ref{librarychapter} and \ref{programchapter}
 describe the syntax and semantics of libraries and top-level programs,
@@ -69,9 +69,6 @@ locations.  Collectively, these forms are called {\em binding
 Some binding constructs take the form of
 \textit{definitions}\index{definition}, while others are
 expressions.
-A base-library {\cf define} form creates a variable binding (see
-section~\ref{defines}), and a base-library {\cf define-syntax} form
-creates a keyword binding (see section~\ref{syntaxdefinitionsection}).
 With the exception of exported library bindings, a binding created
 by a definition is visible only within the body in which the
 definition appears, e.g., the body of a library, top-level program,
@@ -86,20 +83,22 @@ and {\cf let*-values} forms along with the control-library {\cf do} and
 {\cf case-lambda} forms
 (see sections~\ref{lambda}, \ref{letrec}, and library chapter
 \extref{lib:controllib}{{\cf Control structures}}).
-Of these, {\cf lambda} is the most fundamental, since all of the
-others can be implemented in terms of {\cf lambda}.
+Of these, {\cf lambda} is the most fundamental.
 Sets of variable definitions appearing within the bodies of any of
 these constructs, or within the bodies of a library or top-level
 program, are treated as the equivalent of a set of
-{\cf letrec*} bindings and can therefore also be implemented in
-terms of {\cf lambda}.
+{\cf letrec*} bindings.
 For library bodies, however, some additional mechanism is required to
 allow the variables that are exported from the library to be referenced by
 importing libraries and top-level programs.
 
-Expressions that bind keywords include the base-library {\cf let-syntax}
-and {\cf letrec-syntax} forms.
-(see section~\ref{bindsyntax}).
+Expressions that bind keywords include the base-library {\cf
+  let-syntax} and {\cf letrec-syntax} forms.  (see
+section~\ref{bindsyntax}).  A base-library {\cf define} form is a
+definition that creates a variable binding (see
+section~\ref{defines}), and a base-library {\cf define-syntax} form is
+a definition that creates a keyword binding (see
+section~\ref{syntaxdefinitionsection}).
 
 \vest Scheme is a statically scoped language with
 block structure.  To each place in a top-level program or library body where an identifier is bound 
@@ -135,7 +134,7 @@ portable programs cannot rely upon the exception being continuable
 at the place where the situation was detected.
 For those exceptions, the exception handler that is invoked by the
 exception should not return.
-In some cases, however, continuing is permissible; the
+In some cases, however, continuing is permissible, and the
 handler may return.  See library section~\extref{lib:exceptionssection}{Exceptions}.
 
 An \defining{implementation restriction} is a limitation imposed by an
@@ -195,8 +194,13 @@ violate reasonable performance assumptions.  For these reasons, the
 programmer's obligations may exceed the checking obligations of the
 implementation.
 
+Usually, the subforms of a special form need to obey certain syntactic
+restrictions.  These subforms may be subject to macro expansion, which
+may not terminate, thus making the question of whether they obey the
+specified restrictions undecidable.
+
 When an implementation detects a violation of an argument or
-subexpression value restriction, it must raise an exception with
+subform value restriction, it must raise an exception with
 condition type {\cf\&violation} in a way
 consistent with the safety of execution as described in the next
 section.
@@ -234,8 +238,8 @@ cannot guarantee safety.
 \section{Boolean values}
 \label{booleanvaluessection}
 
-Although there is a separate Boolean type, any Scheme value can be
-used as a Boolean value for the purpose of a conditional test.  In a
+Although there is a separate boolean type, any Scheme value can be
+used as a boolean value for the purpose of a conditional test.  In a
 conditional test, all values count as true in such a test except for
 \schfalse{}.  This report uses the word ``true'' to refer to any
 Scheme value except \schfalse{}, and the word ``false'' to refer to
@@ -275,7 +279,7 @@ Variables and mutable objects such as mutable pairs, bytevectors, vectors, strin
 and records implicitly
 denote locations\mainindex{location} or sequences of locations.  A
 mutable string, for example, denotes as many locations as there are characters in the string. 
-(These locations need not correspond to a full machine word.) A new value may be
+A new value may be
 stored into one of these locations using the {\tt string-set!} procedure, but
 the string continues to denote the same locations as before.
 
@@ -296,7 +300,7 @@ or object is made to denote them.
 
 In many systems it is desirable for constants\index{constant} (i.e., the values of
 literal expressions) to reside in read-only memory.  To express this,
-it is convenient to imagine that every object that denotes locations
+it is convenient to imagine that every object that could denote locations
 is associated with a flag telling whether that object is
 mutable\index{mutable} or immutable\index{immutable}.  Literal
 constants, the strings returned by \ide{symbol->string}, records with
@@ -308,7 +312,7 @@ should raise an exception with condition type {\cf\&assertion}.
 An immutable object may not denote a specific set of locations, i.e.,
 it may be copied at any time by the implementation so as to exist
 simultaneously in different sets of locations.
-This may be detected in the failure of {\cf eqv?} or {\cf eq?}
+This may be visible in the failure of {\cf eqv?} or {\cf eq?}
 (section~\ref{equivalencesection}) to
 recognize two occurrences of the object as equivalent.
 
@@ -318,7 +322,7 @@ recognize two occurrences of the object as equivalent.
 Implementations of Scheme are required to be
 {\em properly tail-recursive}\mainindex{proper tail recursion}.
 Procedure calls that occur in certain syntactic
-contexts are `tail calls'.  A Scheme implementation is
+contexts are \textit{tail calls}\mainindex{tail call}.  A Scheme implementation is
 properly tail-recursive if it supports an unbounded number of active
 tail calls.  A call is {\em active} if the called procedure may still
 return.  Note that this includes regular returns as well as returns

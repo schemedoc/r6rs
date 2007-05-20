@@ -22,19 +22,19 @@ apparent binding of that variable.
 \cite{WaiteGoos}.  Types
 are associated with values (also called objects\mainindex{object}) rather than
 with variables.  (Some authors refer to languages with latent types as
-weakly typed or dynamically typed languages.)  Other languages with
+untyped, weakly typed or dynamically typed languages.)  Other languages with
 latent types are Python, Ruby, Smalltalk, and other dialects of Lisp.  Languages
 with manifest types (sometimes referred to as strongly typed or
 statically typed languages) include Algol 60, C, C\sharpsign{}, Java, Haskell and ML.
 
-\vest All objects created in the course of a Scheme computation, including
+\vest Alli objects created in the course of a Scheme computation, including
 procedures and continuations, have unlimited extent.
 No Scheme object is ever destroyed.  The reason that
 implementations of Scheme do not (usually!)\ run out of storage is that
 they are permitted to reclaim the storage occupied by an object if
 they can prove that the object cannot possibly matter to any future
 computation.  Other languages in which most objects have unlimited
-extent include C\sharpsign{}, Haskell, ML, Python, Ruby, Smalltalk and other Lisp dialects.
+extent include C\sharpsign{}, Haskell, Java, ML, Python, Ruby, Smalltalk and other Lisp dialects.
 
 \vest Implementations of Scheme are required to be properly tail-recursive.
 This allows the execution of an iterative computation in constant space,
@@ -131,7 +131,7 @@ of pairs is to represent (singly linked) lists, where the first
 component (the ``car'') represents the first element of the list, and
 the second component (the ``cdr'') the rest of the list.  Scheme also
 has a distinguished empty list, which is the last cdr in a chain of
-pairs representing a list.
+pairs that form a list.
 
 \paragraph{Vectors}
 
@@ -145,8 +145,7 @@ lists for random access to elements.
 
 \paragraph{Procedures}
 
-\mainindex{procedure}As mentioned in the introduction, procedures are
-values in Scheme.
+\mainindex{procedure}Procedures are values in Scheme.
 
 \section{Expressions}
 
@@ -345,7 +344,7 @@ syntactic keyword as its first subexpression obeys special rules determined by
 the keyword.  The {\cf define} identifier in a definition is also a
 syntactic keyword.  Hence, definitions are also not procedure calls.
 
-In the case of {\cf lambda}, these rules specify that the first
+The rules for the {\cf lambda} keyword specify that the first
 subform is a list of parameters, and the remaining subforms are the body of
 the procedure.  In {\cf let} expressions, the first subform is a list
 of binding specifications, and the remaining subforms are a body of

@@ -145,7 +145,7 @@ language: {\tt \verb"{" \verb"}"}
 \meta{comment} \: ; \= $\langle$\rm all subsequent characters up to a
                     \>\ \rm \meta{line ending} or \meta{paragraph separator}$\rangle$\index{comment}
 \qquad \= \| \meta{nested comment}
-\> \| \#; \meta{datum}
+\> \| \#; \meta{interlexeme space} \meta{datum}
 \> \| \#!r6rs
 \meta{nested comment} \: \#| \= \meta{comment text}
 \> \arbno{\meta{comment cont}} |\#
@@ -307,8 +307,8 @@ the end of the line on which the semicolon appears.
 Another way to indicate a comment is to prefix a \hyper{datum}
 (cf.\ Section~\ref{datumsyntax}) with {\tt \#;}\sharpindex{;}, possibly with
 \meta{interlexeme space} before the \hyper{datum}.  The comment consists of
-the comment prefix {\tt \#;} and the \hyper{datum} together.  (This
-notation is useful for ``commenting out'' sections of code.)
+the comment prefix {\tt \#;} and the \hyper{datum} together.  This
+notation is useful for ``commenting out'' sections of code.
 
 Block comments may be indicated with properly nested {\tt
   \#|}\index{#"|@\texttt{\sharpsign\verticalbar}}\index{"|#@\texttt{\verticalbar\sharpsign}}
@@ -661,10 +661,8 @@ section~\ref{lexicalsyntaxsection}:
 \>  \| \meta{character} \| \meta{string} \|  \meta{symbol}
 \meta{symbol} \: \meta{identifier}
 \meta{compound datum} \: \meta{list} \| \meta{vector} \| \meta{bytevector}
-\meta{list} \: (\arbno{\meta{datum}})
-\>    \| [\arbno{\meta{datum}}]
-\>    \| (\atleastone{\meta{datum}} .\ \meta{datum})
-\>    \| [\atleastone{\meta{datum}} .\ \meta{datum}]
+\meta{list} \: (\arbno{\meta{datum}}) \| [\arbno{\meta{datum}}]
+\>    \| (\atleastone{\meta{datum}} .\ \meta{datum}) \| [\atleastone{\meta{datum}} .\ \meta{datum}]
 \>    \| \meta{abbreviation}
 \meta{abbreviation} \: \meta{abbrev prefix} \meta{datum}
 \meta{abbrev prefix} \: ' \| ` \| , \| ,@ \| \#' | \#` | \#, | \#,@
@@ -679,8 +677,8 @@ section~\ref{lexicalsyntaxsection}:
 
 List and pair datums, denoting pairs and lists of values
 (see section~\ref{listsection}) are written using parentheses or brackets.
-Matching pairs of parentheses that occur in the rules of \meta{list} are
-equivalent to matching pairs of brackets.
+Matching pairs of brackets that occur in the rules of \meta{list} are
+equivalent to matching pairs of parentheses.
 
 The most general notation for Scheme pairs as syntactic datums is
 the ``dotted'' notation \hbox{\cf (\hyperi{datum} .\ \hyperii{datum})} where
