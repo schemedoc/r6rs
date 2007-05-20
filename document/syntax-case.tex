@@ -31,7 +31,7 @@ section~\extref{report:syntax-rules}{Macro transformers}).
 Because {\cf syntax-case} does not require literals, including quoted
 lists or vectors, to be copied or even traversed, it may be able to preserve sharing
 and cycles within and among the constants of a program.  It also
-supports source-object correlation, i.e., the maintenance of ties
+allows source-object correlation, i.e., the maintenance of ties
 between the original source code and expanded output, allowing
 implementations to provide source-level support for debuggers and
 other tools.
@@ -158,7 +158,7 @@ lexical scoping and may also be used by an implementation to maintain
 source-object correlation.
 
 Syntax objects may be wrapped or unwrapped.
-A wrapped syntax object (section~\ref{hygienesection}), consists of a
+A wrapped syntax object (section~\ref{hygienesection}) consists of a
 \textit{wrap} (section~\ref{hygienesection}) and some internal representation
 of a Scheme form.
 (The internal representation is unspecified, but is typically a 
@@ -211,15 +211,16 @@ A transformation procedure is a procedure that must accept one
 argument, a wrapped syntax object (section~\ref{syntaxobjectssection})
 representing the input, and return a \defining{syntax object}
 (section~\ref{syntaxobjectssection}) representing the output.
-The procedure is called by the expander whenever a reference to
+The transformer is called by the expander whenever a reference to
 a keyword with which it has been associated is found.
-If the keyword appears in the first position of a list-structured
+If the keyword appears in the car of a list-structured
 input form, the transformer receives the entire list-structured
 form, and its output replaces the entire form.
-If the keyword is found in any other definition or expression
+Except with variable transformers (see below),
+if the keyword is found in any other definition or expression
 context, the transformer receives a wrapped syntax object representing
 just the keyword reference, and its output replaces just the reference.
-Except with variable transformers (see below), an exception with condition
+Except with variable transformers, an exception with condition
 type {\cf\&syntax} is raised if the keyword appears on the left-hand side
 of a {\cf set!} expression.
 
@@ -247,7 +248,7 @@ only to the extent performed by applying it as described.
 \section{Parsing input and producing output}
 \label{syntaxcasesection}
 
-Transformers destructure their input with {\cf syntax-case} and rebuild
+Transformers can destructure their input with {\cf syntax-case} and rebuild
 their output with {\cf syntax}.
 
 \begin{entry}{%
@@ -890,8 +891,8 @@ derived forms} is shown below.
   (lambda (x)
     (syntax-case x ()
       ((\_ ((i e) ...) b1 b2 ...)
-       (with-syntax (((t ...) (generate-temporaries
-                                \#'(i ...))))
+       (with-syntax
+           (((t ...) (generate-temporaries \#'(i ...))))
          \#'(let ((i <undefined>) ...)
              (let ((t e) ...)
                (set! i t) ...
@@ -1020,7 +1021,7 @@ as follows.
                       \#'(begin e1 e2 ...)]
                      [((k ...) e1 e2 ...)
                       \#'(if (memv t '(k ...))
-                             (begin e1 e2 ...))])
+                            (begin e1 e2 ...))])
                    (syntax-case c1 ()
                      [((k ...) e1 e2 ...)
                       \#`(if (memv t '(k ...))

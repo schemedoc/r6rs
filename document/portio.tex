@@ -76,11 +76,11 @@ only, have standard meanings:
 
 \begin{itemize}   
 \item {\cf no-create} do not create file if it does not already exist
-  (if this options is absent, the file is created)
-\item {\cf no-fail} do not fail if this options is set and {\cf
-    no-create} is absent (if this option and {\cf no-create} is
-  absent, an exception with condition type
-  {\cf\&i/o-file-already-exists} is raised if the file already exists)
+  (if this option is absent, the file is created)
+\item {\cf no-fail} do not fail if this option is set and {\cf
+    no-create} is absent (if the {\cf no-create} and {\cf no-fail} are
+  both absent the file already exists, then an exception with condition type
+  {\cf\&i/o-file-already-exists} is raised.)
 \item {\cf no-truncate}
   file is not truncated to zero length (if absent, the file is truncated)
 \end{itemize}
@@ -125,7 +125,7 @@ peeked byte or character even though the port is otherwise unbuffered.
 
 In other words, the semantics of buffering is defined in terms of side
 effects on shared mutable sources, and a lookahead operation has the
-same side effect on the shared source as read operation.
+same side effect on the shared source as a read operation.
 
 \begin{entry}{%
 \proto{buffer-mode}{ \hyper{name}}{\exprtype}}
@@ -142,7 +142,7 @@ identifiers.
 \proto{buffer-mode?}{ obj}{procedure}}
    
 Returns \schtrue{} if the argument is a valid buffer-mode symbol,
-\schfalse{} otherwise.
+and returns \schfalse{} otherwise.
 \end{entry}
 
 \subsection{Transcoders}
@@ -198,7 +198,8 @@ these identifiers, effect and result are implementation-dependent: The
 result may be an eol-style symbol acceptable as an \var{eol-mode}
 argument to {\cf make-transcoder}.  Otherwise, an exception is raised.
 
-The line ending encodings corresponding to the eol-style symbols are:
+All eol-style symbols except {\cf none} describe a specific
+line-ending encoding:
 
 \noindent\begin{tabular}{ll}
 {\cf lf} & \meta{linefeed}\\
@@ -209,18 +210,14 @@ The line ending encodings corresponding to the eol-style symbols are:
 {\cf ls} & \meta{line separator}
 \end{tabular}
 
-For a textual port whose transcoder has an eol-style symbol other than
-{\cf none}, the following holds: A textual output port with a
-transcoder encodes linefeed characters into line endings.  (All other
-characters that participate in possible line endings are encoded
-as-is.)  A textual input port decodes \emph{any} of the possible line
-endings into linefeed characters.
-
-For a textual output port, a {\cf none} eol-style symbol is equivalent
-to {\cf lf}.  For a textual input port, a {\cf none} eol-style symbol
-means that all characters participating in possible line endings are
-decoded as-is, i.e.\ only encodings of the linefeed character are
-decoded as the linefeed character.
+For a textual port whose transcoder has an eol-style symbol {\cf
+  none}, no conversion occurs.  For a textual input port, any
+eol-style symbol other than {\cf none} means that all of the above
+line-ending encodings are recognized and are translated into a single
+linefeed.  For a textual output port, {\cf none} and {\cf lf} are
+equivalent.  Linefeed characters are encoded according to the
+specified eol-style symbol, and all other characters that participate
+in possible line endings are encoded as is.
 
 \begin{rationale}
   The set is not closed because end-of-line styles other than those
@@ -238,8 +235,11 @@ Returns the default end-of-line style of the underlying platform, e.g.
 \begin{entry}{%
 \ctproto{i/o-decoding}
 \proto{make-i/o-decoding-error}{ port}{procedure}
-\proto{i/o-decoding-error?}{ obj}{procedure}}
+\proto{i/o-decoding-error?}{ obj}{procedure}
+\proto{i/o-decoding-error-transcoder}{ condition}{procedure}}
 
+This condition type could be defined by
+%
 \begin{scheme}
 (define-condition-type \&i/o-decoding \&i/o-port
   make-i/o-decoding-error i/o-decoding-error?
@@ -307,7 +307,8 @@ If \var{name} is one of the \meta{identifier}s {\cf ignore}, {\cf
 symbol.  If \var{name} is not one of these identifiers, effect and
 result are implementation-dependent: The result may be an
 error-handling-mode symbol acceptable as a \var{handling-mode}
-argument to {\cf make-transcoder}.  Otherwise, an exception is raised.
+argument to {\cf make-transcoder}.  If it is not acceptable as a
+\var{handling-mode} argument to {\cf make-transcoder}, an exception is raised.
 
 \begin{rationale}
   Implementations may support error-handling modes other than those
@@ -366,8 +367,8 @@ behavior specified by its arguments.
 \begin{entry}{
 \proto{native-transcoder}{}{procedure}}
 
-Returns a port with an implementation-dependent transcoder that
-reprents a ``native'' transcoding of the locale.
+Returns an implementation-dependent transcoder that represents a
+possibly locale-dependent ``native'' transcoding.
 \end{entry}
 
 \begin{entry}{%
@@ -377,23 +378,22 @@ reprents a ``native'' transcoding of the locale.
 
 These are accessors for transcoder objects; when applied to a
 transcoder returned by {\cf make-transcoder}, they return the
-\var{codec}, \var{eol-style}, \var{handling-mode} arguments.
+\var{codec}, \var{eol-style}, and \var{handling-mode} arguments,
+respectively.
 \end{entry}
 
 \begin{entry}{%
 \proto{bytevector->string}{ bytevector transcoder}{procedure}}
 
 Returns the string that results from transcoding the
-\var{bytevector} according to the input direction of
-the \var{transcoder}.
+\var{bytevector} according to the transcoders's input direction.
 \end{entry}
 
 \begin{entry}{%
 \proto{string->bytevector}{ string transcoder}{procedure}}
 
 Returns the bytevector that results from transcoding the
-\var{string} according to the output direction of
-the \var{transcoder}.
+\var{string} according to the transcoder's output direction.
 \end{entry}
 
 \subsection{End of file object}
@@ -427,12 +427,10 @@ returns \schfalse.
 \subsection{Input and output ports}
 
 The operations described in this section are common to input and
-output ports, both binary and textual.
-A port may also have an associated \defining{position} that
-specifies a particular place within its data sink or source as a byte
-count from the beginning of the sink or source, and may also provide
-operations for inspecting and setting that place.
-(Ends of file do not count as bytes.)
+output ports, both binary and textual.  A port may also have an
+associated \defining{position} that specifies a particular place
+within its data sink or source, and may also provide operations for
+inspecting and setting that place.
 
 \begin{entry}{%
 \proto{port?}{ obj}{procedure}}
@@ -445,7 +443,7 @@ otherwise.
 \proto{port-transcoder}{ port}{procedure}}
 
 Returns the transcoder associated with \var{port} if \var{port} is
-textual and \schfalse{} if \var{port} is binary.
+textual, and returns \schfalse{} if \var{port} is binary.
 \end{entry}
 
 \begin{entry}{%
@@ -453,9 +451,9 @@ textual and \schfalse{} if \var{port} is binary.
 \proto{binary-port?}{ port}{procedure}}
 
 The {\cf textual-port} procedure returns \schtrue{} if \var{port} is
-textual, \schfalse otherwise.
+textual, \schfalse{} otherwise.
 The {\cf binary-port} procedure returns \schtrue{} if \var{port} is
-textual, \schfalse otherwise.
+textual, \schfalse{} otherwise.
 \end{entry}
 
 \begin{entry}{%
@@ -598,7 +596,7 @@ the end-of-file object, and returns \schfalse{} otherwise.
 \domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
 
 Returns an input port for the named file. The \var{file-options} and
-\var{transcoder} arguments are optional.
+\var{maybe-transcoder} arguments are optional.
 
 The \var{file-options} argument, which may determine
 various aspects of the returned port (see section~\ref{fileoptionssection}),
@@ -608,15 +606,15 @@ The \var{buffer-mode} argument, if supplied,
 must be one of the symbols that name a buffer mode.
 The \var{buffer-mode} argument defaults to {\cf block}.
 
-If \var{maybe-transcoder} is specified, it becomes the transcoder associated
+If \var{maybe-transcoder} is a transcoder, it becomes the transcoder associated
 with the returned port.
 
-If {\cf maybe-transcoder} is absent or \schfalse{}, then the port will be a
-binary port and will support the {\cf port-position} and {\cf
-  set-port-position!}  operations.  If {\cf maybe-transcoder} is a
-transcoder the port will be a textual port, and whether it supports
-the {\cf port-position} and {\cf set-port-position!} operations will
-be implementation-dependent (and possibly transcoder-dependent).
+If \var{maybe-transcoder} is \schfalse{} or absent,
+then the port will be a binary port and will support the
+{\cf port-position} and {\cf set-port-position!}  operations.
+Otherwise the port will be a textual port, and whether it supports
+the {\cf port-position} and {\cf set-port-position!} operations
+will be implementation-dependent (and possibly transcoder-dependent).
 
 \begin{rationale}
   The position of a transcoded port may not be
@@ -627,7 +625,8 @@ be implementation-dependent (and possibly transcoder-dependent).
 
 \begin{entry}{%
 \proto{open-bytevector-input-port}{ bytevector}{procedure}
-\rproto{open-bytevector-input-port}{ bytevector maybe-transcoder}{procedure}}
+\pproto{(open-bytevector-input-port \var{bytevector}}{procedure}{\tt\obeyspaces%
+\hspace*{2em}\var{maybe-transcoder})}}
 
 \domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
    
@@ -666,20 +665,19 @@ has been called, the effect on the returned port is unspecified.
 \proto{standard-input-port}{}{procedure}}
    
 Returns a fresh binary input port connected to standard input.
-Whether the port is binary or textual is implementation-dependent,
-as is whether the port supports
-the {\cf port-position} and {\cf set-port-position!} operations.
+Whether the port supports the {\cf port-position} and {\cf
+  set-port-position!} operations is implementation-dependent.
 
 \begin{rationale}
   The port is fresh so it can be safely closed or converted to a
-  textual port without risiking the usability of an existing port.
+  textual port without risking the usability of an existing port.
 \end{rationale}
 \end{entry}
 
 \begin{entry}{%
 \proto{current-input-port}{}{procedure}}
  
-This returns a default port for input.  Normally, this default port
+This returns a default textual port for input.  Normally, this default port
 is associated with standard input, but can be dynamically re-assigned
 using the {\cf with-input-from-file} procedure from the
 \rsixlibrary{i/o simple} library (see section~\ref{with-input-from-file}).
@@ -1051,7 +1049,7 @@ Returns the symbol that represents the buffer-mode of
 \pproto{(open-file-output-port \var{filename}}{procedure}{\tt\obeyspaces%
 \hspace*{2em}\var{file-options} \var{buffer-mode} \var{maybe-transcoder})}}
 
-\domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
+\domain{\var{Maybe-transcoder} must be either a transcoder or \schfalse.}
 
 The {\cf open-file-output-port} procedure returns an output port for the named file.
 
@@ -1084,7 +1082,7 @@ will be implementation-dependent (and possibly transcoder-dependent).
 \proto{open-bytevector-output-port}{}{procedure}
 \rproto{open-bytevector-output-port}{ maybe-transcoder}{procedure}}
 
-\domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
+\domain{\var{Maybe-transcoder} must be either a transcoder or \schfalse.}
 
 The {\cf open-bytevector-output-port} procedure returns 
 two values: an output port and a procedure.
@@ -1117,13 +1115,13 @@ the accumulated data from the port.
 \hspace*{2em}\var{maybe-transcoder})}}
 
 \domain{\var{Proc} must be a procedure accepting one argument.
-  \var{Maybe-transcoder} must either be a transcoder or \schfalse.}
+  \var{Maybe-transcoder} must be either a transcoder or \schfalse.}
 
 The {\cf call-with-bytevector-output-port} procedure creates an output
 port that accumulates the data written to it and calls \var{proc} with
 that output port as an argument. Whenever \var{proc} returns, a
 bytevector consisting of the port's accumulated data is returned and
-the accumulated data is removed from the port.
+the port is closed.
 
 The transcoder associated with the output port is determined
 as for a call to {\cf open-bytevector-output-port}.
@@ -1151,8 +1149,7 @@ accumulated characters and removes the accumulated characters from the port.
 Creates a textual output port that accumulates the
 characters written to it and calls \var{proc} with that output port
 as an argument. Whenever \var{proc} returns, a string consisting of the
-port's accumulated characters is returned and the accumulated characters are
-removed from the port.
+port's accumulated characters is returned and the port is closed.
 
 The port has an associated transcoder, which is implementation-dependent.
 The port should support
@@ -1163,8 +1160,8 @@ the {\cf port-position} and {\cf set-port-position!} operations.
 \proto{standard-output-port}{}{procedure}
 \proto{standard-error-port}{}{procedure}}
    
-Returns fresh an output port connected to the standard output or
-standard error, respectively.  Whether the port supports the {\cf
+Returns a fresh binary output port connected to the standard output or
+standard error respectively.  Whether the port supports the {\cf
   port-position} and {\cf set-port-position!} operations is
 implementation-dependent.
 \end{entry}
@@ -1173,7 +1170,7 @@ implementation-dependent.
 \proto{current-output-port}{}{procedure}
 \proto{current-error-port}{}{procedure}}
  
-These return default ports for regular output and error output.
+These return default textual ports for regular output and error output.
 Normally, these default ports are associated with standard output, and
 standard error, respectively.  The return value of {\cf
   current-output-port} can be dynamically re-assigned using the {\cf
@@ -1279,7 +1276,7 @@ Writes \var{octet} to the output port and returns \unspecifiedreturn.
    
 \domain{\var{Start} and \var{count} must be non-negative exact
   integers that default to 0 and $\texttt{(bytevector-length \var{bytevector})}
-  - \var{start}$, respectively. \var{bytevector} must have a size of at
+  - \var{start}$, respectively. \var{bytevector} must have a length of at
   least $\var{start} + \var{count}$.}  The {\cf put-bytevector} procedure writes
 \var{count} bytes of the bytevector \var{bytevector}, starting at index
 \var{start}, to the output port.  The {\cf put-bytevector} procedure

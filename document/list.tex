@@ -11,8 +11,8 @@ This chapter describes the \defrsixlibrary{lists} library.
 The {\cf find} procedure applies \var{proc} to the elements of
 \var{list} in order.  If \var{proc} returns a true value for an
 element, {\cf find} immediately returns that element.  If \var{proc}
-returns \schfalse{} for all elements of the list, it returns
-\schfalse{}.  \var{Proc} is always called in same dynamic environment
+returns \schfalse{} for all elements of the list, {\cf find} returns
+\schfalse{}.  \var{Proc} is always called in the same dynamic environment
 as {\cf find} itself.
 
 \begin{scheme}
@@ -59,7 +59,7 @@ If \var{proc} returns a true value on any set of elements, {\cf
 \var{proc}.  If the \var{list}s
 are all empty, {\cf exists} returns \schfalse.
 
-\var{Proc} is always called in same dynamic environment 
+\var{Proc} is always called in the same dynamic environment 
 as {\cf for-all} or, respectively, {\cf exists} itself.
 
 \begin{scheme}
@@ -103,10 +103,10 @@ the elements of \var{list}, but returns two values, the first one a
 list of the values of \var{list} for which \var{proc} returned a
 true value, and the second a list of the values of \var{list} for
 which \var{proc} returned \schfalse.
-\var{Proc} is always called in same dynamic environment 
+\var{Proc} is always called in the same dynamic environment 
 as {\cf filter} or, respectively, {\cf partition} itself.
 If multiple returns occur from {\cf filter} or {\cf partitions}, the return
-values of earlier returns are not mutated.
+values returned by earlier returns are not mutated.
 
 \begin{scheme}
 (filter even? '(3 1 4 1 5 9 2 6)) \lev (4 2 6)
@@ -133,10 +133,10 @@ specifically, {\cf fold-left} returns \var{nil} if the \var{list}s are
 empty.  If they are not empty, \var{combine} is first applied to
 \var{nil} and the respective first elements of the \var{list}s in
 order.  The result becomes the new accumulator value, and \var{combine}
-is applied to new accumulator value and the respective next elements
+is applied to the new accumulator value and the respective next elements
 of the \var{list}.  This step is repeated until the end of the list is
 reached; then the accumulator value is returned.
-\var{Combine} is always called in same dynamic environment 
+\var{Combine} is always called in the same dynamic environment 
 as {\cf fold-left} itself.
 
 \begin{scheme}
@@ -181,10 +181,10 @@ specifically, {\cf fold-right} returns \var{nil} if the \var{list}s
 are empty.  If they are not empty, \var{combine} is first applied to the
 respective last elements of the \var{list}s in order and \var{nil}.
 The result becomes the new accumulator value, and \var{combine} is
-applied to the respective previous elements of the \var{list} and the
+applied to the respective previous elements of the \var{list}s and the
 new accumulator value.  This step is repeated until the beginning of the
 list is reached; then the accumulator value is returned.
-\var{Proc} is always called in same dynamic environment 
+\var{Proc} is always called in the same dynamic environment 
 as {\cf fold-right} itself.
 
 \begin{scheme}
@@ -216,12 +216,12 @@ on \var{combine} to the extent performed by applying it as described.
 
 \domain{\var{Proc} should be a procedure that takes a single argument
    and returns a single value.
-   \var{Proc} should not mutate the \var{list} arguments.}
+   \var{Proc} should not mutate \var{list}.}
 Each of these procedures returns a list of the elements of \var{list}
 that do not satisfy a given condition.  The {\cf remp} procedure successively
 applies \var{proc} to the elements of \var{list} and returns a
 list of the values of \var{list} for which \var{proc} returned
-\schfalse.  \var{Proc} is always called in same dynamic environment 
+\schfalse.  \var{Proc} is always called in the same dynamic environment 
 as {\cf remp} itself.
 The {\cf remove}, {\cf remv}, and {\cf remq} procedures return a list of
 the elements that are not \var{obj}.  The {\cf remq} procedure uses {\cf eq?}\ to
@@ -258,7 +258,7 @@ lists returned by {\tt (list-tail \var{list} \var{k})} for
 \var{k} less than the length of \var{list}.  The {\cf memp} procedure applies
 \var{proc} to the cars of the sublists of \var{list} until it
 finds one for which \var{proc} returns a true value without traversing
-\var{list} further.  \var{Proc} is always called in same dynamic environment 
+\var{list} further.  \var{Proc} is always called in the same dynamic environment 
 as {\cf memp} itself.  The {\cf
   member}, {\cf memv}, and {\cf memq} procedures look for the first occurrence of
 \var{obj}.  If \var{list} does not contain an element satisfying the
@@ -302,21 +302,21 @@ beyond the found element.  The implementation must check the restrictions on
 
 \domain{\var{Alist} (for ``association list'') should be a list of pairs.
   \var{Proc} should be a procedure that takes a single argument
-  and returns a single value.  \var{Proc} should not mutate \var{list}.}
+  and returns a single value.  \var{Proc} should not mutate \var{alist}.}
 
 These procedures find the first pair in \var{alist}
 whose car field satisfies a given condition, and returns that pair
 without traversing \var{alist} further.
 If no pair in \var{alist} satisfies the condition, then \schfalse{}
 is returned.  The {\cf assp} procedure successively applies
-\var{proc} to the car fields of \var{al} and looks for a pair
+\var{proc} to the car fields of \var{alist} and looks for a pair
 for which it returns a true value.
-\var{Proc} is always called in same dynamic environment 
+\var{Proc} is always called in the same dynamic environment 
 as {\cf assp} itself.  The {\cf assoc}, {\cf assv}, and {\cf
   assq} procedures look for a pair that has \var{obj} as its car.  The
 {\cf assoc} procedure uses 
 {\cf equal?}\ to compare \var{obj} with the car fields of the pairs in
-\var{al}, while {\cf assv} uses {\cf eqv?}\ and {\cf assq} uses
+\var{alist}, while {\cf assv} uses {\cf eqv?}\ and {\cf assq} uses
 {\cf eq?}.
 
 \implresp The implementation must check that \var{alist} is a chain of

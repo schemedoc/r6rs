@@ -38,9 +38,9 @@ must be quoted:
 
 \section{Endianness}
 
-Many operations described in this chapter accept and
+Many operations described in this chapter accept an
 \defining{endianness} argument.  Endianness describes the encoding of
-exact integers as several subsequent bytes in a bytevector.  For this
+exact integers as several contiguous bytes in a bytevector.  For this
 purpose, the binary representation of the integer is split into
 consecutive bytes.  \mainindex{little-endian}The little-endian
 encoding places the least significant byte of an integer first, with
@@ -140,7 +140,8 @@ and returns \unspecifiedreturn.  Analogous to {\cf vector-fill!}.
 \mainschindex{bytevector-copy!}{\tt\obeyspaces\\
      \var{target} \var{target-start} \var{k})}
 
-\domain{\var{Source-start}, \var{target-start},
+\domain{\var{Source} and \var{target} must be bytevectors.
+  \var{Source-start}, \var{target-start},
   and \var{k} must be non-negative exact integers that satisfy
   
   \begin{displaymath}
@@ -238,13 +239,15 @@ Both procedures return \unspecifiedreturn.
    
 \domain{\var{List} must be a list of octets.}
 
-The {\cf bytevector->u8-list} procedure returns a newly allocated list of the bytes of
+The {\cf bytevector->u8-list} procedure returns a newly allocated list of the octets of
 \var{bytevector} in the same order.
 
 The {\cf u8-list->bytevector} procedure returns a newly allocated bytevector whose
 elements are the elements of list \var{list}, in
 the same order.  It is analogous to {\cf list->vector}.
 \end{entry}
+
+\section{Operations on integers of arbitrary size}
 
 \begin{entry}{%
 \proto{bytevector-uint-ref}{ bytevector k endianness size}{procedure}
@@ -305,8 +308,6 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
                255 255 255 255 255 255 255 253))
 \end{scheme}
 \end{entry}
-
-\section{Operations on integers of arbitrary size}
 
 \begin{entry}{%
 \proto{bytevector->uint-list}{ bytevector endianness size}{procedure}
@@ -396,7 +397,7 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
    
 These retrieve and set four-byte representations of numbers at indices $\{\var{k},
 \ldots, \var{k}+ 3\}$, according to the endianness specified by \var{endianness}. The
-procedures with {\cf u32} in their names deal with the unsigned representation,
+procedures with {\cf u32} in their names deal with the unsigned representation;
 those with {\cf s32} with the two's complement representation.
    
 The procedures with {\cf native} in their names employ the native endianness, and
@@ -434,7 +435,7 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 These retrieve and set eight-byte representations of numbers at
 indices $\{\var{k}, \ldots, \var{k}+ 7\}$, according to the endianness
 specified by \var{endianness}. The procedures with {\cf u64} in their names deal
-with the unsigned representation, those with {\cf s64} with the two's
+with the unsigned representation; those with {\cf s64} with the two's
 complement representation.
    
 The procedures with {\cf native} in their names employ the native endianness, and
@@ -494,7 +495,7 @@ precision number represented by the eight bytes beginning at index
   be a multiple of $4$.  \var{X} must be a real number.}
 
 These procedures store an IEEE-754 single precision representation of \var{x} into
-elements \var{k} through $\var{k}+3$ of \var{bytevector}, and returns
+elements \var{k} through $\var{k}+3$ of \var{bytevector}, and return
 \unspecifiedreturn.
 \end{entry}
 
@@ -509,7 +510,7 @@ elements \var{k} through $\var{k}+3$ of \var{bytevector}, and returns
   be a multiple of $8$.}
 
 These procedures store an IEEE-754 double precision representation of \var{x} into
-elements \var{k} through $\var{k}+7$ of \var{bytevector}, and returns
+elements \var{k} through $\var{k}+7$ of \var{bytevector}, and return
 \unspecifiedreturn.
 \end{entry}
 
