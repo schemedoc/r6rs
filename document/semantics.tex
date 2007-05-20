@@ -11,13 +11,18 @@
 %\item begin is only there as the expression form variant
 %\end{itemize}
 
-This section gives a formal, operational semantics for Scheme. It does not cover the entire language. The notable missing features are the macro system, IO, and the numeric tower. The precise list of features included is given in section~\ref{sec:semantics:grammar}.
+This section gives a formal, operational semantics for Scheme. It does not cover the entire language. The notable missing features are the macro system, I/O, and the numeric tower. The precise list of features included is given in section~\ref{sec:semantics:grammar}.
 
-The core of the specification is a single-step term rewriting relation that indicates how an (abstract) machine behaves. In general, the Report is not a complete specification, giving implementations freedom to behave differently, typically to allow optimizations. This underspecification shows up in two ways in our semantics. 
+The core of the specification is a single-step term rewriting relation that indicates how an (abstract) machine behaves. In general, the report is not a complete specification, giving implementations freedom to behave differently, typically to allow optimizations. This underspecification shows up in two ways in our semantics. 
 
 The first is reduction rules that reduce to special ``\textbf{unknown:} \textit{string}'' states (where the string provides a description of the unknown state). The intention is that rules that reduce to such states can be replaced with arbitrary reduction rules. The precise specification of how to replace those rules is given in section~\ref{sec:semantics:underspecification}.
 
-The other is that the single-step relation relates one program to multiple different programs, each corresponding to a legal transition that an abstract machine might take. Accordingly we use the transitive closure of the single step relation to define the semantics, $\mathcal{S}$, as a function from programs ($\mathcal{P}$) to sets of observable results ($\mathcal{R}$):
+The other is that the single-step relation relates one program to
+multiple different programs, each corresponding to a legal transition
+that an abstract machine might take. Accordingly we use the transitive
+closure of the single step relation $\rightarrow^*$ to define the
+semantics, $\mathcal{S}$, as a function from programs ($\mathcal{P}$)
+to sets of observable results ($\mathcal{R}$):
 \begin{center}
 \begin{tabular}{l}
 $\mathcal{S} : \mathcal{P} \longrightarrow 2^{\mathcal{R}}$ \\
@@ -32,7 +37,7 @@ The precise definitions of $\mathcal{P}$, $\mathcal{A}$, $\mathcal{R}$, and $\ma
 
 To help understand the semantics and how it behaves, we have
 implemented it in PLT Redex. The implementation is available at the
-Report's website: \url{http://www.r6rs.org/}. All of the reduction
+report's website: \url{http://www.r6rs.org/}. All of the reduction
 rules and the metafunctions shown in the figures in this semantics
 were generated automatically from the source code.
 
@@ -86,7 +91,7 @@ appear in place of the the ellipsis and the pattern preceding it. We
 use the notation $\{ x_1 \cdots \mapsto v_1 \cdots \} e_1$ for
 capture-avoiding substitution; in this case it means that each
 $x_1$ is replaced with the corresponding $v_1$ in
-$e_1$. Finally, we write side-conditions in parenthesis beside
+$e_1$. Finally, we write side-conditions in parentheses beside
 a rule; the side-condition in the above rule indicates that the number
 of $x_1$s must be the same as the number of $v_1$s.
 Sometimes we use equality in the side-conditions; when we do it merely
@@ -95,7 +100,7 @@ same syntactic shape.
 
 \beginfig
 \input{r6-fig-grammar-parti.tex}
-\caption{Program Grammar}\label{fig:grammar}
+\caption{Grammar for program}\label{fig:grammar}
 \endfig
 
 Making the evaluation context $E$ explicit in the rule allows
@@ -121,7 +126,7 @@ sophisticated ways.
 
 \beginfig
 \input{r6-fig-grammar-partii.tex}
-\caption{Evaluation Context Grammar}\label{fig:ec-grammar}
+\caption{Grammar for evaluation contexts}\label{fig:ec-grammar}
 \endfig
 
 \beginfig
@@ -143,7 +148,7 @@ sophisticated ways.
 
 
 Figure~\ref{fig:grammar} shows the grammar for the subset of the
-Report this semantics models. Non-terminals are written in
+report this semantics models. Non-terminals are written in
 \textit{italics} or in a calligraphic font ($\mathcal{P}$ and
 $\mathcal{A}$), syntactic keywords are written in \textbf{boldface} and
 other primitives are written in a \textsf{sans-serif} font.
@@ -225,7 +230,7 @@ The values ($v$) are divided into five categories:
   (\va{pp}), \va{null}, symbols, self-quoting values
   (\nt{sqv}), and conditions. The self-quoting values are numbers,
   and the booleans \semtrue{} and \semfalse{}. Conditions represent
-  the Report's condition values, but here just contain a message and
+  the report's condition values, but here just contain a message and
   are otherwise inert.
 \item User procedure (\nt{uproc}) include multi-arity
   \sy{lambda} expressions and lambda expressions with dotted
@@ -262,7 +267,7 @@ re-use \nt{F} and have fine-grained control over the context to support
 exceptions and \va{dynamic-wind}. The starred and circled variants,
 \Estar{}, \Eo, \Fstar, and \Fo{} dictate where a single value is
 promoted to multiple values and where multiple values are demoted to a
-single value. The \nt{U} context is used to manage the Report's underspecification of the results of \sy{set!}, \va{set-car!}, and \va{set-cdr!}. Finally, \nt{SD} and $S$ are the contexts where quoted
+single value. The \nt{U} context is used to manage the report's underspecification of the results of \sy{set!}, \va{set-car!}, and \va{set-cdr!}. Finally, \nt{SD} and $S$ are the contexts where quoted
 expressions can be simplified. The precise use of the evaluation
 contexts is explained along with the relevant rules.
 
@@ -271,7 +276,8 @@ Figure~\ref{fig:observable} specifies a function that takes an answer ($\mathcal
 \section{Quote}\label{sec:semantics:quote}
 
 The first reduction rule that applies to any program is the
-\rulename{6qcons} that replaces a quoted expression with a reference
+\rulename{6qcons} rule in figure~\ref{fig:quote} that replaces a
+quoted expression with a reference
 to a defined variable, and introduces a new definition. This rule
 applies before any other because of the contexts in which it, and all
 of the other rules, apply. In particular, this rule applies in an
@@ -294,7 +300,7 @@ Although the identifier \nt{qp} does not have a subscript, the semantics of PLT 
 \begin{center}
 \input{r6-fig-Multiple--values--and--call-with-values.tex}
 \end{center}
-\caption{Multiple Values and Call-with-values}\label{fig:Multiple--values--and--call-with-values}
+\caption{Multiple values and call-with-values}\label{fig:Multiple--values--and--call-with-values}
 \endfig
 
 The basic strategy for multiple values is to add a rule that demotes
@@ -306,8 +312,11 @@ demotion. So, the semantics allows demotion only in a context
 expecting a single value and allows promotion only in a context
 expecting multiple values. We obtain this behavior with a small
 extension to the Felleisen-Hieb framework (also present in the
-operational model for R$^5$RS~\cite{mf:op-r5rs} and work on
-interoperability~\cite{mf:interop}). We extend the notation so that
+operational model for R$^5$RS~\cite{mf:op-r5rs}%
+% Robby also has this:
+%and work on
+%interoperability~\cite{mf:interop}
+). We extend the notation so that
 holes have names (written with a subscript), and the context-matching
 syntax may also demand a hole of a particular name (also written with
 a subscript, for instance $E[e]_{\star}$).  The extension
@@ -319,7 +328,7 @@ To exploit this extension, we use three kinds of holes in the
 evaluation context grammar in figure~\ref{fig:ec-grammar}. The
 ordinary hole \hole{} appears where the usual kinds of
 evaluation can occur. The hole \holes{} appears in contexts that
-allows multiple values and the hole \holeone{} appears in
+allow multiple values and the hole \holeone{} appears in
 contexts that expect a single value. Accordingly, the rules
 \rulename{6promote} only applies in \holes{} contexts, and the
 rule \rulename{6demote} only applies in \holeone{} contexts.
@@ -382,7 +391,8 @@ that context to find the closest enclosing handler.
 
 To see how the contexts work together with \sy{handler}
 expressions, consider the left-hand side of the \rulename{6xunee}
-rule. It matches expressions that have a call to \va{raise} or
+rule in figure~\ref{fig:Exceptions}.
+It matches expressions that have a call to \va{raise} or
 \va{raise-continuable} (the non-terminal \nt{raise*} matches
 both exception-raising procedures) expression in a \nt{PG}
 evaluation context. Since the \nt{PG} context does not contain any
@@ -417,7 +427,7 @@ handler. The \rulename{6xr} rule behaves similarly, except it
 raises a new exception if the handler returns. The new exception is
 created with the \sy{condition} special form.
 
-The \sy{condition} special form is a stand-in for the Report's
+The \sy{condition} special form is a stand-in for the report's
 conditions. It does not evaluate its argument (note its absence from
 the $E$ grammar in figure~\ref{fig:ec-grammar}). That argument
 is just a literal string describing the context in which the exception
@@ -430,7 +440,7 @@ when its body is fully evaluated, and the rule \rulename{6weherr}
 raises an exception when \va{with-exception-handler} is supplied with
 incorrect arguments.
 
-\section{Arithmetic \& basic forms}
+\section{Arithmetic and basic forms}
 
 \beginfig
 \begin{center}
@@ -443,10 +453,10 @@ incorrect arguments.
 \begin{center}
 \input{r6-fig-Basic--syntactic--forms.tex}
 \end{center}
-\caption{Basic Syntactic Forms}\label{fig:Basic--syntactic--forms}
+\caption{Basic syntactic forms}\label{fig:Basic--syntactic--forms}
 \endfig
 
-This model does not include the Report's arithmetic, but does include
+This model does not include the report's arithmetic, but does include
 an idealized form in order to make experimentation with other features
 simpler. Figure~\ref{fig:Arithmetic} shows the reduction rules for the
 primitive procedures that implement addition, subtraction,
@@ -516,7 +526,7 @@ The rules \rulename{6car} and \rulename{6cdr} extract the components of a pair f
 \begin{center}
 \input{r6-fig-Procedure--application.tex}
 \end{center}
-\caption{Procedures \& Application}\label{fig:Procedure--application}
+\caption{Procedures \& application}\label{fig:Procedure--application}
 \endfig
 
 \beginfig
@@ -531,7 +541,7 @@ The rules \rulename{6car} and \rulename{6cdr} extract the components of a pair f
 \begin{center}
 \input{r6-fig-Var-set!d_.tex}
 \end{center}
-\caption{Variable Assignment Metafunction}\label{fig:varsetd}
+\caption{Variable-assignment metafunction}\label{fig:varsetd}
 \endfig
 
 In evaluating a procedure call, the report deliberately leaves
@@ -604,7 +614,7 @@ too few arguments to \va{apply}.
 \input{r6-fig-Call-cc--and--dynamic-wind.tex} \\
 \input{r6-fig-pRepoStTrim.tex}
 \end{center}
-\caption{Call/cc and Dynamic Wind}\label{fig:Call-cc--and--dynamic-wind}
+\caption{Call/cc and dynamic wind}\label{fig:Call-cc--and--dynamic-wind}
 \endfig
 
 The specification of \va{dynamic-wind} uses $(\sy{dw}~x~e~e~e)$
@@ -678,7 +688,7 @@ parts of the context in its result.
 \begin{center}
 \input{r6-fig-Letrec.tex}
 \end{center}
-\caption{Letrec and Letrec*}
+\caption{Letrec and letrec*}
 \label{fig:Letrec}
 \endfig
 
@@ -690,7 +700,7 @@ parts of the context in its result.
 \begin{center}
 \input{r6-fig-Top--level--and--Variables.tex}
 \end{center}
-\caption{Library Top Level}\label{fig:Top--level--and--Variables}
+\caption{Library top level}\label{fig:Top--level--and--Variables}
 \endfig
 
 The sequence of definitions in the body of a $p$ models the
@@ -738,7 +748,7 @@ unspecified value. The next two rules, \rulename{6setu} and \rulename{6refu} han
 \begin{center}
 \input{r6-fig-Underspecification.tex}
 \end{center}
-\caption{Explicitly Unspecified Behavior}\label{fig:Underspecification}
+\caption{Explicitly unspecified behavior}\label{fig:Underspecification}
 \endfig
 
 The rules in figure~\ref{fig:Underspecification} cover aspects of the
