@@ -6,6 +6,9 @@ provides a somewhat more convenient interface for performing textual
 I/O on ports.  This library implements most of the 
 I/O procedures of the previous version of this report~\cite{R5RS}.
 
+The ports created by the procedures of this library are textual ports
+associated implementation-dependent transcoders.
+
 \begin{entry}{%
 \rproto{eof-object}{}{procedure}
 \rproto{eof-object?}{ obj}{procedure}}
@@ -21,9 +24,9 @@ These are the same as {\cf eof-object} and {\cf eof-object?} from the
 \domain{\var{Proc} must be a procedure accepting a single argument.}
 These procedures open the file named by \var{filename} for input or
 for output, with no specified file options, and call \var{proc} with
-the obtained port as an argument.  If \var{proc} returns, then the
+the obtained port as an argument.  If \var{proc} returns, the
 port is closed automatically and the values returned by \var{proc} are
-returned. If \var{proc} does not return, then the port is not
+returned. If \var{proc} does not return, the port is not
 closed automatically, unless it is possible to prove that the port
 will never again be used for an I/O operation.
 \end{entry}
@@ -97,7 +100,7 @@ be the prefix of any valid encoding, or an end of file is reached.
 If a complete character is available before the next end of file, {\cf
   read-char} returns that character, and updates the input port to
 point past that character. If an end of file is
-reached before any data are read, then {\cf read-char} returns the
+reached before any data are read, {\cf read-char} returns the
 end-of-file object.
 
 If \var{textual-input-port} is omitted, it defaults to the value returned by

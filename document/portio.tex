@@ -126,10 +126,10 @@ endings, and {\cf block} for arbitrary buffering.  This section uses
 the parameter name \var{buffer-mode} for arguments that must be
 buffer-mode symbols.
 
-If two ports are connected to the same mutable source, and both ports
+If two ports are connected to the same mutable source, both ports
 are unbuffered, and reading a byte or character from that shared
 source via one of the two ports would change the bytes or characters
-seen via the other port, then a lookahead operation on one port will
+seen via the other port, a lookahead operation on one port will
 render the peeked byte or character inaccessible via the other port,
 while a subsequent read operation on the peeked port will see the
 peeked byte or character even though the port is otherwise unbuffered.
@@ -178,12 +178,12 @@ sequences and Unicode characters and strings.
 Every transcoder can operate in the input direction (bytes to characters)
 or in the output direction (characters to bytes),
 but the composition of those directions need not be identity (and
-often isn't).  The composition of two transcoders is not defined.
+often is not).  The composition of two transcoders is not defined.
 A \var{transcoder} parameter name means that the corresponding
 argument must be a transcoder.
 
 A \defining{binary port} is a port that does not have an associated
-transcoder: It does not support textual I/O.  A \defining{textual
+transcoder and does not support textual I/O.  A \defining{textual
   port} is a port with an associated transcoder.
 
 \begin{entry}{%
@@ -203,9 +203,10 @@ procedure.
 \proto{eol-style}{ name}{\exprtype}}
 
 If \var{name} is one of the \meta{identifier}s {\cf lf}, {\cf cr},
-{\cf crlf}, {\cf nel}, {\cf crnel}, {\cf ls}, or {\cf none}, then the form
+{\cf crlf}, {\cf nel}, {\cf crnel}, {\cf ls}, or {\cf none}, the form
 evaluates to the corresponding symbol.  If \var{name} is not one of
-these identifiers, effect and result are implementation-dependent: The
+these identifiers, the effect and result are implementation-dependent;
+in particular, the
 result may be an eol-style symbol acceptable as an \var{eol-mode}
 argument to {\cf make-transcoder}.  Otherwise, an exception is raised.
 
@@ -314,7 +315,7 @@ handler has output an encoding.
 \proto{error-handling-mode}{ name}{\exprtype}}
 
 If \var{name} is one of the \meta{identifier}s {\cf ignore}, {\cf
-  raise}, or {\cf replace}, then the result is the corresponding
+  raise}, or {\cf replace}, the result is the corresponding
 symbol.  If \var{name} is not one of these identifiers, effect and
 result are implementation-dependent: The result may be an
 error-handling-mode symbol acceptable as a \var{handling-mode}
@@ -332,21 +333,21 @@ errors.
 
 If a textual input operation encounters an invalid or incomplete
 character encoding, and the error-handling mode is {\cf ignore},
-then an appropriate number of bytes of the
+an appropriate number of bytes of the
 invalid encoding are ignored and decoding continues with the
 following bytes.
-If the error-handling mode is {\cf replace}, then the replacement
+If the error-handling mode is {\cf replace}, the replacement
 character U+FFFD is injected into the data stream, an appropriate
 number of bytes are ignored, and decoding
 continues with the following bytes.
-If the error-handling mode is {\cf raise}, then a continuable
+If the error-handling mode is {\cf raise}, a continuable
 exception with condition type {\cf\&i/o-decoding} is raised;
 see the description of
 {\cf\&i/o-decoding} for details
 on how to handle such an exception.
 
 If a textual output operation encounters a character it cannot encode,
-and the error-handling mode is {\cf ignore}, then the character is
+and the error-handling mode is {\cf ignore}, the character is
 ignored and encoding continues with the next character.
 If the error-handling mode is {\cf replace}, a codec-specific
 replacement character is emitted by the transcoder, and encoding
@@ -431,8 +432,7 @@ Returns the end of file object.
 \begin{entry}{%
 \proto{eof-object?}{ obj}{procedure}}
   
-Returns \schtrue{} if \var{obj} is the end of file object, otherwise
-returns \schfalse.
+Returns \schtrue{} if \var{obj} is the end of file object, \schfalse{} otherwise.
 \end{entry}
 
 \subsection{Input and output ports}
@@ -474,16 +474,16 @@ The {\cf transcoded-port} procedure
 returns a new textual port with the specified \var{transcoder}.
 Otherwise the new textual port's state is largely the same as
 that of the \var{binary-port}.
-If the \var{binary-port} is an input port, then the new textual
+If the \var{binary-port} is an input port, the new textual
 port will be an input port and
 will transcode the bytes that have not yet been read from
 the \var{binary-port}.
-If the \var{binary-port} is an output port, then the new textual
+If the \var{binary-port} is an output port, the new textual
 port will be an output port and
 will transcode output characters into bytes that are
 written to the byte sink represented by the \var{binary-port}.
 
-As a side effect, however, the {\cf transcoded-port} procedure
+As a side effect, however, {\cf transcoded-port}
 closes \var{binary-port} in
 a special way that allows the new textual port to continue to
 use the byte source or sink represented by the \var{binary-port},
@@ -533,12 +533,24 @@ The {\cf port-has-set-port-position?} procedure returns \schtrue{} if the port
 supports the {\cf set-port-position!} operation, and \schfalse{}
 otherwise.
    
-The {\cf set-port-position!} procedure sets the current position
-of the port to \var{pos}.  If \var{port} is an output or combined
-input and output port, this first flushes \var{port}.  (See {\cf
-  flush-output-port}, section~\ref{flush-output-port}.)
-An exception with condition type {\cf\&assertion} is raised
+The {\cf set-port-position!} procedure raises an
+exception with condition type {\cf\&assertion}
 if the port does not support the operation.
+Otherwise, it sets the current position
+of the port to \var{pos}.  If \var{port} is an output
+port, {\cf set-port-position!} first flushes\var{port}.  (See {\cf
+  flush-output-port}, section~\ref{flush-output-port}.)
+
+If \var{port} is a binary output port and the current position is set
+beyond the current end of the data in the underlying object, the object is
+not extended until new data is written at that position.
+The contents of any intervening positions are unspecified.
+Binary ports created by {\cf open-file-output-port} and
+{\cf open-file-input/output-port} can always be extended in this manner
+within the limits of the underlying operating system.
+In other cases, attempts to set the port beyond the current end of data
+in the underlying object may result in an exception with condition
+type {\cf\&i/o-invalid-position}.
 \end{entry}
 
 \begin{entry}{%
@@ -557,16 +569,16 @@ A closed port is still a port.  The {\cf close-port} procedure returns
 \domain{\var{Proc} must be a procedure that accepts a single
   argument.}  The {\cf call-with-port} procedure
 calls \var{proc} with \var{port} as an argument. If
-\var{proc} returns, then the \var{port} is closed automatically and
+\var{proc} returns, the \var{port} is closed automatically and
 the values returned by \var{proc} are returned. If \var{proc} does not
-return, then the port is not closed automatically, except perhaps when it is
-possible to prove that the port will never again be used for a
-{\cf lookahead}, {\cf get}, or {\cf put} operation.
+return, the port is not closed automatically, except perhaps when it is
+possible to prove that the port will never again be used for an
+input or output operation.
 \end{entry}
 
 \subsection{Input ports}
 
-An input port allows reading an infinite sequence of bytes
+An input port allows the reading of an infinite sequence of bytes
 or characters punctuated
 by end of file objects. An input port connected to a finite data
 source ends in an infinite sequence of end of file objects.
@@ -593,7 +605,9 @@ Returns \schtrue{}
 if the {\cf lookahead-u8} procedure (if \var{input-port} is a binary port)
 or the {\cf lookahead-char} procedure (if \var{input-port} is a textual port)
 would return
-the end-of-file object, and returns \schfalse{} otherwise.
+the end-of-file object, and \schfalse{} otherwise.
+The operation may block indefinitely if no data is available
+but the port cannot be determined to be at end of file.
 \end{entry}
 
 \begin{entry}{%
@@ -611,7 +625,7 @@ Returns an input port for the named file. The \var{file-options} and
 
 The \var{file-options} argument, which may determine
 various aspects of the returned port (see section~\ref{fileoptionssection}),
-defaults to {\cf (file-options)}.
+defaults to the value of {\cf (file-options)}.
 
 The \var{buffer-mode} argument, if supplied,
 must be one of the symbols that name a buffer mode.
@@ -621,7 +635,7 @@ If \var{maybe-transcoder} is a transcoder, it becomes the transcoder associated
 with the returned port.
 
 If \var{maybe-transcoder} is \schfalse{} or absent,
-then the port will be a binary port and will support the
+the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
@@ -646,9 +660,8 @@ The {\cf open-bytevector-input-port} procedure returns an input port whose bytes
 If \var{transcoder} is specified, it becomes the transcoder associated
 with the returned port.
 
-If no \var{maybe-transcoder} argument is given, or
-if \schfalse{} is passed as an explicit argument,
-then the port will be a binary port and will support the
+If \var{maybe-transcoder} is \schfalse{} or absent,
+the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
@@ -692,6 +705,7 @@ This returns a default textual port for input.  Normally, this default port
 is associated with standard input, but can be dynamically re-assigned
 using the {\cf with-input-from-file} procedure from the
 \rsixlibrary{i/o simple} library (see section~\ref{with-input-from-file}).
+The port has an associated transcoder, which is implementation-dependent.
 \end{entry}
 
 \begin{entry}{%
@@ -721,7 +735,7 @@ should behave as specified below.
   from the byte source, and should write those bytes
   into \var{bytevector} starting at index \var{start}.
   The \var{read!} procedure should return an exact integer.  This
-  integer should be the number of bytes that it has written.
+  integer should be the number of bytes that it has read.
   To indicate an end of file condition, the \var{read!}
   procedure should write no bytes and return 0.
 
@@ -732,10 +746,11 @@ should behave as specified below.
   the input port.  If not supplied, the custom port will not support
   the {\cf port-position} operation.
   
-\item {\cf (\var{set-position!} \var{k})}
+\item {\cf (\var{set-position!} \var{pos})}
        
+  \domain{\var{Pos} will be a non-negative exact integer.}
   The \var{set-position!} procedure (if supplied) should set the
-  position of the input port to \var{k}.  If not supplied, the custom
+  position of the input port to \var{pos}.  If not supplied, the custom
   port will not support the {\cf set-port-position!} operation.
        
 \item {\cf (\var{close})}
@@ -744,8 +759,8 @@ should behave as specified below.
   that are necessary when the input port is closed.
 \end{itemize}
 
-\implresp The implementation is only required to check the return
-values of \var{read!} and \var{get-position} when it actually calls
+\implresp The implementation is required to check the return
+values of \var{read!} and \var{get-position} only when it actually calls
 them as part of an I/O operation requested by the program.  The
 implementation is not required to check that these procedures
 otherwise behave as described.  If they do not, however, the behavior
@@ -803,8 +818,10 @@ should behave as specified below.
   that are necessary when the input port is closed.
 \end{itemize}
 
-\implresp The implementation is only required to check the return
-values of \var{read!} and \var{get-position} when it actually calls
+The port has an associated transcoder, which is implementation-dependent.
+
+\implresp The implementation is required to check the return
+values of \var{read!} and \var{get-position} only when it actually calls
 them as part of an I/O operation requested by the program.  The
 implementation is not required to check that these procedures
 otherwise behave as described.  If they do not, however, the behavior
@@ -818,9 +835,9 @@ of the resulting port is unspecified.
    
 Reads from \var{binary-input-port}, blocking as necessary, until data are
 available from \var{binary-input-port} or until an end of file is reached.
-If a byte becomes available, {\cf get-u8} returns the byte as an octet, and
+If a byte becomes available, {\cf get-u8} returns the byte as an octet and
 updates \var{binary-input-port} to point just past that byte. If no input
-byte is seen before an end of file is reached, then the end-of-file
+byte is seen before an end of file is reached, the end-of-file
 object is returned.
 \end{entry}
 
@@ -832,12 +849,15 @@ update \var{binary-input-port} to point past the byte.
 \end{entry}
 
 \begin{entry}{%
-\proto{get-bytevector-n}{ binary-input-port k}{procedure}}
+\proto{get-bytevector-n}{ binary-input-port count}{procedure}}
    
-Reads from \var{binary-input-port}, blocking as necessary, until \var{k}
+\domain{\var{Count} must be an exact, non-negative integer, specifying
+  the number of bytes to be read.}
+
+Reads from \var{binary-input-port}, blocking as necessary, until \var{count}
 bytes are available from \var{binary-input-port} or until an end of file is
-reached. If \var{k} or more bytes are available before an end
-of file, {\cf get-bytevector-n} returns a bytevector of size \var{k}.
+reached. If \var{count} bytes are available before an end
+of file, {\cf get-bytevector-n} returns a bytevector of size \var{count}.
 If fewer bytes are available before an end of file, {\cf get-bytevector-n}
 returns a bytevector
 containing those bytes. In either case, the input port is updated to
@@ -859,7 +879,7 @@ The {\cf get-bytevector-n!} procedure reads from \var{binary-input-port},
 blocking as necessary, until
 \var{count} bytes are available from \var{binary-input-port} or until
 an end of file is
-reached. If \var{count} or more bytes are available before an end of file,
+reached. If \var{count} bytes are available before an end of file,
 they are written into \var{bytevector} starting at index \var{start}, and
 the result is \var{count}. If fewer bytes are available before
 the next end of file, the available bytes are written into \var{bytevector}
@@ -876,10 +896,10 @@ Reads from \var{binary-input-port}, blocking as necessary, until data are
 available from \var{binary-input-port} or until an end of file is reached.
 If data become available,
 {\cf get-bytevector-some} returns a freshly allocated
-bytevector of non-zero size containing the available data, and it updates
-\var{binary-input-port} to point just past that data.
+bytevector containing the initial one or more bytes of available
+data, and it updates \var{binary-input-port} to point just past that data.
 If no input bytes are seen before an end
-of file is reached, then the end-of-file object is returned.
+of file is reached, the end-of-file object is returned.
 \end{entry}
 
 \begin{entry}{%
@@ -890,9 +910,8 @@ necessary. If one or more bytes are read, {\cf get-bytevector-all} returns
 a bytevector
 containing all bytes up to the next end of file.  Otherwise, {\cf
   get-bytevector-all} returns the end-of-file object.
-Note that  {\cf get-bytevector-all}
-may block indefinitely, waiting to see an end of
-file, even though some bytes are available.
+The operation may block indefinitely waiting to see if more data
+will become available, even if some bytes are already available.
 \end{entry}
 
 \subsection{Textual input}
@@ -906,9 +925,9 @@ or until the available input data cannot be the prefix of any valid encoding,
 or until an end of file is reached.
 
 If a complete character is available before the next end of file, {\cf
-  get-char} returns that character, and updates the input port to
+  get-char} returns that character and updates the input port to
 point past the data that encoded that character. If an end of file is
-reached before any data are read, then {\cf get-char} returns the
+reached before any data are read, {\cf get-char} returns the
 end-of-file object.
 \end{entry}
 
@@ -927,40 +946,43 @@ that encode the character.
 \end{entry}
 
 \begin{entry}{%
-\proto{get-string-n}{ textual-input-port k}{procedure}}
+\proto{get-string-n}{ textual-input-port count}{procedure}}
    
+\domain{\var{Count} must be an exact, non-negative integer, specifying
+  the number of characters to be read.}
+
 Reads from \var{textual-input-port}, blocking as necessary, until the
-encodings of \var{k} characters (including invalid encodings, if they
+encodings of \var{count} characters (including invalid encodings, if they
 don't raise an exception) are available, or until an end of
 file is reached.
    
-If \var{k} or more characters are read before end of file, {\cf
-  get-string-n} returns a string consisting of those \var{k}
+If \var{count} characters are available before end of file, {\cf
+  get-string-n} returns a string consisting of those \var{count}
 characters. If fewer characters are available before an end of file,
 but one or more characters can be read,
 {\cf get-string-n} returns a string containing
 those characters. In either case, the input port is updated to point
 just past the data read. If no data can be read before an 
-end of file, then the end-of-file object is returned.
+end of file, the end-of-file object is returned.
 \end{entry}
 
 \begin{entry}{%
 \proto{get-string-n!}{ textual-input-port string start count}{procedure}}
 
-\domain{\var{Start} and \var{count} must be an exact, non-negative
-  integer, specifying the number of characters to be read.
+\domain{\var{Start} and \var{count} must be exact, non-negative
+  integer, with \var{count} specifying the number of characters to be read.
   \var{string} must be a string with at least $\var{start} +
   \var{count}$ characters.}
 
 Reads from \var{textual-input-port} in the same manner as {\cf
-  get-string-n}.  If \var{count} or more characters are available
-before an end of file, they are written into string
+  get-string-n}.  If \var{count} characters are available
+before an end of file, they are written into \var{string}
 starting at index \var{start}, and \var{count} is returned. If fewer
 characters are available before an end of file, but one
-or more can be read, then those characters are written into string
-starting at index \var{start}, and the number of characters actually read is
+or more can be read, those characters are written into string
+starting at index \var{start} and the number of characters actually read is
 returned. If no characters can be read before an end of file,
-then the end-of-file object is returned.
+the end-of-file object is returned.
 \end{entry}   
 
 \begin{entry}{%
@@ -969,9 +991,9 @@ then the end-of-file object is returned.
 Reads from \var{textual-input-port} until an end of file, decoding
 characters in the same manner as {\cf get-string-n} and {\cf get-string-n!}.
    
-If data are available before the end of file, a string
+If data is available before the end of file, a string
 containing all the text decoded from that data are returned. If no data
-precede the end of file, the end-of-file object file object is
+precedes the end of file, the end-of-file object file object is
 returned.
 \end{entry}
 
@@ -982,14 +1004,14 @@ Reads from \var{textual-input-port} up to and including the linefeed
 character or end of file, decoding characters in the same manner as
 {\cf get-string-n} and {\cf get-string-n!}.
    
-If a linefeed character is read, then a string
+If a linefeed character is read, a string
 containing all of the text up to (but not including) the linefeed
 character is returned, and the port is updated to point just past the
 linefeed character. If an end of file is
 encountered before any linefeed character is read, but some data
-have been read and decoded as characters, then a string containing
+have been read and decoded as characters, a string containing
 those characters is returned. If an end of file is encountered before
-any data are read, then the end-of-file object is
+any data are read, the end-of-file object is
 returned.
 
 \begin{note}
@@ -1026,15 +1048,15 @@ with condition types {\cf\&lexical} and {\cf\&i/o-read} is raised.
 \subsection{Output ports}
 
 An output port is a sink to which bytes or characters are written.
-These data may control
-external devices, or may produce files and other objects that may
+The written data may control
+external devices or may produce files and other objects that may
 subsequently be opened for input.
 
 \begin{entry}{%
 \proto{output-port?}{ obj}{procedure}}
    
 Returns \schtrue{} if the argument is an output port (or a
-combined input and output port), and returns \schfalse{} otherwise.
+combined input and output port), \schfalse{} otherwise.
 \end{entry}   
 
 \begin{entry}{%
@@ -1048,7 +1070,7 @@ procedure returns \unspecifiedreturn.
 \begin{entry}{%
 \proto{output-port-buffer-mode}{ output-port}{procedure}}
    
-Returns the symbol that represents the buffer-mode of
+Returns the symbol that represents the buffer mode of
 \var{output-port}.
 \end{entry}
 
@@ -1066,7 +1088,7 @@ The {\cf open-file-output-port} procedure returns an output port for the named f
 
 The \var{file-options} argument, which may determine
 various aspects of the returned port (see section~\ref{fileoptionssection}),
-defaults to {\cf (file-options)}.
+defaults to the value of {\cf (file-options)}.
 
 The \var{buffer-mode} argument, if supplied,
 must be one of the symbols that name a buffer mode.
@@ -1076,7 +1098,7 @@ If \var{maybe-transcoder} is a transcoder, it becomes the transcoder
 associated with the port.
 
 If \var{maybe-transcoder} is \schfalse{} or absent,
-then the port will be a binary port and will support the
+the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
@@ -1096,28 +1118,24 @@ will be implementation-dependent (and possibly transcoder-dependent).
 \domain{\var{Maybe-transcoder} must be either a transcoder or \schfalse.}
 
 The {\cf open-bytevector-output-port} procedure returns 
-two values: an output port and a procedure.
+two values: an output port and an extraction procedure.
 The output port accumulates the data written to it for
 later extraction by the procedure.
 
 If \var{maybe-transcoder} is a transcoder, it becomes
 the transcoder associated with the port.
-If no \var{maybe-transcoder} argument is given, or
-if it is \schfalse,
-then the port will be a binary port and will support the
+If \var{maybe-transcoder} is \schfalse{} or absent,
+the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
 will be implementation-dependent (and possibly transcoder-dependent).
 
-When the procedure is called without arguments, it returns a
-bytevector consisting of all the port's accumulated data and removes
-the accumulated data from the port.
-
-\begin{note}
-  When the returned procedure is called without arguments, the
-  returned data is independent of the port's current position.
-\end{note}
+The extraction procedure takes no arguments.
+When called, it returns a
+bytevector consisting of all the port's accumulated data (regardless
+of the port's current position), removes
+the accumulated data from the port, and resets the port's position.
 \end{entry}
 
 \begin{entry}{%
@@ -1131,7 +1149,8 @@ the accumulated data from the port.
 The {\cf call-with-bytevector-output-port} procedure creates an output
 port that accumulates the data written to it and calls \var{proc} with
 that output port as an argument. Whenever \var{proc} returns, a
-bytevector consisting of the port's accumulated data is returned and
+bytevector consisting of all of the port's accumulated data (regardless
+of the port's current position) is returned and
 the port is closed.
 
 The transcoder associated with the output port is determined
@@ -1141,7 +1160,7 @@ as for a call to {\cf open-bytevector-output-port}.
 \begin{entry}{%
 \proto{open-string-output-port}{}{procedure}}
 
-Returns two values: a textual output port and a procedure.
+Returns two values: a textual output port and an extraction procedure.
 The output port accumulates the characters written to it for
 later extraction by the procedure.
 
@@ -1149,8 +1168,11 @@ The port has an associated transcoder, which is
 implementation-dependent.  The port should support the {\cf
   port-position} and {\cf set-port-position!} operations.
 
-When the procedure is called without arguments, it returns a string consisting of the port's
-accumulated characters and removes the accumulated characters from the port.
+The extraction procedure takes no arguments.
+When called, it returns a string consisting of all of the port's
+accumulated characters (regardless of the current position),
+removes the accumulated characters from the port, and resets
+the port's position.
 \end{entry}
 
 \begin{entry}{%
@@ -1159,8 +1181,9 @@ accumulated characters and removes the accumulated characters from the port.
 \domain{\var{Proc} must be a procedure accepting one argument.}
 Creates a textual output port that accumulates the
 characters written to it and calls \var{proc} with that output port
-as an argument. Whenever \var{proc} returns, a string consisting of the
-port's accumulated characters is returned and the port is closed.
+as an argument.  Whenever \var{proc} returns, a string consisting of all
+of the port's accumulated characters (regardless of the port's current
+position) is returned and the port is closed.
 
 The port has an associated transcoder, which is implementation-dependent.
 The port should support
@@ -1187,6 +1210,7 @@ standard error, respectively.  The return value of {\cf
   current-output-port} can be dynamically re-assigned using the {\cf
   with-output-to-file} procedure from the \rsixlibrary{i/o simple}
 library (see section~\ref{with-output-to-file}).
+Each port has an associated transcoder, which is implementation-dependent.
 \end{entry}
 
 
@@ -1199,7 +1223,7 @@ Returns a newly created binary output port whose byte sink is
 an arbitrary algorithm represented by the \var{write!} procedure.
 \var{Id} must be a string naming the new port,
 provided for informational purposes only.
-\var{Write!} must be a procedure, and should behave as specified
+\var{Write!} must be a procedure and should behave as specified
 below; it will be called by operations that perform binary output.
 
 Each of the remaining arguments may be \schfalse{}; if any of
@@ -1214,16 +1238,16 @@ should behave as specified in the description of
   and \var{bytevector} will be a bytevector whose length is at least
   $\var{start} + \var{count}$.}
   The \var{write!} procedure should read up to \var{count} bytes
-  from \var{bytevector} starting at index \var{start}, and forward
+  from \var{bytevector} starting at index \var{start} and forward
   them to the byte sink.
-  If \var{count} is 0, then the \var{write!} procedure should
+  If \var{count} is 0, the \var{write!} procedure should
   have the effect of passing an end-of-file object to the byte sink.
   In any case, the \var{write!} procedure should return the number of
   bytes that it wrote, as an exact integer.
 \end{itemize}
 
-\implresp The implementation is only required to check the return
-values of \var{write!} when it actually calls \var{write!} as part of
+\implresp The implementation is required to check the return
+values of \var{write!} only when it actually calls \var{write!} as part of
 an I/O operation requested by the program.  The implementation is not
 required to check that \var{write!} otherwise behaves as described.
 If it does not, however, the behavior of the resulting port is
@@ -1254,16 +1278,18 @@ should behave as specified in the description of
   and \var{string} will be a string whose length is at least
   $\var{start} + \var{count}$.}
   The \var{write!} procedure should read up to \var{count} characters
-  from \var{string} starting at index \var{start}, and forward
+  from \var{string} starting at index \var{start} and forward
   them to the character sink.
-  If \var{count} is 0, then the \var{write!} procedure should
+  If \var{count} is 0, the \var{write!} procedure should
   have the effect of passing an end-of-file object to the character sink.
   In any case, the \var{write!} procedure should return the number of
   characters that it wrote, as an exact integer.
 \end{itemize}
 
-\implresp The implementation is only required to check the return
-values of \var{write!} when it actually calls \var{write!} as part of
+The port has an associated transcoder, which is implementation-dependent.
+
+\implresp The implementation is required to check the return
+values of \var{write!} only when it actually calls \var{write!} as part of
 an I/O operation requested by the program.  The implementation is not
 required to check that \var{write!} otherwise behaves as described.
 If it does not, however, the behavior of the resulting port is
@@ -1289,8 +1315,8 @@ Writes \var{octet} to the output port and returns \unspecifiedreturn.
   integers that default to 0 and $\texttt{(bytevector-length \var{bytevector})}
   - \var{start}$, respectively. \var{bytevector} must have a length of at
   least $\var{start} + \var{count}$.}  The {\cf put-bytevector} procedure writes
-\var{count} bytes of the bytevector \var{bytevector}, starting at index
-\var{start}, to the output port.  The {\cf put-bytevector} procedure
+the \var{count} bytes of the bytevector \var{bytevector} starting at index
+\var{start} to the output port.  The {\cf put-bytevector} procedure
 returns \unspecifiedreturn.
 \end{entry}
 
@@ -1312,8 +1338,8 @@ Writes \var{char} to the port. The {\cf put-char} procedure returns
   integers.  \var{String} must have a length of at least $\var{start} +
   \var{count}$.}  \var{Start} defaults to 0.  \var{Count} defaults to
 $\texttt{(string-length \var{string})} - \var{start}$. Writes the
-\var{count} characters of \var{string}, starting at
-index \var{start}, to the port.  The {\cf put-string-n} procedure
+\var{count} characters of \var{string} starting at
+index \var{start} to the port.  The {\cf put-string} procedure
 returns \unspecifiedreturn.
 \end{entry}
 
@@ -1351,7 +1377,7 @@ output port for the named file.
 The optional arguments default as described in the specification
 of {\cf open-file-output-port}.
 If the input/output port supports {\cf port-position} and/or
-{\cf set-port-position!}, then the same port position is used
+{\cf set-port-position!}, the same port position is used
 for both input and output.
 \end{entry}
 
