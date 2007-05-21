@@ -21,19 +21,19 @@ The other is that the single-step relation relates one program to
 multiple different programs, each corresponding to a legal transition
 that an abstract machine might take. Accordingly we use the transitive
 closure of the single step relation $\rightarrow^*$ to define the
-semantics, $\mathcal{S}$, as a function from programs ($\mathcal{P}$)
-to sets of observable results ($\mathcal{R}$):
+semantics, \calS, as a function from programs (\calP)
+to sets of observable results (\calR):
 \begin{center}
 \begin{tabular}{l}
-$\mathcal{S} : \mathcal{P} \longrightarrow 2^{\mathcal{R}}$ \\
-$\mathcal{S}(\mathcal{P}) = \{ \mathscr{O}(\mathcal{A}) \mid \mathcal{P} \rightarrow^* \mathcal{A} \}$
+$\calS : \calP \longrightarrow 2^{\calR}$ \\
+$\calS(\calP) = \{ \scrO(\calA) \mid \calP \rightarrow^* \calA \}$
 \end{tabular}
 \end{center}
-where the function $\mathscr{O}$ turns an answer ($\mathcal{A}$) from the semantics into an observable result. Roughly, $\mathscr{O}$ is the identity function on simple base values, and returns a special tag for more complex values, like procedure and pairs.
+where the function $\scrO$ turns an answer ($\calA$) from the semantics into an observable result. Roughly, $\scrO$ is the identity function on simple base values, and returns a special tag for more complex values, like procedure and pairs.
 
-So, an implementation conforms to the semantics if, for every program $\mathcal{P}$, the implementation produces one of the results in $\mathcal{S}(\mathcal{P})$ or, if the implementation loops forever, then there is an infinite reduction sequence starting at $\mathcal{P}$, assuming that the reduction relation $\rightarrow$ has been adjusted to replace the \textbf{unknown:} states.
+So, an implementation conforms to the semantics if, for every program $\calP$, the implementation produces one of the results in $\calS(\calP)$ or, if the implementation loops forever, then there is an infinite reduction sequence starting at $\calP$, assuming that the reduction relation $\rightarrow$ has been adjusted to replace the \textbf{unknown:} states.
 
-The precise definitions of $\mathcal{P}$, $\mathcal{A}$, $\mathcal{R}$, and $\mathscr{O}$ are also given in section~\ref{sec:semantics:grammar}.
+The precise definitions of $\calP$, $\calA$, $\calR$, and $\scrO$ are also given in section~\ref{sec:semantics:grammar}.
 
 To help understand the semantics and how it behaves, we have
 implemented it in PLT Redex. The implementation is available at the
@@ -149,20 +149,20 @@ sophisticated ways.
 
 Figure~\ref{fig:grammar} shows the grammar for the subset of the
 report this semantics models. Non-terminals are written in
-\textit{italics} or in a calligraphic font ($\mathcal{P}$ and
-$\mathcal{A}$), syntactic keywords are written in \textbf{boldface} and
+\textit{italics} or in a calligraphic font ($\calP$ and
+$\calA$), syntactic keywords are written in \textbf{boldface} and
 other primitives are written in a \textsf{sans-serif} font.
 
-The $\mathcal{P}$ non-terminal represents possible program states. The
+The $\calP$ non-terminal represents possible program states. The
 first alternative is a program with a store and a series of
 definitions. The second alternative is an error, and the final one is
 used to indicate a place where the model does not completely specify
-the behavior of the primitives it models. The $\mathcal{A}$ non-terminal
-represents a final result of a program. It is just like $\mathcal{P}$
+the behavior of the primitives it models. The $\calA$ non-terminal
+represents a final result of a program. It is just like $\calP$
 except that all of the definitions have been evaluated and the
 value(s) of the last one is retained.
 
-The $\mathcal{R}$ and $\mathcal{R}_v$ non-terminals specify the observable results of a program. Each $\mathcal{R}$ is either a sequence of values that correspond to the values produced by the program that terminates normally, or a tag indicating an uncaught exception was raised, or \sy{unknown} if the program encounters a situation the semantics does not cover (see section~\ref{sec:semantics:underspecification} for details of those situations). The $\mathcal{R}_v$ non-terminal specifies what the observable results are for a particular value: the unspecified value, a pair, the empty list, a symbol, a self-quoting value (true, false, and numbers), a condition, or a procedure.
+The $\calR$ and $\calR_v$ non-terminals specify the observable results of a program. Each $\calR$ is either a sequence of values that correspond to the values produced by the program that terminates normally, or a tag indicating an uncaught exception was raised, or \sy{unknown} if the program encounters a situation the semantics does not cover (see section~\ref{sec:semantics:underspecification} for details of those situations). The $\calR_v$ non-terminal specifies what the observable results are for a particular value: the unspecified value, a pair, the empty list, a symbol, a self-quoting value (true, false, and numbers), a condition, or a procedure.
 
 The $\mathit{sf}$ non-terminal generates individual elements of the
 store. The store holds all of the mutable state of a program. It is
@@ -216,7 +216,7 @@ expressions are either sequences, symbols, or self-quoting values
 
 The $p$ non-terminal represents programs that have no quoted
 data. Most of the reduction rules rewrite $p$ to $p$,
-rather than $\mathcal{P}$ to $\mathcal{P}$, since quoted data is first
+rather than $\calP$ to $\calP$, since quoted data is first
 rewritten into calls to the list construction functions before
 ordinary evaluation proceeds. Much like \nt{ds}, $d$
 represents definitions and like \nt{es}, $e$ represents
@@ -271,7 +271,7 @@ single value. The \nt{U} context is used to manage the report's underspecificati
 expressions can be simplified. The precise use of the evaluation
 contexts is explained along with the relevant rules.
 
-Figure~\ref{fig:observable} specifies a function that takes an answer ($\mathcal{A}$) and produces an observable result. It eliminates the store, and replaces complex values with simple tags that indicate only the kind of value that was produced or, if no values were produced, indicates that either an uncaught exception was raised, or that the program reached a state that is not specified by the semantics.
+Figure~\ref{fig:observable} specifies a function that takes an answer ($\calA$) and produces an observable result. It eliminates the store, and replaces complex values with simple tags that indicate only the kind of value that was produced or, if no values were produced, indicates that either an uncaught exception was raised, or that the program reached a state that is not specified by the semantics.
 
 \section{Quote}\label{sec:semantics:quote}
 
