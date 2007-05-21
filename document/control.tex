@@ -19,7 +19,7 @@ If \hyper{test} evaluates to false, the remaining
 \hyper{expression}s are evaluated in order, and the results of the
 last \hyper{expression} are returned as the results of the
 entire {\cf unless} expression.  Otherwise, the {\cf unless} expression
-evaluates to \unspecifiedreturn.
+returns \unspecifiedreturn.
 
 \begin{scheme}
 (when (> 3 2) 'greater) \ev greater
@@ -61,8 +61,7 @@ expressions.  The \hyper{variable}s must be pairwise distinct variables.
 \semantics
 The {\cf do} expression is an iteration construct.  It specifies a set of variables to
 be bound, how they are to be initialized at the start, and how they are
-to be updated on each iteration.  When a termination condition is met,
-the loop exits after evaluating the \hyper{expression}s.
+to be updated on each iteration.
 
 A {\cf do} expression is evaluated as follows:
 The \hyper{init} expressions are evaluated (in some unspecified order),
@@ -74,11 +73,10 @@ the \hyper{variable}s are bound to fresh locations, the results of the
 \schfalse, then the \hyper{command}s
 are evaluated in order for effect, the \hyper{step}
 expressions are evaluated in some unspecified order, the
-\hyper{variable}s are bound to fresh locations, the results of the
-\hyper{step}s are stored in the bindings of the
-\hyper{variable}s, and the next iteration begins.
+\hyper{variable}s are bound to fresh locations holding the results,
+and the next iteration begins.
 
-\vest If \hyper{test} evaluates to a true value, then the
+\vest If \hyper{test} evaluates to a true value, the
 \hyper{expression}s are evaluated from left to right and the values of
 the last \hyper{expression} are returned.  If no \hyper{expression}s
 are present, then the values of the {\cf do} expression \areunspecified.
@@ -95,7 +93,7 @@ been written instead of {\cf(\hyper{variable} \hyper{init})}.
 If a {\cf do} expression appears in a tail context, the
 \hyper{expression}s are a \hyper{tail sequence} in the sense of report
 section~\extref{report:basetailcontextsection}{Tail calls and tail contexts},
-i.e.\ the last \hyper{expression} is also in a tail context.
+i.e., the last \hyper{expression} is also in a tail context.
 
 \begin{scheme}
 (do ((vec (make-vector 5))
@@ -150,7 +148,7 @@ Each \hyper{clause} should be of the form
 \end{scheme}
 
 \hyper{Formals} must be as in a {\cf lambda} form
-(report section~\extref{report:lambda}{Procedures}), and \hyper{body} must be a body according to
+(report section~\extref{report:lambda}{Procedures}), and \hyper{body} is as described in
 report section~\extref{report:bodiessection}{Bodies and sequences}.
 
 \semantics A {\cf case-lambda} expression evaluates to a procedure.

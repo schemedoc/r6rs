@@ -21,10 +21,10 @@ list, and {\cf vector-sort} returns a vector.  The results may be {\cf
   eq?} to the argument when the argument is already sorted, and the
 result of {\cf list-sort} may share structure with a tail of the
 original list.  The sorting algorithm performs $O(n \lg n)$ calls to
-the predicate where $n$ is the length of \var{list} or \var{vector},
-and all arguments passed to the predicate are elements of the list or
+\var{proc} where $n$ is the length of \var{list} or \var{vector},
+and all arguments passed to \var{proc} are elements of the list or
 vector being sorted, but the pairing of arguments and the sequencing
-of calls to the predicate are not specified.
+of calls to \var{proc} are not specified.
 
 \begin{scheme}
 (list-sort < '(3 5 2 1)) \ev (1 2 3 5)
@@ -45,10 +45,10 @@ argument is strictly less than its second, and \schfalse{} otherwise.
 
 The {\cf vector-sort!} procedure destructively sorts \var{vector} in
 ascending order according to \var{proc}.  The sorting algorithm
-performs $O(n^2)$ calls to the predicate where $n$ is the length of
-\var{vector}, and all arguments passed to the predicate are elements
+performs $O(n^2)$ calls to \var{proc} where $n$ is the length of
+\var{vector}, and all arguments passed to \var{proc} are elements
 of the vector being sorted, but the pairing of arguments and the
-sequencing of calls to the predicate are not specified.  The sorting
+sequencing of calls to \var{proc} are not specified.  The sorting
 algorithm may be unstable.  The procedure returns \unspecifiedreturn.
 
 \begin{scheme}
