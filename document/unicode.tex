@@ -31,6 +31,9 @@ its upper case form, then {\cf char-upcase} returns that character.
 If the argument is a lower case
 or upper case character, and there is a single character that is
 its title case form, then {\cf char-titlecase} returns that character.
+If the argument is not a title case character and there is no single
+character that is its title case form, then {\cf char-titlecase}
+returns the upper case form of the argument.
 Finally, if the character has a case-folded character,
 then {\cf char-foldcase} returns that character.
 Otherwise the character returned is the same
@@ -62,6 +65,11 @@ same as {\cf char-downcase} composed with {\cf char-upcase}.
 (char-titlecase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\Sigma$
 (char-foldcase \sharpsign\backwhack{}$\varsigma$) \ev \sharpsign\backwhack{}$\sigma$
 \end{scheme}
+
+\begin{note}
+  Note that {\cf char-titlecase} does not always return a title case
+  character.
+\end{note}
 
 \begin{note}
   These procedures are consistent with
@@ -168,12 +176,12 @@ argument, these procedures may return the argument instead of a newly
 allocated string.
 
 The {\cf string-upcase} procedure converts a string to upper case;
-{\cf string-downcase} converts a string to lowercase. The {\cf
+{\cf string-downcase} converts a string to lower case. The {\cf
   string-foldcase} procedure converts the string to its case-folded
 counterpart, using the full case-folding mapping, but without the
 special mappings for Turkic languages.  The {\cf string-titlecase}
-procedure converts the first cased character of each word to title
-case, and downcases all other cased characters.
+procedure converts the first cased character of each word via {\cf
+  char-titlecase}, and downcases all other cased characters.
 
 \begin{scheme}
 (string-upcase "Hi") \ev "HI"
