@@ -69,10 +69,19 @@ For two records \vari{obj} and \varii{obj}, the return value of {\cf
 \begin{itemize}
 \item If \vari{obj} and \varii{obj} have different record types (i.e.,
   their record-type descriptors are not {\cf eqv?}), {\cf eqv?}
-  returns false.
-\item If \vari{obj} and \varii{obj} are both immutable records, then
-  {\cf eqv?} may return \schfalse.  
+  returns \schfalse.
+\item If \vari{obj} and \varii{obj} are both mutable records of the
+  same record type, and are the results of two separate calls to
+  record-type constructors, then {\cf eqv?} returns \schfalse.
+\item If \vari{obj} and \varii{obj} are both mutable records of the
+  same record type, and are the results of a single call to a
+  record-type constructor, then {\cf eqv?} returns \schtrue.
 \end{itemize}
+
+Moreover, if {\cf (eqv? \vari{obj} \varii{obj})} returns \schtrue,
+then \vari{obj} and \varii{obj} behave the same when passed as
+arguments to any procedure that can be written as a finite composition
+of Scheme's standard procedures.
 
 \begin{rationale}
   For immutable records, either \vari{obj} and \varii{obj} may have
@@ -81,11 +90,6 @@ For two records \vari{obj} and \varii{obj}, the return value of {\cf
   locations, serial numbers, or any other notion of object identity.
 \end{rationale}
 
-Moreover, if \vari{obj} and \varii{obj} are both immutable records,
-and {\cf (eqv? \vari{obj} \varii{obj})} returns \schtrue, then
-\vari{obj} and \varii{obj} behave the same when passed as arguments to
-any procedure that can be written as a finite composition of Scheme's
-standard procedures.
 
 \section{Procedural layer}
 \label{recordsproceduralsection}
