@@ -71,28 +71,39 @@ corresponding argument must be a file-options object.
 Each \hyper{file-options name} must be an \meta{identifier}.
 The {\cf file-options} syntax returns a file-options object that 
 encapsulates the
-specified options. The following options, which affect output
-only, have standard meanings:
+specified options.
+
+When supplied to an operation that opens a file for output, the
+file-options object returned by {\cf (file-options)} specifies that the
+file is created if it does not exist and an exception with condition type
+{\cf\&i/o-file-already-exists} is raised if it does exist.
+The following standard options can be included to modify the default behavior.
 
 \begin{itemize}   
-\item {\cf no-create} do not create file if it does not already exist
-  (if this option is absent, the file is created)
-\item {\cf no-fail} do not fail if this option is set and {\cf
-    no-create} is absent (if the {\cf no-create} and {\cf no-fail} are
-  both absent the file already exists, then an exception with condition type
-  {\cf\&i/o-file-already-exists} is raised.)
+\item {\cf no-create}
+      If the file does not already exist, it is not created;
+      instead, an exception with condition type {\cf\&i/o-file-exists-not}
+      is raised.
+      If the file already exists, the exception with condition type
+      {\cf\&i/o-file-already-exists} is not raised
+      and the file is truncated to zero length.
+\item {\cf no-fail}
+      If the file already exists, the exception with condition type
+      {\cf\&i/o-file-already-exists} is not raised,
+      even if {\cf no-create} is not included,
+      and the file is truncated to zero length.
 \item {\cf no-truncate}
-  file is not truncated to zero length (if absent, the file is truncated)
+      If the file already exists and the exception with condition type
+      {\cf\&i/o-file-already-exists} has been inhibited by inclusion of
+      {\cf no-create} or {\cf no-fail}, the file is not truncated, but
+      the port's current position is still set to the beginning of the
+      file.
 \end{itemize}
 
+These options have no affect when a file is opened only for input.
 \meta{Identifiers}s
 other than those listed above may be used as \hyper{file-options name}s;
 they have implementation-specific meaning, if any.
-
-When supplied to an operation that opens a file for output, the
-file-options object returned by {\cf (file-options)} specifies that
-the file is created if it does not exist, and is truncated and
-overwritten if it exists.
 
 \begin{rationale}
   The flags specified above represent only a common subset of
