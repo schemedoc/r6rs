@@ -4,6 +4,16 @@
 \usepackage{mathrsfs}
 \usepackage{stmaryrd}
 
+\newcounter{subfig}
+\newcommand{\subfigurestart}{\renewcommand{\thefigure}{A.\arabic{figure}\alph{subfig}}\setcounter{subfig}{1}}
+
+
+% needed for the second thru the nth figure
+\newcommand{\subfigureadjust}{\addtocounter{figure}{-1}\addtocounter{subfig}{1}}
+
+\newcommand{\subfigurestop}{\renewcommand{\thefigure}{A.\arabic{figure}}}
+
+
 \newcommand{\semanticsindex}[2]{\index{#1@{\texttt{#1}, formal semantics rule \rulename{#2}}}}
 
 \newcommand{\pltreducks}{PLT Redex}
@@ -45,11 +55,12 @@
 \imgdef\calP{\ensuremath{\mathcal{P}}}
 \imgdef\calS{\ensuremath{\mathcal{S}}}
 \imgdef\calR{\ensuremath{\mathcal{R}}}
+\imgdef\calRv{\ensuremath{\mathcal{R}_v}}
 \imgdef\calA{\ensuremath{\mathcal{A}}}
 \imgdef\scrO{\ensuremath{\mathscr{O}}}
 
-\newcommand{\semfalse}{\textsf{\#f}}
-\newcommand{\semtrue}{\textsf{\#t}}
+\newcommand{\semfalse}{\texttt{\#f}}
+\newcommand{\semtrue}{\texttt{\#t}}
 
 \newcommand{\aline}{\noindent\hrulefill\par}
 
@@ -89,11 +100,17 @@
 \multicolumn{4}{l}{#2} \\
 \multicolumn{4}{l}{~ ~ ~ #4} \extraspterm}
 
+\newcommand{\threelinescruleA}[5]{
+\multicolumn{3}{l}{{#1} {#5}} & {#4}\\ 
+\multicolumn{4}{l}{#2} \\
+\multicolumn{4}{l}{#3} \extraspterm}
+
 \newcommand{\threelinescruleB}[6]{
 \multicolumn{3}{l}{{#1} {#6}} & {#4}\\ 
 \multicolumn{4}{l}{#2} \\
 \multicolumn{4}{l}{#3} \\
 \multicolumn{4}{l}{~ ~ ~ #5} \extraspterm}
+
 
 \newcommand{\fourlinescruleB}[7]{
 \multicolumn{3}{l}{{#1} {#7}} & {#5}\\ 

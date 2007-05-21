@@ -1,6 +1,6 @@
 
 (module r6rs mzscheme
-  (require (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
+  (require (planet "reduction-semantics.ss" ("robby" "redex.plt" 3 10))
            (lib "plt-match.ss"))
   
   (provide lang 
@@ -19,7 +19,6 @@
            Exceptions
            Multiple--values--and--call-with-values
            Quote
-           Top--level--and--Variables
            Letrec
            Underspecification
            observable)
@@ -261,6 +260,13 @@
     (reduction-relation
      lang
   
+     (--> (in-hole P_1 (list v_1 v_2 ...))
+          (in-hole P_1 (cons v_1 (list v_2 ...)))
+          "6listc")
+     (--> (in-hole P_1 (list))
+          (in-hole P_1 null)
+          "6listn")
+     
      (--> (store (sf_1 ...) (in-hole E_1 (cons v_1 v_2)))
           (store (sf_1 ... (mp (cons v_1 v_2))) (in-hole E_1 mp))
           "6cons"
@@ -271,13 +277,6 @@
           "6consi"
           (fresh ip))
      
-     (--> (in-hole P_1 (list v_1 v_2 ...))
-          (in-hole P_1 (cons v_1 (list v_2 ...)))
-          "6listc")
-     (--> (in-hole P_1 (list))
-          (in-hole P_1 null)
-          "6listn")
-     
      ;; car
      (--> (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (car pp_i)))
           (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...) (in-hole E_1 v_1))
@@ -287,6 +286,14 @@
      (--> (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (cdr pp_i)))
           (store (sf_1 ... (pp_i (cons v_1 v_2)) sf_2 ...) (in-hole E_1 v_2))
           "6cdr")
+     
+     (--> (store (sf_1 ... (mp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-car! mp_1 v_3)))
+          (store (sf_1 ... (mp_1 (cons v_3 v_2)) sf_2 ...) (in-hole E_1 unspecified))
+          "6setcar")
+
+     (--> (store (sf_1 ... (mp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-cdr! mp_1 v_3)))
+          (store (sf_1 ... (mp_1 (cons v_1 v_3)) sf_2 ...) (in-hole E_1 unspecified))
+          "6setcdr")
 
      ;; null?
      (--> (in-hole P_1 (null? null))
@@ -314,14 +321,6 @@
           (in-hole P_1 (raise (make-cond "can't take cdr of non-pair")))
           "6cdre"
           (side-condition (not (pp? (term v_i)))))
-     
-     (--> (store (sf_1 ... (mp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-car! mp_1 v_3)))
-          (store (sf_1 ... (mp_1 (cons v_3 v_2)) sf_2 ...) (in-hole E_1 unspecified))
-          "6setcar")
-
-     (--> (store (sf_1 ... (mp_1 (cons v_1 v_2)) sf_2 ...) (in-hole E_1 (set-cdr! mp_1 v_3)))
-          (store (sf_1 ... (mp_1 (cons v_1 v_3)) sf_2 ...) (in-hole E_1 unspecified))
-          "6setcdr")
      
      (--> (in-hole P_1 (set-car! v_1 v_2))
           (in-hole P_1 (raise (make-cond "can't set-car! on a non-pair or an immutable pair")))
@@ -369,6 +368,30 @@
           (in-hole P_1 (begin e_1 e_2 ...))
           "6app0")
      
+     (--> (in-hole P_1 ((lambda (x_1 x_2 ... dot x_r) e_1 e_2 ...) v_1 v_2 ... v_3 ...))
+          (in-hole P_1 ((lambda (x_1 x_2 ... x_r) e_1 e_2 ...) v_1 v_2 ... (list v_3 ...)))
+          "6μapp"
+          (side-condition
+           (= (length (term (x_2 ...))) (length (term (v_2 ...))))))
+     
+     (--> (in-hole P_1 ((lambda x_1 e_1 e_2 ...) v_1 ...))
+          (in-hole P_1 ((lambda (x_1) e_1 e_2 ...) (list v_1 ...)))
+          "6μapp1")
+     
+     ;; variable lookup
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 x_1))
+          (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 v_1))
+          "6var")
+     
+     ;; set!
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 (set! x_1 v_2)))
+          (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
+          "6set")
+     
+     (--> (in-hole P_1 (procedure? proc)) (in-hole P_1 #t) "6proct")
+     (--> (in-hole P_1 (procedure? nonproc)) (in-hole P_1 #f) "6procf")
+     
+     ;; mu-lambda too few arguments case
      (--> (in-hole P_1 ((lambda (x_1 ...) e e ...) v_1 ...))
           (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6arity"
@@ -376,26 +399,12 @@
            (not (= (length (term (x_1 ...)))
                    (length (term (v_1 ...)))))))
      
-     (--> (in-hole P_1 ((lambda (x_1 x_2 ... dot x_r) e_1 e_2 ...) v_1 v_2 ... v_3 ...))
-          (in-hole P_1 ((lambda (x_1 x_2 ... x_r) e_1 e_2 ...) v_1 v_2 ... (list v_3 ...)))
-          "6μapp"
-          (side-condition
-           (= (length (term (x_2 ...))) (length (term (v_2 ...))))))
-     
-     ;; mu-lambda too few arguments case
      (--> (in-hole P_1 ((lambda (x_1 x_2 ... dot x) e e ...) v_1 ...))
           (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6μarity"
           (side-condition
            (< (length (term (v_1 ...)))
               (length (term (x_1 x_2 ...))))))
-     
-     (--> (in-hole P_1 ((lambda x_1 e_1 e_2 ...) v_1 ...))
-          (in-hole P_1 ((lambda (x_1) e_1 e_2 ...) (list v_1 ...)))
-          "6μapp1")
-     
-     (--> (in-hole P_1 (procedure? proc)) (in-hole P_1 #t) "6proct")
-     (--> (in-hole P_1 (procedure? nonproc)) (in-hole P_1 #f) "6procf")
      
      (--> (in-hole P_1 (nonproc v ...))
           (in-hole P_1 (raise (make-cond "can't call non-procedure")))
@@ -442,67 +451,66 @@
   
   ;; circular? : pp val store -> boolean
   ;; returns #t if pp is reachable via val in the store
-  (metafunction-type circular? (-> pp val (sf ...) boolean))
+  (metafunction-type circular? (pp val (sf ...)))
   (define-metafunction circular?
     lang
-    [(pp_1 pp_2 (sf_1 ... (pp_2 (cons v_1 pp_1)) sf_2 ...))
-     #t]
     [(pp_1 pp_2 (sf_1 ... (pp_2 (cons v_1 v_2)) sf_2 ...))
-     (circular? (pp_1 v_2 (sf_1 ... (pp_2 (cons v_1 v_2)) sf_2 ...)))]
+     #t
+     (side-condition (equal? (term pp_1) (term v_2)))]
+    [(pp_1 pp_2 (sf_1 ... (pp_2 (cons v_1 v_2)) sf_2 ...))
+     (circular? (pp_1 v_2 (sf_1 ... (pp_2 (cons v_1 v_2)) sf_2 ...)))
+     (side-condition (not (equal? (term pp_1) (term v_2))))]
     [(pp_1 v_1 (sf_1 ...))
      #f]) ;; otherwise
   
   ;; Var-set!d? : e -> boolean
-  (metafunction-type Var-set!d? (-> x e boolean))
+  (metafunction-type Var-set!d? (x e))
   (define-metafunction Var-set!d?
     lang
-    [(x_1 (set! x_1 e)) #t]
-    [(x_1 (set! x_2 e_1))
-     (Var-set!d? (x_1 e_1))]
-    
+    [(x_1 (set! x_2 e_1)) 
+     #t
+     (side-condition (equal? (term x_1) (term x_2)))]
+    [(x_1 (set! x_2 e_1)) 
+     (Var-set!d? (x_1 e_1))
+     (side-condition (not (equal? (term x_1) (term x_2))))]
     [(x_1 (begin e_1 e_2 e_3 ...))
      ,(or (term (Var-set!d? (x_1 e_1)))
           (term (Var-set!d? (x_1 (begin e_2 e_3 ...)))))]
     [(x_1 (begin e_1))
      (Var-set!d? (x_1 e_1))]
-    
     [(x_1 (e_1 e_2 ...)) 
      (Var-set!d? (x_1 (begin e_1 e_2 ...)))]
     [(x_1 (if e_1 e_2 e_3))
      ,(or (term (Var-set!d? (x_1 e_1)))
           (term (Var-set!d? (x_1 e_2)))
           (term (Var-set!d? (x_1 e_3))))]
-    
     [(x_1 (begin0 e_1 e_2 ...))
      (Var-set!d? (x_1 (begin e_1 e_2 ...)))]
     
-    [(x_1 (lambda (x ... x_1 x ...) e e ...)) #f]
-    [(x_1 (lambda (x ... x_1 x ... dot x) e e ...)) #f]
-    [(x_1 (lambda (x ... dot x_1) e e ...)) #f]
-    [(x_1 (lambda x_1 e e ...)) #f]
-    [(x_1 (lambda f e_1 e_2 ...))
-     (Var-set!d? (x_1 (begin e_1 e_2 ...)))]
-    
-    [(x_1 (letrec ([x e] ... [x_1 e] [x e] ...) e e ...)) #f]
+    [(x_1 (lambda (x_2 ...) e_1 e_2 ...)) 
+     (Var-set!d? (x_1 (begin e_1 e_2 ...)))
+     (side-condition (not (memq (term x_1) (term (x_2 ...)))))]
+    [(x_1 (lambda (x_2 ... dot x_3) e_1 e_2 ...)) 
+     (Var-set!d? (x_1 (begin e_1 e_2 ...)))
+     (side-condition (not (memq (term x_1) (term (x_2 ... x_3)))))]
+    [(x_1 (lambda x_2 e_1 e_2 ...)) 
+     (Var-set!d? (x_1 (begin e_1 e_2 ...)))
+     (side-condition (not (equal? (term x_1) (term x_2))))]
     [(x_1 (letrec ([x_2 e_1] ...) e_2 e_3 ...))
-     (Var-set!d? (x_1 (begin e_1 ... e_2 e_3 ...)))]
-    [(x_1 (letrec* ([x_2 e_2] ...) e_3 e_4 ...))
-     (Var-set!d? (x_1 (letrec ([x_2 e_2] ...) e_3 e_4 ...)))]
-    
-    [(x_1 (l! x_1 e)) #t]
-    [(x_1 (l! x_2 e_1)) 
-     (Var-set!d? (x_1 e_1))]
-    [(x_1 (reinit x_1)) #t]
-    [(x_1 (reinit x_2)) #f]
-    [(x_1 x_2) #f]
-    [(x_1 v) #f]
+     (Var-set!d? (x_1 (begin e_1 ... e_2 e_3 ...)))
+     (side-condition (not (memq (term x_1) (term (x_2 ...)))))]
+    [(x_1 (letrec* ([x_2 e_1] ...) e_2 e_3 ...))
+     (Var-set!d? (x_1 (begin e_1 ... e_2 e_3 ...)))
+     (side-condition (not (memq (term x_1) (term (x_2 ...)))))]
+    [(x_1 (l! x_2 e_1))
+     (Var-set!d? (x_1 (set! x_2 e_1)))]
+    [(x_1 (reinit x_2 e_1))
+     (Var-set!d? (x_1 (set! x_2 e_1)))]
     [(x_1 (dw x_2 e_1 e_2 e_3))
      ,(or (term (Var-set!d? (x_1 e_1)))
           (term (Var-set!d? (x_1 e_2)))
           (term (Var-set!d? (x_1 e_3))))]
-    [(x_1 hole) #f]
-    [(x_1 (hole single)) #f]
-    [(x_1 (hole multi)) #f])
+    [(x_1 any_1) #f])
      
      
   (define Call-cc--and--dynamic-wind
@@ -583,12 +591,6 @@
           (in-hole PG_1 (handlers proc_1 (proc_2)))
           "6xwh1")
      
-     (--> (in-hole PG_1 (with-exception-handler v_1 v_2))
-          (in-hole PG_1 (raise (make-cond "with-exception-handler expects procs")))
-          "6xwh1e"
-          (side-condition (or (not (proc? (term v_1)))
-                              (not (proc? (term v_2))))))
-     
      (--> (in-hole P_1 (handlers proc_1 ... (in-hole G_1 (with-exception-handler proc_2 proc_3))))
           (in-hole P_1 (handlers proc_1 ... (in-hole G_1 (handlers proc_1 ... proc_2 (proc_3)))))
           "6xwhn")
@@ -625,7 +627,13 @@
      
      (--> (in-hole P_1 (handlers proc_1 ... (values v_1 ...)))
           (in-hole P_1 (values v_1 ...))
-          "6xdone")))
+          "6xdone")
+     
+     (--> (in-hole PG_1 (with-exception-handler v_1 v_2))
+          (in-hole PG_1 (raise (make-cond "with-exception-handler expects procs")))
+          "6weherr"
+          (side-condition (or (not (proc? (term v_1)))
+                              (not (proc? (term v_2))))))))
 
   (define Multiple--values--and--call-with-values
     (reduction-relation
@@ -653,7 +661,33 @@
   (define Letrec
     (reduction-relation
      lang
-     (--> (store (sf_1 ...) (in-hole E_1 (letrec ([x_1 e_1] ...) e_2 e_3 ...)))
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (l! x_1 v_2)))
+          (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
+          "6initdt")
+     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 (l! x_1 v_2)))
+          (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
+          "6initv")
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (set! x_1 v_1)))
+          (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 unspecified))
+          "6setdt")
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (set! x_1 v_1)))
+          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (make-cond "letrec variable touched"))))
+          "6setdte")
+     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 x_1))
+          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (make-cond "letrec variable touched"))))
+          "6dt")
+     
+     (--> (store (sf_1 ... (x_1 #f) sf_2 ...) (in-hole E_1 (reinit x_1)))
+          (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 'ignore))
+          "6init")
+    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (reinit x_1)))
+         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 'ignore))
+         "6reinit")
+    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (reinit x_1)))
+         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (raise (make-cond "reinvoked continuation of letrec init"))))
+         "6reinite")
+    
+    (--> (store (sf_1 ...) (in-hole E_1 (letrec ([x_1 e_1] ...) e_2 e_3 ...)))
           (store (sf_1 ... (lx bh) ... (ri #f) ...)
             (in-hole E_1 
                      ((lambda (x_1 ...) 
@@ -689,31 +723,7 @@
                   ,(map (λ (x) (string->symbol (format "lx-~a" x))) (term (x_1 ...)))))
           (fresh ((ri ...) 
                   (x_1 ...)
-                  ,(map (λ (x) (string->symbol (format "ri-~a" x))) (term (x_1 ...))))))
-     (--> (store (sf_1 ... (x_1 #f) sf_2 ...) (in-hole E_1 (reinit x_1)))
-          (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 'ignore))
-          "6init")
-    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (reinit x_1)))
-         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 'ignore))
-         "6reinit")
-    (--> (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (reinit x_1)))
-         (store (sf_1 ... (x_1 #t) sf_2 ...) (in-hole E_1 (raise (make-cond "reinvoked continuation of letrec init"))))
-         "6reinite")
-     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (l! x_1 v_2)))
-          (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
-          "6initdt")
-     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 (l! x_1 v_2)))
-          (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
-          "6initv")
-     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (set! x_1 v_1)))
-          (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 unspecified))
-          "6setdt")
-     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (set! x_1 v_1)))
-          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (make-cond "letrec variable touched"))))
-          "6setdte")
-     (--> (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 x_1))
-          (store (sf_1 ... (x_1 bh) sf_2 ...) (in-hole E_1 (raise (make-cond "letrec variable touched"))))
-          "6dt")))
+                  ,(map (λ (x) (string->symbol (format "ri-~a" x))) (term (x_1 ...))))))))
   
   (define Underspecification
     (reduction-relation
@@ -793,20 +803,6 @@
     [sym_1 'sym_1]
     [sqv_1 sqv_1])
   
-  (define Top--level--and--Variables
-    (reduction-relation
-     lang
-     
-     ;; variable lookup
-     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 x_1))
-          (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 v_1))
-          "6var")
-     
-     ;; set!
-     (--> (store (sf_1 ... (x_1 v_1) sf_2 ...) (in-hole E_1 (set! x_1 v_2)))
-          (store (sf_1 ... (x_1 v_2) sf_2 ...) (in-hole E_1 unspecified))
-          "6set")))
-  
   (define reductions
     (union-reduction-relations
      Arithmetic
@@ -819,7 +815,6 @@
      Exceptions
      Multiple--values--and--call-with-values
      Quote
-     Top--level--and--Variables
      Letrec
      Underspecification))
   

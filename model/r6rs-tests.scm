@@ -2,7 +2,7 @@
   (require (lib "match.ss")
            (lib "list.ss")
            (lib "etc.ss")
-           (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
+           (planet "reduction-semantics.ss" ("robby" "redex.plt" 3 10))
            "test.scm"
            "r6rs.scm")
   
@@ -1946,7 +1946,15 @@ of digits with deconv-base
                       #t))
                   (list '(uncaught-exception (make-cond "reinvoked continuation of letrec init"))
                         '(uncaught-exception (make-cond "can't take car of non-pair"))))
-     ))
+     
+     (make-r6test '(store ()
+                     (letrec* ([x (values 1 2)])
+                       x))
+                  (list '(unknown "context expected one value, received 2")))
+     (make-r6test '(store ()
+                     (letrec ([x (values 1 2)])
+                       x))
+                  (list '(unknown "context expected one value, received 2")))))
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;

@@ -1,7 +1,7 @@
 (module show-examples mzscheme
   
-  (require (planet "gui.ss" ("robby" "redex.plt" 3))
-           (planet "reduction-semantics.ss" ("robby" "redex.plt" 3))
+  (require (planet "gui.ss" ("robby" "redex.plt" 3 10))
+           (planet "reduction-semantics.ss" ("robby" "redex.plt" 3 10))
            "r6rs.scm")
   (provide trace trace-expression
            step step-expression)
@@ -64,20 +64,4 @@
           (set-car! x 3)
           (car y))
         c c))
-     (cons 1 2)))
-  
-  
-  (step '(store ()
-           ((lambda (o)
-              (with-exception-handler
-               (lambda (x) (set! o (* 3 o)))
-               (lambda ()
-                 (with-exception-handler
-                  (lambda (x) (set! o (* 2 o)) x)
-                  (lambda () 
-                    (raise-continuable 4)
-                    (raise-continuable 4)))))
-              o)
-            1)))
-  
-  )
+     (cons 1 2))))

@@ -34,10 +34,14 @@
   
   (define otherwise-metafunctions '(pRe poSt Trim reachable))
   
-  (define combine-metafunction-names '((pRe poSt Trim) (Qtoc Qtoic)))
+  (define combine-metafunction-names '((Trim pRe poSt) (Qtoc Qtoic)))
   
   (define metafunctions-to-skip '(r6rs-subst-one r6rs-subst-many))
 
+  (define relation-as-metafunction '(Var-set!d? circular?))
+  
+  (define two-line-metafunctions '(observable))
+  
   (define (side-condition-below? x)
     (member x '("6appN!" "6refu" "6setu" "6xref" "6xset" 
                          "6letrec" "6letrec*"
@@ -229,30 +233,88 @@
          body)]))
   
   (define (print-metafunction name clauses)
-    (print-something 
-     (cond
-       [(memq name flatten-args-metafunctions)
-        (lambda (x last-one?) 
-          (match x
-            [`(,left ,right) 
-             (p-flatten-case name 
-                             left
-                             right 
-                             (and last-one? (memq name otherwise-metafunctions)))]
-            [else (error 'print-metafunction "mismatch ~s" x)]))]
-       [else
-        (lambda (x last-one?) 
-          (match x
-            [`(,left ,right) 
-             (p-case name left right 
-                     (and last-one? (memq name otherwise-metafunctions)))]
-            [else (error 'print-metafunction "mismatch ~s" x)]))])
-                     name
-                     clauses
-                     (string-append
-                      "\\begin{displaymath}\n\\begin{array}{lcl}\n"
-                      (metafunction-type-line name))
-                     "\\end{array}\n\\end{displaymath}"))
+    (let ([flatten-lhs? (memq name flatten-args-metafunctions)])
+      (cond
+        [(memq name two-line-metafunctions)
+         (print-something
+          (lambda (x last-one?) 
+            (match x
+              [`(,left ,right) 
+               (p-twoline-case name 
+                               left
+                               right 
+                               (and last-one? (memq name otherwise-metafunctions)))]
+              [else (error 'print-metafunction "mismatch ~s" x)]))
+          name
+          clauses
+          (string-append
+           "\\begin{displaymath}\n\\begin{array}{l@{}l}\n"
+           (metafunction-type-line name 2))
+          "\\end{array}\n\\end{displaymath}")]
+        [(memq name relation-as-metafunction)
+         (print-something
+          (lambda (x last-one?) 
+            (match x
+              [`(,left #f) 
+               ;; a relation skips those!
+               (list)]
+              
+              [`(,left #t)
+               (p-rel-case name 
+                           left
+                           #f
+                           #f
+                           flatten-lhs?)]
+              [`(,left ,right) 
+               (p-rel-case name 
+                           left
+                           right 
+                           #f
+                           flatten-lhs?)]
+              [`(,left #t (side-condition ,sc))
+               (p-rel-case name 
+                           left
+                           #f
+                           sc
+                           flatten-lhs?)]
+              [`(,left ,right (side-condition ,sc))
+               (p-rel-case name 
+                           left
+                           right
+                           sc
+                           flatten-lhs?)]
+              [else (error 'print-metafunction "mismatch ~s" x)]))
+          name
+          clauses
+          (string-append
+           "\\begin{displaymath}\n\\begin{array}{lc@{~}l}\n"
+           (metafunction-type-line name 3))
+          "\\end{array}\n\\end{displaymath}")]
+        [else
+         (print-something 
+          (cond
+            [flatten-lhs?
+             (lambda (x last-one?) 
+               (match x
+                 [`(,left ,right) 
+                  (p-flatten-case name 
+                                  left
+                                  right 
+                                  (and last-one? (memq name otherwise-metafunctions)))]
+                 [else (error 'print-metafunction "mismatch ~s" x)]))]
+            [else
+             (lambda (x last-one?) 
+               (match x
+                 [`(,left ,right) 
+                  (p-case name left right 
+                          (and last-one? (memq name otherwise-metafunctions)))]
+                 [else (error 'print-metafunction "mismatch ~s" x)]))])
+          name
+          clauses
+          (string-append
+           "\\begin{displaymath}\n\\begin{array}{lcl}\n"
+           (metafunction-type-line name 3))
+          "\\end{array}\n\\end{displaymath}")])))
   
   (define (print-metafunctions names/clauses)
     (let ([names/spread-out
@@ -272,7 +334,7 @@
                            [(eq? name/clause 'blank)
                             (list "\\\\")]
                            [(symbol? name/clause)
-                            (list (metafunction-type-line name/clause))]
+                            (list (metafunction-type-line name/clause 3))]
                            [else
                             (let ([name (list-ref name/clause 0)]
                                   [clause (list-ref name/clause 1)]
@@ -292,21 +354,25 @@
                        "\\begin{displaymath}\n\\begin{array}{lcl}"
                        "\\end{array}\n\\end{displaymath}")))
   
-  (define (metafunction-type-line name)
+  (define (metafunction-type-line name cols)
     (let ([type-pr (assoc name metafunction-types)])
       (unless type-pr 
         (error 'metafunction-type "cannot find type for ~s" name))
-      (let* ([type (cadr type-pr)]
-             [_ (unless (eq? '-> (car type))
-                  (error "no arrow at front of type for ~a: ~s"
-                         name
-                         type))]
-             [doms (cdr (all-but-last type))]
-             [rng (car (last-pair type))])
-        (format "\\multicolumn{3}{l}{~a : ~a \\rightarrow ~a}\\\\" 
-                (translate-mf-name name)
-                (apply string-append (add-between " \\times " (map format-nonterm doms)))
-                (format-nonterm rng)))))
+      (let ([type (cadr type-pr)])
+        (cond
+          [(eq? (car type) '->)
+           (let* ([doms (cdr (all-but-last type))]
+                  [rng (car (last-pair type))])
+             (format "\\multicolumn{~a}{l}{~a : ~a \\rightarrow ~a}\\\\" 
+                     cols
+                     (translate-mf-name name)
+                     (apply string-append (add-between " \\times " (map format-nonterm doms)))
+                     (format-nonterm rng)))]
+          [else
+           (format "\\multicolumn{~a}{l}{~a \\in 2^{~a}}\\\\" 
+                   cols
+                   (translate-mf-name name)
+                   (apply string-append (add-between " \\times " (map format-nonterm type))))]))))
   
   (define (add-between x lst)
     (cond
@@ -374,6 +440,78 @@
                  "~ ~ ~ ~ ~ ~ ~ \\mbox{\\textrm{(otherwise)}}"
                  ""))])))))
   
+  (define (p-rel-case name lhs rhs side-condition flatten-lhs?)
+    (let*-values ([(l) (map (λ (x) (let-values ([(a b) (pattern->tex x)]) 
+                                     (unless (null? b)
+                                       (error 'p-rel-case "found side conditions, but don't support them here"))
+                                     a))
+                            (if flatten-lhs?
+                                lhs
+                                (list lhs)))]
+                  [(r r-cl) (pattern->tex rhs)])
+      (unless (null? r-cl)
+        (error 'p-rel-case "don't use side-conditions in patterns for metafunction-as-relations"))
+      (let ([side-cond-tex
+             (and side-condition 
+                  (apply string-append
+                         (add-between
+                          "\\textrm{~and~}"
+                          (format-side-cond side-condition))))]
+            [l-tex (apply string-append (add-between ", " (map (λ (x) (inline-tex x #f)) l)))])
+        (list 
+         (cond
+           [(and side-cond-tex rhs)
+            (format
+             "~a \\llbracket ~a \\rrbracket & \\textrm{if} &\n~a \\textrm{~~and~~} ~a\\\\\n"
+             (translate-mf-name name)
+             l-tex
+             (inline-tex r #f)
+             side-cond-tex)]
+           [side-cond-tex
+            (format
+             "~a \\llbracket ~a \\rrbracket & \\textrm{if} &\n~a\\\\\n"
+             (translate-mf-name name)
+             l-tex
+             side-cond-tex)]
+           [rhs
+            (format
+             "~a \\llbracket ~a \\rrbracket & \\textrm{if} &\n~a\\\\\n"
+             (translate-mf-name name)
+             l-tex
+             (inline-tex r #f))]
+           [else
+            (format
+             "~a \\llbracket ~a \\rrbracket \\\\\n"
+             (translate-mf-name name)
+             l-tex)])))))
+  
+  (define (p-twoline-case name lhs rhs show-otherwise?)
+    (let*-values ([(l l-cl) (pattern->tex lhs)]
+                  [(r r-cl) (pattern->tex rhs)])
+      (let* ([cl (append l-cl r-cl)]
+             [side-conditions
+              (if (null? cl)
+                  #f
+                  (format "(~a)" (string-join cl ", ")))])
+        (list 
+         (cond
+           [side-conditions
+            (format
+             "~a \\llbracket & ~a \\rrbracket = \\\\ \n& ~a \\\\\n\\multicolumn{2}{l}{\\hbox to .2in{} ~a}\\extrasptermn"
+             (translate-mf-name name)
+             (inline-tex l #f)
+             (inline-tex r #f)
+             side-conditions)]
+           [else
+            (format
+             "~a \\llbracket & ~a \\rrbracket = \\\\ \n& ~a ~a\\extraspterm\n"
+             (translate-mf-name name)
+             (inline-tex l #f)
+             (inline-tex r #f)
+             (if show-otherwise?
+                 "~ ~ ~ ~ ~ ~ ~ \\mbox{\\textrm{(otherwise)}}"
+                 ""))])))))
+  
   (define TEX-NEWLINE "\\\\\n")
   ;; ============================================================
   ;; LANGUAGE NONTERMINAL PRINTING
@@ -411,6 +549,7 @@
                   [(es) 65]
                   [(a*) 90]
                   [(S) 75]
+                  [(U) 90]
                   [else 70])])
            (printf "~a & ::=~~~~& " (format-nonterm nonterm))
            (let loop ([prods (map prod->string (cdr p))]
@@ -471,7 +610,7 @@
                     (format "(~a)" (string-join cl ", ")))])
           (list
            (cond
-             [(= 2 rbox-height)
+             [(and side-conditions (= 2 rbox-height))
               (let ([lines (regexp-split #rx"\n" r)])
                 (format
                  "\\threelinescruleB\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n\n"
@@ -483,7 +622,20 @@
                  (if extra-inlined-arrow?
                      ""
                      (inline-tex arrow-tex #f))))]
+             [(= 2 rbox-height)
+              (let ([lines (regexp-split #rx"\n" r)])
+                (format
+                 "\\threelinescruleA\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n\n"
+                 (inline-tex l extra-inlined-arrow?)
+                 (list-ref lines 0)
+                 (list-ref lines 1)
+                 (inline-tex name #f)
+                 (if extra-inlined-arrow?
+                     ""
+                     (inline-tex arrow-tex #f))))]
              [(= 3 rbox-height)
+              (unless side-conditions
+                (error 'tex-translate "three line rules without side-conditions aren't supported"))
               (let ([lines (regexp-split #rx"\n" r)])
                 (format
                  "\\fourlinescruleB\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n  {~a}\n\n"
@@ -635,7 +787,7 @@
 	 ((number? p)
 	  (display p o))
 	 ((null? p)
-	  (display "()" o))
+	  (display "\\texttt{()}" o))
 	 ((string? p)
 	  (display "\\textrm{``" o)
 	  (display (quote-tex-specials p) o)
@@ -747,7 +899,7 @@
     (case op
       [(language
         name subst reduction reduction/context red term apply-values store dot consi throw push pop trim dw mark condition make-cond handlers
-        define beginF throw lambda set! if begin0 quote begin letrec letrec* reinit l!)
+        define beginF throw lambda set! if begin0 quote begin letrec letrec* reinit l! bh)
        'sy]
       [(cons unspecified null list dynamic-wind apply values null? pair? car cdr call/cc procedure? condition? unspecified? set-car! set-cdr! eqv? call-with-values with-exception-handler raise-continuable raise + * - /)
        'va]
@@ -807,16 +959,20 @@
         (list (format "~a \\cdots \\textrm{ fresh}" (gps x)))]
       [`(freshS ,xs)        
         (list (format "~a \\cdots \\textrm{ fresh}" (string-join (map (lambda (x) (format "~a" (gps x))) xs) ", ")))]
-      [`(not (eq? (term ,t1) (term ,t2)))
+      [`(not (,(? (λ (x) (memq x '(equal? eq?)))) (term ,t1) (term ,t2)))
         (list (format "~a \\neq ~a" (gps t1) (gps t2)))]
+      [`(,(? (λ (x) (memq x '(equal? eq?)))) (term ,t1) (term ,t2))
+        (list (format "~a = ~a" (gps t1) (gps t2)))]
       [`(not (eq? (term ,t1) #f))
         (list (format "~a \\neq \\semfalse{}" (gps t1)))]
       [`(not (null-v? (term ,v)))
-        (list (format "~a \\neq \\nt{null}" (gps v)))]
+        (list (format "~a \\neq \\va{null}" (gps v)))]
       [`(not (prefixed-by? (term ,v) (quote p:)))
         (list (format "~a \\not\\in \\nt{pp}" (gps v)))]
       [`(not (condition? (term ,v)))
-        (list (format "~a \\neq (\\sy{make-cond}~~\\nt{string})" (gps v)))]
+        (list (format "~a \\neq (\\sy{make\\mbox{\\texttt{-}}cond}~~\\nt{string})" (gps v)))]
+      [`(not (lambda-null? (term ,v)))
+       (list (format "~a \\neq \\texttt{(lambda}~~\\texttt{()}~~\\nt{e}\\texttt{)}" v))]
       [`(not (,(? (λ (x) 
                     (and (symbol? x) 
                          (regexp-match #rx"\\?$" (symbol->string x))))
@@ -932,7 +1088,7 @@
           (list (string-append boilerplate (car condition))))]
       [_ 
        (fprintf (current-error-port) "unknown side-condition: ~s\n" sc)
-       (list (format "\\verbatim|~s|" sc))]))
+       (list (format "\\verb|~s|" sc))]))
   
   (define (all-but-last l)
     (cond
@@ -1086,6 +1242,8 @@
       (fmatch pat
         
         [(list 'unquote e) (rhs->tex/int e lr?)]
+        [(list 'quote (? (λ (x) (and (symbol? x) (eq? 'nt (categorize-symbol x)))) s))
+         (d "\\sy{'}") (d s)]
         [(list 'quote e)
          (d "\\sy{'") (d (format "~s" e)) (d "}")]
         [(list 'unquote-splicing expr) (rhs->tex/int expr lr?)]
@@ -1096,6 +1254,21 @@
            (d "\\texttt{(}\\sy{store}~") (loop store) (d "\n")
            (d "~~~") (loop e) (d "[\\texttt{(}") (loop func) (d "\n")
            (d "~~~\\hphantom{") (loop e) (d "[\\texttt{(}}") (loop-eles args) (d "\\texttt{)])}"))]
+        
+        [`(in-hole ,p (handlers ,h1 ,h2 ,h3 (in-hole ,g (handlers ,h1 ,h2 (begin ,begin-args ...)))))
+         (let ([snd-line `(in-hole ,g (handlers ,h1 ,h2 (begin ,@begin-args)))]
+               [first-line-prefix
+                (λ () 
+                  (loop p) 
+                  (d "[\\texttt{(}"))])
+           (first-line-prefix) (loop 'handlers) (d "~") (loop h1) (d "~") (loop h2) (d "~") (loop h3) 
+           (d "\n")
+           
+           (d "\\hphantom{") 
+           (first-line-prefix)
+           (d "}")
+           (loop snd-line)
+           (d "\\texttt{)}]"))]
         
         [`(term ,p) (error 'pattern->tex/int "found term inside a pattern ~s, ~s" orig-pat p)]
         [`(side-condition ,p ,_) (loop p)]
@@ -1215,9 +1388,9 @@
 	['v_car (display "v_{\\nt{car}}")]
 	['v_cdr (display "v_{\\nt{cdr}}")]
 	[else
-	 (let ([str (regexp-replace* #rx"-"
+	 (let ([str (regexp-replace* #rx"[-*/+?!]"
                                      (symbol->string x)
-                                     "\\\\mbox{-}")])
+                                     "\\\\mbox{\\\\texttt{\\0}}")])
 	   (cond
              [(regexp-match #rx"^([^_]*)_none$" str)
               =>
