@@ -1732,6 +1732,21 @@ of digits with deconv-base
                       (lambda () (raise 1))))
                   (list '(uncaught-exception 1)))
      
+     ;; make sure that the inner handler is called twice, 
+     ;; rather than the inner handler called once and the outer one called once.
+     (make-r6test/v '((lambda (o)
+                        (with-exception-handler
+                         (lambda (x) (set! o (* 3 o)))
+                         (lambda ()
+                           (with-exception-handler
+                            (lambda (x) (set! o (* 2 o)) x)
+                            (lambda () 
+                              (raise-continuable 4)
+                              (raise-continuable 4)))))
+                        o)
+                      1)
+                    4)
+     
      (make-r6test 
       '(store ()
          (letrec* ([k #f]

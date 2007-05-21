@@ -66,26 +66,18 @@
         c c))
      (cons 1 2)))
   
-  (step 
-   (term 
-    (store ()
-      ((lambda (x)
-         (set-cdr! x x)
-         (apply + x))
-       (cons 1 #f)))))
   
-  (step 
-   (term 
-    (store ()
-      ((lambda (x)
-         (set-cdr! (cdr x) x)
-         (apply + x))
-       (cons 1 (cons 2 #f))))))
+  (step '(store ()
+           ((lambda (o)
+              (with-exception-handler
+               (lambda (x) (set! o (* 3 o)))
+               (lambda ()
+                 (with-exception-handler
+                  (lambda (x) (set! o (* 2 o)) x)
+                  (lambda () 
+                    (raise-continuable 4)
+                    (raise-continuable 4)))))
+              o)
+            1)))
   
-  (step 
-   (term 
-    (store ()
-      ((lambda (x)
-         (set-car! (cdr x) x)
-         (apply + x))
-       (cons 1 (cons 2 null)))))))
+  )

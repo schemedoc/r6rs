@@ -39,8 +39,7 @@
      (es 'seq 'sqv '()
          (begin es es ...) (begin0 es es ...) (es es ...)
          (if es es es) (set! x es) x
-         nonproc pproc
-         (lambda f es es ...)
+         nonproc pproc (lambda f es es ...)
          (letrec ([x es] ...) es es ...) 
          (letrec* ([x es] ...) es es ...)
          
@@ -57,7 +56,8 @@
      
      (s seq () sqv sym)
      (seq (s s ...) (s s ... dot sqv) (s s ... dot sym))
-     
+     (sqv n #t #f)
+
      (p (store (sf ...) e))
      (e (begin e e ...) (begin0 e e ...)
         (e e ...) (if e e e)
@@ -70,10 +70,8 @@
         (reinit x))
      (v nonproc proc)
      (nonproc pp null 'sym sqv (make-cond string))
-     (sqv n #t #f)
      
-     (proc uproc pproc (throw x e))
-     (uproc (lambda f e e ...))
+     (proc (lambda f e e ...) pproc (throw x e))
      (pproc aproc proc1 proc2 list dynamic-wind apply values)
      (proc1 null? pair? car cdr call/cc procedure? condition? raise*)
      (proc2 cons consi set-car! set-cdr! eqv? call-with-values with-exception-handler)
@@ -756,7 +754,12 @@
   (define Quote
     (reduction-relation
      lang
-     ;; compile time quote removal
+     (--> (store (sf_1 ...) (in-hole S_1 'sqv_1))
+          (store (sf_1 ...) (in-hole S_1 sqv_1))
+          "6sqv")
+     (--> (store (sf_1 ...) (in-hole S_1 '()))
+          (store (sf_1 ...) (in-hole S_1 null))
+          "6eseq")
      (--> (store (sf_1 ...) (in-hole S_1 'seq_1))
           (store (sf_1 ...) ((lambda (qp) (in-hole S_1 qp)) (Qtoc seq_1)))
           "6qcons"
@@ -764,13 +767,7 @@
      (--> (store (sf_1 ...) (in-hole S_1 'seq_1))
           (store (sf_1 ...) ((lambda (qp) (in-hole S_1 qp)) (Qtoic seq_1)))
           "6qconsi"
-          (fresh qp))
-     (--> (store (sf_1 ...) (in-hole S_1 'sqv_1))
-          (store (sf_1 ...) (in-hole S_1 sqv_1))
-          "6sqv")
-     (--> (store (sf_1 ...) (in-hole S_1 '()))
-          (store (sf_1 ...) (in-hole S_1 null))
-          "6eseq")))
+          (fresh qp))))
   
   (metafunction-type Qtoc (-> seq e))
   (define-metafunction Qtoc
@@ -923,10 +920,11 @@
     [proc procedure])
   
   (define condition? (test-match lang (make-cond string)))
+  (define lambda-null? (test-match lang (lambda () e)))
+  (define null-v? (test-match lang null))
+  
   (define v? (test-match lang v))
   (define proc? (test-match lang proc))
-  (define null-v? (test-match lang null))
-  (define lambda-null? (test-match lang (lambda () e)))
   (define pp? (test-match lang pp))
   (define mp? (test-match lang mp))
   (define ip? (test-match lang ip))
