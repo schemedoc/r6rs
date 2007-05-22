@@ -56,9 +56,8 @@ raised the exception, not as a crash.
 \begin{entry}{%
 \proto{with-exception-handler}{ \var{handler} \var{thunk}}{procedure}}
 
-\domain{\var{Handler} should be a
-procedure that accepts one argument.
-\var{Thunk} must be a procedure that accepts zero arguments.}  The {\cf
+\domain{\var{Handler} must be a procedure and should accept one argument.
+\var{Thunk} must be a procedure and should accept zero arguments.}  The {\cf
 with-exception-handler} procedure returns the results of invoking
 \var{thunk}.  \var{Handler} is installed as the current
 exception handler for the dynamic extent (as determined by {\tt
@@ -277,7 +276,7 @@ otherwise returns \schfalse.
 
 \domain{\var{Rtd} must be a record-type descriptor of a subtype of
   {\cf\&condition}.}  The {\cf condition-predicate} procedure returns
-a procedure that accepts a single argument.  This procedure returns
+a procedure that takes one argument.  This procedure returns
 \schtrue{} if its argument is a condition of the condition type
 represented by \var{rtd}, i.e., if it is either a simple condition of
 that record type (or one of its subtypes) or a compound conditition
@@ -288,8 +287,8 @@ with such a simple condition as one of its components.
 \proto{condition-accessor}{ rtd proc}{procedure}}
 
 \domain{\var{Rtd} must be a record-type descriptor of a subtype of
-  {\cf\&condition}.  \var{Proc} must be a procedure that should accept
-  a record of the record type of \var{rtd}.}  The {\cf
+  {\cf\&condition}.  \var{Proc} must be a procedure and should accept
+  one argument, a record of the record type of \var{rtd}.}  The {\cf
   condition-accessor} procedure returns a procedure that accepts a
 single argument, which must be a condition of the type represented by
 \var{rtd}.  This procedure extracts the first component of the

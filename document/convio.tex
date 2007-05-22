@@ -21,7 +21,7 @@ These are the same as {\cf eof-object} and {\cf eof-object?} from the
 \proto{call-with-input-file}{ filename proc}{procedure}
 \proto{call-with-output-file}{ filename proc}{procedure}}
 
-\domain{\var{Proc} must be a procedure accepting a single argument.}
+\domain{\var{Proc} should accept one argument.}
 These procedures open the file named by \var{filename} for input or
 for output, with no specified file options, and call \var{proc} with
 the obtained port as an argument.  If \var{proc} returns, the
@@ -53,7 +53,7 @@ the \rsixlibrary{i/o ports} library.
 \proto{with-input-from-file}{ filename thunk}{procedure}
 \proto{with-output-to-file}{ filename thunk}{procedure}}
 
-\domain{\var{Thunk} must be a procedure that accepts zero arguments.}  The
+\domain{\var{Thunk} must be a procedure and should accept zero arguments.}  The
 file is opened for input or output using empty file options, and
 \var{thunk} is called with no arguments.  During the dynamic extent of
 the call to \var{thunk}, the obtained port is made the value returned
