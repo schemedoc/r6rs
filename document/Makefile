@@ -38,7 +38,6 @@ LIB_TEX_FILES = r6rs-lib.tex \
 	hashtable.tex \
 	io.tex \
 	iocond.tex \
-	libderived.tex \
 	list.tex \
 	control.tex \
 	portio.tex \
