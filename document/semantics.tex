@@ -181,15 +181,6 @@ The \nt{f} describes the arguments for \sy{lambda} expressions. (The \sy{dot} is
 
 The \nt{s} non-terminal covers all s-expressions, which can be either non-empty sequences (\nt{seq}), the empty sequence, self-quoting values (\nt{sqv}), or symbols. Non-empty sequences are either just a sequence of s-expressions, or they are terminated with a dot followed by either a symbol or a self-quoting value. Finally the self-quoting values are numbers and the booleans \semtrue{} and \semfalse{}.
 
-\beginfig
-\begin{center}
-\input{r6-fig-Quote.tex}
-
-\input{r6-fig-QtocQtoic.tex}
-\end{center}
-\caption{Quote}\label{fig:quote}
-\endfig
-
 The \nt{p} non-terminal represents programs that have no quoted
 data. Most of the reduction rules rewrite \nt{p} to \nt{p},
 rather than $\calP$ to $\calP$, since quoted data is first
@@ -249,6 +240,15 @@ To convert the answers ($\calA$)  of the semantics into observable results, we u
 They eliminate the store, and replace complex values with simple tags that indicate only the kind of value that was produced or, if no values were produced, indicates that either an uncaught exception was raised, or that the program reached a state that is not specified by the semantics.
 
 \section{Quote}\label{sec:semantics:quote}
+
+\beginfig
+\begin{center}
+\input{r6-fig-Quote.tex}
+
+\input{r6-fig-QtocQtoic.tex}
+\end{center}
+\caption{Quote}\label{fig:quote}
+\endfig
 
 The first reduction rules that apply to any program is the 
 rules in figure~\ref{fig:quote} that eliminate quoted expressions. 
