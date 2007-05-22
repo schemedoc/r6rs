@@ -29,15 +29,14 @@ Fixnum operations perform integer arithmetic on their fixnum
 arguments, but raise an exception with condition type
 {\cf\&implementation-restriction} if the result is not a fixnum.
 
-This section uses \var{fx}, \vari{fx} and \varii{fx} as parameter
+This section uses \var{fx}, \vari{fx}, \varii{fx}, etc., as parameter
 names for arguments that must be fixnums.
 
 \begin{entry}{%
 \rproto{fixnum?}{ obj}{procedure}}
 
 Returns \schtrue{} if \var{obj} is an exact
-integer within the fixnum range, and
-otherwise returns \schfalse{}.
+integer within the fixnum range, \schfalse{} otherwise.
 \end{entry}
 
 \begin{entry}{%
@@ -272,14 +271,12 @@ fixnum result of the following computation:
 
 \domain{\varii{Fx} must be non-negative and less than {\cf
   (fixnum-width)}. \variii{Fx} must be 0 or
-1.}  The {\cf fxbit-field} procedure
-returns the fixnum result of the following computation:
-%
+1.}  The {\cf fxcopy-bit} procedure returns the result of the following computation:
 \begin{scheme}
-(let* ((mask (fxnot
-              (fxarithmetic-shift-left -1 \variii{fx}))))
-  (fxarithmetic-shift-right (fxand \vari{fx} mask)
-                            \varii{fx}))%
+(let* ((mask (fxarithmetic-shift-left 1 \varii{fx})))
+  (fxif mask
+        (fxarithmetic-shift-left \variii{fx} \varii{fx})
+        \vari{fx}))%
 \end{scheme}
 %
 \end{entry}
@@ -401,17 +398,16 @@ bit field specified by \varii{fx} and \variii{fx}.
 
 This section describes the \defrsixlibrary{arithmetic flonum} library.
 
-This section uses \var{fl}, \vari{fl} and \varii{fl} as
-parameter names for arguments that must be flonums, and \var{ifl},
-\vari{ifl} and \varii{ifl} as parameter names for arguments that 
+This section uses \var{fl}, \vari{fl}, \varii{fl}, etc., as
+parameter names for arguments that must be flonums, and \var{ifl}
+as a name for arguments that 
 must be integer-valued flonums, i.e., flonums for which the
 {\cf integer-valued?} predicate returns true.
 
 \begin{entry}{%
 \proto{flonum?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a flonum, and
-otherwise returns \schfalse{}.
+Returns \schtrue{} if \var{obj} is a flonum, \schfalse{} otherwise.
 \end{entry}
 
 \begin{entry}{%
@@ -596,8 +592,8 @@ denominator of 0.0 is defined to be 1.0.
 (flnumerator -inf.0)           \ev  -inf.0
 (fldenominator +inf.0)         \ev  1.0
 (fldenominator -inf.0)         \ev  1.0
-(flnumerator 0.75)             \ev  3.0 ; example
-(fldenominator 0.75)           \ev  4.0 ; example%
+(flnumerator 0.75)             \ev  3.0 ; \textrm{probably}
+(fldenominator 0.75)           \ev  4.0 ; \textrm{probably}%
 \end{scheme}
 
 The following behavior is strongly recommended but not required:
@@ -684,11 +680,18 @@ encouraged to follow the relevant standards for these procedures.
 \begin{entry}{%
 \proto{flsqrt}{ fl}{procedure}}
 
-Returns the principal square root of \var{fl}. For a negative argument,
-the result may be a NaN, or may be some meaningless flonum.
+Returns the principal square root of \var{fl}. For $-0.0$,
+{\cf flsqrt} should return $-0.0$; for other negative arguments,
+the result may be a NaN or some meaningless flonum.
+
+\begin{rationale}
+The behavior of {\cf flsqrt} on $-0.0$ is consistent with the IEEE
+floating point standard.
+\end{rationale}
 
 \begin{scheme}
-(flsqrt +inf.0)               \ev  +inf.0%
+(flsqrt +inf.0)               \ev  +inf.0
+(flsqrt -0.0)                 \ev  -0.0%
 \end{scheme}
 \end{entry}
 
@@ -748,8 +751,8 @@ may be greater than the flonum precision.
 
 This section describes the \defrsixlibrary{arithmetic bitwise}
 library.  The exact bitwise arithmetic provides generic operations on
-exact integers.  This section uses \var{ei}, \vari{ei}, \varii{ei},
-and \variii{ei} as parameter names that must be exact integers.
+exact integers.  This section uses \var{ei}, \vari{ei}, \varii{ei}, etc.,
+as parameter names that must be exact integers.
 
 Some procedures allow extracting \defining{bit fields}, i.e., numbers
 representing subsequences of the binary representation of an exact
@@ -836,9 +839,9 @@ If \var{ei} is $0$, then $-1$ is returned.
 Returns the result of the following computation:
 \begin{scheme}
 (not (zero?
-      (bitwise-and
-       (bitwise-arithmetic-shift-left 1 \varii{ei})
-       \vari{ei})))%
+       (bitwise-and
+         (bitwise-arithmetic-shift-left 1 \varii{ei})
+         \vari{ei})))%
 \end{scheme}
 \end{entry}
 
@@ -868,8 +871,8 @@ procedure returns the result of the following computation:
         (bitwise-not
          (bitwise-arithmetic-shift-left -1 \variii{ei}))))
   (bitwise-arithmetic-shift-right
-   (bitwise-and \vari{ei} mask)
-   \varii{ei}))%
+    (bitwise-and \vari{ei} mask)
+    \varii{ei}))%
 \end{scheme}
 \end{entry}
 
@@ -904,19 +907,19 @@ The {\cf bitwise-copy-bit-field} procedure returns the result of the following c
 Returns the result of the following computation:
 %
 \begin{scheme}
-(exact (floor (* \vari{ei} (expt 2 \varii{ei}))))%
+(floor (* \vari{ei} (expt 2 \varii{ei})))%
 \end{scheme}
 
 Examples:
 %
-\begin{schemenoindent}
-(bitwise-arithmetic-shift -6 -1) \ev -3
-(bitwise-arithmetic-shift -5 -1) \ev -3
-(bitwise-arithmetic-shift -4 -1) \ev -2
-(bitwise-arithmetic-shift -3 -1) \ev -2
-(bitwise-arithmetic-shift -2 -1) \ev -1
-(bitwise-arithmetic-shift -1 -1) \ev -1%
-\end{schemenoindent}
+\begin{scheme}
+(bitwise-arithmetic-shift -6 -1) \lev -3
+(bitwise-arithmetic-shift -5 -1) \lev -3
+(bitwise-arithmetic-shift -4 -1) \lev -2
+(bitwise-arithmetic-shift -3 -1) \lev -2
+(bitwise-arithmetic-shift -2 -1) \lev -1
+(bitwise-arithmetic-shift -1 -1) \lev -1%
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%

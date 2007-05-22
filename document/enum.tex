@@ -17,14 +17,14 @@ its specific universe of symbols and enumeration type.
 This facilitates efficient implementation of enumeration sets
 and enables the complement operation.
 
-In the definition of the following procedures, let \var{enum-set}
-range over the enumeration sets, which are defined as the subsets
+In the descriptions of the following procedures, \var{enum-set}
+ranges over the enumeration sets, which are defined as the subsets
 of the universes that can be defined using {\cf make-enumeration}.
 
 \begin{entry}{%
-\proto{make-enumeration}{ list}{procedure}}
+\proto{make-enumeration}{ symbol-list}{procedure}}
 
-\domain{\var{List} must be a list of symbols.}
+\domain{\var{Symbol-list} must be a list of symbols.}
 The {\cf make-enumeration} procedure
 creates a new enumeration type whose universe consists of
 those symbols (in canonical order of their first appearance
@@ -37,7 +37,7 @@ the newly created enumeration type.
 \proto{enum-set-universe}{ enum-set}{procedure}}
 
 Returns the set of all symbols that comprise
-the universe of its argument.
+the universe of its argument, as an enumeration set.
 \end{entry}
 
 \begin{entry}{%
@@ -54,8 +54,8 @@ value not in the universe, the unary procedure returns \schfalse.
   (list (i 'red) (i 'green) (i 'blue) (i 'yellow))) \lev (0 1 2 \schfalse)
 \end{scheme}
 
-The {\cf enum-set-indexer} procedure could be defined as follows (using the
-{\cf memq} procedure from the \rsixlibrary{lists} library):
+The {\cf enum-set-indexer} procedure could be defined as follows using the
+{\cf memq} procedure from the \rsixlibrary{lists} library:
 
 \begin{scheme}
 (define (enum-set-indexer set)
@@ -167,7 +167,7 @@ complement with respect to its universe.
 (let* ((e (make-enumeration '(red green blue)))
        (c (enum-set-constructor e)))
   (enum-set->list
-   (enum-set-complement (c '(red)))))
+    (enum-set-complement (c '(red)))))
 \ev (green blue)
 \end{scheme}
 \end{entry}
@@ -178,16 +178,16 @@ complement with respect to its universe.
 Projects \vari{enum-set} into the universe
 of \varii{enum-set}, dropping any elements of \vari{enum-set} that do
 not belong to the universe of \varii{enum-set}.  (If \vari{enum-set}
-is a subset of the universe of its second, then no elements are
+is a subset of the universe of its second, no elements are
 dropped, and the injection is returned.)
 
 \begin{scheme}
 (let ((e1 (make-enumeration
-           '(red green blue black)))
+            '(red green blue black)))
       (e2 (make-enumeration
-           '(red black white))))
+            '(red black white))))
   (enum-set->list
-   (enum-set-projection e1 e2))))
+    (enum-set-projection e1 e2))))
 \ev (red black)
 \end{scheme}
 \end{entry}
@@ -211,7 +211,7 @@ universe of the enumeration (in order).
 
 {\cf (\hyper{type-name} \hyper{symbol})} checks at macro-expansion
 time whether \hyper{symbol} is in the universe associated with
-\hyper{type-name}.  If it is, then {\cf (\hyper{type-name}
+\hyper{type-name}.  If it is, {\cf (\hyper{type-name}
   \hyper{symbol})} is equivalent to {\cf \hyper{symbol}}.  
 It is a syntax violation if it is not.
 
@@ -233,7 +233,7 @@ is equivalent to
 %
 \begin{scheme}
 ((enum-set-constructor (\hyper{constructor-syntax}))
- (list '\hyper{symbol}~\dotsfoo{}))\rm.
+ '(\hyper{symbol}~\dotsfoo{}))\rm.
 \end{scheme}
 
 Example:
@@ -247,7 +247,7 @@ Example:
 (color purpel)                     \ev \exception{\&syntax}
 (enum-set->list (color-set))       \ev ()
 (enum-set->list
- (color-set maroon white))         \ev (white maroon)
+  (color-set maroon white))        \ev (white maroon)
 \end{scheme}
 \end{entry}
 
