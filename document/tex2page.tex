@@ -368,110 +368,10 @@
 \fi
 \fi
 
-
 \let\htmlonly\iffalse
 \let\endhtmlonly\fi
 
-
-%\def\rawhtml{\errmessage{Can't occur outside
-%  \string\htmlonly}}
-%\def\endrawhtml{\errmessage{Can't occur outside
-%  \string\htmlonly}}
-
-\let\rawhtml\iffalse
-\let\endrawhtml\fi
-
-\let\htmlheadonly\iffalse
-\let\endhtmlheadonly\fi
-
-\let\cssblock\iffalse
-\let\endcssblock\fi
-
-\def\inputcss#1 {\relax}
-\let\htmladdimg\gobblegroup
-
-\def\htmlref{\bgroup\aftergroup\gobblegroup\let\dummy=}
-
-%
-
-\let\htmlcolophon\gobblegroup
-\let\htmldoctype\gobblegroup
-\let\htmlmathstyle\gobblegroup
-
-\ifx\slatexversion\UnDeFiNeD
-% SLaTeX compat
-\let\scmkeyword\gobblegroup
-\let\scmbuiltin\gobblegroup
-\let\scmconstant\scmbuiltin
-\let\scmvariable\scmbuiltin
-\let\setbuiltin\scmbuiltin
-\let\setconstant\scmbuiltin
-\let\setkeyword\scmkeyword 
-\let\setvariable\scmvariable
-\def\schemedisplay{\begingroup
-  \verbsetup\verbavoidligs
-  \verbinsertskip
-  \schemedisplayI}%
-\def\schemeresponse{\begingroup
-  \verbsetup\verbavoidligs
-  \verbinsertskip
-  \schemeresponseI}%
-{\catcode`\|0 |catcode`|\12
-  |long|gdef|schemedisplayI#1\endschemedisplay{%
-    #1|endgroup}%
-  |long|gdef|schemeresponseI#1\endschemeresponse{%
-    #1|endgroup}}%
-\fi
-
-\let\slatexlikecomments\relax
-\let\noslatexlikecomments\relax
-
-\let\imgpreamble\iffalse
-\let\endimgpreamble\fi
-
-\def\inputexternallabels#1 {\relax}
-\def\includeexternallabels#1 {\relax}
-
-\ifx\eval\UnDeFiNeD
-\IfFileExists{eval4tex.tex}{\input eval4tex }{}\fi
-
-\let\evalh\gobblegroup
-\let\evalq\gobblegroup
-
-\let\htmlpagebreak\relax
-
-\let\htmlpagelabel\gobblegroup
-
-\def\htmlpageref{\errmessage{Can't occur except inside
-  \string\htmlonly}}
-
-% Miscellaneous stuff
-
-%\def\hr{$$\hbox{---}$$}
-\def\hr{\medbreak\centerline{---}\medbreak}
-%\def\hr{\par\centerline{$*$}\par}
-
-
-\let\htmlimageformat\gobblegroup
-\let\htmlimageconversionprogram\gobblegroup
-
-\let\externaltitle\gobblegroup
 \let\imgdef\def
-\let\ignorenextinputtimestamp\relax
-
-%
-
-\let\htmladvancedentities\relax
-\let\n\noindent
-\let\p\verb
-\let\q\scm
-\let\f\numberedfootnote
-\let\scmp\scm
-\let\numfootnote\numberedfootnote
-\let\writetotoc\writenumberedtocline
-\let\tag\xrtag
-\let\scmfilename\verbwritefile
-\let\scmwrite\verbwrite
 
 % STOP LOADING HERE FOR LATEX
 
@@ -1232,6 +1132,105 @@
   \leftskip 0pt plus 1fil
   \parfillskip 0pt
 }
+
+%\def\rawhtml{\errmessage{Can't occur outside
+%  \string\htmlonly}}
+%\def\endrawhtml{\errmessage{Can't occur outside
+%  \string\htmlonly}}
+
+\let\rawhtml\iffalse
+\let\endrawhtml\fi
+
+\let\htmlheadonly\iffalse
+\let\endhtmlheadonly\fi
+
+\let\cssblock\iffalse
+\let\endcssblock\fi
+
+\def\inputcss#1 {\relax}
+\let\htmladdimg\gobblegroup
+
+\def\htmlref{\bgroup\aftergroup\gobblegroup\let\dummy=}
+
+%
+
+\let\htmlcolophon\gobblegroup
+\let\htmldoctype\gobblegroup
+\let\htmlmathstyle\gobblegroup
+
+\ifx\slatexversion\UnDeFiNeD
+% SLaTeX compat
+\let\scmkeyword\gobblegroup
+\let\scmbuiltin\gobblegroup
+\let\scmconstant\scmbuiltin
+\let\scmvariable\scmbuiltin
+\let\setbuiltin\scmbuiltin
+\let\setconstant\scmbuiltin
+\let\setkeyword\scmkeyword 
+\let\setvariable\scmvariable
+\def\schemedisplay{\begingroup
+  \verbsetup\verbavoidligs
+  \verbinsertskip
+  \schemedisplayI}%
+\def\schemeresponse{\begingroup
+  \verbsetup\verbavoidligs
+  \verbinsertskip
+  \schemeresponseI}%
+{\catcode`\|0 |catcode`|\12
+  |long|gdef|schemedisplayI#1\endschemedisplay{%
+    #1|endgroup}%
+  |long|gdef|schemeresponseI#1\endschemeresponse{%
+    #1|endgroup}}%
+\fi
+
+\let\slatexlikecomments\relax
+\let\noslatexlikecomments\relax
+
+\let\imgpreamble\iffalse
+\let\endimgpreamble\fi
+
+\def\inputexternallabels#1 {\relax}
+\def\includeexternallabels#1 {\relax}
+
+\ifx\eval\UnDeFiNeD
+\IfFileExists{eval4tex.tex}{\input eval4tex }{}\fi
+
+\let\evalh\gobblegroup
+\let\evalq\gobblegroup
+
+\let\htmlpagebreak\relax
+
+\let\htmlpagelabel\gobblegroup
+
+\def\htmlpageref{\errmessage{Can't occur except inside
+  \string\htmlonly}}
+
+% Miscellaneous stuff
+
+%\def\hr{$$\hbox{---}$$}
+\def\hr{\medbreak\centerline{---}\medbreak}
+%\def\hr{\par\centerline{$*$}\par}
+
+
+\let\htmlimageformat\gobblegroup
+\let\htmlimageconversionprogram\gobblegroup
+
+\let\externaltitle\gobblegroup
+\let\ignorenextinputtimestamp\relax
+
+%
+
+\let\htmladvancedentities\relax
+\let\n\noindent
+\let\p\verb
+\let\q\scm
+\let\f\numberedfootnote
+\let\scmp\scm
+\let\numfootnote\numberedfootnote
+\let\writetotoc\writenumberedtocline
+\let\tag\xrtag
+\let\scmfilename\verbwritefile
+\let\scmwrite\verbwrite
 
 %
 
