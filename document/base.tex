@@ -13,16 +13,9 @@ tail calls and tail contexts in base-library constructs.
 
 All identifiers described in the entries of this chapter are exported
 by the \rsixlibrary{base} library with level $0$, with the exception
-of {\cf syntax-rules}\schindex{syntax-rules} and {\cf
+of {\cf syntax-rules}\schindex{syntax-rules}, {\cf
   identifier-syntax}\schindex{syntax-rules}, which are exported with
 level $1$.
-
-\begin{rationale} 
-The {\cf syntax-rules} and {\cf identifier-syntax} forms are
-used to create macro transformers and are thus needed only at
-expansion time, i.e., meta level $1$.  
-\end{rationale}
-
 In addition, the identifiers {\cf unquote}\schindex{unquote}, {\cf
   unquote-splicing}\schindex{unquote-splicing}, {\cf =>}\schindex{=>},
 {\cf else}\schindex{else} are exported with level $0$, and the
@@ -34,6 +27,10 @@ The identifier {\cf set!} (section~\ref{set!})
 is exported at both levels $0$ and $1$.
 
 \begin{rationale}
+The {\cf syntax-rules} and {\cf identifier-syntax} forms are
+used to create macro transformers and are thus needed only at
+expansion time, i.e., meta level $1$.  
+
 The identifiers {\cf unquote}, {\cf unquote-splicing}, {\cf =>}, and
 {\cf else} serve as literals in the syntax of one or more
 base-library syntactic forms; e.g., {\cf else} serves as a
