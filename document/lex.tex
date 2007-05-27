@@ -11,27 +11,27 @@ The syntax of Scheme code is organized in three levels:
   into a sequence of lexemes,
 \item the \textit{read syntax}, formulated in terms of the lexical
   syntax, that structures the lexeme sequence as a sequence of
-  \textit{syntactic datums\mainindex{datum}\mainindex{syntactic
+  \textit{syntactic data\mainindex{datum}\mainindex{syntactic
       datum}}, where a syntactic datum is
     a recursively structured entity,
 \item the \textit{program syntax} formulated in terms of the read
   syntax, imposing further structure and assigning meaning to
-  syntactic datums.
+  syntactic data.
 \end{enumerate}
 %
-Syntactic datums (also called \textit{external
+Syntactic data (also called \textit{external
   representations\index{external representation}}) double
 as a notation for data, and Scheme's \rsixlibrary{i/o ports} library
 (library section~\extref{lib:portsiosection}{Port I/O})
 provides the {\cf get-datum} and {\cf put-datum} procedures
-for reading and writing syntactic datums, converting between their
+for reading and writing syntactic data, converting between their
 textual representation and the corresponding values. 
 Each syntactic datum uniquely determines a corresponding \defining{datum value}.
 A syntactic datum can be used in a program to obtain the corresponding
 datum value using {\cf quote} (see section~\ref{quote}).
 
-Scheme source code consists of syntactic datums and (non-significant) comments
-Syntactic datums in Scheme source code are called
+Scheme source code consists of syntactic data and (non-significant) comments
+Syntactic data in Scheme source code are called
 \textit{forms}\mainindex{form}.
 Consequently, Scheme's syntax has the property that any sequence of
 characters that is a form is also a syntactic datum representing
@@ -44,15 +44,15 @@ called a \defining{subform}.
 
 A datum value may have several different external representations.
 For example, both ``{\tt \#e28.000}'' and
-``{\tt\#x1c}'' are syntactic datums representing the exact integer 28,
-and the syntactic datums ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
+``{\tt\#x1c}'' are syntactic data representing the exact integer 28,
+and the syntactic data ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
   (13 .\ ()))}''
 all represent a list containing the integers 8 and 13. 
-Syntactic datums that denote equal objects (in the sense of {\cf
+Syntactic data that denote equal objects (in the sense of {\cf
   equal?}; see section~\ref{equal?}) are always equivalent 
 as forms of a program.
 
-Because of the close correspondence between syntactic datums and datum
+Because of the close correspondence between syntactic data and datum
 values, this report sometimes uses the term \defining{datum} to denote
 either a syntactic datum or a datum value when the exact meaning
 is apparent from the context.
@@ -103,16 +103,16 @@ sequence of lexemes\index{lexeme}, omitting non-significant portions
 such as comments and whitespace.  The character sequence is assumed to
 be text according to the Unicode standard~\cite{Unicode}.  Some of
 the lexemes, such as numbers, identifiers, strings etc., of the lexical
-syntax are syntactic datums in the read syntax, and thus represent data.
+syntax are syntactic data in the read syntax, and thus represent data.
 Besides the formal account of the syntax, this section also describes
-what datum values are denoted by these syntactic datums.
+what datum values are denoted by these syntactic data.
 
 The lexical syntax, in the description of comments, contains
 a forward reference to \meta{datum}, which is described as part of the
 read syntax.  Being comments, however, these \meta{datum}s do not play
 a significant role in the syntax.
 
-Case is significant except in boolean datums, number datums, and
+Case is significant except in boolean data, number data, and
 hexadecimal numbers denoting Unicode scalar values.  For example, {\cf \#x1A}
 and {\cf \#X1a} are equivalent.  The identifier {\cf Foo} is, however,
 distinct from the identifier {\cf FOO}.
@@ -306,7 +306,7 @@ comment.\mainindex{comment}\mainschindex{;} The comment continues to
 the end of the line on which the semicolon appears.
 
 Another way to indicate a comment is to prefix a \hyper{datum}
-(cf.\ Section~\ref{datumsyntax}) with {\tt \#;}\sharpindex{;}, possibly with
+(cf.\ Section~\ref{datayntax}) with {\tt \#;}\sharpindex{;}, possibly with
 \meta{interlexeme space} before the \hyper{datum}.  The comment consists of
 the comment prefix {\tt \#;} and the \hyper{datum} together.  This
 notation is useful for ``commenting out'' sections of code.
@@ -331,8 +331,8 @@ and {\tt |\#} pairs.
 
 \begin{rationale}
   {\cf \sharpsign\verticalbar} \ldots {\cf \verticalbar\sharpsign}
-  cannot be used to comment out an arbitrary datum or set of datums;
-  it works only when none of the datums include a string with an
+  cannot be used to comment out an arbitrary datum or set of data;
+  it works only when none of the data include a string with an
   unmatched {\cf \sharpsign\verticalbar} or {\cf
     \verticalbar\sharpsign} character sequence.  While {\cf
     \sharpsign\verticalbar} \ldots {\cf \verticalbar\sharpsign} and
@@ -656,12 +656,12 @@ this report.
 \label{readsyntaxsection}
 
 The read syntax describes the syntax of
-syntactic datums\mainindex{syntactic datum} in terms of a sequence of
+syntactic data\mainindex{syntactic datum} in terms of a sequence of
 \meta{lexeme}s, as defined in the lexical syntax.
 
-Syntactic datums include the lexeme datums described in the
+Syntactic data include the lexeme data described in the
 previous section as well as the following constructs for forming
-compound datums:
+compound data:
 %
 \begin{itemize}
 \item pairs and lists, enclosed by \verb|( )| or \verb|[ ]| (see
@@ -671,9 +671,9 @@ compound datums:
 \end{itemize}
 
 \subsection{Formal account}
-\label{datumsyntax}
+\label{datayntax}
 
-The following grammar describes the syntax of syntactic datums in terms
+The following grammar describes the syntax of syntactic data in terms
 of various kinds of lexemes defined in the grammar in
 section~\ref{lexicalsyntaxsection}:
 
@@ -698,12 +698,12 @@ section~\ref{lexicalsyntaxsection}:
 \subsection{Pairs and lists}
 \label{pairlistsyntax}
 
-List and pair datums, denoting pairs and lists of values
+List and pair data, denoting pairs and lists of values
 (see section~\ref{listsection}) are written using parentheses or brackets.
 Matching pairs of brackets that occur in the rules of \meta{list} are
 equivalent to matching pairs of parentheses.
 
-The most general notation for Scheme pairs as syntactic datums is
+The most general notation for Scheme pairs as syntactic data is
 the ``dotted'' notation \hbox{\cf (\hyperi{datum} .\ \hyperii{datum})} where
 \hyperi{datum} is the representation of the value of the car field and
 \hyperii{datum} is the representation of the value of the
@@ -741,7 +741,7 @@ are the symbol {\tt +} and the integers 2 and 6.
 \subsection{Vectors}
 \label{vectorsyntax}
 
-Vector datums, denoting vectors of values (see
+Vector data, denoting vectors of values (see
 section~\ref{vectorsection}), are written using the notation
 {\tt\#(\hyper{datum} \dotsfoo)}.  For example, a vector of length 3
 containing the number zero in element 0, the list {\cf(2 2 2 2)} in
@@ -758,7 +758,7 @@ base-library expression that evaluates to a vector.
 \subsection{Bytevectors}
 \label{bytevectorsyntax}
 
-Bytevector datums, denoting bytevectors (see
+Bytevector data, denoting bytevectors (see
 library chapter~\extref{lib:bytevectorschapter}{Bytevectors}), are written using the notation
 {\tt\#vu8(\hyper{u8} \dotsfoo)}, where the \hyper{u8}s represent the octets of
 the bytevector.  For example, a bytevector of length 3 containing the
