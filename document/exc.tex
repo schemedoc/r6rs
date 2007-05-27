@@ -60,7 +60,7 @@ raised the exception, not as a crash.
 \var{Thunk} must be a procedure and should accept zero arguments.}  The {\cf
 with-exception-handler} procedure returns the results of invoking
 \var{thunk}.  \var{Handler} is installed as the current
-exception handler for the dynamic extent (as determined by {\tt
+exception handler for the dynamic extent (as determined by {\cf
   dynamic-wind}) of the invocation of \var{thunk}.
 
 \implresp The implementation must check the restrictions on
@@ -70,23 +70,23 @@ when it is called as a result of a call to {\cf raise} or {\cf
 \end{entry}
 
 \begin{entry}{%
-\pproto{(guard (\hyper{variable} \hyperi{clause} \hyperii{clause} \dotsfoo)  \hyper{body})}{\exprtype}}
+\pproto{(guard (\hyper{variable} \hyperi{cond clause} \hyperii{cond clause} \dotsfoo)  \hyper{body})}{\exprtype}}
 \mainschindex{guard}
 
 \syntax
-Each \hyper{clause} must have the same form as a {\tt cond} clause.
+Each \hyper{cond clause} is as in the specification of {\cf cond}.
 (See report section~\extref{report:cond}{Derived conditionals}.)
 
 \semantics 
-Evaluating a {\tt guard} form evaluates \hyper{body} with an exception
+Evaluating a {\cf guard} form evaluates \hyper{body} with an exception
 handler that binds the raised object to \hyper{variable} and within the scope of
 that binding evaluates the clauses as if they were the clauses of a
-{\tt cond} expression. That implicit {\tt cond} expression is evaluated with the
-continuation and dynamic environment of the {\tt guard} expression. If every
-\hyper{clause}'s \hyper{test} evaluates to \schfalse{} and there is no else clause, then
+{\cf cond} expression. That implicit {\cf cond} expression is evaluated with the
+continuation and dynamic environment of the {\cf guard} expression. If every
+\hyper{cond clause}'s \hyper{test} evaluates to \schfalse{} and there is no else clause, then
 {\cf raise} is re-invoked on the raised object within the dynamic
 environment of the original call to raise except that the current
-exception handler is that of the {\tt guard} expression.  
+exception handler is that of the {\cf guard} expression.  
 
 The {\cf =>} and {\cf else} identifiers are exported from the
 \rsixlibrary{exceptions} library with level $0$, and are the same as
@@ -98,10 +98,10 @@ in the \rsixlibrary{base} library.
 
 Raises a non-continuable exception by invoking the current exception
 handler on \var{obj}. The handler is called with a continuation whose
-dynamic environment is that of the call to {\tt raise}, except that
+dynamic environment is that of the call to {\cf raise}, except that
 the current exception handler is the one that was in place when the handler being
 called was installed.  When the handler returns, a non-continuable
-exception with condition type {\tt \&non-continuable} is raised in the
+exception with condition type {\cf \&non-continuable} is raised in the
 same dynamic environment as the handler.
 \end{entry}
 
@@ -117,7 +117,7 @@ when the handler being called was installed, and
 (2) if the handler being called returns, then it will again become the
 current exception handler.  If the handler returns, the values it
 returns become the values returned by the call to
-{\tt raise-continuable}.
+{\cf raise-continuable}.
 \end{entry}
 
 \begin{scheme}
