@@ -392,7 +392,7 @@ An {\cf if} expression is evaluated as follows: first,
 \hyper{test} is evaluated.  If it yields a true value\index{true} (see
 section~\ref{booleanvaluessection}), then \hyper{consequent} is evaluated and
 its values are returned.  Otherwise \hyper{alternate} is evaluated and its
-values are returned.  If \hyper{test} yields a false value and no
+values are returned.  If \hyper{test} yields \schfalse{} and no
 \hyper{alternate} is specified, then the result of the expression \isunspecified.
 
 \begin{scheme}
@@ -469,7 +469,7 @@ Its value must be a procedure.  This procedure should accept one argument; it is
 called on the value of the \hyper{test} and the values returned by this
 procedure are returned by the {\cf cond} expression.
 If all \hyper{test}s evaluate
-to false values, and there is no else clause, then the result of
+to \schfalse, and there is no else clause, then the result of
 the conditional expression \isunspecified; if there is an else
 clause, then its \hyper{expression}s are evaluated, and the values of
 the last one are returned.
@@ -1278,9 +1278,9 @@ behavior on symbols, booleans, the empty list,
 pairs, procedures,
 non-empty
 strings and vectors, and mutable records.  The behavior of {\cf eq?} on numbers and characters is
-implementation-dependent, but it always returns either true or
-false, and returns true only when {\cf eqv?}\ would also return
-true.  The {\cf eq?} predicate may also behave differently from {\cf eqv?} on empty
+implementation-dependent, but it always returns either \schtrue{} or
+\schfalse{}, and returns \schtrue{} only when {\cf eqv?}\ would also return
+\schtrue.  The {\cf eq?} predicate may also behave differently from {\cf eqv?} on empty
 vectors and empty strings.
 
 \begin{scheme}
@@ -1633,7 +1633,7 @@ all true.  Thus infinities and NaNs are not rational numbers.
 If \var{q} is a rational number, then {\cf (integer?
 \var{q})} is true if and only if {\cf (= (denominator
 \var{q}) 1)} is true.  If \var{q} is not a rational number,
-then {\cf (integer? \var{q})} is false.
+then {\cf (integer? \var{q})} is \schfalse.
 
 \begin{scheme}
 (complex? 3+4i)                        \ev  \schtrue{}
@@ -2419,7 +2419,7 @@ from each other and from the symbol \ide{nil}.
 \begin{entry}{%
 \proto{not}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is false, and returns
+Returns \schtrue{} if \var{obj} is \schfalse, and returns
 \schfalse{} otherwise.
 
 \begin{scheme}
