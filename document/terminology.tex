@@ -48,14 +48,23 @@ built-in procedure.  An entry begins with one or more header lines of the form
 
 \noindent\pproto{\var{template}}{\var{category}}\unpenalty
 
+The \var{category} defines the kind of binding described by the entry,
+typically either ``\exprtype'' or ``procedure''.
+An entry may specify various restrictions on subforms or arguments.
+For background on this, see section~\ref{argumentcheckingsection}.
+
+\subsection{Syntax entries}
+
 If \var{category} is ``\exprtype'', the entry describes a 
-special syntactic form, and the template gives the syntax of the form.  Even
-though the template is written in a notation similar to a right-hand
-side of the BNF rules in chapter~\ref{readsyntaxchapter}, it describes
+special syntactic construct, and the template gives the syntax of the
+forms of the construct.  
+The template is written in a notation similar to a right-hand
+side of the BNF rules in chapter~\ref{readsyntaxchapter}, and describes
 the set of forms equivalent to the forms matching the
 template as syntactic datums.  Some ``\exprtype'' entries carry a
-suffix ({\cf expand}), specifying that the form is exported with level
-$1$.  Otherwise, the form is exported with level $0$; see
+suffix ({\cf expand}), specifying that the syntactic keyword of the
+construct exported with level
+$1$.  Otherwise, the syntatic keyword is exported with level $0$; see
 section~\ref{phasessection}.
 
 Components of the form described by a template are designated
@@ -64,7 +73,8 @@ example, \hyper{expression}, \hyper{variable}.  Case is insignificant
 in syntactic variables.  Syntactic variables
 denote other forms, or, in some cases,
 sequences of them.  A syntactic variable may refer to a non-terminal
-in the grammar for syntactic datums, in which case only forms matching
+in the grammar for syntactic datums (see section~\ref{datumsyntax},
+in which case only forms matching
 that non-terminal are permissible in that position.  For example,
 \hyper{expression} stands for any form which is a
 syntactically valid expression.  Other non-terminals that are used in
@@ -80,7 +90,7 @@ indicates zero or more occurrences of a \hyper{thing}, and
 \end{tabbing}
 indicates one or more occurrences of a \hyper{thing}.
 
-It is the programmer's responsibility to ensure that the component of
+It is the programmer's responsibility to ensure that each component of
 a form has the shape specified by a template.  Descriptions of syntax
 may express other restrictions on the components of a form.
 Typically, such a restriction is formulated as a phrase of the form
@@ -90,6 +100,8 @@ responsibility to check that these restrictions are satisfied, as long
 as the macro transformers involved in expanding the form terminate.
 If the implementation detects that a component does not meet the
 restriction, an exception with condition type {\cf\&syntax} is raised.
+
+\subsection{Procedure entries}
 
 If \var{category} is ``procedure'', then the entry describes a procedure, and
 the header line gives a template for a call to the procedure.  Parameter
@@ -123,12 +135,11 @@ numbers.
 A procedure that detects an argument that it is not specified to
 handle must raise an exception with condition type
 {\cf\&assertion}.  Also, if the
-number of arguments provided in a procedure call does not match any
-argument count specified for the called procedure, an exception with
+number of arguments provided in a procedure call does not match 
+the number of arguments accepted by the procedure, an exception with
 condition type {\cf\&assertion} must be raised.
-See section~\ref{argumentcheckingsection}.
 
-For succinctness, we follow the convention
+For succinctness, the report follows the convention
 that if a parameter name is also the name of a type, then the corresponding argument must be of the named type.
 For example, the header line for {\tt vector-ref} given above dictates that the
 first argument to {\tt vector-ref} must be a vector.  The following naming
@@ -164,10 +175,10 @@ parameter variables for the various subsets of the numbers.
 With the listed type restrictions, it is the programmer's responsibility to
 ensure that the corresponding argument is of the specified type.
 It is the implementation's responsibility to check for
-that type; see section~\ref{argumentcheckingsection}.
+that type.
 
-A \var{list} parameter means that it is the
-programmer's responsibility to pass a list argument (see
+A parameter called \var{list} means that it is the
+programmer's responsibility to pass an argument that is a list (see
 section~\ref{listsection}).  It is the implementation's responsibility
 to check that the argument is appropriately structured for the
 operation to perform its function, to the extent that this is possible
@@ -180,18 +191,20 @@ as a phrase of the form ``\var{x} must be a \ldots'' (or otherwise
 using the word ``must'').
 
 In addition to the restrictions implied by naming conventions, an
-entries may list additional explicit restrictions.
+entry may list additional explicit restrictions.
 These explicit restrictions usually describe both the
 programmer's responsibilities, who must ensure that an appropriate
 argument is passed, and the implementation's responsibilities, which
-must check that the argument is appropriate.  Additionally, a description
+must check that the argument is appropriate.  A description
 may explicitly list the implementation's responsibilities for some
 arguments in a paragraph labeled ``\textit{Implementation
-  responsibilities}''.  In that case, the responsibilities specified
+  responsibilities}''.  In this case, the responsibilities specified
 for these arguments in the rest of the description are only for the
-programmer.  An implementation responsibility paragraph does not
+programmer.  An paragraph describing implementation responsibility does not
 affect the implementation's responsibilities for checking arguments not
 mentioned in the paragraph.
+
+\subsection{Other kinds of entries}
 
 If \var{category} is something other than ``syntax'' and
 ``procedure'', then the entry describes a non-procedural value, and
@@ -199,6 +212,8 @@ the \var{category} describes the type of that value.  The header line
 
 \noindent\rvproto{\&who}{condition type}\\
 indicates that {\cf\&who} is a condition type.
+
+\subsection{Equivalent entries}
 
 The description of an entry occasionally states that it is \textit{the
   same} as another entry.  This means that both entries are

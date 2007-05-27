@@ -267,7 +267,7 @@ complement representation of size \var{size} and specified by \var{endianness} a
 indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
 \domain{For {\cf bytevector-uint-set!}, \var{n} must be an exact integer in the
-  set $\{0, \ldots, 256^{\var{size}}-1\}$.}
+  interval $\{0, \ldots, 256^{\var{size}}-1\}$.}
 
 {\cf bytevector-uint-set!} stores the unsigned representation of size \var{size}
 and specified by \var{endianness} into \var{bytevector} at indices
@@ -315,9 +315,13 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \proto{uint-list->bytevector}{ list endianness size}{procedure}
 \proto{sint-list->bytevector}{ list endianness size}{procedure}}
    
-\domain{\var{Size} must be a positive exact integer.  The length of
-  \var{bytevector} or, respectively, of \var{list} must be divisible
-  by \var{size}.}
+\domain{\var{Size} must be a positive exact integer.  For {\cf
+    uint-list->bytevector}, \var{list} must be a list of exact
+  integers in the interval $\{0, \ldots, 256^{\var{size}}-1\}$.  For
+  {\cf sint-list->bytevector}, \var{list} must be a list of exact
+  integers in the interval $\{-256^{\var{size}}/2, \ldots,
+  256^{\var{size}}/2-1\}$.  The length of \var{bytevector} or,
+  respectively, of \var{list} must be divisible by \var{size}.}
    
 These procedures convert between lists of integers and their consecutive
 representations according to \var{size} and \var{endianness} in the
@@ -345,8 +349,12 @@ representations according to \var{size} and \var{endianness} in the
 \proto{bytevector-u16-native-set!}{ bytevector k n}{procedure}
 \proto{bytevector-s16-native-set!}{ bytevector k n}{procedure}}
    
-\domain{\var{K} must be a valid index of \var{bytevector}; so must $\var{k}
-  + 1$.}
+\domain{\var{K} must be a valid index of \var{bytevector}; so must
+  $\var{k} + 1$. For {\cf bytevector-u16-set!} and {\cf
+    bytevector-u16-native-set!}, \var{n} must be an exact integer in
+  the interval $\{0, \ldots, 2^{16}-1\}$.  For {\cf bytevector-s16-set!}
+  and {\cf bytevector-s16-native-set!}, \var{n} must be an exact
+  integer in the interval $\{-2^{15}, \ldots, 2^{15}-1\}$.}
    
 These retrieve and set two-byte representations of numbers at indices
 \var{k} and $\var{k}+1$, according to the endianness specified by
@@ -393,7 +401,13 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \proto{bytevector-u32-native-set!}{ bytevector k n}{procedure}
 \proto{bytevector-s32-native-set!}{ bytevector k n}{procedure}}
    
-\domain{$\{\var{k}, \ldots, \var{k}+ 3\}$ must be valid indices of \var{bytevector}.}.
+\domain{$\{\var{k}, \ldots, \var{k}+ 3\}$ must be valid indices of
+  \var{bytevector}.
+  For {\cf bytevector-u32-set!} and {\cf
+    bytevector-u32-native-set!}, \var{n} must be an exact integer in
+  the interval $\{0, \ldots, 2^{32}-1\}$.  For {\cf bytevector-s32-set!}
+  and {\cf bytevector-s32-native-set!}, \var{n} must be an exact
+  integer in the interval $\{-2^{31}, \ldots, 2^{32}-1\}$.}
    
 These retrieve and set four-byte representations of numbers at indices $\{\var{k},
 \ldots, \var{k}+ 3\}$, according to the endianness specified by \var{endianness}. The
@@ -430,7 +444,13 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 \proto{bytevector-u64-native-set!}{ bytevector k n}{procedure}
 \proto{bytevector-s64-native-set!}{ bytevector k n}{procedure}}
  
-\domain{$\{\var{k}, \ldots, \var{k}+ 7\}$ must be valid indices of \var{bytevector}.}
+\domain{$\{\var{k}, \ldots, \var{k}+ 7\}$ must be valid indices of
+  \var{bytevector}.
+  For {\cf bytevector-u64-set!} and {\cf
+    bytevector-u64-native-set!}, \var{n} must be an exact integer in
+  the interval $\{0, \ldots, 2^{64}-1\}$.  For {\cf bytevector-s64-set!}
+  and {\cf bytevector-s64-native-set!}, \var{n} must be an exact
+  integer in the interval $\{-2^{63}, \ldots, 2^{64}-1\}$.}
    
 These retrieve and set eight-byte representations of numbers at
 indices $\{\var{k}, \ldots, \var{k}+ 7\}$, according to the endianness
@@ -492,7 +512,7 @@ precision number represented by the eight bytes beginning at index
 
 \domain{$\{\var{k}, \ldots, \var{k}+3\}$ must be valid indices of
   \var{bytevector}.  For {\cf bytevector-ieee-single-native-set!}, \var{k} must
-  be a multiple of $4$.  \var{X} must be a real number.}
+  be a multiple of $4$.}
 
 These procedures store an IEEE-754 single precision representation of \var{x} into
 elements \var{k} through $\var{k}+3$ of \var{bytevector}, and return

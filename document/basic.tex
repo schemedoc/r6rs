@@ -137,10 +137,9 @@ exception should not return.
 In some cases, however, continuing is permissible, and the
 handler may return.  See library section~\extref{lib:exceptionssection}{Exceptions}.
 
-An \defining{implementation restriction} is a limitation imposed by an
-implementation.  Implementations must raise an exception
+Implementations must raise an exception
 when they are unable to continue correct execution
-of a correct program due to some implementation restriction.  For
+of a correct program due to some \defining{implementation restriction}.  For
 example, an implementation that does not support infinities
 must raise an exception with condition type
 {\cf\&implementation-restriction} when it evaluates an expression
@@ -157,8 +156,8 @@ appropriate condition type if they encounter such a situation.
 
 \mainindex{argument checking}
 Many procedures specified in this report or as part of a
-standard library accept only specific numbers and types of arguments
-or restrict their arguments in other ways.
+standard library restrict the arguments they accept.
+Typically, a procedure accepts only specific numbers and types of arguments.
 Many syntactic forms similarly restrict the values to which one or
 more of their subforms can evaluate.
 These restrictions imply responsibilities\mainindex{responsibility} for
@@ -173,37 +172,35 @@ responsibilities are specified in more detail in
 section~\ref{entryformatsection} and throughout the report.
 
 Note that it is not always possible for an implementation to completely check
-the restrictions set forth in the specifications.  For example, if an
+the restrictions set forth in a specification.  For example, if an
 operation is specified to accept a procedure with specific properties,
 checking of these properties is undecidable in general.  Similarly,
-some operations accept both list arguments and procedures that are
-called by these operations.  Since lists are mutable in programs that
-make use of the \rsixlibrary{mutable-pairs} library (see library
+some operations accept both lists and procedures that are
+called by these operations.  Since lists can be mutated by the procedures
+through the \rsixlibrary{mutable-pairs} library (see library
 chapter~\extref{lib:pairmutationchapter}{Mutable pairs}), an argument that is a list
-when the operation starts may be mutated by the passed procedure so
-that it becomes a non-list during the execution of the operation.
+when the operation starts may become a non-list during the execution of the operation.
 Also, the procedure might escape to a different continuation,
 preventing the operation from performing more checks.
-In any case, requiring the operation to check that the argument is a list after
+Requiring the operation to check that the argument is a list after
 each call to such a procedure would be impractical.  Furthermore, some
-operations that accept list arguments need only traverse the lists
+operations that accept lists only need to traverse these lists
 partially to perform their function; requiring the implementation to
 traverse the remainder of the list to verify that all specified
-restrictions have been met would potentially
+restrictions have been met might
 violate reasonable performance assumptions.  For these reasons, the
 programmer's obligations may exceed the checking obligations of the
 implementation.
 
-Usually, the subforms of a special form need to obey certain syntactic
+Moreover, the subforms of a special form usually need to obey certain syntactic
 restrictions.  These subforms may be subject to macro expansion, which
 may not terminate, thus making the question of whether they obey the
 specified restrictions undecidable.
 
-When an implementation detects a violation of an argument or
-subform value restriction, it must raise an exception with
-condition type {\cf\&violation} in a way
-consistent with the safety of execution as described in the next
-section.
+When an implementation detects a violation of a restriction for an
+argument or the value of a subform, it must raise an exception with
+condition type {\cf\&assertion} in a way consistent with the safety of
+execution as described in the next section.
 
 \section{Safety}
 \label{safeunsafemodesection}

@@ -57,7 +57,7 @@ raised the exception, not as a crash.
 \proto{with-exception-handler}{ \var{handler} \var{thunk}}{procedure}}
 
 \domain{\var{Handler} must be a procedure and should accept one argument.
-\var{Thunk} must be a procedure and should accept zero arguments.}  The {\cf
+\var{Thunk} must be a procedure that accepts zero arguments.}  The {\cf
 with-exception-handler} procedure returns the results of invoking
 \var{thunk}.  \var{Handler} is installed as the current
 exception handler for the dynamic extent (as determined by {\cf
@@ -238,7 +238,7 @@ record type.  The {\cf\&condition} type is neither sealed nor opaque.
 \begin{entry}{%
 \proto{condition}{ \vari{condition} \dotsfoo}{procedure}}
 
-\domain{The \var{condition}s must be conditions.}  The {\cf condition}
+The {\cf condition}
 procedure returns a condition object with the components of the
 \var{condition}s as its components, in the same order, i.e., with the
 components of \vari{condition} appearing first in the same order as in
@@ -250,7 +250,7 @@ zero or greater than one.  Otherwise, it may be compound or simple.
 \begin{entry}{%
 \proto{simple-conditions}{ condition}{procedure}}
 
-\domain{\var{condition} must be a condition.}  The {\cf simple-conditions}
+The {\cf simple-conditions}
 procedure returns a list of the components of \var{condition}, in the same
 order as they appeared in the construction of \var{condition}.  The
 returned list is immutable.  If the returned list is modified, the
@@ -287,7 +287,7 @@ with such a simple condition as one of its components.
 \proto{condition-accessor}{ rtd proc}{procedure}}
 
 \domain{\var{Rtd} must be a record-type descriptor of a subtype of
-  {\cf\&condition}.  \var{Proc} must be a procedure and should accept
+  {\cf\&condition}.  \var{Proc} should accept
   one argument, a record of the record type of \var{rtd}.}  The {\cf
   condition-accessor} procedure returns a procedure that accepts a
 single argument, which must be a condition of the type represented by

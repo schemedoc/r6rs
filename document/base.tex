@@ -264,7 +264,7 @@ section~\ref{primitiveexpressionsection}.
 \begin{entry}{%
 \proto{quote}{ \hyper{datum}}{\exprtype}}
 
-\syntax \hyper{Datum} should be a datum value.
+\syntax \hyper{Datum} should be a syntactic datum.
 
 \semantics
 {\cf (quote \hyper{datum})} evaluates to the datum value
@@ -304,7 +304,7 @@ As noted in section~\ref{storagemodel}, constants are immutable.
 
 \syntax
 \hyper{Formals} must be a formal arguments list as described below,
-and \hyper{body} is as described in section~\ref{bodiessection}.
+and \hyper{body} must be as described in section~\ref{bodiessection}.
 
 \semantics
 \vest A \lambdaexp{} evaluates to a procedure.  The environment in
@@ -495,7 +495,7 @@ appendix~\ref{derivedformsappendix}.
 \proto{case}{ \hyper{key} \hyperi{case clause} \hyperii{case clause} \dotsfoo}{\exprtype}}
 
 \syntax
-\hyper{Key} must be an expression.  Each \hyper{case clause} has one of
+\hyper{Key} must be an expression.  Each \hyper{case clause} must have one of
 the following forms:
 \begin{scheme}
 ((\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo)
@@ -1952,38 +1952,22 @@ consistent with the following examples:
 
 \begin{entry}{%
 \proto{-}{ z}{procedure}
-\rproto{-}{ \vari{z} \varii{z} \dotsfoo}{procedure}
-\proto{/}{ z}{procedure}
-\rproto{/}{ \vari{z} \varii{z} \dotsfoo}{procedure}}
+\rproto{-}{ \vari{z} \varii{z} \dotsfoo}{procedure}}
 
-With two or more arguments, these procedures return the difference or
-quotient of their arguments, associating to the left.  With one
-argument, however, they return the additive or multiplicative inverse
-of their argument.
+With two or more arguments, this procedures returns the difference of
+its arguments, associating to the left.  With one argument, however,
+it returns the additive inverse of its argument.
 
 \begin{scheme}
 (- 3 4)                                \ev  -1
 (- 3 4 5)                              \ev  -6
 (- 3)                                  \ev  -3
-(- +inf.0 +inf.0)                      \ev  +nan.0
-
-(/ 3 4 5)                              \ev  3/20
-(/ 3)                                  \ev  1/3
-(/ 0.0)                                \ev  +inf.0
-(/ 1.0 0)                              \ev  +inf.0
-(/ -1 0.0)                             \ev  -inf.0
-(/ +inf.0)                             \ev  0.0
-(/ 0 0)                                \lev \exception{\&assertion}
-(/ 3 0)                                \lev \exception{\&assertion}
-(/ 0 3.5)                              \ev  0.0 ; inexact
-(/ 0 0.0)                              \ev  +nan.0
-(/ 0.0 0)                              \ev  +nan.0
-(/ 0.0 0.0)                            \ev  +nan.0%
+(- +inf.0 +inf.0)                      \ev  +nan.0%
 \end{scheme}
 
-If any of these procedures are applied to mixed non-rational real and
-non-real complex arguments, they either raise an exception with
-condition type {\cf\&implementation-restriction} or return an
+If this procedure is applied to mixed non-rational real and
+non-real complex arguments, it either raises an exception with
+condition type {\cf\&implementation-restriction} or returns an
 unspecified number.
 
 Implementations that distinguish $-0.0$ should adopt behavior
@@ -2001,6 +1985,37 @@ consistent with the following examples:
 \begin{rationale}
   This behavior is consistent with the IEEE floating point standard.
 \end{rationale}
+\end{entry}
+
+\begin{entry}{%
+\proto{/}{ z}{procedure}
+\rproto{/}{ \vari{z} \varii{z} \dotsfoo}{procedure}}
+
+\domain{\var{Z} and \varii{z}, \dotsfoo must not be (exact) $0$.}
+With two or more arguments, this procedures returs the 
+quotient of its arguments, associating to the left.  With one
+argument, however, it returns the multiplicative inverse
+of its argument.
+
+\begin{scheme}
+(/ 3 4 5)                              \ev  3/20
+(/ 3)                                  \ev  1/3
+(/ 0.0)                                \ev  +inf.0
+(/ 1.0 0)                              \ev  +inf.0
+(/ -1 0.0)                             \ev  -inf.0
+(/ +inf.0)                             \ev  0.0
+(/ 0 0)                                \lev \exception{\&assertion}
+(/ 3 0)                                \lev \exception{\&assertion}
+(/ 0 3.5)                              \ev  0.0 ; inexact
+(/ 0 0.0)                              \ev  +nan.0
+(/ 0.0 0)                              \ev  +nan.0
+(/ 0.0 0.0)                            \ev  +nan.0%
+\end{scheme}
+
+If this procedure is applied to mixed non-rational real and
+non-real complex arguments, it either raises an exception with
+condition type {\cf\&implementation-restriction} or returns an
+unspecified number.
 \end{entry}
 
 \begin{entry}{%
@@ -3100,7 +3115,7 @@ inverses so far as {\cf equal?}\ is concerned.
 \end{entry}
 
 \begin{entry}{%
-\proto{string-for-each}{ proc \vari{string} \varii{string } \dotsfoo}{procedure}}
+\proto{string-for-each}{ proc \vari{string} \varii{string} \dotsfoo}{procedure}}
 
 \domain{The \var{string}s must all have the same length.  \var{Proc}
   should accept as many arguments as there are {\it string}s.}
@@ -3113,6 +3128,9 @@ as {\cf string-for-each} itself.
 The return values of {\cf string-for-each} \areunspecified.
 
 Analogous to {\cf for-each}.
+
+\implresp The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
 \end{entry}
 
 \begin{entry}{%
@@ -3258,6 +3276,9 @@ The dynamic order in which \var{proc} is applied to the elements of the
 \var{vector}s is unspecified.
 
 Analogous to {\cf map}.
+
+\implresp The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
 \end{entry}
 
 
@@ -3275,6 +3296,9 @@ as {\cf vector-for-each} itself.
 The return values of {\cf vector-for-each} \areunspecified.
 
 Analogous to {\cf for-each}.
+
+\implresp The implementation must check the restrictions
+on \var{proc} to the extent performed by applying it as described.
 \end{entry}
 
 \section{Errors and violations}
@@ -3700,7 +3724,12 @@ invoking the procedure named by \hyper{variable}.
 
 ``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
 for constructing a list or vector structure when some but not all of the
-desired structure is known in advance.  If no
+desired structure is known in advance.  
+
+\syntax \hyper{Qq template} should be as specified by the grammar at
+the end of this entry.
+
+\semantics If no
 {\cf unquote} or {\cf unquote-splicing} forms
 appear within the \hyper{qq template}, the result of
 evaluating
@@ -4212,7 +4241,8 @@ which would result in an assertion violation.
   ((set! \hyperii{id} \hyper{pattern})\\
    \hyperii{template}))}
 
-\syntax The \hyper{id}s must be identifiers.
+\syntax The \hyper{id}s must be identifiers.  The \hyper{template}s
+must be as for {\cf syntax-case}.
 
 \semantics
 When a keyword is bound to a transformer produced by the first form of
