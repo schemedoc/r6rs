@@ -1,0 +1,53 @@
+\chapter{Library file system mapping}
+\label{filesystemmappingappendix}
+
+Storing library source code as files in a file system is a common way to
+support the use of standard tools for editing and other kinds of
+source code processing.
+
+The following recommendation specifies a standard way to map library
+names to file names in popular filesystems, using an approach in which 
+each file contains exactly one library form.  Following this recommendation
+will allow users to work with a familiar source code structure across 
+implementations, and can also allow multiple implementations to share 
+a common repository of library source code.
+
+The form of a library name is specified in 
+section~\extref{report:librarysyntaxsection}{Library form}.  It can be 
+expressed as follows:
+
+\begin{scheme}
+(\hyperi{identifier} \hyperii{identifier} \ldots \hypern{identifier} \hyper{version})%
+\end{scheme}
+
+where \hyper{version} is empty or has the following form:
+%
+\begin{scheme}
+(\hyperi{sub-version} \hyperii{sub-version} \ldots)%
+\end{scheme}
+
+Such a library name should be mapped to a file in the file system with
+the following relative path:
+%TODO: not scheme
+\begin{scheme}
+\hyperi{identifier} \hyper{sep} \hyperii{identifier} \hyper{sep} \ldots \hypern{identifier} \hyper{xsep} \hyper{extension}
+\end{scheme}
+where \hyper{sep} is the platform-specific character (such as ``/'')
+used to separate path elements (typically directory names); \hyper{xsep} 
+is the platform-specific character (typically a period) used to separate parts 
+of a filename; and \hyper{extension} has the following form:
+
+%TODO: not scheme
+\begin{scheme}
+\hyperi{sub-version} \hyper{xsep} \hyperii{sub-version} \hyper{xsep} \ldots sls%
+\end{scheme}
+
+Note that the resulting path is relative to some implementation-dependent root 
+directory.
+
+%TODO:filename length limits, e.g. DOS? VMS? :)
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-app"
+%%% End: 
