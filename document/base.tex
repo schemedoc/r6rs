@@ -1107,6 +1107,11 @@ character according to the {\cf char=?} procedure
   section~\extref{lib:recordsproceduralsection}{Procedural layer}.
 \end{itemize}
 
+Moreover, if {\cf (eqv? \vari{obj} \varii{obj})} returns \schtrue,
+then \vari{obj} and \varii{obj} behave the same when passed as
+arguments to any procedure that can be written as a finite composition
+of Scheme's standard procedures.
+
 The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 
 \begin{itemize}
@@ -1149,6 +1154,12 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
   section~\extref{lib:portsiosection}{Port I/O}), and hashtables (library
   chapter~\extref{lib:hashtablechapter}{Hashtables}) that denote
   distinct locations.
+
+\item \vari{Obj} and \varii{obj} are pairs, vectors, strings, or
+  records, or hashtables, where the applying the same accessor (i.e.\
+  {\cf car}, {\cf cdr}, {\cf vector-ref}, {\cf string-ref}, or record
+  accessors) to both yields results for which {\cf eqv?} returns
+  \schfalse.
 
 \item \vari{Obj} and \varii{obj} are procedures that would behave differently
 (return different values or have different side effects) for some arguments.
@@ -1275,13 +1286,14 @@ capable of discerning distinctions finer than those detectable by
 
 The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the same
 behavior on symbols, booleans, the empty list, 
-pairs, procedures,
-non-empty
+mutable pairs, procedures,
+non-empty, mutable
 strings and vectors, and mutable records.  The behavior of {\cf eq?} on numbers and characters is
 implementation-dependent, but it always returns either \schtrue{} or
 \schfalse{}, and returns \schtrue{} only when {\cf eqv?}\ would also return
 \schtrue.  The {\cf eq?} predicate may also behave differently from {\cf eqv?} on empty
-vectors and empty strings.
+vectors and empty strings, and on immutable pairs, vectors, strings,
+and records.
 
 \begin{scheme}
 (eq? 'a 'a)                     \ev  \schtrue
