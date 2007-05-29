@@ -13,9 +13,10 @@
 ;
 ; Reference implementation of (r6rs unicode)
 ;
-; This just combines the (proto-unicode1) and (proto-unicode2)
-; libraries, which are in separate files because their copyright
-; notices are different.
+; This just combines the various (proto-unicode*) libraries.
+; One of them has to be in a separate file because its copyright
+; notice is different from the others, and the others are in
+; separate files to impose some modularity upon this library.
 
 (library (r6rs unicode)
   (export
@@ -55,5 +56,8 @@
     string-normalize-nfc
     string-normalize-nfkc)
 
-  (import (proto-unicode1)
-          (proto-unicode2)))
+  (import ;(proto-unicode0)
+           (proto-unicode1)
+          ;(proto-unicode2)
+           (proto-unicode3)
+           (proto-unicode4)))

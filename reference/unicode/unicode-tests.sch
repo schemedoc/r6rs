@@ -1,5 +1,22 @@
+; Copyright 2006 William D Clinger.
+;
+; Permission to copy this software, in whole or in part, to use this
+; software for any lawful purpose, and to redistribute this software
+; is granted subject to the restriction that all copies made of this
+; software must include this copyright notice in full.
+;
+; I also request that you send me a copy of any improvements that you
+; make to this software so that they may be incorporated within it to
+; the benefit of the Scheme community.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
 ; Basic tests of (r6rs unicode) procedures,
 ; mostly taken from the R6RS examples.
+;
+; Usage:
+;
+; > (load "unicode-tests.sch")
 ;
 ; This is R5RS code.
 ; It does not rely upon any non-R5RS lexical syntax.
@@ -54,6 +71,32 @@
      (let-syntax ((test (syntax-rules (=> error)
                          ((test name exp => result)
                           (unicode-test char- name exp => result exit)))))
+
+       ; Given a unary predicate on characters, returns a sorted
+       ; list of all characters that satisfy the predicate.
+
+       (define (filter-all-chars p?)
+         (do ((i 0 (+ i 1))
+              (chars '()
+                     (if (and (not (<= #xd800 i #xdfff))
+                              (p? (integer->char i)))
+                         (cons (integer->char i) chars)
+                         chars)))
+             ((= i #x110000)
+              (reverse chars))))
+
+       ; Given a list of characters, prints its length and returns 0.
+
+       (define (report chars n)
+         (display "  ")
+         (display (length chars))
+         (display " characters")
+         (if (not (= n (length chars)))
+             (begin (display " but expected ")
+                    (write n)
+                    (display " in Unicode 5.0.0")))
+         (newline)
+         0)
 
        (test type1 (integer->char 32) => #\space)
        (test type2 (char->integer (integer->char 5000)) => 5000)
@@ -110,6 +153,51 @@
                  ((= i #x110000)
                   (reverse excluded)))
              => excluded-code-points-above-127)
+
+       (test upcase
+             (filter-all-chars (lambda (c) (char-upcase c) #f))
+             => '())
+
+       (test downcase
+             (filter-all-chars (lambda (c) (char-downcase c) #f))
+             => '())
+
+       (test titlecase
+             (filter-all-chars (lambda (c) (char-titlecase c) #f))
+             => '())
+
+       (test foldcase
+             (filter-all-chars (lambda (c) (char-foldcase c) #f))
+             => '())
+
+       (test general-category
+             (report (filter-all-chars (lambda (c) (char-general-category c)))
+                     1112064)
+             => 0)
+
+       (test alphabetic?
+             (report (filter-all-chars char-alphabetic?) 93217)
+             => 0)
+
+       (test numeric?
+             (report (filter-all-chars char-numeric?) 282)
+             => 0)
+
+       (test whitespace?
+             (report (filter-all-chars char-whitespace?) 26)
+             => 0)
+
+       (test upper-case?
+             (report (filter-all-chars char-upper-case?) 1362)
+             => 0)
+
+       (test lower-case?
+             (report (filter-all-chars char-lower-case?) 1791)
+             => 0)
+
+       (test title-case?
+             (report (filter-all-chars char-title-case?) 31)
+             => 0)
 
 ))))
 

@@ -13,30 +13,15 @@
 ;
 ; (proto-unicode1)
 ;
-; This file contains all of the code for (r6rs unicode) except
-; for the four normalization procedures, which are in
-; (proto-unicode2).
+; This file contains all of the code for R6RS library section 1.1.
+; In other words, this file contains the operations on characters,
+; but not the operations on strings.
 ;
 ; The tables in this file were generated from the
 ; Unicode Character Database, revision 5.0.0.
 ;
 ; This file does not rely on any lexical syntax for
-; characters and strings.
-;
-; FIXME:
-;
-;     The string folding and normalization procedures should
-;     run much faster on strings that consist entirely of
-;     ASCII characters.  (Search for FIXME.)
-;
-;     The normalization procedures have been tested on
-;     the standard tests in NormalizationTests.txt, and
-;     that exercises some of the the procedures in this
-;     file, but other procedures haven't been tested
-;     very thoroughly.
-;
-;     The tables should be updated for Unicode 5.0, and
-;     the testing repeated.
+; non-Ascii characters and strings.
 
 (library (proto-unicode1)
   (export
@@ -58,21 +43,11 @@
     char-whitespace?
     char-upper-case?
     char-lower-case?
-    char-title-case?
-
-    string-upcase
-    string-downcase
-    string-titlecase
-    string-foldcase
-
-    string-ci=?
-    string-ci<?
-    string-ci>?
-    string-ci<=?
-    string-ci>=?)
+    char-title-case?)
 
   (import (r6rs base)
-          (r6rs bytevector))
+          (r6rs bytevector)
+          (proto-unicode0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -119,13 +94,13 @@
            (let ((probe
                   (if (<= n #xffff)
                       (binary-search-16bit n simple-upcase-chars-16bit)
-                      (binary-search-of-vector
-                       n simple-upcase-chars-morebits))))
+                      (binary-search n simple-upcase-chars-morebits))))
              (if probe
                  (integer->char
                   (+ n (vector-ref simple-case-adjustments
-                                   (bytevector-u8-ref simple-upcase-adjustments
-                                                 probe))))
+                                   (bytevector-u8-ref
+                                    simple-upcase-adjustments
+                                    probe))))
                  c))))))
 
 (define (char-downcase c)
@@ -142,13 +117,13 @@
            (let ((probe
                   (if (<= n #xffff)
                       (binary-search-16bit n simple-downcase-chars-16bit)
-                      (binary-search-of-vector
-                       n simple-downcase-chars-morebits))))
+                      (binary-search n simple-downcase-chars-morebits))))
              (if probe
                  (integer->char
                   (- n (vector-ref simple-case-adjustments
-                                   (bytevector-u8-ref simple-downcase-adjustments
-                                                 probe))))
+                                   (bytevector-u8-ref
+                                    simple-downcase-adjustments
+                                    probe))))
                  c))))))
 
 ; FIXME:
@@ -188,9 +163,9 @@
           (char-downcase (char-upcase c)))))))
 
 ; Given a character, returns its Unicode general category.
-; The tables used to implement this procedure occupy about 12440 bytes.
-; 4408 of those bytes could be saved by splitting the large vector
-; into a bytevector for the 16-bit scalar values and using a
+; The tables used to implement this procedure occupy about 12869 bytes.
+; About a third of those bytes could be saved by splitting the large
+; vector into a bytevector for the 16-bit scalar values and using a
 ; general vector only for the scalar values greater than 65535.
 
 (define (char-general-category c)
@@ -206,470 +181,179 @@
                         vector-of-code-points-with-same-category))))))
 
 ; Given a character, returns true if and only if the character
-; is alphabetic, numeric, whitespace, upper-case, lower-case,
-; or title-case respectively.
+; has the Alphabetic property, which is defined as
+; Other_Alphabetic + Lu + Ll + Lt + Lm + Lo + Nl
+;
+; FIXME:
+; Hard-coding knowledge of Other_Alphabetic into this procedure
+; means this procedure will have to be revisited whenever the
+; Unicode database is changed.
+;
+; Note: the hard-coded excluded ranges were computed by
+;     (decision-strategy (extract-other-alphabetic))
+; and inserted into the code by cut-and-paste
+; and a couple of Emacs keyboard macros.
 
 (define (char-alphabetic? c)
-  (if (memq (char-general-category c)
-            '(Lu Ll Lt Lm Lo))
-      #t
-      #f))
+  (if (< (char->integer c) 128)
+      (or (and (char<=? #\a c) (char<=? c #\z))
+          (and (char<=? #\A c) (char<=? c #\Z)))
+      (let ((category (char-general-category c)))
+        (case category
+         ((Lu Ll Lt Lm Lo Nl)
+          #t)
+         ((Mc)
+          (let ((sv (char->integer c)))
+            (cond ((<  sv #xf3e) #t)
+                  ((<= #xf3e sv #xf3f) #f)
+                  ((<= #x1b44 sv #xa802) #f)
+                  ((<= #x1d165 sv #x1d172) #f)
+                  (else #t))))
+         ((Mn)
+          (let ((sv (char->integer c)))
+            (cond ((<  sv #x300) #t)
+                  ((<= #x300 sv #x344) #f)
+                  ((<= #x346 sv #x5af) #f)
+                  ((<= #x6df sv #x6e0) #f)
+                  ((<= #x6ea sv #x6ec) #f)
+                  ((<= #x740 sv #x74a) #f)
+                  ((<= #x7eb sv #x7f3) #f)
+                  ((<= #x94d sv #x954) #f)
+                  ((<= #xd4d sv #xdca) #f)
+                  ((<= #xe47 sv #xe4c) #f)
+                  ((<= #xec8 sv #xecc) #f)
+                  ((<= #xf18 sv #xf39) #f)
+                  ((<= #xf82 sv #xf87) #f)
+                  ((<= #x1037 sv #x1039) #f)
+                  ((<= #x17c9 sv #x180d) #f)
+                  ((<= #x1939 sv #x193b) #f)
+                  ((<= #x1b6b sv #xa80b) #f)
+                  ((<= #xfe00 sv #xfe23) #f)
+                  ((<= #x10a38 sv #xe01ef) #f)
+                  ((memv sv '(#x658 #x93c #x9bc #x9cd #xa3c #xa4d #xabc #xacd
+                              #xb3c #xb4d #xbcd #xc4d #xcbc #xccd #xe4e #xfc6
+                              #x1714 #x1734 #x1b34))
+                   #f)
+                  (else #t))))
+         (else (<= #x24b6 (char->integer c) #x24e9))))))
+
+; Given a character, returns true if and only if the character
+; has the numeric property, which appears to be true if and only if
+; its entry in UnicodeData.txt contains a numeric value in column 8.
+;
+; FIXME:
+; Hard-coding knowledge of Numeric into this procedure
+; means this procedure will have to be revisited whenever the
+; Unicode database is changed.
+;
+; Note: the hard-coded code points were computed by
+;     (decision-strategy (extract-numeric))
 
 (define (char-numeric? c)
-  (eq? (char-general-category c)
-       'Nd))
+  (case (char-general-category c)
+   ((Nd)
+    (cond ((<= #xff10 (char->integer c) #xff19) #f)
+          (else #t)))
+   (else
+    (<= #x66b (char->integer c) #x66c))))
+
+; FIXME:
+; The predicate above computes the Numeric property
+; that is needed for word-breaking.  The predicate
+; that is commented out below computes the more
+; inclusive property of having a numeric value,
+; which includes characters for fractions et cetera.
+;
+; Note: the hard-coded excluded ranges were computed by
+;     (decision-strategy (map car (extract-numeric-values)))
+;
+;(define (char-numeric? c)
+;  (if (< (char->integer c) 128)
+;      (and (char<=? #\0 c) (char<=? c #\9))
+;      (case (char-general-category c)
+;       ((Nd) #t)
+;       ((No) (not (= #x09f8 (char->integer c))))
+;       ((Nl) (case (char->integer c)
+;              ((#x12432 #x12433 #x12456 #x12457) #f)
+;              (else #t)))
+;       (else #f))))
+
+; Given a character, returns true if and only if the character
+; has the White_Space property, which is enumerated in PropList.txt.
+;
+; FIXME:
+; Hard-coding the exceptional code points into this procedure
+; means this procedure will have to be revisited whenever the
+; Unicode database is changed.
 
 (define (char-whitespace? c)
   (let ((k (char->integer c)))
     (if (< k 256)
         (case k
-         ((#x09 #x0a #x0b #x0c #x0d #x20 #xa0) #t)
+         ((#x09 #x0a #x0b #x0c #x0d #x20 #x85 #xa0) #t)
          (else #f))
-        (if (memq (char-general-category c)
-                  '(Zs Zl Zp))
-            #t
-            #f))))
+        (case (char-general-category c)
+         ((Zs Zl Zp) #t)
+         (else #f)))))
+
+; Given a character, returns true if and only if the character
+; has the Uppercase property, which is defined as
+; Other_Uppercase + Lu.
+;
+; FIXME:
+; Hard-coding knowledge of Other_Uppercase into this procedure
+; means this procedure will have to be revisited whenever the
+; Unicode database is changed.
 
 (define (char-upper-case? c)
-  (eq? 'Lu (char-general-category c)))
+  (if (< (char->integer c) 128)
+      (and (char<=? #\A c) (char<=? c #\Z))
+      (or (eq? 'Lu (char-general-category c))
+          ; In Unicode 5.0.0, Other_Uppercase consists of
+          ; 2160..216F and 24B6..24CF
+          (let ((sv (char->integer c)))
+            (cond ((< sv #x2160)
+                   #f)
+                  ((> sv #x24cf)
+                   #f)
+                  ((<= #x2170 sv #x24b5)
+                   #f)
+                  (else #t))))))
+
+; Given a character, returns true if and only if the character
+; has the Lowercase property, which is defined as
+; Other_Lowercase + Ll.
+;
+; FIXME:
+; Hard-coding knowledge of Other_Lowercase into this procedure
+; means this procedure will have to be revisited whenever the
+; Unicode database is changed.
 
 (define (char-lower-case? c)
-  (eq? 'Ll (char-general-category c)))
+  (if (< (char->integer c) 128)
+      (and (char<=? #\a c) (char<=? c #\z))
+      (or (eq? 'Ll (char-general-category c))
+          (let ((sv (char->integer c)))
+            (cond ((< sv #x02b0) #f)
+                  ((> sv #x24e9) #f)
+                  (else
+                   (or (<= #x02b0 sv #x02b8)
+                       (<= #x02c0 sv #x02c1)
+                       (<= #x02e0 sv #x02e4)
+                       (= sv #x0345)
+                       (= sv #x037a)
+                       (<= #x1d2c sv #x1d61)
+                       (= sv #x1d78)
+                       (<= #x1d9b sv #x1dbf)
+                       (<= #x2090 sv #x2094)
+                       (<= #x2170 sv #x217f)
+                       (<= #x24d0 sv #x24e9))))))))
+
+; Given a character, returns true if and only if the character
+; is in Unicode general category Lt.
 
 (define (char-title-case? c)
   (eq? 'Lt (char-general-category c)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; Procedures that operate on strings.
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; Case-insensitive comparisons.
-
-(define (string-ci=? s1 s2)
-  (string=? (string-foldcase s1) (string-foldcase s2)))
-
-(define (string-ci<? s1 s2)
-  (string<? (string-foldcase s1) (string-foldcase s2)))
-
-(define (string-ci>? s1 s2)
-  (string>? (string-foldcase s1) (string-foldcase s2)))
-
-(define (string-ci<=? s1 s2)
-  (string<=? (string-foldcase s1) (string-foldcase s2)))
-
-(define (string-ci>=? s1 s2)
-  (string>=? (string-foldcase s1) (string-foldcase s2)))
-
-(define (string-upcase s)
-  (let* ((n (string-length s))
-         (s2 (make-string n)))
-    ; For when character-to-character mappings suffice.
-    (define (fast i)
-      (if (< i n)
-          (let* ((c (string-ref s i))
-                 (cp (char->integer c)))
-            (if (< cp #x00df)
-                (begin (string-set! s2 i (char-upcase c))
-                       (fast (+ i 1)))
-                (let ((probe (binary-search-16bit cp special-case-chars)))
-                  (if probe
-                      (let ((c2 (vector-ref special-uppercase-mapping probe)))
-                        (if (char? c2)
-                            (begin (string-set! s2 i c2)
-                                   (fast (+ i 1)))
-                            (slow-caser s
-                                        i
-                                        (list (substring s2 0 i))
-                                        i
-                                        char-upcase
-                                        special-uppercase-mapping)))
-                      (begin (string-set! s2 i (char-upcase c))
-                             (fast (+ i 1)))))))
-          s2))
-    (fast 0)))
-
-(define (string-downcase s)
-  (let* ((n (string-length s))
-         (s2 (make-string n)))
-    ; For when character-to-character mappings suffice.
-    (define (fast i)
-      (if (< i n)
-          (let* ((c (string-ref s i))
-                 (cp (char->integer c)))
-            (if (< cp #x00df)
-                (begin (string-set! s2 i (char-downcase c))
-                       (fast (+ i 1)))
-                (let ((probe (binary-search-16bit cp special-case-chars)))
-                  (if probe
-                      (let ((c2 (vector-ref special-lowercase-mapping probe)))
-                        (if (char? c2)
-                            ; Special handling of Greek final sigma
-                            ; when converting to lower case.
-                            (if (and (char? c2)
-                                     (= (char->integer c2)
-                                        #x03c2))
-                                ; Is the sigma the last letter of a word?
-                                (let ((c3 (if (final-cased? s i)
-                                              c2
-                                              (integer->char #x03c3))))
-                                  (string-set! s2 i c3)
-                                  (fast (+ i 1)))
-                                (begin (string-set! s2 i c2)
-                                       (fast (+ i 1))))
-                            ; String length must grow.
-                            (slow-caser s
-                                        i
-                                        (list (substring s2 0 i))
-                                        i
-                                        char-downcase
-                                        special-lowercase-mapping)))
-                      (begin (string-set! s2 i (char-downcase c))
-                             (fast (+ i 1)))))))
-          s2))
-    (fast 0)))
-
-; The string-titlecase procedure converts the first character
-; to titlecase in each contiguous sequence of cased characters
-; within string, and it downcases all other cased characters;
-; for the purposes of detecting cased-character sequences,
-; case-ignorable characters are ignored (i.e., they do not
-; interrupt the sequence).
-;
-; A character C is defined to be case-ignorable if C has the Unicode
-; Property Word_Break=MidLetter as defined in Unicode Standard Annex
-; #29, "Text Boundaries;" or the General Category of C is Nonspacing
-; Mark (Mn), Enclosing Mark (Me), Format Control (Cf), Letter Modifier
-; (Lm), or Symbol Modifier (Sk).
-
-(define (string-titlecase s)
-  (let ((n (string-length s)))
-    (define (loop i isFirst chars)
-      (if (= i n)
-
-          ; Concatenate the characters and strings.
-          (let* ((n2 (do ((mapped chars (cdr mapped))
-                          (n2 0
-                              (+ n2 (if (char? (car mapped))
-                                        1
-                                        (string-length (car mapped))))))
-                         ((null? mapped) n2)))
-                 (s2 (make-string n2)))
-            (define (loop i mapped)
-              (if (null? mapped)
-                  s2
-                  (let ((c2 (car mapped)))
-                    (if (char? c2)
-                        (let ((i1 (- i 1)))
-                          (string-set! s2 i1 c2)
-                          (loop i1 (cdr mapped)))
-                        (do ((j (- (string-length c2) 1) (- j 1))
-                             (i (- i 1) (- i 1)))
-                            ((< j 0)
-                             (loop i (cdr mapped)))
-                          (string-set! s2 i (string-ref c2 j)))))))
-            (loop n2 chars))
-
-          (let* ((c (string-ref s i))
-                 (cp (char->integer c))
-                 (category (char-general-category c)))
-            (case category
-             ((Lu Ll Lt)
-              (let ((probe (if (< cp #x00df)
-                               #f
-                               (binary-search-16bit cp special-case-chars))))
-                (if isFirst
-                    (let ((x (if probe
-                                 (vector-ref special-titlecase-mapping probe)
-                                 (char-titlecase c))))
-                      (loop (+ i 1) #f (cons x chars)))
-                    (let ((x (if probe
-                                 (vector-ref special-lowercase-mapping probe)
-                                 (char-downcase c))))
-                      (loop (+ i 1) #f (cons x chars))))))
-             ((Po Pf)
-              (case (char->integer c)
-               ; The MidLetter characters are:
-               ; apostrophe, middle dot,
-               ; Hebrew punctuation GERSHAYIM,
-               ; right single quotation mark,
-               ; hyphenation point, colon
-               ((#x0027 #x00b7 #x05f4 #x2019 #x2027 #x003a)
-                (loop (+ i 1) isFirst (cons c chars)))
-               (else
-                (loop (+ i 1) #t (cons c chars)))))
-             ((Mn Me Cf Lm Sk)
-              (loop (+ i 1) isFirst (cons c chars)))
-             (else
-              (loop (+ i 1) #t (cons c chars)))))))
-    (loop 0 #t '())))
-
-; Returns the case-folded version of a string.
-; If the string is already case-folded, then it may be returned.
-;
-; FIXME: The draft R6RS permits the argument to be returned only
-; if the argument is mutable, but a formal comment has requested
-; a change that would allow this implementation.
-
-(define (string-foldcase s)
-  (string-foldcase-fast s))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; Help procedures and tables (not part of R6RS)
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; Given a string s, returns a string that is string=? to
-; (string-foldcase s), but the result may be eq? to s.
-
-(define (string-foldcase-fast s)
-  (let ((n (string-length s)))
-
-    ; All characters of s before index i are ASCII,
-    ; and none are upper case.  If i is the length
-    ; of s, then s can be returned as the result.
-
-    (define (foldcase-without-allocating i)
-      (if (= i n)
-          s
-          (let ((c (string-ref s i)))
-            (if (char<=? c #\x7f)
-                (if (not (char-upper-case? c))
-                    (foldcase-without-allocating (+ i 1))
-                    (foldcase-ascii (make-string n) 0))
-                (string-foldcase-slow s)))))
-
-    ; All characters of s before index i are ASCII,
-    ; and their downcased versions have been stored
-    ; into the corresponding elements of s2.
-    ; If i is the length of s, then s2 is the result.
-
-    (define (foldcase-ascii s2 i)
-      (if (= i n)
-          s2
-          (let ((c (string-ref s i)))
-            (if (char<=? c #\x7f)
-                (begin (string-set! s2 i (char-downcase c))
-                       (foldcase-ascii s2 (+ i 1)))
-                (string-foldcase-slow s)))))
-
-    ; The general case: easy but slow.
-
-    (define (string-foldcase-slow s)
-      (string-downcase (string-upcase s)))
-
-    (foldcase-without-allocating 0)))
-
-; Given an exact integer key and a vector of exact integers
-; in strictly increasing order, returns the largest i such
-; that element i of the vector is less than or equal to key,
-; or -1 if key is less than every element of the vector.
-
-(define (binary-search-of-vector key vec)
-
-  ; Loop invariants:
-  ; 0 <= i < j <= (vector-length vec)
-  ; vec[i] <= key
-  ; if j < (vector-length vec), then key < vec[j]
-
-  (define (loop i j)
-    (let ((mid (quotient (+ i j) 2)))
-      (cond ((= i mid)
-             mid)
-            ((<= (vector-ref vec mid) key)
-             (loop mid j))
-            (else
-             (loop i mid)))))
-
-  (let ((hi (vector-length vec)))
-    (if (or (= hi 0) (< key (vector-ref vec 0)))
-        -1
-        (loop 0 hi))))
-
-; Given an exact integer key and a bytevector of 16-bit unsigned
-; big-endian integers in strictly increasing order,
-; returns i such that elements (* 2 i) and (+ (* 2 i) 1)
-; are equal to the key, or returns #f if the key is not found.
-
-(define (binary-search-16bit key bytes)
-
-  (define (bytevector-ref16 bytes i)
-    (let ((i2 (+ i i)))
-      (+ (* 256 (bytevector-u8-ref bytes i2))
-         (bytevector-u8-ref bytes (+ i2 1)))))
-
-  (define (loop i j)
-    (let ((mid (quotient (+ i j) 2)))
-      (cond ((= i mid)
-             (if (= (bytevector-ref16 bytes mid) key)
-                 mid
-                 #f))
-            ((<= (bytevector-ref16 bytes mid) key)
-             (loop mid j))
-            (else
-             (loop i mid)))))
-
-  (let ((hi (quotient (bytevector-length bytes) 2)))
-    (if (or (= hi 0) (< key (bytevector-ref16 bytes 0)))
-        #f
-        (loop 0 hi))))
-
-; Given:
-;
-;     s:       the string whose case is being converted
-;     i:       an exact integer index into or past s
-;     mapped:  a list of characters and strings
-;     n2:      an exact integer
-;     caser:   a simple case mapping
-;     table:   a table of special mappings
-;
-; such that:
-;
-;     0 <= i <= (string-length s)
-;     (substring s 0 i) maps to (concatenation (reverse mapped))
-;     n2 = (string-length (concatenation (reverse mapped)))
-;     caser is char-downcase, char-upcase, or char-titlecase
-;     table is one of
-;         special-lowercase-mapping
-;         special-uppercase-mapping
-;         special-titlecase-mapping
-;
-; where (concatenation things)
-;     = (apply string-append
-;              (map (lambda (x) (if (char? x) (string x) x))
-;                   things))
-;
-; Returns: the cased version of s.
-
-(define (slow-caser s i mapped n2 caser table)
-  (if (< i (string-length s))
-      (let* ((c (string-ref s i))
-             (cp (char->integer c)))
-        (if (< cp #x00df)
-            (slow-caser s
-                        (+ i 1)
-                        (cons (caser c) mapped)
-                        (+ n2 1)
-                        caser
-                        table)
-            (let ((probe (binary-search-16bit cp special-case-chars)))
-              (if probe
-                  (let ((c2 (vector-ref table probe)))
-                    ; Special handling of Greek final sigma
-                    ; when converting to lower case.
-                    (if (and (char? c2)
-                             (= (char->integer c2)
-                                #x03c2))
-                        ; Is the sigma the last letter of a word?
-                        (let ((c3 (if (final-cased? s i)
-                                      c2
-                                      (integer->char #x03c3))))
-                          (slow-caser s
-                                      (+ i 1)
-                                      (cons c3 mapped)
-                                      (+ n2 1)
-                                      caser
-                                      table))
-                        (slow-caser s
-                                    (+ i 1)
-                                    (cons c2 mapped)
-                                    (+ n2
-                                       (if (char? c2)
-                                           1
-                                           (string-length c2)))
-                                    caser
-                                    table)))
-                  (slow-caser s
-                              (+ i 1)
-                              (cons (caser c) mapped)
-                              (+ n2 1)
-                              caser
-                              table)))))
-      (let ((s2 (make-string n2)))
-        (define (loop i mapped)
-          (if (null? mapped)
-              s2
-              (let ((c2 (car mapped)))
-                (if (char? c2)
-                    (let ((i1 (- i 1)))
-                      (string-set! s2 i1 c2)
-                      (loop i1 (cdr mapped)))
-                    (do ((j (- (string-length c2) 1) (- j 1))
-                         (i (- i 1) (- i 1)))
-                        ((< j 0)
-                         (loop (+ i 1) (cdr mapped)))
-                      (string-set! s2 i (string-ref c2 j)))))))
-        (loop n2 mapped))))
-
-; Given a string s and an index i into s,
-; returns #t if and only if C = (string-ref s i) is
-; a Final_Cased casing context:
-;
-; Within the closest word boundaries containing C,
-; there is a cased letter before C, and there is
-; no cased letter after C.
-;
-; FIXME:  We assume (string-ref s i) is a letter.
-; Right now, it is always some kind of Greek sigma.
-; That means we can count MidNum and Katakana as word boundaries.
-
-(define (final-cased? s i)
-  (and (cased-before? s i)
-       (not (cased-after? s i))))
-
-(define (cased-after? s i)
-  (cased-dir? s i +1))
-
-(define (cased-before? s i)
-  (cased-dir? s i -1))
-
-; (cased-dir? s i +1) is true iff a cased letter follows within this word
-; (cased-dir? s i -1) is true iff a cased letter precedes within this word
-;
-; The things that do not count as a word boundary are
-;     Format and Extend characters
-;     letters (ALetter)
-;     MidLetter punctuation
-;     digits (Numeric) adjacent to digits or letters
-;     MidNum adjacent to Numeric
-;     Katakana adjacent to Katakana
-;     ExtendNumLet (Pc) adjacent to ALetter or Numeric or Katakana
-;
-; Everything else counts as a word boundary.
-; FIXME:  We can count MidNum and Katakana as word boundaries,
-; since this is called only by final-cased?.
-
-(define (cased-dir? s i increment)
-  (let ((i1 (+ i increment)))
-    (and (< -1 i1 (string-length s))
-         (let* ((c (string-ref s i1))
-                (category (char-general-category c)))
-           (case category
-             ((Lu Ll Lt) #t)
-             ((Lm Lo Nd Nl Cf)
-              (case (char->integer c)
-                ((#x200c #x200d) #f)
-                (else
-                 (cased-dir? s i1 increment))))
-             ((Pc)
-              (let ((ci (string-ref s i)))
-                (and (or (char-alphabetic? ci) (char-numeric? ci))
-                     (cased-dir? s i1 increment))))
-             ((Po Pf)
-              (case (char->integer c)
-                ; The MidLetter characters are:
-                ; apostrophe, middle dot,
-                ; Hebrew punctuation GERSHAYIM,
-                ; right single quotation mark,
-                ; hyphenation point, colon
-                ;
-                ; Also, Hebrew punctuation GERESH counts as alphabetic
-                ((#x0027 #x00b7 #x05f4 #x2019 #x2027 #x003a #x05f3)
-                 (cased-dir? s i1 increment))
-                (else #f)))
-             (else #f))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -2026,387 +1710,14 @@
         #x21 #x21 #x21 #x21 #x21 #x21 #x21 #x21 
         #x21 #x21 ))
 
-; This bytevector uses two bytes per code point
-; to list 16-bit code points, in increasing order,
-; that have anything other than a simple case mapping.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; The locale-dependent mappings are not in this table.
+; The following tables were generated from PropList.txt.
+; Use parseUCDpart2.sch to regenerate these tables.
 ;
-; This table contains 210 elements.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define special-case-chars
-  '#vu8(
-        #x0 #xdf #x1 #x30 #x1 #x49 #x1 #xf0 
-        #x3 #x90 #x3 #xa3 #x3 #xb0 #x3 #xc3 
-        #x5 #x87 #x1e #x96 #x1e #x97 #x1e #x98 
-        #x1e #x99 #x1e #x9a #x1f #x50 #x1f #x52 
-        #x1f #x54 #x1f #x56 #x1f #x80 #x1f #x81 
-        #x1f #x82 #x1f #x83 #x1f #x84 #x1f #x85 
-        #x1f #x86 #x1f #x87 #x1f #x88 #x1f #x89 
-        #x1f #x8a #x1f #x8b #x1f #x8c #x1f #x8d 
-        #x1f #x8e #x1f #x8f #x1f #x90 #x1f #x91 
-        #x1f #x92 #x1f #x93 #x1f #x94 #x1f #x95 
-        #x1f #x96 #x1f #x97 #x1f #x98 #x1f #x99 
-        #x1f #x9a #x1f #x9b #x1f #x9c #x1f #x9d 
-        #x1f #x9e #x1f #x9f #x1f #xa0 #x1f #xa1 
-        #x1f #xa2 #x1f #xa3 #x1f #xa4 #x1f #xa5 
-        #x1f #xa6 #x1f #xa7 #x1f #xa8 #x1f #xa9 
-        #x1f #xaa #x1f #xab #x1f #xac #x1f #xad 
-        #x1f #xae #x1f #xaf #x1f #xb2 #x1f #xb3 
-        #x1f #xb4 #x1f #xb6 #x1f #xb7 #x1f #xbc 
-        #x1f #xc2 #x1f #xc3 #x1f #xc4 #x1f #xc6 
-        #x1f #xc7 #x1f #xcc #x1f #xd2 #x1f #xd3 
-        #x1f #xd6 #x1f #xd7 #x1f #xe2 #x1f #xe3 
-        #x1f #xe4 #x1f #xe6 #x1f #xe7 #x1f #xf2 
-        #x1f #xf3 #x1f #xf4 #x1f #xf6 #x1f #xf7 
-        #x1f #xfc #xfb #x0 #xfb #x1 #xfb #x2 
-        #xfb #x3 #xfb #x4 #xfb #x5 #xfb #x6 
-        #xfb #x13 #xfb #x14 #xfb #x15 #xfb #x16 
-        #xfb #x17 ))
-
-; Each code point in special-case-chars maps to the
-; character or string contained in the following tables.
-;
-; Each of these tables contains 105 elements, not counting
-; the strings that are the elements themselves.
-
-(define special-lowercase-mapping
-  (let ((str (lambda args
-               (if (= 1 (length args))
-                   (integer->char (car args))
-                   (apply string (map integer->char args))))))
-    (vector
-     (str #xdf)
-     (str #x69 #x307)
-     (str #x149)
-     (str #x1f0)
-     (str #x390)
-     (str #x3c2)
-     (str #x3b0)
-     (str #x3c2)
-     (str #x587)
-     (str #x1e96)
-     (str #x1e97)
-     (str #x1e98)
-     (str #x1e99)
-     (str #x1e9a)
-     (str #x1f50)
-     (str #x1f52)
-     (str #x1f54)
-     (str #x1f56)
-     (str #x1f80)
-     (str #x1f81)
-     (str #x1f82)
-     (str #x1f83)
-     (str #x1f84)
-     (str #x1f85)
-     (str #x1f86)
-     (str #x1f87)
-     (str #x1f80)
-     (str #x1f81)
-     (str #x1f82)
-     (str #x1f83)
-     (str #x1f84)
-     (str #x1f85)
-     (str #x1f86)
-     (str #x1f87)
-     (str #x1f90)
-     (str #x1f91)
-     (str #x1f92)
-     (str #x1f93)
-     (str #x1f94)
-     (str #x1f95)
-     (str #x1f96)
-     (str #x1f97)
-     (str #x1f90)
-     (str #x1f91)
-     (str #x1f92)
-     (str #x1f93)
-     (str #x1f94)
-     (str #x1f95)
-     (str #x1f96)
-     (str #x1f97)
-     (str #x1fa0)
-     (str #x1fa1)
-     (str #x1fa2)
-     (str #x1fa3)
-     (str #x1fa4)
-     (str #x1fa5)
-     (str #x1fa6)
-     (str #x1fa7)
-     (str #x1fa0)
-     (str #x1fa1)
-     (str #x1fa2)
-     (str #x1fa3)
-     (str #x1fa4)
-     (str #x1fa5)
-     (str #x1fa6)
-     (str #x1fa7)
-     (str #x1fb2)
-     (str #x1fb3)
-     (str #x1fb4)
-     (str #x1fb6)
-     (str #x1fb7)
-     (str #x1fb3)
-     (str #x1fc2)
-     (str #x1fc3)
-     (str #x1fc4)
-     (str #x1fc6)
-     (str #x1fc7)
-     (str #x1fc3)
-     (str #x1fd2)
-     (str #x1fd3)
-     (str #x1fd6)
-     (str #x1fd7)
-     (str #x1fe2)
-     (str #x1fe3)
-     (str #x1fe4)
-     (str #x1fe6)
-     (str #x1fe7)
-     (str #x1ff2)
-     (str #x1ff3)
-     (str #x1ff4)
-     (str #x1ff6)
-     (str #x1ff7)
-     (str #x1ff3)
-     (str #xfb00)
-     (str #xfb01)
-     (str #xfb02)
-     (str #xfb03)
-     (str #xfb04)
-     (str #xfb05)
-     (str #xfb06)
-     (str #xfb13)
-     (str #xfb14)
-     (str #xfb15)
-     (str #xfb16)
-     (str #xfb17)
-)))
-
-(define special-titlecase-mapping
-  (let ((str (lambda args
-               (if (= 1 (length args))
-                   (integer->char (car args))
-                   (apply string (map integer->char args))))))
-    (vector
-     (str #x53 #x73)
-     (str #x130)
-     (str #x2bc #x4e)
-     (str #x4a #x30c)
-     (str #x399 #x308 #x301)
-     (str #x3a3)
-     (str #x3a5 #x308 #x301)
-     (str #x3a3)
-     (str #x535 #x582)
-     (str #x48 #x331)
-     (str #x54 #x308)
-     (str #x57 #x30a)
-     (str #x59 #x30a)
-     (str #x41 #x2be)
-     (str #x3a5 #x313)
-     (str #x3a5 #x313 #x300)
-     (str #x3a5 #x313 #x301)
-     (str #x3a5 #x313 #x342)
-     (str #x1f88)
-     (str #x1f89)
-     (str #x1f8a)
-     (str #x1f8b)
-     (str #x1f8c)
-     (str #x1f8d)
-     (str #x1f8e)
-     (str #x1f8f)
-     (str #x1f88)
-     (str #x1f89)
-     (str #x1f8a)
-     (str #x1f8b)
-     (str #x1f8c)
-     (str #x1f8d)
-     (str #x1f8e)
-     (str #x1f8f)
-     (str #x1f98)
-     (str #x1f99)
-     (str #x1f9a)
-     (str #x1f9b)
-     (str #x1f9c)
-     (str #x1f9d)
-     (str #x1f9e)
-     (str #x1f9f)
-     (str #x1f98)
-     (str #x1f99)
-     (str #x1f9a)
-     (str #x1f9b)
-     (str #x1f9c)
-     (str #x1f9d)
-     (str #x1f9e)
-     (str #x1f9f)
-     (str #x1fa8)
-     (str #x1fa9)
-     (str #x1faa)
-     (str #x1fab)
-     (str #x1fac)
-     (str #x1fad)
-     (str #x1fae)
-     (str #x1faf)
-     (str #x1fa8)
-     (str #x1fa9)
-     (str #x1faa)
-     (str #x1fab)
-     (str #x1fac)
-     (str #x1fad)
-     (str #x1fae)
-     (str #x1faf)
-     (str #x1fba #x345)
-     (str #x1fbc)
-     (str #x386 #x345)
-     (str #x391 #x342)
-     (str #x391 #x342 #x345)
-     (str #x1fbc)
-     (str #x1fca #x345)
-     (str #x1fcc)
-     (str #x389 #x345)
-     (str #x397 #x342)
-     (str #x397 #x342 #x345)
-     (str #x1fcc)
-     (str #x399 #x308 #x300)
-     (str #x399 #x308 #x301)
-     (str #x399 #x342)
-     (str #x399 #x308 #x342)
-     (str #x3a5 #x308 #x300)
-     (str #x3a5 #x308 #x301)
-     (str #x3a1 #x313)
-     (str #x3a5 #x342)
-     (str #x3a5 #x308 #x342)
-     (str #x1ffa #x345)
-     (str #x1ffc)
-     (str #x38f #x345)
-     (str #x3a9 #x342)
-     (str #x3a9 #x342 #x345)
-     (str #x1ffc)
-     (str #x46 #x66)
-     (str #x46 #x69)
-     (str #x46 #x6c)
-     (str #x46 #x66 #x69)
-     (str #x46 #x66 #x6c)
-     (str #x53 #x74)
-     (str #x53 #x74)
-     (str #x544 #x576)
-     (str #x544 #x565)
-     (str #x544 #x56b)
-     (str #x54e #x576)
-     (str #x544 #x56d)
-)))
-
-(define special-uppercase-mapping
-  (let ((str (lambda args
-               (if (= 1 (length args))
-                   (integer->char (car args))
-                   (apply string (map integer->char args))))))
-    (vector
-     (str #x53 #x53)
-     (str #x130)
-     (str #x2bc #x4e)
-     (str #x4a #x30c)
-     (str #x399 #x308 #x301)
-     (str #x3a3)
-     (str #x3a5 #x308 #x301)
-     (str #x3a3)
-     (str #x535 #x552)
-     (str #x48 #x331)
-     (str #x54 #x308)
-     (str #x57 #x30a)
-     (str #x59 #x30a)
-     (str #x41 #x2be)
-     (str #x3a5 #x313)
-     (str #x3a5 #x313 #x300)
-     (str #x3a5 #x313 #x301)
-     (str #x3a5 #x313 #x342)
-     (str #x1f08 #x399)
-     (str #x1f09 #x399)
-     (str #x1f0a #x399)
-     (str #x1f0b #x399)
-     (str #x1f0c #x399)
-     (str #x1f0d #x399)
-     (str #x1f0e #x399)
-     (str #x1f0f #x399)
-     (str #x1f08 #x399)
-     (str #x1f09 #x399)
-     (str #x1f0a #x399)
-     (str #x1f0b #x399)
-     (str #x1f0c #x399)
-     (str #x1f0d #x399)
-     (str #x1f0e #x399)
-     (str #x1f0f #x399)
-     (str #x1f28 #x399)
-     (str #x1f29 #x399)
-     (str #x1f2a #x399)
-     (str #x1f2b #x399)
-     (str #x1f2c #x399)
-     (str #x1f2d #x399)
-     (str #x1f2e #x399)
-     (str #x1f2f #x399)
-     (str #x1f28 #x399)
-     (str #x1f29 #x399)
-     (str #x1f2a #x399)
-     (str #x1f2b #x399)
-     (str #x1f2c #x399)
-     (str #x1f2d #x399)
-     (str #x1f2e #x399)
-     (str #x1f2f #x399)
-     (str #x1f68 #x399)
-     (str #x1f69 #x399)
-     (str #x1f6a #x399)
-     (str #x1f6b #x399)
-     (str #x1f6c #x399)
-     (str #x1f6d #x399)
-     (str #x1f6e #x399)
-     (str #x1f6f #x399)
-     (str #x1f68 #x399)
-     (str #x1f69 #x399)
-     (str #x1f6a #x399)
-     (str #x1f6b #x399)
-     (str #x1f6c #x399)
-     (str #x1f6d #x399)
-     (str #x1f6e #x399)
-     (str #x1f6f #x399)
-     (str #x1fba #x399)
-     (str #x391 #x399)
-     (str #x386 #x399)
-     (str #x391 #x342)
-     (str #x391 #x342 #x399)
-     (str #x391 #x399)
-     (str #x1fca #x399)
-     (str #x397 #x399)
-     (str #x389 #x399)
-     (str #x397 #x342)
-     (str #x397 #x342 #x399)
-     (str #x397 #x399)
-     (str #x399 #x308 #x300)
-     (str #x399 #x308 #x301)
-     (str #x399 #x342)
-     (str #x399 #x308 #x342)
-     (str #x3a5 #x308 #x300)
-     (str #x3a5 #x308 #x301)
-     (str #x3a1 #x313)
-     (str #x3a5 #x342)
-     (str #x3a5 #x308 #x342)
-     (str #x1ffa #x399)
-     (str #x3a9 #x399)
-     (str #x38f #x399)
-     (str #x3a9 #x342)
-     (str #x3a9 #x342 #x399)
-     (str #x3a9 #x399)
-     (str #x46 #x46)
-     (str #x46 #x49)
-     (str #x46 #x4c)
-     (str #x46 #x46 #x49)
-     (str #x46 #x46 #x4c)
-     (str #x53 #x54)
-     (str #x53 #x54)
-     (str #x544 #x546)
-     (str #x544 #x535)
-     (str #x544 #x53b)
-     (str #x54e #x546)
-     (str #x544 #x53d)
-)))
+(define other-alphabetic
+  (make-vector 0))
 
 )

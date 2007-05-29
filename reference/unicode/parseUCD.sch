@@ -18,13 +18,16 @@
 ;     (write-unicode-tables "temp.sch")
 ;
 ; Uses filter, and perhaps a few more non-R5RS procedures.
-; Assumes the target system has bytevector operations
-; (which correspond to bytes operations of R6RS).
+; Assumes the target system has bytevector operations.
 ;
 ; The Unicode files that are needed are:
 ;     UnicodeData.txt
 ;     SpecialCasing.txt
 ;     CompositionExclusions.txt
+;     PropList.txt
+;     auxiliary/GraphemeBreakProperty.txt
+;     auxiliary/WordBreakProperty.txt
+; These files can be found at http://www.unicode.org/Public/UNIDATA/
 ;
 ; The Larceny format for a line of parsed data is
 ; a vector
@@ -203,10 +206,13 @@
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define unicode-data '())        ; 16351 entries
-(define case-folding '())        ; 1010 entries
-(define special-casing '())
-(define composition-exclusions '())
+(define unicode-data '())            ; 17710 entries (Unicode 5.0.0)
+(define case-folding '())            ;  1039 entries
+(define special-casing '())          ;   119 entries
+(define composition-exclusions '())  ;    81 entries
+(define prop-list '())               ;   896 entries
+(define graphem-break-property '())  ;
+(define word-break-property '())     ;   468 entries
 
 (define (read-unicode-files . rest)
   (if (null? rest)
@@ -221,6 +227,12 @@
               (parseUCD-file (string-append dir "SpecialCasing.txt")))
         (set! composition-exclusions
               (parseUCD-file (string-append dir "CompositionExclusions.txt")))
+        (set! prop-list
+              (parseUCD-file (string-append dir "PropList.txt")))
+        (set! grapheme-break-property
+              (parseUCD-file (string-append dir "GraphemeBreakProperty.txt")))
+        (set! word-break-property
+              (parseUCD-file (string-append dir "WordBreakProperty.txt")))
         #t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -266,11 +278,14 @@
 ; returns its Unicode general category as a symbol.
 
 (define (get-general-category n)
+  (define (data-scalar-value data)
+    (let ((sv (vector-ref data 0)))
+      (if (pair? sv) (car sv) sv)))
   (let loop ((previous (car unicode-data))
              (rest (cdr unicode-data)))
     (cond ((null? rest)
            (extract-general-category previous))
-          ((>= n (vector-ref (car rest) 0))
+          ((>= n (data-scalar-value (car rest)))
            (loop (car rest) (cdr rest)))
           (else
            (extract-general-category previous)))))
@@ -394,6 +409,15 @@
       (vector-ref data 3)
       ""))
 
+; Given the Larceny format for a line of parsed data
+; taken from UnicodeData.txt,
+; returns the numeric value as a string.
+
+(define (extract-numeric-value data)
+  (if (> (vector-length data) 8)
+      (vector-ref data 8)
+      ""))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Returns a list of lists of the form (code-point0 code-point1)
@@ -453,6 +477,64 @@
                             excluded))))
           (extract-decomposition-types)))
 
+(define (extract-numeric-values)
+  (extract-from-unicode extract-numeric-value))
+
+; Returns a list whose elements are of the forms
+;     code-point0
+;     (code-point0 code-point1)
+; where both code-point0 and code-point1 are strings of hex digits
+; representing a Unicode scalar value that has the named property
+; according to the specified database (prop-list or word-break-property).
+
+(define (extract-from-database database propname)
+  (let* ((n (string-length propname))
+         (x (filter (lambda (data)
+                      (let ((s (vector-ref data 1)))
+                        (and (<= n (string-length s))
+                             (string=? propname (substring s 0 n)))))
+                    database)))
+    (map (lambda (data)
+           (let ((cp (vector-ref data 0)))
+             (if (pair? cp)
+                 (map (lambda (cp) (number->string cp 16))
+                      cp)
+                 (number->string (vector-ref data 0) 16))))
+         x)))
+
+(define (extract-other-alphabetic)
+  (extract-from-database prop-list "Other_Alphabetic"))
+
+(define (extract-white-space)
+  (extract-from-database prop-list "White_Space"))
+
+(define (extract-control)
+  (extract-from-database grapheme-break-property "Control"))
+
+(define (extract-extend)
+  (extract-from-database grapheme-break-property "Extend"))
+
+(define (extract-format)
+  (extract-from-database word-break-property "Format"))
+
+(define (extract-katakana)
+  (extract-from-database word-break-property "Katakana"))
+
+(define (extract-aletter)
+  (extract-from-database word-break-property "ALetter"))
+
+(define (extract-midletter)
+  (extract-from-database word-break-property "MidLetter"))
+
+(define (extract-midnum)
+  (extract-from-database word-break-property "MidNum"))
+
+(define (extract-numeric)
+  (extract-from-database word-break-property "Numeric"))
+
+(define (extract-extendnumlet)
+  (extract-from-database word-break-property "ExtendNumLet"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; Output of tables for unicode.sch and normalization.sch
@@ -472,9 +554,15 @@
        (newline out)
        (display "; The following tables were generated from" out)
        (newline out)
-       (display "; UnicodeData.txt and SpecialCasing.txt." out)
+       (display "; UnicodeData.txt, SpecialCasing.txt," out)
        (newline out)
-       (display "; Use parseUCD.sch to regenerate these tables." out)
+       (display "; PropList.txt, WordBreakProperty.txt," out)
+       (newline out)
+       (display "; and CompositionExclusions.txt." out)
+       (newline out)
+       (display "; Use parseUCD.sch and parseUCDpart2.sch" out)
+       (newline out)
+       (display "; to regenerate these tables." out)
        (newline out)
        (display ";" out)
        (newline out)
@@ -484,6 +572,8 @@
      (block-comment)
      (write-category-tables out)
      (write-casing-tables out)
+     (block-comment)
+     (write-special-casing-tables out)
      (block-comment)
      (write-normalization-tables out))))
 
@@ -649,23 +739,23 @@
     (newline out)
     (newline out)))
 
+; Just a simple insertion sort on lists.
+
+(define (mysort <= xs)
+  (define (insert x xs)
+    (if (or (null? xs)
+            (<= x (car xs)))
+        (cons x xs)
+        (cons (car xs)
+              (insert x (cdr xs)))))
+  (define (sort xs)
+    (if (null? xs)
+        '()
+        (insert (car xs)
+                (sort (cdr xs)))))
+  (sort xs))
+
 (define (write-casing-tables out)
-
-  ; Just a simple insertion sort on lists.
-
-  (define (mysort <= xs)
-    (define (insert x xs)
-      (if (or (null? xs)
-              (<= x (car xs)))
-          (cons x xs)
-          (cons (car xs)
-                (insert x (cdr xs)))))
-    (define (sort xs)
-      (if (null? xs)
-          '()
-          (insert (car xs)
-                  (sort (cdr xs)))))
-    (sort xs))
 
   (let* ((simple-upcase-mappings (extract-simple-uppercase-mappings))
          (simple-downcase-mappings (extract-simple-lowercase-mappings))
@@ -983,7 +1073,25 @@
         (display " " out)))
     (display "))" out)
     (newline out)
-    (newline out)
+    (newline out)))
+
+(define (write-special-casing-tables out)
+
+  (let* ((special-case-mappings
+          (mysort
+           (lambda (x y) (<= (vector-ref x 0) (vector-ref y 0)))
+           (filter (lambda (x)
+                     (or (< (vector-length x) 5)
+                         (string-ci=? (vector-ref x 4) "Final_Sigma")
+                         (string-ci=? (vector-ref x 4) "Not_Final_Sigma")))
+                   (cons
+
+                    ; This is commented out within SpecialCasing.txt,
+                    ; but treating it as a special case simplifies the
+                    ; common case for string-downcase.
+
+                    '#(#x03C3 "03C2" "03A3" "03A3" "Final_Sigma")
+                    special-casing)))))
 
     (display "; This bytevector uses two bytes per code point" out)
     (newline out)

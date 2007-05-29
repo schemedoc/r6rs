@@ -25,20 +25,22 @@
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; Majorly hacked for Larceny by William D Clinger, 3 August 2006.
+; Majorly hacked for Larceny by William D Clinger, 25 May 2007.
+; Based on Clinger's hacked version of Michael Sperber's
+; check-normalization.scm.
 ;
 ; I think this file should now run in any R5RS-conforming system
-; that supports Unicode characters, strings, and the normalization
-; procedures being tested.
+; that supports Unicode characters, strings, and the procedure
+; being tested.
 ;
 ; Usage:
 ;
 ; > (load "check-normalization.scm")
 ; > (normalization-run-tests)
 
-; Get NormalizationTest.txt from http://www.unicode.org/
+; Get auxiliary/WordBreakTest.txt from http://www.unicode.org/
 
-(define normalization-tests-filename "NormalizationTest.txt")
+(define wordbreaking-tests-filename "WordBreakTest.txt")
 
 (define (read-line port)
   (let loop ((l '()))
@@ -94,61 +96,84 @@
          (result 0 (+ (* 16 result) (hexdigit->int (string-ref s i)))))
         ((= i n) result))))
 
-; Given a non-comment line from NormalizationTest.txt,
-; returns the 5 strings parsed from that line (as multiple values).
+; Given a non-comment line from WordBreakTest.txt,
+; returns two values parsed from that line (as multiple values):
+;     a string of Unicode values (the test)
+;     a vector of booleans, the same length as the string,
+;         indicating whether a break is permitted before
+;         the corresponding element of the string
+;         (true means a word break is permitted)
+;
+; Note that a break is always permitted following the last
+; character in the string.
+;
+; WordBreakTest.txt contains UTF-8 encodings for two characters:
+;
+;     division sign        #\x00f7   (UTF-8: #xc3 #xb7)
+;     multiplication sign  #\x00d7   (UTF-8: #xc3 #x97)
+;
+; The file can be parsed as Latin-1, however, which is what
+; we'll do here.
 
-(define (parse-scalar-values s)
-  (let ((size (string-length s)))
-    (let column-loop ((start 0) (count 0) (rev-columns '()))
-      (if (= count 5)
-	  (apply values (reverse rev-columns))
-	  (let sv-loop ((start start) (rev-svs '()))
-	    (let* ((i (index-of-next-non-hex-digit s start))
-		   (n (hexstring->int (substring s start i))))
-	      (if (char=? #\space (string-ref s i))
-		  (sv-loop (+ 1 i) (cons n rev-svs))
-		  (column-loop (+ 1 i) (+ 1 count)
-			       (cons (list->string
-                                      (map integer->char
-                                           (reverse (cons n rev-svs))))
-				     rev-columns)))))))))
+(define (parse-wordbreaktest-line s)
+  (let ((n (string-length s)))
+    (define (loop i chars flags)
+      (if (< i n)
+          (let* ((c (string-ref s i))
+                 (sv (char->integer c)))
+            (cond ((char=? c #\#)
+                   (values (list->string (reverse chars))
+                           (list->vector (reverse (cdr flags)))))
+                  ((char-whitespace? c)
+                   (loop (+ i 1) chars flags))
+                  ((= sv #xc3)
+                   (let ((sv2 (char->integer (string-ref s (+ i 1)))))
+                     (cond ((= sv2 #xb7)
+                            (loop (+ i 2) chars (cons #t flags)))
+                           ((= sv2 #x97)
+                            (loop (+ i 2) chars (cons #f flags)))
+                           (else ???))))
+                  (else
+                   (let* ((j (index-of-next-non-hex-digit s (+ i 1)))
+                          (n (hexstring->int (substring s i j))))
+                     (loop j (cons (integer->char n) chars) flags)))))
+          ???))
+    (loop 0 '() '())))
 
 ; Crude test rig.
 
 (define total-tests 0)
 (define total-failed 0)
 (define total-inputs 0)
-(define current-input "")
 (define failed-inputs '())
 
-(define (normalization-test-init!)
+(define (wordbreak-test-init!)
   (set! total-tests 0)
   (set! total-failed 0)
   (set! total-inputs 0)
-  (set! current-input "")
   (set! failed-inputs '()))
 
-(define (normalization-test-start name)
+(define (wordbreak-test-start)
   (display ".")
-  (set! total-inputs (+ total-inputs 1))
-  (set! current-input name))
+  (set! total-inputs (+ total-inputs 1)))
 
-(define (normalization-test name predicate x y)
+(define (wordbreak-test input expected obtained)
   (set! total-tests (+ total-tests 1))
-  (if (not (predicate x y))
+  (if (not (equal? expected obtained))
       (begin (set! total-failed (+ total-failed 1))
-             (if (or (null? failed-inputs)
-                     (not (equal? current-input (car failed-inputs))))
-                 (set! failed-inputs (cons current-input failed-inputs)))
+             (set! failed-inputs (cons input failed-inputs))
+             (newline)
              (display "***** test failed ***** ")
              (display total-inputs)
              (newline)
-             (display current-input)
+             (write (string->list input))
              (newline)
-             (display name)
+             (write expected)
+             (newline)
+             (write obtained)
              (newline))))
 
-(define (normalization-test-summarize)
+(define (wordbreak-test-summarize)
   (newline)
   (display "Failed ")
   (write total-failed)
@@ -156,42 +181,32 @@
   (write total-tests)
   (newline))
 
-(define (normalization-check-line s)
+(define (wordbreak-check-line s)
   (call-with-values
    (lambda ()
-     (parse-scalar-values s))
-   (lambda (c1 c2 c3 c4 c5)
-     (normalization-test-start s)
-     (normalization-check-one c1 c2 c3 c4 c5))))
+     (parse-wordbreaktest-line s))
+   (lambda (str flags)
+     (wordbreak-test-start)
+     (check-word-breaks str flags))))
 
-(define (normalization-check-one c1 c2 c3 c4 c5)
-  (normalization-test "c2 == NFC(c1)" string=? c2 (string-normalize-nfc c1))
-  (normalization-test "c2 == NFC(c2)" string=? c2 (string-normalize-nfc c2))
-  (normalization-test "c2 == NFC(c3)" string=? c2 (string-normalize-nfc c3))
-  (normalization-test "c4 == NFC(c4)" string=? c4 (string-normalize-nfc c4))
-  (normalization-test "c4 == NFC(c5)" string=? c4 (string-normalize-nfc c5))
-  
-  (normalization-test "c3 == NFD(c1)" string=? c3 (string-normalize-nfd c1))
-  (normalization-test "c3 == NFD(c2)" string=? c3 (string-normalize-nfd c2))
-  (normalization-test "c3 == NFD(c3)" string=? c3 (string-normalize-nfd c3))
-  (normalization-test "c5 == NFD(c4)" string=? c5 (string-normalize-nfd c4))
-  (normalization-test "c5 == NFD(c5)" string=? c5 (string-normalize-nfd c5))
+(define (check-word-breaks s flags)
 
-  (normalization-test "c4 == NFKC(c1)" string=? c4 (string-normalize-nfkc c1))
-  (normalization-test "c4 == NFKC(c2)" string=? c4 (string-normalize-nfkc c2))
-  (normalization-test "c4 == NFKC(c3)" string=? c4 (string-normalize-nfkc c3))
-  (normalization-test "c4 == NFKC(c4)" string=? c4 (string-normalize-nfkc c4))
-  (normalization-test "c4 == NFKC(c5)" string=? c4 (string-normalize-nfkc c5))
+  (define (compute-word-breaks)
+    (let* ((n (string-length s))
+           (breaks (make-vector n #f)))
+      (do ((i (string-next-word-break s -1)
+              (string-next-word-break s i)))
+          ((= i n))
+        (vector-set! breaks i #t))
+      breaks))
 
-  (normalization-test "c5 == NFKD(c1)" string=? c5 (string-normalize-nfkd c1))
-  (normalization-test "c5 == NFKD(c2)" string=? c5 (string-normalize-nfkd c2))
-  (normalization-test "c5 == NFKD(c3)" string=? c5 (string-normalize-nfkd c3))
-  (normalization-test "c5 == NFKD(c4)" string=? c5 (string-normalize-nfkd c4))
-  (normalization-test "c5 == NFKD(c5)" string=? c5 (string-normalize-nfkd c5)))
+  (wordbreak-test s flags (compute-word-breaks)))
 
 (define current-line "")
 
-(define (normalization-check-all filename)
+(define (wordbreak-check-all filename)
+  ; FIXME: The file must be read as Latin-1,
+  ; but there's no portable way to ensure that in R5RS Scheme.
   (call-with-input-file filename
     (lambda (port)
       (let loop ()
@@ -202,11 +217,11 @@
 		(if (and (not (string=? "" thing))
 			 (not (char=? (string-ref thing 0) #\#))
 			 (not (char=? (string-ref thing 0) #\@)))
-		    (normalization-check-line thing))
+		    (wordbreak-check-line thing))
 		(loop))))))))
 
-(define (normalization-run-tests)
-  (normalization-test-init!)
-  (normalization-check-all normalization-tests-filename)
-  (normalization-test-summarize))
+(define (wordbreak-run-tests)
+  (wordbreak-test-init!)
+  (wordbreak-check-all wordbreaking-tests-filename)
+  (wordbreak-test-summarize))
 
