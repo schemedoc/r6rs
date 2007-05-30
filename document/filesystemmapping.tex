@@ -17,7 +17,7 @@ section~\extref{report:librarysyntaxsection}{Library form}.  It can be
 expressed as follows:
 
 \begin{scheme}
-(\hyperi{identifier} \hyperii{identifier} \ldots \hypern{identifier} \hyper{version})%
+(\hyperi{identifier} \ldots \hypern{identifier} \hyper{version})%
 \end{scheme}
 
 where \hyper{version} is empty or has the following form:
@@ -30,7 +30,7 @@ Such a library name should be mapped to a file in the file system with
 a relative path formed by the concatenation of the following components:
 %TODO: not scheme
 \begin{scheme}
-\hyperi{identifier} \hyper{sep} \hyperii{identifier} \hyper{sep} \ldots \hypern{identifier} \hyper{xsep} \hyper{extension}
+\hyperi{identifier} \hyper{sep} \ldots \hypern{identifier} \hyper{xsep} \hyper{extension}
 \end{scheme}
 where \hyper{sep} is the platform-specific character (such as ``/'')
 used to separate path elements (which are typically directory names); 
@@ -49,15 +49,11 @@ Note that the resulting path is relative to some implementation-dependent root
 directory.
 %TODO: note that multiple roots are possible
 
-Examples:
-\texonly\begin{center}\endtexonly
-  \begin{tabular}{ll}
-    library name & relative pathname
-    \\
-    {\cf (mylib examples hello)} & {\cf mylib/examples/hello.sls}\\
-    {\cf (mylib examples hello (0 4 2))} & {\cf mylib/examples/hello.0.4.2.sls}
-  \end{tabular}
-\texonly\end{center}\endtexonly
+According to this mapping, the source code for a library named {\cf (mylib examples
+  hello)} would be stored in a file {\cf mylib/examples/hello.sls};
+the source code for a library named {\cf (mylib examples hello (0 4
+  2))} would be stored in a file {\cf mylib/examples/hello.0.4.2.sls}.
+
 %TODO: define "known to the implementation"
 A library source file may define a library with a library name consisting
 of the same sequence of identifiers as another library known to the 
