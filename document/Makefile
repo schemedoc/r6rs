@@ -51,7 +51,9 @@ LIB_TEX_FILES = r6rs-lib.tex \
 APP_TEX_FILES = r6rs-app.tex \
 	casesensitivity.tex \
 	scriptappendix.tex \
-	sourcerep.tex
+	sourcerep.tex \
+	librarynames.tex \
+	filesystemmapping.tex
 
 BIB_FILES = rrs.bib abbrevs.bib
 
