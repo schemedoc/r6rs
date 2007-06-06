@@ -1,27 +1,35 @@
 \chapter{Optional case insensitivity}
 \label{caseinsensitivityappendix}
 
-The report specifies that the lexical syntax of symbols is
-case-sensitive.  This is a major change from the previous revision of
-the report~\cite{R5RS}, which breaks compatibility.  Code written
-under the old assumption of case-insensitivity may break because of
-this change.  Implementations may support such code by implementing
-the following directives:
+In contrast with earlier revisions of the report~\cite{R5RS}, the upper
+and lower case forms of a character are distinguished everywhere, except
+that both can be used when expressing hex digits in the syntax of a number
+or character escape. 
+So, for example, the identifiers {\cf X} and {\cf x} are different, the
+boolean constant \schtrue{} cannot be written \sharpfoo{T}, the
+character \sharpfoo{space} cannot be written \sharpfoo{SPACE}, and the
+number {\cf 1e23} cannot be written {\cf 1E23}.
+
+Implementors may wish to support case-insensitive syntax for backward
+compatibility or other reasons.
+If they do so, they are encouraged to adopt the following directives
+to control case folding.
 
 \begin{entry}{%
 {\cf{}\#!fold-case}\sharpbangindex{fold-case}\\
 {\cf{}\#!no-fold-case}\sharpbangindex{no-fold-case}}
 
-These directives may appear in the read syntax everywhere a
-\hyper{datum} occurs, and affects the reading of subsequent symbols.
-The {\cf{}\#!fold-case} directive means the name of a each subsequent
-symbol is the result of case-folding (see library
-section~\extref{lib:string-foldcase}{``Unicode''}) the name that appears in the
-source text.  The {\cf{}\#!no-fold-case} directive means the name of a each
-subsequent symbol is precisely the name that appears in the source text.
+These directives may appear anywhere that comments may appear and are
+treated as comments, except that they affect the reading of subsequent
+datums.
+The {\cf{}\#!fold-case} causes the reader to case-fold
+(see library section~\extref{lib:string-foldcase}{``Unicode''})
+each identifier name, character name, boolean name, and exponent marker.
+The {\cf{}\#!no-fold-case} directive causes the reader to return
+to the default, non-folding behavior.
 
 The region where each of these directives has effect depends on the
-context: If the directive occurs at top level, the region extends
+context. If the directive occurs at top level, the region extends
 until the next such directive at top level, or until the end of the
 source text if no such directive follows.  If the directive occurs in
 the immediate context of a \hyper{list} or \hyper{vector} datum (i.e.,
