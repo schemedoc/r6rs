@@ -81,7 +81,7 @@ restriction.
     (lambda (e)
       (+ 1 2)))
   (define + 2)
-  (foo))
+  (foo))%
 \end{scheme}
 
 The following do not violate the restriction.
@@ -103,7 +103,7 @@ The following do not violate the restriction.
     (lambda (e)
       (let ([+ -]) (+ 1 2))))
   (define + 2)
-  (foo))                \ev  -1
+  (foo))                \ev  -1%
 \end{scheme}
 
 The implementation should treat a violation of the restriction as a
@@ -130,11 +130,11 @@ For example, in
 (lambda (x)
   (define-syntax defun
     (syntax-rules ()
-      [(\_ (x . a) e) (define x (lambda a e))]))
-  (defun (even? n) (or (= n 0) (odd? (- n 1))))
+      [(\_ x a e) (define x (lambda a e))]))
+  (defun even? (n) (or = n 0) (odd? (- n 1)))
   (define-syntax odd?
     (syntax-rules () [(\_ n) (not (even? n))]))
-  (odd? (if (odd? x) (* x x) x)))
+  (odd? (if (odd? x) (* x x) x)))%
 \end{scheme}
 
 The definition of {\cf defun} is encountered first, and the keyword
@@ -162,7 +162,7 @@ The final output is the equivalent of
               (lambda (n)
                 (or (= n 0)
                     (not (even? (- n 1)))))])
-    (not (even? (if (not (even? x)) (* x x) x)))))
+    (not (even? (if (not (even? x)) (* x x) x)))))%
 \end{scheme}
 
 although the structure of the output is implementation dependent.

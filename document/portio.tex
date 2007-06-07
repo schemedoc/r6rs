@@ -100,7 +100,7 @@ The following standard options can be included to modify the default behavior.
       file.
 \end{itemize}
 
-These options have no affect when a file is opened only for input.
+These options have no effect when a file is opened only for input.
 \meta{Identifiers}s
 other than those listed above may be used as \hyper{file-options name}s;
 they have implementation-specific meaning, if any.
@@ -1401,6 +1401,28 @@ Each of the remaining arguments may be \schfalse{}; if any of
 those arguments is not \schfalse{}, it must be a procedure and
 should behave as specified in the description of
 {\cf make-custom-binary-input-port}.
+\end{entry}
+
+\begin{entry}{%
+\pproto{(make-custom-textual-input/output-port}{procedure}}
+\mainschindex{make-custom-textual-input/output-port}{\tt\obeyspaces\\
+  \var{id} \var{read!} \var{write!} \var{get-position} \var{set-position!} \var{close})}
+
+Returns a newly created textual input/output port whose
+textual source and sink are
+arbitrary algorithms represented by the \var{read!} and \var{write!}
+procedures.
+\var{Id} must be a string naming the new port,
+provided for informational purposes only.
+\var{Read!} and \var{write!} must be procedures,
+and should behave as specified for the
+{\cf make-custom-textual-input-port} and
+{\cf make-custom-textual-output-port} procedures.
+
+Each of the remaining arguments may be \schfalse{}; if any of
+those arguments is not \schfalse{}, it must be a procedure and
+should behave as specified in the description of
+{\cf make-custom-textual-input-port}.
 \end{entry}
 
 

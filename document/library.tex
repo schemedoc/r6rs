@@ -90,6 +90,24 @@ where \hyper{version} is empty or has the following form:
 Each \hyper{sub-version} must be an exact nonnegative integer.
 An empty \hyper{version} is equivalent to {\cf ()}.
 
+An \hyper{export~spec} names a set of imported and locally defined bindings to
+be exported, possibly with different
+external names.  An \hyper{export~spec} must have one of the
+following forms:
+
+\begin{scheme}
+\hyper{identifier}
+(rename (\hyperi{identifier} \hyperii{identifier}) \ldots)%
+\end{scheme}
+
+In an \hyper{export~spec}, an \hyper{identifier} names a single binding defined
+within or imported into the library, where the external name for the export is
+the same as the name of the binding within the library. 
+A {\cf rename} spec exports the binding named by the first
+\hyper{identifier} in each {\cf (\hyper{identifier}
+  \hyper{identifier})} pairing, using the second \hyper{identifier} as the
+external name.
+
 Each \hyper{import~spec} specifies a set of bindings to be imported into
 the library, the levels at which they are to be available, and the local
 names by which they are to be known.  An \hyper{import spec} must
@@ -238,24 +256,6 @@ each \hyperii{identifier} must not be in the intermediate \hyper{import~set},
 and the \hyperii{identifier}s must be distinct.
 \end{itemize}
 It is a syntax violation if a constraint given above is not met.
-
-An \hyper{export~spec} names a set of imported and locally defined bindings to
-be exported, possibly with different
-external names.  An \hyper{export~spec} must have one of the
-following forms:
-
-\begin{scheme}
-\hyper{identifier}
-(rename (\hyperi{identifier} \hyperii{identifier}) \ldots)%
-\end{scheme}
-
-In an \hyper{export~spec}, an \hyper{identifier} names a single binding defined
-within or imported into the library, where the external name for the export is
-the same as the name of the binding within the library. 
-A {\cf rename} spec exports the binding named by the first
-\hyper{identifier} in each {\cf (\hyper{identifier}
-  \hyper{identifier})} pairing, using the second \hyper{identifier} as the
-external name.
 
 \label{librarybodysection}
 The \hyper{library~body} of a {\cf library} form consists of forms
@@ -523,15 +523,20 @@ also section~\ref{expressionsection}.
 \subsubsection*{Constant literals}\unsection
 
 \begin{entry}{%
-\pproto{\hyper{constant}}{\exprtype}}\mainindex{literal}
+\pproto{\hyper{number}}{\exprtype}
+\pproto{\hyper{boolean}}{\exprtype}
+\pproto{\hyper{character}}{\exprtype}
+\pproto{\hyper{string}}{\exprtype}
+\pproto{\hyper{bytevector}}{\exprtype}}\mainindex{literal}
 
-Numerical constants, string constants, character constants, and
-boolean constants evaluate ``to themselves''.
+An expression consisting of a number, a boolean, a character, a
+string, or a bytevector, evaluates ``to itself.
 
 \begin{scheme}
-"abc"      \ev  "abc"
 145932     \ev  145932
-\schtrue   \ev  \schtrue%
+\schtrue   \ev  \schtrue
+"abc"      \ev  "abc"
+\#vu8(2 24 123) \ev \#vu8(2 24 123)%
 \end{scheme}
 
 As noted in section~\ref{storagemodel}, the value of a literal
