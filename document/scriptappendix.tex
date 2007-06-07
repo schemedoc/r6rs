@@ -45,22 +45,20 @@ The \defining{script header}, if present on the first line of a script,
 is used by Unix-like operating systems to identify the interpreter to 
 be used to execute that script.
 
-Regardless of platform, Scheme script interpreters must ignore the 
-script header if present, and cause the remainder of the script to be 
-executed as a Scheme top-level program.
+The script header syntax given above is the recommended portable 
+form that programmers should use.  However, if the first line 
+of a script begins with {\cf \#!/} or {\cf \#!\meta{space}}, 
+implementations must ignore it on all platforms, even if it does not conform to 
+the recommended syntax.  
 
 \begin{rationale}
 Requiring script interpreters to recognize and ignore the script 
 header helps ensure that Scheme scripts written for Unix-like systems 
-can also run on other kinds of systems.
+can also run on other kinds of systems. Furthermore, recognizing
+all {\cf \#!/} or {\cf \#!\meta{space}} combinations 
+allows local customizations to be 
+performed by altering a script header from its default form.
 \end{rationale}
-
-The script header syntax given above is the recommended portable 
-form for Unix-like operating systems.  However, if the first line 
-of a script begins with {\cf \#!/} or {\cf \#!\meta{space}}, 
-implementations must ignore it, even if it does not conform to 
-the recommended syntax.  This allows local customizations to be 
-performed by altering the script headers from their default form.
 
 \subsection{Example}
 \begin{scheme}
