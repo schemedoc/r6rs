@@ -1,0 +1,61 @@
+This directory contains a reference implementation for
+(r6rs bytevector), or whatever the name of that library
+is this week.  It contains the following files:
+
+    README                      what you're reading
+    bytevector.sch              the (r6rs bytevector) library
+    bvec-core.sch               definitions of the core procedures
+    bvec-proto.sch              definitions of most other procedures
+    bvec-ieee.sch               definitions related to IEEE-754
+    bvec-string.sch             string <-> bytevector conversions
+    bytevector-tests.sch        tests
+    bytevector-tests-r5rs.sch   tests used by r5rs.sch
+    r5rs.sch                    for testing in R5RS-compatible systems
+    larceny.sch                 for testing Larceny v0.94
+
+For license information, see the copyright files at the top
+of each file.
+
+This implementation is written in R6RS Scheme with a few exceptions:
+
+- r5rs.sch is written in R5RS Scheme.
+
+- bytevector-tests-r5rs.sch is written in R5RS Scheme,
+  but the tests of string <-> bytevector conversion
+  assume that all Unicode characters are supported
+  and can appear in strings.
+
+- bvec-core.sch contains system-specific definitions that
+  implementors of the R6RS are expected to rewrite.
+
+For improved efficiency, most implementors will also want to
+rewrite at least some of the definitions in bvec-proto.sch
+and in bvec-ieee.sch.
+
+                                * * *
+
+To load the code into an R5RS-conforming system:
+
+1.  (load "r5rs.sch")
+
+This will run a series of tests after the code is loaded.
+Exactly one test should fail (because bytevectors will be
+represented as vectors).  If the system does not support
+Unicode characters and strings, then the conversion tests
+will also fail, but they are run last.  The exhaustive
+tests of string conversion may take a long time.
+
+                                * * *
+
+To run the tests in Larceny v0.94:
+
+1.  (load "larceny.sch")
+
+This will run a series of tests after the code is loaded.
+
+                                * * *
+
+Enjoy!
+
+William D Clinger
+8 June 2007
