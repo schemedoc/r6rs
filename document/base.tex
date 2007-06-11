@@ -93,13 +93,15 @@ The {\cf define} form described in this section is a
 \hyper{definition}\mainindex{definition} used to create variable bindings
 and may appear anywhere other definitions may appear.
 
-A variable definition has one of the following forms:\mainschindex{define}
+\begin{entry}{%
+\proto{define}{ \hyper{variable} \hyper{expression}}{\exprtype}
+\rproto{define}{ \hyper{variable}}{\exprtype}
+\pproto{(define (\hyper{variable} \hyper{formals}) \hyper{body})}{\exprtype}
+\pproto{(define (\hyper{variable} .\ \hyper{formal}) \hyper{body})}{\exprtype}}
 
-\begin{itemize}
 
-\item{\tt(define \hyper{variable} \hyper{expression})}
-  Binds \hyper{variable} to a new
-  location before assigning the value of \hyper{expression} to it.
+The first from of {\cf define} binds \hyper{variable} to a new
+location before assigning the value of \hyper{expression} to it.
 \begin{scheme}
 (define add3
   (lambda (x) (+ x 3)))
@@ -116,18 +118,14 @@ continuation of \hyper{expression} is invoked more than once.
 If the implementation detects this, it must raise an
 exception with condition type {\cf\&assertion}.
 
-\item{\tt(define \hyper{variable})}
-
-This form is equivalent to
+The second form of {\cf define} is equivalent to
 \begin{scheme}
 (define \hyper{variable} \hyper{unspecified})%
 \end{scheme}
 where \hyper{unspecified} is a side-effect-free expression returning
 an unspecified value.
 
-\item{\tt(define (\hyper{variable} \hyper{formals}) \hyper{body})}
-
-\hyper{Formals} must be either a
+In the third form of {\cf define}, \hyper{formals} must be either a
 sequence of zero or more variables, or a sequence of one or more
 variables followed by a space-delimited period and another variable (as
 in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
@@ -136,15 +134,14 @@ in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
   (lambda (\hyper{formals}) \hyper{body}))\rm.%
 \end{scheme}
 
-\item{\tt(define (\hyper{variable} .\ \hyper{formal}) \hyper{body})}
-
-\hyper{Formal} must be a single
+In the fourth form of {\cf define}, 
+\hyper{formal} must be a single
 variable.  This form is equivalent to
 \begin{scheme}
 (define \hyper{variable}
   (lambda \hyper{formal} \hyper{body}))\rm.%
 \end{scheme}
-\end{itemize}
+\end{entry}
 
 \subsection{Syntax definitions}
 \label{syntaxdefinitionsection}
