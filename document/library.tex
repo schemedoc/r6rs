@@ -629,7 +629,7 @@ The transformer determines
 how a use of the macro is transcribed into a more primitive
 form.
 
-Macro uses typically have the form:
+Most macro uses have the form:
 \begin{scheme}
 (\hyper{keyword} \hyper{datum} \dotsfoo)%
 \end{scheme}%
@@ -639,9 +639,10 @@ keyword}\index{syntactic keyword}, or simply {\em
 keyword}\index{keyword}, of the macro\index{macro keyword}.
 The number of \hyper{datum}s and the syntax
 of each depends on the syntactic abstraction.
+
 Macro uses can also take the form of improper lists, singleton
 identifiers, or {\cf set!} forms, where the second subform of the
-{\cf set!} is the keyword (see
+{\cf set!} is the keyword (see section~\ref{identifier-syntax})
 library section~\extref{lib:make-variable-transformer}{{\cf make-variable-transformer}}):
 \begin{scheme}
 (\hyper{keyword} \hyper{datum} \dotsfoo . \hyper{datum})
@@ -649,23 +650,17 @@ library section~\extref{lib:make-variable-transformer}{{\cf make-variable-transf
 (set! \hyper{keyword} \hyper{datum})%
 \end{scheme}
 
-The macro definition facility consists of two parts:
+The {\cf define-syntax}, {\cf let-syntax} and {\cf letrec-syntax}
+forms, described in sections~\ref{define-syntax} and \ref{let-syntax},
+create bindings for keywords, associate them with macro transformers,
+and control the scope within which they are visible.
 
-\begin{itemize}
-\item A set of forms ({\cf define-syntax}, described in
-  section~\ref{define-syntax}; {\cf let-syntax} and {\cf
-    letrec-syntax}, described in section~\ref{let-syntax}) used to create bindings
-for keywords, associate them with macro transformers, and control
-the scope within which they are visible, and
-
-\item a facility ({\cf syntax-rules}, described in
-  section~\ref{syntaxrulessection}) for creating transformers
-  via a pattern language,
-  and a facility ({\cf syntax-case}, described in
-  library chapter~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}) for creating transformers
-  via a pattern language that permits the use of arbitrary
-  Scheme code.
-\end{itemize}
+The {\cf syntax-rules} and {\cf identifier-syntax} forms, described in
+section~\ref{syntaxrulessection}, create transformers via a pattern
+language.  Moreover, the {\cf syntax-case} form, described in library
+chapter~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}, 
+creates transformers via a pattern language that permits the use of
+arbitrary Scheme code.
 
 Keywords occupy the same name space as variables.
 That is, within the same
@@ -673,11 +668,11 @@ scope, an identifier can be bound as a variable or keyword, or neither, but
 not both, and local bindings of either kind may shadow other bindings of
 either kind.
 
-Macros defined using {\cf syntax-rules} are ``hygienic'' and ``referentially
-transparent'' and thus preserve Scheme's lexical scoping~\cite{Kohlbecker86,
-hygienic,Bawden88,macrosthatwork,syntacticabstraction}:
-\mainindex{hygienic}
-\mainindex{referentially transparent}
+Macros defined using {\cf syntax-rules} and {\cf identifier-syntax}
+are ``hygienic'' and ``referentially transparent'' and thus preserve
+Scheme's lexical scoping~\cite{Kohlbecker86,
+  hygienic,Bawden88,macrosthatwork,syntacticabstraction}:
+\mainindex{hygienic} \mainindex{referentially transparent}
 
 \begin{itemize}
 \item If a macro transformer inserts a binding for an identifier
