@@ -509,7 +509,7 @@ For a binary port, the {\cf port-position} procedure returns the exact
 non-negative integer index of the position at which the next byte
 would be read from or written to the port.  For a textual port, {\cf
   port-position} returns an arbitrary value that is acceptable as
-input for {\cf set-port-position} (see below).
+input for {\cf set-port-position!} (see below).
 
 If the port does not support the operation, {\cf port-position} raises
 an exception with condition type {\cf\&assertion}.
@@ -538,11 +538,11 @@ exception with condition type {\cf\&assertion}
 if the port does not support the operation.
 Otherwise, it sets the current position
 of the port to \var{pos}.  If \var{port} is an output
-port, {\cf set-port-position!} first flushes\var{port}.  (See {\cf
+port, {\cf set-port-position!} first flushes \var{port}.  (See {\cf
   flush-output-port}, section~\ref{flush-output-port}.)
 
 If \var{port} is a binary output port and the current position is set
-beyond the current end of the data in the underlying object, the object is
+beyond the current end of the data in the underlying data sink, the object is
 not extended until new data is written at that position.
 The contents of any intervening positions are unspecified.
 Binary ports created by {\cf open-file-output-port} and
@@ -618,7 +618,7 @@ but the port cannot be determined to be at end of file.
 \pproto{(open-file-input-port \var{filename}}{procedure}{\tt\obeyspaces%
 \hspace*{2em}\var{file-options} \var{buffer-mode} \var{maybe-transcoder})}}
    
-\domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
+\domain{\var{Maybe-transcoder} must be either a transcoder or \schfalse.}
 
 Returns an input port for the named file. The \var{file-options} and
 \var{maybe-transcoder} arguments are optional.
@@ -653,7 +653,7 @@ will be implementation-dependent (and possibly transcoder-dependent).
 \pproto{(open-bytevector-input-port \var{bytevector}}{procedure}{\tt\obeyspaces%
 \hspace*{2em}\var{maybe-transcoder})}}
 
-\domain{\var{Maybe-transcoder} must either be a transcoder or \schfalse.}
+\domain{\var{Maybe-transcoder} must be either a transcoder or \schfalse.}
    
 The {\cf open-bytevector-input-port} procedure returns an input port whose bytes are drawn from the
 \var{bytevector}.
