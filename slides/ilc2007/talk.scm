@@ -160,8 +160,8 @@
 
    (code
     #,(tt "#!r6rs")
-    (import (r6rs base)
-	    (r6rs i/o ports))
+    (import (rnrs base (6))
+	    (rnrs i/o ports (6)))
     (put-bytes (standard-output-port)
 	       (call-with-port
 		(open-file-input-port
@@ -171,12 +171,12 @@
   (slide/title/center
    "R6RS Libraries"
    (code
-    (library (ilc points)
+    (library (de deinprogramm mike points)
       (export make-point point?
 	      point-x point-y
 	      move-point!)
-      (import (r6rs base)
-	      (r6rs records syntactic))
+      (import (rnrs base (6))
+	      (rnrs records syntactic (6)))
       code:blank
       (define-record-type (point make-point point?)
 	(fields 
@@ -209,9 +209,9 @@
   (slide/title/center
    "Two Reports"
 
-   (scale-to-fit (bitmap "report.jpg") client-w (* 0.3 client-h))
+   (scale-to-fit (bitmap "report.png") client-w (* 0.3 client-h))
    (blank)
-   (scale-to-fit (bitmap "lib-report.jpg") client-w (* 0.3 client-h))
+   (scale-to-fit (bitmap "lib-report.png") client-w (* 0.3 client-h))
 
    (blank)
    
@@ -252,15 +252,15 @@
        (file-icon (pict-width name-p) (pict-height name-p) #t #t)
        name-p)))
 
-  (define r6rs-base (library-box "(r6rs base)"))
-  (define r6rs-records-syntactic (library-box "(r6rs records syntactic)"))
-  (define r6rs-i/o-ports (library-box "(r6rs i/o ports)"))
-  (define r6rs-hashtables (library-box "(r6rs hashtables)"))
-  (define r6rs-r5rs (library-box "(r6rs r5rs)"))
-  (define r6rs-mutable-pairs (library-box "(r6rs mutable-pairs)"))
-  (define r6rs-mutable-strings (library-box "(r6rs mutable-strings)"))
-  (define r6rs-eval (library-box "(r6rs eval)"))
-  (define r6rs-syntax-case (library-box "(r6rs syntax-case)"))
+  (define r6rs-base (library-box "(rnrs base)"))
+  (define r6rs-records-syntactic (library-box "(rnrs records syntactic)"))
+  (define r6rs-i/o-ports (library-box "(rnrs i/o ports)"))
+  (define r6rs-hashtables (library-box "(rnrs hashtables)"))
+  (define r6rs-r5rs (library-box "(rnrs r5rs)"))
+  (define r6rs-mutable-pairs (library-box "(rnrs mutable-pairs)"))
+  (define r6rs-mutable-strings (library-box "(rnrs mutable-strings)"))
+  (define r6rs-eval (library-box "(rnrs eval)"))
+  (define r6rs-syntax-case (library-box "(rnrs syntax-case)"))
 
 
   (slide/title/center
@@ -319,7 +319,7 @@
   (slide/title/center
    "Composite Library"
    
-   (tt "(r6rs)")
+   (tt "(rnrs (6))")
 
    (let ((p
 	  (inset (vc-append
@@ -343,13 +343,16 @@
 
    (hc-append (t "orphaned:")
 	      (blank 20)
-	      (scale r6rs-mutable-pairs 0.7)
-	      (blank 20)
-	      (scale r6rs-mutable-strings 0.7)
-	      (blank 20)
-	      (scale r6rs-eval 0.7)
-	      (blank 20)
-	      (scale r6rs-r5rs 0.7))
+	      (vc-append
+	       (hc-append
+	       (scale r6rs-mutable-pairs 0.7)
+	       (blank 20)
+	       (scale r6rs-mutable-strings 0.7))
+	       (hc-append
+		(blank 20)
+		(scale r6rs-eval 0.7)
+		(blank 20)
+		(scale r6rs-r5rs 0.7))))
 	      
    )
 
@@ -724,7 +727,7 @@
    (code
     (library (my-helpers id-stuff)
       (export find-dup)
-      (import (r6rs))
+      (import (rnrs (6)))
       code:blank
       (define (find-dup l)
 	(and (pair? l)
@@ -740,7 +743,8 @@
    (code
     (library (my-helpers values-stuff)
       (export mvlet)
-      (import (r6rs) (for (my-helpers id-stuff) expand))
+      (import (rnrs (6))
+	      (for (my-helpers id-stuff) expand))
       code:blank
       (define-syntax mvlet
 	(lambda (stx)
@@ -757,9 +761,9 @@
    (code
     (library (let-div)
       (export let-div)
-      (import (r6rs)
+      (import (rnrs (6))
 	      (my-helpers values-stuff)
-	      (r6rs r5rs))
+	      (rnrs r5rs (6)))
       code:blank
       (define (quotient+remainder n d)
 	(let ([q (quotient n d)])
@@ -802,7 +806,7 @@
    
    (my-page-item "public review")
    (my-page-item "formal-comment responses (April 15)")
-   (my-page-item "R5.93RS (> May 15)")
+   (my-page-item "R5.94RS (>= June 6)")
    (my-page-item "non-normative appendices & rationale")
    (my-page-item "ratification?")
 
@@ -822,7 +826,7 @@
    
    (blank)
 
-   (colorize (scale (bt "PLEASE RATIFY (OR NOT)!") 2.0)
+   (colorize (scale (bt "PLEASE RATIFY!") 2.0)
 	     "DarkGreen"))
 		    
 )
