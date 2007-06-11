@@ -4,6 +4,8 @@ BIBTEX = bibtex
 MAKEINDEX = makeindex
 SCHEME = scheme48 -a batch
 MZSCHEME = mzscheme
+# use the one from tex2page distro, *not* the one included with PLT Scheme
+TEX2PAGE = /afs/wsi/home/sperber/build/tex2page/tex2page
 
 report: thirdrun
 
@@ -139,12 +141,40 @@ thirdrun: secondrun
 	$(LATEX) r6rs-app
 	touch thirdrun
 
+html:	r6rs-html r6rs-lib-html r6rs-app-html
+
+r6rs-html: $(REPORT_TEX_FILES) r6-fig-grammar-parti.tex
+	rm -rf r6rs-html r6rs-Z-G-*
+	$(TEX2PAGE) r6rs
+	$(TEX2PAGE) r6rs
+	$(TEX2PAGE) r6rs
+	$(MAKEINDEX) -s r6rs.mst -c r6rs-html/r6rs-Z-I.idx
+	$(TEX2PAGE) r6rs
+	$(TEX2PAGE) r6rs
+
+r6rs-lib-html: $(LIB_TEX_FILES)
+	rm -rf r6rs-lib-html r6rs-lib-Z-G-*
+	$(TEX2PAGE) r6rs-lib
+	$(TEX2PAGE) r6rs-lib
+	$(TEX2PAGE) r6rs-lib
+	$(MAKEINDEX) -s r6rs.mst -c r6rs-lib-html/r6rs-lib-Z-I.idx
+	$(TEX2PAGE) r6rs-lib
+	$(TEX2PAGE) r6rs-lib
+
+r6rs-app-html: $(APP_TEX_FILES)
+	rm -rf r6rs-app-html r6rs-app-Z-G-*
+	$(TEX2PAGE) r6rs-app
+	$(TEX2PAGE) r6rs-app
+	$(TEX2PAGE) r6rs-app
+
 clean:
 	-rm -f r6rs.idx r6rs.log r6rs.toc r6rs.aux r6rs.bbl r6rs.blg r6rs.eval4tex r6rs.ilg r6rs.ind
 	-rm -f r6rs-lib.idx r6rs-lib.log r6rs-lib.toc r6rs-lib.aux r6rs-lib.bbl r6rs-lib.blg r6rs-lib.eval4tex r6rs-lib.ilg r6rs-lib.ind
 	-rm -f r6rs-report-lib.idx
 	-rm -f r6rs-app.idx r6rs-app.log r6rs-app.toc r6rs-app.aux r6rs-app.bbl r6rs-app.blg r6rs-app.eval4tex r6rs-app.ilg r6rs-app.ind
 	-rm -f firstrun secondrun thirdrun
+	-rm -rf r6rs-html r6rs-lib-html r6rs-app-html
+	-rm -f r6rs-Z-G-* r6rs-lib-Z-G-* r6rs-app-Z-G-*
 
 reallyclean: clean
 	-rm -f r6rs.dvi r6rs-lib.dvi r6rs-app.dvi
