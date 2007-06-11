@@ -2,11 +2,11 @@
 \label{caseinsensitivityappendix}
 
 In contrast with earlier revisions of the report~\cite{R5RS}, the
-upper and lower case forms of a character are distinguished
-everywhere, except that both can be used when expressing hex digits in
-the syntax of a number or character escape.  So, for example, the
-identifiers {\cf X} and {\cf x} are different, and the character
-\sharpfoo{space} cannot be written \sharpfoo{SPACE}.
+syntax of datums distinguishes upper and lower case in identifiers and
+characters specified va their names.  For example, the identifiers
+{\cf X} and {\cf x} are different, and the character
+{\cf\sharpsign\backwhack{}space} cannot be written
+{\cf\sharpsign\backwhack{}SPACE}.
 
 Implementors may wish to support case-insensitive syntax for backward
 compatibility or other reasons.
@@ -17,12 +17,12 @@ to control case folding.
 {\cf{}\#!fold-case}\sharpbangindex{fold-case}\\
 {\cf{}\#!no-fold-case}\sharpbangindex{no-fold-case}}
 
-These directives may appear anywhere that comments may appear and are
+These directives may appear anywhere comments may appear and are
 treated as comments, except that they affect the reading of subsequent
 datums.
 The {\cf{}\#!fold-case} causes the reader to case-fold
 (see library section~\extref{lib:string-foldcase}{``Unicode''})
-each identifier name, character name, boolean name, and exponent marker.
+each \meta{identifier} and \meta{character name}.
 The {\cf{}\#!no-fold-case} directive causes the reader to return
 to the default, non-folding behavior.
 

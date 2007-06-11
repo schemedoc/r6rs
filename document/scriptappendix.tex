@@ -9,7 +9,7 @@ one or more plaforms.
 
 \section{Script interpreter}
 
-Implementations should provide a \defining{script interpreter} in 
+Where applicable, implementations should provide a \defining{script interpreter} in 
 the form of an executable program named {\cf scheme-script} that is 
 capable of initiating the execution of Scheme scripts, as described 
 below.
@@ -43,12 +43,12 @@ the following syntax:
 
 The \defining{script header}, if present on the first line of a script,
 is used by Unix-like operating systems to identify the interpreter to 
-be used to execute that script.
+execute that script.
 
 The script header syntax given above is the recommended portable 
 form that programmers should use.  However, if the first line 
 of a script begins with {\cf \#!/} or {\cf \#!\meta{space}}, 
-implementations must ignore it on all platforms, even if it does not conform to 
+implementations should ignore it on all platforms, even if it does not conform to 
 the recommended syntax.  
 
 \begin{rationale}
@@ -65,12 +65,13 @@ performed by altering a script header from its default form.
 \#!/usr/bin/env scheme-script
 \#!r6rs
 (import (rnrs base (6))
-        (rnrs i/o ports (6)))
+        (rnrs i/o ports (6))
+        (rnrs programs))
 (put-bytes (standard-output-port)
            (call-with-port
                (open-file-input-port
                  (cadr (command-line)))
-             get-bytes-all))
+             get-bytes-all))%
 \end{scheme}
 
 \section{Platform considerations}
@@ -78,19 +79,18 @@ Many platforms require that scripts be marked as executable in some way.
 The platform-specific details of this are beyond the scope of this 
 report.  Scripts that are not suitably marked as executable will fail 
 to execute on many platforms.
-
 Other platform-specific notes for some popular operating systems follow.
 
 \subsection{Apple Mac OS X}
 The Mac OS X operating system supports the Unix-like script header for
-shell scripts which run in the Terminal.  Depending on the intended
+shell scripts that run in the Terminal.  Depending on the intended
 usage, it may be advisable to choose a file name ending in {\cf
   .command} for a script, as this makes the script double-clickable.
-%TODO: other kind of Mac script?
+ %TODO: other kind of Mac script?
 
 \subsection{Unix}
 Scheme scripts on Unix-like operating systems are supported by the 
-presence of the script header.  Scripts which omit the script header 
+presence of the script header.  Scripts that omit the script header 
 are unlikely to be directly executable on Unix-like systems.
 
 To support installation of the Scheme script interpreter in 
