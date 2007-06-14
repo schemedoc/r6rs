@@ -698,7 +698,7 @@ example, the implicit-naming record definition:
 (define-record-type frob
   (fields (mutable widget))
   (protocol
-    (lambda (c) (c (make-widget n)))))
+    (lambda (c) (lambda (n) (c (make-widget n))))))
 \end{scheme}
 
 is equivalent to the following explicit-naming record definition.
@@ -708,7 +708,7 @@ is equivalent to the following explicit-naming record definition.
   (fields (mutable widget
                    frob-widget frob-widget-set!))
   (protocol
-    (lambda (c) (c (make-widget n)))))
+    (lambda (c) (lambda (n) (c (make-widget n))))))
 \end{scheme}
 
 Also, the implicit-naming record definition:
