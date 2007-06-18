@@ -227,8 +227,7 @@
           (in-hole P_1 #t)
           "6eqt"
           (side-condition (not (proc? (term v_1))))
-          (side-condition (not (condition? (term v_1))))
-          (side-condition (not (ip? (term v_1)))))
+          (side-condition (not (condition? (term v_1)))))
      
      (--> (in-hole P_1 (eqv? v_1 v_2))
           (in-hole P_1 #f)
@@ -237,17 +236,7 @@
           (side-condition (or (not (proc? (term v_1)))
                               (not (proc? (term v_2)))))
           (side-condition (or (not (condition? (term v_1)))
-                              (not (condition? (term v_2)))))
-          (side-condition (or (not (ip? (term v_1)))
-                              (not (ip? (term v_2))))))
-     
-     (--> (in-hole P_1 (eqv? ip_1 ip_2))
-          (in-hole P_1 #t)
-          "6eqipt")
-     
-     (--> (in-hole P_1 (eqv? ip_1 ip_2))
-          (in-hole P_1 #f)
-          "6eqipf")
+                              (not (condition? (term v_2))))))
      
      (--> (in-hole P_1 (eqv? (make-cond string) (make-cond string)))
           (in-hole P_1 #t)

@@ -360,14 +360,12 @@
      (make-r6test/v '(eqv? '() null) #t)
      
      (make-r6test '(store () (eqv? '(a) '(a))) 
-                  (list '(store () (values #f))
-                        '(store () (values #t))))
+                  (list '(store () (values #f))))
      (make-r6test '(store () (eqv? '(a) '(b))) 
-                  (list '(store () (values #f))
-                        '(store () (values #t))))
+                  (list '(store () (values #f))))
      (make-r6test '(store () ((lambda (x) (eqv? x x)) '(a)))
-                  (list '(store () (values #f))
-                        '(store () (values #t))))
+                  (list '(store () (values #t))))
+     
      (make-r6test '(store ()
                      (eqv?
                       (call/cc
