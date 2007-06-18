@@ -1,0 +1,1344 @@
+ \documentclass[twoside,twocolumn]{algol60}
+%\documentclass[twoside]{algol60}
+
+\usepackage{xr}
+
+\pagestyle{headings} 
+\showboxdepth=0
+\makeindex
+\input{commands}
+
+\newcommand{\rn}[1]{R$^{#1}$RS}
+\newcommand{\rsix}{\rn{6}}
+
+\texonly\externaldocument[report:]{r6rs}\endtexonly
+\texonly\externaldocument[lib:]{r6rs-lib}\endtexonly
+\texonly\externaldocument[app:]{r6rs-app}\endtexonly
+
+\def\headertitle{Revised$^{5.94}$ Scheme Rationale}
+\def\integerversion{6}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+\topnewpage[{
+\begin{center}   {\huge\bf
+        Revised{\Huge$^{\mathbf{\htmlonly\tiny\endhtmlonly{}5.94}}$} Report on the Algorithmic Language \\
+                              \vskip 3pt
+                              Scheme\\
+                                \vskip 1.5ex
+                              --- Rationale ---}
+
+\vskip 1ex$$
+\begin{tabular}{l@{\extracolsep{.5in}}lll}
+\multicolumn{4}{c}{M\authorsc{ICHAEL} S\authorsc{PERBER}}
+\\
+\multicolumn{4}{c}{W\authorsc{ILLIAM} C\authorsc{LINGER},
+  R.\ K\authorsc{ENT} D\authorsc{YBVIG},
+  M\authorsc{ATTHEW} F\authorsc{LATT},
+  A\authorsc{NTON} \authorsc{VAN} S\authorsc{TRAATEN}}
+\\
+\multicolumn{4}{c}{(\textit{Editors})} \\[1ex]
+\multicolumn{4}{c}{\bf 15 March 2007}
+\end{tabular}
+$$
+
+
+
+\end{center}
+
+\chapter*{Summary}
+\medskip
+
+This document describes rationales for some of the design decisions
+behind the \textit{Revised$^6$ Report on the Algorithmic Language
+  Scheme}.  The focus is on changes made since the last revision on
+the report.  However, numerous fundamental design decisions of Scheme
+are also explained.  This report also contains some historical notes.
+The formal comments submitted for drafts of the report and their
+responses, as archived on \url{http://www.r6rs.org/} provides more
+valuable background information on many decisions that are reflected
+in the report.
+
+This document frequently refers back to the \textit{Revised$^6$ Report
+  on the Algorithmic Language Scheme}~\cite{R6RS}, the
+\textit{Revised$^6$ Report on the Algorithmic Language Scheme ---
+  Libraries ---}~\cite{R6RS-libraries}, and the
+\textit{Revised$^6$ Report on the Algorithmic Language Scheme ---
+  Non-Normative Appendices ---}~\cite{R6RS-appendices}; references to the report are
+identified by designations such as ``report section'' or ``report
+chapter'', references to the library report are identified by
+designations such as ``library section'' or ``library chapter'', and
+references to the appendices are identified by
+designations such as ``appendix'' or ``appendix section''.
+
+\bigskip
+
+\begin{center}
+{\large \bf
+*** DRAFT*** \\
+}\end{center}
+
+This is a preliminary draft.  It is intended to reflect the decisions
+taken by the editors' committee, but contains many mistakes,
+ambiguities and inconsistencies.
+
+}]
+
+\texonly\clearpage\endtexonly
+
+\chapter*{Contents}
+\addvspace{3.5pt}                  % don't shrink this gap
+\renewcommand{\tocshrink}{-4.0pt}  % value determined experimentally
+{%\footnotesize
+\tableofcontents
+}
+
+\vfill
+
+\texonly\clearpage\endtexonly
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Introduction}
+
+The \textit{Revised$^6$ Report on the Algorithmic Language Scheme}
+(\rn{6} for short) is the sixth of the Revised Reports on Scheme.
+
+Prior to \rn{6}, decisions on changes to the Revised Reports were made
+at physical meetings, by votes among those present.  The process
+started out with a rule of consensus, which required a large majority
+for changes to pass.  This rule changed to unanimous consent, which
+was in place until \textit{Revised$^6$ Report on the Algorithmic
+  Language Scheme} (\rn{5} for short).  \rn{5} itself came out in
+1998, six years after the 1992 meeting where most of the changes
+between \rn{4} and \rn{5} had been decided.  By that time, a
+disconnect between the process for producing Revised Reports and the
+current state of the community had happened: Whereas previously, the
+Scheme community was well represented by the authors present at the
+meetings, many of the original authors were no longer part of the
+Scheme community, and the community had diversified far beyond its
+original size.
+
+Richard Kelsey, after having co-edited \rn{5}, organized a workshop in
+1998 (co-located with ICFP 1998) to discuss future directions to the
+Scheme.  Many proposals for future changes to the language were
+discussed, but no clear picture emerged as to how a new Revised Report
+might be produced. The main tangible result of the workshop was the
+creation of the \textit{Scheme Requests for Implementation} (SRFI)
+process (\url{http://srfi.schemers.org}), which is now well
+established in the community.  As a counterpoint to the Revised
+Reports, which require that everyone approves a change, a SRFI is
+merely a request by an individual author or a group of authors, and
+thus only subject to the approval of the author(s).  The SRFI process
+sets up a mailing list for each such proposal, where members of the
+community can make suggestions to improve the SRFI; the author can
+revise the document throughout the draft period, after which she can
+finalize or withdraw.
+
+While the SRFIs are a valuable vehicle for discussing proposals, and
+many are widely adopted by implementations, they do not have a
+coherent organizing principle; for some subjects, several competing
+SRFIs exist.  Thus, the SRFIs in some cases serve as an incubator for
+future standards but are no substitute for a coherent
+language design and set of standard libraries.
+
+The editors of \rn{6} broke with the unanimous-consent rule; instead,
+decisions have been made by simple vote.  While many decisions were
+prepared by e-mail discussion, most votes were actually cast in a
+series of telephone conferences starting in 2007.
+
+
+\chapter{Numbers}
+\label{numberschapter}
+
+\section{Infinities, NaNs}
+\label{infinitiesnansection}
+
+Infinities and NaNs and are artefacts that help
+deal with the inexactness of binary floating-point arithmetic.  The
+semantics dealing with infinities and NaNs, or the circumstances
+leading to their generation are somewhat arbitrary.  However, as most
+Scheme implementation use an IEEE~754-conformant
+implementation~\cite{IEEE} of flonums and inexact reals, \rn{6} uses
+the particular semantics from this standard as the basis for the
+treatment of infinities and NaNs in the report.  This is also the
+reason why infinities and NaNs are flonums and inexact reals, allowing
+Scheme systems to exploit the closure properties arising from their
+being part of the standard IEEE-754 floating-point representation.
+See section~\ref{closurepropertiessection} for details on closure
+properties.
+
+\rn{6} intentionally does not require a Scheme implementation to use
+infinities and NaNs as specified in IEEE~754.  Hence, support for them
+is optional.
+
+\section{Distinguished -0.0}
+
+\chapter{Lexical syntax and read syntax}
+
+\section{Symbol and identifier syntax}
+
+\subsection{Escaped symbol constituents}
+
+While revising the syntax of symbols and identifiers, the editors'
+goal was to make symbols subject to write/read invariance, i.e.\ to
+allow each symbol to be written out using {\cf put-datum} (section
+\ref{lib:put-datum}) or {\cf write} (section~\ref{lib:write}), and
+read back in using {\cf get-datum} (section \ref{lib:get-datum}) or
+{\cf read} (section \ref{lib:read}), yielding the same symbol.  This
+was not the case in \rrs{5}, as symbols could contain arbitrary
+characters such as spaces which could not be part of their external
+representation.  Moreover, symbols could distinguish case, whereas
+their external representation could not.
+
+For representing unusual characters in the symbol syntax, the report
+provides the {\cf\backwhack{}x} escape syntax, which allows specifying
+an arbitrary Unicode scalar value.  This also has the advantage that
+arbitrary symbols can be represented using only ASCII, which allows
+referencing them from Scheme programs restricted to ASCII or some
+other subset of Unicode.
+
+A popular choice for extending the set of characters that can occur in
+symbols is the vertical-bar syntax of Common Lisp.  The vertical-bar
+syntax of Common Lisp carries the risk of confusing the syntax of
+identifiers with that of consecutive lexemes, and also does not allow
+representing arbitrary characters only using ASCII.  Consequently, it
+was not adopted for \rn{6}.
+
+\subsection{Case sensitivity}
+\label{casesensitivityrationalesection}
+
+The change from case-insensitive syntax in \rn{5} to case-sensitive
+syntax is a major change.  Many technical arguments exist in favor of
+both case sensitivity and case insensitivity, and any attempt to list
+them all here would be incomplete.  What is relevant here is that
+switching to case sensitivity will break backwards compatibility, and
+might set a precedent for switching a technically more or less
+arbitrary decision again in the future.
+
+The editors decided to switch to case sensitivity because they
+perceived that a significant majority of the Scheme community favored
+the change.  This perception has been strengthened by polls at the
+2004 Scheme workshop, on the {\cf plt-scheme} mailing list, and the
+{\cf r6rs-discuss} mailing list.
+
+The directives described in appendix~\ref{app:caseinsensitivityappendix}
+allow specifying that a code portion (or other syntactic data) was
+written under the old assumption of case-insensitivity and therefore
+must be case-folded upon reading.
+
+\subsection{Identifiers starting with {\tt ->}}
+
+\rn{6} introduces a special rule in the lexical syntax for
+identifiers starting with the characters {\cf ->}.  In \rn{5}, such
+identifiers were not valid lexemes.  (In \rn{5}, a lexeme starting
+with a {\cf -} character has to be a number.)  However, many existing
+Scheme implementations prior to \rn{6} already supported identifiers
+starting with {\cf ->}.  (Many readers would classify any lexeme as an
+identifier starting with {\cf -} for which {\cf string->number}
+returns \schfalse{}.)  As a result, a signficant amount of otherwise
+portable Scheme code used identifiers starting with {\cf ->}, which
+are a convenient choice for many names.  Therefore, \rn{6} legalizes
+these identifiers.  The separate rule is not particularly elegant.
+However, designing a more elegant rule that does not overlap with
+numbers or other lexeme classes has proved to be surprisingly
+difficult.
+
+ 
+\section{Comments}
+
+While \rn{5} only provided the {\cf;} syntax for comments, the report
+now describes three essential kinds: In addition to {\cf;}, {\tt \#|}
+and {\tt |\#} delimit block comments, and {\cf\sharpsign;} starts a
+``datum comment''.  ({\cf\sharpsign!r6rs} is also a kind of command,
+albeit with a specific, fixed purpose.) 
+
+Block comments provide a more convient way of writing multi-line
+comments, and are an often-requested and often-implemented syntactic
+addition to the language. 
+
+The rationale for {\cf\sharpsign;} is not as readily apparent: It
+automatically comments out a single datum, the basic unit of Scheme
+syntax, something that the other comment mechanisms cannot do.  As the
+specification notes, {\cf \sharpsign\verticalbar} \ldots {\cf
+  \verticalbar\sharpsign} cannot generally be used to comment out an
+arbitrary datum or set of data. Moreover, while {\cf\sharpsign;} is
+probably most useful during development and debugging, it is still
+useful to have a standard notation for commenting out a datum,
+particularly since programmers sometimes develop and debug a single
+piece of code concurrently on multiple systems.
+
+\chapter{Semantic concepts}
+
+\section{Argument aund subform checking}
+\label{argumentchecking}
+
+The report requires implementations to check the arguments of
+procedures and subforms for syntactic forms for adherence to the
+specification.  However, implementations are not required to detect
+every violation of a specification.  Specifically, the report allows
+the following exceptions:
+%
+\begin{enumerate}
+\item Checking of restrictions that are undecidable is not required,
+  such as certain properties of procedures passed as arguments, or
+  properties of subexpressions, whose macro expansion may not
+  terminate.
+\item Checking that an argument is a list where doing so would be
+  impractical or expensive is not required.  Specically, procedures that
+  invoke another procedure passed as an argument are not required to
+  check that a list remains a list after every invocation.
+\item Checking that an argument is of the specified types when future
+  extensions are explicitly allowed.
+\end{enumerate}
+%
+The second item deserves special attention, as the specific decisions
+made for the report are meant to enable ``picky'' implementations that
+catch as many violations and unportable assumptions made by programs
+as possible, while also enabling practical and efficient
+implementations that execute programs quickly.
+
+\section{Safety}
+
+\rn{5} described many situations not specified in the report as ``is
+an error'': Portable programs could not cause such situations, but
+implementations were free to implement arbitary behavior under this
+umbrella.  This included ``crashing'' the running programming, or
+somehow compromising the integrity of its execution model, resulting
+in random behavior.  This was in sharp contrast to the assumption to
+many users that assumed Scheme was a ``safe'' language where each
+violation of a restriction of the language standard or the
+implementation would at least result in defined behavior, such as
+interrupting or aborting the program and/or starting a debugger.
+
+To avoid the problems associated with this arbitrary behavior, all
+libraries specified in the report must now be safe, and react to
+detected violations of the specification by raising
+an exception, which allows the program to detect and react
+to the violation itself.
+
+The report allows implementations to provide ``unsafe'' libraries that
+may compromise safety.
+
+\section{Proper tail recursion}
+
+While a proper tail recursion has been a cornerstone property of
+Scheme since its inception, it is difficult to implement efficiently
+on some architectures, specifically those compiling to higher-level
+intermediate languages such as C or to certain virtual-machine
+architectures such as JVM or CIL.
+
+Nevertheless, abandoning proper tail recursion as a language property
+and relegating it to optional optimizations would have far-reaching
+consequences: Many programs written with the assumption of proper tail
+recursion would no longer work.  Moreover, the lack of proper tail
+recursion would prevent the natural expression of certain programming
+styles such as Actors-style message-passing systems, self-replacing
+servers, or automata written as mutually recursive procedures.
+Furthermore, if they did not exist, special ``loop'' constructs would
+have to be added to the language to compensate for the lack of another
+iteration construct.  Consequently, proper tail recursion remains an
+essential and required aspect of the Scheme language.
+
+\chapter{Notation and terminology}
+
+\section{Requirement levels}
+
+\rn{6} distinguishes between different requirement levels, both for
+the programmer and for the implementation.  Specifically, the
+distinction between ``should'' and ``must'' is important: For example,
+``should'' is used for restrictions on argument types that are
+undecidable or potentially too expensive to enforce.  The use of
+``should'' allows implementations to perform quite extensive checking
+of restrictions on arguments (see section~\ref{argumentchecking}), but
+also to eschew more expensive checks.
+
+\section{Entry format}
+
+While it is reasonable to require the programmer to adhere to
+restrictions on arguments, some of these restrictions are eihter
+undecidable or too expensive to always enforce (see
+section~\ref{argumentchecking}).  Therefore, some entries have
+additional paragraphs labelled ``\textit{Implementation
+  responsibilities}'' that distinguishes the responsibilities of the
+implementation from those of the implementation.
+
+\chapter{Libraries}
+
+The design of the library system was a challenging process: Many
+existing Scheme implementations offer ``module systems'', but they
+differ dramatically both in functionality and in the goals they
+address.  The library system was designed with the primary
+requirement of allowing programmers to write, distribute, and evolve
+portable code.  An secondary requirement was to be able to separately
+compile libraries in the sense that compiling a library requires only
+having compiled its dependencies.  This entailed the following
+corollary requirements:
+%
+\begin{itemize}
+\item Composing libraries requires some kind of dependency management.
+\item Libraries from different sources may have name conflicts.
+  Consequently, some form of name-space management is needed.
+\item In Scheme, abstractions provided by code includes macros.
+  Hence, it must be possible to export macros from libraries, with all
+  the consequences dictated by the referential-transparency property
+  of hygienic macros.
+\end{itemize}
+%
+The library system does not address the following goals, which were
+considered during the design process:
+%
+\begin{itemize}
+\item Mutually dependent libraries.
+\item Separation of library interface from library implementation.
+\item Local modules and local imports. 
+\end{itemize}
+%
+This section discusses some aspects of the design of the library
+system that have been controversial:
+
+\section{Syntax}
+
+It's not clear that a sequence of forms is more convenient than a
+single form for processing and generation. Both syntactic choices have
+technical merits and drawbacks. The single-form syntax chosen for
+\rn{6} has the advantage of being self-delimiting.
+
+A difference between top-level programs and libraries is that a
+program contains only one top-level program but multiple libraries.
+As a result, we believe that delimiting the text for a library body is
+a common enough need (in streams of various kinds) that it is worth
+standardizing the delimiters; parentheses are the obvious choice.
+
+\section{Local import}
+
+Some Scheme implementations feature module systems that allow
+importing a module's bindings into a local environment.  While we
+agree with the described benefits of local import, a drawback of local
+imports is that library dependencies are not readily apparent from a
+library header. This drawback seems significant enough to merit
+longer-term consideration. Since leaving out local import for now does
+not preclude it from being added later, and since the report already
+tackles so many library-related issues, the editors decided to omit
+local import from the report.
+
+\section{Local modules}
+
+Some Scheme implementations feature module systems that allow defining
+``local modules'' in a local environment rather than only at the
+library level.  Specifically, this enables syntactic abstraction over
+modules.  Local modules are undoubtedly useful, but also complicate
+the scoping rules of the language: Whereas the library system only
+allows transporting bindings from one library top level to another,
+local modules allow transporting bindings into local scopes, with
+far-reaching consequences for the rules that may be used to determine
+scoping, particularly in the absence of {\cf syntax-case}.
+
+Moreover it is debatable whether top-level {\cf library} is (or should
+be) the same construct as local {\cf module}. The job of the library
+system is to organize the top-level namespace, and not to serve as a
+target for expansion of sophisticated macros. Of course, the broader
+roles and syntactic similarity of {\cf module} and {\cf library}
+suggest merging the concepts, but merging the concepts further
+broadens the role of each.  Such generalization may seem intuitively
+right to Scheme programmers, but all attempts by the editors at such
+broadening led away from consensus rather than toward it.
+
+\section{Fixed {\tt import} and {\tt export} clauses}
+
+The {\cf import} and {\cf export} clauses of the {\cf library} form
+are fixed---they cannot be the result of macro expansion.  Just as
+with local import, this decision reflects the desire to make library
+dependencies readily apparent from the library header.
+
+\section{Compound library names}
+
+Libary names are compound.  This differs from the treatment of
+identifiers in the rest of the language.  Using compound compound
+names reflects experience across programming languages that a
+structured top-level name space is necessary to avoid collisons.
+Embedding a hierachy within a single string or symbol is certainly
+possible. However, the editors became convinced by the arguments in
+favor of using list data to represent hierarchical structure, rather
+than encoding it in a string or symbol.  Versioning, in particular, is
+natural in list form, but awkward in encoded form.  Consequently,
+despite the syntactic complexity of compound names, and despite the
+potential mishandling of the hierarchy by implementations, the editors
+chose the list representation.
+
+\section{Versioning}
+
+Libraries and {\cf import} clauses optionally carry versioning
+information.  This allows reflecting the development history of a
+library, but also significantly increases the complexity of the
+library system.  Experience with module systems gathered in other
+languages as well as with shared libraries at the operating-system
+level consistently indicates that relying only on the name of a module
+for identification causes conflicts impossible to rectify in the
+absence of versioning information, and thus diminishes the
+opportunities for sharing code.  Therefore, versioning is part of the
+library system.
+
+\section{Treatment of different versions}
+
+Libraries with the same name but different versions cannot coexist
+within the same program.  This prevents combining libraries and
+programs that require conflicting versions of the same library.  An
+alternative choice would have been to allow the co-existence of
+different versions of the same library.  Based on experience with
+other shared-library systems (including Windows DLLs and Unix shared
+objects), the potential for confusion created by multiple library
+instances seems too great. At the same time, it is not clear that this
+prior experience applies directly; Windows DLLs are generally not
+versioned, and while Linux shared objects are versioned for linking,
+inter-object references do not designate a particular source object.
+The editors chose the conservative approach disallowing multiple
+instances of a library.
+
+\chapter{Top-level programs}
+
+The notion of ``top-level program'' is new in \rn{6} and replaces the
+notion of ``Scheme program'' in \rn{5}.  The two are quite different:
+While a \rn{6} top-level program is defined to be a complete, textual
+entity, an \rn{5} program could evolve by being entered piecemeal into
+a running Scheme system.  Many Scheme systems have interactive
+command-line environments based on the semantics of \rn{5} programs.
+However, the specification of \rn{5} programs was not really
+sufficient do describe how to operate an arbitrary Scheme system: The
+\rn{5} is ambiguous on some aspects of the semantics such as binding.
+Moreover, \rn{5}'s {\cf load} procedure does say how to load source
+code into the running system, but the pragmatics of {\cf load} would
+often make compiling programs before execution problematic, in
+particular with regard to macros.  Furthermore, Scheme implementations
+handle treatment of and recovery from errors in wildly different ways.
+
+Tightening the specification of programs from \rn{5} would have been
+possible, but could have restricted the design employed by Scheme
+implementations in undesirable ways.  Moreover, alternative approaches
+to structuring the user interface of a Scheme implementation have
+emerged since \rn{5}.  Consequently, \rn{6} makes no attempt of trying
+to specify the semantics of programs as in \rn{5}; the design of an
+interactive environment is now completely in the hands of the
+implementors.  On the other hand, being able to distribute portable
+programs as one of the goals of the \rn{6} process.  As a result, the
+notion of top-level program was added to the report.
+
+\chapter{Expansion process}
+
+The description of macro expansion is considerable more involved than
+it was in \rn{5}: One reason for this that the specification of
+expansion in \rn{5} was ambiguous in several important respects.  For
+example, \rn{5} does not specify whether {\cf define} is a binding
+form.  Also, it was not clear whether definitions of macros had to
+precede their uses.  The fact that the set of available bindings may
+influence the matching process of macro expansion further complicates
+matters.  The specific algorithm \rn{6} describes is one of the
+simplest expansion strategies that addresses these questions.  It has
+the advantage that it visits every subform of the source code only
+once.
+
+The description of the expansion process specifically avoids
+specifying the recursive case, where a macro use expands into a
+definition whose binding would influence the expansion of the macro
+use after the fact, as this might lead to confusing programs.
+Implementors are encouraged to detect such cases as syntax violations.
+
+\chapter{Base library}
+
+\section{Library organization}
+
+The libraries of the Scheme standard are organized according to
+projected use.  Hence, the \rsixlibrary{base} library exports
+procedures and syntactic abstractions that are likely to be useful for
+most Scheme programs and libraries.  Conversely, each of the libraries
+relegated to the separate report on libraries is likely to be missing
+from the imports of a substantial number of programs and libraries.
+Naturally, the specific decisions about this organization and the
+separation of concerns of the libraries are debatable, and represent a
+best attempt of the editors.
+
+A number of secondary criteria were also used in choosing the exports
+of the base library.  In particular, macros transformers defined using
+the facilities of the base library are guaranteed to be hygienic;
+hygiene-breaking transformers are only available through the
+\rsixlibrary{syntax-case} library.
+
+Note that \rsixlibrary{base} is not a ``primitive library'' in the
+sense that all other libraries of the Scheme standard can be
+implemented portably using only its exports.  Moreover, the library
+organization is not layered from more primitive to more advanced
+libraries, even though some libraries can certainly be implemented in
+terms of others.  Organizing the libraries according to such a
+layering would have meant imposing unnecessary constraints on
+implementations.  Implementations differ in their sets of primitives,
+and thus any layering mandated by the report is unlikely to reflect
+the layering employed by any specific implementation.  (The
+distinction between primitive and derived features was removed from
+the report for the same reasons.)
+
+\section{Bodies}
+
+\rn{6} draft treats top-level bodies as a special case.  Allowing
+definitions and expressions to be mixed in top-level bodies has ugly
+semantics, and introduces a special case, but was allowed as a
+concession to convenience when constructing programs rapidly via cut
+and paste.
+
+Definitions are not interchangeable with expressions, so definitions
+cannot be allowed to appear wherever expressions can appear, and
+expressions cannot be allowed to appear wherever definitions can
+appear.  Composition of definitions with expressions will therefore be
+restricted in some way; the question is not whether there will be
+restrictions, but what those restrictions will be.
+
+Historically, top-level definitions in Scheme have had a different
+semantics from definitions in bodies.  In a body, definitions serve as
+syntactic sugar for the bindings of a {\cf letrec} (or {\cf letrec*}
+in \rn{6}) that is implicit at the head of every body.
+
+That semantics can be stretched to cover top-level bodies by
+converting expressions to definitions of ignored variables, but does
+not easily generalize to allow definitions to be placed anywhere
+within expressions.  The editors considered a different generalization
+of definition placement, but decided against that generalization in
+part because a survey of current Scheme code found surprisingly few
+places where the generalization would be useful.
+
+If szch generalization proposed, were adopted, programmers who are
+familiar with Java and similar languages might expect definitions to
+be allowed in the same kinds of contexts that allow declarations in
+Java.  These programmers would have to be reminded that Scheme's
+definitions have {\cf letrec*} scope, while Java declarations (inside
+a method body) have {\cf let*} scope and cannot be used to define
+recursive procedures; that Scheme's begin expressions do not introduce
+a new scope, while Java's curly braces do introduce a new scope; that
+flow analysis is nontrivial in higher order languages, while Java can
+use a trivial flow analysis to reject programs with undefined
+variables; that Scheme's macro expander must locate all definitions,
+while Java has no macro system; and so on.  Rather than explain how
+those facts justify restricting definitions to appear as top-level
+forms of a body, it is simpler to explain that definitions are just
+syntactic sugar for the bindings of an implicit {\cf letrec*} at the
+head of each body, and to explain that the relaxation of that
+restriction for top-level bodies is (like several other features of
+top-level bodies) an ad hoc special case.
+
+\section{Equivalence predicates}
+
+\subsection{Equivalence of NaNs}
+
+The basic reason why the behavior of {\cf eqv?} is not specified on
+NaNs is that the IEEE-754 standard does not say much about how the
+bits of a NaN are to be interpreted, and explicitly allows
+implementations of that standard to use most of a NaN's bits to encode
+implementation-dependent semantics.  The implementors of a Scheme
+system should therefore decide how {\cf eqv?} should interpret those
+bits.
+
+Arguably, \rn{6} should require
+%
+\begin{scheme}
+(let ((x \hyper{expression})) (eqv? x x))%
+\end{scheme}
+%
+to evaluate to true when \hyper{expression} evaluates to a number;
+both \rn{5} and \rn{6} imply this for certain other types, and for
+most numbers, but not for NaNs.  Since the IEEE-754 and draft
+IEEE-754R~\cite{IEEE754R} both say that the interpretation of a NaN's
+payload is left up to implementations, and implementations of Scheme
+often do not have much control over the implementation of IEEE
+arithmetic, it would be unwise for \rn{6} to insist upon the truth of
+%
+\begin{scheme}
+(let ((x \hyper{expression}))
+  (or (not (number? x))
+      (eqv? x x)))%
+\end{scheme}
+even though that expression is likely to evaluate to true in most
+systems.  For example, a system with delayed boxing of inexact real
+numbers may box the two arguments to {\cf eqv?} separately, the boxing
+process may involve a change of precision, and the two separate
+changes of precision may result in two different payloads.
+
+When \var{x} and \var{y} are flonums represented in IEEE floating
+point or similar, it is reasonable to implement {\cf (eqv? \var{x}
+  \var{y})} by a bitwise comparison of the floating point
+representations.  \rn{6} should not require this, however, because
+%
+\begin{enumerate}
+\item \rn{6} does not require that flonums be represented by a
+  floating point representation,
+\item the interpretation of a NaN's payload is explicitly
+  implementation-dependent according to both the IEEE-754 standard and
+  the current draft of its proposed replacement, IEEE-754R, and
+\item the semantics of Scheme should remain independent
+  of bit-level representations.
+\end{enumerate}
+%
+For example, IEEE-754, IEEE-754R, and the draft \rn{6} all allow the
+external representation {\cf +nan.0} to be read as a NaN whose payload
+encodes the input port and position at which {\cf +nan.0} was read.
+This is no different from any other external representation such as
+{\cf ()}, {\cf \sharpsign()}, or {\cf 324}.  An implementation can
+have arbitrarily many bit-level representations of the empty vector,
+for example, and some do.  That is why the behavior of the {\cf eq?}
+and {\cf eqv?} procedures on vectors cannot be defined by reference to
+bit-level representations, and must instead be defined explicitly.
+
+\section{Generic arithmetic}
+
+Numerical computation was long neglected by the Lisp community.  Until
+Common Lisp there was no carefully thought out strategy for organizing
+numerical computation, and with the exception of the MacLisp system
+\cite{Pitman83} little effort was made to execute numerical code
+efficiently.  The Scheme reports recognized the excellent work of the
+Common Lisp committee and accepted many of their recommendations,
+while simplifying and generalizing in some ways consistent with the
+purposes of Scheme.
+
+\section{IEEE-754 conformance}
+
+As mentioned in chapter~\ref{numberschapter}, the treatment of
+infinities, NaNs and -0.0, if present in a Scheme implementation, are
+in line with IEEE-754~\cite{IEEE} and IEEE-754R~\cite{IEEE754R}.
+Analogously, the specification of branch cuts for certain
+transcendental functions have been changed from \rn{5} to conform to
+the IEEE standard.
+
+\section{Domains of numerical predicates}
+
+The domains of the {\cf finite?}, {\cf infinite?}, and {\cf nan?}
+procedures could be expanded to include all numbers, or perhaps even
+all objects.  However, \rn{6} restricts them to real numbers.
+Expanding {\cf nan?} to complex numbers would involve at least some
+arbitrariness; not expanding its domain while expanding the domains of
+the other two would introduce an irregularity into the domains of
+these three procedures, which are likely to be used together; it is
+easier for programmers who wish to use these procedures with complex
+numbers to express their intent in terms of the real-only versions
+than it would be for the editors to guess their intent.
+
+\section{Numerical types}
+
+Scheme's numerical types are the exactness types $\{ \textrm{exact},
+\textrm{inexact} \}$, the tower types $\{ \textrm{integer},
+\textrm{rational}, \textrm{real}, \textrm{complex}, \textrm{number}
+\}$, and the Cartesian product of the exactness types with the tower
+types, where $\left< t_1, t2 \right>$; is regarded as a subtype of
+both $t_1$ and $t_2$.
+
+These types have an aesthetic symmetry to them, but they are not
+equally important.  Judging by the number of \rn{5} procedures whose
+domain is restricted to values of some numerical type, the most
+important numerical types are the exact integers, the integers, the
+rationals, the reals, and the complex numbers.
+
+Many programmers and implementors regard the focus of \rn{5} on those
+particular numerical types as something of a mistake.  In practice,
+there is reason to believe that the most important numerical types are
+the exact integers, the exact rationals, the inexact reals, and the
+inexact complex numbers.  This section explores one of the reasons
+those four types are so important in practice, and why reals have an
+exact zero as their imaginary part in \rn{6} (a change from \rn{5}).
+
+\subsection{Closure Properties}
+\label{closurepropertiessection}
+
+Scheme's types are not completely arbitrary.  Each type corresponds to
+a set of values that turns up repeatedly as the natural domain or
+range of the functions that are computed by Scheme's standard
+procedures.  The reason these types turn up so often is that they are
+closed under certain sets of operations.
+
+The exact integers, for example, are closed under the integral
+operations of addition, subtraction, and multiplication.  The exact
+rationals are closed under the rational operations, which consist of
+the integral operations plus division (although we must make a special
+case for division by zero).  The reals (and inexact reals) are closed
+under some (often inexact) interpretation of rational and irrational
+operations such as exp and sin, but are not closed under operations
+such as {\cf log}, {\cf sqrt}, and {\cf expt}.  The complex (and
+inexact complex) numbers are closed under the largest set of
+operations.
+
+\subsection{Representation-specific operations}
+
+A naive implementation of Scheme's arithmetic operations is slow
+compared to the arithmetic operations of most other languages, mainly
+because most operations must perform some sort of case dispatch on the
+representation types of their arguments.  The potential for this case
+dispatch arises when the type of an operation's argument is
+represented by a union of two or more representation types, or because
+the operation is required to signal an error when given an argument of
+an incorrect type.  (The second reason can be regarded as a special
+case of the first.)
+
+To make Scheme's arithmetic more efficient, many implementations
+provide sets of operations whose domain is restricted to a single
+representation type, and which are not expected to signal an error
+when given arguments of incorrect type.
+
+Alternatively, or in addition, several compilers perform some kind of
+flow analysis that attempts to infer the representation types of
+expressions.  When a single representation type can be inferred for
+each argument of an operation, and those types match the types
+expected by some representation-specific version of the operation,
+then the compiler can substitute the specific version for the more
+general version that was specified in the source code.
+
+\subsection{Flow analysis}
+
+Flow analysis is performed by solving the type and interval
+constraints that arise from such things as:
+
+\begin{itemize}
+\item the types of literal constants, e.g.\ {\cf 2} is an exact integer
+  that is known to be within the interval $[2,2]$
+  
+\item conditional control flow that is predicated on known
+  inequalities, e.g. {\cf (if (< i n) \hyperi{expr} \hyperii{expr})}
+  
+\item conditional control flow that is predicated on known type
+  predicates, e.g. {\cf (if (real? x) \hyper{real case} \hyper{unreal case})}
+  
+\item the closure properties of known operations (for example, {\cf (+
+    \vari{flonum} \varii{flonum})} always evaluates to a flonum)
+\end{itemize}
+  
+The purpose of flow analysis (as motivated in this section) is to infer a
+single representation type for each argument of an operation.  That
+places a premium on predicates and closure properties from which a
+single representation type can be inferred.
+
+In practice, the most important single representation types are
+fixnum, flonum, and compnum.  (A compnum is a pair of flonums,
+representing an inexact complex number.)  These are the representation
+types for which a short sequence of machine code can be generated when
+the representation type is known, but for which considerably less
+efficient code will probably have to be generated when the
+representation type cannot be inferred.
+
+The fixnum representation type is not closed under any operations of
+\rn{5}, so it is hard for flow analysis to infer the fixnum type from
+portable code.  Sometimes the combination of a more general type (e.g.
+exact integer) and an interval (e.g.  $[0,n)$, where $n$ is known to
+be a fixnum) can imply the fixnum representation type.  Adding
+fixnum-specific operations that map fixnums to fixnums (by computing
+modulo $2^n$, say) greatly increases the number of fixnum
+representation types that a compiler can infer.
+
+The flonum representation type is not closed under operations such as
+{\cf sqrt} and {\cf expt}, so flow analysis tends to break down in the
+presence of those operations.  This is unfortunate, because those
+operations are normally used only with arguments for which the result
+is expected to be a flonum.  Adding flonum-specific versions such as
+{\cf flsqrt} and {\cf flexpt} improves the effectiveness of flow
+analysis.
+
+\rn{5} creates a more insidious problem by defining {\cf (real?
+  \var{z})} to be true if and only if {\cf (zero? (imag-part
+  \var{z}))} is true.  This means, for example, that {\cf -2.5+0.0i}
+is real.  If {\cf -2.5+0.0i} is represented as a compnum, then the
+compiler cannot rely on x being a flonum during the \hyper{real case}
+of {\cf (if (real? x) \hyper{real case} \hyper{unreal case})}.  This
+problem could be fixed by writing all of the arithmetic operations so
+that any compnum with a zero imaginary part is converted to a flonum
+before it is returned, but that merely creates an analogous problem
+for compnum arithmetic, as explained below.  \rn{6} adopted a proposal
+by Brad Lucier to fix the problem: {\cf (real? \var{z})} is now true
+if and only if {\cf (imag-part \var{z})} is an exact zero.
+
+The compnum representation type is closed under virtually all
+operations, provided no operation that accepts two compnums as its
+argument ever returns a flonum.  To work around the problem described
+in the paragraph above, several implementations automatically convert
+compnums with a zero imaginary part to the flonum representation.
+This practice virtually destroys the effectiveness of flow analysis
+for inferring the compnum representation, so it is not a good
+workaround.  To improve the effectiveness of flow analysis, it is
+better to change the definition of Scheme's real numbers as described
+in the paragraph above.
+
+\section{div and mod}
+
+Given arithmetic on exact integers of arbitrary precision, it is a
+trivial matter to derive signed and unsigned integer types of finite
+range from it by modular reduction.  For example 32-bit signed
+two-complement arithmetic behaves like computing with the residue
+classes ``mod $2^{32}$'', where the set $\{-2^{31}, \ldots,
+2^{31}-1\}$ has been chosen to represent the residue classes.
+Likewise, unsigned 32-bit arithmetic also behaves like computing ``mod
+$2^{32}$'', but with a different set of representatives $\{0, \ldots,
+2^{32}-1\}$.
+
+Unfortunately, the \rn{5} operations {\cf quotient}, {\cf remainder},
+and {\cf modulo} are not ideal for this purpose.  In the following
+example, {\cf remainder} fails to transport the additive group
+structure of the integers over to the residues modulo 3.
+%
+\begin{scheme}
+(remainder (+ -2 3) 3) \ev 1,
+(remainder (+ (remainder -2 3)
+              (remainder 3 3))
+           3) \ev -2%
+\end{scheme}
+%
+In fact, {\cf modulo} should have been used, producing residues in
+$\{0,1,2\}$. For modular reduction with symmetric residues, i.e. in
+$\{-1,0,1\}$ in the example, it is necessary to define a more
+complicated reduction altogether.
+
+Therefore, {\cf quotient}, {\cf remainder}, and {\cf modulo} have been
+replaced in \rn{6} by the {\cf div}, {\cf mod}, {\cf div0}, and {\cf
+  mod0} procedures, which are more useful when implementing modular
+reduction.  The underlying mathemtical functions $\mathrm{div}$,
+$\mathrm{mod}$, $\mathrm{div}_0$, and $\mathrm{mod}_0$ (see report
+section~\extref{report:integerdivision}{Integer division}) have been
+adapted from the $\mathrm{div}$ and $\mathrm{mod}$ operations from Egner
+et al.~\cite{cleaninguptower}.  They differ in the representatives
+from the residue classes they return: $\mathrm{div}$ and $\mathrm{mod}$
+always compute a non-negative residue, whereas $\mathrm{div}_0$ and
+$\mathrm{mod}_0$ compute a residue from a set centered on 0.  The
+former can be used, for example, to implement unsigned fixed-width
+arithmetic, whereas the latter correspond to two's-complement arithmetic.
+
+These operations differ slightly from the $\mathrm{div}$ and
+$\mathrm{mod}$ operations from Egner et al.\ that make both operations
+available through a single pair of operations, that distinguish
+between the two cases for residues by the sign of the divisor (as well
+as returning $0$ for a zero divisor).  Splitting the operations into
+two sets of procedures avoids some potential confusion.
+
+The procedures {\cf modulo}, {\cf remainder}, and {\cf quotient} from
+\rn{5} can easily be defined in terms of {\cf div} and {\cf mod}.
+
+\section{Characters and strings}
+
+Where \rn{5} specified characters and strings in terms of its own,
+limited character set, \rn{6} specifies characters and strings in
+terms of Unicode.  The primary goal of the design change were to
+improve the portability of Scheme programs that manipulate text, while
+preserving a maximum of backward compatibility with \rn{5}.
+
+\rn{6} defines characters to be representations of Unicode scalar
+values, and strings to be indexed sequences of characters.  This is a
+different representation for Unicode text than the representations
+chosen by some other programming languages such as Java or
+C\sharpsign{}, which use UTF-16 code units as the basis for the type
+of characters.
+
+The representation of Unicode text corresponds to the lowest semantic
+level of the Unicode standard: The Unicode standard specifies most
+semantic properties in terms of Unicode scalar values.  Thus, Unicode
+strings in Scheme allow the straightforward implementation of
+semantically sensitive algorithms on strings in terms of these scalar
+values.
+
+In contrast, UTF-16 is a specific encoding for Unicode text, and
+performing semantic manipulation on UTF-16 representations of text is
+awkward.  Choosing UTF-16 as the basis for the string representation
+would have meant that a character object potentially carries no
+semantic information at all, as surrogates have to be combined
+pairwise to yield the corresponding Unicode scalar value.  (As a
+result, the APIs of Java for semantic operations on Unicode text often
+come in two overloadings, one for character objects and one for
+integers that are Unicode scalar values.)
+
+The surrogates cover a numerical range deliberately omitted from the
+set of Unicode scalar values.  Hence, surrogates have no
+representation as characters---they are merely an artefact of the
+design of UTF-16.  Including surrogates in the set of characters
+introduces complications similar to the complications of using UTF-16
+directly.  In particular, most Unicode consortium standards and
+recommendations explicitly prohibit unpaired surrogates, including the
+the UTF-8 encoding, the UTF-16 encoding, the UTF-32 encoding, and
+recommendations for implementing the ANSI C {\cf wchar\_t} type.  Even
+UCS-4, which originally permitted a larger range of values that
+includes the surrogate range, has been redefined to match UTF-32
+exactly. That is, the original UCS-4 range was shrunk and surrogates
+were excluded.
+
+Arguably, a higher-level model for text could be used as the basis for
+Scheme's character and string types, such as grapheme clusters.
+However, no design satisfying the goals stated above was available
+when the report was written.
+
+\section{Multiple values}
+
+FIXME: Why include in the first place
+
+\rn{6} does not specify the semantics of multiple values completely.
+In particular, it does not specify what happens when more than one
+value (or zero values) are returned to a continuation that implicitly
+accepts only one value.  In particular,
+%
+\begin{scheme}
+((lambda (x) x) (values  1 2)) \lev \unspecified%
+\end{scheme}
+%
+Whether an implementation must raise an exception when evaluating such
+an expression, or should exhibit some other, non-exceptional behavior
+is a contentious issue.  Variations of two different and fundamentally
+incompatible positions on this issue exist, each with its own merits:
+%
+\begin{enumerate}
+\item Passing the wrong number of values to a continuation is
+typically an error, one that implementations ideally detect and report.
+
+\item There is no such thing as returning the wrong number of values
+  to a continuation.  In particular, continuations not created by {\cf
+    begin} or {\cf call-with-values} should ignore all but the first
+  value, and treat zero values as one unspecified value.
+\end{enumerate}
+%
+\rn{6} allows an implementation to take either position.  Moreover, it
+allows an implementation to let {\cf set!}, {\cf vector-set!}, and
+other effect-only operators to pass zero values to their
+continuations, preventing a program to make obscure use of the return
+value.  This causes a potential compatibility problem with \rn{5},
+which specifies that such expression return a single unspecified
+value, but the benefits of the change were deemed to outweigh the costs.
+
+\section{{\tt call-with-current-continuation} and {\tt dynamic-wind}}
+
+The {\cf call-with-current-continuation} procedure is one of the
+distinguishing features of Scheme, and enables the implementation of
+many high-level control structures in terms of the base language.  The
+{\cf dynamic-wind} procedure was added more recently in \rn{5}.  It
+enables implementing a number of abstractions related to
+continuations, such as implementing a general dynamic environment, and
+making sure that finalization code runs when some dynamic extent
+expires.  More generally, the {\cf dynamic-wind} procedure provides a
+guarantee that
+%
+\begin{scheme}
+(dynamic-wind \var{before} \var{thunk} \var{after})%
+\end{scheme}
+%
+cannot return unless both \var{before} and \var{after} have been
+evaluated, in that order.  They might be evaluated several times, but
+always in that order, and these evaluations are never nested.  As this
+guarantee is crucial for enabling many of the uses of {\cf
+  call-with-current-continuation} and {\cf dynamic-wind}, both are
+specified jointly.
+
+\chapter{Unicode}
+
+\section{Case mapping}
+
+The various case-mapping procedures of the \rsixlibrary{unicode}
+library all operate in a locale-independent manner.  The Unicode
+standard also offers locale-sensitive case operations, not implemented
+by the procedures from the \rsixlibrary{unicode} library.  While the
+library does not make available the full spectrum of case-related
+functionality defined by the Unicode standard, it does provide the
+most commonly used procedures.  In particular, this strategy has
+allowed providing procedures mostly compatible with those provided by
+\rn{5}.  (A minor exception is the case-insensitive procedures for
+string comparison.  However, it is unlikely that this affects many
+existing programs.)  Providing locale-sensitive operations would have
+meant significant novel design effort without significant precedent,
+which is why they are not part of \rn{6}.
+
+The case-mapping procedures operating on characters are not sufficient
+for implementing case mapping on strings.  For example, the upper-case
+version of the German ``\ss{}'' in a string is ``SS''.  As {\cf
+  char-upcase} can only return a single character, it must return
+\ss{} for \ss.  This limits then usefulness of the procedures
+operating on characters, but provides compatibility with \rn{5}
+sufficient for many existing applications.  Moroever, it provides
+direct access to the corresponding attributes of the Unicode character
+database.
+
+\chapter{Bytevectors}
+
+Bytevectors are a representation for binary data, based on
+SRFI~74~\cite{srfi74}.  The primary motivation for including them in
+\rn{6} was to enable binary I/O.  Positions in bytevectors always
+refer to certain bytes or octets.  However, the operations of the
+\rsixlibrary{bytevectors} library provide access to binary data in
+various byte-aligned formats, such as signed and unsigned integers of
+various widths, IEEE floating-point representations, and textual
+encodings.  This differs notably from representations for binary data
+as homogeneous vectors of numbers.  In settings related to I/O, an
+application often needs to access different kinds of entities from a
+single binary block.  Providing operations for them on a single
+datatype considerably reduces both programming effort and library
+size.
+
+Bytevectors can also be used to encode sequences of unboxed numbers.
+However, unencapsulated use of bytevectors for this purpose may lead
+to aliasing, which may reduce the effectiveness of compiler
+optimizations.  However, the records facility provides sealedness and
+opacity, which, together with bytevectors, make it possible to
+construct a portable reference implementation for new data types that
+provide fast and memory-efficient arrays of homogeneous numerical
+data.  The design and implementation of those data types is beyond the
+scope of the report, but \rn{6} provides the machinery needed to
+implement them effectively.
+
+\chapter{List utilities}
+
+The \rsixlibrary{lists} library provides a small number of useful
+procedures operating on lists, including several procedures from
+\rn{5}.  The goal of the library is to provide only procedures likely
+to be useful for many programs.  Consequently, the selection
+represented by \rsixlibrary{lists} is less exhaustive than the widely
+implemented SRFI~1~\cite{srfi1}.  Several changes were made with
+respect to the corresponding procedures SRFI~1 to simplify the
+specification, and establish uniform naming conventions.
+
+\chapter{Sorting}
+
+The procedures of the \rsixlibrary{sorting} library provide simple
+interfaces to sorting algorithms useful to many programs.  In
+particular, {\cf list-sort} and {\cf vector-sort} guarantee stable
+sorting using $O(n \lg n)$ calls to the comparison procedure.
+Straightforward implementations of merge sort~\cite{algorithms} have
+the desired properties.  Note that, at least with merge sort,
+stability carries no significant implementation or performance burden.
+
+The choice of ``strictly less than'' for the comparison relation is
+consistent with the most common choice of existing Scheme libraries
+for sorting.  Moreover, using a boolean comparison procedure instead
+one returning three possible values (for less than, equal, and greater
+than) would make calling the sorting procedures less convenient, with
+no discernable performance advantage.
+
+The specification of the {\cf vector-sort!} procedure is meant to
+allow an implementation using {\cf quicksort}, hence the $O(n^2)$
+bound on the number of calls to the comparison procedure, and the
+omission of the stability requirement.
+
+\chapter{Control structures}
+
+\section{{\tt when} and {\tt unless}}
+
+The {\cf when} and {\cf unless} forms are syntactic sugar for {\cf if}
+expressions in one arm.  They provide minor convenience, and are
+useful for distinguishing one-armed conditionals from two-armed {\cf
+  if} expressions.  Some programmers use {\cf when} and {\cf unless}
+to mark conditionals with side effects, avoid one-armed {\cf if}
+expressions, and use two-armed {\cf if} expressions primarily for
+their values, not their effects.
+
+\section{{\tt case-lambda}}
+
+The {\cf case-lambda} form allows constructing procedures that
+distinguish different numbers of arguments.  Using {\cf case-lambda}
+makes this considerably easier than deconstructing a list containing
+optional arguments explicitly.  Moreover, Scheme implementations might
+optimize dispatch on the number of arguments when expressed as {\cf
+  case-lambda}, which is considerably harder on code explicitly
+deconstructing argument lists.
+
+\chapter{Records}
+
+\section{Syntactic layer}
+
+While the syntactic layer could be expressed portably in terms of the
+procedural layer, standardizing a particular surface syntax
+facilitates communication via code.
+
+Moreover, the syntactic layer can be implemented more efficiently, and
+thus it facilitates the development of efficient portable libraries
+that define and use record types.  The syntactic layer is designed to
+allow expansion- or compile-time determination of record
+characteristics, including field offsets, so that, for example, record
+accesses can be be compiled efficiently to simple memory indirects.
+This property would be lost if the parent were not generally known
+until run time.  Consequently, the {\cf parent} clause only accepts
+other record types defined using the syntactic layer.
+
+\section{Constructor mechanism}
+
+Significant demand for the features of the present mechanism,
+particularly the general construction mechanism, was expressed during
+the review process for SRFI~76~\cite{srfi76}, upon which the present
+mechanism is based.
+
+FIXME: more material from the report itself
+
+\section{Sealed record types}
+
+Record types may be sealed.  This feature allows enforcing abstraction
+barriers, which is useful in itself, but also allows more efficient
+compilation.
+
+In particular, when the implementor of an abstract data type chooses
+to represent that ADT by record type, and allows one of the classes
+that represent the ADT to be exposed and subclassed, then the ADT is
+no longer abstract.  Its implementors must expose enough information
+to allow for effective subtyping, and must commit to enough of the
+representation to allow those subclasses to continue to work even as
+the ADT evolves.
+
+In practice, the ADT cannot evolve freely over time.  Its
+representation cannot be changed without breaking most of its
+subclasses.  This kind of brittleness has been problematic of many
+large programs.  Sealedness allows the construction of record types
+that evolve more gracefully over time.
+
+Moreover, making a record type sealed may prevent its accessors and
+mutators from becoming polymorphic, making effective flow analysis and
+optimization difficult.  This is particularly relevant for
+Scheme implementations that use record to implement some of Scheme's
+other primitive data types such as pairs.
+
+\section{Opaque record types}
+
+FIXME: I need Kent's or Matthew's help here
+
+\chapter{Conditions and exceptions}
+
+\section{Exceptions}
+
+The goals of the exception mechanism are to help programmers share
+code which relies on exception handling, and to provide information on
+violations of specifications of procedures and syntactic forms.  This
+exception mechanism is en extension of SRFI~34~\cite{srfi34}, which
+was primarily designed to meet the first goal.  However, it has proven
+suitable for addressing the second goal of dealing with violations as
+well.   (More on the second goal below in the discussion of the
+condition system.)
+
+For some violations such the use of unsupported NaNs or infinities, as
+well as other applications, an exception handler may be able to
+repair the cause of the exception, for example by substituting a
+suitable object for the NaN or infinity.  Therefore, the exception
+mechanism extends SRFI~34 by continuable exceptions, and specifies the
+continuation of an exception handler
+
+\section{Conditions}
+
+FIXME: Mike
+
+\chapter{I/O}
+
+FIXME: Mike
+
+\section{File names}
+\label{filenamesection}
+
+FIXME: Mike
+
+\section{Binary and textual ports}
+
+FIXME: Mike
+
+\section{Argument conventions}
+
+FIXME: Mike
+
+\chapter{File system}
+
+Standardization of procedures that return or pass to another procedure
+the name of a file is more difficult than standardization of {\cf
+  file-exists?} and {\cf delete-file}, because strings are either
+awkward or in sufficient to represent file names on some platforms,
+such as Unix and Windows.  See section~\ref{filenamesection}.
+
+FIXME Why not more operations
+
+\chapter{Arithmetic}
+
+\section{Fixnums}
+
+FIXME: Mike
+
+\section{Flonums}
+
+FIXME: Mike
+
+\chapter{{\tt syntax-case}}
+
+FIXME
+
+\chapter{Hash tables}
+
+FIXME: Why not SRFI
+
+\chapter{Enumerations}
+
+Many procedures in many libraries accept arguments from a finite set,
+or subsets of a finite sets to describe a certain mode of operation,
+or several flags to describe a mode of operation.  Examples in the
+\rn{6} include the endianness for bytes-object operations, and file
+and buffering modes in the I/O library.  Offering a default policy for
+dealing with such values fosters portable and readable code, much as
+records do for compound values, or multiple values for procedures
+computing several values.  Moreover, representations of sets from a
+finite set of options should offer the standard set operations, as
+they tend to occur in practice.  (One such set operation is the
+complement, which makes lists of symbols a less than suitable
+representation.)
+
+Different Scheme implementations have taken different approaches to
+this problem in the past, which suggests that a default policy does
+not merely encode what any sensible programmer would do anyway.  As
+possible uses occur quite frequently, this particular aspect of
+interface construction has been standardized.
+
+
+\chapter{Composite library}
+
+FIXME
+
+\chapter{{\tt eval}}
+
+FIXME
+
+\chapter{Mutable pairs}
+
+The presence of mutable pairs causes numerous problems:
+%
+\begin{itemize}
+\item It complicates the specification of higher-procedures that
+  operate on lists.
+\item It inhibits certain compiler optimizations such as
+  deforestation.
+\item It complicates reasoning about programs that use lists.
+\item It complicates the implementation of procedures that accept
+  variable numbers of arguments.  FIXME: Kent, more info?
+\end{itemize}
+%
+However, removing mutable pairs from the language entirely would have
+caused significant compatibility problems for existing code.  As a
+compromise, the {\cf set-car!} and {\cf set-cdr!} procedures were
+moved to a separate library.  This facilitates statically determining
+if a program ever mutates pairs, encourages writing programs that do
+not mutate pairs, and may help deprecating or removing mutable pairs
+in the future.
+
+\chapter{Mutable strings}
+
+The presence of mutable strings problems similar to some of the
+problems caused by the presence of mutable pairs.  Hence, the same
+reasoning applies for moving the mutation operations into a separate
+library.
+
+\chapter{R$^5$RS compatibility}
+
+FIXME: Mike
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\newpage                   %  Put bib on it's own page (it's just one)
+%\twocolumn[\vspace{-.18in}]%  Last bib item was on a page by itself.
+\renewcommand{\bibname}{References}
+
+\bibliographystyle{plain}
+\bibliography{abbrevs,rrs}
+
+\vfill\eject
+
+
+\newcommand{\indexheading}{Alphabetic index of definitions of
+  concepts, keywords, and procedures}
+\newcommand{\indexintro}{}
+
+\printindex
+
+\end{document}
