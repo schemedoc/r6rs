@@ -1,4 +1,4 @@
- \documentclass[twoside,twocolumn]{algol60}
+\documentclass[twoside,twocolumn]{algol60}
 %\documentclass[twoside]{algol60}
 
 \usepackage{xr}
@@ -175,6 +175,8 @@ infinities and NaNs as specified in IEEE~754.  Hence, support for them
 is optional.
 
 \section{Distinguished -0.0}
+
+FIXME
 
 \chapter{Lexical syntax and read syntax}
 
@@ -1213,7 +1215,50 @@ continuation of an exception handler
 
 \section{Conditions}
 
-FIXME: Mike
+Conditions are values that communicate information about exceptional
+situations between parts of a program. Code that detects an exception
+may be in a different part of the program than the code that handles
+it. In fact, the former may have been written independently from the
+latter.  Consequently, to facilitate effective handling of exceptions,
+conditions should communicate as much information as possible as
+accurately as possible, and still allow effective handling by code
+that did not precisely anticipate the nature of the exception that has
+occurred.
+
+The \rsixlibrary{conditions} library provides two mechanisms to
+enable this kind of communication:
+%
+\begin{itemize}
+\item subtyping (through record types) among condition types allows
+  handling code to determine the general nature of an exception even
+  though it does not anticipate its exact nature,
+\item compound conditions allow an exceptional situation to be
+  described in multiple ways.
+\end{itemize}
+%
+As an example, a networking error that occurs during a file operation
+on a remote drive fits two descriptions: A networking error or a
+file-system error.  An exception handler might only look for one of
+the two.  Compound conditions are a simple solution to this problem.
+Moreover, compound conditions also make providing auxiliary
+information as part of the condition object, such as an error message,
+easier.
+
+The standard condition hierarchy makes an important distinction
+between \emph{errors} and \emph{violations}: An error is an
+exceptional situation in the environment, which the program cannot
+avoid or prevent.  For example, I/O errors are represented by
+condition types that are subtypes of {\cf\&error}.  Violations, on the
+other hand, are exceptional situations that the program could have
+avoided.  Violations are typically programming mistakes.  The
+distinction between the two is not always clear, as may be possible
+but inordinately difficult or expensive to detect certain violations.
+The use of {\cf eval} also blurs the distinction.  Nevertheless, many
+cases do allow distinguishing between errors and violations.
+Consequently, exception handlers that handle errors are common,
+whereas exception handlers that handle violations should be introduced
+with great care.
+
 
 \chapter{I/O}
 
