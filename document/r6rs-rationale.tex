@@ -1217,20 +1217,61 @@ FIXME: Mike
 
 \chapter{I/O}
 
-FIXME: Mike
-
 \section{File names}
 \label{filenamesection}
 
-FIXME: Mike
+The filenames in most common operating systems, despite their
+appearance in most cases, are not text: For example, Unix uses
+null-terminated byte sequences, and Windows uses null-terminated
+sequences of UTF-16 code units.  On Unix, the textual representation
+of a file name depends on the locale, environmental setting.  In both
+cases, a file name may be an invalid encoding and thus not correspond
+to a string.  An appropriate representation for file names that covers
+these cases while still offering convenient access to file-system
+names through strings is still an open research problem.  Therefore,
+\rn{6} allows specifying file names as strings, but also allows an
+implementation to add its own representation for file names.
 
 \section{Binary and textual ports}
 
-FIXME: Mike
+The plethora of widely used encodings for texts makes providing
+textual I/O significantly more complicated than the simple model
+offered by \rn{5}.  In particular, realistic textual I/O should
+address encodings such as UTF-16 that include a header word
+determining the ``actual'' encoding of the rest of the byte stream,
+stateful encodings, and textual formats such as XML, which specify the
+encoding in a header line.  Consequently, a library implementing
+textual I/O should support specifying an encoding upon opening a port,
+but should also support opening a port in ``binary mode'' to determine
+the encoding and switch to ``text mode''.
+
+In contrast, arbitrary switching between ``binary mode'' and ``text
+mode'' is difficult to support, as it may interfere with efficient
+buffering strategies, and because the semantics may be unclear in the
+case of stateful encodings.  Consequently, the \rsixlibrary{io ports}
+library allows switching from ``binary mode'' to ``text mode'' by
+converting a binary port into a textual port, but not the other way
+around.  Applications that read from sources that intersperse binary
+and textual data should open a binary port and use either {\cf
+  bytevector->string} or the procedures from the
+\rsixlibrary{bytevectors} library to convert the binary data to text.
+
+The separation of binary and textual ports enables creating ports from
+both binary and textual sources and sinks.  It also makes creating
+both binary and textual versions of some procedures many procedures
+necessary.
 
 \section{Argument conventions}
 
-FIXME: Mike
+While the \rsixlibrary{io simple} library provides mostly
+\rn{5}-compatible procedures for performing textual I/O, the
+\rsixlibrary{io ports} library uses a different convention for
+argument ordering.  In particular, the port is always the first
+argument.  This enables the use of optional arguments for information
+about the data to be read or written, such as the range in a
+bytevector.  As this convention is incompatible with the convention of
+\rsixlibrary{io simple}, corresponding procedures have different
+names.
 
 \chapter{File system}
 
