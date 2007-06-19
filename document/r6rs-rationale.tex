@@ -700,6 +700,16 @@ Common Lisp committee and accepted many of their recommendations,
 while simplifying and generalizing in some ways consistent with the
 purposes of Scheme.
 
+\section{Full numeric tower}
+
+\rn{5} did not require implementations to suppoer the full numeric
+tower.  Consequently, it was hard to write portable programs that
+perform substantial arithmetic, and it is unnecessarily difficult even
+to write programs whose arithmetic is portable between different
+implementations in the same category.  The portability problems were
+most easily solved by requiring all implementations to support the
+full numeric tower.
+
 \section{IEEE-754 conformance}
 
 As mentioned in chapter~\ref{numberschapter}, the treatment of
@@ -1334,13 +1344,26 @@ such as Unix and Windows.  See section~\ref{filenamesection}.
 
 \chapter{Arithmetic}
 
-\section{Fixnums}
+\section{Fixnums and flonums}
 
-FIXME: Mike
+Fixnum and flonum arithmetic is already supported by many systems,
+mainly for efficiency. Standardization of fixnum and flonum arithmetic
+increases the portability of code that uses it.  Standardizing the
+precision of fixnum and flonum arithmetic would make it inefficient on
+some systems, which would defeat its purpose.  Therefore, \rn{6}
+specifies the syntax and much of the semantics of fixnum and flonum
+arithmetic, but makes the precision implementation-dependent.
 
-\section{Flonums}
-
-FIXME: Mike
+Existing implementations employ different implementation strategies
+for fixnums: Some implement the model specified by \rn{6} (overflows
+cause exceptions), some implement modular arithmetic (overflows ``wrap
+around''), and others do not handle arithmetic overflows at all.  The
+latter model violates the safety requirement of \rn{6}.  In programs
+that use fixnums instead of generic arithmetic, overflows are
+typically programming mistakes.  The model chosen for \rn{6} has the
+advantage that such overflows do not get silently converted into
+meaningless numbers, and that the programs gets notified of the
+violation through the exception system.
 
 \chapter{{\tt syntax-case}}
 
