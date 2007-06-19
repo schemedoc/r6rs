@@ -1,12 +1,14 @@
 % Macros for R^nRS.
 
-\usepackage{makeidx}
-\usepackage{url}
-
 % tex2page.sty mucks with in some manner
 \let\centerlinesaved=\centerline
 \usepackage{tex2page}
 \let\centerline=\centerlinesaved
+
+\usepackage{xr-hyper}
+
+\usepackage{makeidx}
+\usepackage{hyperref}
 
 % \let\htmlonly=\iffalse
 % \let\endhtmlonly=\fi
@@ -139,7 +141,12 @@
 \newcommand{\ampindex}[1]{\index{#1@\texttt{\&{}#1}}}
 \newcommand{\libindex}[1]{\index{#1@\texttt{(#1)}}}
 
-\newcommand{\extref}[2]{\texonly\ref{#1}\endtexonly\htmlonly{on ``#2''}\endhtmlonly}
+\texonly
+\newcommand{\extref}[2]{\ref{#1}}
+\endtexonly
+\htmlonly
+\newcommand{\extref}[2]{on ``#2''}
+\endhtmlonly
 
 \renewenvironment{theindex}
 {\clearpage
