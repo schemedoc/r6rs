@@ -194,8 +194,11 @@ infinities and NaNs as specified in IEEE~754.  Hence, support for them
 is optional.
 
 \section{Distinguished -0.0}
-
-FIXME
+ 
+A distinguished -0.0 is another artefact of IEEE~754, which can be
+used to construct certain branch cuts.  A Scheme implementation is not
+required to distinguish -0.0.  If it does, however, the behavior of
+the transcendental functions is sensitive to the distinction.  
 
 \chapter{Lexical syntax and read syntax}
 
@@ -822,6 +825,13 @@ in line with IEEE-754~\cite{IEEE} and IEEE-754R~\cite{IEEE754R}.
 Analogously, the specification of branch cuts for certain
 transcendental functions have been changed from \rn{5} to conform to
 the IEEE standard.
+
+\subsection{Transcendental functions}
+
+The specification of the transcendental functions follows
+Steele~\cite{CLtL}, which in turn cites Penfield~\cite{Penfield81};
+refer to these sources for more detailed discussion of branch cuts,
+boundary conditions, and implementation of these functions.
 
 \subsection{Domains of numerical predicates}
 
