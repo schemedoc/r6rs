@@ -332,29 +332,6 @@ in Clinger's paper~\cite{propertailrecursion}.  The rules for identifying tail c
 in base-library constructs are described in
 section~\ref{basetailcontextsection}.
 
-\begin{rationale}
-
-Intuitively, no space is needed for an active tail call because the
-continuation that is used in the tail call has the same semantics as the
-continuation passed to the procedure containing the call.  Although an improper
-implementation might use a new continuation in the call, a return
-to this new continuation would be followed immediately by a return
-to the continuation passed to the procedure.  A properly tail-recursive
-implementation returns to that continuation directly.
-
-Proper tail recursion was one of the central ideas in Steele and
-Sussman's original version of Scheme.  Their first Scheme interpreter
-implemented both functions and actors.  Control flow was expressed using
-actors, which differed from functions in that they passed their results
-on to another actor instead of returning to a caller.  In the terminology
-of this section, each actor finished with a tail call to another actor.
-
-Steele and Sussman later observed that in their interpreter the code
-for dealing with actors was identical to that for functions and thus
-there was no need to include both in the language.
-
-\end{rationale}
-
 \section{Dynamic environment}
 \label{dynamicenvironmentsection}
 

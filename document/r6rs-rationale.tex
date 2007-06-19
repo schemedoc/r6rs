@@ -263,14 +263,14 @@ addition to the language.
 
 The rationale for {\cf\sharpsign;} is not as readily apparent: It
 automatically comments out a single datum, the basic unit of Scheme
-syntax, something that the other comment mechanisms cannot do.  As the
-specification notes, {\cf \sharpsign\verticalbar} \ldots {\cf
-  \verticalbar\sharpsign} cannot generally be used to comment out an
-arbitrary datum or set of data. Moreover, while {\cf\sharpsign;} is
-probably most useful during development and debugging, it is still
-useful to have a standard notation for commenting out a datum,
-particularly since programmers sometimes develop and debug a single
-piece of code concurrently on multiple systems.
+syntax, something that the other comment mechanisms cannot do.  {\cf
+  \sharpsign\verticalbar} \ldots {\cf \verticalbar\sharpsign} cannot
+generally be used to comment out an arbitrary datum or set of data.
+Moreover, while {\cf\sharpsign;} is probably most useful during
+development and debugging, it is still useful to have a standard
+notation for commenting out a datum, particularly since programmers
+sometimes develop and debug a single piece of code concurrently on
+multiple systems.
 
 \section{Future extensions}
 
@@ -329,6 +329,25 @@ The report allows implementations to provide ``unsafe'' libraries that
 may compromise safety.
 
 \section{Proper tail recursion}
+
+Intuitively, no space is needed for an active tail call because the
+continuation that is used in the tail call has the same semantics as the
+continuation passed to the procedure containing the call.  Although an improper
+implementation might use a new continuation in the call, a return
+to this new continuation would be followed immediately by a return
+to the continuation passed to the procedure.  A properly tail-recursive
+implementation returns to that continuation directly.
+
+Proper tail recursion was one of the central ideas in Steele and
+Sussman's original version of Scheme.  Their first Scheme interpreter
+implemented both functions and actors.  Control flow was expressed using
+actors, which differed from functions in that they passed their results
+on to another actor instead of returning to a caller.  In the terminology
+of this section, each actor finished with a tail call to another actor.
+
+Steele and Sussman later observed that in their interpreter the code
+for dealing with actors was identical to that for functions and thus
+there was no need to include both in the language.
 
 While a proper tail recursion has been a cornerstone property of
 Scheme since its inception, it is difficult to implement efficiently
@@ -459,6 +478,23 @@ are fixed---they cannot be the result of macro expansion.  Just as
 with local import, this decision reflects the desire to make library
 dependencies readily apparent from the library header.
 
+\section{Instantiation and initialization}
+
+Opinions vary on how libraries should be instantiated and
+initialized during the expansion and execution of library bodies,
+whether library instances should be distinguished across phases,
+and whether levels should be declared so that they constrain 
+identifier uses to particular phases. This report therefore leaves
+considerable latitude to implementations, while attempting to
+provide enough guarantees to make portable libraries practical.
+
+\section{Immutable exports}
+
+The asymmetry in the prohibitions against assignments to explicitly
+and implicitly exported variables reflects the fact that the violation
+can be determined for implicitly exported variables only when the
+importing library is expanded.
+
 \section{Compound library names}
 
 Libary names are compound.  This differs from the treatment of
@@ -530,6 +566,11 @@ interactive environment is now completely in the hands of the
 implementors.  On the other hand, being able to distribute portable
 programs as one of the goals of the \rn{6} process.  As a result, the
 notion of top-level program was added to the report.
+
+By allowing the interleaving of definitions and expressions, top-level 
+programs support exploratory and interactive development, without 
+imposing unnecessary organizational overhead on code which may not be 
+intended for reuse.
 
 \chapter{Expansion process}
 
@@ -631,7 +672,36 @@ head of each body, and to explain that the relaxation of that
 restriction for top-level bodies is (like several other features of
 top-level bodies) an ad hoc special case.
 
+\section{Export levels}
+
+The {\cf syntax-rules} and {\cf identifier-syntax} forms are
+used to create macro transformers and are thus needed only at
+expansion time, i.e., meta level $1$.  
+
+The identifiers {\cf unquote}, {\cf unquote-splicing}, {\cf =>}, and
+{\cf else} serve as literals in the syntax of one or more
+base-library syntactic forms; e.g., {\cf else} serves as a
+literal in the syntax of {\cf cond} and {\cf case}.
+Bindings of these identifiers are exported from the base library so
+that they can be distinguished from other bindings of these identifiers
+or renamed on import.
+The identifiers {\cf ...}, {\cf \_}, and {\cf set!} serve as
+literals in the syntax of {\cf syntax-rules} and
+{\cf identifier-syntax} forms and are thus exported along with those
+forms with level $1$.
+
 \section{Equivalence predicates}
+
+\subsection{Treatment of procedures}
+
+The above definition of {\cf eqv?} allows implementations latitude in
+their treatment of procedures: implementations are free either to
+detect or to fail to detect that two procedures are equivalent to each
+other, and can decide whether or not to merge representations of
+equivalent procedures by using the same pointer or bit pattern to
+represent both.  Moreover, they can use implementation techniques such
+as inlining and beta reduction that duplicate otherwise equivalent
+procedures.
 
 \subsection{Equivalence of NaNs}
 
@@ -693,6 +763,17 @@ for example, and some do.  That is why the behavior of the {\cf eq?}
 and {\cf eqv?} procedures on vectors cannot be defined by reference to
 bit-level representations, and must instead be defined explicitly.
 
+\subsection{{\tt eq?}}
+
+It is usually possible to implement {\cf eq?}\ much more efficiently
+than {\cf eqv?}, for example, as a simple pointer comparison instead
+of as some more complicated operation.  One reason is that it may not
+be possible to compute {\cf eqv?}\ of two numbers in constant time,
+whereas {\cf eq?}\ implemented as pointer comparison will always
+finish in constant time.  The {\cf eq?} predicate may be used like
+{\cf eqv?}\ in applications using procedures to implement objects with
+state since it obeys the same constraints as {\cf eqv?}.
+
 \section{Generic arithmetic}
 
 Numerical computation was long neglected by the Lisp community.  Until
@@ -704,7 +785,7 @@ Common Lisp committee and accepted many of their recommendations,
 while simplifying and generalizing in some ways consistent with the
 purposes of Scheme.
 
-\section{Full numeric tower}
+\subsection{Full numeric tower}
 
 \rn{5} did not require implementations to suppoer the full numeric
 tower.  Consequently, it was hard to write portable programs that
@@ -714,7 +795,7 @@ implementations in the same category.  The portability problems were
 most easily solved by requiring all implementations to support the
 full numeric tower.
 
-\section{IEEE-754 conformance}
+\subsection{IEEE-754 conformance}
 
 As mentioned in chapter~\ref{numberschapter}, the treatment of
 infinities, NaNs and -0.0, if present in a Scheme implementation, are
@@ -723,7 +804,7 @@ Analogously, the specification of branch cuts for certain
 transcendental functions have been changed from \rn{5} to conform to
 the IEEE standard.
 
-\section{Domains of numerical predicates}
+\subsection{Domains of numerical predicates}
 
 The domains of the {\cf finite?}, {\cf infinite?}, and {\cf nan?}
 procedures could be expanded to include all numbers, or perhaps even
@@ -736,7 +817,7 @@ easier for programmers who wish to use these procedures with complex
 numbers to express their intent in terms of the real-only versions
 than it would be for the editors to guess their intent.
 
-\section{Numerical types}
+\subsection{Numerical types}
 
 Scheme's numerical types are the exactness types $\{ \textrm{exact},
 \textrm{inexact} \}$, the tower types $\{ \textrm{integer},
@@ -779,7 +860,7 @@ such as {\cf log}, {\cf sqrt}, and {\cf expt}.  The complex (and
 inexact complex) numbers are closed under the largest set of
 operations.
 
-\subsection{Representation-specific operations}
+\subsubsection{Representation-specific operations}
 
 A naive implementation of Scheme's arithmetic operations is slow
 compared to the arithmetic operations of most other languages, mainly
@@ -804,7 +885,7 @@ expected by some representation-specific version of the operation,
 then the compiler can substitute the specific version for the more
 general version that was specified in the source code.
 
-\subsection{Flow analysis}
+\subsubsection{Flow analysis}
 
 Flow analysis is performed by solving the type and interval
 constraints that arise from such things as:
@@ -877,7 +958,7 @@ workaround.  To improve the effectiveness of flow analysis, it is
 better to change the definition of Scheme's real numbers as described
 in the paragraph above.
 
-\section{div and mod}
+\subsubsection{div and mod}
 
 Given arithmetic on exact integers of arbitrary precision, it is a
 trivial matter to derive signed and unsigned integer types of finite
@@ -930,6 +1011,36 @@ two sets of procedures avoids some potential confusion.
 The procedures {\cf modulo}, {\cf remainder}, and {\cf quotient} from
 \rn{5} can easily be defined in terms of {\cf div} and {\cf mod}.
 
+\subsection{{\tt Numerical predicates}}
+
+The behavior of the numerical type predicates {\cf complex?}, {\cf
+  real?}, {\cf rational?}, and {\cf integer} behavior is motivated by
+closure properties described in
+section~\ref{closurepropertiessection}.  Conversely, the procedures
+{\cf real-valued?}, {\cf rational-valued?}, and {\cf integer-valued?}
+test whether a given number can be coerced to the specified type
+without loss of numerical accuracy.
+
+\subsection{Notes on individual procedures}
+
+\paragraph{{\tt round}}
+
+The {\cf round} procedure rounds to even for consistency with the
+default rounding mode specified by the IEEE floating point standard.
+
+\paragraph{{\tt sqrt}}
+
+The behavior of {\cf sqrt} is consistent with the IEEE floating point
+standard.
+
+\paragraph{{\tt number->string}}
+
+If \var{z} is an inexact number represented using binary floating
+point, and the radix is 10, then the expression listed in the
+specification is normally satisfied by a result containing a decimal
+point.  The unspecified case allows for infinities, NaNs, and
+representations other than binary floating point.
+
 \section{Characters and strings}
 
 Where \rn{5} specified characters and strings in terms of its own,
@@ -981,7 +1092,64 @@ Scheme's character and string types, such as grapheme clusters.
 However, no design satisfying the goals stated above was available
 when the report was written.
 
-\section{Multiple values}
+\section{Control features}
+
+\section{{\tt call-with-current-continuation} and {\tt dynamic-wind}}
+
+\vest A common use of {\cf call-with-current-continuation} is for
+structured, non-local exits from loops or procedure bodies, but in fact
+{\cf call-with-current-continuation} is useful for implementing a
+wide variety of advanced control structures.
+
+\vest Whenever a Scheme expression is evaluated there is a
+\defining{continuation} wanting the result of the expression.  The continuation
+represents an entire (default) future for the computation.
+Most of the time the continuation includes actions
+specified by user code, as in a continuation that will take the result,
+multiply it by the value stored in a local variable, add seven, and store
+the result in some other variable.  Normally these
+ubiquitous continuations are hidden behind the scenes and programmers do not
+think much about them.  On rare occasions, however, a programmer may
+need to deal with continuations explicitly.
+The {\cf call-with-current-continuation} procedure allows Scheme programmers to do
+that by creating a procedure that acts just like the current
+continuation.
+
+\vest Most programming languages incorporate one or more special-purpose
+escape constructs with names like {\tt exit}, \hbox{{\cf return}}, or
+even {\tt goto}.  In 1965, however, Peter Landin~\cite{Landin65}
+invented a general purpose escape operator called the J-operator.  John
+Reynolds~\cite{Reynolds72} described a simpler but equally powerful
+construct in 1972.  The {\cf catch} special form described by Sussman
+and Steele in the 1975 report on Scheme is exactly the same as
+Reynolds's construct, though its name came from a less general construct
+in MacLisp.  Several Scheme implementors noticed that the full power of the
+\ide{catch} construct could be provided by a procedure instead of by a
+special syntactic construct, and the name
+{\cf call-with-current-continuation} was coined in 1982.  This name is
+descriptive, but opinions differ on the merits of such a long name, and
+some people use the name \ide{call/cc} instead.
+
+The {\cf dynamic-wind} procedure was added more recently in \rn{5}.
+It enables implementing a number of abstractions related to
+continuations, such as implementing a general dynamic environment, and
+making sure that finalization code runs when some dynamic extent
+expires.  More generally, the {\cf dynamic-wind} procedure provides a
+guarantee that
+%
+\begin{scheme}
+(dynamic-wind \var{before} \var{thunk} \var{after})%
+\end{scheme}
+%
+cannot return unless both \var{before} and \var{after} have been
+evaluated, in that order.  They might be evaluated several times, but
+always in that order, and these evaluations are never nested.  As this
+guarantee is crucial for enabling many of the uses of {\cf
+  call-with-current-continuation} and {\cf dynamic-wind}, both are
+specified jointly.
+
+
+\subsection{Multiple values}
 
 FIXME: Why include in the first place
 
@@ -1017,28 +1185,21 @@ value.  This causes a potential compatibility problem with \rn{5},
 which specifies that such expression return a single unspecified
 value, but the benefits of the change were deemed to outweigh the costs.
 
-\section{{\tt call-with-current-continuation} and {\tt dynamic-wind}}
+\section{Macro transformers}
 
-The {\cf call-with-current-continuation} procedure is one of the
-distinguishing features of Scheme, and enables the implementation of
-many high-level control structures in terms of the base language.  The
-{\cf dynamic-wind} procedure was added more recently in \rn{5}.  It
-enables implementing a number of abstractions related to
-continuations, such as implementing a general dynamic environment, and
-making sure that finalization code runs when some dynamic extent
-expires.  More generally, the {\cf dynamic-wind} procedure provides a
-guarantee that
-%
-\begin{scheme}
-(dynamic-wind \var{before} \var{thunk} \var{after})%
-\end{scheme}
-%
-cannot return unless both \var{before} and \var{after} have been
-evaluated, in that order.  They might be evaluated several times, but
-always in that order, and these evaluations are never nested.  As this
-guarantee is crucial for enabling many of the uses of {\cf
-  call-with-current-continuation} and {\cf dynamic-wind}, both are
-specified jointly.
+\subsection{{\tt syntax-rules}}
+
+While the first subform of \hyper{srpattern} may be an identifier, the
+identifier is not involved in the matching and is not considered a
+pattern variable or literal identifier.  This is actually important,
+as the identifier is most often the keyword used to identify the
+macro.  The scope of the keyword is determined by the binding form or
+syntax definition that binds it to the associated macro transformer.
+If the keyword were a pattern variable or literal identifier, then the
+template that follows the pattern would be within its scope regardless
+of whether the keyword were bound by {\cf let-syntax}, {\cf
+  letrec-syntax}, or {\cf define-syntax}.
+
 
 \chapter{Unicode}
 
@@ -1106,6 +1267,15 @@ implemented SRFI~1~\cite{srfi1}.  Several changes were made with
 respect to the corresponding procedures SRFI~1 to simplify the
 specification, and establish uniform naming conventions.
 
+\section{Notes on individual procedures}
+
+\paragraph{{\tt memp}, {\tt member}, {\tt memv}, and {\tt memq}}
+
+Although they are ordinarily used as predicates, {\cf memp}, {\cf
+  member}, {\cf memv}, and {\cf memq}, do not have question marks in
+their names because they return useful values rather than just
+\schtrue{} or \schfalse{}.
+
 \chapter{Sorting}
 
 The procedures of the \rsixlibrary{sorting} library provide simple
@@ -1152,6 +1322,7 @@ deconstructing argument lists.
 
 \chapter{Records}
 
+
 \section{Syntactic layer}
 
 While the syntactic layer could be expressed portably in terms of the
@@ -1168,14 +1339,49 @@ This property would be lost if the parent were not generally known
 until run time.  Consequently, the {\cf parent} clause only accepts
 other record types defined using the syntactic layer.
 
+\section{Positional access and field names}
+
+The record and field names passed to {\cf make-record-type-descriptor}
+and appearing in the syntactic layer are for informational purposes
+only, e.g., for printers and debuggers.  In particular, the accessor
+and mutator creation routines do not use names, but rather field
+indices, to identify fields.
+  
+Thus, field names are not required to be distinct in the procedural or
+syntactic layers.  This relieves macros and other code generators from
+the need to generate distinct names.
+
+The record and field names are used in the syntactic layer for the
+generation of accessor and mutator names, and duplicate field names
+may lead to accessor and mutator naming conflicts.
+
+\section{Lack of multiple inheritance}
+
+Multiple inheritance was considered but omitted from the records
+facility, as it raises a number of semantic issues such as sharing
+among common parent types.
+
 \section{Constructor mechanism}
 
-Significant demand for the features of the present mechanism,
-particularly the general construction mechanism, was expressed during
-the review process for SRFI~76~\cite{srfi76}, upon which the present
-mechanism is based.
+The constructor-descriptor mechanism is an infra\-struc\-ture for
+creating specialized constructors, rather than just creating default
+constructors that accept the initial values of all the fields as
+arguments. This infrastructure achieves full generality while leaving
+each level of an inheritance hierarchy in control over its own fields
+and allowing child record definitions to be abstracted away from the
+actual number and contents of parent fields.
 
-FIXME: more material from the report itself
+The design allows the initial values of the fields to be specially
+computed or to default to constant values. It also allows for
+operations to be performed on or with the resulting record, such as
+the registration of a record for finalization. Moreover, the
+constructor-descriptor mechanism allows the creation of such
+initializers in a modular manner, separating the initialization
+concerns of the parent types from those of the extensions.
+
+The mechanism achieves complete generality without cluttering the
+syntactic layer, sacrificing a bit of notational convenience in
+special cases.
 
 \section{Sealed record types}
 
@@ -1291,6 +1497,25 @@ names through strings is still an open research problem.  Therefore,
 \rn{6} allows specifying file names as strings, but also allows an
 implementation to add its own representation for file names.
 
+\section{File options}
+
+The flags specified for {\cf file-options} represent only a common
+subset of meaningful options on popular platforms.  The {\cf
+  file-options} form does not restrict the \hyper{file-options name}s,
+so implementations can extend the file options by platform-specific
+flags.
+
+\section{End-of-line styles}
+
+The set of end-of-line styles recognized by the \rsixlibrary{ports}
+library is not closed because end-of-line styles other than those
+listed might become commonplace in the future.
+
+\section{Error-handling modes}
+
+The set of error-handling modes is not closed because implementations
+may support error-handling modes other than those listed.
+
 \section{Binary and textual ports}
 
 The plethora of widely used encodings for texts makes providing
@@ -1310,15 +1535,32 @@ buffering strategies, and because the semantics may be unclear in the
 case of stateful encodings.  Consequently, the \rsixlibrary{io ports}
 library allows switching from ``binary mode'' to ``text mode'' by
 converting a binary port into a textual port, but not the other way
-around.  Applications that read from sources that intersperse binary
-and textual data should open a binary port and use either {\cf
-  bytevector->string} or the procedures from the
+around.  The {\cf transcoded-port} procedure closes the binary port to
+preclude interference between the binary port and the textual port
+constructed from it.  Applications that read from sources that
+intersperse binary and textual data should open a binary port and use
+either {\cf bytevector->string} or the procedures from the
 \rsixlibrary{bytevectors} library to convert the binary data to text.
 
 The separation of binary and textual ports enables creating ports from
 both binary and textual sources and sinks.  It also makes creating
 both binary and textual versions of some procedures many procedures
 necessary.
+
+\section{File positions}
+
+Transcoded ports do not always support the {\cf port-position} and
+{\cf set-port-position!} opertions: The position of a transcoded port
+may not be well-defined, and may be hard to calculate even when
+defined, especially when transcoding is buffered.
+
+\section{Freshness of standard ports}
+
+The ports returned by {\cf standard-input-port}, {\cf
+  standard-output-port}, and {\cf standard-error-port} is fresh so it
+can be safely closed or converted to a textual port without risking
+the usability of an existing port.
+
 
 \section{Argument conventions}
 
@@ -1369,13 +1611,82 @@ advantage that such overflows do not get silently converted into
 meaningless numbers, and that the programs gets notified of the
 violation through the exception system.
 
+\section{Notes on individual procedures}
+
+\paragraph{{\tt fl+} and {\tt fl*}}
+
+These procedures are restricted to two arguments because their
+generalizations to three or more arguments would require
+precision proportional to the number of arguments.
+
+\paragraph{{\tt real->flonum}}
+
+This procedure is necessary because not all reals are inexact, and
+some inexact reals may not be flonums.
+
+\paragraph{{\tt flround}}
+
+The {\cf flround} procedure rounds to even for consistency with the default rounding
+mode specified by the IEEE floating point standard.
+
+\paragraph{{\tt flsqrt}}
+
+The behavior of {\cf flsqrt} on $-0.0$ is consistent with the IEEE
+floating point standard.
+
+
 \chapter{{\tt syntax-case}}
 
-FIXME
+\begin{rationale}
+While many syntax transformers are succinctly expressed using the
+high-level {\cf syntax-rules} form, others are difficult or impossible
+to write, including some that introduce visible bindings for or references
+to identifiers that do not appear explicitly in the input form, ones that
+maintain state or read from the file system, and ones that construct new
+identifiers.
+The {\cf syntax-case} system~\cite{syntacticabstraction} described here
+allows the programmer to write transformers that perform these sorts of
+transformations, and arbitrary additional transformations, without
+sacrificing the default enforcement of hygiene or the high-level
+pattern-based syntax matching and template-based output construction
+provided by {\cf syntax-rules} (report
+section~\extref{report:syntax-rules}{Macro transformers}).
 
-\chapter{Hash tables}
+Because {\cf syntax-case} does not require literals, including quoted
+lists or vectors, to be copied or even traversed, it may be able to preserve sharing
+and cycles within and among the constants of a program.  It also
+allows source-object correlation, i.e., the maintenance of ties
+between the original source code and expanded output, allowing
+implementations to provide source-level support for debuggers and
+other tools.
+\end{rationale}
 
-FIXME: Why not SRFI
+\chapter{Hashtables}
+
+\section{Caching}
+
+The specification notes that hashtables are allowed to cache the
+results of calling the hash function and equivalence function, and
+that any hashtable operation may call the hash function more than
+once.  Hashtable lookups are often followed by updates, so caching may
+improve performance.  Hashtables are free to change their internal
+representation at any time, which may result in many calls to the hash
+function.
+
+\section{Immutable hashtables}
+
+Hashtable references may be less expensive with immutable hashtables.
+Also, the creator of a hashtable may wish to prevent 
+modifications, particularly by code outside of the creator's 
+control.
+
+\section{Hash functions}
+
+The {\cf make-eq-hashtable} and {\cf make-eqv-hashtable} constructors
+are designed to hide their hash function.  This allows implementations
+to use the machine address of an object as its hash value, rehashing
+parts of the table as necessary if a garbage collector moves
+objects to different addresses.
 
 \chapter{Enumerations}
 
@@ -1400,6 +1711,12 @@ interface construction has been standardized.
 
 
 \chapter{Composite library}
+
+The \thersixlibrary{} library is intended as a convenient import for
+libraries where fine control over imported bindings is not necessary
+or desirable. The \thersixlibrary{} library exports all bindings for
+{\cf expand} as well as {\cf run} so that it is convenient for writing
+{\cf syntax-case} macros as well as run-time code.
 
 The \rsixlibrary{} library does not include a few select libraries:
 %

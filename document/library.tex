@@ -334,13 +334,6 @@ side of a {\cf set!} expression in the exporting library.
 
 All other variables defined within a library are mutable.
 
-\begin{rationale}
-The asymmetry in the prohibitions against assignments to
-explicitly and implicitly exported variables reflects the fact that the
-violation can be determined for implicitly exported variables only when the
-importing library is expanded.
-\end{rationale}
-
 \section{Import and export levels}
 \label{phasessection}
 
@@ -430,13 +423,6 @@ levels $0$ and $1$, and all bindings from the composite
 chapter~\extref{lib:complibchapter}{Composite library}), which are
 exported with levels $0$ and $1$.
 
-\begin{rationale} 
-The \thersixlibrary{} library is intended as a convenient import for libraries where fine
-control over imported bindings is not necessary or desirable. The \thersixlibrary{} library
-exports all bindings for {\cf expand} as well as {\cf run} so that it is convenient
-for writing {\cf syntax-case} macros as well as run-time code.
-\end{rationale}
-
 Macro expansion within a library can introduce a reference to an
 identifier that is not explicitly imported into the library. In that
 case, the phase of the reference must match the identifier's level as
@@ -483,16 +469,6 @@ when it references identifiers in phases consistent with the declared
 levels, and a library whose meaning depends on whether the
 instances of a library are distinguished or shared across phases or
 {\cf library} expansions may be unportable.
-
-\begin{rationale} 
-Opinions vary on how libraries should be instantiated and
-initialized during the expansion and execution of library bodies,
-whether library instances should be distinguished across phases,
-and whether levels should be declared so that they constrain 
-identifier uses to particular phases. This report therefore leaves
-considerable latitude to implementations, while attempting to
-provide enough guarantees to make portable libraries practical.
-\end{rationale} 
 
 \begin{note}
 If a program and its libraries avoid the \thersixlibrary{}

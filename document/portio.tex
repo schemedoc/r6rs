@@ -41,15 +41,6 @@ using the native notation of filesystem paths on an implementation's
 underlying operating system, and may include implementation-dependent
 values as well.
 
-\begin{rationale}
-Implementation-dependent file names may provide a more
-abstract and/or more general representation. Indeed, most operating
-systems do not use strings for representing file names, but rather byte
-or word sequences.
-Furthermore the string notation is not fully portable across operating
-systems, and is difficult to manipulate.
-\end{rationale}
-
 A \var{filename} parameter name means that the
 corresponding argument must be a file name.
 
@@ -106,11 +97,6 @@ other than those listed above may be used as \hyper{file-options name}s;
 they have implementation-specific meaning, if any.
 
 \begin{rationale}
-  The flags specified above represent only a common subset of
-  meaningful options on popular platforms.  The {\cf file-options}
-  form does not restrict the \hyper{file-options name}s, so 
-  implementations can extend the file options by platform-specific
-  flags.
 \end{rationale}
 \end{entry}   
 
@@ -230,11 +216,6 @@ linefeed.  For a textual output port, {\cf none} and {\cf lf} are
 equivalent.  Linefeed characters are encoded according to the
 specified eol-style symbol, and all other characters that participate
 in possible line endings are encoded as is.
-
-\begin{rationale}
-  The set is not closed because end-of-line styles other than those
-  listed might become commonplace in the future.
-\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -321,11 +302,6 @@ result are implementation-dependent: The result may be an
 error-handling-mode symbol acceptable as a \var{handling-mode}
 argument to {\cf make-transcoder}.  If it is not acceptable as a
 \var{handling-mode} argument to {\cf make-transcoder}, an exception is raised.
-
-\begin{rationale}
-  Implementations may support error-handling modes other than those
-  listed.
-\end{rationale}
 
 The error-handling mode of a transcoder specifies the behavior
 of textual I/O operations in the presence of encoding or decoding
@@ -490,11 +466,6 @@ use the byte source or sink represented by the \var{binary-port},
 even though the \var{binary-port} itself is closed and cannot
 be used by the input and output operations described in this
 chapter.
-
-\begin{rationale}
-Closing the \var{binary-port} precludes interference between
-the \var{binary-port} and the textual port constructed from it.
-\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -640,12 +611,6 @@ the port will be a binary port and will support the
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
 will be implementation-dependent (and possibly transcoder-dependent).
-
-\begin{rationale}
-  The position of a transcoded port may not be
-  well-defined, and may be hard to calculate even when defined,
-  especially when transcoding is buffered.
-\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -691,11 +656,6 @@ has been called, the effect on the returned port is unspecified.
 Returns a fresh binary input port connected to standard input.
 Whether the port supports the {\cf port-position} and {\cf
   set-port-position!} operations is implementation-dependent.
-
-\begin{rationale}
-  The port is fresh so it can be safely closed or converted to a
-  textual port without risking the usability of an existing port.
-\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -1103,12 +1063,6 @@ the port will be a binary port and will support the
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
 will be implementation-dependent (and possibly transcoder-dependent).
-
-\begin{rationale}
-  The byte position of a transcoded port may not be
-  well-defined, and may be hard to calculate even when defined,
-  especially when transcoding is buffered.
-\end{rationale}
 \end{entry}   
 
 \begin{entry}{%

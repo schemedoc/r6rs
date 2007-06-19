@@ -90,12 +90,6 @@ These procedures return the sum or product of their arguments,
 provided that sum or product is a fixnum.  An exception with condition
 type {\cf\&implementation-restriction} is raised if
 that sum or product is not a fixnum.
-
-\begin{rationale}
-These procedures are restricted to two arguments because their
-generalizations to three or more arguments would require
-precision proportional to the number of arguments.
-\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -419,11 +413,6 @@ Returns the best flonum representation of
 The value returned is a flonum that is numerically closest to the
 argument.
 
-\begin{rationale}
-  Not all reals are inexact, and some inexact reals may
-  not be flonums.
-\end{rationale}
-
 \begin{note}
   If flonums are represented in binary floating point, then
   implementations are strongly encouraged to break ties by preferring
@@ -620,11 +609,6 @@ absolute value is not larger than the absolute value of \var{fl}.
 The {\cf flround} procedure returns the closest integral flonum to \var{fl},
 rounding to even when \var{fl} is halfway between two integers.
 
-\begin{rationale}
-The {\cf flround} procedure rounds to even for consistency with the default rounding
-mode specified by the IEEE floating point standard.
-\end{rationale}
-
 Although infinities and NaNs are not integers, these procedures return
 an infinity when given an infinity as an argument, and a NaN when
 given a NaN:
@@ -684,11 +668,6 @@ encouraged to follow the relevant standards for these procedures.
 Returns the principal square root of \var{fl}. For $-0.0$,
 {\cf flsqrt} should return $-0.0$; for other negative arguments,
 the result may be a NaN or some meaningless flonum.
-
-\begin{rationale}
-The behavior of {\cf flsqrt} on $-0.0$ is consistent with the IEEE
-floating point standard.
-\end{rationale}
 
 \begin{scheme}
 (flsqrt +inf.0)               \ev  +inf.0

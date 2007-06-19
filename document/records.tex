@@ -192,39 +192,6 @@ is {\cf eqv?}  only to itself, i.e., {\cf (eqv? \vari{rtd} \varii{rtd})} iff
 Also, two nongenerative record-type descriptors are {\cf eqv?} iff they were
 created by calls to {\cf make-record-type-descriptor} with the same
 uid arguments.
-
-\begin{rationale}
-  The record and field names passed to
-  {\cf make-record-type-descriptor} and appearing in the 
-  syntactic layer are for informational purposes only, e.g., for
-  printers and debuggers.
-  In particular, the accessor and mutator creation routines do not use
-  names, but rather field indices, to identify fields.
-  
-  Thus, field names are not required to be distinct in the procedural or
-  syntactic layers.
-  This relieves macros and other code generators from the need to
-  generate distinct names.
-
-  The record and field names are used in the syntactic
-  layer for the generation of accessor and mutator names, and duplicate
-  field names may lead to accessor and mutator naming conflicts.
-\end{rationale}
-
-\begin{rationale}
-  Sealing a record type can help to enforce abstraction barriers by preventing
-  extensions that may expose implementation details of the parent type.
-  Type extensions also make monomorphic code polymorphic and
-  difficult to change the parent class at a later time, and also
-  prevent effective predictions of types by a compiler or human
-  reader.
-\end{rationale}
-
-\begin{rationale}
-  Multiple inheritance was considered but omitted from the records
-  facility, as it raises a number of semantic issues such as
-  sharing among common parent types.
-\end{rationale}
 \end{entry}
 
 \begin{entry}{%
@@ -348,29 +315,6 @@ type, and $k$ is the number of fields of \var{rtd} itself.)
 \implresp If \var{protocol} is a procedure, the implementation must
 check the restrictions on it to the extent performed by applying it as
 described when the constructor is called.
-
-\begin{rationale}
-  The constructor-descriptor mechanism is an infra\-struc\-ture for
-  creating specialized constructors, rather than just creating default
-  constructors that accept the initial values of all the fields as
-  arguments. This infrastructure achieves full generality while
-  leaving each level of an inheritance hierarchy in control over its
-  own fields and allowing child record definitions to be abstracted
-  away from the actual number and contents of parent fields.
-
-  The design allows the initial values of the fields to be specially
-  computed or to default to constant values. It also allows for
-  operations to be performed on or with the resulting record, such as
-  the registration of a record for finalization. Moreover, the
-  constructor-descriptor mechanism allows the creation of such
-  initializers in a modular manner, separating the initialization
-  concerns of the parent types from those of the extensions.
-  
-  The mechanism described here achieves complete generality without
-  cluttering the syntactic layer, sacrificing a bit of
-  notational convenience in special cases.
-\end{rationale}
-
 \end{entry}
 
 \begin{entry}{%

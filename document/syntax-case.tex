@@ -13,30 +13,6 @@ destructuring, output restructuring, maintenance of lexical scoping
 and referential transparency (hygiene), and support for controlled
 identifier capture.
 
-\begin{rationale}
-While many syntax transformers are succinctly expressed using the
-high-level {\cf syntax-rules} form, others are difficult or impossible
-to write, including some that introduce visible bindings for or references
-to identifiers that do not appear explicitly in the input form, ones that
-maintain state or read from the file system, and ones that construct new
-identifiers.
-The {\cf syntax-case} system~\cite{syntacticabstraction} described here
-allows the programmer to write transformers that perform these sorts of
-transformations, and arbitrary additional transformations, without
-sacrificing the default enforcement of hygiene or the high-level
-pattern-based syntax matching and template-based output construction
-provided by {\cf syntax-rules} (report
-section~\extref{report:syntax-rules}{Macro transformers}).
-
-Because {\cf syntax-case} does not require literals, including quoted
-lists or vectors, to be copied or even traversed, it may be able to preserve sharing
-and cycles within and among the constants of a program.  It also
-allows source-object correlation, i.e., the maintenance of ties
-between the original source code and expanded output, allowing
-implementations to provide source-level support for debuggers and
-other tools.
-\end{rationale}
-
 \section{Hygiene}
 \label{hygienesection}
 

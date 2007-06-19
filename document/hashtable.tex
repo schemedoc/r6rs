@@ -86,13 +86,6 @@ update.  Furthermore any hashtable operation may call the
 hash function more than once.
 \end{note}
 
-\begin{rationale}
-Hashtable lookups are often followed by updates, so caching
-may improve performance.  Hashtables are free to change
-their internal representation at any time, which may result
-in many calls to the hash function.
-\end{rationale}
-
 \end{entry}
 
 \section{Procedures}
@@ -168,13 +161,6 @@ Returns a copy of \var{hashtable}.  If the
 \var{mutable} argument is provided and is true, the returned hashtable is mutable;
 otherwise it is immutable.
 
-\begin{rationale}
-Hashtable references may be less expensive with immutable hashtables.
-Also, the creator of a hashtable may wish to prevent 
-modifications, particularly by code outside of the creator's 
-control.
-\end{rationale}
-
 \end{entry}
 \begin{entry}{%
 \proto{hashtable-clear!}{ \var{hashtable}}{procedure}
@@ -222,14 +208,6 @@ returns {\cf eq?} and {\cf eqv?} respectively.
 Returns the hash function used by \var{hashtable}.
 For hashtables created by {\cf make-eq-hashtable} 
 or {\cf make-eqv-hashtable}, \schfalse{} is returned.
-
-\begin{rationale}
-The {\cf make-eq-hashtable} and {\cf make-eqv-hashtable} constructors
-are designed to hide their hash function.  This allows implementations
-to use the machine address of an object as its hash value, rehashing
-parts of the table as necessary if a garbage collector moves
-objects to different addresses.
-\end{rationale}
 \end{entry}
 
 \begin{entry}{\proto{hashtable-mutable?}{ \var{hashtable}}{procedure}}
