@@ -1071,17 +1071,13 @@ character according to the {\cf char=?} procedure
 
 \item Both \vari{obj} and \varii{obj} are the empty list.
 
-\item \vari{Obj} and \varii{obj} are mutable objects such as pairs,
-  vectors, strings, mutable records (library
+\item \vari{Obj} and \varii{obj} are objects such as pairs, vectors, bytevectors
+  (library chapter~\extref{lib:bytevectorschapter}{Bytevectors}),
+  strings, hashtables, records (library
   chapter~\extref{lib:recordschapter}{Records}), ports (library
-  section~\extref{lib:portsiosection}{Port I/O}), and hashtables (library
-  chapter~\extref{lib:hashtablechapter}{Hash tables}) that denote the
-  same locations in the store (section~\ref{storagemodel}).
-
-\item \vari{Obj} and \varii{obj} are records, and 
-  library section~\extref{lib:recordsequivalencesection}{Mutability
-    and equivalence} specifies that {\cf eqv?}
-  returns \schtrue.
+  section~\extref{lib:portsiosection}{Port I/O}), or hashtables
+  (library chapter~\extref{lib:hashtablechapter}{Hash tables}) that
+  denote the same locations in the store (section~\ref{storagemodel}).
 
 \item \vari{Obj} and \varii{obj} are record-type descriptors that are
   specified to be {\cf eqv?} in library
@@ -1098,14 +1094,6 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 \begin{itemize}
 \item \vari{Obj} and \varii{obj} are of different types
 (section~\ref{disjointness}).
-
-\item \vari{Obj} is a record and \varii{obj} is not, or vice versa
-  (see library chapter~\extref{lib:recordschapter}{Records}).
-
-\item \vari{Obj} and \varii{obj} are records, and 
-  library section~\extref{lib:recordsequivalencesection}{Mutability
-    and equivalence} specifies that {\cf eqv?}
-  returns \schfalse.
 
 \item \vari{Obj} and \varii{obj} are booleans for which the {\cf
     boolean=?} procedure returns \schfalse.
@@ -1129,12 +1117,14 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 
 \item One of \vari{obj} and \varii{obj} is the empty list, but the other is not.
 
-\item \vari{Obj} and \varii{obj} are mutable objects such as pairs,
-  vectors, strings, mutable records (library
+\item \vari{Obj} and \varii{obj} are objects such as pairs, vectors,
+  bytevectors (library
+  chapter~\extref{lib:bytevectorschapter}{Bytevectors}), strings,
+  records (library
   chapter~\extref{lib:recordschapter}{Records}), ports (library
-  section~\extref{lib:portsiosection}{Port I/O}), and hashtables (library
-  chapter~\extref{lib:hashtablechapter}{Hashtables}) that denote
-  distinct locations.
+  section~\extref{lib:portsiosection}{Port I/O}), or hashtables
+  (library chapter~\extref{lib:hashtablechapter}{Hashtables}) that
+  denote distinct locations.
 
 \item \vari{Obj} and \varii{obj} are pairs, vectors, strings, or
   records, or hashtables, where the applying the same accessor (i.e.\
@@ -1235,7 +1225,7 @@ implementation-dependent.
 (eqv? "a" "a")                   \ev  \unspecified
 (eqv? '(b) (cdr '(a b)))         \ev  \unspecified
 (let ((x '(a)))
-  (eqv? x x))                    \ev  \unspecified%
+  (eqv? x x))                    \ev  \schtrue%
 \end{scheme}
 
 \begin{note}
@@ -1253,16 +1243,14 @@ The {\cf eq?} predicate is similar to {\cf eqv?}\ except that in some cases it i
 capable of discerning distinctions finer than those detectable by
 {\cf eqv?}.
 
-The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the same
-behavior on symbols, booleans, the empty list, 
-mutable pairs, procedures,
-non-empty, mutable
-strings and vectors, and mutable records.  The behavior of {\cf eq?} on numbers and characters is
+The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the
+same behavior on symbols, booleans, the empty list, pairs, procedures,
+non-empty strings, bytevectors, and vectors, and records.  The
+behavior of {\cf eq?} on numbers and characters is
 implementation-dependent, but it always returns either \schtrue{} or
-\schfalse{}, and returns \schtrue{} only when {\cf eqv?}\ would also return
-\schtrue.  The {\cf eq?} predicate may also behave differently from {\cf eqv?} on empty
-vectors and empty strings, and on immutable pairs, vectors, strings,
-and records.
+\schfalse{}, and returns \schtrue{} only when {\cf eqv?}\ would also
+return \schtrue.  The {\cf eq?} predicate may also behave differently
+from {\cf eqv?} on empty vectors, empty bytevectors, and empty strings.
 
 \begin{scheme}
 (eq? 'a 'a)                     \ev  \schtrue
@@ -1277,7 +1265,7 @@ and records.
 (let ((n (+ 2 3)))
   (eq? n n))      \ev  \unspecified
 (let ((x '(a)))
-  (eq? x x))      \ev  \unspecified
+  (eq? x x))      \ev  \schtrue
 (let ((x '\#()))
   (eq? x x))      \ev  \unspecified
 (let ((p (lambda (x) x)))

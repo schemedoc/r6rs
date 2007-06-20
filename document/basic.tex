@@ -271,11 +271,10 @@ discarding these values accept any number of values.
 \section{Storage model}
 \label{storagemodel}
 
-Variables and mutable objects such as mutable pairs, bytevectors, vectors, strings,
-and records implicitly
-denote locations\mainindex{location} or sequences of locations.  A
-mutable string, for example, denotes as many locations as there are characters in the string. 
-A new value may be
+Variables and objects such as pairs, vectors, bytevectors, strings, hashtables, records implicitly
+denote locations\mainindex{location} or sequences of locations.  A string, for
+example, denotes as many locations as there are characters in the string. 
+(These locations need not correspond to a full machine word.) A new value may be
 stored into one of these locations using the {\tt string-set!} procedure, but
 the string continues to denote the same locations as before.
 
@@ -283,8 +282,7 @@ An object fetched from a location, by a variable reference or by
 a procedure such as {\cf car}, {\cf vector-ref}, or {\cf string-ref}, is
 equivalent in the sense of \ide{eqv?} % and \ide{eq?} ??
 (section~\ref{equivalencesection})
-to the object last stored in the location before the fetch, whenever
-the behavior of \ide{eqv?} is fully specified for the object.
+to the object last stored in the location before the fetch.
 
 Every location is marked to show whether it is in use.
 No variable or object ever refers to a location that is not in use.
@@ -294,23 +292,18 @@ chosen from the set of locations that are not in use, and the chosen
 locations are marked to indicate that they are now in use before the variable
 or object is made to denote them.
 
-In many systems it is desirable for constants\index{constant} (i.e., the values of
-literal expressions) to reside in read-only memory.  To express this,
-it is convenient to imagine that every object that could denote locations
+It is desirable for constants\index{constant} (i.e. the values of
+literal expressions) to reside in read-only-memory.  To express this,
+it is convenient to imagine that every object that denotes locations
 is associated with a flag telling whether that object is
 mutable\index{mutable} or immutable\index{immutable}.  Literal
 constants, the strings returned by \ide{symbol->string}, records with
 no mutable fields, and other values explicitly designated as immutable
-are immutable objects, while other objects that denote locations
-are mutable.  
-An attempt to mutate an immutable object
+are immutable objects, while all objects created by the other
+procedures listed in this report are mutable.  An attempt to store a
+new value into a location that is denoted by an immutable object
 should raise an exception with condition type {\cf\&assertion}.
-An immutable object may not denote a specific set of locations, i.e.,
-it may be copied at any time by the implementation so as to exist
-simultaneously in different sets of locations.
-This may be visible in the failure of {\cf eqv?} or {\cf eq?}
-(section~\ref{equivalencesection}) to
-recognize two occurrences of the object as equivalent.
+
 
 \section{Proper tail recursion}
 \label{proper tail recursion}

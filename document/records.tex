@@ -63,31 +63,27 @@ field is called \textit{immutable}\mainindex{immutable record
 are immutable objects.  All other record types are \textit{mutable},
 and so are their records.
 
-For two records \vari{obj} and \varii{obj}, the return value of {\cf
-  (eqv? \vari{obj} \varii{obj})}, is specified as follows:
+Each call to a record constructor returns a new record with a fresh
+location (see report section~\extref{report:storagemodel}{Storage
+  model}).  Consequently, for two records \vari{obj} and \varii{obj},
+the return value of {\cf (eqv? \vari{obj} \varii{obj})}, adheres to
+the following criteria (see report
+section~\extref{report:eqv?}{Equivalence predicates}):
 
 \begin{itemize}
 \item If \vari{obj} and \varii{obj} have different record types (i.e.,
   their record-type descriptors are not {\cf eqv?}), {\cf eqv?}
   returns \schfalse.
-\item If \vari{obj} and \varii{obj} are both mutable records of the
+\item If \vari{obj} and \varii{obj} are both records of the
   same record type, and are the results of two separate calls to
-  record-type constructors, then {\cf eqv?} returns \schfalse.
-\item If \vari{obj} and \varii{obj} are both mutable records of the
-  same record type, and are the results of a single call to a
-  record-type constructor, then {\cf eqv?} returns \schtrue.
+  record constructors, then {\cf eqv?} returns \schfalse.
+\item If \vari{obj} and \varii{obj} are both records of the
+  same record type, and both are the result of a single call to a
+  record constructor, then {\cf eqv?} returns \schtrue.
 \item If \vari{obj} and \varii{obj} are both records of the same
   record type, where applying the same accessor to both yields results
   for which {\cf eqv?} returns \schfalse.
 \end{itemize}
-
-\begin{rationale}
-  For immutable records, either \vari{obj} and \varii{obj} may have
-  been subjected to boxing and unboxing since they were created, and
-  implementors are not required to implement immutable records with
-  locations, serial numbers, or any other notion of object identity.
-\end{rationale}
-
 
 \section{Procedural layer}
 \label{recordsproceduralsection}
