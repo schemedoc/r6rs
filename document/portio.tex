@@ -168,9 +168,11 @@ often is not).  The composition of two transcoders is not defined.
 A \var{transcoder} parameter name means that the corresponding
 argument must be a transcoder.
 
-A \defining{binary port} is a port that does not have an associated
-transcoder and does not support textual I/O.  A \defining{textual
-  port} is a port with an associated transcoder.
+A \defining{binary port} is a port that supports binary I/O, does not
+have an associated transcoder and does not support textual I/O.  A
+\defining{textual port} is a port that supports textual I/O, and does
+not support binary I/O.  A textual port may or may not have an
+associated transcoder.
 
 \begin{entry}{%
 \proto{latin-1-codec}{}{procedure}
@@ -208,7 +210,7 @@ line-ending encoding:
 {\cf ls} & \meta{line separator}
 \end{tabular}
 
-For a textual port whose transcoder has an eol-style symbol {\cf
+For a textual port with a transcoder, and whose transcoder has an eol-style symbol {\cf
   none}, no conversion occurs.  For a textual input port, any
 eol-style symbol other than {\cf none} means that all of the above
 line-ending encodings are recognized and are translated into a single
@@ -430,7 +432,8 @@ otherwise.
 \proto{port-transcoder}{ port}{procedure}}
 
 Returns the transcoder associated with \var{port} if \var{port} is
-textual, and returns \schfalse{} if \var{port} is binary.
+textual and has an associated transcoder, and returns \schfalse{} if
+\var{port} is binary or does not have an associated transcoder.
 \end{entry}
 
 \begin{entry}{%
@@ -641,7 +644,8 @@ port is unspecified.
 \proto{open-string-input-port}{ string}{procedure}}
 
 Returns a textual input port whose characters are drawn from
-\var{string}.  The port has an associated transcoder, which is implementation-dependent.
+\var{string}.  The port may or may not have an associated transcoder;
+if it does, the transcoder is implementation-dependent.
 Whether the port supports
 the {\cf port-position} and {\cf set-port-position!} operations
 is implementation-dependent.
@@ -665,7 +669,8 @@ This returns a default textual port for input.  Normally, this default port
 is associated with standard input, but can be dynamically re-assigned
 using the {\cf with-input-from-file} procedure from the
 \rsixlibrary{i/o simple} library (see section~\ref{with-input-from-file}).
-The port has an associated transcoder, which is implementation-dependent.
+The port may or may not have an associated transcoder; if it does, the
+transcoder is implementation-dependent.
 \end{entry}
 
 \begin{entry}{%
@@ -778,7 +783,8 @@ should behave as specified below.
   that are necessary when the input port is closed.
 \end{itemize}
 
-The port has an associated transcoder, which is implementation-dependent.
+The port may or may not have an an associated transcoder; if it does,
+the transcoder is implementation-dependent.
 
 \implresp The implementation is required to check the return
 values of \var{read!} and \var{get-position} only when it actually calls
@@ -1118,8 +1124,8 @@ Returns two values: a textual output port and an extraction procedure.
 The output port accumulates the characters written to it for
 later extraction by the procedure.
 
-The port has an associated transcoder, which is
-implementation-dependent.  The port should support the {\cf
+The port may or may not have an associated transcoder; if it does, the
+transcoder is implementation-dependent.  The port should support the {\cf
   port-position} and {\cf set-port-position!} operations.
 
 The extraction procedure takes no arguments.
@@ -1139,9 +1145,9 @@ as an argument.  Whenever \var{proc} returns, a string consisting of all
 of the port's accumulated characters (regardless of the port's current
 position) is returned and the port is closed.
 
-The port has an associated transcoder, which is implementation-dependent.
-The port should support
-the {\cf port-position} and {\cf set-port-position!} operations.
+The port may or may not have an associated transcoder; if it does, the
+transcoder is implementation-dependent.  The port should support the
+{\cf port-position} and {\cf set-port-position!} operations.
 \end{entry}
 
 \begin{entry}{%
@@ -1158,13 +1164,14 @@ implementation-dependent.
 \proto{current-output-port}{}{procedure}
 \proto{current-error-port}{}{procedure}}
  
-These return default textual ports for regular output and error output.
-Normally, these default ports are associated with standard output, and
-standard error, respectively.  The return value of {\cf
+These return default textual ports for regular output and error
+output.  Normally, these default ports are associated with standard
+output, and standard error, respectively.  The return value of {\cf
   current-output-port} can be dynamically re-assigned using the {\cf
   with-output-to-file} procedure from the \rsixlibrary{i/o simple}
-library (see section~\ref{with-output-to-file}).
-Each port has an associated transcoder, which is implementation-dependent.
+library (see section~\ref{with-output-to-file}).  A port returned by
+one of these procedures may or may not have an associated transcoder;
+if it does, the transcoder is implementation-dependent.
 \end{entry}
 
 
@@ -1240,7 +1247,8 @@ should behave as specified in the description of
   characters that it wrote, as an exact integer.
 \end{itemize}
 
-The port has an associated transcoder, which is implementation-dependent.
+The port may or may not have an associated transcoder; if it does, the
+transcoder is implementation-dependent.
 
 \implresp The implementation is required to check the return
 values of \var{write!} only when it actually calls \var{write!} as part of
