@@ -1190,7 +1190,20 @@ specified jointly.
 
 \subsection{Multiple values}
 
-FIXME: Why include in the first place
+Many computations conceptually return several results.  Scheme
+expressions implementing such computations can return the results as
+several values using the {\cf values} procedure.  Of course, such
+expressions could alternatively return the results as a single
+compound value, such as a list, vector, or a record.  However, values
+in programs usually represent conceptual wholes; in many cases,
+multiple results yielded by a computation lack this coherence.
+Moreover, this would be inefficient in many implementations, and a
+compiler would need to perform significant optimization to remove the
+boxing and unboxing inherent in packaging multiple results into a
+single values.  Most importantly, the mechanism for multiple values in
+Scheme establishes a standard policy for returning several results
+from an expression, which makes constructing interfaces and using them
+easier.
 
 \rn{6} does not specify the semantics of multiple values completely.
 In particular, it does not specify what happens when more than one
