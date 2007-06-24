@@ -1077,11 +1077,12 @@ The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
 \item \vari{Obj} and \varii{obj} are both symbols and are the same
   according to the {\cf symbol=?} procedure (section~\ref{symbol=?}).
 
-\item \vari{Obj} and \varii{obj} are both exact\index{exact} numbers
+\item \vari{Obj} and \varii{obj} are both exact\index{exact} number objects
   and are numerically equal (see {\cf =}, 
   section~\ref{genericarithmeticsection}).
 
-\item \vari{Obj} and \varii{obj} are both inexact\index{inexact} numbers, are numerically
+\item \vari{Obj} and \varii{obj} are both inexact\index{inexact}
+  number objects, are numerically
   equal (see {\cf =}, section~\ref{genericarithmeticsection}, and
   yield the same results (in the sense of {\cf eqv?}) when passed
   as arguments to any other procedure that can be defined
@@ -1124,10 +1125,10 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 \item \vari{Obj} and \varii{obj} are symbols for which the {\cf
     symbol=?} procedure returns \schfalse.
 
-\item One of \vari{obj} and \varii{obj} is an exact number but the other is
-        an inexact number.
+\item One of \vari{obj} and \varii{obj} is an exact number object but the other is
+        an inexact number object.
 
-\item \vari{Obj} and \varii{obj} are rational numbers for which the {\cf =} procedure
+\item \vari{Obj} and \varii{obj} are rational number objects for which the {\cf =} procedure
   returns \schfalse{}.
 
 \item \vari{Obj} and \varii{obj} yield different results (in the sense of
@@ -1162,7 +1163,7 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 
 \begin{note}
   The {\cf eqv?} procedure returning \schtrue{} when \vari{obj} and
-  \varii{obj} are numbers does not imply that {\cf =} would also
+  \varii{obj} are number objects does not imply that {\cf =} would also
   return \schtrue{} when called with \vari{obj} and \varii{obj} as
   arguments.
 \end{note}
@@ -1269,7 +1270,7 @@ capable of discerning distinctions finer than those detectable by
 The {\cf eq?}\ and {\cf eqv?} predicates are guaranteed to have the
 same behavior on symbols, booleans, the empty list, pairs, procedures,
 non-empty strings, bytevectors, and vectors, and records.  The
-behavior of {\cf eq?} on numbers and characters is
+behavior of {\cf eq?} on number objects and characters is
 implementation-dependent, but it always returns either \schtrue{} or
 \schfalse{}, and returns \schtrue{} only when {\cf eqv?}\ would also
 return \schtrue.  The {\cf eq?} predicate may also behave differently
@@ -1367,7 +1368,7 @@ The procedures described here implement arithmetic that is
 generic over
 the numerical tower described in chapter~\ref{numbertypeschapter}.
 The generic procedures described in this section
-accept both exact and inexact numbers as arguments,
+accept both exact and inexact number objects as arguments,
 performing coercions and selecting the appropriate operations
 as determined by the numeric subtypes of their arguments.
 
@@ -1422,7 +1423,7 @@ may return either {\cf 0} (exact) or {\cf 0.0} (inexact).
 
 The specification of the numerical operations is written as though
 infinities and NaNs are representable, and specifies many operations
-with respect to these numbers in ways that are consistent with the
+with respect to these number objects in ways that are consistent with the
 IEEE 754 standard for binary floating point arithmetic.  
 An implementation of Scheme is not required to represent infinities and
 NaNs; however,
@@ -1433,7 +1434,7 @@ whenever it is unable to represent an infinity or NaN as required by
 the specification.  In this case, the continuation of the exception
 handler is the continuation that otherwise would have received
 the infinity or NaN value.  This requirement also applies to
-conversions between numbers and external representations, including
+conversions between number objects and external representations, including
 the reading of program source code.
 
 \subsection{Semantics of common operations}
@@ -1445,9 +1446,8 @@ section for later reference.
 \subsubsection{Integer division}
 \label{integerdivision}
 
-For various kinds of arithmetic (fixnum, flonum, exact, inexact, and
-generic), Scheme provides operations for performing integer
-division.  They rely on mathematical operations $\mathrm{div}$,
+Scheme's operations for performing integer
+division rely on mathematical operations $\mathrm{div}$,
 $\mathrm{mod}$, $\mathrm{div}_0$, and
 $\mathrm{mod}_0$, that are defined as follows:
 
@@ -1590,26 +1590,26 @@ $\ast$& $y = -0.0$ & $x = 0$    & $-\frac{\pi}{2}$
 \proto{integer?}{ obj}{procedure}}
 
 These numerical type predicates can be applied to any kind of
-argument, including non-numbers.  They return \schtrue{} if the object is
-of the named type, and otherwise they return \schfalse{}.
-In general, if a type predicate is true of a number then all higher
-type predicates are also true of that number.  Consequently, if a type
-predicate is false of a number, then all lower type predicates are
-also false of that number.
+argument.  They return \schtrue{} if the object is a number object
+of the named type, and \schfalse{} otherwise.
+In general, if a type predicate is true of a number object then all higher
+type predicates are also true of that number object.  Consequently, if a type
+predicate is false of a number object, then all lower type predicates are
+also false of that number object.
 
-If \var{z} is a complex number, then {\cf (real? \var{z})} is true if
+If \var{z} is a complex number object, then {\cf (real? \var{z})} is true if
 and only if {\cf (zero? (imag-part \var{z}))} and {\cf (exact?
   (imag-part \var{z}))} are both true.
 
-If \var{x} is a real number, then {\cf (rational? \var{x})} is true if
-and only if there exist exact integers \vari{k} and \varii{k} such that
+If \var{x} is a real number object, then {\cf (rational? \var{x})} is true if
+and only if there exist exact integer objects \vari{k} and \varii{k} such that
 {\cf (= \var{x} (/ \vari{k} \varii{k}))} and {\cf (= (numerator
   \var{x}) \vari{k})} and {\cf (= (denominator \var{x}) \varii{k})} are
-all true.  Thus infinities and NaNs are not rational numbers.
+all true.  Thus infinities and NaNs are not rational number objects.
 
-If \var{q} is a rational number, then {\cf (integer?
+If \var{q} is a rational number objects, then {\cf (integer?
 \var{q})} is true if and only if {\cf (= (denominator
-\var{q}) 1)} is true.  If \var{q} is not a rational number,
+\var{q}) 1)} is true.  If \var{q} is not a rational number object,
 then {\cf (integer? \var{q})} is \schfalse.
 
 \begin{scheme}
@@ -1639,7 +1639,7 @@ then {\cf (integer? \var{q})} is \schfalse.
 
 \begin{note}
 Except for {\cf number?}, the behavior of these type predicates
-on inexact numbers is
+on inexact number objects is
 unreliable, because any inaccuracy may
 affect the result.
 \end{note}
@@ -1651,13 +1651,13 @@ affect the result.
 \proto{integer-valued?}{ obj}{procedure}}
 
 These numerical type predicates can be applied to any kind of
-argument, including non-numbers.  The {\cf real-valued?} procedure
-returns \schtrue{} if the object is a number and is equal in the
-sense of {\cf =} to some real number, or if the object is a NaN, or a
-complex number whose real part is a NaN and whose imaginary part zero
+argument.  The {\cf real-valued?} procedure
+returns \schtrue{} if the object is a number object and is equal in the
+sense of {\cf =} to some real number object, or if the object is a NaN, or a
+complex number object whose real part is a NaN and whose imaginary part zero
 in the sense of {\cf zero?}.  The {\cf rational-valued?} and {\cf
   integer-valued?} procedures return \schtrue{} if the object is a
-number and is equal in the sense of {\cf =} to some object of the
+number object and is equal in the sense of {\cf =} to some object of the
 named type, and otherwise they return \schfalse{}.
 
 \begin{scheme}
@@ -1685,7 +1685,7 @@ named type, and otherwise they return \schfalse{}.
 \end{scheme}
 
 \begin{note}
-The behavior of these type predicates on inexact numbers is
+The behavior of these type predicates on inexact number objects is
 unreliable, because any inaccuracy may
 affect the result.
 \end{note}
@@ -1696,7 +1696,7 @@ affect the result.
 \proto{inexact?}{ z}{procedure}}
 
 These numerical predicates provide tests for the exactness of a
-quantity.  For any Scheme number, precisely one of these predicates is
+quantity.  For any number object, precisely one of these predicates is
 true.
 
 \begin{scheme}
@@ -1712,23 +1712,23 @@ true.
 \proto{exact}{ z}{procedure}}
 
 The {\cf inexact} procedure returns an inexact representation of \var{z}.  If
-inexact numbers of the appropriate type have bounded precision, then
-the value returned is an inexact number that is nearest to the
+inexact number objects of the appropriate type have bounded precision, then
+the value returned is an inexact number object that is nearest to the
 argument.  If an exact argument has no reasonably close inexact
 equivalent, an exception with condition type
 {\cf\&implementation-violation} may be
 raised.
 
 \begin{note}
-  For a real number whose magnitude is finite but so large that it has
+  For a real number object whose magnitude is finite but so large that it has
   no reasonable finite approximation as an inexact number, a
   reasonably close inexact equivalent may be {\cf +inf.0} or {\cf
     -inf.0}.  Similarly, the inexact representation of a complex
-  number whose components are finite may have infinite components.
+  number object whose components are finite may have infinite components.
 \end{note}
 
 The {\cf exact} procedure returns an exact representation of \var{z}.  The value
-returned is the exact number that is numerically closest to the
+returned is the exact number object that is numerically closest to the
 argument; in most cases, the result of this procedure should be
 numerically equal to its argument.  If an inexact argument has no
 reasonably close exact equivalent, an exception with condition type
@@ -1736,7 +1736,7 @@ reasonably close exact equivalent, an exception with condition type
 raised.
 
 These procedures implement the natural one-to-one correspondence
-between exact and inexact integers throughout an
+between exact and inexact integer objects throughout an
 implementation-dependent range.
 
 The {\cf inexact} and {\cf exact} procedures are idempotent.
@@ -1762,20 +1762,20 @@ nonincreasing, and \schfalse{} otherwise.
 (= -inf.0 -inf.0)           \ev  \schtrue{}%
 \end{scheme}
 
-For any real number \var{x} that is neither infinite nor NaN:
+For any real number object \var{x} that is neither infinite nor NaN:
 
 \begin{scheme}
 (< -inf.0 \var{x} +inf.0))        \ev  \schtrue{}
 (> +inf.0 \var{x} -inf.0))        \ev  \schtrue{}%
 \end{scheme}
 
-For any number \var{z}:
+For any number object \var{z}:
 %
 \begin{scheme}
 (= +nan.0 \var{z})               \ev  \schfalse{}%
 \end{scheme}
 %
-For any real number \var{x}:
+For any real number object \var{x}:
 %
 \begin{scheme}
 (< +nan.0 \var{x})               \ev  \schfalse{}
@@ -1790,7 +1790,7 @@ languages are not transitive.
 \end{note}
 
 \begin{note}
-While it is possible to compare inexact numbers using these
+While it is possible to compare inexact number objects using these
 predicates, the results may be unreliable because a small inaccuracy
 may affect the result; this is especially true of {\cf =} and {\cf zero?} (below).
 
@@ -1808,10 +1808,10 @@ When in doubt, consult a numerical analyst.
 \proto{infinite?}{ x}{procedure}
 \proto{nan?}{ x}{procedure}}
 
-These numerical predicates test a number for a particular property,
+These numerical predicates test a number object for a particular property,
 returning \schtrue{} or \schfalse{}.  See note above.  The {\cf zero?}
 procedure
-tests if the number is {\cf =} to zero, {\cf positive?} tests whether it is
+tests if the number object is {\cf =} to zero, {\cf positive?} tests whether it is
 greater than zero, {\cf negative?} tests whether it is less than zero, {\cf
   odd?} tests whether it is odd, {\cf even?} tests whether it is even, {\cf
   finite?} tests whether it is not an infinity and not a NaN, {\cf
@@ -1845,7 +1845,7 @@ These procedures return the maximum or minimum of their arguments.
 (max 3.9 4)                            \ev  4.0  ; inexact%
 \end{scheme}
 
-For any real number \var{x}:
+For any real number object \var{x}:
 
 \begin{scheme}
 (max +inf.0 \var{x})                         \ev  +inf.0
@@ -1856,8 +1856,8 @@ For any real number \var{x}:
 If any argument is inexact, then the result is also inexact (unless
 the procedure can prove that the inaccuracy is not large enough to affect the
 result, which is possible only in unusual implementations).  If {\cf min} or
-{\cf max} is used to compare numbers of mixed exactness, and the numerical
-value of the result cannot be represented as an inexact number without loss of
+{\cf max} is used to compare number objects of mixed exactness, and the numerical
+value of the result cannot be represented as an inexact number object without loss of
 accuracy, then the procedure may raise an exception with condition
 type {\cf\&implementation-restriction}.
 \end{note}
@@ -1888,20 +1888,20 @@ These procedures return the sum or product of their arguments.
 (* 1.0 0)                              \ev  0 \textit{or} 0.0%
 \end{scheme}
 
-For any real number \var{x} that is neither infinite nor NaN:
+For any real number object \var{x} that is neither infinite nor NaN:
 
 \begin{scheme}
 (+ +inf.0 \var{x})                           \ev  +inf.0
 (+ -inf.0 \var{x})                           \ev  -inf.0
 \end{scheme}
 
-For any real number \var{x}:
+For any real number object \var{x}:
 
 \begin{scheme}
 (+ +nan.0 \var{x})                           \ev  +nan.0%
 \end{scheme}
 
-For any real number \var{x} that is not an exact 0:
+For any real number object \var{x} that is not an exact 0:
 
 \begin{scheme}
 (* +nan.0 \var{x})                           \ev  +nan.0%
@@ -1910,7 +1910,7 @@ For any real number \var{x} that is not an exact 0:
 If any of these procedures are applied to mixed non-rational real and
 non-real complex arguments, they either raise an exception with
 condition type {\cf\&implementation-restriction} or return an
-unspecified number.
+unspecified number object.
 
 Implementations that distinguish $-0.0$ should adopt behavior
 consistent with the following examples:
@@ -1941,7 +1941,7 @@ it returns the additive inverse of its argument.
 If this procedure is applied to mixed non-rational real and
 non-real complex arguments, it either raises an exception with
 condition type {\cf\&implementation-restriction} or returns an
-unspecified number.
+unspecified number object.
 
 Implementations that distinguish $-0.0$ should adopt behavior
 consistent with the following examples:
@@ -1985,7 +1985,7 @@ of its argument.
 If this procedure is applied to mixed non-rational real and
 non-real complex arguments, it either raises an exception with
 condition type {\cf\&implementation-restriction} or returns an
-unspecified number.
+unspecified number object.
 \end{entry}
 
 \begin{entry}{%
@@ -2062,14 +2062,15 @@ denominator of $0$ is defined to be $1$.
 \proto{truncate}{ x}{procedure}
 \proto{round}{ x}{procedure}}
 
-These procedures return inexact integers for inexact arguments that are
-not infinities or NaNs, and exact integers for exact rational
+These procedures return inexact integer objects for inexact arguments that are
+not infinities or NaNs, and exact integer objects for exact rational
 arguments.  For such arguments, {\cf floor} returns the largest
-integer not larger than \var{x}.  The {\cf ceiling} procedure returns the smallest
-integer not smaller than \var{x}.  The {\cf truncate} procedure returns the integer
-closest to \var{x} whose absolute value is not larger than the
-absolute value of \var{x}.  The {\cf round} procedure returns the closest integer to
-\var{x}, rounding to even when \var{x} is halfway between two
+integer object not larger than \var{x}.  The {\cf ceiling} procedure returns the smallest
+integer object not smaller than \var{x}.  The {\cf truncate} procedure returns the integer
+object closest to \var{x} whose absolute value is not larger than the
+absolute value of \var{x}.  The {\cf round} procedure returns the
+closest integer object to
+\var{x}, rounding to even when \var{x} represents a number halfway between two
 integers.
 
 \begin{note}
@@ -2078,7 +2079,7 @@ is also inexact.  If an exact value is needed, the
 result should be passed to the {\cf exact} procedure.
 \end{note}
 
-Although infinities and NaNs are not integers, these procedures return
+Although infinities and NaNs are not integer objects, these procedures return
 an infinity when given an infinity as an argument, and a NaN when
 given a NaN.
 
@@ -2106,8 +2107,9 @@ given a NaN.
 \begin{entry}{%
 \proto{rationalize}{ \vari{x} \varii{x}}{procedure}}
 
-The {\cf rationalize} procedure returns the {\em simplest} rational number
-differing from \vari{x} by no more than \varii{x}.    A rational number $r_1$ is
+The {\cf rationalize} procedure returns the a number object
+representing the {\em simplest} rational
+number differing from \vari{x} by no more than \varii{x}.    A rational number $r_1$ is
 {\em simpler} \mainindex{simplest rational} than another rational number
 $r_2$ if $r_1 = p_1/q_1$ and $r_2 = p_2/q_2$ (in lowest terms) and $|p_1|
 \leq |p_2|$ and $|q_1| \leq |q_2|$.  Thus $3/5$ is simpler than $4/7$.
@@ -2196,7 +2198,7 @@ argument.
 \proto{exact-integer-sqrt}{ k}{procedure}}
 
 The {\cf exact-integer-sqrt} procedure returns two non-negative exact
-integers $s$ and $r$ where $\var{k} = s^2 +
+integer objects $s$ and $r$ where $\var{k} = s^2 +
 r$ and $\var{k} < (s+1)^2$.
 
 \begin{scheme}
@@ -2218,10 +2220,10 @@ $0.0^{\var{z}}$ is $1.0$ if $\var{z} = 0.0$, and $0.0$ if {\cf
   (real-part \var{z})} is positive.  For other cases in which
 the first argument is zero, either an exception is raised with
 condition type {\cf\&implementation-restriction}, or an unspecified
-number is returned.
+number object is returned.
 
-For an exact real \vari{z} and an exact
-integer \varii{z}, {\cf (expt \vari{z}
+For an exact real number object \vari{z} and an exact
+integer object \varii{z}, {\cf (expt \vari{z}
 \varii{z})} must return an exact result.  For all other
 values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
 \varii{z})} may return an inexact result, even when both
@@ -2248,6 +2250,7 @@ values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
 \proto{magnitude}{ z}{procedure}
 \proto{angle}{ z}{procedure}}
 
+% FIXME
 Suppose \vari{x}, \varii{x}, \variii{x}, and \variv{x} are real
 numbers and \var{z} is a complex number such that
 %
@@ -2303,13 +2306,13 @@ arguments.
 \rproto{number->string}{ z radix}{procedure}
 \rproto{number->string}{ z radix precision}{procedure}}
 
-\var{Radix} must be an exact integer, either 2, 8, 10, or 16.  If
+\var{Radix} must be an exact integer object, either 2, 8, 10, or 16.  If
 omitted, \var{radix} defaults to 10.  If a \var{precision} is
-specified, then \var{z} must be an inexact complex number,
-\var{precision} must be an exact positive integer, and \var{radix}
-must be 10.  The {\cf number->string} procedure takes a number and a
+specified, then \var{z} must be an inexact complex number object,
+\var{precision} must be an exact positive integer object, and \var{radix}
+must be 10.  The {\cf number->string} procedure takes a number object and a
 radix and returns as a string an external representation of the given
-number in the given radix such that
+number object in the given radix such that
 %
 \begin{scheme}
 (let ((number \var{z}) (radix \var{radix}))
@@ -2324,8 +2327,8 @@ true, an exception with condition type
 {\cf\&implementation-restriction} is raised.
 
 \begin{note}
-The error case can occur only when \var{z} is not a complex number
-or is a complex number with a non-rational real or imaginary part.
+The error case can occur only when \var{z} is not a complex number object
+or is a complex number object with a non-rational real or imaginary part.
 \end{note}
 
 If a \var{precision} is specified, then the representations of the
@@ -2350,13 +2353,13 @@ radix prefix.
 \proto{string->number}{ string}{procedure}
 \rproto{string->number}{ string radix}{procedure}}
 
-Returns a number of the maximally precise representation expressed by the
-given \var{string}.  \var{Radix} must be an exact integer, either 2, 8, 10,
+Returns a number object with maximally precise representation expressed by the
+given \var{string}.  \var{Radix} must be an exact integer object, either 2, 8, 10,
 or 16.  If supplied, \var{radix} is a default radix that may be overridden
 by an explicit radix prefix in \var{string} (e.g., {\tt "\#o177"}).  If \var{radix}
 is not supplied, then the default radix is 10.  If \var{string} is not
-a syntactically valid notation for a number or a notation for a
-rational number with a zero denominator, then {\cf string->number}
+a syntactically valid notation for a number object or a notation for a
+rational number object with a zero denominator, then {\cf string->number}
 returns \schfalse{}.
 %
 \begin{scheme}
@@ -2364,6 +2367,7 @@ returns \schfalse{}.
 (string->number "100" 16)              \ev  256
 (string->number "1e2")                 \ev  100.0
 (string->number "15\sharpsign\sharpsign")                \ev  1500.0
+(string->number "0/0")                 \ev  \schfalse
 (string->number "+inf.0")              \ev  +inf.0
 (string->number "-inf.0")              \ev  -inf.0
 (string->number "+nan.0")              \ev  +nan.0%
@@ -2910,11 +2914,11 @@ Returns \schtrue{} if \var{obj} is a character, otherwise returns \schfalse.
 \proto{integer->char}{ \vr{sv}}{procedure}}
 
 \domain{\var{Sv} must be a Unicode scalar value, i.e., a non-negative exact
-  integer in $\left[0, \#x\textrm{D7FF}\right] \cup
+  integer object in $\left[0, \#x\textrm{D7FF}\right] \cup
   \left[\#x\textrm{E000}, \#x\textrm{10FFFF}\right]$.}
 
 Given a character, {\cf char\coerce{}integer} returns its Unicode scalar value
-as an exact integer.  
+as an exact integer object.  
 For a Unicode scalar value \var{sv}, {\cf integer\coerce{}char}
 returns its associated character.
 
@@ -2951,9 +2955,10 @@ according to their Unicode scalar values.
 Strings are sequences of characters.  
 
 \vest The {\em length} of a string is the number of characters that it
-contains.  This number is an exact, non-negative integer that is fixed when the
-string is created.  The \defining{valid indices} of a string are the
-exact non-negative integers less than the length of the string.  The first
+contains.  This number is fixed when the
+string is created, and represented by an exact, non-negative integer
+object.  The \defining{valid indices} of a string are the
+exact non-negative integer objects less than the length of the string.  The first
 character of a string has index 0, the second has index 1, and so on.
 
 \vest In phrases such as ``the characters of \var{string} beginning with
@@ -2991,7 +2996,8 @@ Returns a newly allocated string composed of the arguments.
 \begin{entry}{%
 \proto{string-length}{ string}{procedure}}
 
-Returns the number of characters in the given \var{string}.
+Returns the number of characters in the given \var{string} as an exact
+integer object.
 \end{entry}
 
 
@@ -3042,7 +3048,7 @@ is considered to be lexicographically less than the longer string.
 \proto{substring}{ string start end}{procedure}}
 
 \domain{\var{String} must be a string, and \var{start} and \var{end}
-must be exact integers satisfying
+must be exact integer objects satisfying
 $$0 \leq \var{start} \leq \var{end} \leq \hbox{\tt(string-length \var{string})\rm.}$$}
 The {\cf substring} procedure returns a newly allocated string formed from the characters of
 \var{string} beginning with index \var{start} (inclusive) and ending with index
@@ -3109,8 +3115,9 @@ chosen element is typically less for the vector than for the list.
 
 \vest The {\em length} of a vector is the number of elements that it
 contains.  This number is a non-negative integer that is fixed when the
-vector is created.  The {\em valid indices}\index{valid indices} of a
-vector are the exact non-negative integers less than the length of the
+vector is created, and represented by an exact integer object.
+The {\em valid indices}\index{valid indices} of a
+vector are the exact non-negative integer objects less than the length of the
 vector.  The first element in a vector is indexed by zero, and the last
 element is indexed by one less than the length of the vector.
 
@@ -3154,7 +3161,7 @@ arguments.  Analogous to {\cf list}.
 \begin{entry}{%
 \proto{vector-length}{ vector}{procedure}}
 
-Returns the number of elements in \var{vector} as an exact integer.
+Returns the number of elements in \var{vector} as an exact integer object.
 \end{entry}
 
 

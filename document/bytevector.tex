@@ -13,14 +13,14 @@ these are the most frequent applications.
 Bytevectors\mainindex{bytevector} are objects of a disjoint
 type. Conceptually, a bytevector represents a sequence of 8-bit
 bytes.  The description of bytevectors uses the term \defining{byte}
-for an exact integer in the interval $\{-128, \ldots, 127\}$ and the
-term \defining{octet} for an exact integer in the interval $\{0,
+for an exact integer object in the interval $\{-128, \ldots, 127\}$ and the
+term \defining{octet} for an exact integer object in the interval $\{0,
 \ldots, 255\}$.  A byte corresponds to its two's complement
 representation as an octet.
 
 The length of a bytevector is the number of bytes it contains. This
 number is fixed. A valid index into a bytevector is an exact,
-non-negative integer. The first byte of a bytevector has index 0;
+non-negative integer object. The first byte of a bytevector has index 0;
 the last byte has an index one less than the length of the bytevector.
 
 Generally, the access procedures come in different flavors according
@@ -40,8 +40,8 @@ must be quoted:
 
 Many operations described in this chapter accept an
 \defining{endianness} argument.  Endianness describes the encoding of
-exact integers as several contiguous bytes in a bytevector~\cite{IEN137}. 
-For this purpose, the binary representation of the integer is split into
+exact integer objects as several contiguous bytes in a bytevector~\cite{IEN137}. 
+For this purpose, the binary representation of the integer object is split into
 consecutive bytes.  \mainindex{little-endian}The little-endian
 encoding places the least significant byte of an integer first, with
 the other bytes following in increasing order of significance.
@@ -50,7 +50,7 @@ significant byte of an integer first, with the other bytes following
 in decreasing order of significance. 
 
 This terminology also applies to IEEE-754 numbers: IEEE-754 describes
-how to represent a floating-point number as an exact integer, and
+how to represent a floating-point number as an exact integer object, and
 endianness describes how the bytes of such an integer are laid out in
 a bytevector.
 
@@ -106,7 +106,8 @@ Returns a newly allocated bytevector of \var{k} bytes.
 If the \var{fill} argument is missing, the initial contents of the
 returned bytevector are unspecified.
    
-If the \var{fill} argument is present, it must be an exact integer in
+If the \var{fill} argument is present, it must be an exact integer
+object in
 the interval $\{-128, \ldots 255\}$ that specifies the initial value
 for the bytes of the bytevector: If \var{fill} is positive, it is
 interpreted as an octet; if it is negative, it is interpreted as a byte.
@@ -115,7 +116,7 @@ interpreted as an octet; if it is negative, it is interpreted as a byte.
 \begin{entry}{%
 \proto{bytevector-length}{ bytevector}{procedure}}
    
-Returns, as an exact integer, the number of bytes in \var{bytevector}.
+Returns, as an exact integer object, the number of bytes in \var{bytevector}.
 \end{entry}
 
 \begin{entry}{%
@@ -142,7 +143,7 @@ and returns \unspecifiedreturn.  Analogous to {\cf vector-fill!}.
 
 \domain{\var{Source} and \var{target} must be bytevectors.
   \var{Source-start}, \var{target-start},
-  and \var{k} must be non-negative exact integers that satisfy
+  and \var{k} must be non-negative exact integer objects that satisfy
   
   \begin{displaymath}
     \begin{array}{rcccccl}
@@ -255,25 +256,26 @@ the same order.  It is analogous to {\cf list->vector}.
 \proto{bytevector-uint-set!}{ bytevector k n endianness size}{procedure}
 \proto{bytevector-sint-set!}{ bytevector k n endianness size}{procedure}}
    
-\domain{\var{Size} must be a positive exact integer. $\{\var{k}, \ldots,
+\domain{\var{Size} must be a positive exact integer object. $\{\var{k}, \ldots,
   \var{k} + \var{size} - 1\}$ must be valid indices of \var{bytevector}.}
    
-{\cf bytevector-uint-ref} retrieves the exact integer corresponding to the
+The {\cf bytevector-uint-ref} procedure retrieves the exact integer object corresponding to the
 unsigned representation of size \var{size} and specified by \var{endianness}
 at indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-{\cf bytevector-sint-ref} retrieves the exact integer corresponding to the two's
+The {\cf bytevector-sint-ref} procedure retrieves the exact integer object corresponding to the two's
 complement representation of size \var{size} and specified by \var{endianness} at
 indices $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-\domain{For {\cf bytevector-uint-set!}, \var{n} must be an exact integer in the
-  interval $\{0, \ldots, 256^{\var{size}}-1\}$.}
+\domain{For {\cf bytevector-uint-set!}, \var{n} must be an exact
+  integer object in the interval $\{0, \ldots, 256^{\var{size}}-1\}$.}
 
 {\cf bytevector-uint-set!} stores the unsigned representation of size \var{size}
 and specified by \var{endianness} into \var{bytevector} at indices
 $\{\var{k}, \ldots, \var{k} + \var{size} - 1\}$.
    
-\domain{For {\cf bytevector-sint-set!}, \var{n} must be an exact integer in
+\domain{For {\cf bytevector-sint-set!}, \var{n} must be an exact
+  integer object in
   the interval $\{-256^{\var{size}}/2, \ldots,
   256^{\var{size}}/2-1\}$.}
 {\cf bytevector-sint-set!} stores the two's complement
@@ -315,15 +317,15 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \proto{uint-list->bytevector}{ list endianness size}{procedure}
 \proto{sint-list->bytevector}{ list endianness size}{procedure}}
    
-\domain{\var{Size} must be a positive exact integer.  For {\cf
+\domain{\var{Size} must be a positive exact integer object.  For {\cf
     uint-list->bytevector}, \var{list} must be a list of exact
-  integers in the interval $\{0, \ldots, 256^{\var{size}}-1\}$.  For
+  integer objects in the interval $\{0, \ldots, 256^{\var{size}}-1\}$.  For
   {\cf sint-list->bytevector}, \var{list} must be a list of exact
-  integers in the interval $\{-256^{\var{size}}/2, \ldots,
+  integer objects in the interval $\{-256^{\var{size}}/2, \ldots,
   256^{\var{size}}/2-1\}$.  The length of \var{bytevector} or,
   respectively, of \var{list} must be divisible by \var{size}.}
    
-These procedures convert between lists of integers and their consecutive
+These procedures convert between lists of integer objects and their consecutive
 representations according to \var{size} and \var{endianness} in the
 \var{bytevector} objects in the same way as {\cf bytevector->u8-list} and {\cf
   u8-list->bytevector} do for one-byte representations.
@@ -351,10 +353,10 @@ representations according to \var{size} and \var{endianness} in the
    
 \domain{\var{K} must be a valid index of \var{bytevector}; so must
   $\var{k} + 1$. For {\cf bytevector-u16-set!} and {\cf
-    bytevector-u16-native-set!}, \var{n} must be an exact integer in
+    bytevector-u16-native-set!}, \var{n} must be an exact integer object in
   the interval $\{0, \ldots, 2^{16}-1\}$.  For {\cf bytevector-s16-set!}
   and {\cf bytevector-s16-native-set!}, \var{n} must be an exact
-  integer in the interval $\{-2^{15}, \ldots, 2^{15}-1\}$.}
+  integer object in the interval $\{-2^{15}, \ldots, 2^{15}-1\}$.}
    
 These retrieve and set two-byte representations of numbers at indices
 \var{k} and $\var{k}+1$, according to the endianness specified by
@@ -404,10 +406,11 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \domain{$\{\var{k}, \ldots, \var{k}+ 3\}$ must be valid indices of
   \var{bytevector}.
   For {\cf bytevector-u32-set!} and {\cf
-    bytevector-u32-native-set!}, \var{n} must be an exact integer in
+    bytevector-u32-native-set!}, \var{n} must be an exact integer
+  object in
   the interval $\{0, \ldots, 2^{32}-1\}$.  For {\cf bytevector-s32-set!}
   and {\cf bytevector-s32-native-set!}, \var{n} must be an exact
-  integer in the interval $\{-2^{31}, \ldots, 2^{32}-1\}$.}
+  integer object in the interval $\{-2^{31}, \ldots, 2^{32}-1\}$.}
    
 These retrieve and set four-byte representations of numbers at indices $\{\var{k},
 \ldots, \var{k}+ 3\}$, according to the endianness specified by \var{endianness}. The
@@ -447,10 +450,11 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 \domain{$\{\var{k}, \ldots, \var{k}+ 7\}$ must be valid indices of
   \var{bytevector}.
   For {\cf bytevector-u64-set!} and {\cf
-    bytevector-u64-native-set!}, \var{n} must be an exact integer in
+    bytevector-u64-native-set!}, \var{n} must be an exact integer
+  object in
   the interval $\{0, \ldots, 2^{64}-1\}$.  For {\cf bytevector-s64-set!}
   and {\cf bytevector-s64-native-set!}, \var{n} must be an exact
-  integer in the interval $\{-2^{63}, \ldots, 2^{64}-1\}$.}
+  integer object in the interval $\{-2^{63}, \ldots, 2^{64}-1\}$.}
    
 These retrieve and set eight-byte representations of numbers at
 indices $\{\var{k}, \ldots, \var{k}+ 7\}$, according to the endianness
@@ -476,7 +480,7 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 \end{scheme}
 \end{entry}
 
-\section{Operations on IEEE-754 numbers}
+\section{Operations on IEEE-754 representations}
 
 \begin{entry}{%
 \proto{bytevector-ieee-single-native-ref}{ bytevector k}{procedure}
@@ -486,7 +490,7 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
   \var{bytevector}.  For {\cf bytevector-ieee-single-native-ref}, \var{k} must
   be a multiple of $4$.}
 
-These procedures return the inexact real that best represents the IEEE-754 single
+These procedures return the inexact real number object that best represents the IEEE-754 single
 precision number represented by the four bytes beginning at index
 \var{k}.
 \end{entry}
@@ -499,7 +503,7 @@ precision number represented by the four bytes beginning at index
   \var{bytevector}.  For {\cf bytevector-ieee-double-native-ref}, \var{k} must
   be a multiple of $8$.}
 
-These procedures return the inexact real that best represents the IEEE-754 single
+These procedures return the inexact real number object that best represents the IEEE-754 single
 precision number represented by the eight bytes beginning at index
 \var{k}.
 \end{entry}

@@ -61,14 +61,11 @@ lazy-evaluation semantics of Haskell, or the call-by-name semantics of
 Algol 60, where an argument expression is not evaluated unless its
 value is needed by the procedure.
 
-\vest Scheme's model of arithmetic is designed to remain as
-independent as possible of the particular ways in which numbers are
-represented within a computer. In Scheme, every integer is a rational
-number, every rational is a real, and every real is a complex number.
-Scheme distinguishes between exact arithmetic, which corresponds to
-the mathematical ideal, and inexact arithmetic on approximations.
-Scheme implementations support exact arithmetic on at least integers,
-rationals, and complex numbers created from their rectangular components.
+Scheme's model of arithmetic provides a rich set of numerical types
+and operations on them.  Furthermore, it distinguishes \textit{exact}
+and \textit{inexact} number objects: Essentially, an inexact number
+object corresponds to a number exactly, and an inexact number objects
+is the result of a computation that involved rounding or other errors.
 
 \section{Basic types}
 
@@ -95,7 +92,7 @@ most places where a truth value is expected, however, any value different from
 \paragraph{Numbers}
 
 \mainindex{number}Scheme supports a rich variety of numerical data types, including
-integers of arbitrary precision, rational numbers, complex numbers, and
+objects representing integers of arbitrary precision, rational numbers, complex numbers, and
 inexact numbers of various kinds.  Chapter~\ref{numbertypeschapter} gives an
 overview of the structure of Scheme's numerical tower.
 
@@ -158,7 +155,7 @@ fundamental expressions are literal expressions:
 
 This notation means that the expression \schtrue{} evaluates to
 \schtrue{}, that is, the value for ``true'',  and that the expression
-{\cf 23} evaluates to the number 23.
+{\cf 23} evaluates to a number object representing the number 23.
 
 Compound expressions are formed by placing parentheses around their
 subexpressions.  The first subexpression identifies an operation; the
@@ -306,7 +303,7 @@ In fact, many predefined operations of Scheme are provided not by
 syntax, but by variables whose values are procedures.
 The {\cf +} operation, for example, which receives
 special syntactic treatment in many other languages, is just a regular
-identifier in Scheme, bound to a procedure that adds numbers.  The
+identifier in Scheme, bound to a procedure that adds number objects.  The
 same holds for {\cf *} and many others:
 
 \begin{scheme}
@@ -327,7 +324,7 @@ need to specify a name:
 
 The entire expression in this example is a procedure call; {\cf
   (lambda (x) (+ x 42))}, evaluates to a procedure that takes a single
-number and adds 42 to it.
+number object and adds 42 to it.
 
 \section{Procedure calls and syntactic keywords}
 
@@ -443,7 +440,7 @@ built into other languages to be derived forms in Scheme.
 
 A subset of the Scheme values called \textit{datum
   values}\index{datum value} have a special
-status in the language.  These include booleans, numbers, characters, symbols,
+status in the language.  These include booleans, number objects, characters, symbols,
 and strings as well as lists and vectors whose elements are datums.  Each
 datum value may be represented in textual form as a
 \textit{syntactic datum}\index{syntactic datum}, which can be written out
@@ -465,7 +462,7 @@ prepending a {\cf\singlequote} to a corresponding syntactic datum:
 \end{scheme}
 
 The {\cf\singlequote} shown in the previous examples
-is not needed for number or boolean literals.
+is not needed for number representations or boolean literals.
 The identifier {\cf foo} is a syntactic datum that represents a
 symbol with name ``foo'', and {\cf 'foo} is a literal expression with
 that symbol as its value.  {\cf (1 2 3)} is a syntactic datum that 

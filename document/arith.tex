@@ -4,7 +4,7 @@
 
 This chapter describes Scheme's libraries for more specialized
 numerical operations: fixnum and flonum arithmetic, as well as bitwise
-operations on exact integers.
+operations on exact integer objects.
 
 \section{Fixnums}
 \label{fixnumssection}
@@ -18,9 +18,9 @@ interval
 %
 such that $w$ is a (mathematical) integer $w \geq 24$.  Every
 mathematical integer within an implementation's fixnum range must
-correspond to an exact integer that is representable within the
+correspond to an exact integer object that is representable within the
 implementation.
-A fixnum is an exact integer whose value lies within this
+A fixnum is an exact integer object whose value lies within this
 fixnum range.
 
 This section describes the \defrsixlibrary{arithmetic fx} library,
@@ -36,7 +36,7 @@ names for arguments that must be fixnums.
 \rproto{fixnum?}{ obj}{procedure}}
 
 Returns \schtrue{} if \var{obj} is an exact
-integer within the fixnum range, \schfalse{} otherwise.
+integer object within the fixnum range, \schfalse{} otherwise.
 \end{entry}
 
 \begin{entry}{%
@@ -71,7 +71,7 @@ monotonically nondecreasing, or monotonically nonincreasing,
 
 These numerical predicates test a fixnum for a particular property,
 returning \schtrue{} or \schfalse{}.  The five properties tested by
-these procedures are: whether the number is zero, greater than zero,
+these procedures are: whether the number object is zero, greater than zero,
 less than zero, odd, or even.
 \end{entry}
 
@@ -100,7 +100,7 @@ With two arguments, this procedure returns the difference of its
 arguments, provided that difference is a fixnum.
 
 With one argument, this procedure returns the additive
-inverse of its argument, provided that integer is a
+inverse of its argument, provided that integer object is a
 fixnum.
 
 An exception with condition type {\cf\&assertion} is raised if the
@@ -458,7 +458,7 @@ predicates are required to be transitive.
 
 These numerical predicates test a flonum for a particular property,
 returning \schtrue{} or \schfalse{}.
-The {\cf flinteger?} procedure tests whether the number is an integer,
+The {\cf flinteger?} procedure tests whether the number object is an integer,
 {\cf flzero?} tests whether
 it is {\cf fl=?} to zero, {\cf flpositive?} tests whether it is greater
 than zero, {\cf flnegative?} tests whether it is less
@@ -499,7 +499,7 @@ They always return a NaN when one or more of the arguments is a NaN.
 These procedures return the flonum sum or product of their flonum
 arguments.  In general, they should return the flonum that best
 approximates the mathematical sum or product.  (For implementations
-that represent flonums as IEEE binary floating point numbers, the
+that represent flonums using IEEE binary floating point, the
 meaning of ``best'' is defined by the IEEE standards.)
 
 \begin{scheme}
@@ -521,7 +521,7 @@ left.  With one argument, however, they return the additive or
 multiplicative flonum inverse of their argument.  In general, they
 should return the flonum that best approximates the mathematical
 difference or quotient.  (For implementations that represent flonums
-as IEEE binary floating point numbers, the meaning of ``best'' is
+using IEEE binary floating point, the meaning of ``best'' is
 reasonably well-defined by the IEEE standards.)
 
 \begin{scheme}
@@ -607,9 +607,9 @@ returns the smallest integral flonum not smaller than \var{fl}.
 The {\cf fltruncate} procedure returns the integral flonum closest to \var{fl} whose
 absolute value is not larger than the absolute value of \var{fl}.
 The {\cf flround} procedure returns the closest integral flonum to \var{fl},
-rounding to even when \var{fl} is halfway between two integers.
+rounding to even when \var{fl} represents a number halfway between two integers.
 
-Although infinities and NaNs are not integers, these procedures return
+Although infinities and NaNs are not integer objects, these procedures return
 an infinity when given an infinity as an argument, and a NaN when
 given a NaN:
 
@@ -680,7 +680,7 @@ the result may be a NaN or some meaningless flonum.
 
 Returns \vari{fl} raised to the power \varii{fl}.  Either \vari{fl}
 should be non-negative, or, if \vari{fl} is negative, \varii{fl}
-should be an integer; otherwise, the result may be a NaN, or may
+should be an integer object; otherwise, the result may be a NaN, or may
 be some meaningless flonum.  If \vari{fl} is zero, then the result is
 zero.
 \end{entry}
@@ -728,12 +728,12 @@ may be greater than the flonum precision.
 
 This section describes the \defrsixlibrary{arithmetic bitwise}
 library.  The exact bitwise arithmetic provides generic operations on
-exact integers.  This section uses \var{ei}, \vari{ei}, \varii{ei}, etc.,
-as parameter names that must be exact integers.
+exact integer objects.  This section uses \var{ei}, \vari{ei}, \varii{ei}, etc.,
+as parameter names that must be exact integer objects.
 
-Some procedures allow extracting \defining{bit fields}, i.e., numbers
+Some procedures allow extracting \defining{bit fields}, i.e., number objects
 representing subsequences of the binary representation of an exact
-integer.  Bit fields are always positive, and always defined using a
+integer object.  Bit fields are always positive, and always defined using a
 finite number of bits, contrary to 2's complement representation which
 implicitly uses an infinite extension of $0$ bits or $1$ bits to the
 left.
@@ -741,7 +741,7 @@ left.
 \begin{entry}{%
 \proto{bitwise-not}{ ei}{procedure}}
 
-Returns the exact integer whose two's complement representation is the
+Returns the exact integer object whose two's complement representation is the
 one's complement of the two's complement representation of \var{ei}.
 \end{entry}
 
@@ -750,18 +750,18 @@ one's complement of the two's complement representation of \var{ei}.
 \proto{bitwise-ior}{ \vari{ei} \dotsfoo}{procedure}
 \proto{bitwise-xor}{ \vari{ei} \dotsfoo}{procedure}}
 
-These procedures return the exact integer that is the bit-wise
+These procedures return the exact integer object that is the bit-wise
 ``and'', ``inclusive or'', or ``exclusive or'' of the two's complement
 representations of their arguments.  If they are passed only one
 argument, they return that argument.  If they are passed no arguments,
-they return the integer (either $-1$ or $0$) that acts as identity for
+they return the integer object (either $-1$ or $0$) that acts as identity for
 the operation.
 \end{entry}
 
 \begin{entry}{%
 \proto{bitwise-if}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-Returns the exact integer that is the result of the following computation:
+Returns the exact integer object that is the result of the following computation:
 \begin{scheme}
 (bitwise-ior (bitwise-and \vari{ei} \varii{ei})
              (bitwise-and (bitwise-not \vari{ei}) \variii{ei}))%
@@ -783,7 +783,7 @@ Otherwise it returns the result of the following computation:
 \begin{entry}{%
 \proto{bitwise-length}{ ei}{procedure}}
 
-Returns the exact integer that is the result of the following
+Returns the exact integer object that is the result of the following
 computation:
 \begin{scheme}
 (do ((result 0 (+ result 1))

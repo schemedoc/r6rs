@@ -95,9 +95,6 @@ These options have no effect when a file is opened only for input.
 \meta{Identifiers}s
 other than those listed above may be used as \hyper{file-options name}s;
 they have implementation-specific meaning, if any.
-
-\begin{rationale}
-\end{rationale}
 \end{entry}   
 
 \subsection{Buffer modes}
@@ -479,19 +476,19 @@ The {\cf port-has-port-position?} procedure returns \schtrue{} if the
 port supports the {\cf port-position} operation, and \schfalse{}
 otherwise.
 
-For a binary port, the {\cf port-position} procedure returns the exact
-non-negative integer index of the position at which the next byte
-would be read from or written to the port.  For a textual port, {\cf
-  port-position} returns an arbitrary value that is acceptable as
-input for {\cf set-port-position!} (see below).
+For a binary port, the {\cf port-position} procedure returns the index
+of the position at which the next byte would be read from or written
+to the port as an exact non-negative integer object.  For a textual
+port, {\cf port-position} returns an arbitrary value that is
+acceptable as input for {\cf set-port-position!} (see below).
 
 If the port does not support the operation, {\cf port-position} raises
 an exception with condition type {\cf\&assertion}.
 
 \begin{note}
-  For a textual port, the port position may or may not be an integer.
-  If it is an integer, the integer does not necessarily correspond to
-  a byte or character position.
+  For a textual port, the port position may or may not be an integer
+  object.  If it is an integer object, the integer object does not
+  necessarily correspond to a byte or character position.
 \end{note}
 \end{entry}   
 
@@ -500,7 +497,7 @@ an exception with condition type {\cf\&assertion}.
 \proto{set-port-position!}{ port pos}{procedure}}
 
 \domain{If \var{port} is a binary port, \var{pos} should be a
-  non-negative exact integer.  If \var{port} is a textual port,
+  non-negative exact integer object.  If \var{port} is a textual port,
   \var{pos} should be the return value of a call to {\cf
     port-position} on \var{port}.}
    
@@ -693,28 +690,28 @@ should behave as specified below.
 \begin{itemize}
 \item {\cf (\var{read!} \var{bytevector} \var{start} \var{count})}
        
-  \domain{\var{Start} will be a non-negative exact integer,
-  \var{count} will be a positive exact integer,}
+  \domain{\var{Start} will be a non-negative exact integer object,
+  \var{count} will be a positive exact integer object,}
   and \var{bytevector} will be a bytevector whose length is at least
   $\var{start} + \var{count}$.
   The \var{read!} procedure should obtain up to \var{count} bytes
   from the byte source, and should write those bytes
   into \var{bytevector} starting at index \var{start}.
-  The \var{read!} procedure should return an exact integer.  This
-  integer should be the number of bytes that it has read.
+  The \var{read!} procedure should return an exact integer object.  This
+  integer object should represent the number of bytes that it has read.
   To indicate an end of file condition, the \var{read!}
   procedure should write no bytes and return 0.
 
 \item {\cf (\var{get-position})}
        
   The \var{get-position} procedure (if supplied) should return an exact
-  integer.  The return value should represent the current position of
+  integer object.  The return value should represent the current position of
   the input port.  If not supplied, the custom port will not support
   the {\cf port-position} operation.
   
 \item {\cf (\var{set-position!} \var{pos})}
        
-  \domain{\var{Pos} will be a non-negative exact integer.}
+  \domain{\var{Pos} will be a non-negative exact integer object.}
   The \var{set-position!} procedure (if supplied) should set the
   position of the input port to \var{pos}.  If not supplied, the custom
   port will not support the {\cf set-port-position!} operation.
@@ -752,15 +749,15 @@ should behave as specified below.
 \begin{itemize}
 \item {\cf (\var{read!} \var{string} \var{start} \var{count})}
        
-  \domain{\var{Start} will be a non-negative exact integer,
-  \var{count} will be a positive exact integer,}
+  \domain{\var{Start} will be a non-negative exact integer object,
+  \var{count} will be a positive exact integer object,}
   and \var{string} will be a string whose length is at least
   $\var{start} + \var{count}$.
   The \var{read!} procedure should obtain up to \var{count} characters
   from the character source, and should write those characters
   into \var{string} starting at index \var{start}.
-  The \var{read!} procedure must return an exact integer.  This
-  integer should be the number of characters that it has written.
+  The \var{read!} procedure must return an exact integer object.  This
+  integer object should represent the number of characters that it has written.
   To indicate an end of file condition, the \var{read!}
   procedure should write no bytes and return 0.
 
@@ -818,7 +815,7 @@ update \var{binary-input-port} to point past the byte.
 \begin{entry}{%
 \proto{get-bytevector-n}{ binary-input-port count}{procedure}}
    
-\domain{\var{Count} must be an exact, non-negative integer, specifying
+\domain{\var{Count} must be an exact, non-negative integer object representing
   the number of bytes to be read.}
 
 Reads from \var{binary-input-port}, blocking as necessary, until \var{count}
@@ -837,7 +834,7 @@ any bytes are available, {\cf get-bytevector-n} returns the end-of-file object.
 \mainschindex{get-bytevector-n!}{\tt\obeyspaces\\
     \var{bytevector} \var{start} \var{count})}
 
-\domain{\var{Count} must be an exact, non-negative integer, specifying
+\domain{\var{Count} must be an exact, non-negative integer object, representing
   the number of bytes to be read. \var{bytevector} must be a bytevector
   with at
   least $\var{start} + \var{count}$ elements.}
@@ -850,7 +847,8 @@ reached. If \var{count} bytes are available before an end of file,
 they are written into \var{bytevector} starting at index \var{start}, and
 the result is \var{count}. If fewer bytes are available before
 the next end of file, the available bytes are written into \var{bytevector}
-starting at index \var{start}, and the result is the number of bytes actually
+starting at index \var{start}, and the result is a number object
+representing the number of bytes actually
 read. In either case, the input port is updated to point just past the
 data read. If an end of file is reached before any bytes
 are available, {\cf get-bytevector-n!} returns the end-of-file object.
@@ -915,7 +913,7 @@ that encode the character.
 \begin{entry}{%
 \proto{get-string-n}{ textual-input-port count}{procedure}}
    
-\domain{\var{Count} must be an exact, non-negative integer, specifying
+\domain{\var{Count} must be an exact, non-negative integer object, representing
   the number of characters to be read.}
 
 Reads from \var{textual-input-port}, blocking as necessary, until the
@@ -937,7 +935,7 @@ end of file, the end-of-file object is returned.
 \proto{get-string-n!}{ textual-input-port string start count}{procedure}}
 
 \domain{\var{Start} and \var{count} must be exact, non-negative
-  integer, with \var{count} specifying the number of characters to be read.
+  integer object, with \var{count} representing the number of characters to be read.
   \var{String} must be a string with at least $\var{start} +
   \var{count}$ characters.}
 
@@ -948,7 +946,7 @@ starting at index \var{start}, and \var{count} is returned. If fewer
 characters are available before an end of file, but one
 or more can be read, those characters are written into string
 starting at index \var{start} and the number of characters actually read is
-returned. If no characters can be read before an end of file,
+returned as an exact integer object. If no characters can be read before an end of file,
 the end-of-file object is returned.
 \end{entry}   
 
@@ -1196,7 +1194,8 @@ should behave as specified in the description of
 \begin{itemize}
 \item {\cf (\var{write!} \var{bytevector} \var{start} \var{count})}
        
-  \domain{\var{Start} and \var{count} will be non-negative exact integers,
+  \domain{\var{Start} and \var{count} will be non-negative exact
+    integer objects,
   and \var{bytevector} will be a bytevector whose length is at least
   $\var{start} + \var{count}$.}
   The \var{write!} procedure should read up to \var{count} bytes
@@ -1205,7 +1204,7 @@ should behave as specified in the description of
   If \var{count} is 0, the \var{write!} procedure should
   have the effect of passing an end-of-file object to the byte sink.
   In any case, the \var{write!} procedure should return the number of
-  bytes that it wrote, as an exact integer.
+  bytes that it wrote, as an exact integer object.
 \end{itemize}
 
 \implresp The implementation is required to check the return
@@ -1236,7 +1235,8 @@ should behave as specified in the description of
 \begin{itemize}
 \item {\cf (\var{write!} \var{string} \var{start} \var{count})}
        
-  \domain{\var{Start} and \var{count} will be non-negative exact integers,
+  \domain{\var{Start} and \var{count} will be non-negative exact
+    integer objects,
   and \var{string} will be a string whose length is at least
   $\var{start} + \var{count}$.}
   The \var{write!} procedure should read up to \var{count} characters
@@ -1245,7 +1245,7 @@ should behave as specified in the description of
   If \var{count} is 0, the \var{write!} procedure should
   have the effect of passing an end-of-file object to the character sink.
   In any case, the \var{write!} procedure should return the number of
-  characters that it wrote, as an exact integer.
+  characters that it wrote, as an exact integer object.
 \end{itemize}
 
 The port may or may not have an associated transcoder; if it does, the
@@ -1275,7 +1275,7 @@ Writes \var{octet} to the output port and returns \unspecifiedreturn.
      \var{bytevector} \var{start} \var{count})}
    
 \domain{\var{Start} and \var{count} must be non-negative exact
-  integers that default to 0 and $\texttt{(bytevector-length \var{bytevector})}
+  integer objects that default to 0 and $\texttt{(bytevector-length \var{bytevector})}
   - \var{start}$, respectively. \var{bytevector} must have a length of at
   least $\var{start} + \var{count}$.}  The {\cf put-bytevector} procedure writes
 the \var{count} bytes of the bytevector \var{bytevector} starting at index
@@ -1298,7 +1298,7 @@ Writes \var{char} to the port. The {\cf put-char} procedure returns
 \rproto{put-string}{ textual-output-port string start count}{procedure}}
    
 \domain{\var{Start} and \var{count} must be non-negative exact
-  integers.  \var{String} must have a length of at least $\var{start} +
+  integer objects.  \var{String} must have a length of at least $\var{start} +
   \var{count}$.}  \var{Start} defaults to 0.  \var{Count} defaults to
 $\texttt{(string-length \var{string})} - \var{start}$. Writes the
 \var{count} characters of \var{string} starting at

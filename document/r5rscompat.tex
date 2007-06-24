@@ -20,14 +20,14 @@ procedures; see report section~\extref{report:inexact}{Generic conversions}.
 \proto{modulo}{ \vari{n} \varii{n}}{procedure}}
 
 These procedures implement number-theoretic (integer)
-division.  \varii{n} must be non-zero.  All three procedures
-return integers.  If \vari{n}/\varii{n} is an integer:
+division.  \varii{N} must be non-zero.  All three procedures
+return integer objects.  If \vari{n}/\varii{n} is an integer object:
 \begin{scheme}
     (quotient \vari{n} \varii{n})   \ev \vari{n}/\varii{n}
     (remainder \vari{n} \varii{n})  \ev 0
     (modulo \vari{n} \varii{n})     \ev 0
 \end{scheme}
-If \vari{n}/\varii{n} is not an integer:
+If \vari{n}/\varii{n} is not an integer object:
 \begin{scheme}
     (quotient \vari{n} \varii{n})   \ev \var{n$_q$}
     (remainder \vari{n} \varii{n})  \ev \var{n$_r$}
@@ -39,14 +39,14 @@ $0 < |\var{n$_r$}| < |\varii{n}|$, $0 < |\var{n$_m$}| < |\varii{n}|$,
 \var{n$_r$} has the same sign as \vari{n}, and
 \var{n$_m$} has the same sign as \varii{n}.
 
-Consequently, for integers \vari{n} and \varii{n} with
+Consequently, for integer objects \vari{n} and \varii{n} with
 \varii{n} not equal to 0,
 \begin{scheme}
      (= \vari{n} (+ (* \varii{n} (quotient \vari{n} \varii{n}))
            (remainder \vari{n} \varii{n})))
                                  \ev  \schtrue%
 \end{scheme}
-provided all numbers involved in that computation are exact.
+provided all number object involved in that computation are exact.
 
 \begin{scheme}
 (modulo 13 4)           \ev  1
@@ -204,7 +204,7 @@ where {\cf make-promise} is defined as follows:
 \begin{entry}{%
 \proto{null-environment}{ n}{procedure}}
 
-\domain{\var{N} must be the exact integer 5.}  The {\cf
+\domain{\var{N} must be the exact integer object 5.}  The {\cf
   null-environment} procedure returns an
 environment specifier suitable for use with {\cf eval} (see
 chapter~\ref{evalchapter}) representing an environment that is empty except
@@ -215,7 +215,7 @@ the previous revision of this report~\cite{R5RS}.
 \begin{entry}{%
 \proto{scheme-report-environment}{ n}{procedure}}
 
-\domain{\var{N} must be the exact integer 5.}  The {\cf scheme-report-environment} procedure returns
+\domain{\var{N} must be the exact integer object 5.}  The {\cf scheme-report-environment} procedure returns
 an environment specifier for an environment that is empty except for
 the bindings for the identifiers described in the previous
 revision of this report~\cite{R5RS}, omitting {\cf load}, {\cf

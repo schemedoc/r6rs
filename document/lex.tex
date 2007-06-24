@@ -44,10 +44,10 @@ called a \defining{subform}.
 
 A datum value may have several different external representations.
 For example, both ``{\tt \#e28.000}'' and
-``{\tt\#x1c}'' are syntactic data representing the exact integer 28,
-and the syntactic data ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
+``{\tt\#x1c}'' are syntactic data representing the exact integer
+object 28, and the syntactic data ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
   (13 .\ ()))}''
-all represent a list containing the integers 8 and 13. 
+all represent a list containing the exact integer objects 8 and 13. 
 Syntactic data that denote equal objects (in the sense of {\cf
   equal?}; see section~\ref{equal?}) are always equivalent 
 as forms of a program.
@@ -102,7 +102,7 @@ The lexical syntax determines how a character sequence is split into a
 sequence of lexemes\index{lexeme}, omitting non-significant portions
 such as comments and whitespace.  The character sequence is assumed to
 be text according to the Unicode standard~\cite{Unicode}.  Some of
-the lexemes, such as numbers, identifiers, strings etc., of the lexical
+the lexemes, such as number representations, identifiers, strings etc., of the lexical
 syntax are syntactic data in the read syntax, and thus represent data.
 Besides the formal account of the syntax, this section also describes
 what datum values are denoted by these syntactic data.
@@ -112,7 +112,7 @@ a forward reference to \meta{datum}, which is described as part of the
 read syntax.  Being comments, however, these \meta{datum}s do not play
 a significant role in the syntax.
 
-Case is significant except in boolean data, number data, and
+Case is significant except in boolean data, number representations, and
 hexadecimal numbers denoting Unicode scalar values.  For example, {\cf \#x1A}
 and {\cf \#X1a} are equivalent.  The identifier {\cf Foo} is, however,
 distinct from the identifier {\cf FOO}.
@@ -123,7 +123,7 @@ distinct from the identifier {\cf FOO}.
 \meta{Interlexeme space} may occur on either side of any lexeme, but not
 within a lexeme.
 
-\vest Identifiers, numbers, characters, booleans, and dot must be terminated
+\vest Identifiers, number representations, characters, booleans, and dot must be terminated
 by a \meta{delimiter} (e.g., parenthesis, space, or comment) or by the
 end of the input.
 
@@ -210,7 +210,7 @@ The rules for \meta{num $R$}, \meta{complex $R$}, \meta{real
 $R$}, \meta{ureal $R$}, \meta{uinteger $R$}, and \meta{prefix $R$} below
 should be replicated for \hbox{$R = 2, 8, 10,$}
 and $16$.  There are no rules for \meta{decimal $2$}, \meta{decimal
-$8$}, and \meta{decimal $16$}, which means that numbers containing
+$8$}, and \meta{decimal $16$}, which means that number representations containing
 decimal points or exponents must be in decimal radix.
 
 \begin{grammar}%
@@ -298,7 +298,8 @@ where it is significant.
 
 The lexical syntax includes several comment forms. In all cases,
 comments are invisible to Scheme, except that they act as delimiters,
-so, for example, a comment cannot appear in the middle of an identifier or number.
+so, for example, a comment cannot appear in the middle of an
+identifier or number representation.
 
 A semicolon ({\tt;}) indicates the start of a line
 comment.\mainindex{comment}\mainschindex{;} The comment continues to
@@ -339,7 +340,8 @@ Most identifiers\mainindex{identifier} allowed by other programming
 languages are also acceptable to Scheme.  In general,
 a sequence of letters, digits, and ``extended alphabetic
 characters'' is
-an identifier when it begins with a character that cannot begin a number.
+an identifier when it begins with a character that cannot begin a
+number representation.
 In addition, \ide{+}, \ide{-}, and \ide{...} are identifiers, as is
 a sequence of letters, digits, and extended alphabetic
 characters that begins with the two-character sequence \ide{->}.
@@ -543,15 +545,15 @@ Examples:
 \subsection{Numbers}
 \label{numbernotations}
 
-The syntax of written representations for numbers is described
+The syntax of written representations for number objects is described
 formally by the \meta{number} rule in the formal grammar.
 Case is not significant in numerical constants.
 
-A number may be written in binary, octal, decimal, or
+A number representation may be written in binary, octal, decimal, or
 hexadecimal by the use of a radix prefix.  The radix prefixes are {\cf
 \#b}\sharpindex{b} (binary), {\cf \#o}\sharpindex{o} (octal), {\cf
 \#d}\sharpindex{d} (decimal), and {\cf \#x}\sharpindex{x} (hexadecimal).  With
-no radix prefix, a number is assumed to be expressed in decimal.
+no radix prefix, a number representation is assumed to be expressed in decimal.
 
 A
 numerical constant may be specified to be either exact or
@@ -565,7 +567,7 @@ exponent, a ``\sharpsign'' character in the place of a digit, or
 a nonempty mantissa width;
 otherwise it is exact.
 
-In systems with inexact numbers
+In systems with inexact number objects
 of varying precisions, it may be useful to specify
 the precision of a constant.  For this purpose, numerical constants
 may be written with an exponent marker that indicates the
@@ -591,18 +593,18 @@ implementations may wish to allow this default to be set by the user.
        {\rm{}Extend to long, perhaps} .600000000000000%
 \end{scheme}
 
-An inexact real number with nonempty mantissa width,
-{\cf \var{x}|\var{p}}, denotes the best binary
-floating point approximation of \var{x} using a \var{p}-bit significand. 
-For example, {\cf 1.1|53} is an external
+A number representation with nonempty mantissa width,
+{\cf \var{x}|\var{p}}, represents the best binary
+floating-point approximation of \var{x} using a \var{p}-bit significand. 
+For example, {\cf 1.1|53} is a
 representation of the best approximation of 1.1 in IEEE double
 precision.
-If \var{x} is an external representation of an inexact real number
+If \var{x} is an external representation of an inexact real number object
 that contains no vertical bar, it should be treated as if specified
 with a mantissa width of {\cf 53}.
 
 Implementations that use binary floating point representations
-of real numbers should represent {\cf \var{x}|\var{p}}
+of real number objects should represent {\cf \var{x}|\var{p}}
 using a \var{p}-bit significand if practical, or by a greater
 precision if a \var{p}-bit significand is not practical, or
 by the largest available precision if \var{p} or more bits
@@ -629,7 +631,8 @@ precision can be calculated by calling the following procedure:
 \begin{note}
 When the underlying floating-point representation is IEEE double
 precision, the {\cf |\var{p}} suffix should not always be omitted:
-Denormalized numbers have diminished precision, and therefore should
+Denormalized floating-point representations have diminished precision,
+and therefore their external representation should
 carry a {\cf |\var{p}} suffix with the actual width of the
 significand.
 \end{note}
@@ -639,12 +642,13 @@ negative infinity, respectively.  The {\cf +nan.0}
 literal represents the NaN that is the result of {\cf (/ 0.0 0.0)},
 and may represent other NaNs as well.
 
-If \var{x} is an external representation of an inexact real number and
+If \var{x} is an external representation of an inexact real number
+object and
 contains no vertical bar and no exponent marker
-other than {\cf e}, the inexact real number it denotes is a flonum
+other than {\cf e}, the inexact real number object it represents is a flonum
 (see library section~\extref{lib:flonumssection}{Flonums}).
 Some or all of the other external representations of
-inexact reals may also denote flonums, but that is not required by
+inexact real number objects may also denote flonums, but that is not required by
 this report.
 
 \section{Read syntax}
@@ -686,7 +690,7 @@ section~\ref{lexicalsyntaxsection}:
 \meta{abbrev prefix} \: ' \| ` \| , \| ,@ \| \#' | \#` | \#, | \#,@
 \meta{vector} \: \#(\arbno{\meta{datum}})
 \meta{bytevector} \: \#vu8(\arbno{\meta{u8}})
-\meta{u8} \: $\langle${\rm any \meta{number} denoting an exact}
+\meta{u8} \: $\langle${\rm any \meta{number} representing an exact}
  \>\>\quad\quad {\rm integer in $\{0, \ldots, 255\}$}$\rangle$%
 \end{grammar}
 

@@ -192,7 +192,7 @@ implementation use an IEEE~754-conformant implementation~\cite{IEEE}
 of flonums, \rn{6} uses the particular semantics from this standard as
 the basis for the treatment of infinities and NaNs in the report.
 This is also the reason why infinities and NaNs are flonums and thus
-inexact reals, allowing Scheme systems to exploit the closure
+inexact real number objects, allowing Scheme systems to exploit the closure
 properties arising from their being part of the standard IEEE-754
 floating-point representation.  See
 section~\ref{closurepropertiessection} for details on closure
@@ -269,7 +269,7 @@ must be case-folded upon reading.
 identifiers starting with the characters {\cf ->}.  In \rn{5}, such
 identifiers were not valid lexemes.  (In \rn{5}, a lexeme starting
 with a {\cf -} character---except for {\cf -} itself---has to be a
-number.)
+number representation.)
 However, many existing
 Scheme implementations prior to \rn{6} already supported identifiers
 starting with {\cf ->}.  (Many readers would classify any lexeme as an
@@ -279,7 +279,7 @@ portable Scheme code used identifiers starting with {\cf ->}, which
 are a convenient choice for many names.  Therefore, \rn{6} legalizes
 these identifiers.  The separate production in the grammar is not particularly elegant.
 However, designing a more elegant production that does not overlap with
-numbers or other lexeme classes has proved to be surprisingly
+number representations or other lexeme classes has proved to be surprisingly
 difficult.
 
  
@@ -766,9 +766,9 @@ Arguably, \rn{6} should require
 (let ((x \hyper{expression})) (eqv? x x))%
 \end{scheme}
 %
-to evaluate to true when \hyper{expression} evaluates to a number;
+to evaluate to true when \hyper{expression} evaluates to a number object;
 both \rn{5} and \rn{6} imply this for certain other types, and for
-most numbers, but not for NaNs.  Since the IEEE-754 and draft
+most numbers objects, but not for NaNs.  Since the IEEE-754 and draft
 IEEE-754R~\cite{IEEE754R} both say that the interpretation of a NaN's
 payload is left up to implementations, and implementations of Scheme
 often do not have much control over the implementation of IEEE
@@ -781,7 +781,7 @@ arithmetic, it would be unwise for \rn{6} to insist upon the truth of
 \end{scheme}
 even though that expression is likely to evaluate to true in most
 systems.  For example, a system with delayed boxing of inexact real
-numbers might box the two arguments to {\cf eqv?} separately, the boxing
+number objects might box the two arguments to {\cf eqv?} separately, the boxing
 process might involve a change of precision, and the two separate
 changes of precision may result in two different payloads.
 
@@ -815,7 +815,7 @@ bit-level representations, and must instead be defined explicitly.
 It is usually possible to implement {\cf eq?}\ much more efficiently
 than {\cf eqv?}, for example, as a simple pointer comparison instead
 of as some more complicated operation.  One reason is that it may not
-be possible to compute {\cf eqv?}\ of two numbers in constant time,
+be possible to compute {\cf eqv?}\ of two number objects in constant time,
 whereas {\cf eq?}\ implemented as pointer comparison will always
 finish in constant time.  The {\cf eq?} predicate may be used like
 {\cf eqv?}\ in applications using procedures to implement objects with
@@ -852,14 +852,14 @@ boundary conditions, and implementation of these functions.
 \subsection{Domains of numerical predicates}
 
 The domains of the {\cf finite?}, {\cf infinite?}, and {\cf nan?}
-procedures could be expanded to include all numbers, or perhaps even
-all objects.  However, \rn{6} restricts them to real numbers.
-Expanding {\cf nan?} to complex numbers would involve at least some
+procedures could be expanded to include all number objects, or perhaps even
+all objects.  However, \rn{6} restricts them to real number objects.
+Expanding {\cf nan?} to complex number objects would involve at least some
 arbitrariness; not expanding its domain while expanding the domains of
 the other two would introduce an irregularity into the domains of
 these three procedures, which are likely to be used together; it is
 easier for programmers who wish to use these procedures with complex
-numbers to express their intent in terms of the real-only versions
+number objects to express their intent in terms of the real-only versions
 than it would be for the editors to guess their intent.
 
 \subsection{Numerical types}
@@ -873,15 +873,17 @@ $t_2$.
 These types have an aesthetic symmetry to them, but they are not
 equally important.  Judging by the number of \rn{5} procedures whose
 domain is restricted to values of some numerical type, the most
-important numerical types are the exact integers, the integers, the
-rationals, the reals, and the complex numbers.
+important numerical types are the exact integer objects, the integer objects, the
+rational number objects, the real number objects, and the complex
+number objects.
 
 Many programmers and implementors regard the focus of \rn{5} on those
 particular numerical types as something of a mistake.  In practice,
 there is reason to believe that the most important numerical types are
-the exact integers, the exact rationals, the inexact reals, and the
-inexact complex numbers.  This section explores one of the reasons
-those four types are so important in practice, and why reals have an
+the exact integer objects, the exact rational number objects, the
+inexact real number objects, and the
+inexact complex number objects.  This section explores one of the reasons
+those four types are so important in practice, and why real number objects have an
 exact zero as their imaginary part in \rn{6} (a change from \rn{5}).
 
 \subsection{Closure Properties}
@@ -893,15 +895,15 @@ range of the functions that are computed by Scheme's standard
 procedures.  The reason these types turn up so often is that they are
 closed under certain sets of operations.
 
-The exact integers, for example, are closed under the integral
+The exact integer objects, for example, are closed under the integral
 operations of addition, subtraction, and multiplication.  The exact
-rationals are closed under the rational operations, which consist of
+rational number objects are closed under the rational operations, which consist of
 the integral operations plus division (although division by zero is a special
-case).  The reals (and inexact reals) are closed
+case).  The real number objects (and inexact real number objects) are closed
 under some (often inexact) interpretation of rational and irrational
 operations such as exp and sin, but are not closed under operations
 such as {\cf log}, {\cf sqrt}, and {\cf expt}.  The complex (and
-inexact complex) numbers are closed under the largest set of
+inexact complex) number objects are closed under the largest set of
 operations.
 
 \subsubsection{Representation-specific operations}
@@ -935,7 +937,8 @@ Flow analysis is performed by solving the type and interval
 constraints that arise from such things as:
 
 \begin{itemize}
-\item the types of literal constants, e.g.\ {\cf 2} is an exact integer
+\item the types of literal constants, e.g.\ {\cf 2} is an exact
+  integer object
   that is known to be within the interval $[2,2]$
   
 \item conditional control flow that is predicated on known
@@ -955,7 +958,7 @@ single representation type can be inferred.
 
 In practice, the most important single representation types are
 fixnum, flonum, and compnum.  (A compnum is a pair of flonums,
-representing an inexact complex number.)  These are the representation
+representing an inexact complex number object.)  These are the representation
 types for which a short sequence of machine code can be generated when
 the representation type is known, but for which considerably less
 efficient code will probably have to be generated when the
@@ -964,7 +967,7 @@ representation type cannot be inferred.
 The fixnum representation type is not closed under any operation of
 \rn{5}, so it is hard for flow analysis to infer the fixnum type from
 portable code.  Sometimes the combination of a more general type (e.g.
-exact integer) and an interval (e.g.  $[0,n)$, where $n$ is known to
+exact integer object) and an interval (e.g.  $[0,n)$, where $n$ is known to
 be a fixnum) can imply the fixnum representation type.  Adding
 fixnum-specific operations that map fixnums to fixnums 
 greatly increases the number of fixnum
@@ -999,12 +1002,12 @@ compnums with a zero imaginary part to the flonum representation.
 This practice virtually destroys the effectiveness of flow analysis
 for inferring the compnum representation, so it is not a good
 workaround.  To improve the effectiveness of flow analysis, it is
-better to change the definition of Scheme's real numbers as described
+better to change the definition of Scheme's real number objects as described
 in the paragraph above.
 
 \subsubsection{div and mod}
 
-Given arithmetic on exact integers of arbitrary precision, it is a
+Given arithmetic on exact integer objects of arbitrary precision, it is a
 trivial matter to derive signed and unsigned integer types of finite
 range from it by modular reduction.  For example 32-bit signed
 two-complement arithmetic behaves like computing with the residue
@@ -1062,7 +1065,7 @@ The behavior of the numerical type predicates {\cf complex?}, {\cf
 closure properties described in
 section~\ref{closurepropertiessection}.  Conversely, the procedures
 {\cf real-valued?}, {\cf rational-valued?}, and {\cf integer-valued?}
-test whether a given number can be coerced to the specified type
+test whether a given number object can be coerced to the specified type
 without loss of numerical accuracy.
 
 \subsection{Notes on individual procedures}
@@ -1079,7 +1082,7 @@ standard.
 
 \paragraph{{\tt number->string}}
 
-If \var{z} is an inexact number represented using binary floating
+If \var{z} is an inexact number object represented using binary floating
 point, and the radix is 10, then the expression listed in the
 specification is normally satisfied by a result containing a decimal
 point.  The unspecified case allows for infinities, NaNs, and
@@ -1304,7 +1307,7 @@ single binary block.  Providing operations for them on a single
 datatype considerably reduces both programming effort and library
 size.
 
-Bytevectors can also be used to encode sequences of unboxed numbers.
+Bytevectors can also be used to encode sequences of unboxed number objects.
 However, unencapsulated use of bytevectors for this purpose may lead
 to aliasing, which may reduce the effectiveness of compiler
 optimizations.  However, the records facility provides sealedness and
@@ -1662,7 +1665,7 @@ latter model violates the safety requirement of \rn{6}.  In programs
 that use fixnums instead of generic arithmetic, overflows are
 typically programming mistakes.  The model chosen for \rn{6} has the
 advantage that such overflows do not get silently converted into
-meaningless numbers, and that the programs gets notified of the
+meaningless number objects, and that the programs gets notified of the
 violation through the exception system.
 
 \section{Notes on individual procedures}
@@ -1675,8 +1678,8 @@ precision proportional to the number of arguments.
 
 \paragraph{{\tt real->flonum}}
 
-This procedure is necessary because not all reals are inexact, and
-some inexact reals may not be flonums.
+This procedure is necessary because not all real number objects are inexact, and
+some inexact real number objects may not be flonums.
 
 \paragraph{{\tt flround}}
 
@@ -1796,7 +1799,7 @@ The presence of mutable pairs causes numerous problems:
   deforestation.
 \item It complicates reasoning about programs that use lists.
 \item It complicates the implementation of procedures that accept
-  variable numbers of arguments.  FIXME: Kent, more info?
+  variable numbers of arguments.
 \end{itemize}
 %
 However, removing mutable pairs from the language entirely would have

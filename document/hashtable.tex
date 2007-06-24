@@ -7,7 +7,7 @@ A \defining{hashtable} is a data structure that associates keys with values.
 Any object can be used as a key, provided a \defining{hash function}
 and a suitable \defining{equivalence function} is available.  A hash function is a
 procedure that maps
-keys to integers.
+keys to exact integer objects.
 It is the programmer's responsibility to ensure that the hash function
 is compatible with the equivalence function,
 which is a procedure that accepts two keys and returns true if they
@@ -53,7 +53,7 @@ capacity of the hashtable is set to approximately \var{k} elements.
 
 \domain{\var{Hash-function} and \var{equiv} must be procedures.
 \var{Hash-function} should accept a key as an argument and should return a 
-non-negative exact integer.
+non-negative exact integer object.
 \var{Equiv} should accept two keys as arguments and return a single
 value.
 Neither procedure should mutate the hashtable returned by {\cf make-hashtable}.}
@@ -71,7 +71,7 @@ keys are strings and the contents of those strings are never
 changed so long as any of them continues to serve as a key in
 the hashtable.  Furthermore, any pair of keys for which
 \var{equiv} returns true should
-be hashed to the same exact integers by 
+be hashed to the same exact integer objects by 
 \var{hash-function}.
 
 \implresp The implementation must check the restrictions on
@@ -99,7 +99,8 @@ Returns \schtrue{} if \var{hashtable} is a hashtable,
 
 \begin{entry}{\proto{hashtable-size}{ \var{hashtable}}{procedure}}
 
-Returns the number of keys contained in \var{hashtable} as an exact integer.
+Returns the number of keys contained in \var{hashtable} as an exact
+integer object.
 \end{entry}
 
 \begin{entry}{%
