@@ -1212,7 +1212,7 @@ easier.
 \rn{6} does not specify the semantics of multiple values completely.
 In particular, it does not specify what happens when more than one
 value (or zero values) are returned to a continuation that implicitly
-accepts only one value.  In particular,
+accepts only one value.  In particular:
 %
 \begin{scheme}
 ((lambda (x) x) (values  1 2)) \lev \unspecified%
@@ -1245,7 +1245,10 @@ value, but the benefits of the change were deemed to outweigh the costs.
 
 \subsection{{\tt syntax-rules}}
 
-While the first subform of \hyper{srpattern} may be an identifier, the
+While the first subform of \hyper{srpattern} of a \hyper{syntax rule}
+in a {\cf syntax-rules} form (see report
+section~\extref{report:syntaxrulessection}{Macro transformers})
+may be an identifier, the
 identifier is not involved in the matching and is not considered a
 pattern variable or literal identifier.  This is actually important,
 as the identifier is most often the keyword used to identify the
@@ -1279,7 +1282,7 @@ The case-mapping procedures operating on characters are not sufficient
 for implementing case mapping on strings.  For example, the upper-case
 version of the German ``\ss{}'' in a string is ``SS''.  As {\cf
   char-upcase} can only return a single character, it must return
-\ss{} for \ss.  This limits then usefulness of the procedures
+\ss{} for \ss.  This limits the usefulness of the procedures
 operating on characters, but provides compatibility with \rn{5}
 sufficient for many existing applications.  Moroever, it provides
 direct access to the corresponding attributes of the Unicode character
@@ -1306,11 +1309,9 @@ However, unencapsulated use of bytevectors for this purpose may lead
 to aliasing, which may reduce the effectiveness of compiler
 optimizations.  However, the records facility provides sealedness and
 opacity, which, together with bytevectors, make it possible to
-construct a portable reference implementation for new data types that
+construct a portable implementation for new data types that
 provide fast and memory-efficient arrays of homogeneous numerical
-data.  The design and implementation of those data types is beyond the
-scope of the report, but \rn{6} provides the machinery needed to
-implement them effectively.
+data.
 
 \chapter{List utilities}
 
@@ -1321,7 +1322,7 @@ to be useful for many programs.  Consequently, the selection
 represented by \rsixlibrary{lists} is less exhaustive than the widely
 implemented SRFI~1~\cite{srfi1}.  Several changes were made with
 respect to the corresponding procedures SRFI~1 to simplify the
-specification, and establish uniform naming conventions.
+specification, and to establish uniform naming conventions.
 
 \section{Notes on individual procedures}
 
@@ -1344,13 +1345,13 @@ stability carries no significant implementation or performance burden.
 
 The choice of ``strictly less than'' for the comparison relation is
 consistent with the most common choice of existing Scheme libraries
-for sorting.  Moreover, using a boolean comparison procedure instead
-one returning three possible values (for less than, equal, and greater
-than) would make calling the sorting procedures less convenient, with
-no discernable performance advantage.
+for sorting.  Moreover, using a procedure returning three possible
+values (for less than, equal, and greater than) instead of a boolean
+comparison procedure would make calling the sorting procedures less
+convenient, with no discernable performance advantage.
 
 The specification of the {\cf vector-sort!} procedure is meant to
-allow an implementation using {\cf quicksort}, hence the $O(n^2)$
+allow an implementation using quicksort, hence the $O(n^2)$
 bound on the number of calls to the comparison procedure, and the
 omission of the stability requirement.
 
@@ -1373,8 +1374,8 @@ distinguish different numbers of arguments.  Using {\cf case-lambda}
 makes this considerably easier than deconstructing a list containing
 optional arguments explicitly.  Moreover, Scheme implementations might
 optimize dispatch on the number of arguments when expressed as {\cf
-  case-lambda}, which is considerably harder on code explicitly
-deconstructing argument lists.
+  case-lambda}, which is considerably harder for code that explicitly
+deconstructs argument lists.
 
 \chapter{Records}
 
@@ -1385,14 +1386,16 @@ While the syntactic layer could be expressed portably in terms of the
 procedural layer, standardizing a particular surface syntax
 facilitates communication via code.
 
-Moreover, the syntactic layer can be implemented more efficiently, and
-thus it facilitates the development of efficient portable libraries
+Moreover, some implementations are able to implement the syntactic
+layer more efficiently than
+a portable implementation built on top of the procedureal layer, and
+thus the syntactic layer facilitates the development of efficient portable libraries
 that define and use record types.  The syntactic layer is designed to
 allow expansion- or compile-time determination of record
 characteristics, including field offsets, so that, for example, record
 accesses can be be compiled efficiently to simple memory indirects.
 This property would be lost if the parent were not generally known
-until run time.  Consequently, the {\cf parent} clause only accepts
+until run time.  Therefore, the {\cf parent} clause only accepts
 other record types defined using the syntactic layer.
 
 \section{Positional access and field names}
@@ -1402,13 +1405,12 @@ and appearing in the syntactic layer are for informational purposes
 only, e.g., for printers and debuggers.  In particular, the accessor
 and mutator creation routines do not use names, but rather field
 indices, to identify fields.
-  
 Thus, field names are not required to be distinct in the procedural or
 syntactic layers.  This relieves macros and other code generators from
 the need to generate distinct names.
 
 The record and field names are used in the syntactic layer for the
-generation of accessor and mutator names, and duplicate field names
+generation of accessor and mutator names, and thus duplicate field names
 may lead to accessor and mutator naming conflicts.
 
 \section{Lack of multiple inheritance}
@@ -1427,17 +1429,13 @@ each level of an inheritance hierarchy in control over its own fields
 and allowing child record definitions to be abstracted away from the
 actual number and contents of parent fields.
 
-The design allows the initial values of the fields to be specially
+The constructor mechanism allows the initial values of the fields to be specially
 computed or to default to constant values. It also allows for
 operations to be performed on or with the resulting record, such as
 the registration of a record for finalization. Moreover, the
 constructor-descriptor mechanism allows the creation of such
 initializers in a modular manner, separating the initialization
 concerns of the parent types from those of the extensions.
-
-The mechanism achieves complete generality without cluttering the
-syntactic layer, sacrificing a bit of notational convenience in
-special cases.
 
 \section{Sealed record types}
 
@@ -1455,19 +1453,19 @@ the ADT evolves.
 
 In practice, the ADT cannot evolve freely over time.  Its
 representation cannot be changed without breaking most of its
-subclasses.  This kind of brittleness has been problematic of many
+subclasses.  This kind of brittleness is often problematic in
 large programs.  Sealedness allows the construction of record types
 that evolve more gracefully over time.
 
 Moreover, making a record type sealed may prevent its accessors and
-mutators from becoming polymorphic, making effective flow analysis and
+mutators from becoming polymorphic, which would make effective flow analysis and
 optimization difficult.  This is particularly relevant for
 Scheme implementations that use record to implement some of Scheme's
 other primitive data types such as pairs.
 
-\section{Opaque record types}
-
-FIXME: I need Kent's or Matthew's help here
+% \section{Opaque record types}
+%
+% FIXME: not there yet
 
 \chapter{Conditions and exceptions}
 
@@ -1513,8 +1511,8 @@ enable this kind of communication:
 \end{itemize}
 %
 As an example, a networking error that occurs during a file operation
-on a remote drive fits two descriptions: A networking error or a
-file-system error.  An exception handler might only look for one of
+on a remote drive fits two descriptions: ``networking error'' and
+``file-system error''.  An exception handler might only look for one of
 the two.  Compound conditions are a simple solution to this problem.
 Moreover, compound conditions also make providing auxiliary
 information as part of the condition object, such as an error message,
@@ -1527,13 +1525,13 @@ avoid or prevent.  For example, I/O errors are represented by
 condition types that are subtypes of {\cf\&error}.  Violations, on the
 other hand, are exceptional situations that the program could have
 avoided.  Violations are typically programming mistakes.  The
-distinction between the two is not always clear, as may be possible
+distinction between the two is not always clear, and it may be possible
 but inordinately difficult or expensive to detect certain violations.
 The use of {\cf eval} also blurs the distinction.  Nevertheless, many
 cases do allow distinguishing between errors and violations.
 Consequently, exception handlers that handle errors are common,
-whereas exception handlers that handle violations should be introduced
-with great care.
+whereas programmers should introduce exception handlers that handle
+violations with great care.
 
 
 \chapter{I/O}
@@ -1693,14 +1691,13 @@ floating-point standard.
 
 \chapter{{\tt syntax-case}}
 
-\begin{rationale}
 While many syntax transformers are succinctly expressed using the
 high-level {\cf syntax-rules} form, others are difficult or impossible
 to write, including some that introduce visible bindings for or references
 to identifiers that do not appear explicitly in the input form, ones that
 maintain state or read from the file system, and ones that construct new
 identifiers.
-The {\cf syntax-case} system~\cite{syntacticabstraction} described here
+The {\cf syntax-case} system~\cite{syntacticabstraction} 
 allows the programmer to write transformers that perform these sorts of
 transformations, and arbitrary additional transformations, without
 sacrificing the default enforcement of hygiene or the high-level
@@ -1715,7 +1712,6 @@ allows source-object correlation, i.e., the maintenance of ties
 between the original source code and expanded output, allowing
 implementations to provide source-level support for debuggers and
 other tools.
-\end{rationale}
 
 \chapter{Hashtables}
 
@@ -1781,14 +1777,13 @@ The \rsixlibrary{} library does not include a few select libraries:
   self-contained programs more difficult;
 \item \rsixlibrary{mutable-pairs}, as its absence from a program may enable compiler
   optimizations, and as mutable pairs might be deprecated in the future;
-\item \rsixlibrary{mutable-strings}, for similar reasons as
+\item \rsixlibrary{mutable-strings}, for similar reasons as for
   \rsixlibrary{mutable-pairs};
 \item \rsixlibrary{r5rs}, as its use is deprecated.
 \end{itemize}
 
-\chapter{{\tt eval}}
-
-FIXME
+% \chapter{{\tt eval}}
+% FIXME
 
 \chapter{Mutable pairs}
 
@@ -1819,9 +1814,8 @@ problems caused by the presence of mutable pairs.  Hence, the same
 reasoning applies for moving the mutation operations into a separate
 library.
 
-\chapter{R$^5$RS compatibility}
-
-FIXME: Mike
+% \chapter{R$^5$RS compatibility}
+% FIXME
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
