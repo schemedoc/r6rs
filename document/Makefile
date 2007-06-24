@@ -131,7 +131,7 @@ r6rs-rationale.idx r6rs-rationale.aux : $(COMMON_TEX_FILES) $(RATIONALE_TEX_FILE
 r6-fig-grammar-parti.tex: tex-translate.ss ../model/r6rs.scm
 	$(MZSCHEME) -qu tex-translate.ss
 
-firstrun: $(COMMON_TEX_FILES) $(REPORT_TEX_FILES) $(LIB_TEX_FILES)
+firstrun: $(COMMON_TEX_FILES) $(REPORT_TEX_FILES) $(LIB_TEX_FILES) $(RATIONALE_TEX_FILES)
 	$(MZSCHEME) -qu tex-translate.ss
 	$(LATEX) r6rs
 	$(LATEX) r6rs-lib
@@ -139,7 +139,7 @@ firstrun: $(COMMON_TEX_FILES) $(REPORT_TEX_FILES) $(LIB_TEX_FILES)
 	$(LATEX) r6rs-rationale
 	touch firstrun
 
-secondrun: firstrun r6rs.bbl r6rs-lib.bbl r6rs-app.bbl
+secondrun: firstrun r6rs.bbl r6rs-lib.bbl r6rs-app.bbl r6rs-rationale.bbl
 	$(SCHEME) < frob-lib-index.scm
 	$(MAKEINDEX) -s r6rs.mst -c r6rs.idx r6rs-report-lib.idx
 	$(MAKEINDEX) -s r6rs.mst -c r6rs-lib.idx
