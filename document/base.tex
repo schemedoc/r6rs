@@ -383,6 +383,9 @@ values are returned.  If \hyper{test} yields \schfalse{} and no
 (if \#f \#f)                    \ev \theunspecified%
 \end{scheme}
 
+The \hyper{consequent} and \hyper{alternate} expressions are in
+tail context if the {\cf if} expression itself is; see
+section~\ref{basetailcontextsection}.
 \end{entry}
 
 
@@ -448,8 +451,8 @@ Its value must be a procedure.  This procedure should accept one argument; it is
 called on the value of the \hyper{test} and the values returned by this
 procedure are returned by the {\cf cond} expression.
 If all \hyper{test}s evaluate
-to \schfalse, and there is no else clause, then the result of
-the conditional expression \isunspecified; if there is an else
+to \schfalse, and there is no {\cf else} clause, then the result of
+the conditional expression \isunspecified; if there is an {\cf else}
 clause, then its \hyper{expression}s are evaluated, and the values of
 the last one are returned.
 
@@ -464,6 +467,16 @@ the last one are returned.
 (cond ('(1 2 3) => cadr)
       (else \schfalse{}))         \ev  2%
 \end{scheme}
+
+For \hyper{cond clauses} that use the forms
+%
+\begin{scheme}
+(\hyper{test} \hyperi{expression} \dotsfoo)%
+(else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
+\end{scheme}
+%
+the last \hyper{expression} is in tail context if the {\cf cond} form
+itself is; see section~\ref{basetailcontextsection}.
 
 A sample definition of {\cf cond} in terms of simpler forms is in
 appendix~\ref{derivedformsappendix}.
@@ -515,6 +528,10 @@ otherwise the result of the {\cf case} expression \isunspecified.
   (else 'consonant))            \ev  consonant%
 \end{scheme}
 
+The last \hyper{expression} of a \hyper{case clause} is in tail
+context if the {\cf case} expression itself is; see
+section~\ref{basetailcontextsection}.
+
 % A sample definition of {\cf case} in terms of simpler forms is in
 % appendix~\ref{derivedformsappendix}.
 \end{entry}
@@ -531,7 +548,7 @@ right until a \hyper{test} returns \schfalse{} or the last
 \hyper{test} is reached.  In the former case, the {\cf and} expression
 returns \schfalse{} without evaluating the remaining expressions.
 In the latter case, the last expression is evaluated and its values
-returned.
+are returned.
 
 \begin{scheme}
 (and (= 2 2) (> 2 1))           \ev  \schtrue
@@ -551,6 +568,9 @@ The {\cf and} keyword could be defined in terms of {\cf if} using {\cf
     ((and test1 test2 ...)
      (if test1 (and test2 ...) \sharpfoo{f}))))%
 \end{scheme}
+
+The last \hyper{test} expression is in tail context if the {\cf and}
+expression itself is; see section~\ref{basetailcontextsection}.
 \end{entry}
 
 
@@ -587,6 +607,9 @@ The {\cf or} keyword could be defined in terms of {\cf if} using {\cf
      (let ((x test1))
        (if x x (or test2 ...))))))%
 \end{scheme}
+
+The last \hyper{test} expression is in tail context if the {\cf or}
+expression itself is; see section~\ref{basetailcontextsection}.
 \end{entry}
 
 
