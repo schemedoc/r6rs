@@ -288,7 +288,7 @@
       (bytevector-u8-set! b i (car vals)))
     b))
 
-(define (s8-list->bytevector l)
+(define (s8-list->bytevector vals)
   (let* ((n (length vals))
          (b (make-bytevector n)))
     (do ((vals vals (cdr vals))
@@ -302,18 +302,5 @@
 
 (define uint-list->bytevector (make-int-list->bytevector bytevector-uint-set!))
 (define sint-list->bytevector (make-int-list->bytevector bytevector-sint-set!))
-
-; FIXME: not implemented yet
-
-(define (bytevector-ieee-single-native-ref bytevector k) ...)
-(define (bytevector-ieee-single-ref bytevector k endianness) ...)
-(define (bytevector-ieee-double-native-ref bytevector k) ...)
-(define (bytevector-ieee-double-ref bytevector k endianness) ...)
-(define (bytevector-ieee-single-native-set! bytevector k x) ...)
-(define (bytevector-ieee-single-set! bytevector k x endianness) ...)
-(define (bytevector-ieee-double-native-set! bytevector k x) ...)
-(define (bytevector-ieee-double-set! bytevector k x endianness) ...)
-
-
 
 )

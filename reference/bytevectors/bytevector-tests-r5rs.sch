@@ -176,11 +176,11 @@
       (setter! b k x endness)
       (getter b k endness)))
 
-  (define (->single x)
+  (define (x->single x)
     (roundtrip
      x bytevector-ieee-single-ref bytevector-ieee-single-set! 0 'big))
 
-  (define (->double x)
+  (define (x->double x)
     (roundtrip
      x bytevector-ieee-double-ref bytevector-ieee-double-set! 0 'big))
 
@@ -652,7 +652,7 @@
 
   (do ((x 1.0 (* .5 x)))
       ((= x 0.0))
-    (let ((y (->single x)))
+    (let ((y (x->single x)))
       (if (and (> y 0.0)
                (not (= x y)))
           (begin (write (list 'inaccurate-single-conversion: x '=> y))
@@ -660,7 +660,7 @@
 
   (do ((x 1.0 (* .5 x)))
       ((= x 0.0))
-    (let ((y (->double x)))
+    (let ((y (x->double x)))
       (if (not (= x y))
           (begin (write (list 'inaccurate-double-conversion: x '=> y))
                  (newline))))))
