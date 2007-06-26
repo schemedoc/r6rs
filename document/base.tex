@@ -60,9 +60,9 @@ at the top of a \meta{library body} (section~\ref{librarysyntaxsection}),
 or at the top of a \meta{body} (section~\ref{bodiessection}).
 
 A \hyper{definition} may be a variable definition
-(section~\ref{variabledefinitionsection} or
+(section~\ref{variabledefinitionsection}) or
 keyword definition
-(section~\ref{variabledefinitionsection}.
+(section~\ref{variabledefinitionsection}).
 Syntactic abstractions that expand into definitions or groups of
 definitions (packaged in a base-library {\cf begin}, {\cf let-syntax}, or
 {\cf letrec-syntax} form; see section~\ref{begin}) may also appear
@@ -1841,8 +1841,8 @@ NaN.
 These procedures return the maximum or minimum of their arguments.
 
 \begin{scheme}
-(max 3 4)                              \ev  4    ; exact
-(max 3.9 4)                            \ev  4.0  ; inexact%
+(max 3 4)                              \ev  4
+(max 3.9 4)                            \ev  4.0%
 \end{scheme}
 
 For any real number object \var{x}:
@@ -1883,9 +1883,9 @@ These procedures return the sum or product of their arguments.
 (* -5 +inf.0)                          \ev  -inf.0
 (* +inf.0 +inf.0)                      \ev  +inf.0
 (* +inf.0 -inf.0)                      \ev  -inf.0
-(* 0 +inf.0)                           \ev  0 \textit{or} +nan.0
-(* 0 +nan.0)                           \ev  0 \textit{or} +nan.0
-(* 1.0 0)                              \ev  0 \textit{or} 0.0%
+(* 0 +inf.0)                           \ev  0 \textnormal{\textit{or}} +nan.0
+(* 0 +nan.0)                           \ev  0 \textnormal{\textit{or}} +nan.0
+(* 1.0 0)                              \ev  0 \textnormal{\textit{or}} 0.0%
 \end{scheme}
 
 For any real number object \var{x} that is neither infinite nor NaN:
@@ -1976,7 +1976,7 @@ of its argument.
 (/ +inf.0)                             \ev  0.0
 (/ 0 0)                                \lev \exception{\&assertion}
 (/ 3 0)                                \lev \exception{\&assertion}
-(/ 0 3.5)                              \ev  0.0 ; inexact
+(/ 0 3.5)                              \ev  0.0
 (/ 0 0.0)                              \ev  +nan.0
 (/ 0.0 0)                              \ev  +nan.0
 (/ 0.0 0.0)                            \ev  +nan.0%
@@ -2017,10 +2017,10 @@ otherwise, an exception with condition type {\cf\&assertion} is raised.
 \begin{scheme}
 (div \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{div}~\varii{x}\)
 (mod \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{mod}~\varii{x}\)
-(div-and-mod \vari{x} \varii{x})     \ev \(\vari{x}~\mathrm{div}~\varii{x}, \vari{x}~\mathrm{mod}~\varii{x}\)\\\>\>\>; two return values
+(div-and-mod \vari{x} \varii{x})     \ev \(\vari{x}~\mathrm{div}~\varii{x}, \vari{x}~\mathrm{mod}~\varii{x}\)\\\>\>\>; \textrm{two return values}
 (div0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{div}_0~\varii{x}\)
 (mod0 \vari{x} \varii{x})        \ev \(\vari{x}~\mathrm{mod}_0~\varii{x}\)
-(div0-and-mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; two return values%
+(div0-and-mod0 \vari{x} \varii{x})   \lev \(\vari{x}~\mathrm{div}_0~\varii{x}, \vari{x}~\mathrm{mod}_0~\varii{x}\)\\\>\>; \textrm{two return values}%
 \end{scheme}
 
 \begin{entry}{%
@@ -2034,7 +2034,7 @@ multiple of their arguments.  The result is always non-negative.
 (gcd 32 -36)                           \ev  4
 (gcd)                                  \ev  0
 (lcm 32 -36)                           \ev  288
-(lcm 32.0 -36)                         \ev  288.0 ; inexact
+(lcm 32.0 -36)                         \ev  288.0
 (lcm)                                  \ev  1%
 \end{scheme}
 \end{entry}
@@ -2092,9 +2092,9 @@ given a NaN.
 (floor 3.5)                            \ev  3.0
 (ceiling 3.5)                          \ev  4.0
 (truncate 3.5)                         \ev  3.0
-(round 3.5)                            \ev  4.0  ; inexact
+(round 3.5)                            \ev  4.0
 
-(round 7/2)                            \ev  4    ; exact
+(round 7/2)                            \ev  4
 (round 7)                              \ev  7
 
 (floor +inf.0)                         \ev  +inf.0
@@ -2118,16 +2118,18 @@ and $3/5$) any interval contains a rational number that is simpler than
 every other rational number in that interval (the simpler $2/5$ lies
 between $2/7$ and $3/5$).  Note that $0 = 0/1$ is the simplest rational of
 all.
-
+%
 \begin{scheme}
-(rationalize
-  (exact .3) 1/10)                   \ev 1/3    ; exact
-(rationalize .3 1/10)                  \ev \sharpsign{}i1/3  ; inexact
+(rationalize (exact .3) 1/10)          \lev 1/3
+(rationalize .3 1/10)                  \lev \sharpsign{}i1/3  ; \textrm{approximately}
 
 (rationalize +inf.0 3)                 \ev  +inf.0
 (rationalize +inf.0 +inf.0)            \ev  +nan.0
 (rationalize 3 +inf.0)                 \ev  0.0%
 \end{scheme}
+%
+The first two examples hold only in implementations whose inexact real
+number objects have sufficient precision.
 
 \end{entry}
 
@@ -2163,11 +2165,11 @@ even when given exact arguments.
 (log +inf.0)                   \ev +inf.0
 (log 0.0)                      \ev -inf.0
 (log 0)                        \lev \exception{\&assertion}
-(log -inf.0)                   \ev +inf.0+\(\pi\)i
+(log -inf.0)                   \lev +inf.0+3.141592653589793i\\\> ; \textrm{approximately}
 (atan -inf.0)                  \lev -1.5707963267948965 ; \textrm{approximately}
 (atan +inf.0)                  \lev 1.5707963267948965 ; \textrm{approximately}
-(log -1.0+0.0i)                \ev 0.0+\(\pi\)i
-(log -1.0-0.0i)                \ev 0.0-\(\pi\)i\\\>; \textrm{if -0.0 is distinguished}%
+(log -1.0+0.0i)                \lev 0.0+3.141592653589793i ; \textrm{approximately}
+(log -1.0-0.0i)                \lev 0.0-3.141592653589793i ; \textrm{approximately}\\\>; \textrm{if -0.0 is distinguished}%
 \end{scheme}
 \end{entry}
 
@@ -2178,17 +2180,13 @@ Returns the principal square root of \var{z}.  For rational \var{z},
 the result has either positive real part, or zero real part and
 non-negative imaginary part.  With $\log$ defined as in
 section~\ref{transcendentalfunctions}, the value of {\cf (sqrt
-  \var{z})} could be expressed as
-%
-\begin{displaymath}
-e^{\frac{\log \var{z}}{2}}.
-\end{displaymath}
+  \var{z})} could be expressed as $e^{\frac{\log \var{z}}{2}}$.
 
 The {\cf sqrt} procedure may return an inexact result even when given an exact
 argument.
 
 \begin{scheme}
-(sqrt -5)                   \lev  0.0+2.23606797749979i ; approximately
+(sqrt -5)                   \lev  0.0+2.23606797749979i ; \textrm{approximately}
 (sqrt +inf.0)               \ev  +inf.0
 (sqrt -inf.0)               \ev  +inf.0i%
 \end{scheme}
@@ -2202,8 +2200,8 @@ integer objects $s$ and $r$ where $\var{k} = s^2 +
 r$ and $\var{k} < (s+1)^2$.
 
 \begin{scheme}
-(exact-integer-sqrt 4) \ev 2, 0
-(exact-integer-sqrt 5) \ev 2, 1
+(exact-integer-sqrt 4) \ev 2, 0\\\>\>\>; \textrm{two return values}
+(exact-integer-sqrt 5) \ev 2, 1\\\>\>\>; \textrm{two return values}
 \end{scheme}
 \end{entry}
 
@@ -2211,11 +2209,7 @@ r$ and $\var{k} < (s+1)^2$.
 \proto{expt}{ \vari{z} \varii{z}}{procedure}}
 
 Returns \vari{z} raised to the power \varii{z}.  For nonzero \vari{z},
-%
-\begin{displaymath}
-  \vari{z}^{\varii{z}} = e^{\varii{z} \log \vari{z}}
-\end{displaymath}
-
+this is $e^{\varii{z} \log \vari{z}}$.
 $0.0^{\var{z}}$ is $1.0$ if $\var{z} = 0.0$, and $0.0$ if {\cf
   (real-part \var{z})} is positive.  For other cases in which
 the first argument is zero, either an exception is raised with
@@ -2250,35 +2244,40 @@ values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
 \proto{magnitude}{ z}{procedure}
 \proto{angle}{ z}{procedure}}
 
-% FIXME
-Suppose \vari{x}, \varii{x}, \variii{x}, and \variv{x} are real
-numbers and \var{z} is a complex number such that
+Suppose $a_1$, $a_2$, $a_3$, and $a_4$ are real
+numbers, and $c$ is a complex number object such that the
+following holds:
 %
 \begin{displaymath}
-\var{z} = \vari{x} + \varii{x}i = \variii{x} e^{i\variv{x}}.
+c = a_1 + a_2 i = a_3 e^{i a_4}
 \end{displaymath}
 
-Then:
+Then, if \vari{x}, \varii{x}, \variii{x}, and \variv{x} are number
+objects representing $a_1$, $a_2$, $a_3$, and $a_4$, respectively,
+{\cf (make-rectangular \vari{x} \varii{x})} returns $c$, and {\cf
+  (make-polar \variii{x} \variv{x})} returns $c$.
 %
 \begin{scheme}
-(make-rectangular \vari{x} \varii{x}) \ev \var{z}
-(make-polar \variii{x} \variv{x}) \ev \var{z}
-(real-part \var{z})              \ev \vari{x}
-(imag-part \var{z})              \ev \varii{x}
-(magnitude \var{z})              \ev |\variii{x}|
-(angle \var{z})                  \ev \var{x}\(_{\mathrm{angle}}\)%
+(make-rectangular 1.1 2.2) \lev 1.1+2.2i ; \textrm{approximately}
+(make-polar 1.1 2.2) \lev 1.1@2.2 ; \textrm{approximately}
 \end{scheme}
 %
-where $-\pi \leq \var{x}_{\mathrm{angle}} \leq \pi$ with
-$\var{x}_{\mathrm{angle}} = \variv{x} + 2\pi n$ for
-some integer $n$.
+Conversely, if $-\pi \leq a_4 \leq \pi$, and if $z$ is a number object
+representing $c$, then {\cf (real-part \var{z})} returns $a_1$ {\cf
+  (imag-part \var{z})} returns $a_2$, {\cf (magnitude \var{z})}
+returns $a_3$, and {\cf (angle \var{z})} returns $a_4$.
 
 \begin{scheme}
-(angle -1.0)         \ev \(\pi\)
-(angle -1.0+0.0i)    \ev \(\pi\)
-(angle -1.0-0.0i)    \ev -\(\pi\)\\\>; \textrm{if -0.0 is distinguished}
+(real-part 1.1+2.2i)              \ev 1.1 ; \textrm{approximately}
+(imag-part 1.1+2.2i)              \ev 2.2i ; \textrm{approximately}
+(magnitude 1.1@2.2)              \ev 1.1 ; \textrm{approximately}
+(angle 1.1@2.2)                  \ev 2.2 ; \textrm{approximately}
+
+(angle -1.0)         \lev 3.141592653589793 ; \textrm{approximately}
+(angle -1.0+0.0i)    \lev 3.141592653589793 ; \textrm{approximately}
+(angle -1.0-0.0i)    \lev -3.141592653589793 ; \textrm{approximately}\\\>; \textrm{if -0.0 is distinguished}
 (angle +inf.0)       \ev 0.0
-(angle -inf.0)       \ev \(\pi\)%
+(angle -inf.0)       \lev 3.141592653589793 ; \textrm{approximately}%
 \end{scheme}
 
 Moreover, suppose \vari{x}, \varii{x} are such that either \vari{x}
@@ -2295,7 +2294,7 @@ The {\cf make-polar}, {\cf magnitude}, and
 arguments.
 
 \begin{scheme}
-(angle -1)                    \ev \(\pi\)
+(angle -1)                    \lev 3.141592653589793 ; \textrm{approximately}
 \end{scheme}
 \end{entry}
 
