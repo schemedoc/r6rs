@@ -37,7 +37,8 @@ Consequently, Scheme's syntax has the property that any sequence of
 characters that is a form is also a syntactic datum representing
 some object.  This can lead to confusion, since it may not be obvious
 out of context whether a given sequence of characters is intended to
-denote data or program. It is also a source of power, since it
+be a representation of data or the text of a program.
+It is also a source of power, since it
 facilitates writing programs such as interpreters or compilers that
 treat programs as data (or vice versa).  A form nested inside another form is
 called a \defining{subform}.
@@ -48,12 +49,12 @@ For example, both ``{\tt \#e28.000}'' and
 object 28, and the syntactic data ``{\tt(8 13)}'', ``{\tt( 08 13 )}'', ``{\tt(8 .\
   (13 .\ ()))}''
 all represent a list containing the exact integer objects 8 and 13. 
-Syntactic data that denote equal objects (in the sense of {\cf
+Syntactic data that represent equal objects (in the sense of {\cf
   equal?}; see section~\ref{equal?}) are always equivalent 
 as forms of a program.
 
 Because of the close correspondence between syntactic data and datum
-values, this report sometimes uses the term \defining{datum} to denote
+values, this report sometimes uses the term \defining{datum} for
 either a syntactic datum or a datum value when the exact meaning
 is apparent from the context.
 
@@ -105,7 +106,7 @@ be text according to the Unicode standard~\cite{Unicode}.  Some of
 the lexemes, such as number representations, identifiers, strings etc., of the lexical
 syntax are syntactic data in the datum syntax, and thus represent data.
 Besides the formal account of the syntax, this section also describes
-what datum values are denoted by these syntactic data.
+what datum values are represented by these syntactic data.
 
 The lexical syntax, in the description of comments, contains
 a forward reference to \meta{datum}, which is described as part of the
@@ -113,7 +114,7 @@ datum syntax.  Being comments, however, these \meta{datum}s do not play
 a significant role in the syntax.
 
 Case is significant except in boolean data, number representations, and
-hexadecimal numbers denoting Unicode scalar values.  For example, {\cf \#x1A}
+hexadecimal numbers specifying Unicode scalar values.  For example, {\cf \#x1A}
 and {\cf \#X1a} are equivalent.  The identifier {\cf Foo} is, however,
 distinct from the identifier {\cf FOO}.
 
@@ -281,7 +282,7 @@ marks the end of a line.  Moreover, the two-character line endings
 \meta{next line} each count as a single line ending.
 
 In a string literal, a line ending not preceded by a {\cf\backwhack}
-denotes a linefeed character, which is the standard line-ending
+stands for a linefeed character, which is the standard line-ending
 character of Scheme.
 
 \subsection{Whitespace and comments}
@@ -365,7 +366,7 @@ Moreover, all characters whose Unicode scalar values are greater than 127 and
 whose Unicode category is Lu, Ll, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pd,
 Pc, Po, Sc, Sm, Sk, So, or Co can be used within identifiers.
 In addition, any character can be used within an identifier
-when denoted via an \meta{inline hex escape}.  For example, the
+when specified via an \meta{inline hex escape}.  For example, the
 identifier \verb|H\x65;llo| is the same as the identifier
 \verb|Hello|, and the identifier \verb|\x3BB;| is the same as the
 identifier $\lambda$.
@@ -375,7 +376,7 @@ syntactic keyword\index{syntactic keyword} (see
 sections~\ref{variablesection} and~\ref{macrosection}) in a Scheme
 program.
 Any identifier may also be used as a syntactic datum, in which case it
-denotes a \textit{symbol}\index{symbol} (see section~\ref{symbolsection}).
+represents a \textit{symbol}\index{symbol} (see section~\ref{symbolsection}).
 
 \subsection{Booleans}
 
@@ -477,7 +478,7 @@ by the identifier ``{\tt pace}''.
 
 \vest String are written as sequences of characters enclosed within doublequotes
 ({\cf "}).  Within a string literal, various escape
-sequences\mainindex{escape sequence} denote characters other than
+sequences\mainindex{escape sequence} represent characters other than
 themselves.  Escape sequences always start with a backslash (\backwhack{}):
 
 \begin{itemize}
@@ -504,8 +505,8 @@ Any other character in a string after a backslash is an error. Except
 for a line ending, any
 character outside of an escape sequence and not a doublequote stands
 for itself in the string literal. For example the single-character
-string {\tt "$\lambda$"} (doublequote, a lower case lambda, doublequote)
-denotes the same string literal as {\tt "\backwhack{}x03bb;"}.
+string literal {\tt "$\lambda$"} (doublequote, a lower case lambda, doublequote)
+represents the same string as {\tt "\backwhack{}x03bb;"}.
 A line ending stands for a linefeed character.
 
 Examples:
@@ -648,7 +649,7 @@ contains no vertical bar and no exponent marker
 other than {\cf e}, the inexact real number object it represents is a flonum
 (see library section~\extref{lib:flonumssection}{Flonums}).
 Some or all of the other external representations of
-inexact real number objects may also denote flonums, but that is not required by
+inexact real number objects may also represent flonums, but that is not required by
 this report.
 
 \section{Datum syntax}
@@ -697,7 +698,7 @@ section~\ref{lexicalsyntaxsection}:
 \subsection{Pairs and lists}
 \label{pairlistsyntax}
 
-List and pair data, denoting pairs and lists of values
+List and pair data, representing pairs and lists of values
 (see section~\ref{listsection}) are written using parentheses or brackets.
 Matching pairs of brackets that occur in the rules of \meta{list} are
 equivalent to matching pairs of parentheses.
@@ -741,7 +742,7 @@ are the symbol {\tt +} and the integers 2 and 6.
 \subsection{Vectors}
 \label{vectorsyntax}
 
-Vector data, denoting vectors of values (see
+Vector data, representing vectors of values (see
 section~\ref{vectorsection}), are written using the notation
 {\tt\#(\hyper{datum} \dotsfoo)}.  For example, a vector of length 3
 containing the number zero in element 0, the list {\cf(2 2 2 2)} in
@@ -758,7 +759,7 @@ base-library expression that evaluates to a vector.
 \subsection{Bytevectors}
 \label{bytevectorsyntax}
 
-Bytevector data, denoting bytevectors (see
+Bytevector data, representing bytevectors (see
 library chapter~\extref{lib:bytevectorschapter}{Bytevectors}), are written using the notation
 {\tt\#vu8(\hyper{u8} \dotsfoo)}, where the \hyper{u8}s represent the octets of
 the bytevector.  For example, a bytevector of length 3 containing the
