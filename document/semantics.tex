@@ -1,16 +1,5 @@
 %!TEX root = r6rs.tex
 
-%\noindent\textbf{TODO}
-%\begin{itemize}
-%\item mention things are not meant to be in original programs (handlers, etc.)
-%\item the semantics covers ``should''s as if they were ``musts''.
-%\item discuss modeling of unspecified results
-%\item letrec and lambda bodies do not allow definitions
-%\item the script V metafunction description needs to say that the cases are ordered (to save space in its presentation)
-%\item need to explain why 6appN makes 6mark work.
-%\item begin is only there as the expression form variant
-%\end{itemize}
-
 This appendix presents a non-normative, formal, operational semantics for Scheme. It does not cover the entire language. The notable missing features are the macro system, I/O, and the numeric tower. The precise list of features included is given in section~\ref{sec:semantics:grammar}.
 
 The core of the specification is a single-step term rewriting relation that indicates how an (abstract) machine behaves. In general, the report is not a complete specification, giving implementations freedom to behave differently, typically to allow optimizations. This underspecification shows up in two ways in the semantics. 
@@ -103,7 +92,7 @@ same syntactic shape.
 \subfigurestart{}
 \beginfig
 \input{r6-fig-grammar-parti.tex}
-\caption{Grammar for program}\label{fig:grammar}
+\caption{Grammar for programs and observables}\label{fig:grammar}
 \endfig
 
 Making the evaluation context $E$ explicit in the rule allows
@@ -130,7 +119,7 @@ sophisticated ways.
 \beginfig
 \subfigureadjust{}
 \input{r6-fig-grammar-partii.tex}
-\caption{Grammar for evaluation contexts and observable metafunctions}\label{fig:ec-grammar}
+\caption{Grammar for evaluation contexts}\label{fig:ec-grammar}
 \endfig
 \subfigurestop{}
 
@@ -188,6 +177,15 @@ rewritten into calls to the list construction functions before
 ordinary evaluation proceeds. In parallel to \nt{es}, \nt{e} represents
 expressions that have no quoted expressions.
 
+\beginfig
+\begin{center}
+\input{r6-fig-Quote.tex}
+
+\input{r6-fig-QtocQtoic.tex}
+\end{center}
+\caption{Quote}\label{fig:quote}
+\endfig
+
 The values ($v$) are divided into four categories:
 %
 \begin{itemize}
@@ -223,6 +221,13 @@ The next three set of non-terminals in figure~\ref{fig:grammar} represent pairs 
 \nt{x}, and $n$ represent symbols, variables, and
 numbers respectively. The non-terminals \nt{ip}, \nt{mp}, and \nt{sym} are all assumed to all be disjoint. Additionally, the variables $x$ are assumed not to include any keywords or primitive operations, so any program variables whose names coincide with them must be renamed before the semantics can give the meaning of that program.
 
+\beginfig
+\begin{center}
+\input{r6-fig-Multiple--values--and--call-with-values.tex}
+\end{center}
+\caption{Multiple values and call-with-values}\label{fig:Multiple--values--and--call-with-values}
+\endfig
+
 The set of non-terminals for evaluation contexts is shown in
 figure~\ref{fig:ec-grammar}. The \nt{P} non-terminal controls where
 evaluation happens in a program that does not contain any quoted data.
@@ -240,15 +245,6 @@ To convert the answers ($\calA$)  of the semantics into observable results, we u
 They eliminate the store, and replace complex values with simple tags that indicate only the kind of value that was produced or, if no values were produced, indicates that either an uncaught exception was raised, or that the program reached a state that is not specified by the semantics.
 
 \section{Quote}\label{sec:semantics:quote}
-
-\beginfig
-\begin{center}
-\input{r6-fig-Quote.tex}
-
-\input{r6-fig-QtocQtoic.tex}
-\end{center}
-\caption{Quote}\label{fig:quote}
-\endfig
 
 The first reduction rules that apply to any program is the 
 rules in figure~\ref{fig:quote} that eliminate quoted expressions. 
@@ -272,14 +268,14 @@ into lists before those rules apply.
 
 Although the identifier \nt{qp} does not have a subscript, the semantics of PLT Redex's ``fresh'' declaration takes special care to ensures that the \nt{qp} on the right-hand side of the rule is indeed the same as the one in the side-condition.
 
-\section{Multiple values}
-
 \beginfig
 \begin{center}
-\input{r6-fig-Multiple--values--and--call-with-values.tex}
+\input{r6-fig-Exceptions}
 \end{center}
-\caption{Multiple values and call-with-values}\label{fig:Multiple--values--and--call-with-values}
+\caption{Exceptions}\label{fig:Exceptions}
 \endfig
+
+\section{Multiple values}
 
 The basic strategy for multiple values is to add a rule that demotes
 $(\va{values}~v)$ to $v$ and another rule that promotes
@@ -328,6 +324,14 @@ need to consider multiple values in its first subexpression.
 Similarly, the rule for \sy{begin} does not need to consider the
 case of a single value as its first subexpression.
 
+\beginfig
+\begin{center}
+\input{r6-fig-Arithmetic.tex}
+\input{r6-fig-Basic--syntactic--forms.tex}
+\end{center}
+\caption{Arithmetic and basic forms}\label{fig:Arithmetic}
+\endfig
+
 The other two rules in
 figure~\ref{fig:Multiple--values--and--call-with-values} handle
 \va{call-with-values}. The evaluation contexts for
@@ -343,14 +347,14 @@ case that the first argument to \va{call-with-values} is a value,
 but is not of the form $\texttt{(}\sy{lambda}~\texttt{()}~e\texttt{)}$, the rule
 \rulename{6cwvw} wraps it in a thunk to trigger evaluation.
 
-\section{Exceptions}
-
 \beginfig
 \begin{center}
-\input{r6-fig-Exceptions}
+\input{r6-fig-Cons.tex}
 \end{center}
-\caption{Exceptions}\label{fig:Exceptions}
+\caption{Lists}\label{fig:Cons}
 \endfig
+
+\section{Exceptions}
 
 The workhorses for the exception system are $$\texttt{(}\sy{handlers}~\nt{proc}~\cdots{}~\nt{e}\texttt{)}$$ expressions and the \nt{G} and \nt{PG} evaluation contexts (shown in figure~\ref{fig:ec-grammar}). 
 The \sy{handlers} expression records the
@@ -381,7 +385,7 @@ one of the exception-raising functions is nested in the
 context ensures that there are no other \sy{handler} expressions
 between this one and the raise.
 
-The next two rules handle calls to \va{with-exception-handler}.
+The next two rules cover call to the procedure \va{with-exception-handler}.
 The \rulename{6xwh1} rule applies when there are no \sy{handler}
 expressions. It constructs a new one and applies $\nt{v}_2$ as a
 thunk in the \sy{handler} body. If there already is a handler
@@ -400,6 +404,13 @@ handler. The \rulename{6xr} rule behaves similarly, except it
 raises a new exception if the handler returns. The new exception is
 created with the \sy{condition} special form.
 
+\beginfig
+\begin{center}
+\input{r6-fig-Eqv.tex}
+\end{center}
+\caption{Eqv}\label{fig:Eqv}
+\endfig
+
 The \sy{make-cond} special form is a stand-in for the report's
 conditions. It does not evaluate its argument (note its absence from
 the $E$ grammar in figure~\ref{fig:ec-grammar}). That argument
@@ -414,14 +425,6 @@ raises an exception when \va{with-exception-handler} is supplied with
 incorrect arguments.
 
 \section{Arithmetic and basic forms}
-
-\beginfig
-\begin{center}
-\input{r6-fig-Arithmetic.tex}
-\input{r6-fig-Basic--syntactic--forms.tex}
-\end{center}
-\caption{Arithmetic and basic forms}\label{fig:Arithmetic}
-\endfig
 
 This model does not include the report's arithmetic, but does include
 an idealized form in order to make experimentation with other features
@@ -449,6 +452,14 @@ subexpressions. In that case, once the first expression has been fully
 simplified, the reduction rules drop its value. If there is only a
 single subexpression, the \sy{begin} itself is dropped.
 
+\subfigurestart{}
+\beginfig
+\begin{center}
+\input{r6-fig-Procedure--application.tex}
+\end{center}
+\caption{Procedures \& application}\label{fig:Procedure--application}
+\endfig
+
 Like the \sy{begin} evaluation contexts, the \sy{begin0}
 evaluation contexts allow evaluation of the first argument of a
 \sy{begin0} expression when there are two or more subexpressions.
@@ -462,13 +473,6 @@ at which point the \rulename{begin01} rule fires, and removes the
 
 \section{Lists}\label{sec:semantics:lists}
 
-\beginfig
-\begin{center}
-\input{r6-fig-Cons.tex}
-\end{center}
-\caption{Lists}\label{fig:Cons}
-\endfig
-
 The rules in figure~\ref{fig:Cons} handle lists. The first two rules handle \va{list} by reducing it to a succession of calls to \va{cons}, followed by \va{null}.
 
 The next two rules, \rulename{6cons} and \rulename{6consi}, allocate new \va{cons} cells.
@@ -481,16 +485,17 @@ The rules \rulename{6car} and \rulename{6cdr} extract the components of a pair f
 The rules \rulename{6setcar} and \rulename{6setcdr} handle assignment of mutable pairs. 
 They replace the contents of the appropriate location in the store with the new value, and reduce to \va{unspecified}. See section~\ref{sec:semantics:underspecification} for an explanation of how \va{unspecified} reduces.
 
+\beginfig
+\subfigureadjust{}
+\begin{center}
+\input{r6-fig-Var-set!d_.tex}
+\end{center}
+\caption{Variable-assignment relation}\label{fig:varsetd}
+\endfig
+
 The next four rules handle the \va{null?} predicate and the \va{pair?} predicate, and the final four rules raise exceptions when \va{car}, \va{cdr}, \va{set-car!} or \va{set-cdr!} receive non pairs.
 
 \section{Eqv}
-
-\beginfig
-\begin{center}
-\input{r6-fig-Eqv.tex}
-\end{center}
-\caption{Eqv}\label{fig:Eqv}
-\endfig
 
 The rules for \va{eqv?} are shown in figure~\ref{fig:Eqv}. The first two rules cover most of the behavior of \va{eqv?}. 
 The first says that when the two arguments to \va{eqv?} are syntactically identical, then \va{eqv?} produces \semtrue{} and the second says that when the arguments are not syntactically identical, then \va{eqv?} produces \semfalse{}. 
@@ -500,32 +505,6 @@ For example, pairs are represented as pointers into the store and \va{eqv?} only
 The side-conditions on those first two rules ensure that they do not apply when simple term equality doesn't match the behavior of \va{eqv?}. There are two situations where it does not match: comparing two conditions and comparing two procedures. For the first, the report does not specify \va{eqv?}'s behavior, except to say that it must return a boolean, so the remaining two rules (\rulename{6eqct}, and \rulename{6eqcf}) allow such comparisons to return \semtrue{} or \semfalse{}. Comparing two procedures is covered in section~\ref{sec:semantics:underspecification}. 
 
 \section{Procedures and application}
-
-\subfigurestart{}
-\beginfig
-\begin{center}
-\input{r6-fig-Procedure--application.tex}
-\end{center}
-\caption{Procedures \& application}\label{fig:Procedure--application}
-\endfig
-
-\beginfig
-\subfigureadjust{}
-\begin{center}
-\input{r6-fig-Apply.tex}
-\input{r6-fig-circular_.tex}
-\end{center}
-\caption{Apply}\label{fig:Apply}
-\endfig
-
-\beginfig
-\subfigureadjust{}
-\begin{center}
-\input{r6-fig-Var-set!d_.tex}
-\end{center}
-\caption{Variable-assignment relation}\label{fig:varsetd}
-\endfig
-\subfigurestop{}
 
 In evaluating a procedure call, the report leaves
 unspecified the order in which arguments are evaluated. So, our reduction system allows multiple, different reductions to occur, one for each possible order of evaluation.
@@ -573,6 +552,16 @@ ordinary procedure by constructing a list of the extra arguments. Similarly, the
 The rule \rulename{6var} handles variable lookup in the store and \rulename{6set} handles variable assignment.
 
 The next two rules \rulename{6proct} and \rulename{6procf} handle applications of \va{procedure?}, and the remaining rules cover applications of non-procedures and arity errors.
+
+\beginfig
+\subfigureadjust{}
+\begin{center}
+\input{r6-fig-Apply.tex}
+\input{r6-fig-circular_.tex}
+\end{center}
+\caption{Apply}\label{fig:Apply}
+\endfig
+\subfigurestop{}
 
 The rules in figure~\ref{fig:Apply} cover 
 cover \va{apply}. 
@@ -707,9 +696,8 @@ The remaining rules in figure~\ref{fig:Underspecification} cover the results fro
 
 So, the remaining rules just specify the minimal behavior that we know that a value or values must have and otherwise reduce to an \textbf{unknown:} state. The rule \rulename{6udemand} drops \va{unspecified} in the \sy{U} context. See figure~\ref{fig:ec-grammar} for the precise definition of \sy{U}, but intuitively it is a context that is only a single expression layer deep that contains expressions whose value depends on the value of their subexpressions, like the first subexpression of a \sy{if}. Following that are rules that discard \va{unspecified} in expressions that discard the results of some of their subexpressions. The \rulename{6ubegin} shows how \sy{begin} discards its first expression when there are more expressions to evaluate. The next two rules, \rulename{6uhandlers} and \rulename{6udw} propagate \va{unspecified} to their context, since they also return any number of values to their context. Finally, the two \va{begin0} rules preserve \va{unspecified} until the rule \rulename{6begin01} can return it to its context.
 
-\section*{Acknowledgments}
-
-Thanks to Michael Sperber for many helpful discussions of specific points in the semantics, for spotting many mistakes and places where the formal semantics diverged from the informal semantics, and for generally making it possible for us to keep up with changes to the informal semantics as it developed. Thanks also to Will Clinger for a careful reading of the semantics and its explanation.
+%\section*{Acknowledgments}
+%Thanks to Michael Sperber for many helpful discussions of specific points in the semantics, for spotting many mistakes and places where the formal semantics diverged from the informal semantics, and for generally making it possible for us to keep up with changes to the informal semantics as it developed. Thanks also to Will Clinger for a careful reading of the semantics and its explanation.
 
 %%% Local Variables: 
 %%% mode: latex
