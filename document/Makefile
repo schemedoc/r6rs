@@ -29,6 +29,7 @@ REPORT_TEX_FILES = r6rs.tex \
 	semantics.tex \
 	struct.tex \
 	entry.tex \
+	mustard.tex
 
 LIB_TEX_FILES = r6rs-lib.tex \
 	bytevector.tex \

@@ -1,44 +1,6 @@
 %\vfill\eject
-\chapter{Notation and terminology}
-\label{terminologychapter}
-
-\section{Requirement levels} 
-\label{requirementsection}
-
-The key words ``must'', ``must not'', ``required'', ``should'',
-``should not'', ``recommended'', ``may'', and ``optional'' in this
-report are to be interpreted as described in RFC~2119~\cite{mustard}.
-Specifically:
-
-\begin{description}
-\item[must]\mainindex{must} This word means that a statement is an absolute
-  requirement of the specification.
-\item[must not]\mainindex{must not} This phrase means that a statement is an absolute
-  prohibition of the specification.
-\item[should]\mainindex{should} This word, or the adjective ``recommended'', mean that
-  valid reasons may exist in particular circumstances to ignore a
-  statement, but that the implications must be understood and weighed
-  before choosing a different course.
-\item[should not]\mainindex{should not} This phrase, or the phrase ``not recommended'', mean
-  that valid reasons may exist in particular circumstances when the
-  behavior of a statement is acceptable, but that the implications
-  should be understood and weighed before choosing the course described
-  by the statement.
-\item[may]\mainindex{may} This word, or the adjective ``optional'', mean that an item
-  is truly optional.
-\end{description}
-
-In particular, this report occasionally uses ``should'' to designate
-circumstances that are outside the specification of this report, but
-cannot be practically detected by an implementation; see
-section~\ref{argumentcheckingsection}.  In such circumstances, a
-particular implementation may allow the programmer to ignore the
-recommendation of the report; it may even exhibit reasonable behavior.
-However, as the report does not specify the behavior,
-these programs may be unportable.
-
-\section{Entry format}
-\label{entryformatsection}
+\chapter{Entry format}
+\label{entryformatchapter}
 
 The chapters that describe bindings in the base library and the standard
 libraries are organized
@@ -53,7 +15,7 @@ typically either ``\exprtype'' or ``procedure''.
 An entry may specify various restrictions on subforms or arguments.
 For background on this, see section~\ref{argumentcheckingsection}.
 
-\subsection{Syntax entries}
+\section{Syntax entries}
 
 If \var{category} is ``\exprtype'', the entry describes a 
 special syntactic construct, and the template gives the syntax of the
@@ -101,7 +63,7 @@ as the macro transformers involved in expanding the form terminate.
 If the implementation detects that a component does not meet the
 restriction, an exception with condition type {\cf\&syntax} is raised.
 
-\subsection{Procedure entries}
+\section{Procedure entries}
 
 If \var{category} is ``procedure'', then the entry describes a procedure, and
 the header line gives a template for a call to the procedure.  Parameter
@@ -204,7 +166,7 @@ programmer.  An paragraph describing implementation responsibility does not
 affect the implementation's responsibilities for checking arguments not
 mentioned in the paragraph.
 
-\subsection{Other kinds of entries}
+\section{Other kinds of entries}
 
 If \var{category} is something other than ``syntax'' and
 ``procedure'', then the entry describes a non-procedural value, and
@@ -213,7 +175,7 @@ the \var{category} describes the type of that value.  The header line
 \noindent\rvproto{\&who}{condition type}\\
 indicates that {\cf\&who} is a condition type.
 
-\subsection{Equivalent entries}
+\section{Equivalent entries}
 
 The description of an entry occasionally states that it is \textit{the
   same} as another entry.  This means that both entries are
@@ -265,42 +227,6 @@ specified conditionally or approximately.  For example:
 (atan -inf.0)                  \lev -1.5707963267948965 ; \textrm{approximately}%
 \end{scheme}
 
-\section{Unspecified behavior}
-
-\vest If the value of an expression is said to be ``unspecified'' or
-an expression is said to ``return unspecified values'',
-then the expression must evaluate without raising an exception, but
-the values returned depend on the implementation; this report
-explicitly does not say how many or what values should be returned.
-Programmers should not rely on a specific number of return values or
-the specific values themselves.
-\mainindex{unspecified behavior}\mainindex{unspecified values}
-
-\section{Exceptional situations}
-
-When speaking of an exceptional situation (see section~\ref{exceptionalsituationsection}), this
-report uses the phrase ``an exception is raised'' to indicate
-that implementations must detect the situation and report it to the
-program through the exception system described in
-library chapter~\extref{lib:exceptionsconditionschapter}{Exceptions
-  and conditions}.
-
-Several variations on ``an exception is raised'' using the keywords
-described in section~\ref{requirementsection} are possible, in
-particular ``an exception must be raised'' (equivalent to ``an
-exception is raised''), ``an exception should be raised'', and ``an
-exception may be raised''.
-
-This report uses the phrase ``an exception with condition type \var{t}''
-to indicate that the object provided with the
-exception is a condition object of the specified type.
-
-The phrase ``a continuable exception is raised'' indicates an
-exceptional situation that permits the exception handler to return,
-thereby allowing program execution to continue at the place where the
-original exception occurred.  See library
-section~\extref{lib:raise-continuable}{Exceptions}.
-
 \section{Naming conventions}
 
 By convention, the names of procedures that store values into previously
@@ -331,21 +257,6 @@ followed by a hyphen.
 
 By convention, the names of condition types usually start with
 ``{\cf\&}''\index{&@\texttt{\&}}.
-
-\section{Syntax violations}
-
-Scheme implementations conformant with this report must detect
-violations of the syntax.  A \defining{syntax violation} is an error
-with respect to the syntax of library bodies, top-level bodies,
-or the ``\exprtype'' entries in the
-specification of the base library or the standard libraries.
-Moreover, attempting to assign to an immutable variable (i.e., the
-variables exported by a library; see
-section~\ref{importsareimmutablesection}) is also
-considered a syntax violation.
-
-If a top-level or library form is not syntactically correct, then the
-execution of that top-level program or library must not be allowed to begin.
 
 %%% Local Variables: 
 %%% mode: latex
