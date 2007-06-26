@@ -1,0 +1,172 @@
+Telephone conference June 14 2007 8:00am-9:18am EDT
+
+Decisions after each agenda item are preceded by three asterisks.
+
+Mike, Matthew, Anton, Kent present by about 8:02am.
+
+0. finalize agenda (1 minute)
+
+1. action items (1 minute)
+    - complete adoption candidate by 6/30
+    - complete (or cause completion) of reference implementations by 6/30
+      Kent: Unicode, bytevector, numeric, enumeration, libraries/expander
+      Matthew: records
+      Mike: I/O
+      Anton: hashtables, lists
+
+2. should we allow (cond) and (case expr)?
+    - what about (begin) as an expression?
+      - presently disallowed
+    - what about implicit begins?
+      - implicit begin in do can already be empty
+      - presently disallowed elsewhere
+
+*** No change (following a principle suggested by Matthew, to be 
+conservative at this stage.)
+
+3. make eq?/eqv? work reliably even for immutable pairs and records?
+    See https://r6rs.scheming.org/node/655
+    - compromise: allow copying of constants?
+    - what about strings?
+    - what about procedures?
+
+*** Revert to r5rs behaviour, but eliminate location tags for procedures.
+
+4. should (cond clause ... [<test>]) be required treat <test> as in
+    tail position with respect to the cond expression and thus return all
+    of the values that <test> returns?
+
+*** No change.
+
+5. the eqv? procedure is said to return #f if "obj1 and obj2 are
+    rational numbers for which the = procedure returns #f".  should
+    this be modified to include complex numbers whose real and imaginary
+    parts are rational?
+
+*** Move discussion to email.
+
+6. may (inexact x) return +inf.0 for large x?  the wording in the draft
+    r6rs seems to preclude this, unless we take +inf.0 as a reasonably
+    close approximation to all numbers greater than the largest
+    representable non-infinite value.  so did r5rs, but r5rs did not
+    account for +inf.0.
+
+*** Be explicit in document about allowing +inf.0 for large x.
+
+7. Should we include a rationale for why floor, ceiling, and round
+    accept infinities and nan?
+
+*** Kent will draft rationale, Mike will put into rationale document.
+(Simplified summary of rationale is that calculations may result in 
+infinities and nan, therefore procedures should accept them.)
+
+8. should (string->number "0/0") be allowed to raise an exception with
+    condition type &assertion or return #f?  this case and similar cases
+    aren't addressed by the current wording.  what's at stake is whether
+    one can count on string->number returning a number or #f or whether
+    one must be prepared to handle exceptions.
+
+*** Should return number or #f.  Get rid of language: "a syntactically 
+valid notation for".
+
+9. should set-port-position! on a given textual port require that pos
+    argument be a position extracted by port-position for that port?
+
+*** "Should" be the same port.
+
+10. should the third arguments to fx+/carry and fx-/carry be restricted
+     to 0 or 1? the implementation might be easier and more efficient.
+
+*** Yes; Mike will run past Will.
+
+11. arith.tex says that certain procedures can return either NaN or some
+     meaningless flonums for some inputs.  is this a throwback to before
+     we committed to requiring NaNs/infinities or implementation-
+     restriction exceptions?  If so, should we require NaNs in these
+     situations?  If not, we should define what "meaningless flonum"
+     means.
+
+*** Mike believes that Will considers current behavior correct.  Mike 
+will check with Will for rationale.
+
+8:30am: Matthew dropped off call & came back on at about 8:31am
+
+12. can we not allow flexpt to take a negative first argument if its
+     second is integer-valued?
+
+*** Yes, make this change.
+
+     Also, should we remove the mathematical definition of fl_1^fl_2 in
+     terms of e and log, which seems unhelpful given the domains of the
+     inputs?
+
+*** Yes, Mike will fix.
+
+13. should we specify that (exit #t) is a normal exit and
+     (exit #f) is an abnormal exit, while leaving other explicit exit
+     values unspecified?  there is presently no portable way to produce
+     an abnormal exit.
+
+*** Adopt (exit #f).  Leave others unspecified.
+
+14. must equal-hash terminate?
+
+*** Mike will add note about termination.
+
+15. rename (rnrs i/o ...) to (rnrs io ...)?
+
+*** Yes.
+
+16. rename `&i/o-file-exists-not' to `&i/o-does-not-exist'?
+
+*** Yes.
+
+8:39:42
+17. move identifier-syntax to (rnrs syntax-case (6))?
+
+*** Response to formal comment #111 says otherwise; Mike will solicit 
+new formal comment about this.
+	
+18. pimp the `utfXX->string' procedures?
+     http://lists.r6rs.org/pipermail/r6rs-discuss/2007-May/002399.html
+
+*** Do it.
+
+19. consider transcoder change?
+     http://lists.r6rs.org/pipermail/r6rs-discuss/2007-June/002490.html
+
+*** Do it unless Mike has any problems when making the change.  The 
+change is summmarized in the second paragraph of the formal comment. 
+(Or so I believe.  Please check that this is correct -- I didn't get 
+Kent's exact dictation about this decision.)
+
+*** An additional change was suggested in the r6rs-discuss thread, to 
+add with-{input,output}-from-port.  This change will not be made.  (My 
+notes are sketchy here, though.)
+
+20. consider enumerations change?
+     http://lists.r6rs.org/pipermail/r6rs-discuss/2007-June/002492.html
+
+*** No.  Mike said that this would require a proposal, and offered to 
+prepare one.  Anton commented, essentially, that this violated Matthew's 
+conservatism principle, and Matthew agreed.
+
+Ad-hoc agenda item:
+20.5 Add #\newline back.
+
+*** Yes, but include language recommending use of #\linefeed etc. instead.
+
+21. consider name change?
+     See https://r6rs.scheming.org/node/662
+
+*** Discussed for 11 minutes.  Role of editors is limited here.  Chair 
+encouraged editors with an opinion to contact the Steering Committee.
+
+22. should we revisit (rnrs ... (6)) naming convention?
+     - use rrs in place of rnrs?
+
+*** Mike had to leave; defer.
+
+*** Agreed to phone conference Friday 22nd, 8:00am EDT.
+
+23. adjourned at about 9:18am
