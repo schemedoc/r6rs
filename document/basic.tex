@@ -44,26 +44,17 @@ syntactic abstraction, a {\em transformer} that translates the syntax into more
 primitive forms; see section~\ref{macrosection}).  An identifier that names a
 location is called a {\em variable}\mainindex{variable} and is said to be
 {\em bound} to that location.  
-A variable that names a piece of syntax in a syntactic abstraction is
+A variable that names a subform in a syntactic abstraction is
 called a \textit{pattern variable}\index{pattern variable} and is said
-to be bound to that piece of syntax.
-The set of all visible
-bindings\mainindex{binding} in effect at some point in a top-level program or
-library body is
-known as the {\em environment} in effect at that point.  The value
+to be bound to a syntax object representing the subform.
+At each point within a top-level program or a library, a specific, fixed set
+of variables is bound.  The set of these variables, the set of \textit{visible
+bindings}\mainindex{binding}, is
+known as the {\em environment} in effect at that point.  The object
 stored in the location to which a variable is bound is called the
-variable's value.  By abuse of terminology, the variable is sometimes
-said to name the value or to be bound to the value.  This is not quite
-accurate, but confusion rarely results from this practice.
+variable's value.
 
-\todo{Define ``assigned'' and ``unassigned'' perhaps?}
-
-\todo{In programs without side effects, one can safely pretend that the
-variables are bound directly to the arguments.  Or:
-In programs without \ide{set!}, one can safely pretend that the
-variable is bound directly to the value. }
-
-\vest Certain forms are used to create syntactic abstractions
+Certain forms are used to create syntactic abstractions
 and to bind keywords to transformers for those new syntactic abstractions, while other
 forms create new locations and bind variables to those
 locations.  Collectively, these forms are called {\em binding
@@ -74,31 +65,30 @@ expressions.
 With the exception of exported library bindings, a binding created
 by a definition is visible only within the body in which the
 definition appears, e.g., the body of a library, top-level program,
-or base-library {\cf lambda} expression.
+or {\cf lambda} expression.
 Exported library bindings are also visible within the bodies of
 the libraries and top-level programs that import them (see
 chapter~\ref{librarychapter}).
 
-Expressions that bind variables include the base-library {\cf lambda},
+Expressions that bind variables include the {\cf lambda},
 {\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*}, {\cf let-values},
-and {\cf let*-values} forms along with the control-library {\cf do} and
-{\cf case-lambda} forms
-(see sections~\ref{lambda}, \ref{letrec}, and library chapter
-\extref{lib:controllib}{{\cf Control structures}}).
+and {\cf let*-values} forms from the base library (see
+sections~\ref{lambda}, \ref{letrec}).
 Of these, {\cf lambda} is the most fundamental.
-Sets of variable definitions appearing within the bodies of any of
-these constructs, or within the bodies of a library or top-level
-program, are treated as the equivalent of a set of
+Variable definitions appearing within the body of 
+such an expression, or within the bodies of a library or top-level
+program, are treated as a set of
 {\cf letrec*} bindings.
-For library bodies, however, some additional mechanism is required to
-allow the variables that are exported from the library to be referenced by
+In addition, for library bodies, 
+the variables exported from the library can be referenced by
 importing libraries and top-level programs.
 
-Expressions that bind keywords include the base-library {\cf
-  let-syntax} and {\cf letrec-syntax} forms.  (see
-section~\ref{bindsyntax}).  A base-library {\cf define} form is a
-definition that creates a variable binding (see
-section~\ref{defines}), and a base-library {\cf define-syntax} form is
+Expressions that bind keywords include the {\cf
+  let-syntax} and {\cf letrec-syntax} forms (see
+section~\ref{bindsyntax}).  A {\cf define} form (see section~\ref{define}) is a
+definition that creates a variable binding (see 
+section~\ref{defines}), and a {\cf define-syntax} form (see
+section~\ref{define-syntax}) is
 a definition that creates a keyword binding (see
 section~\ref{syntaxdefinitionsection}).
 
@@ -123,14 +113,24 @@ it is said to be \defining{unbound}.\mainindex{bound}
 \label{exceptionalsituationsection}
 
 \mainindex{exceptional situation}A variety of exceptional situations
-are distinguished in this report, among them violations of 
-syntax, violations of a procedure's specification, violations of
+are distinguished in this report, among them violations of syntax,
+violations of a procedure's specification, violations of
 implementation restrictions, and exceptional situations in the
-environment.  When an exception is raised, an object is provided that
+environment.  When an exceptional situation is detected by the
+implementation, an \textit{exception is raised}\mainindex{raise},
+which means that a special procedure called the \textit{current
+  exception handler} is called.  A program can also raise an
+exception, and override the current exception handler; see
+section~\extref{lib:exceptionssection}.
+
+When an exception is raised, an object is provided that
 describes the nature of the exceptional situation.  The report uses
 the condition system described in library section~\extref{lib:conditionssection}{Conditions} to
 describe exceptional situations, classifying them by condition types.
 
+Some exceptional situations allow continuing the program if the
+exception handler takes appropriate action.  The corresponding
+exceptions are called \textit{continuable}\index{continuable exception}.
 For most of the exceptional situations described in this report,
 portable programs cannot rely upon the exception being continuable
 at the place where the situation was detected.
@@ -217,7 +217,7 @@ execution as described in the next section.
 
 \section{Syntax violations}
 
-Scheme implementations conformant with this report must detect
+Implementations must detect
 violations of the syntax.  A \defining{syntax violation} is an error
 with respect to the syntax of library bodies, top-level bodies,
 or the ``\exprtype'' entries in the
@@ -243,9 +243,7 @@ The execution of a safe top-level program
 cannot go so badly wrong as to crash or to continue to
 execute while behaving in ways that are
 inconsistent with the semantics described in this document,
-unless the execution first encounters some implementation
-restriction or other defect in the implementation of Scheme
-that is executing the program.
+unless an exception is raised.
 
 Violations of an implementation restriction must raise an
 exception with condition type {\cf\&implementation-restriction},
@@ -299,8 +297,7 @@ discarding these values accept any number of values.
 
 \section{Unspecified behavior}
 
-\vest If the value of an expression is said to be ``unspecified'' or
-an expression is said to ``return unspecified values'',
+\vest If an expression is said to ``return unspecified values'',
 then the expression must evaluate without raising an exception, but
 the values returned depend on the implementation; this report
 explicitly does not say how many or what values should be returned.
@@ -313,11 +310,11 @@ the specific values themselves.
 \label{storagemodel}
 
 Variables and objects such as pairs, vectors, bytevectors, strings, hashtables, records implicitly
-denote locations\mainindex{location} or sequences of locations.  A string, for
-example, denotes as many locations as there are characters in the string. 
+refer to locations\mainindex{location} or sequences of locations.  A string, for
+example, contains as many locations as there are characters in the string. 
 (These locations need not correspond to a full machine word.) A new value may be
 stored into one of these locations using the {\tt string-set!} procedure, but
-the string continues to denote the same locations as before.
+the string contains the same locations as before.
 
 An object fetched from a location, by a variable reference or by
 a procedure such as {\cf car}, {\cf vector-ref}, or {\cf string-ref}, is
@@ -331,18 +328,18 @@ Whenever this report speaks of storage being allocated for a variable
 or object, what is meant is that an appropriate number of locations are
 chosen from the set of locations that are not in use, and the chosen
 locations are marked to indicate that they are now in use before the variable
-or object is made to denote them.
+or object is made to refer to them.
 
 It is desirable for constants\index{constant} (i.e. the values of
 literal expressions) to reside in read-only-memory.  To express this,
-it is convenient to imagine that every object that denotes locations
+it is convenient to imagine that every object that refers to locations
 is associated with a flag telling whether that object is
 mutable\index{mutable} or immutable\index{immutable}.  Literal
 constants, the strings returned by \ide{symbol->string}, records with
 no mutable fields, and other values explicitly designated as immutable
 are immutable objects, while all objects created by the other
 procedures listed in this report are mutable.  An attempt to store a
-new value into a location that is denoted by an immutable object
+new value into a location referred to by an immutable object
 should raise an exception with condition type {\cf\&assertion}.
 
 
