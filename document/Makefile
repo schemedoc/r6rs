@@ -28,7 +28,7 @@ REPORT_TEX_FILES = r6rs.tex \
 	repository.tex \
 	semantics.tex \
 	struct.tex \
-	terminology.tex \
+	entry.tex \
 
 LIB_TEX_FILES = r6rs-lib.tex \
 	bytevector.tex \
