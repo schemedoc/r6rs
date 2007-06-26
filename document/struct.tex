@@ -282,7 +282,7 @@ indicate that this is a procedure definition.)  The expression {\cf (f
 roughly, ``evaluate {\cf (+ x 42)} (the body of the procedure) with
 {\cf x} bound to 23''.
 
-As procedures are regular values, they can be passed to other
+As procedures are objects, they can be passed to other
 procedures:
 %
 \begin{scheme}
@@ -357,11 +357,10 @@ below.
 \section{Assignment}
 
 Scheme variables bound by definitions or {\cf let} or {\cf lambda}
-forms are not actually bound directly to the values specified in the
+expressions are not actually bound directly to the values specified in the
 respective bindings, but to locations containing these values.  The
 contents of these locations can subsequently be modified destructively
 via \textit{assignment}\index{assignment}:
-
 %
 \begin{scheme}
 (let ((x 23))
@@ -380,8 +379,8 @@ Thus, the previous value of {\cf x}, 23, is replaced by 42.
 
 Many of the special forms specified in this report
 can be translated into more basic special forms.
-For example, {\cf let} expressions can be translated
-into procedure calls and {\cf lambda} expressions.  The following two
+For example, a {\cf let} expression can be translated
+into a procedure call and a {\cf lambda} expression.  The following two
 expressions are equivalent:
 %
 \begin{scheme}
@@ -438,13 +437,13 @@ built into other languages to be derived forms in Scheme.
 
 \section{Syntactic data and datum values}
 
-A subset of the Scheme values called \textit{datum
-  values}\index{datum value} have a special
-status in the language.  These include booleans, number objects, characters, symbols,
+A subset of the Scheme values is called \textit{datum
+  values}\index{datum value}. 
+These include booleans, number objects, characters, symbols,
 and strings as well as lists and vectors whose elements are data.  Each
 datum value may be represented in textual form as a
 \textit{syntactic datum}\index{syntactic datum}, which can be written out
-and read back in without loss of information, giving a syntactic value
+and read back in without loss of information, giving a syntactic datum
 equal to the original (in the sense of {\cf equal?}; see section~\ref{equal?}).
 A datum value may be represented by several different syntactic data,
 but the datum value corresponding to a syntactic datum is uniquely
@@ -463,7 +462,7 @@ prepending a {\cf\singlequote} to a corresponding syntactic datum:
 
 The {\cf\singlequote} shown in the previous examples
 is not needed for number representations or boolean literals.
-The identifier {\cf foo} is a syntactic datum that represents a
+The syntatic datum {\cf foo} represents a
 symbol with name ``foo'', and {\cf 'foo} is a literal expression with
 that symbol as its value.  {\cf (1 2 3)} is a syntactic datum that 
 represents a list with elements 1, 2, and 3, and {\cf '(1 2 3)} is a literal
@@ -471,7 +470,7 @@ expression with this list as its value.  Likewise, {\cf \#(1 2 3)}
 is a syntactic datum that represents a vector with elements 1, 2 and 3, and
 {\cf '\#(1 2 3)} is the corresponding literal.
 
-The syntactic data form a superset of the Scheme forms.  Thus, datums
+The syntactic data are a superset of the Scheme forms.  Thus, data
 can be used to represent Scheme forms as data objects.  In
 particular, symbols can be used to represent identifiers.
 
@@ -489,25 +488,43 @@ in particular interpreters and program transformers.
 Scheme code can be organized in components called
 \textit{libraries}\index{library}.  Each library contains 
 definitions and expressions.  It can import definitions
-from other libraries and export definitions to other libraries:
+from other libraries and export definitions to other libraries.
 
+The following library called {\cf (hello)} exports a definition called
+{\cf hello-world},  and imports the base library (see
+chapter~\ref{baselibrarychapter}) and the simple I/O library (see
+library section~\extref{simpleiosection}{Simple I/O}).  The {\cf
+  hello-world} export is a procedure that displays {\cf Hello World}
+on a separate line:
+%
 \begin{scheme}
 (library (hello)
-  (export)
+  (export hello-world)
   (import (rnrs base (6))
           (rnrs io simple (6)))
-  (display "Hello World")
-  (newline))%
+  (define (hello-world)
+    (display "Hello World")
+    (newline)))%
 \end{scheme}
 
 \section{Top-level programs}
 
-A Scheme program is invoked via a \textit{top-level program}\index{top-level program}.
-Like a library, a top-level program contains definitions and
-expressions, but specifies an entry point for execution.  Thus a
-top-level program defines, via the transitive closure of the libraries it
-imports, a Scheme program.
+A Scheme program is invoked via a \textit{top-level
+  program}\index{top-level program}.  Like a library, a top-level
+program contains imports, definitions and expressions, and specifies
+an entry point for execution.  Thus a top-level program defines, via
+the transitive closure of the libraries it imports, a Scheme program.
 
+The following program obtains the first argument from the command line
+via the {\cf command-line} procedure from the \rsixlibrary{programs}
+library (see library chapter~\extref{programlibchapter}{Command-line
+  access and exit values}.  It then opens the file using {\cf
+  open-file-input-port} (see library section~\extref{portsiosection}),
+yielding a \textit{port}, i.e.\ a connection to the file as a data
+source, and calls the {\cf get-bytes-all} procedure to obtain the
+contents of the file as binary data.  It then uses {\cf put-bytes} to
+output the contents of the file to standard output:
+%
 \begin{scheme}
 \#!r6rs
 (import (rnrs base (6))

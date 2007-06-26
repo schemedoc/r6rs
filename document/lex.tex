@@ -1,7 +1,7 @@
 % Lexical structure
 \hyphenation{white-space}
 %%\vfill\eject
-\chapter{Lexical syntax and read syntax}
+\chapter{Lexical syntax and datum syntax}
 \label{readsyntaxchapter}
 
 The syntax of Scheme code is organized in three levels:
@@ -9,7 +9,7 @@ The syntax of Scheme code is organized in three levels:
 \begin{enumerate}
 \item the \textit{lexical syntax} that describes how a program text is split
   into a sequence of lexemes,
-\item the \textit{read syntax}, formulated in terms of the lexical
+\item the \textit{datum syntax}, formulated in terms of the lexical
   syntax, that structures the lexeme sequence as a sequence of
   \textit{syntactic data\mainindex{datum}\mainindex{syntactic
       datum}}, where a syntactic datum is
@@ -38,7 +38,7 @@ characters that is a form is also a syntactic datum representing
 some object.  This can lead to confusion, since it may not be obvious
 out of context whether a given sequence of characters is intended to
 denote data or program. It is also a source of power, since it
-facilitates writing programs such as interpreters and compilers that
+facilitates writing programs such as interpreters or compilers that
 treat programs as data (or vice versa).  A form nested inside another form is
 called a \defining{subform}.
 
@@ -57,21 +57,21 @@ values, this report sometimes uses the term \defining{datum} to denote
 either a syntactic datum or a datum value when the exact meaning
 is apparent from the context.
 
-An implementation is not permitted to extend the lexical or read syntax in
+An implementation must not extend the lexical or datum syntax in
 any way, with one exception: it need not treat the syntax
 {\cf \sharpsign{}!\meta{identifier}}, for any \meta{identifier} (see
 section~\ref{identifiersection}) that is not {\cf r6rs}, as a syntax
 violation, and it may use specific {\cf \sharpsign{}!}-prefixed
 identifiers as flags indicating that subsequent input contains extensions
-to the standard lexical or read syntax. 
+to the standard lexical or datum syntax. 
 The syntax {\cf \sharpsign{}!r6rs} may be used to signify that
 the input afterward is written with the lexical syntax and
-read syntax described by
-this report when no other {\cf \sharpsign{}!\meta{identifier}} appears;
+datum syntax described by
+this report.
 {\cf \sharpsign{}!r6rs} is otherwise treated as a comment; see section~\ref{whitespaceandcomments}.
 
-This chapter overviews and provides formal accounts of the lexical
-syntax and the read syntax.
+This chapter contains overviews and formal accounts of the lexical
+syntax and the datum syntax.
 
 \section{Notation}
 \label{BNF}
@@ -103,13 +103,13 @@ sequence of lexemes\index{lexeme}, omitting non-significant portions
 such as comments and whitespace.  The character sequence is assumed to
 be text according to the Unicode standard~\cite{Unicode}.  Some of
 the lexemes, such as number representations, identifiers, strings etc., of the lexical
-syntax are syntactic data in the read syntax, and thus represent data.
+syntax are syntactic data in the datum syntax, and thus represent data.
 Besides the formal account of the syntax, this section also describes
 what datum values are denoted by these syntactic data.
 
 The lexical syntax, in the description of comments, contains
 a forward reference to \meta{datum}, which is described as part of the
-read syntax.  Being comments, however, these \meta{datum}s do not play
+datum syntax.  Being comments, however, these \meta{datum}s do not play
 a significant role in the syntax.
 
 Case is significant except in boolean data, number representations, and
@@ -330,7 +330,7 @@ and {\tt |\#} pairs.
 \end{scheme}
 
 The lexeme {\cf \sharpsign{}!r6rs}, which signifies that the program text
-that follows is written with the lexical and read syntax described in this
+that follows is written with the lexical and datum syntax described in this
 report, is also otherwise treated as a comment.
 
 \subsection{Identifiers}
@@ -364,7 +364,7 @@ they were letters.  The following are extended alphabetic characters:
 Moreover, all characters whose Unicode scalar values are greater than 127 and
 whose Unicode category is Lu, Ll, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pd,
 Pc, Po, Sc, Sm, Sk, So, or Co can be used within identifiers.
-In addtion, any character can be used within an identifier
+In addition, any character can be used within an identifier
 when denoted via an \meta{inline hex escape}.  For example, the
 identifier \verb|H\x65;llo| is the same as the identifier
 \verb|Hello|, and the identifier \verb|\x3BB;| is the same as the
@@ -651,10 +651,10 @@ Some or all of the other external representations of
 inexact real number objects may also denote flonums, but that is not required by
 this report.
 
-\section{Read syntax}
-\label{readsyntaxsection}
+\section{Datum syntax}
+\label{datumsyntaxsection}
 
-The read syntax describes the syntax of
+The datum syntax describes the syntax of
 syntactic data\mainindex{syntactic datum} in terms of a sequence of
 \meta{lexeme}s, as defined in the lexical syntax.
 
@@ -732,8 +732,9 @@ can be omitted in the external representation.
 The sequence of characters ``{\cf (4 .\ 5)}'' is the external representation of a
 pair, not an expression that evaluates to a pair.
 Similarly, the sequence of characters ``{\tt(+ 2 6)}'' is {\em not} an
-external representation of the integer 8, even though it {\em is} a
-base-library expression evaluating to the integer 8; rather, it is a
+external representation of the integer 8, even though it {\em is} an
+expression (in the language of the \rsixlibrary{base} library)
+evaluating to the integer 8; rather, it is a
 syntactic datum representing a three-element list, the elements of which
 are the symbol {\tt +} and the integers 2 and 6.
 
