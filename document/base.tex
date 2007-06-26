@@ -3388,13 +3388,13 @@ arguments.
 \label{continuations} \domain{\var{Proc} should accept one
 argument.} The procedure {\cf call-with-current-continuation} 
 (which is the same as the procedure {\cf call/cc}) packages
-the current continuation (see the rationale below) as an ``escape
+the current continuation as an ``escape
 procedure''\mainindex{escape procedure} and passes it as an argument to
 \var{proc}.  The escape procedure is a Scheme procedure that, if it is
 later called, will abandon whatever continuation is in effect at that later
-time and will instead use the continuation that was in effect
+time and will instead reinstate the continuation that was in effect
 when the escape procedure was created.  Calling the escape procedure
-may cause the invocation of \var{before} and \var{after} thunks installed using
+may cause the invocation of \var{before} and \var{after} procedures installed using
 \ide{dynamic-wind}.
 
 The escape procedure accepts the same number of arguments as the
@@ -3404,7 +3404,7 @@ continuation of the original call to \callcc.
 unlimited extent just like any other procedure in Scheme.  It may be stored
 in variables or data structures and may be called as many times as desired.
 
-\vest The following examples show only the most common ways in which
+\vest The following examples show only some ways in which
 {\cf call-with-current-continuation} is used.  If all real uses were as
 simple as these examples, there would be no need for a procedure with
 the power of {\cf call-with-current-continuation}.
@@ -3437,6 +3437,12 @@ the power of {\cf call-with-current-continuation}.
 (call-with-current-continuation procedure?)
                             \ev  \schtrue%
 \end{scheme}
+
+\begin{note}
+  Calling an escape procedure reenters the dynamic extent of the call
+  to {\cf call-with-current-continuation}, and thus restores its
+  dynamic environment; see section~\ref{dynamicenvironmentsection}.
+\end{note}
 
 \end{entry}
 
@@ -3495,67 +3501,43 @@ returned.
 \proto{dynamic-wind}{ before thunk after}{procedure}}
 
 \domain{\var{Before}, \var{thunk}, and \var{after} must be procedures,
-and each should accept zero arguments.
-These procedures may return any number of values.}
+  and each should accept zero arguments.  These procedures may return
+  any number of values.}  The {\cf dynamic-wind} procedure calls
+\var{thunk} without arguments, returning the results of this call.
+Moreover, {\cf dynamic-wind} calls \var{before} without arguments
+whenever the dynamic extent of the call to \var{thunk} is entered, and
+\var{after} without arguments whenever the dynamic extent of the call
+to \var{thunk} is exited.  Thus, in the absence of calls to escape
+procedures created by {\cf call-with-current-continuation}, {\cf
+  dynamic-wind} calls \var{before}, \var{thunk}, and \var{after}, in
+that order.
 
-In the absence of any calls to escape procedures
-(see \ide{call-with-current-continuation}),
-{\cf dynamic-wind} behaves as if defined as follows.
-
-\begin{scheme}
-(define dynamic-wind
-  (lambda (before thunk after)
-    (before)
-    (call-with-values
-      (lambda () (thunk))
-      (lambda vals
-        (after)
-        (apply values vals)))))%
-\end{scheme}
-
-That is, \var{before} is called without arguments.
-If \var{before} returns, \var{thunk} is called without arguments.
-If \var{thunk} returns, \var{after} is called without arguments.
-Finally, if \var{after} returns, the values resulting from the
-call to \var{thunk} are returned.
-
-\implresp The implementation must check the restrictions on
-\var{thunk} and \var{after} only if they are actually called.
-
-Invoking an escape procedure to transfer control into or out of the
-dynamic extent of the call to \var{thunk} can cause additional calls to
-\var{before} and \var{after}.
-When an escape procedure created outside the dynamic extent of the call to
-\var{thunk} is invoked from within the dynamic extent, \var{after} is
-called just after control leaves the dynamic extent.
-Similarly, when an escape procedure created within the dynamic extent of
-the call to \var{thunk} is invoked from outside the dynamic extent,
-\var{before} is called just before control reenters the dynamic extent.
-In the latter case, if \var{thunk} returns, \var{after} is called even
-if \var{thunk} has returned previously.
 While the calls to \var{before} and \var{after} are not considered to be
-within the dynamic extent of the call to \var{thunk}, calls to the before
-and after thunks of any other calls to {\cf dynamic-wind} that occur
+within the dynamic extent of the call to \var{thunk}, calls to the \var{before}
+and \var{after} procedures of any other calls to {\cf dynamic-wind} that occur
 within the dynamic extent of the call to \var{thunk} are considered to be
 within the dynamic extent of the call to \var{thunk}.
 
 More precisely, an escape procedure transfers control out of the
 dynamic extent of a set of zero or more active {\cf dynamic-wind}
-\var{thunk} calls $x\ \dots$ and transfer control into the dynamic extent
-of a set of zero or more active {\cf dynamic-wind} \var{thunk} calls
+calls $x\ \dots$ and transfer control into the dynamic extent
+of a set of zero or more active {\cf dynamic-wind} calls
 $y\ \dots$.  
 It leaves the dynamic extent of the most recent $x$ and calls without
-arguments the corresponding \var{after} thunk.
-If the \var{after} thunk returns, the escape procedure proceeds to
+arguments the corresponding \var{after} procedure.
+If the \var{after} procedure returns, the escape procedure proceeds to
 the next most recent $x$, and so on.
 Once each $x$ has been handled in this manner,
-the escape procedure calls without arguments the \var{before} thunk
+the escape procedure calls without arguments the \var{before} procedure
 corresponding to the least recent $y$.
-If the \var{before} thunk returns, the escape procedure reenters the
+If the \var{before} procedure returns, the escape procedure reenters the
 dynamic extent of the least recent $y$ and proceeds with the next least
 recent $y$, and so on.
 Once each $y$ has been handled in this manner, control is transferred to
 the continuation packaged in the escape procedure.
+
+\implresp The implementation must check the restrictions on
+\var{thunk} and \var{after} only if they are actually called.
 
 \begin{scheme}
 (let ((path '())
@@ -3607,6 +3589,11 @@ the continuation packaged in the escape procedure.
           (set! n (+ n 4))))))
   n) \ev 7%
 \end{scheme}
+
+\begin{note}
+  Entering a dynamic extent restores its dynamic environment; see
+  section~\ref{dynamicenvironmentsection}.
+\end{note}
 \end{entry}
 
 \section{Iteration}%\unsection

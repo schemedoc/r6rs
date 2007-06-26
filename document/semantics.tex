@@ -332,9 +332,9 @@ The other two rules in
 figure~\ref{fig:Multiple--values--and--call-with-values} handle
 \va{call-with-values}. The evaluation contexts for
 \va{call-with-values} (in the $F$ non-terminal) allow
-evaluation in the body of a thunk that has been passed as the first
+evaluation in the body of a procedure that has been passed as the first
 argument to \va{call-with-values}, as long as the second argument
-has been reduced to a value. Once evaluation inside that thunk
+has been reduced to a value. Once evaluation inside that procedure
 completes, it will produce multiple values (since it is an \Fstar{}
 position), and the entire \va{call-with-values} expression reduces
 to an application of its second argument to those values, via the rule
@@ -602,18 +602,19 @@ too few arguments to \va{apply}.
 
 The specification of \va{dynamic-wind} uses 
 $\texttt{(}\sy{dw}~x~e~e~e\texttt{)}$
-expressions to record which dynamic-wind middle thunks are active at
+expressions to record which dynamic-wind \var{thunk}s are active at
 each point in the computation. Its first argument is an identifier
 that is globally unique and serves to identify invocations of
 \va{dynamic-wind}, in order to avoid exiting and re-entering the
 same dynamic context during a continuation switch. The second, third,
-and fourth arguments are calls to some pre-thunk, middle thunk, and
-post thunks from a call to \va{dynamic-wind}. Evaluation only
+and fourth arguments are calls to some \var{before}, \var{thunk}, and
+\var{after} procedures from a call to \va{dynamic-wind}. Evaluation only
 occurs in the middle expression; the \sy{dw} expression only
-serves to record which pre- and post- thunks need to be run during a
+serves to record which \var{before} and \var{after} procedures need to be run during a
 continuation switch. Accordingly, the reduction rule for an
 application of \va{dynamic-wind} reduces to a call to the
-pre-thunk, a \sy{dw} expression and a call to the post-thunk, as
+\var{before} procedure, a \sy{dw} expression and a call to the
+\var{after} procedure, as
 shown in rule \rulename{6wind} in
 figure~\ref{fig:Call-cc--and--dynamic-wind}. The next two rules cover
 abuses of the \va{dynamic-wind} procedure: calling it with
@@ -635,7 +636,8 @@ context with the context returned by the $\mathscr{T}$ metafunction.
 
 The $\mathscr{T}$ (for ``trim'') metafunction accepts two $D$ contexts and
 builds a context that matches its second argument, the destination
-context, except that additional calls to the pre- and post- thunks
+context, except that additional calls to the \var{before} and
+\var{after} procedures
 from \sy{dw} expressions in the context have been added.
 
 The first clause of the $\mathscr{T}$ metafunction exploits the
@@ -650,11 +652,11 @@ either when there are no \sy{dw}s in the context, or when the
 metafunctions defined in figure~\ref{fig:Call-cc--and--dynamic-wind} and
 puts their results together into a \sy{begin} expression.
 
-The $\mathscr{R}$ metafunction extracts all of the pre
-thunks from its argument and the $\mathscr{S}$ metafunction extracts all of the post thunks from its argument. They each construct new contexts and exploit
+The $\mathscr{R}$ metafunction extracts all of the \var{before}
+procedures from its argument and the $\mathscr{S}$ metafunction extracts all of the \var{after} procedures from its argument. They each construct new contexts and exploit
 $H$ to work through their arguments, one \sy{dw} at a time.
 In each case, the metafunctions are careful to keep the right
-\sy{dw} context around each of the thunks in case a continuation
+\sy{dw} context around each of the procedures in case a continuation
 jump occurs during one of their evaluations. 
 Since $\mathscr{R}$,
 receives the destination context, it keeps the intermediate
