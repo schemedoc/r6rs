@@ -153,6 +153,65 @@ such directive follows. A directive occurring inside the region of
 effect of another directive takes precedence.
 \end{entry}
 
+\chapter{Use of square brackets}
+
+Even though matched square brackets are synonymous with parentheses in
+the syntax, many programmers use square brackets only in a few select
+places.  In particular, programmers are encouraged to restrict use of
+square brackets to places in syntactic forms where two consecutive
+open parentheses would otherwise be common.  These are the applicable
+forms specified in the report and the library report:
+%
+\begin{itemize}
+\item For {\cf cond} forms (see report section~\extref{report:cond}{Derived
+    conditionals}), a \hyper{cond clause} may take one of the follow
+  forms:
+\begin{scheme}
+[\hyper{test} \hyperi{expression} \dotsfoo]
+{}[\hyper{test} => \hyper{expression}]
+{}[else \hyperi{expression} \hyperii{expression} \dotsfoo]%
+\end{scheme}
+\item For {\cf case} forms (see report section~\extref{report:case}{Derived
+    conditionals}), a \hyper{case clause} may take one of the follow
+  forms:
+\begin{scheme}
+[(\hyperi{datum} \dotsfoo) \hyperi{expression} \hyperii{expression} \dotsfoo]
+{}[else \hyperi{expression} \hyperii{expression} \dotsfoo]%
+\end{scheme}
+\item For {\cf let}, {\cf let*}, {\cf letrec}, {\cf letrec*} forms
+  (see report section~\extref{report:let}{Binding constructs}), 
+  \hyper{bindings} may take the following form:
+\begin{scheme}
+([\hyperi{variable} \hyperi{init}] \dotsfoo)%
+\end{scheme}
+\item For {\cf let-values} and {\cf let-values*} forms 
+  (see report section~\extref{report:let}{Binding constructs}),
+  \hyper{mv-bindings} may take the following form:
+\begin{scheme}
+([\hyperi{formals} \hyperi{init}] \dotsfoo)%
+\end{scheme}
+\item For {\cf do} forms (see library
+  section~\extref{lib:do}{Control structures}), the variable bindings
+  may take the following form:
+\begin{scheme}
+([\hyperi{variable} \hyperi{init} \hyperi{step}] \dotsfoo)%
+\end{scheme}
+\item For {\cf case-lambda} forms (see library
+  section~\extref{lib:case-lambda}{Control structures}), a
+  \hyper{case-lambda clause} may take the following form:
+%
+\begin{scheme}
+[\hyper{formals} \hyper{body}]%
+\end{scheme}
+\item For {\cf raise} forms (see library section~\extref{lib:guard}{Exceptions}),
+a \hyper{cond clause} may take one of the follow forms:
+\begin{scheme}
+[\hyper{test} \hyperi{expression} \dotsfoo]
+{}[\hyper{test} => \hyper{expression}] 
+{}[else \hyperi{expression} \hyperii{expression} \dotsfoo]%
+\end{scheme}
+\end{itemize}
+
 \chapter{Scripts}
 \label{scriptappendix}
 
