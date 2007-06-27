@@ -9,8 +9,6 @@ operations on exact integer objects.
 \section{Fixnums}
 \label{fixnumssection}
 
-This section describes the \defrsixlibrary{arithmetic fixnums} library.
-
 Every implementation must define its fixnum range as a closed
 interval
 %
@@ -25,7 +23,7 @@ implementation.
 A fixnum is an exact integer object whose value lies within this
 fixnum range.
 
-This section describes the \defrsixlibrary{arithmetic fx} library,
+This section describes the \defrsixlibrary{arithmetic fixnums} library,
 which defines various operations on fixnums.
 Fixnum operations perform integer arithmetic on their fixnum
 arguments, but raise an exception with condition type
@@ -557,7 +555,7 @@ Returns the absolute value of \var{fl}.
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
 specified in report section~\extref{report:integerdivision}{Integer division}.  For zero divisors, these
-procedures may return a NaN or some meaningless flonum.
+procedures may return a NaN or some unspecified flonum.
 
 \begin{scheme}
 (fldiv \vari{fl} \varii{fl})         \ev \(\vari{fl}~\mathrm{div}~\varii{fl}\)
@@ -647,7 +645,7 @@ See report
 section~\extref{report:transcendentalfunctions}{Transcendental functions} for the underlying
 mathematical operations.  In the event that these operations do not
 yield a real result for the given arguments, the result may be a NaN,
-or may be some meaningless flonum.
+or may be some unspecified flonum.
 
 Implementations that use IEEE binary floating point arithmetic are
 encouraged to follow the relevant standards for these procedures.
@@ -669,7 +667,7 @@ encouraged to follow the relevant standards for these procedures.
 
 Returns the principal square root of \var{fl}. For $-0.0$,
 {\cf flsqrt} should return $-0.0$; for other negative arguments,
-the result may be a NaN or some meaningless flonum.
+the result may be a NaN or some unspecified flonum.
 
 \begin{scheme}
 (flsqrt +inf.0)               \ev  +inf.0
@@ -684,7 +682,7 @@ the result may be a NaN or some meaningless flonum.
   negative, \varii{fl} should be an integer object.}
 Returns \vari{fl} raised to the power \varii{fl}.  If \vari{fl} is
 negative and \varii{fl} is not an integer object, the result may be a
-NaN, or may be some meaningless flonum.  If \vari{fl} is zero, then
+NaN, or may be some unspecified flonum.  If \vari{fl} is zero, then
 the result is zero.
 \end{entry}
 
