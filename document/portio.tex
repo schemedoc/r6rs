@@ -227,68 +227,43 @@ Returns the default end-of-line style of the underlying platform, e.g.,
 \begin{entry}{%
 \ctproto{i/o-decoding}
 \proto{make-i/o-decoding-error}{ port}{procedure}
-\proto{i/o-decoding-error?}{ obj}{procedure}
-\proto{i/o-decoding-error-transcoder}{ condition}{procedure}}
+\proto{i/o-decoding-error?}{ obj}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&i/o-decoding \&i/o-port
-  make-i/o-decoding-error i/o-decoding-error?
-  (transcoder i/o-decoding-error-transcoder))
+  make-i/o-decoding-error i/o-decoding-error?)%
 \end{scheme}
 
 An exception with this type is raised when one of the operations for
 textual input from a port encounters a sequence of bytes that cannot
 be translated into a character or string by the input direction of the
-port's transcoder.  The {\cf transcoder} field contains the port's
-transcoder.
+port's transcoder.
 
-Exceptions of this type raised by the operations described in this
-section are continuable.
-When such an exception is raised, the port's position is at
-the beginning of the invalid encoding.
-If the exception handler returns, it should
-return a character or string representing the decoded text starting at
-the port's current position, and the exception handler must update the 
-port's position to point past the error.
-
-\implresp The implementation must check that the exception handler
-returns a character or a string only if it actually returns.
+When such an exception is raised, the port's position is past
+the invalid encoding.
 \end{entry}
 
 \begin{entry}{% 
 \ctproto{i/o-encoding}
-\proto{make-i/o-encoding-error}{ port char transcoder}{procedure}
+\proto{make-i/o-encoding-error}{ port char}{procedure}
 \proto{i/o-encoding-error?}{ obj}{procedure}
-\proto{i/o-encoding-error-char}{ condition}{procedure}
-\proto{i/o-encoding-error-transcoder}{ condition}{procedure}}
+\proto{i/o-encoding-error-char}{ condition}{procedure}}
 
 This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&i/o-encoding \&i/o-port
   make-i/o-encoding-error i/o-encoding-error?
-  (char i/o-encoding-error-char)
-  (transcoder i/o-encoding-error-transcoder))
+  (char i/o-encoding-error-char))%
 \end{scheme}
 
 An exception with this type is raised when one of the operations for
 textual output to a port encounters a character that cannot be
 translated into bytes by the output direction of the port's transcoder.
 The {\cf char} field of the
-condition object contains the character that could not be encoded,
-and the {\cf transcoder} field contains the transcoder associated
-with the port.
-
-Exceptions of this type raised by the operations described in this
-section are continuable.  The handler, if it returns, should 
-output to the port an appropriate encoding for the character that
-caused the error.  The operation that raised the exception 
-continues after that character.
-
-\implresp The implementation is not required to check whether the
-handler has output an encoding.
+condition object contains the character that could not be encoded.
 \end{entry}
 
 \begin{entry}{%
@@ -316,10 +291,7 @@ character U+FFFD is injected into the data stream, an appropriate
 number of bytes are ignored, and decoding
 continues with the following bytes.
 If the error-handling mode is {\cf raise}, a continuable
-exception with condition type {\cf\&i/o-decoding} is raised;
-see the description of
-{\cf\&i/o-decoding} for details
-on how to handle such an exception.
+exception with condition type {\cf\&i/o-decoding} is raised.
 
 If a textual output operation encounters a character it cannot encode,
 and the error-handling mode is {\cf ignore}, the character is
@@ -331,10 +303,7 @@ The replacement character is U+FFFD for transcoders whose codec
 is one of the Unicode encodings, but is the {\cf ?}
 character for the Latin-1 encoding.
 If the error-handling mode is {\cf raise}, an
-exception with condition type {\cf\&i/o-encoding} is raised;
-see the description of
-{\cf\&i/o-decoding} for details
-on how to handle such an exception.
+exception with condition type {\cf\&i/o-encoding} is raised.
 \end{entry}
 
 \begin{entry}{%
@@ -347,7 +316,7 @@ on how to handle such an exception.
   error-handling-mode symbol.}  \var{Eol-style} may be omitted, in
 which case it defaults to the native end-of-line style of the
 underlying platform.  \var{Handling-mode} may be omitted, in which
-case it defaults to {\cf raise}.  The result is a transcoder with the
+case it defaults to {\cf replace}.  The result is a transcoder with the
 behavior specified by its arguments.
 \end{entry}
 
