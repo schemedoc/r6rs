@@ -228,11 +228,12 @@ Transformers can destructure their input with {\cf syntax-case} and rebuild
 their output with {\cf syntax}.
 
 \begin{entry}{%
-\pproto{(syntax-case \hyper{expression} (\hyper{literal} \dots) \hyper{clause} \dots)}{\exprtype}}
-\mainschindex{syntax-case}
+\pproto{(syntax-case \hyper{expression} (\hyper{literal} \dots)}{\exprtype}
+\mainschindex{syntax-case}{\tt\obeyspaces%
+\hspace{2em}\hyper{syntax-case clause} \dots)}}
 
 \syntax Each \hyper{literal} must be an identifier.
-Each \hyper{clause} must take one of the following two forms.
+Each \hyper{syntax-case clause} must take one of the following two forms.
 
 \begin{scheme}
 (\hyper{pattern} \hyper{output expression})
@@ -346,19 +347,19 @@ datum) and $F$ is equal to $P$ in the sense of the
 \semantics
 {\cf syntax-case} first evaluates \hyper{expression}.
 It then attempts to match
-the \hyper{pattern} from the first \hyper{clause} against the resulting value,
+the \hyper{pattern} from the first \hyper{syntax-case clause} against the resulting value,
 which is unwrapped as necessary to perform the match.
 If the pattern matches the value and no
 \hyper{fender} is present,
 \hyper{output expression} is evaluated and its value returned as the
 value of the {\cf syntax-case} expression.
 If the pattern does not match the value, {\cf syntax-case} tries
-the second \hyper{clause}, then the third, and so on.
+the second \hyper{syntax-case clause}, then the third, and so on.
 It is a syntax violation if the value does not match any of the patterns.
 
 If the optional \hyper{fender} is present, it serves as an additional
 constraint on acceptance of a clause.
-If the \hyper{pattern} of a given \hyper{clause} matches the input value,
+If the \hyper{pattern} of a given \hyper{syntax-case clause} matches the input value,
 the corresponding \hyper{fender} is evaluated.
 If \hyper{fender} evaluates to a true value, the clause is accepted;
 otherwise, the clause is rejected as if the pattern had failed to match
