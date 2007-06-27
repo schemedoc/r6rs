@@ -57,9 +57,9 @@ A \var{file-options} parameter name means that the
 corresponding argument must be a file-options object.
 
 \begin{entry}{%
-\proto{file-options}{ \hyper{file-options name} \dotsfoo}{\exprtype}}
+\proto{file-options}{ \hyper{file-options symbol} \dotsfoo}{\exprtype}}
 
-Each \hyper{file-options name} must be an \meta{identifier}.
+\domain{Each \hyper{file-options symbol} must be a symbol.}
 The {\cf file-options} syntax returns a file-options object that 
 encapsulates the
 specified options.
@@ -92,9 +92,13 @@ The following standard options can be included to modify the default behavior.
 \end{itemize}
 
 These options have no effect when a file is opened only for input.
-\meta{Identifiers}s
-other than those listed above may be used as \hyper{file-options name}s;
+Symbols
+other than those listed above may be used as \hyper{file-options symbol}s;
 they have implementation-specific meaning, if any.
+
+\begin{note}
+  Only the name of \hyper{file-options symbol} is significant.
+\end{note}
 \end{entry}   
 
 \subsection{Buffer modes}
@@ -122,14 +126,15 @@ effects on shared mutable sources, and a lookahead operation has the
 same side effect on the shared source as a read operation.
 
 \begin{entry}{%
-\proto{buffer-mode}{ \hyper{name}}{\exprtype}}
+\proto{buffer-mode}{ \hyper{buffer-mode symbol}}{\exprtype}}
    
-\hyper{Name} must be one of the \meta{identifier}s {\cf none}, {\cf line}, or
-{\cf block}. The result is the corresponding symbol, and specifies the
-associated buffer mode.
+\domain{\hyper{Buffer-mode symbol} must be a symbol whose name is one
+  of {\cf none}, {\cf line}, and {\cf block}.} The result is the
+corresponding symbol, and specifies the associated buffer mode.
 
-It is a syntax violation if \hyper{name} is not one of the valid
-identifiers.
+\begin{note}
+  Only the name of \hyper{buffer-mode symbol} is significant.
+\end{note}
 \end{entry}
 
 \begin{entry}{%
@@ -185,15 +190,16 @@ procedure.
 \end{entry}
 
 \begin{entry}{%
-\proto{eol-style}{ name}{\exprtype}}
+\proto{eol-style}{ \hyper{eol-style symbol}{\exprtype}}
 
-If \var{name} is one of the \meta{identifier}s {\cf lf}, {\cf cr},
-{\cf crlf}, {\cf nel}, {\cf crnel}, {\cf ls}, or {\cf none}, the form
-evaluates to the corresponding symbol.  If \var{name} is not one of
-these identifiers, the effect and result are implementation-dependent;
-in particular, the
-result may be an eol-style symbol acceptable as an \var{eol-mode}
-argument to {\cf make-transcoder}.  Otherwise, an exception is raised.
+\domain{\hyper{Eol-style symbol} should be a symbol whose name is one
+  of {\cf lf}, {\cf cr}, {\cf crlf}, {\cf nel},
+  {\cf crnel}, {\cf ls}, and {\cf none}.}  The form evaluates to the
+corresponding symbol.  If the name of \var{eol-style symbol} is not
+one of these symbols, the effect and result are
+implementation-dependent; in particular, the result may be an
+eol-style symbol acceptable as an \var{eol-mode} argument to {\cf
+  make-transcoder}.  Otherwise, an exception is raised.
 
 All eol-style symbols except {\cf none} describe a specific
 line-ending encoding:
@@ -215,6 +221,10 @@ linefeed.  For a textual output port, {\cf none} and {\cf lf} are
 equivalent.  Linefeed characters are encoded according to the
 specified eol-style symbol, and all other characters that participate
 in possible line endings are encoded as is.
+
+\begin{note}
+  Only the name of \hyper{eol-style symbol} is significant.
+\end{note}
 \end{entry}
 
 \begin{entry}{%
@@ -267,15 +277,21 @@ condition object contains the character that could not be encoded.
 \end{entry}
 
 \begin{entry}{%
-\proto{error-handling-mode}{ name}{\exprtype}}
+\proto{error-handling-mode}{ \hyper{error-handling-mode symbol}}{\exprtype}}
 
-If \var{name} is one of the \meta{identifier}s {\cf ignore}, {\cf
-  raise}, or {\cf replace}, the result is the corresponding
-symbol.  If \var{name} is not one of these identifiers, effect and
-result are implementation-dependent: The result may be an
+\domain{\hyper{Error-handling-mode symbol} should be a symbol whose
+  name is one of {\cf ignore}, {\cf raise}, and {\cf replace}.} The
+form evaluates to the corresponding symbol.  If
+\var{error-handling-mode symbol} is not one of these identifiers,
+effect and result are implementation-dependent: The result may be an
 error-handling-mode symbol acceptable as a \var{handling-mode}
 argument to {\cf make-transcoder}.  If it is not acceptable as a
-\var{handling-mode} argument to {\cf make-transcoder}, an exception is raised.
+\var{handling-mode} argument to {\cf make-transcoder}, an exception is
+raised.
+
+\begin{note}
+  Only the name of \hyper{error-handling-style symbol} is significant.
+\end{note}
 
 The error-handling mode of a transcoder specifies the behavior
 of textual I/O operations in the presence of encoding or decoding
