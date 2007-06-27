@@ -230,11 +230,10 @@ example is equivalent to
 \section{Expressions}
 \label{expressionsection}
 
-The entries in this section describe the expressions of the base
-language, which may occur in the position of the \hyper{expression}
-syntactic variable.  The expressions also include the primitive
-expression types: constant literals,
-variable references, and procedure calls, as described in
+The entries in this section describe the expressions of the \rsixlibrary{base}
+library, which may occur in the position of the \hyper{expression}
+syntactic variable in addition to the primitive
+expression types as described in
 section~\ref{primitiveexpressionsection}.
 
 \subsection{Quotation}\unsection
@@ -616,12 +615,14 @@ expression itself is; see section~\ref{basetailcontextsection}.
 \subsection{Binding constructs}
 
 The binding constructs described in this section
-give Scheme a block structure, like Algol 60.  The syntax of the 
+create local bindings for variables that are visible only in a
+delimited region.  The syntax of the 
 constructs
 {\cf let}, {\cf let*}, {\cf letrec}, and {\cf letrec*}
  is identical, but they differ in the regions\index{region}
 (see section~\ref{variablesection}) they establish
-for their variable bindings.  In a {\cf let} expression, the initial
+for their variable bindings and in the order in which the values for
+the bindings are computed.  In a {\cf let} expression, the initial
 values are computed before any of the variables become bound; in a
 {\cf let*} expression, the bindings and evaluations are performed
 sequentially.  In a {\cf letrec} or {\cf letrec*}
@@ -1066,7 +1067,7 @@ The {\cf eqv?} procedure defines a useful equivalence relation on objects.
 Briefly, it returns \schtrue{} if \vari{obj} and \varii{obj} should
 normally be regarded as the same object and \schfalse{} otherwise.  This relation is left slightly
 open to interpretation, but the following partial specification of
-{\cf eqv?} holds for all implementations of Scheme.
+{\cf eqv?} must hold for all implementations.
 
 The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
 
@@ -1361,7 +1362,7 @@ Returns \schtrue{} if \var{obj} is a procedure, otherwise returns \schfalse.
 
 \end{entry}
 
-\section{Generic arithmetic}
+\section{Arithmetic}
 \label{genericarithmeticsection}
 
 The procedures described here implement arithmetic that is
@@ -1378,7 +1379,7 @@ libraries that define other numerical procedures.
 \subsection{Propagation of exactness and inexactness}
 \label{propagationsection}
 
-The procedures listed below must return the correct exact result
+The procedures listed below must return the mathematically correct exact result
 provided all their arguments are exact:
 
 \begin{scheme}
@@ -1408,7 +1409,7 @@ argument is inexact.  Exceptions to this rule include
 {\cf sin}, {\cf cos}, {\cf tan},
 {\cf asin}, {\cf acos}, {\cf atan},
 {\cf expt}, {\cf make-polar}, {\cf magnitude}, and {\cf angle}, which
-are allowed (but not required) to return inexact results even when
+may (but are not required to) return inexact results even when
 given exact arguments, as indicated in the specification of these
 procedures.
 
@@ -1654,7 +1655,8 @@ These numerical type predicates can be applied to any kind of
 argument.  The {\cf real-valued?} procedure
 returns \schtrue{} if the object is a number object and is equal in the
 sense of {\cf =} to some real number object, or if the object is a NaN, or a
-complex number object whose real part is a NaN and whose imaginary part zero
+complex number object whose real part is a NaN and whose imaginary
+part is zero
 in the sense of {\cf zero?}.  The {\cf rational-valued?} and {\cf
   integer-valued?} procedures return \schtrue{} if the object is a
 number object and is equal in the sense of {\cf =} to some object of the
@@ -1683,6 +1685,14 @@ named type, and otherwise they return \schfalse{}.
 (integer-valued? 3.0+0.0i)             \ev  \schtrue{}
 (integer-valued? 8/4)                  \ev  \schtrue{}%
 \end{scheme}
+
+\begin{note}
+  These procedures test whether a given number object can be coerced
+  to the specified type without loss of numerical accuracy.
+  Specifically, the behavior of these predicates differs from the
+  behavior of {\cf real?}, {\cf rational?}, and {\cf integer?} on
+  complex number objects whose imaginary part is inexact zero.
+\end{note}
 
 \begin{note}
 The behavior of these type predicates on inexact number objects is
@@ -1782,7 +1792,7 @@ For any real number object \var{x}:
 (> +nan.0 \var{x})               \ev  \schfalse{}%
 \end{scheme}
 
-These predicates are required to be transitive.
+These predicates must be transitive.
 
 \begin{note}
 The traditional implementations of these predicates in Lisp-like
@@ -2437,8 +2447,8 @@ Returns \schtrue{} if the booleans are the same.
 \section{Pairs and lists}
 \label{listsection}
 
-A \defining{pair} (sometimes called a \defining{dotted pair}) is a
-record structure with two fields called the car and cdr fields (for
+A \defining{pair} is a
+compound structure with two fields called the car and cdr fields (for
 historical reasons).  Pairs are created by the procedure {\cf cons}.
 The car and cdr fields are accessed by the procedures {\cf car} and
 {\cf cdr}.
@@ -2642,8 +2652,8 @@ list.
 (append '() 'a)                 \ev  a%
 \end{scheme}
 
-The resulting chain of pairs is always newly allocated, except that it shares
-structure with the \var{obj} argument.
+If {\cf append} constructs a nonempty chain of pairs, it is always
+newly allocated.  If no pairs are allocated, \var{obj} is returned.
 \end{entry}
 
 
@@ -2779,12 +2789,7 @@ Implementations of {\cf for-each} may or may not tail-call
 
 Symbols are objects whose usefulness rests on the fact that two
 symbols are identical (in the sense of {\cf eq?}, {\cf eqv?} and {\cf equal?}) if and only if their
-names are spelled the same way.  This is exactly the property needed to
-represent identifiers\index{identifier} in programs, and so most
-implementations of Scheme use them internally for that purpose.  Symbols
-are useful for many other applications; for instance, they may be used
-the way enumerated values are used in C and Pascal.
-
+names are spelled the same way. 
 A symbol literal is formed using {\cf quote}.
 
 \begin{scheme}
@@ -2875,30 +2880,33 @@ Returns the symbol whose name is \var{string}.
 values~\cite{Unicode}.
 
 \begin{note}
-  Unicode defines a standard mapping between sequences of {\em code
-  points}\mainindex{code point} (integers in the range 0 to \#x10FFFF
-  in the latest version of the standard) and human-readable
-  ``characters''. More precisely, Unicode distinguishes between
-  glyphs, which are printed for humans to read, and characters, which
-  are abstract entities that map to glyphs (sometimes in a way that's
-  sensitive to surrounding characters).  Furthermore, different
-  sequences of code points sometimes correspond to the same character.
-  The relationships among code points, characters, and glyphs are
-  subtle and complex.
+  Unicode defines a standard mapping between sequences of
+  \textit{Unicode scalar values}\mainindex{Unicode scalar
+    value}\mainindex{scalar value} (integers in the range 0 to
+  \#x10FFFF, excluding the range \#xD800 to \#xDFFF) in the latest
+  version of the standard) and human-readable ``characters''. More
+  precisely, Unicode distinguishes between glyphs, which are printed
+  for humans to read, and characters, which are abstract entities that
+  map to glyphs (sometimes in a way that's sensitive to surrounding
+  characters).  Furthermore, different sequences of scalar values
+  sometimes correspond to the same character.  The relationships among
+  scalar, characters, and glyphs are subtle and complex.
 
   Despite this complexity, most things that a literate human would
-  call a ``character'' can be represented by a single code point in
-  Unicode (though several code-point sequences may represent
-  that same character). For example, Roman letters, Cyrillic letters,
-  Hebrew consonants, and most Chinese characters fall into this
-  category. Thus, the ``code point'' approximation of ``character''
-  works well for many purposes. More specifically, Scheme characters
-  correspond to Unicode {\em scalar values}\mainindex{scalar
-    value}, which includes all code points except those designated as
-  surrogates. A \defining{surrogate} is a code point in the range
-  \#xD800 to \#xDFFF that is used in pairs in the UTF-16 encoding to
-  encode a supplementary character (whose code is in the range
-  \#x10000 to \#x10FFFF).
+  call a ``character'' can be represented by a single Unicode scalar
+  value (though several sequences of Unicode scalar values may
+  represent that same character). For example, Roman letters, Cyrillic
+  letters, Hebrew consonants, and most Chinese characters fall into
+  this category.
+  
+  Unicode scalar values exclude the range \#xD800 to \#xDFFF, which
+  are part of the range of Unicode \textit{code points}\mainindex{code
+    point}.  However, these the Unicode scalar values in this range,
+  the so-called \textit{surrogates}\mainindex{surrogate}, are an
+  artefact of the UTF-16 encoding, and can only appear in specific
+  Unicode encodings, and even then only in pairs that encode scalar
+  values.  Consequently, all characters represent code points, but the
+  surrogate code points do not have representations as characters.
 \end{note}
 
 \begin{entry}{%
@@ -3280,11 +3288,11 @@ on \var{proc} to the extent performed by applying it as described.
   \var{Message} must be a string.
   The \var{irritant}s are arbitrary objects.}
 
-These procedures raise an exception.  Calling the {\cf error}
-procedure means that an error has occurred, typically caused by
+These procedures raise an exception.  The {\cf error}
+procedure should be called when an error has occurred, typically caused by
 something that has gone wrong in the interaction of the program with the
-external world or the user.  Calling the {\cf assertion-violation} procedure
-means that an invalid call to a procedure was made, either passing an
+external world or the user.  The {\cf assertion-violation} procedure
+should be called when an invalid call to a procedure was made, either passing an
 invalid number of arguments, or passing an argument that it is not
 specified to handle.
 
@@ -3300,7 +3308,7 @@ library chapter~\extref{lib:exceptionsconditionschapter}{Exceptions
 \begin{itemize}
 \item If \var{who} is not \schfalse, the condition has condition type
   {\cf \&who}, with \var{who} as the value of the {\cf who} field.  In
-  that case, \var{who} should identify the procedure or entity that
+  that case, \var{who} should be the name of the procedure or entity that
   detected the exception.  If it is \schfalse, the condition does not
   have condition type {\cf \&who}.
 \item The condition has condition type {\cf \&message}, with
@@ -3345,7 +3353,7 @@ from the {\cf assert} expression.  If \hyper{expression} returns
 object is implementation-dependent.
 
 \begin{note}
-  Implementations can (and are encouraged to) exploit the fact that
+  Implementations should exploit the fact that
   {\cf assert} is syntax to provide as much information as possible
   about the location of the assertion failure.
 \end{note}
@@ -4250,7 +4258,7 @@ tail context.  \hyperii{expression} itself is not in a tail context.
 
 \end{itemize}
 
-Certain built-in procedures are also required to perform tail calls.
+Certain built-in procedures must also perform tail calls.
 The first argument passed to \ide{apply} and to
 \ide{call-with-current-continuation}, and the second argument passed to
 \ide{call-with-values}, must be called via a tail call.
