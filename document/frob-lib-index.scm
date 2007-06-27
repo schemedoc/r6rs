@@ -27,12 +27,19 @@
       (lambda ()
 	(parse-index-line line))
     (lambda (body pagenr)
-      (string-append
-       "\\indexentry{"
-       body
-       "|libindexentry"
-       "}"
-       pagenr))))
+      (let* ((hyperpage "|hyperpage")
+	     (hyperpage-size (string-length hyperpage))
+	     (body-size (string-length body)))
+	(string-append
+	 "\\indexentry{"
+	 (if (and (>= body-size hyperpage-size)
+		  (string=? (substring body (- body-size hyperpage-size) body-size)
+			    hyperpage))
+	     (substring body 0 (- body-size hyperpage-size))
+	     body)
+	 "|libindexentry"
+	 "}"
+	 pagenr)))))
 
 (define (frob-library-index infile outfile)
   (call-with-input-file infile
