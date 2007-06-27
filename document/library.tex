@@ -96,13 +96,8 @@ be one of the following:
 %
 \begin{scheme}
 \hyper{import set}
-(library \hyper{library~reference})
 (for \hyper{import~set} \hyper{import~level} \ldots)%
 \end{scheme}
-%
-The second form is synonymous with the first.  The syntax of an
-\hyper{import spec} is interpreted outermost to innermost
-if ambiguities arise.
 
 An \hyper{import level}  is one of the following:
 \begin{scheme}
@@ -123,6 +118,7 @@ one of the following:
 
 \begin{scheme}
 \hyper{library~reference}
+(library \hyper{library~reference})
 (only \hyper{import~set} \hyperi{identifier} \hyperii{identifier} \ldots)
 (except \hyper{import~set} \hyperi{identifier} \hyperii{identifier} \ldots)
 (prefix \hyper{import~set} \hyper{identifier})
@@ -137,14 +133,11 @@ name and optionally by its version.  It has the following form:
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version~reference})%
 \end{scheme}
 
-In cases where an \hyper{import~set} starting with {\cf only}, {\cf
-  except}, {\cf prefix}, or {\cf rename}, or a
-\hyper{version~reference} starting with {\cf and}, {\cf or}, or {\cf
-  not} occurs in the place of a \hyper{library~reference}, and fits
-the form of a \hyper{library~reference}, the interpretation as an
-\hyper{import~set} or a \hyper{version~reference} takes precedence.  A
-\hyper{import~spec} using {\cf library} can be used to resolve the
-ambiguity.
+A \hyper{library~reference} whose first \hyper{identifier} is
+{\cf library}, {\cf only}, {\cf except}, {\cf prefix}, or {\cf rename} is
+permitted only within a {\cf library} \hyper{import~set}.
+The \hyper{import~set} {\cf (library \hyper{library~reference})} is
+otherwise equivalent to \hyper{library~reference}.
 
 A \hyper{version~reference} specifies a set of \hyper{version}s that
 it matches.  The \hyper{library~reference} identifies all libraries of
