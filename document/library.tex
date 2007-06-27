@@ -467,7 +467,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 \begin{scheme}
 (library (stack)
   (export make push! pop! empty!)
-  (import (rnrs (6)))
+  (import (rnrs))
 
   (define (make) (list '()))
   (define (push! s v) (set-car! s (cons v (car s))))
@@ -478,7 +478,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 
 (library (balloons)
   (export make push pop)
-  (import (rnrs (6)))
+  (import (rnrs))
 
   (define (make w h) (cons w h))
   (define (push b amt)
@@ -495,7 +495,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
           push!
           make-party
           (rename (party-pop! pop!)))
-  (import (rnrs (6))
+  (import (rnrs)
           (only (stack) make push! pop!) ; not empty!
           (prefix (balloons) balloon:))
 
@@ -512,7 +512,7 @@ Examples for various \hyper{import~spec}s and \hyper{export~spec}s:
 
 (library (main)
   (export)
-  (import (rnrs (6)) (party))
+  (import (rnrs) (party))
 
   (define p (make-party))
   (pop! p)        ; displays "Boom! 108"
@@ -525,7 +525,7 @@ Examples for macros and phases:
 \begin{schemenoindent}
 (library (my-helpers id-stuff)
   (export find-dup)
-  (import (rnrs (6)))
+  (import (rnrs))
 
   (define (find-dup l)
     (and (pair? l)
@@ -538,7 +538,7 @@ Examples for macros and phases:
 
 (library (my-helpers values-stuff)
   (export mvlet)
-  (import (rnrs (6)) (for (my-helpers id-stuff) expand))
+  (import (rnrs) (for (my-helpers id-stuff) expand))
 
   (define-syntax mvlet
     (lambda (stx)
@@ -552,9 +552,9 @@ Examples for macros and phases:
 
 (library (let-div)
   (export let-div)
-  (import (rnrs (6))
+  (import (rnrs)
           (my-helpers values-stuff)
-          (rnrs r5rs (6)))
+          (rnrs r5rs))
 
   (define (quotient+remainder n d)
     (let ([q (quotient n d)])

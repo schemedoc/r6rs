@@ -100,25 +100,18 @@ ambiguities and inconsistencies.
 
 Scheme implementations compliant with the report may operate in a
 variety of modes.  In particular, in addition to one or more modes
-conformant with the requirements of the report, an implementation might
-offer non-conformant modes.  These modes are by nature
+conformant with the requirements of the report, an implementation
+might offer non-conformant modes.  These modes are by nature
 implementation-specific, and may differ in the language and available
 libraries.  In particular, non-conformant language extensions may be
-available, including unsafe libraries or otherwise unsafe features, and the
-semantics of the language may differ from the semantics described in
-the report.  Moreover, the default mode offered by a Scheme
-implementation may be non-conformant, and such a Scheme implementation
-may require special settings or declarations to enter the
-report-conformant mode. 
-
-Implementors are encouraged to clearly document the nature of the
-default mode and how to enter a report-conformant mode.  Moreover,
-implementations are encouraged to report when a program or library
-makes use of non-recommended features where feasible and useful.  For
-example, implementations that allow two libraries of the same name
-with different versions to coexist in the same program are encouraged
-to report when processing a program that actually makes use of this
-extension.
+available, including unsafe libraries or otherwise unsafe features,
+and the semantics of the language may differ from the semantics
+described in the report.  Moreover, the default mode offered by a
+Scheme implementation may be non-conformant, and such a Scheme
+implementation may require special settings or declarations to enter
+the report-conformant mode.  Implementors are encouraged to clearly
+document the nature of the default mode and how to enter a
+report-conformant mode.
 
 \chapter{Optional case insensitivity}
 \label{caseinsensitivityappendix}
@@ -285,8 +278,8 @@ performed by altering a script header from its default form.
 \begin{scheme}
 \#!/usr/bin/env scheme-script
 \#!r6rs
-(import (rnrs base (6))
-        (rnrs io ports (6))
+(import (rnrs base)
+        (rnrs io ports)
         (rnrs programs))
 (put-bytes (standard-output-port)
            (call-with-port
@@ -380,6 +373,32 @@ authors of such files are encouraged to include an {\cf\#!r6rs}
 comment if the file is written purely with the lexical and datum syntax
 described in the report.  This report does not describe a file format
 that allows both libraries and programs to appear in the same file.
+
+\chapter{Use of library versions}
+
+Names for libraries may include a version.  An \hyper{import spec} may
+designate a set of acceptable versions that may be imported.
+Conversely, only one version of each library should be part of a
+program.  This allows using the ``name part'' of a \hyper{library
+  name} for different purposes than the \hyper{version}. 
+
+In particular, if several different variants of a library exists where
+it is feasible that they coexist in the same program, it is
+recommended that different names be used for the variants.  In
+contrast, for compatible versions of a library where coexistence of
+several versions is unnecessary and undesirable, it is recommended
+that the same name and different versions be used.  In particular, it
+is recommended new versions of libraries that are conservative
+extensions of old ones differ only in the version, not in the name.
+
+Correspondingly, it is recommended that \hyper{import spec}s do not
+constrain an import to a single version, but instead specify a wide
+range of acceptable versions of a library.
+
+Implementations that allow two libraries of the same name with
+different versions to coexist in the same program are encouraged to
+report when processing a program that actually makes use of this
+extension.
 
 \chapter{Unique library names}
 \label{librarynamesappendix}
