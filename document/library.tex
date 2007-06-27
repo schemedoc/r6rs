@@ -96,8 +96,11 @@ be one of the following:
 %
 \begin{scheme}
 \hyper{import set}
+(library \hyper{library~refernce})
 (for \hyper{import~set} \hyper{import~level} \ldots)%
 \end{scheme}
+%
+The second form is synonymous with the first.
 
 An \hyper{import level}  is one of the following:
 \begin{scheme}
@@ -130,6 +133,15 @@ name and optionally by its version.  It has the following form:
 \begin{scheme}
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version~reference})%
 \end{scheme}
+
+In cases where an \hyper{import~set} starting with {\cf only}, {\cf
+  except}, {\cf prefix}, or {\cf rename}, or a
+\hyper{version~reference} starting with {\cf and}, {\cf or}, or {\cf
+  not} occurs in the place of a \hyper{library~reference}, and fits
+the form of a \hyper{library~reference}, the interpretation as an
+\hyper{import~set} or a \hyper{version~reference} takes precedence.  A
+\hyper{import~spec} using {\cf library} can be used to resolve the
+ambiguity.
 
 A \hyper{version~reference} specifies a set of \hyper{version}s that
 it matches.  The \hyper{library~reference} identifies all libraries of
