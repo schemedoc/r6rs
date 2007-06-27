@@ -783,14 +783,13 @@ and the restriction is satisfied automatically.
 Another restriction is that the continuation of each \hyper{init} should not be invoked
 more than once.
 
-\implresp Implementations are only required to check these restrictions
-to the extent that references to a \hyper{variable} during the
+\implresp Implementations must detect references to a \hyper{variable} during the
 evaluation of the \hyper{init} expressions (using one particular
-evaluation order and order of evaluating the \hyper{init} expressions)
-must be detected.  If an implementation detects a violation of the
+evaluation order and order of evaluating the \hyper{init} expressions).
+If an implementation detects such a violation of the
 restriction, it must raise an exception with condition type
 {\cf\&assertion}.
-Implementations are not required to detect that the continuation of each
+Implementations may or may not detect that the continuation of each
 \hyper{init} is invoked more than once.  However, if the
 implementation detects this, it must raise an exception with condition
 type {\cf\&assertion}.
@@ -848,13 +847,14 @@ rather than by name.
 Another restriction is that the continuation of each \hyper{init} should not be invoked
 more than once.
 
-\implresp Implementations are only required to check these restrictions to
-the extent that references to a \hyper{variable} during the evaluation
-of the \hyper{init} expressions (using one particular evaluation order)
-must be detected.  If an implementation detects a violation of the
+\implresp Implementations must 
+detect references to a \hyper{variable} during the evaluation
+of the \hyper{init} expressions (using one particular evaluation
+order).
+If an implementation detects such a violation of the
 restriction, it must raise an exception with condition type
 {\cf\&assertion}.
-Implementations are not required to detect that the continuation of each
+Implementations may or may not detect that the continuation of each
 \hyper{init} is invoked more than once.  However, if the
 implementation detects this, it must raise an exception with condition
 type {\cf\&assertion}.
@@ -2740,7 +2740,9 @@ values returned by earlier returns are not mutated.
 
 \implresp The implementation should check that the \var{list}s all
 have the same length.  The implementation must check the restrictions
-on \var{proc} to the extent performed by applying it as described.
+on \var{proc} to the extent performed by applying it as described.  An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
 \end{entry}
 
 
@@ -2775,6 +2777,8 @@ The return values of {\cf for-each} \areunspecified.
 \implresp The implementation should check that the \var{list}s all
 have the same length.  The implementation must check the restrictions
 on \var{proc} to the extent performed by applying it as described.
+An implementation may check whether \var{proc} is an appropriate argument
+before applying it.
 
 \begin{note}
 Implementations of {\cf for-each} may or may not tail-call
@@ -3103,6 +3107,9 @@ Analogous to {\cf for-each}.
 
 \implresp The implementation must check the restrictions
 on \var{proc} to the extent performed by applying it as described.
+An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
 \end{entry}
 
 \begin{entry}{%
@@ -3255,6 +3262,9 @@ Analogous to {\cf map}.
 
 \implresp The implementation must check the restrictions
 on \var{proc} to the extent performed by applying it as described.
+An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
 \end{entry}
 
 
