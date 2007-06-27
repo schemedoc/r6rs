@@ -94,12 +94,339 @@ ambiguities and inconsistencies.
 \texonly\clearpage\endtexonly
 
 \appendix
-\input{standardmode} \par
-\input{casesensitivity} \par
-\input{scriptappendix} \par
-\input{sourcerep} \par
-\input{librarynames} \par
-\input{filesystemmapping} \par
+
+\chapter{Standard-conformant mode}
+\label{standardconformantmode}
+
+Scheme implementations compliant with the report may operate in a
+variety of modes.  In particular, in addition to one or more modes
+conformant with the requirements of the report, an implementation might
+offer non-conformant modes.  These modes are by nature
+implementation-specific, and may differ in the language and available
+libraries.  In particular, non-conformant language extensions may be
+available, including unsafe libraries or otherwise unsafe features, and the
+semantics of the language may differ from the semantics described in
+the report.  Moreover, the default mode offered by a Scheme
+implementation may be non-conformant, and such a Scheme implementation
+may require special settings or declarations to enter the
+report-conformant mode.  Implementors are encouraged to clearly
+document the nature of the default mode and how to enter
+a report-conformant mode.
+
+\chapter{Optional case insensitivity}
+\label{caseinsensitivityappendix}
+
+In contrast with earlier revisions of the report~\cite{R5RS}, the
+syntax of data distinguishes upper and lower case in identifiers and in
+characters specified via their names.  For example, the identifiers
+{\cf X} and {\cf x} are different, and the character
+{\cf\sharpsign\backwhack{}space} cannot be written
+{\cf\sharpsign\backwhack{}SPACE}.
+
+Implementors may wish to support case-insensitive syntax for backward
+compatibility or other reasons.
+If they do so, they are encouraged to adopt the following directives
+to control case folding.
+
+\begin{entry}{%
+{\cf{}\#!fold-case}\sharpbangindex{fold-case}\\
+{\cf{}\#!no-fold-case}\sharpbangindex{no-fold-case}}
+
+These directives may appear anywhere comments may appear and are
+treated as comments, except that they affect the reading of subsequent
+data.
+The {\cf{}\#!fold-case} causes the reader to case-fold
+(see library section~\extref{lib:string-foldcase}{``Unicode''})
+each \meta{identifier} and \meta{character name}.
+The {\cf{}\#!no-fold-case} directive causes the reader to return
+to the default, non-folding behavior.
+
+The region where each of these directives has effect depends on the
+context. If the directive occurs at top level, the region extends
+until the next such directive at top level, or until the end of the
+source text if no such directive follows.  If the directive occurs in
+the immediate context of a \hyper{list} or \hyper{vector} datum (i.e.,
+in a place that would make it an element of the list or vector if it
+were a datum), the region of its effect extends until the next such
+directive in the same context, or until the end of the context if no
+such directive follows. A directive occurring inside the region of
+effect of another directive takes precedence.
+\end{entry}
+
+\chapter{Scripts}
+\label{scriptappendix}
+
+A \defining{Scheme script}\mainindex{script} is a top-level program 
+(see report chapter~\extref{report:programchapter}{Top-level
+  programs}) which is packaged such that 
+it is directly executable by conforming implementations of Scheme, on 
+one or more plaforms.
+
+\section{Script interpreter}
+
+Where applicable, implementations should provide a \defining{script interpreter} in 
+the form of an executable program named {\cf scheme-script} that is 
+capable of initiating the execution of Scheme scripts, as described 
+below.
+
+\begin{rationale}
+Distributing a Scheme program that is portable with respect to both 
+Scheme implementations and operating systems is challenging, even 
+if that program has been written in standard Scheme.  Languages with 
+a single or primary implementation can at least rely on a standard 
+name for their script interpreters.  Standardizing the name of the 
+executable used to start a Scheme script removes one barrier to the 
+distribution of Scheme scripts.
+\end{rationale}
+
+\section{Syntax}
+\label{scriptsyntaxsection}
+
+A Scheme script is a delimited piece of text, typically a file, with 
+the following syntax:
+
+\begin{grammar}
+\meta{script} \: \meta{script header} \meta{top-level program}
+  \> \| \meta{top-level program}
+\meta{script header} \: \meta{shebang} /usr/bin/env \meta{space} 
+  \> scheme-script \meta{linefeed}
+\meta{shebang} \: \#! \| \#! \meta{space}
+%FIXME: script header now optional
+\end{grammar}
+
+\subsection{Script header}
+
+The \defining{script header}, if present on the first line of a script,
+is used by Unix-like operating systems to identify the interpreter to 
+execute that script.
+
+The script header syntax given above is the recommended portable 
+form that programmers should use.  However, if the first line 
+of a script begins with {\cf \#!/} or {\cf \#!\meta{space}}, 
+implementations should ignore it on all platforms, even if it does not conform to 
+the recommended syntax.  
+
+\begin{rationale}
+Requiring script interpreters to recognize and ignore the script 
+header helps ensure that Scheme scripts written for Unix-like systems 
+can also run on other kinds of systems. Furthermore, recognizing
+all {\cf \#!/} or {\cf \#!\meta{space}} combinations 
+allows local customizations to be 
+performed by altering a script header from its default form.
+\end{rationale}
+
+\subsection{Example}
+\begin{scheme}
+\#!/usr/bin/env scheme-script
+\#!r6rs
+(import (rnrs base (6))
+        (rnrs io ports (6))
+        (rnrs programs))
+(put-bytes (standard-output-port)
+           (call-with-port
+               (open-file-input-port
+                 (cadr (command-line)))
+             get-bytes-all))%
+\end{scheme}
+
+\section{Platform considerations}
+Many platforms require that scripts be marked as executable in some way. 
+The platform-specific details of this are beyond the scope of this 
+report.  Scripts that are not suitably marked as executable will fail 
+to execute on many platforms.
+Other platform-specific notes for some popular operating systems follow.
+
+\subsection{Apple Mac OS X}
+The Mac OS X operating system supports the Unix-like script header for
+shell scripts that run in the Terminal.  Depending on the intended
+usage, it may be advisable to choose a file name ending in {\cf
+  .command} for a script, as this makes the script double-clickable.
+ %TODO: other kind of Mac script?
+
+\subsection{Unix}
+Scheme scripts on Unix-like operating systems are supported by the 
+presence of the script header.  Scripts that omit the script header 
+are unlikely to be directly executable on Unix-like systems.
+
+To support installation of the Scheme script interpreter in 
+non-standard paths, scripts should use the {\cf /usr/bin/env} 
+program as specified in the recommended script header syntax.  
+(Note that on many Unix-like systems, this also allows the 
+script interpreter itself to be implemented as a shell script.)
+
+\subsection{Microsoft Windows}
+The Windows operating system allows a file extension to be associated 
+with a script interpreter such as {\cf scheme-script}.  This 
+association may be configured appropriately by Scheme implementations, 
+installation programs, or by the user.
+
+\subsection{Selecting an implementation}
+If multiple implementations of Scheme are installed on a machine, the
+user may wish to specify which implementation should be used to 
+execute Scheme scripts by default.  Most platforms support some 
+mechanism for choosing between alternative implementations of a 
+program.  For example, Debian GNU/Linux uses the {\cf /etc/alternatives} 
+mechanism to do this; Microsoft Windows uses file extension 
+associations.  Implementations are expected to configure this 
+appropriately, e.g., as part of their installation procedure.
+Failing that, users must perform any necessary configuration to 
+choose their preferred Scheme script interpreter.
+
+\chapter{Source code representation}
+\label{sourcecoderepappendix}
+
+The report does not specify how source code is represented and stored.
+The only requirement the report imposes is that the source code of a
+top-level program (see report
+section~\extref{report:programsyntaxsection}{Top-level program
+  syntax}) or a script (see section~\ref{scriptsyntaxsection}) be
+delimited.  The source code of a library is self-delimiting in the
+sense that, if the beginning of a library form can be identified, so
+can the end.
+
+Implementations might take radically different approaches to storing
+source code for libraries, among them: files in the file system where
+each file contains an arbitrary number of library forms, files in the
+file system where each file contains exactly one library form, records
+in a database, and data structures in memory.
+
+Similarly, programs and scripts might be stored in a variety of
+formats.  Platform constraints might restrict the choices available to
+an implementation, which is why the report neither mandates nor
+recommends a specific method for storage.
+
+Implementations may provide a means for importing libraries coming
+from the outside via an interface that accepts a UTF-8 text file in
+Unicode Normalization Form C where line endings are encoded as newline
+characters.  Such text files may contain an arbitrary number of
+library forms.  (Authors of such files are encouraged to include an
+{\cf\#!r6rs} comment if the file is written purely with the lexical
+and datum syntax described in the report.  See report
+section~\extref{report:whitespaceandcomments}{Whitespace and
+  comments}.)  After importing such a file, the libraries defined in
+it should be available to other libraries and files.  An
+implementation may store the file as is, or convert it to some storage
+format to achieve this.
+
+Similarly, implementations may provide a means for executing a program
+represented as a UTF-8 text file containing its source code.  Again,
+authors of such files are encouraged to include an {\cf\#!r6rs}
+comment if the file is written purely with the lexical and datum syntax
+described in the report.  This report does not describe a file format
+that allows both libraries and programs to appear in the same file.
+
+\chapter{Unique library names}
+\label{librarynamesappendix}
+
+Programmers are encouraged to choose names for distributed libraries
+whose names are chosen not to collide with other libraries' names.
+This appendix suggests a convention for generating unique library
+names, similar to the convention for Java~\cite{JLS3}.
+
+A unique library name can be formed by associating the library with an
+Internet domain name, such as {\cf mit.edu}.  The lower-case
+components of the domain are reversed to form a prefix for the library
+name.  Adding further name components to establish a hierarchy may be
+advisable, depending on the size of the organization associated with
+the domain name, the number of libraries to be distributed from it,
+and other organizational properties or conventions associated with the
+library.
+
+Programmers are encouraged to use library names that are suitable for
+use in the file-system mapping described in
+appendix~\ref{filesystemmappingappendix}.  Special characters in
+domain names that do not fit the convention should be replaced by
+hyphens or suitable ``escape sequences'' that, as much as possible,
+are suitable for avoiding collisions.  Here are some examples for
+possible library names according to this convention:
+%
+\begin{scheme}
+(edu mit swiss cheese)
+(de deinprogramm educational graphics turtle)
+(com pan-am booking passenger)%
+\end{scheme}
+%
+The name of a library does not necessarily indicate an Internet
+address where the package is distributed.
+
+\chapter{Library / file system mapping}
+\label{filesystemmappingappendix}
+
+Storing library source code as files in a hierarchical file system is
+a common way to support the use of standard tools for editing and other
+kinds of source code processing.
+
+The following recommendation specifies a standard way to map library
+names to file names in widely-used file systems, using an approach in which 
+each file contains exactly one library form.  Following this recommendation
+will allow users to work with a familiar source code structure across 
+implementations, and can also allow multiple implementations to share 
+a common repository of library source code.
+
+The form of a library name is specified in 
+section~\extref{report:librarysyntaxsection}{Library form}.  It can be 
+expressed as follows:
+
+\begin{scheme}
+(\hyperi{identifier} \ldots \hypern{identifier} \hyper{version})%
+\end{scheme}
+
+where \hyper{version} is empty or has the following form:
+%
+\begin{scheme}
+(\hyperi{sub-version} \hyperii{sub-version} \ldots)%
+\end{scheme}
+
+Such a library name should be mapped to a file in the file system with
+a relative path formed by the concatenation of the following components:
+%TODO: not scheme
+\begin{scheme}
+\hyperi{identifier} \hyper{sep} \ldots \hypern{identifier} \hyper{xsep} \hyper{extension}%
+\end{scheme}
+where \hyper{sep} is the platform-specific character (such as {\cf /})
+used to separate path elements (which are typically directory names); 
+\hyper{xsep} is the platform-specific character (typically a period) 
+used to separate parts of a file name; and \hyper{extension} has the 
+following form:
+
+%TODO: not scheme
+\begin{scheme}
+\hyperi{sub-version} \hyper{xsep} \hyperii{sub-version} \hyper{xsep} \ldots sls%
+\end{scheme}
+where {\cf sls} is the recommended extension used to identify Scheme library 
+source files.
+
+Note that the resulting path is relative to some implementation-dependent root 
+directory.
+%TODO: note that multiple roots are possible
+
+According to this mapping, the source code for a library named {\cf (mylib examples
+  hello)} would be stored in a file {\cf mylib/examples/hello.sls};
+the source code for a library named {\cf (mylib examples hello (0 4
+  2))} would be stored in a file {\cf mylib/examples/hello.0.4.2.sls}.
+
+%TODO: define "known to the implementation"
+A library source file may define a library with a library name consisting
+of the same sequence of identifiers as another library known to the 
+implementation if each library name includes a distinct and non-empty 
+\hyper{version}.
+%TODO: note about default version
+
+If a library source file defines a library with a library name for which 
+\hyper{version} is {\cf()} or empty, then the source file must similarly 
+have no version embedded within its name.  In that case, to avoid 
+confusion, no other library with a library name consisting of the same
+sequence of identifiers, but with a non-empty version, should be known 
+to the implementation.
+
+This report does not describe a file system mapping for compiled code.
+
+%TODO:filename length limits, e.g. DOS? VMS? :)
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "r6rs-app"
+%%% End: 
 
 %\newpage                   %  Put bib on it's own page (it's just one)
 %\twocolumn[\vspace{-.18in}]%  Last bib item was on a page by itself.

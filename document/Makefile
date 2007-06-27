@@ -52,14 +52,9 @@ LIB_TEX_FILES = r6rs-lib.tex \
 	syntax-case.tex \
 	unicode.tex
 
-APP_TEX_FILES = r6rs-app.tex \
-	casesensitivity.tex \
-	scriptappendix.tex \
-	sourcerep.tex \
-	librarynames.tex \
-	filesystemmapping.tex
+APP_TEX_FILES = r6rs-app.tex
 
-RATIONALE_TEX_FILES = r6rs-rationale.tex \
+RATIONALE_TEX_FILES = r6rs-rationale.tex
 
 BIB_FILES = rrs.bib abbrevs.bib
 
