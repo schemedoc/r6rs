@@ -3285,6 +3285,9 @@ Analogous to {\cf for-each}.
 
 \implresp The implementation must check the restrictions
 on \var{proc} to the extent performed by applying it as described.
+An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
 \end{entry}
 
 \section{Errors and violations}
@@ -4151,6 +4154,19 @@ instead of
 \end{scheme}
 
 which would result in an assertion violation.
+
+\begin{scheme}
+(define-syntax be-like-begin
+  (syntax-rules ()
+    ((be-like-begin name)
+     (define-syntax name
+       (syntax-rules ()
+         ((name expr (... ...))
+          (begin expr (... ...))))))))
+
+(be-like-begin sequence)
+(sequence 1 2 3 4) \ev 4%
+\end{scheme}
 
 \end{entry}
 
