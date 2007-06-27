@@ -512,8 +512,8 @@ local modules allow transporting bindings into local scopes, with
 far-reaching consequences for the rules that may be used to determine
 scoping, particularly in the absence of {\cf syntax-case}.
 
-Moreover it is debatable whether top-level {\cf library} is (or should
-be) the same construct as local {\cf module}. The job of the library
+Moreover it is debatable whether a top-level library should
+be the same construct as a local module. The job of the library
 system is to organize the top-level namespace, and not to serve as a
 target for expansion of sophisticated macros. Of course, the broader
 roles and syntactic similarity of {\cf module} and {\cf library}
@@ -549,17 +549,19 @@ importing library is expanded.
 \section{Compound library names}
 
 Library names are compound.  This differs from the treatment of
-identifiers in the rest of the language.  Using compound compound
-names reflects experience across programming languages that a
-structured top-level name space is necessary to avoid collisions.
-Embedding a hierarchy within a single string or symbol is certainly
-possible. However, the editors became convinced by the arguments in
-favor of using list data to represent hierarchical structure, rather
-than encoding it in a string or symbol.  Versioning, in particular, is
-natural in list form, but awkward in encoded form.  Consequently,
-despite the syntactic complexity of compound names, and despite the
-potential mishandling of the hierarchy by implementations, the editors
-chose the list representation.
+identifiers in the rest of the language.  Using compound names
+reflects experience across programming languages that a structured
+top-level name space is necessary to avoid collisions.  Embedding a
+hierarchy within a single string or symbol is certainly possible.
+However, in Scheme, list data is the natural means for represent
+hierarchical structure, rather than encoding it in a string or symbol.
+The hierarchical structure makes it easy formulating policies for
+choosing unique names, or possible storage formats in a file system.
+See appendices~\extref{app:librarynamesappendix}{Unique library names}
+and \extref{app:filesystemmappingappendix}{Library / file system
+  mapping} Consequently, despite the syntactic complexity of compound
+names, and despite the potential mishandling of the hierarchy by
+implementations, the editors chose the list representation.
 
 \section{Versioning}
 
@@ -583,12 +585,8 @@ alternative choice would have been to allow the co-existence of
 different versions of the same library.  Based on experience with
 other shared-library systems (including Windows DLLs and Unix shared
 objects), the potential for confusion created by multiple library
-instances seems too great. At the same time, it is not clear that this
-prior experience applies directly; Windows DLLs are generally not
-versioned, and while Linux shared objects are versioned for linking,
-inter-object references do not designate a particular source object.
-The editors chose the conservative approach, disallowing multiple
-instances of a library.
+instances seems too great.  Therefore, the reports recommends against
+multiple instances of a library.
 
 \chapter{Top-level programs}
 
@@ -1410,7 +1408,7 @@ allow expansion- or compile-time determination of record
 characteristics, including field offsets, so that, for example, record
 accesses can be be compiled efficiently to simple memory indirects.
 This property would be lost if the parent were not generally known
-until run time.  Therefore, the {\cf parent} clause only accepts
+until run time.  For this reason, the {\cf parent} clause only accepts
 other record types defined using the syntactic layer.
 
 \section{Positional access and field names}
@@ -1772,7 +1770,7 @@ representation.)
 
 Different Scheme implementations have taken different approaches to
 this problem in the past, which suggests that a default policy does
-not merely encode what any sensible programmer would do anyway.  As
+more than merely encode what any sensible programmer would do anyway.  As
 possible uses occur quite frequently, this particular aspect of
 interface construction has been standardized.
 
