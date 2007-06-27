@@ -100,7 +100,9 @@ be one of the following:
 (for \hyper{import~set} \hyper{import~level} \ldots)%
 \end{scheme}
 %
-The second form is synonymous with the first.
+The second form is synonymous with the first.  The syntax of an
+\hyper{import spec} is interpreted outermost to innermost
+if ambiguities arise.
 
 An \hyper{import level}  is one of the following:
 \begin{scheme}
@@ -121,10 +123,11 @@ one of the following:
 
 \begin{scheme}
 \hyper{library~reference}
-(only \hyper{import~set} \hyper{identifier} \ldots)
-(except \hyper{import~set} \hyper{identifier} \ldots)
+(only \hyper{import~set} \hyperi{identifier} \hyperii{identifier} \ldots)
+(except \hyper{import~set} \hyperi{identifier} \hyperii{identifier} \ldots)
 (prefix \hyper{import~set} \hyper{identifier})
-(rename \hyper{import~set} (\hyper{identifier} \hyper{identifier}) \ldots)%
+(rename \hyper{import~set} (\hyperi{identifier} \hyperii{identifier})
+                    (\hyperiii{identifier} \hyperiv{identifier}) \ldots)%
 \end{scheme}
 
 A \hyper{library~reference} identifies a library by its 
@@ -151,8 +154,8 @@ the following form:
 %
 \begin{scheme}
 (\hyperi{sub-version reference} \ldots \hypern{sub-version reference})
-(and \hyper{version reference} \ldots)
-(or \hyper{version reference} \ldots)
+(and \hyperi{version reference} \hyperii{version reference} \ldots)
+(or \hyperi{version reference} \hyperii{version reference} \ldots)
 (not \hyper{version reference})%
 \end{scheme}
 %
@@ -173,9 +176,9 @@ A \hyper{sub-version reference} has one of the following forms:
 \hyper{sub-version}
 (>= \hyper{sub-version})
 (<= \hyper{sub-version})
-(and \hyper{sub-version~reference} \ldots)
-(or \hyper{sub-version~reference} \ldots)
-(not \hyper{sub-version~reference})%
+(and \hyperi{sub-version~reference} \hyperii{sub-version~reference} \ldots)
+(or \hyperi{sub-version~reference} \hyperii{sub-version~reference} \ldots)
+(not \hyperi{sub-version~reference})%
 \end{scheme}
 
 A \hyper{sub-version reference} of the first form matches a
