@@ -9,23 +9,6 @@ with Scheme.
 Section~\ref{basetailcontextsection} defines the rules that identify
 tail calls and tail contexts in base-library constructs.
 
-\section{Exported identifiers}
-
-All identifiers described in the entries of this chapter are exported
-by the \rsixlibrary{base} library with level $0$, with the exception
-of {\cf syntax-rules}\schindex{syntax-rules}, {\cf
-  identifier-syntax}\schindex{syntax-rules}, which are exported with
-level $1$.
-In addition, the identifiers {\cf unquote}\schindex{unquote}, {\cf
-  unquote-splicing}\schindex{unquote-splicing}, {\cf =>}\schindex{=>},
-{\cf else}\schindex{else} are exported with level $0$, and the
-identifiers {\cf ...}\schindex{...} and {\cf \_}\schindex{\_} are
-exported with level $1$.
-A reference to any of these identifiers out of place is a syntax
-violation.
-The identifier {\cf set!} (section~\ref{set!})
-is exported at both levels $0$ and $1$.
-
 \section{Base types}
 \label{disjointness}
 
@@ -409,12 +392,19 @@ expression \isunspecified.
 
 It is a syntax violation if \hyper{variable} refers to an
 immutable binding.
+
+\begin{note}
+  The identifier {\cf set!} is exported with level $1$ as well.  See
+  section~\ref{identifier-syntax}.
+\end{note}
 \end{entry}
 
 \subsection{Derived conditionals}\unsection
 
 \begin{entry}{%
-\proto{cond}{ \hyperi{cond clause} \hyperii{cond clause} \dotsfoo}{\exprtype}}
+\proto{cond}{ \hyperi{cond clause} \hyperii{cond clause} \dotsfoo}{\exprtype}
+\litproto{=>}
+\litproto{else}}
 
 \syntax
 Each \hyper{cond clause} must be of the form
@@ -431,8 +421,6 @@ an ``else clause'', which has the form
 \begin{scheme}
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
 \end{scheme}
-\mainschindex{else}
-\mainschindex{=>}
 
 \semantics
 A {\cf cond} expression is evaluated by evaluating the \hyper{test}
@@ -3655,7 +3643,9 @@ invoking the procedure named by \hyper{variable}.
 \label{quasiquotesection}
 
 \begin{entry}{%
-\proto{quasiquote}{ \hyper{qq template}}{\exprtype}}
+\proto{quasiquote}{ \hyper{qq template}}{\exprtype}
+\litproto{unquote}
+\litproto{unquote-splicing}}
 
 ``Backquote'' or ``quasiquote''\index{backquote} expressions are useful
 for constructing a list or vector structure when some but not all of the
@@ -3951,8 +3941,10 @@ to the keyword {\cf f} whose binding is established by the
 \label{syntaxrulessection}
 
 \begin{entry}{%
-\pproto{(syntax-rules (\hyper{literal} \dots) \hyper{syntax rule} \dots)}{\exprtype~({\cf expand})}}
-\mainschindex{syntax-rules}
+\pproto{(syntax-rules (\hyper{literal} \dots) \hyper{syntax rule} \dots)}{\exprtype~({\cf expand})}
+\litprotoexpandnoindex{\_}
+\litprotoexpand{...}}
+\mainschindex{syntax-rules}\schindex{\_}
 
 \syntax Each \hyper{literal} must be an identifier.
 Each \hyper{syntax rule} must have the following form:
@@ -4176,7 +4168,8 @@ which would result in an assertion violation.
 {\tt\obeyspaces
   (\hyperi{id} \hyperi{template})\\
   ((set! \hyperii{id} \hyper{pattern})\\
-   \hyperii{template}))}
+   \hyperii{template}))\\
+\litprotoexpandnoindex{set!}}
 
 \syntax The \hyper{id}s must be identifiers.  The \hyper{template}s
 must be as for {\cf syntax-rules}.
