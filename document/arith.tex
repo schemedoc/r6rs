@@ -4,7 +4,10 @@
 
 This chapter describes Scheme's libraries for more specialized
 numerical operations: fixnum and flonum arithmetic, as well as bitwise
-operations on exact integer objects.
+operations on exact integer objects.  A number of procedures operate
+on the binary representations of exact integer objects: Bit positions
+within an exact integer object are counted from the left, i.e.\ bit 0
+is the least significant bit.
 
 \section{Fixnums}
 \label{fixnumssection}
@@ -195,8 +198,12 @@ operation.
 \begin{entry}{%
 \proto{fxif}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
-Returns the fixnum result of the following
-computation:
+Returns the fixnum that is the bit-wise ``if'' of the two's complement
+representations of its arguments, i.e.\ for each bit, if it is 1 in
+\vari{fx}, the corresponding bit in \varii{fx} becomes the value of
+the corresponding bit in the result, and if it is 0, the corresponding
+bit in \variii{fx} becomes the corresponding bit in the value of the
+result.  This is the fixnum result of the following computation:
 \begin{scheme}
 (fxior (fxand \vari{fx} \varii{fx})
        (fxand (fxnot \vari{fx}) \variii{fx}))%
@@ -218,8 +225,10 @@ Otherwise it returns the result of the following computation:
 \begin{entry}{%
 \proto{fxlength}{ \var{fx}}{procedure}}
 
-Returns the fixnum result of the following
-computation:
+Returns the number of bits needed to represent \var{fx} if it is
+positive, and the number of bits needed to represent {\cf (fxnot
+  \var{fx})} if it is negative, which is the fixnum result of the
+following computation:
 \begin{scheme}
 (do ((result 0 (+ result 1))
      (bits (if (fxnegative? \var{fx})
@@ -246,11 +255,14 @@ the two's complement representation of \var{fx}.  If
 \end{entry}
 
 \begin{entry}{%
-\proto{fxbit-set?}{ \var{fx} \varii{fx}}{procedure}}
+\proto{fxbit-set?}{ \vari{fx} \varii{fx}}{procedure}}
 
 \domain{\varii{Fx} must be non-negative and less than {\cf
- (fixnum-width)}.}  The {\cf fxbit-set?} procedure returns the
+    (fixnum-width)}.}  The {\cf fxbit-set?} procedure returns
+\schtrue{} if the \varii{fx}th bit is set in the two's complement
+representation of \vari{fx}, and \schfalse{} otherwise.  This is the
 fixnum result of the following computation:
+%
 \begin{scheme}
 (not
   (fxzero?
@@ -265,7 +277,9 @@ fixnum result of the following computation:
 
 \domain{\varii{Fx} must be non-negative and less than {\cf
   (fixnum-width)}. \variii{Fx} must be 0 or
-1.}  The {\cf fxcopy-bit} procedure returns the result of the following computation:
+1.}  The {\cf fxcopy-bit} procedure returns the result of replacing
+the \varii{fx}th bit of \vari{fx} by \variii{fx}, which is
+the result of the following computation:
 \begin{scheme}
 (let* ((mask (fxarithmetic-shift-left 1 \varii{fx})))
   (fxif mask
@@ -280,8 +294,10 @@ fixnum result of the following computation:
 
 \domain{\varii{Fx} and \variii{fx} must be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
-    equal to \variii{fx}.}  The {\cf fxbit-field} procedure
-returns the fixnum result of the following computation:
+  equal to \variii{fx}.}  The {\cf fxbit-field} procedure returns the
+number represented by the bits at the positions from \varii{fx} to
+$\variii{fx}-1$, which is
+the fixnum result of the following computation:
 %
 \begin{scheme}
 (let* ((mask (fxnot
@@ -297,9 +313,10 @@ returns the fixnum result of the following computation:
 
 \domain{\varii{Fx} and \variii{fx} must be non-negative and less than
   {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
-    equal to \variii{fx}.}  The
-{\cf fxcopy-bit-field} procedure
-returns the fixnum result of the following computation:
+  equal to \variii{fx}.}  The {\cf fxcopy-bit-field} procedure returns
+the result of replacing in \variv{fx} the bits at positions from
+\varii{fx} to $\variii{fx}$ by the corresponding bits in \vari{fx}, which
+is the fixnum result of the following computation:
 \begin{scheme}
 (let* ((to    \vari{fx})
        (start \varii{fx})
@@ -345,9 +362,13 @@ raised.
 \proto{fxrotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
 \domain{\varii{Fx}, \variii{fx}, and \variv{fx} must be non-negative
-  and less than {\cf (fixnum-width)}.  \variv{Fx} must be less than
-  the difference between \variii{fx} and \variii{fx}.}
-  The {\cf fxrotate-bit-field} procedure returns the result of the following computation:
+  and less than {\cf (fixnum-width)}.  \varii{fx} must be less than or
+  equal to \variii{fx}. \variv{Fx} must be less than the difference
+between \variii{fx} and \varii{fx}.}  The {\cf fxrotate-bit-field}
+procedure returns the result of cyclically permuting in \vari{fx} the
+bits at positions from \varii{fx} to \variii{fx} by \variv{fx} bits
+towards the more significant bits, which is the result of the
+following computation:
 \begin{scheme}
 (let* ((n     \vari{fx})
        (start \varii{fx})
@@ -784,8 +805,10 @@ Otherwise it returns the result of the following computation:
 \begin{entry}{%
 \proto{bitwise-length}{ ei}{procedure}}
 
-Returns the exact integer object that is the result of the following
-computation:
+Returns the number of bits needed to represent \var{ei} if it is
+positive, and the number of bits needed to represent {\cf (bitwise-not
+  \var{ei})} if it is negative, which is the exact integer object that
+is the result of the following computation:
 \begin{scheme}
 (do ((result 0 (+ result 1))
      (bits (if (negative? \var{ei})
@@ -814,7 +837,10 @@ If \var{ei} is $0$, then $-1$ is returned.
 \proto{bitwise-bit-set?}{ \vari{ei} \varii{ei}}{procedure}}
 
 \domain{\varii{Ei} must be non-negative.}
-Returns the result of the following computation:
+The {\cf bitwise-bit-set?} procedure returns
+\schtrue{} if the \varii{ei}th bit is set in the two's complement
+representation of \vari{ei}, and \schfalse{}
+otherwise.  This is the result of the following computation:
 \begin{scheme}
 (not (zero?
        (bitwise-and
@@ -828,7 +854,9 @@ Returns the result of the following computation:
 
 \domain{\varii{Ei} must be non-negative, and \variii{ei}
 must be either $0$ or $1$.}
-The {\cf bitwise-copy-bit} procedure returns the result of the following computation:
+The {\cf bitwise-copy-bit} procedure returns the result of replacing
+the \varii{ei}th bit of \vari{ei} by \variii{ei}, which is
+the result of the following computation:
 \begin{scheme}
 (let* ((mask (bitwise-arithmetic-shift-left 1 \varii{ei})))
   (bitwise-if mask
@@ -841,8 +869,11 @@ The {\cf bitwise-copy-bit} procedure returns the result of the following computa
 \proto{bitwise-bit-field}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
 \domain{\varii{Ei} and \variii{ei} must be non-negative, and
-  \varii{ei} must be less than or equal to \variii{ei}.}  This
-procedure returns the result of the following computation:
+  \varii{ei} must be less than or equal to \variii{ei}.}
+The {\cf bitwise-bit-field} procedure returns the
+number represented by the bits at the positions from \varii{ei} to
+$\variii{ei}-1$, which is
+the result of the following computation:
 %
 \begin{scheme}
 (let ((mask
@@ -859,7 +890,10 @@ procedure returns the result of the following computation:
 
 \domain{\varii{Ei} and \variii{ei} must be non-negative,
 and \varii{ei} must be less than or equal to \variii{ei}.}
-The {\cf bitwise-copy-bit-field} procedure returns the result of the following computation:
+The {\cf bitwise-copy-bit-field} procedure returns
+the result of replacing in \variv{ei} the bits at positions from
+\varii{ei} to $\variii{ei}$ by the corresponding bits in \vari{ei}, which
+is the fixnum result of the following computation:
 %
 \begin{scheme}
 (let* ((to    \vari{ei})
@@ -917,7 +951,10 @@ Examples:
 \domain{\varii{Ei}, \variii{ei}, \variv{ei} must be non-negative, 
 \varii{ei} must be less than or equal to \variii{ei}, and
 \variv{ei} must be non-negative.}
-The procedure returns the result of the following computation:
+procedure returns the result of cyclically permuting in \vari{ei} the
+bits at positions from \varii{ei} to \variii{ei} by \variv{ei} bits
+towards the more significant bits, which is the result of the
+following computation:
 %
 \begin{scheme}
 (let* ((n     \vari{ei})
