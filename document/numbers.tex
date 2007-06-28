@@ -51,8 +51,8 @@ not be apparent to a casual programmer writing simple programs.
 \mainindex{exactness}It useful to distinguish between number objects
 that are known to correspond to a number exactly, and those number
 objects whose computation involved rounding or other errors.  For
-example, indices into data structures may be required to be known
-exactly, as may be some polynomial coefficients in a symbolic algebra
+example, index operations into data structures may need to know the index
+exactly, as may some operations on polynomial coefficients in a symbolic algebra
 system.  On the other hand, the results of measurements are inherently
 inexact, and irrational numbers may be approximated by rational and
 therefore inexact approximations.  In order to catch uses of numbers
@@ -86,21 +86,21 @@ A \defining{fixnum} is an exact integer object that lies
 within a certain implementation-dependent subrange of the
 exact integer objects. (Library section \extref{lib:fixnumssection}{Fixnums} describes a
 library for computing with fixnums.)
-Likewise, every implementation is required
-to designate a subset of its inexact real number objects representing as \defining{flonum}s, and
+Likewise, every implementation must
+designate a subset of its inexact real number objects representing as \defining{flonum}s, and
 to convert certain external representations into flonums.  
 (Library section \extref{lib:flonumssection}{Flonums} describes a library for
 computing with flonums.)  Note that
-this does not imply that an implementation is required to use
+this does not imply that an implementation must use
 floating-point representations.
 
 \section{Implementation requirements}
 
 \index{implementation restriction}\label{restrictions}
 
-Implementations of Scheme are required to support number objects for
+Implementations of Scheme must support number objects for
 the entire tower of subtypes given in section~\ref{numericaltypes}.
-Moreover, implementations are required to support exact integer 
+Moreover, implementations must support exact integer 
 objects and exact rational number objects of practically unlimited
 size and precision, and to implement certain procedures (listed in
 \ref{propagationsection}) so they always return exact results when
@@ -128,11 +128,12 @@ using these floating-point standards~\cite{IEEE}.
 In particular, implementations that use floating-point representations
 must follow these rules: A floating-point result must be represented
 with at least as much precision as is used to express any of the
-inexact arguments to that operation.  It is desirable (but not
-required) for potentially inexact operations such as {\cf sqrt}, when
-applied to exact arguments, to produce exact answers whenever possible
+inexact arguments to that operation.
+Potentially inexact operations such as {\cf sqrt}, when
+applied to exact arguments, should produce exact answers whenever possible
 (for example the square root of an exact 4 ought to be an exact 2).
-If, however, an exact number object is operated upon so as to produce an
+However, this is not required.
+If, on the other hand, an exact number object is operated upon so as to produce an
 inexact result (as by {\cf sqrt}), and if the result is represented in
 floating point, then the most precise floating-point format available
 must be used; but if the result is represented in some other way then

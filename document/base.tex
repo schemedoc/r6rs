@@ -78,7 +78,7 @@ location before assigning the value of \hyper{expression} to it.
 The continuation of \hyper{expression} should not be invoked more than
 once.
 
-\implresp Implementations are not required to detect that the
+\implresp Implementations should detect that the
 continuation of \hyper{expression} is invoked more than once.
 If the implementation detects this, it must raise an
 exception with condition type {\cf\&assertion}.
@@ -1191,8 +1191,8 @@ The next set of examples shows the use of {\cf eqv?}\ with procedures
 that have local state.  Calls to {\cf gen-counter} must return a
 distinct procedure every time, since each procedure has its own
 internal counter.  Calls to {\cf gen-loser} return procedures that
-behave pairwise equivalent when called.  However, {\cf eqv?} is not
-required to detect this equivalence.
+behave pairwise equivalent when called.  However, {\cf eqv?} may
+not detect this equivalence.
 
 \begin{scheme}
 (define gen-counter
@@ -1223,9 +1223,8 @@ required to detect this equivalence.
                         \ev  \schfalse%
 \end{scheme}
 
-Since the effect of trying to modify constant objects (those returned by
-literal expressions) is unspecified, implementations are permitted, though not
-required, to share structure between constants where appropriate.
+Implementations may
+share structure between constants where appropriate.
 Furthermore, a constant may be copied at any time by the implementation so
 as to exist simultaneously in different sets of locations, as noted in
 section~\ref{storagemodel}.
@@ -1414,13 +1413,13 @@ The specification of the numerical operations is written as though
 infinities and NaNs are representable, and specifies many operations
 with respect to these number objects in ways that are consistent with the
 IEEE 754 standard for binary floating-point arithmetic.  
-An implementation of Scheme is not required to represent infinities and
+An implementation of Scheme may or may not represent infinities and
 NaNs; however,
 an implementation must raise a continuable exception with
 condition type {\cf\&no-infinities} or {\cf\&no-nans} (respectively;
 see library section~\extref{lib:flonumssection}{Flonums})
-whenever it is unable to represent an infinity or NaN as required by
-the specification.  In this case, the continuation of the exception
+whenever it is unable to represent an infinity or NaN as specified. 
+In this case, the continuation of the exception
 handler is the continuation that otherwise would have received
 the infinity or NaN value.  This requirement also applies to
 conversions between number objects and external representations, including
