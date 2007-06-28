@@ -211,9 +211,9 @@ The {\cf fields} clause may be absent; this is equivalent to an empty
 Specifies that the record type is to have parent type \hyper{parent
   name}, where \hyper{parent name} is the \hyper{record name} of a
 record type previously defined using {\cf define-record-type}. The
-absence of a {\cf parent} clause implies a record type with no parent
-type.  The record-type definition associated with \hyper{parent name}
-must not be sealed.
+absence of a {\cf parent} or {\cf parent-rtd} (see below) clause
+implies a record type with no parent type.  The record-type definition
+associated with \hyper{parent name} must not be sealed.
 
 {\cf (protocol \hyper{expression})}
    
@@ -233,7 +233,7 @@ only if the record type defined has no parent type, or if the parent
 definition does not specify a protocol.
 
 {\cf (sealed \schtrue)}\\
-{\cf(sealed \schfalse)}
+{\cf (sealed \schfalse)}
    
 If this option is specified with operand \schtrue, the defined record
 type is sealed, i.e.\ no extensions of the record type can be created.
@@ -273,6 +273,16 @@ generated every time a {\cf define-record-type} form is evaluated:
   ((f \schtrue) (f \schfalse))) \ev \schfalse{}
 \end{scheme}
 
+{\cf (parent-rtd \hyper{parent rtd} \hyper{parent cd})}
+
+Specifies that the record type is to have its parent type specified by
+\hyper{parent rtd}, which should be an expression evaluating to a
+record-type descriptor, and \hyper{parent cd}, which should be an
+expression evaluating to a constructor descriptor (see below).  The
+record-type definition associated with the value of \hyper{parent rtd}
+must not be sealed.  Moreover, a record-type definition must not have
+both a {\cf parent} and a {\cf parent-rtd} clause.
+
 All bindings created by {\cf define-record-type} (for the record type,
 the constructor, the predicate, the accessors, and the
 mutators) must have names that are pairwise distinct.
@@ -286,7 +296,8 @@ procedure as follows:
   the same order as they appear in the {\cf fields} clause, and
   returns a record object with the fields initialized to the
   corresponding arguments.
-\item If there is no {\cf parent} clause and a {\cf protocol} clause,
+\item If there is no {\cf parent} or {\cf parent-rtd} clause and a
+  {\cf protocol} clause,
   the protocol expressions must evaluate to a procedure that accepts a
   single argument.  The protocol procedure is called once with a
   procedure \var{p} as its argument.  It should return a procedure,
@@ -305,7 +316,7 @@ procedure as follows:
   values for all fields, and initialized them in the reverse order of
   the arguments:
 %
-\begin{scheme}
+\begin{scheme} 
 (lambda (p)
   (lambda (v1 v2 v3)
     (p v3 v2 v1)))%
@@ -353,6 +364,10 @@ also initializes the fields of this record type to the values of {\cf
   order as they appear in its {\cf fields} clause.  It returns a
   record object with the fields initialized to the corresponding
   arguments.
+\item If there is a {\cf parent-rtd} clause, then the constructor is
+  as with a {\cf parent} clause, except that the constructor of the
+  parent type is determined by the constructor descriptor of the {\cf
+    parent-rtd} clause.
 \end{itemize}
 \end{entry}
 
