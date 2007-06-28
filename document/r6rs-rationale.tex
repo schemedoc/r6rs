@@ -638,6 +638,21 @@ programs support exploratory and interactive development, without
 imposing unnecessary organizational overhead on code which may not be 
 intended for reuse.
 
+\chapter{Primitive syntax}
+
+\section{Unspecified evaluation order}
+
+The order in which the subexpressions of an application are evaluated
+is unspecified, as is the order in which certain subexpressions of
+some other forms such as {\cf letrec} are evaluated.  While this
+causes occasional problems, it encourages programmers to write
+programs that do not depend on a specific evaluation order, and thus
+may be easier to read.  Moreover, it allows the programmer to express
+that the evaluation order really does not matter for the result.  A
+secondary consideration is that some compilers are able to generate
+better code if they can choose evaluation order.
+
+
 \chapter{Expansion process}
 
 The description of macro expansion is considerable more involved than
