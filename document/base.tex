@@ -255,6 +255,11 @@ may be abbreviated as \singlequote\hyper{datum}:
 \end{scheme}
 
 As noted in section~\ref{storagemodel}, constants are immutable.
+
+\begin{note}
+  Different constants that are the value of a {\cf quote} expression may
+  share the same locations.
+\end{note}
 \end{entry}
 
 \subsection{Procedures}\unsection
@@ -1222,7 +1227,7 @@ Implementations may
 share structure between constants where appropriate.
 Furthermore, a constant may be copied at any time by the implementation so
 as to exist simultaneously in different sets of locations, as noted in
-section~\ref{storagemodel}.
+section~\ref{quote}.
 Thus the value of {\cf eqv?} on constants is sometimes
 implementation-dependent.
 
