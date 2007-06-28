@@ -36,7 +36,7 @@
           bytevector-u64-native-ref bytevector-s64-native-ref
           bytevector-u64-native-set! bytevector-s64-native-set!
           bytevector=?
-	  bytevector-fill!
+          bytevector-fill!
           bytevector-ieee-single-native-ref bytevector-ieee-single-ref
           bytevector-ieee-double-native-ref bytevector-ieee-double-ref
           bytevector-ieee-single-native-set! bytevector-ieee-single-set!

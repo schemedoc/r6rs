@@ -116,24 +116,24 @@
 (define (make-bytevector->int-list bytevector-ref)
   (lambda (b endness size)
     (let ((ref (lambda (i) (bytevector-ref b i endness size)))
-	  (length (bytevector-length b)))
+          (length (bytevector-length b)))
       (let loop ((i 0) (r '()))
-	(if (>= i length)
-	    (reverse r)
-	    (loop (+ i size)
-		  (cons (ref i) r)))))))
+        (if (>= i length)
+            (reverse r)
+            (loop (+ i size)
+                  (cons (ref i) r)))))))
 
 (define (make-int-list->bytevector bytevector-set!)
   (lambda (l endness size)
     (let* ((bytevector (make-bytevector (* size (length l))))
-	   (setter! (lambda (i n)
+           (setter! (lambda (i n)
                       (bytevector-set! bytevector i n endness size))))
       (let loop ((i 0) (l l))
-	(if (null? l)
-	    bytevector
-	    (begin
-	      (setter! i (car l))
-	      (loop (+ i size) (cdr l))))))))
+        (if (null? l)
+            bytevector
+            (begin
+              (setter! i (car l))
+              (loop (+ i size) (cdr l))))))))
 
 ; Exported syntax and procedures.
 
@@ -173,7 +173,7 @@
          (uresult (bytevector-uint-ref bytevector index endness size)))
     (if (> high-byte 127)
         (- uresult (expt 256 size))
-	uresult)))
+        uresult)))
 
 ; FIXME: Some of these procedures may not do enough range checking.
 
