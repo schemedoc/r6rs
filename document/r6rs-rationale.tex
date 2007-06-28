@@ -1429,16 +1429,16 @@ procedural layer, standardizing a particular surface syntax
 facilitates communication via code.
 
 Moreover, some implementations are able to implement the syntactic
-layer more efficiently than
-a portable implementation built on top of the procedural layer, and
-thus the syntactic layer facilitates the development of efficient portable libraries
-that define and use record types.  The syntactic layer is designed to
-allow expansion- or compile-time determination of record
-characteristics, including field offsets, so that, for example, record
-accesses can be be compiled efficiently to simple memory indirects.
-This property would be lost if the parent were not generally known
-until run time.  For this reason, the {\cf parent} clause only accepts
-other record types defined using the syntactic layer.
+layer more efficiently than a portable implementation built on top of
+the procedural layer, and thus the syntactic layer facilitates the
+development of efficient portable libraries that define and use record
+types.  The syntactic layer is designed to allow expansion- or
+compile-time determination of record characteristics (at least in the
+absence of a {\cf parent-rtd} clause), including field offsets, so
+that, for example, record accesses can be be compiled efficiently to
+simple memory indirects.  This property may be lost if the {\cf
+  parent-rtd} clause is present, and the parent is thus not generally
+known until run time.
 
 \section{Positional access and field names}
 
