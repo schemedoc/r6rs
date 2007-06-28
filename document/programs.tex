@@ -14,25 +14,34 @@ pass data to the program.
 \section{Top-level program syntax}
 \label{programsyntaxsection}
 
-A top-level program is a delimited piece of text, typically a file, that follows
-the following syntax:
+A top-level program is a delimited piece of text, typically a file, that 
+has the following form:
 %
-\begin{grammar}
-\meta{top-level program} \: \meta{import form} \meta{top-level body}
-\meta{import form} \: (import \arbno{\meta{import spec}})
-\meta{top-level body} \: \arbno{\meta{top-level body form}}
-\meta{top-level body form} \: \meta{definition} \| \meta{expression}
-\end{grammar}
+\begin{scheme}
+\hyper{import form} \hyper{top-level body}%
+\end{scheme}
 %
-The rules for \meta{top-level program} specify syntax at the form level.
+An \hyper{import form} has the following form:
+%
+\begin{scheme}
+(import \hyper{import spec} \dotsfoo)%
+\end{scheme}
+%
+A \hyper{top-level body} has the following form:
+\begin{scheme}
+\hyper{top-level body form} \dotsfoo%
+\end{scheme}
+%
+A \hyper{top-level body form} is either a \hyper{definition} or an
+\hyper{expression}.
 
-The \meta{import form} is identical to the import clause in
+The \hyper{import form} is identical to the import clause in
 libraries (see section~\ref{librarysyntaxsection}), 
-and specifies a set of libraries to import.  A \meta{top-level 
- body} is like a \meta{library body} (see
+and specifies a set of libraries to import.  A \hyper{top-level 
+ body} is like a \hyper{library body} (see
 section~\ref{librarybodysection}), except that 
 definitions and expressions may occur in any order.  Thus, the syntax
-specified by \meta{top-level body form} refers to the result of macro
+specified by \hyper{top-level body form} refers to the result of macro
 expansion.
 
 When base-library {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
