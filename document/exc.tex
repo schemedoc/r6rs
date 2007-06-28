@@ -74,8 +74,13 @@ before applying it.
 \end{entry}
 
 \begin{entry}{%
-\pproto{(guard (\hyper{variable} \hyperi{cond clause} \hyperii{cond clause} \dotsfoo)  \hyper{body})}{\exprtype}}
-\mainschindex{guard}
+\pproto{(guard (\hyper{variable}}{\exprtype}
+{\tt\obeyspaces%
+\hspace*{3em}\hyperi{cond clause} \hyperii{cond clause} \dotsfoo)\\
+\hspace*{2em}\hyper{body})}\\
+\litprotonoindex{=>}
+\litprotonoindex{else}}
+\mainschindex{guard}\schindex{=>}\schindex{else}
 
 \syntax
 Each \hyper{cond clause} is as in the specification of {\cf cond}.
@@ -91,10 +96,6 @@ continuation and dynamic environment of the {\cf guard} expression. If every
 {\cf raise} is re-invoked on the raised object within the dynamic
 environment of the original call to raise except that the current
 exception handler is that of the {\cf guard} expression.  
-
-The {\cf =>} and {\cf else} identifiers are exported from the
-\rsixlibrary{exceptions} library with level $0$, and are the same as
-in the \rsixlibrary{base} library.
 
 The final expression in a \hyper{cond} clause is in a tail context if
 the {\cf guard} expression itself is.
