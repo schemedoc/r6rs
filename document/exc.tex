@@ -460,6 +460,58 @@ identifiers will be bound as follows:
 
 \section{Standard condition types}
 
+\begin{figure*}[t]
+  \centering
+  {
+\setlength{\unitlength}{1mm}
+\begin{picture}(156,44)
+    \put(47,42){\tt\&condition}
+    \put(53,36){\line(0,1){5}}
+
+    \put(6,36){\line(0,-1){5}}
+    \put(6,36){\line(1,0){39}}
+    \put(0,28){\tt\&warning}
+
+    \put(115,31){\line(0,1){5}}
+    \put(110,24){\parbox{2cm}{
+        {\tt\&message}\\
+        {\tt\&irritants}\\
+        {\tt\&who}
+      }}
+
+    \put(45,36){\line(1,0){70}}
+    \put(45,31){\line(0,1){5}}
+    \put(40,28){\tt\&serious}
+    \put(45,21){\line(0,1){5}}
+
+    \put(5,21){\line(1,0){84}}
+
+    \put(5,16){\line(0,1){5}}
+    \put(0,13){\tt\&error}
+
+    \put(89,16){\line(0,1){5}}
+    \put(80,13){\tt\&violation}
+    \put(89,7){\line(0,1){5}}
+
+    \put(13,7){\line(1,0){133}}
+    \put(13,3){\line(0,1){4}}
+    \put(3,0){{\tt\&assertion}}
+    \put(36,3){\line(0,1){4}}
+    \put(23,0){{\tt\&non-continuable}}
+    \put(77,3){\line(0,1){4}}
+    \put(55,0){{\tt\&implementation-restriction}}
+    \put(114,3){\line(0,1){4}}
+    \put(107,0){{\tt\&lexical}}
+    \put(130,3){\line(0,1){4}}
+    \put(123,0){{\tt\&syntax}}
+    \put(146,3){\line(0,1){4}}
+    \put(138,0){{\tt\&undefined}}
+\end{picture}
+}
+  \caption{Hierarchy of standard condition types}
+  \label{fig:standard-condition-hierarchy}
+\end{figure*}
+
 \begin{entry}{%
 \ctproto{message}
 \proto{make-message-condition}{ message}{procedure}
@@ -544,6 +596,67 @@ This condition type could be defined by
 This type describes violations of the language standard or a
 library standard, typically caused by a programming error.
 \end{entry}  
+
+\begin{entry}{%
+\ctproto{assertion}
+\proto{make-assertion-violation}{}{procedure}
+\proto{assertion-violation?}{ obj}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&assertion \&violation
+  make-assertion-violation assertion-violation?)%
+\end{scheme}
+% 
+This type describes an invalid call to a procedure, either passing an
+invalid number of arguments, or passing an argument of the wrong type.
+\end{entry}
+
+\begin{entry}{%
+\ctproto{irritants}
+\proto{make-irritants-condition}{ irritants}{procedure}
+\proto{irritants-condition?}{ obj}{procedure}
+\proto{condition-irritants}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&irritants \&condition
+  make-irritants-condition irritants-condition?
+  (irritants condition-irritants))%
+\end{scheme}
+%
+The {\cf irritants} field should contain a list of objects.  This
+condition provides additional information about a condition, typically
+the argument list of a procedure that detected an exception.
+Conditions of this type are created by the {\cf error} and {\cf
+  assertion-violation} procedures of report
+section~\extref{report:errorviolation}{Errors and violations}.
+\end{entry}
+ 
+\begin{entry}{%
+\ctproto{who}
+\proto{make-who-condition}{ who}{procedure}
+\proto{who-condition?}{ obj}{procedure}
+\proto{condition-who}{ condition}{procedure}}
+
+This condition type could be defined by
+%
+\begin{scheme}
+(define-condition-type \&who \&condition
+  make-who-condition who-condition?
+  (who condition-who))%
+\end{scheme}
+%
+The {\cf who} field should contain a symbol or string identifying the
+entity reporting the exception.
+Conditions of this type are created by the {\cf error} and {\cf
+  assertion-violation} procedures (report
+section~\extref{report:errorviolation}{Errors and violations}), and
+the {\cf syntax-violation} procedure
+(section~\extref{syntax-violation}{Syntax violations}).
+\end{entry}
 
 \begin{entry}{%
 \ctproto{non-continuable}
@@ -636,66 +749,6 @@ This condition type could be defined by
 This type describes unbound identifiers in the program.
 \end{entry}
 
-\begin{entry}{%
-\ctproto{assertion}
-\proto{make-assertion-violation}{}{procedure}
-\proto{assertion-violation?}{ obj}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&assertion \&violation
-  make-assertion-violation assertion-violation?)%
-\end{scheme}
-% 
-This type describes an invalid call to a procedure, either passing an
-invalid number of arguments, or passing an argument of the wrong type.
-\end{entry}
-
-\begin{entry}{%
-\ctproto{irritants}
-\proto{make-irritants-condition}{ irritants}{procedure}
-\proto{irritants-condition?}{ obj}{procedure}
-\proto{condition-irritants}{ condition}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&irritants \&condition
-  make-irritants-condition irritants-condition?
-  (irritants condition-irritants))%
-\end{scheme}
-%
-The {\cf irritants} field should contain a list of objects.  This
-condition provides additional information about a condition, typically
-the argument list of a procedure that detected an exception.
-Conditions of this type are created by the {\cf error} and {\cf
-  assertion-violation} procedures of report
-section~\extref{report:errorviolation}{Errors and violations}.
-\end{entry}
- 
-\begin{entry}{%
-\ctproto{who}
-\proto{make-who-condition}{ who}{procedure}
-\proto{who-condition?}{ obj}{procedure}
-\proto{condition-who}{ condition}{procedure}}
-
-This condition type could be defined by
-%
-\begin{scheme}
-(define-condition-type \&who \&condition
-  make-who-condition who-condition?
-  (who condition-who))%
-\end{scheme}
-%
-The {\cf who} field should contain a symbol or string identifying the
-entity reporting the exception.
-Conditions of this type are created by the {\cf error} and {\cf
-  assertion-violation} procedures (report
-section~\extref{report:errorviolation}{Errors and violations}), and
-the {\cf syntax-violation} procedure
-(section~\extref{syntax-violation}{Syntax violations}).
-\end{entry}
 
 
 
