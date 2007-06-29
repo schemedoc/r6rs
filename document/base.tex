@@ -120,7 +120,11 @@ and may appear anywhere other definitions may appear.
 
 Binds \hyper{keyword} to the value of
 \hyper{expression}, which must evaluate, at macro-expansion
-time, to a transformer (see library section~\extref{lib:transformerssection}{Transformers}).
+time, to a transformer.  Macro transformers can be created using the
+{\cf syntax-rules} and {\cf identifier-syntax} forms described in
+section~\ref{syntaxrulessection}.  See library
+section~\extref{lib:transformerssection}{Transformers} for a more
+complete description of transformers.
 
 Keyword bindings established by {\cf define-syntax} are visible
 throughout the body in which they appear, except where shadowed by
@@ -130,9 +134,8 @@ All bindings established by a set of definitions, whether
 keyword or variable definitions, are visible within the definitions
 themselves.
 
-\implresp The implementation must check that the value of
-\hyper{expression} is a transformer when the evaluation produces a
-value.
+\implresp The implementation should detect if the value of
+\hyper{expression} cannot possibly be a transformer.
 
 For example:
 
@@ -3826,9 +3829,8 @@ Thus definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   let-syntax} form would have.
 
-\implresp The implementation must check that the value of each
-\hyper{expression} is a transformer when the evaluation produces a
-value.
+\implresp The implementation should detect if the value of
+\hyper{expression} cannot possibly be a transformer.
 
 \begin{scheme}
 (let-syntax ((when (syntax-rules ()
@@ -3884,9 +3886,8 @@ Thus definitions in the result of expanding the \hyper{form}s have
 the same region as any definition appearing in place of the {\cf
   letrec-syntax} form would have.
 
-\implresp The implementation must check that the value of each
-\hyper{expression} is a transformer when the \hyper{expression}
-evaluates to a value.
+\implresp The implementation should detect if the value of
+\hyper{expression} cannot possibly be a transformer.
 
 \begin{scheme}
 (letrec-syntax
