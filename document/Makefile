@@ -10,7 +10,7 @@ TEX2PAGE = /afs/wsi/home/sperber/build/tex2page/tex2page
 report: thirdrun
 
 COMMON_TEX_FILES = \
-	commands.tex revision.tex
+	commands.tex revision.tex status.tex
 
 REPORT_TEX_FILES = r6rs.tex \
 	semantics-commands.tex \
