@@ -23,7 +23,7 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(library (r6rs records private core)
+(library (rnrs records private core)
   (export make-record-type-descriptor
 	  record-type-descriptor?
 	  record-type-name
@@ -37,7 +37,7 @@
 	  record-accessor record-mutator
 	  record-field-mutable? record-type-generative?
 	  record? record-rtd)
-  (import (r6rs)
+  (import (rnrs)
 	  (implementation vector-types))
   
   (define make-field-spec cons)
@@ -84,9 +84,9 @@
   (define (record-type-descriptor=? rtd-1 rtd-2)
     (and (eq? (record-type-parent rtd-1) (record-type-parent rtd-2))
 	 (eq? (record-type-uid rtd-1) (record-type-uid rtd-2))
-	 (forall field-spec=?
-		 (record-type-field-specs rtd-1)
-		 (record-type-field-specs rtd-2))))
+	 (for-all field-spec=?
+		  (record-type-field-specs rtd-1)
+		  (record-type-field-specs rtd-2))))
 
   (define (uid->record-type-descriptor uid)
     (find (lambda (rtd)
@@ -105,9 +105,19 @@
 	'()))
 
   (define (make-record-type-descriptor name parent uid sealed? opaque? field-specs)
+    (if (not (symbol? name))
+        (assertion-violation 'make-record-type-descriptor "not a symbol for record type name" name))
+    (if (not (or (not parent)
+                 (record-type-descriptor? parent)))
+	(assertion-violation 'make-record-type-descriptor "parent not #f or a record type descriptor" parent))             
+    (if (not (or (not uid)
+                 (symbol? uid)))
+	(assertion-violation 'make-record-type-descriptor "uid must be #f or a symbol" parent))
     (if (and parent
 	     (record-type-sealed? parent))
-	(contract-violation "can't extend a sealed parent class" parent))
+	(assertion-violation 'make-record-type-descriptor "can't extend a sealed parent type" parent))
+    (if (not (list? field-specs))
+        (assertion-violation 'make-record-type-descriptor "field specification must be a list" field-specs))
     (let ((opaque? (if parent
 		       (or (record-type-opaque? parent)
 			   opaque?)
@@ -116,7 +126,7 @@
       (let ((rtd 
 	     (make-vector-type name
 			       parent
-			       (make-record-type-data name uid sealed? opaque? field-specs parent)
+			       (make-record-type-data name uid (and sealed? #t) (and opaque? #t) field-specs parent)
 			       (append (append-field-mutable-specs parent)
 				       (map field-spec-mutable? field-specs))
 			       opaque?)))
@@ -126,8 +136,9 @@
 	      => (lambda (old-rtd)
 		   (if (record-type-descriptor=? rtd old-rtd)
 		       old-rtd
-		       (contract-violation "mismatched nongenerative record types with identical uids"
-					   old-rtd rtd))))
+		       (assertion-violation 'make-record-type
+                                            "mismatched nongenerative record types with identical uids"
+                                            old-rtd rtd))))
 	     (else
 	      (set! *nongenerative-record-types* 
 		    (cons rtd *nongenerative-record-types*))
@@ -140,15 +151,25 @@
 
   (define (ensure-rtd thing)
     (if (not (record-type-descriptor? thing))
-	(contract-violation "not a record-type descriptor" thing)))
+	(assertion-violation 'make-record-type "not a record-type descriptor" thing)))
 
   (define (parse-field-spec spec)
+    (if (not (and (list? spec)
+                  (= 2 (length spec))))
+        (assertion-violation 'make-record-type
+                             "field spec list element is not a list of two elements"
+                             spec))
     (apply (lambda (mutability name)
+             (if (not (symbol? name))
+                 (assertion-violation 'make-record-type
+                                      "field spec name is not a symbol"
+                                      name))
 	     (make-field-spec
 	      (case mutability
 		((mutable) #t)
 		((immutable) #f)
-		(else (contract-violation "field spec with invalid mutability specification" spec)))
+		(else (assertion-violation 'make-record-type
+                                           "field spec with invalid mutability specification" spec)))
 	      name))
 	   spec))
 
@@ -172,22 +193,40 @@
   (define (record-rtd rec)
     (if (record? rec)
 	(typed-vector-type rec)
-	(contract-violation "cannot extract rtd of a non-record or opaque record" rec)))
+	(assertion-violation 'record-rtd "cannot extract rtd of a non-record or opaque record" rec)))
 
   ;; Constructing constructors
 
   (define :record-constructor-descriptor (make-vector-type 'record-constructor-descriptor #f #f '(#f #f #f #f) #t))
 
+  (define record-type-constrctor-descriptor?
+    (vector-type-predicate :record-constructor-descriptor))
+
   (define (make-record-constructor-descriptor rtd previous protocol)
+    (if (not (record-type-descriptor? rtd))
+        (assertion-violation 'make-record-constructor-descriptor
+                             "not a record type descriptor" rtd))
+    (if (not (or (not previous)
+                 (record-type-constrctor-descriptor? previous)))
+        (assertion-violation 'make-record-constructor-descriptor
+                             "not #f or a parent record type constructor descriptor" previous))
+    (if (not (or (not protocol)
+                 (procedure? protocol)))
+        (assertion-violation 'make-record-constructor-descriptor
+                             "not #f or procedure for protocol" protocol))
     (let ((parent (record-type-parent rtd)))
       (if (and previous (not parent))
-	  (contract-violation "mismatch between rtd and constructor descriptor" rtd previous))
-
+	  (assertion-violation 'make-record-constructor-descriptor
+                               "mismatch between rtd and constructor descriptor" rtd previous))
+      (if (and protocol parent (not previous))
+          (assertion-violation 'make-record-constructor-descriptor
+                               "non-default protocol requested, but no parent constrcutor descriptor given" rtd previous))
       (if (and previous
 	       (not protocol)
 	       (record-constructor-descriptor-custom-protocol? previous))
-	  (contract-violation "default protocol requested when parent constructor descriptor has custom one"
-			      protocol previous)) 
+	  (assertion-violation 'make-record-constructor-descriptor
+                               "default protocol requested when parent constructor descriptor has custom one"
+                               protocol previous)) 
       
       (let ((custom-protocol? (and protocol #t))
 	    (protocol (or protocol (default-protocol rtd)))
@@ -246,8 +285,9 @@
 		   (lambda parent-protocol-args
 		     (lambda for-rtd-field-values
 		       (if (not (= (length for-rtd-field-values) for-rtd-field-count))
-			   (contract-violation "wrong number of arguments to record constructor"
-					       for-rtd for-rtd-field-values))
+			   (assertion-violation 'make-record-constructor
+                                                "wrong number of arguments to record constructor"
+                                                for-rtd for-rtd-field-values))
 		       (apply (parent-protocol
 			       (apply parent-make-seeder
 				      (append for-rtd-field-values extension-field-values)))
@@ -256,8 +296,9 @@
 	  (lambda extension-field-values
 	    (lambda for-rtd-field-values
 	      (if (not (= (length for-rtd-field-values) for-rtd-field-count))
-		  (contract-violation "wrong number of arguments to record constructor"
-				      for-rtd for-rtd-field-values))
+		  (assertion-violation 'make-record-constructor
+                                       "wrong number of arguments to record constructor"
+                                       for-rtd for-rtd-field-values))
 	      (wrap
 	       (apply (typed-vector-constructor real-rtd)
 		      (append for-rtd-field-values extension-field-values))))))))))
@@ -281,12 +322,26 @@
   (define (record-predicate rtd)
     (vector-type-predicate rtd))
 
+  (define (check-field-id who rtd field-id)
+    (if (not (record-type-descriptor? rtd))
+        (assertion-violation who
+                             "not a record type descriptor" rtd))
+    (if (not (and (integer? field-id)
+                  (exact? field-id)
+                  (>= field-id 0)
+                  (< field-id (length (record-type-field-specs rtd)))))
+        (assertion-violation who
+                             "invalid index (not a non-negative exact integer less than the field count)" field-id)))
+
   (define (record-accessor rtd field-id)
+    (check-field-id 'record-accessor rtd field-id)
     (typed-vector-accessor rtd (field-id-index rtd field-id)))
 
   (define (record-mutator rtd field-id)
+    (check-field-id 'record-mutator rtd field-id)
     (if (not (record-field-mutable? rtd field-id))
-	(contract-violation "record-mutator called on immutable field" rtd field-id))
+	(assertion-violation 'record-mutator
+                             "record-mutator called on immutable field" rtd field-id))
     (typed-vector-mutator rtd (field-id-index rtd field-id)))
 
   ;; A FIELD-ID is an index, which refers to a field in RTD itself.

@@ -23,12 +23,12 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(library (r6rs records explicit)
+(library (rnrs records private explicit)
   (export define-record-type
 	  record-type-descriptor
 	  record-constructor-descriptor)
-  (import (r6rs)
-	  (r6rs records procedural))
+  (import (rnrs)
+	  (rnrs records procedural))
 
   ;; ASSQ at the syntax level
   (define-syntax define-alist-extractor

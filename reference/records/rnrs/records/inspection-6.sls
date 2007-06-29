@@ -1,5 +1,5 @@
 
-(library (r6rs records inspection)
+(library (rnrs records inspection (6))
   (export record-type-name
 	  record-type-parent
 	  record-type-sealed?
@@ -9,4 +9,4 @@
 	  record-type-opaque?
 	  record-field-mutable?
 	  record? record-rtd)
-  (import (r6rs records private core)))
+  (import (rnrs records private core)))

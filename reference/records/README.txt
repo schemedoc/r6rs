@@ -1,58 +1,80 @@
 
-The "example.scm" is an R6RS script that contains examples of using
-records.
+The "example.scm" is an R6RS script that contains examples and tests
+using records.
 
-The files "r6rs-records-procedural.scm", "r6rs-records-implicit.scm",
-"r6rs-records-explicit.scm", and "r6rs-records-inspection.scm" each
-contain an R6RS library implementing an R6RS record library.
+The files
+  rnrs/records/procedural-6.sls
+  rnrs/records/syntactic-6.sls
+  rnrs/records/inspection-6.sls
+each contain an R6RS library implementing an R6RS record library.
 
 The core of the procedural implementation (with inspection) is in
-"r6rs-records-private-core.scm", again as an R6RS library.  It imports
-`(implementation vector-types)', which is an implementation-specific
-library for relatively simple generative types. The `(implementation
-vector-types)' library must export procedures as described below.
+  rnrs/records/private/core.sls
+as an R6RS library.  It imports `(implementation vector-types)', which
+is an implementation-specific library for relatively simple generative
+types. The `(implementation vector-types)' library must export
+procedures as described below.
 
-The "generic-vector-types.scm" file implements `(implementation
-vector-types)' by building on a SRFI-9 library and `(implementation
-opaque-cells)'. The "generic-opaque-cells.scm" file, in turn,
-implements `(implementation opaque-cells)' by building on a SRFI-9
-library.
 
 Executing in MzScheme (with `library' hack)
 -------------------------------------------
 
+A MzScheme-specific `(implementation vector-types)' is in
+  mzscheme/implementation/vector-types.sls
+It supports the implementation of R6RS records with no overhead
+over MzScheme's native structure types.
+
 The "mzscheme-load.scm" file can be used to load the implementation in
 MzScheme. It uses the `(implementation vector-types)' library in
-"mzscheme-vector-types.scm". The "mzscheme-load.ss" file begins with a
-hack to implement of `library' and `import' in terms of MzScheme's
-`module' and `require'.
+ mzscheme/implementation/vector-types.sls
+The "mzscheme-load.ss" file begins with a hack to implement of
+`library' and `import' in terms of MzScheme's `module' and `require'.
 
 To try this implementation using MzScheme:
   > (load "mzscheme-load.scm")
-  > (load "examples.scm")
+  > (load "example.scm")
 
-Executing via van Tonder `syntax-case' and `library' (in MzScheme)
-------------------------------------------------------------------
 
-The "vantonder-mzscheme-load.scm" file can be used to load the record
-implementation into van Tonder's implementation of R6RS `library' and
-`syntax-case'. The load file assumes that the van Tonder
-implementation is in "../synatx-case/vantonder" relative to this
-directory.
+Portable Execution via van Tonder `syntax-case' and `library'
+-------------------------------------------------------------
 
-As of the September 13 version of the van Tonder system, small patches
-are required to add exports some exports to `(r6rs)'. See
-"vantonder.diff".
+As a potential stepping stone for other implementations of
+`(implementation vector-types)', the files
+  generic/implementation/vector-types.sls
+  generic/implementation/opaque-cells.sls
+build portably on a SRFI-9 library.
 
-The van Tonder load file uses "vantonder-mzscheme-srfi-9.scm", which
-implements `(srfi-9)' by using MzScheme's `make-struct-type' ---
-which, in turn, is imported via the `primitives' extension of `import'
-in van Tonder's `library'.
+The purpose of these two generic libraries is to clarify the job of
+`(implementation vector-types)'.  It's not much of a practical step
+forward, though, since it relies on SRFI-9, and if you can implement
+SRFI-9, then you probably have a more direct route (with less
+overhead) for implementing `(implementation vector-types)'.
 
-To try this implementation using MzScheme:
- > (load "vantonder-mzscheme-load.scm")
- ; comment out first line of "example.scm", and then
- > (r6rs-load "example.scm")
+Indeed, the files
+  generic/implementation/srfi_9.sls
+  generic/implementation/make-struct-type.sls
+
+implement SRFI-9 in terms of SRFI-9, with even more overhead.  This is
+accomplished by defining one record type at the top level, then
+importing the constructor and selectors into "make-struct-type.sls",
+which is used to implemented SRFI-9 *within* the R6RS module
+system. The reason for this back-and-forth is that van Tonder's
+library system supports importing primitive values such as a specific
+constructor, but not primitive macros.
+
+To run via van Tonder's system, you must first load van Tonder's
+system into your Scheme implementation. That is, get "expander.scm"
+loaded, along with the standard library included with the
+expander. Then, load "vantonder-load.scm".
+
+As of the June-22-2007 version of the van Tonder system, you must
+manually replace each `r6rs' in "standard-libraries.scm" to `rnrs'.
+
+The "vantonder-load.scm" file assumes that SRFI-9 becomes available at
+the top level in the process of loading the expander, so it can be
+used to bootstraps the generic implementation SRFI-9 in terms of
+SRFI-9.
+
 
 Procedures to be supplied by `(implementation vector-types)'
 ------------------------------------------------------------

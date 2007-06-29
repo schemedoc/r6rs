@@ -1,8 +1,8 @@
 
 (library (srfi-9)
   (export define-record-type)
-  (import (r6rs)
-	  (primitives (make-struct-type))) ;; <= specific to van Tonder and MzScheme
+  (import (rnrs)
+          (implementation make-struct-type))
 
   (define-syntax define-values
     (lambda (stx)
@@ -11,7 +11,7 @@
 	 (with-syntax ([(tmp ...) (generate-temporaries (syntax (id ...)))])
 	   (syntax
 	    (begin
-	      (define id unspecified) ...
+	      (define id 'unspecified) ...
 	      (define hack
 		(call-with-values (lambda () expr)
 		  (lambda (tmp ...)
@@ -99,7 +99,7 @@
 				modifier ...)
 		  (call-with-values 
 		      (lambda () 
-			(make-struct-type 'type #f number-of-fields 0))
+			(make-struct-type 'type number-of-fields))
 		      (lambda (type-descriptor
 			       full-constructor
 			       predicate

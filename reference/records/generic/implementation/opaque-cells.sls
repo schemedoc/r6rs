@@ -29,7 +29,7 @@
 	  opaque-cell-ref
 	  opaque-cell-key-fits?)
   (import (srfi-9)
-	  (r6rs))
+	  (rnrs))
   
   (define-record-type :opaque-cell
     (make-opaque-cell key-predicate contents)
@@ -39,7 +39,7 @@
 
   (define (ensure-opaque-cell-access key cell)
     (if (not ((opaque-cell-key-predicate cell) key))
-	(contract-violation "access to opaque cell denied" cell key)))
+	(assertion-violation #f "access to opaque cell denied" cell key)))
 
   (define (opaque-cell-ref key cell)
     (ensure-opaque-cell-access key cell)

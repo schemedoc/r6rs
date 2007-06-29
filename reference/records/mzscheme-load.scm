@@ -1,8 +1,8 @@
 
-;; A MzScheme "implementation" of R6RS `library' that's just good
+;; A MzScheme "implementation" of RNRS `library' that's just good
 ;;  enough to run the code here.
 
-(module r6rs-expand-time mzscheme
+(module rnrs-expand-time mzscheme
   (define-syntax (unwrapping-syntax stx)
     (syntax-case stx ()
       [(_ (e ....))
@@ -29,7 +29,7 @@
        (list* (quote-syntax #%plain-module-begin)
 	      (datum->syntax-object
 	       stx
-	       (list (quote-syntax require-for-syntax) 'r6rs-expand-time))
+	       (list (quote-syntax require-for-syntax) 'rnrs-expand-time))
 	      (cdr (syntax-e stx)))
        stx))))
 
@@ -44,12 +44,16 @@
 		   name ...))]
     [(add-prefix seq pfx)
      (list #`(prefix pfx #,@(collapse-name #'seq)))]
-    [else
+    [_else
      (list (string->symbol
 	    (apply string-append
 		   (map symbol->string
-			(map syntax-e
-			     (syntax->list seq))))))]))
+                        (let loop ([l (map syntax-e
+                                           (syntax->list seq))])
+                          (cond
+                           [(null? l) null]
+                           [(symbol? (car l)) (cons (car l) (loop (cdr l)))]
+                           [else (loop (cdr l))]))))))]))
 
 (define-syntax (library stx)
   (syntax-case stx (import export)
@@ -70,7 +74,7 @@
      #`(eval '(require #,@(apply append
 				 (map collapse-name (syntax->list #'(im-spec ...))))))]))
 
-(library (r6rs)
+(library (rnrs)
   (export)
   (import)
   (require (lib "list.ss")
@@ -80,22 +84,28 @@
   (define (find f l)
     (let ([v (memf f l)])
       (and v (car v))))
+  (define (assertion-violation who msg . args)
+    (apply error (if who
+                     (format "~a: ~a" who msg)
+                     msg)
+           args))
   (provide (all-from mzscheme)
 	   find
-	   (rename andmap forall)
+	   (rename andmap for-all)
 	   (rename ormap exists)
-	   (rename error contract-violation)))
+	   assertion-violation
+           (rename call-with-exception-handler with-exception-handler)))
 
-(load "mzscheme-vector-types.scm")
+(load "mzscheme/implementation/vector-types.sls")
  
 ; Alternate implementation of vector types that builds on
 ; SRFI-9 instead of MzScheme struct types:
-;(load "mzscheme-srfi-9.scm")
-;(load "generic-opaque-cells.scm")
-;(load "generic-vector-types.scm")
+;(load "mzscheme/implementation/srfi_9.sls")
+;(load "generic/implementation/opaque-cells.sls")
+;(load "generic/implementation/vector-types.sls")
 
-(load "r6rs-records-private-core.scm")
-(load "r6rs-records-procedural.scm")
-(load "r6rs-records-inspection.scm")
-(load "r6rs-records-explicit.scm")
-(load "r6rs-records-implicit.scm")
+(load "rnrs/records/private/core.sls")
+(load "rnrs/records/procedural-6.sls")
+(load "rnrs/records/inspection-6.sls")
+(load "rnrs/records/private/explicit.sls")
+(load "rnrs/records/syntactic-6.sls")

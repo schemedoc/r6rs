@@ -46,7 +46,7 @@
 	  typed-vector-accessor typed-vector-mutator
 	  typed-vector?
 	  typed-vector-type)
-  (import (r6rs)
+  (import (rnrs)
 	  (implementation opaque-cells)
 	  (srfi-9))
 
@@ -100,13 +100,13 @@
       (lambda vals
 	(if (= (length vals) expected)
 	    (opacify (really-make-typed-vector type (list->vector vals)))
-	    (contract-violation "wrong argument count to constructor" type vals)))))
+	    (assertion-violation #f "wrong argument count to constructor" type vals)))))
 
   (define (ensure-has-vector-type type thing)
     (if (not (and (typed-vector? thing)
 		  (type-ancestor? type
 				  (typed-vector-type thing))))
-	(contract-violation "invalid argument: not of type" type thing)))
+	(assertion-violation #f "invalid argument: not of type" type thing)))
   
   (define (typed-vector-accessor type index)
     (lambda (thing)

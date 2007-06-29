@@ -1,10 +1,8 @@
-#! /usr/bin/env scheme-script
 
-(import (r6rs)
-	(r6rs records procedural)
-	(r6rs records inspection)
-	(r6rs records explicit)
-	(add-prefix (r6rs records implicit) im:))
+(import (rnrs)
+	(rnrs records procedural)
+	(rnrs records inspection)
+	(rnrs records syntactic))
 
 (define *correct-count* 0)
 (define *failed-count* 0)
@@ -33,7 +31,85 @@
                (set! *failed-count* (+ *failed-count* 1)) ))
          (newline) )))))
 
+
+(define-syntax assertion-check
+  (syntax-rules ()
+    [(assertion-check expr)
+     ;; We'd like to check errors portably, but the current reference
+     ;; implemenations don't quite have enough in place.
+     (quote
+      (call/cc (lambda (esc)
+                 (newline)
+                 (display 'expr)
+                 (newline)
+                 (with-exception-handler
+                  (lambda (cdn)
+                    (display " ; correct: ")
+                    (display cdn)
+                    (newline)
+                    (set! *correct-count* (+ *correct-count* 1))
+                    (esc #t))
+                  (lambda ()
+                    expr
+                    (display " ; *** failed ***, should have been an exception")
+                    (newline)
+                    (set! *failed-count* (+ *failed-count* 1)))))))]))
+
 ; procedural layer
+
+(define :empty
+  (make-record-type-descriptor
+   'empty #f
+   #f #f #f 
+   '()))
+
+(assertion-check (make-record-constructor-descriptor 7 #f #f))
+(assertion-check (make-record-constructor-descriptor :empty 7 #f))
+(assertion-check (make-record-constructor-descriptor :empty #f 7))
+
+(define make-empty-desc (make-record-constructor-descriptor :empty #f #f))
+(define make-empty (record-constructor make-empty-desc))
+(define empty? (record-predicate :empty))
+
+(check (record-type-descriptor? :empty) => #t)
+(check (record-type-descriptor? (make-empty)) => #f)
+
+(assertion-check (record-accessor :empty 0))
+(assertion-check (record-mutator :empty 0))
+(assertion-check (record-accessor 0 0))
+(assertion-check (record-mutator 0 0))
+
+(check (empty? (make-empty)) => #t)
+
+(define :still-empty
+  (make-record-type-descriptor
+   'still-empty :empty
+   #f #f #f 
+   '()))
+
+(define make-still-empty
+  (record-constructor (make-record-constructor-descriptor :still-empty make-empty-desc #f)))
+(define still-empty? (record-predicate :still-empty))
+
+(check (still-empty? (make-still-empty)) => #t)
+(check (empty? (make-still-empty)) => #t)
+(check (still-empty? (make-empty)) => #f)
+
+(assertion-check (make-record-constructor-descriptor :still-empty #f (lambda (p) '...)))
+
+(assertion-check (make-record-constructor-descriptor :still-empty
+                                                     (make-record-constructor-descriptor :empty #f  (lambda (p) '...))
+                                                     #f))
+(assertion-check (record-constructor 5))
+
+(define make-fancy-empty
+  (record-constructor
+   (make-record-constructor-descriptor :still-empty
+                                       (make-record-constructor-descriptor :empty #f (lambda (p) (lambda () (p))))
+                                       (lambda (p) (lambda () ((p)))))))
+
+(check (empty? (make-fancy-empty)) => #t)
+
 
 (define :point
   (make-record-type-descriptor
@@ -44,6 +120,8 @@
 (define make-point
   (record-constructor (make-record-constructor-descriptor :point #f #f)))
 
+(assertion-check (make-record-constructor-descriptor :point make-empty-desc #f))
+
 (define point? (record-predicate :point))
 (define point-x (record-accessor :point 0))
 (define point-y (record-accessor :point 1))
@@ -52,6 +130,7 @@
 
 (define p1 (make-point 1 2))
 (check (point? p1) => #t)
+(check (point? (make-empty)) => #f)
 (check (point-x p1) => 1)
 (check (point-y p1) => 2)
 (point-x-set! p1 5)
@@ -68,6 +147,7 @@
 (check (record? :point) => #f)
 (check (record? p1) => #t)
 (check (record-rtd p1) => :point)
+(check (record-type-field-names :point) => '(x y))
 
 (define :point2
   (make-record-type-descriptor
@@ -80,6 +160,8 @@
 (define point2-xx (record-accessor :point2 0))
 (define point2-yy (record-accessor :point2 1))
 (define point2-yy-set! (record-mutator :point2 1))
+
+(assertion-check (record-mutator :point2 0))
 
 (define p2 (make-point2 1 2 3 4))
 (check (point? p2) => #t)
@@ -100,6 +182,22 @@
 (check (record-field-mutable? :point2 1) => #t)
 (check (record? p2) => #t)
 (check (record-rtd p2) => :point2)
+
+(define make-fancy-point2
+  (record-constructor 
+   (make-record-constructor-descriptor :point2 
+                                       (make-record-constructor-descriptor :point #f (lambda (p)
+                                                                                       (lambda (x y)
+                                                                                         (p (+ 1 x) (+ 1 y)))))
+                                       (lambda (p)
+                                         (lambda (x y x2 y2)
+                                           ((p (+ 2 x) (+ 2 y)) (+ 2 x2) (+ 2 y2)))))))
+(define fp2 (make-fancy-point2 1 2 3 4))
+(check (point-x fp2) => 4)
+(check (point-y fp2) => 5)
+(check (point2-xx fp2) => 5)
+(check (point2-yy fp2) => 6)
+
 
 (define :point75
   (make-record-type-descriptor
@@ -192,11 +290,13 @@
 (check (ex2-a ex2-i1) => 1)
 (check (ex2-b ex2-i1) => '(2 3))
 
+(check (point3? ((record-constructor (record-constructor-descriptor point3)) 1 2)) => #t)
+
 ; implicit naming
 
 (define *ex3-instance* #f)
 
-(im:define-record-type ex3
+(define-record-type ex3
   (parent cpoint)
   (protocol
    (lambda (p)
@@ -218,9 +318,9 @@
 
 (check (record? ex3-i1) => #f)
 
-; fancy constructor
+; very fancy constructor
 
-(im:define-record-type (unit-vector make-unit-vector unit-vector?)
+(define-record-type (unit-vector make-unit-vector unit-vector?)
   (protocol
    (lambda (p)
      (lambda (x y z)

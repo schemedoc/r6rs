@@ -23,12 +23,12 @@
 ; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-(library (r6rs records implicit)
+(library (rnrs records syntactic (6))
   (export define-record-type
 	  record-type-descriptor
 	  record-constructor-descriptor)
-  (import (r6rs)
-	  (rename (r6rs records explicit)
+  (import (rnrs)
+	  (rename (rnrs records private explicit)
 		  (define-record-type define-record-type/explicit)))
 
   ;; R5RS part of the implementation of DEFINE-RECORD-TYPE for Records SRFI
