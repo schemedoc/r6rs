@@ -492,7 +492,7 @@ themselves.  Escape sequences always start with a backslash (\backwhack{}):
 \item{\tt \backwhack{}r} : return, U+000D 
 \item{\tt \backwhack{}}\verb|"| : doublequote, U+0022 
 \item{\tt \backwhack{}\backwhack{}} : backslash, U+005C 
-\item{\tt \backwhack{}\hyper{linefeed}} : nothing
+\item{\tt \backwhack{}\hyper{line ending}} : nothing
 \item{\tt \backwhack{}\hyper{space}} : space, U+0020 (useful for terminating the
   previous escape sequence before continuing with whitespace)
 \item{\tt \backwhack{}x\meta{hex scalar value};} : specified character (note the
@@ -502,13 +502,13 @@ themselves.  Escape sequences always start with a backslash (\backwhack{}):
 These escape sequences are case-sensitive, except that the alphabetic
 digits of a \meta{hex scalar value} can be uppercase or lowercase.
 
-Any other character in a string after a backslash is an error. Except
+Any other character in a string after a backslash is a syntax violation. Except
 for a line ending, any
 character outside of an escape sequence and not a doublequote stands
 for itself in the string literal. For example the single-character
 string literal {\tt "$\lambda$"} (doublequote, a lower case lambda, doublequote)
 represents the same string as {\tt "\backwhack{}x03bb;"}.
-A line ending stands for a linefeed character.
+A line ending that does not follow a backslash stands for a linefeed character.
 
 Examples:
 
