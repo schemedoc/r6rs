@@ -231,9 +231,9 @@ Transformers can destructure their input with {\cf syntax-case} and rebuild
 their output with {\cf syntax}.
 
 \begin{entry}{%
-\pproto{(syntax-case \hyper{expression} (\hyper{literal} \dots)}{\exprtype}
+\pproto{(syntax-case \hyper{expression} (\hyper{literal} \dotsfoo)}{\exprtype}
 \mainschindex{syntax-case}{\tt\obeyspaces%
-\hspace{2em}\hyper{syntax-case clause} \dots)}\\
+\hspace{2em}\hyper{syntax-case clause} \dotsfoo)}\\
 \litprotonoindex{\_}
 \litprotonoindex{...}}\schindex{\_}\schindex{...}
 
@@ -263,10 +263,10 @@ An \hyper{ellipsis} is the identifier ``{\cf ...}'' (three periods).\schindex{..
 
 An identifier appearing within a \hyper{pattern} may be an underscore
 (~{\cf \_}~), a literal identifier listed in the list of literals
-{\cf (\hyper{literal} \dots)}, or an ellipsis (~{\cf ...}~).
+{\cf (\hyper{literal} \dotsfoo)}, or an ellipsis (~{\cf ...}~).
 All other identifiers appearing within a \hyper{pattern} are
 \textit{pattern variables\mainindex{pattern variable}}.
-It is a syntax violation if an ellipsis or underscore appears in {\cf (\hyper{literal} \dots)}.
+It is a syntax violation if an ellipsis or underscore appears in {\cf (\hyper{literal} \dotsfoo)}.
 
 {\cf \_} and {\cf ...} are the same as in the \rsixlibrary{base} library.
 
@@ -302,19 +302,19 @@ sense of {\cf free-identifier=?}
 (section~\ref{identifierpredicatessection}).
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots{} $P_n$)}
+{\cf ($P_1$ \dotsfoo{} $P_n$)}
 and $F$ is a list of $n$ elements that match $P_1$ through
 $P_n$.
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots{} $P_n$ . $P_x$)}
+{\cf ($P_1$ \dotsfoo{} $P_n$ . $P_x$)}
 and $F$ is a list or improper list of $n$ or more elements
 whose first $n$ elements match $P_1$ through $P_n$
 and
 whose $n$th cdr matches $P_x$.
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
+{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
 and $F$ is a proper list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
@@ -323,7 +323,7 @@ and
 whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$ . $P_x$)},
+{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$ . $P_x$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
 and $F$ is a list or improper list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
@@ -333,12 +333,12 @@ and
 whose $n$th and final cdr matches $P_x$.
 
 \item $P$ is of the form
-{\cf \#($P_1$ \dots{} $P_n$)}
+{\cf \#($P_1$ \dotsfoo{} $P_n$)}
 and $F$ is a vector of $n$ elements that match $P_1$ through
 $P_n$.
 
 \item $P$ is of the form
-{\cf \#($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
+{\cf \#($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
 and $F$ is a vector of $n$ or more elements
 whose first $k$ elements match $P_1$ through $P_k$,
@@ -1021,9 +1021,9 @@ as follows.
                           
 Uses of {\cf unsyntax} and {\cf unsyntax-splicing} with zero or more than
 one subform are valid only in splicing (list or vector) contexts.
-{\cf (unsyntax \var{template} \dots)} is equivalent to
+{\cf (unsyntax \var{template} \dotsfoo)} is equivalent to
 {\cf (unsyntax \var{template}) \dots}, and
-{\cf (unsyntax-splicing \var{template} \dots)} is equivalent to
+{\cf (unsyntax-splicing \var{template} \dotsfoo)} is equivalent to
 {\cf (unsyntax-splicing \var{template}) \dots}.
 These forms are primarily useful as intermediate forms in the output
 of the {\cf quasisyntax} expander.

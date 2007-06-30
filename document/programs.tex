@@ -7,10 +7,6 @@ code to run.  Through the imported libraries, whether directly or through the
 transitive closure of importing, a top-level program defines a complete Scheme
 program.
 
-Top-level programs accept
-a list of string \defining{command-line arguments} that may be used to
-pass data to the program.
-
 \section{Top-level program syntax}
 \label{programsyntaxsection}
 
@@ -44,7 +40,8 @@ definitions and expressions may occur in any order.  Thus, the syntax
 specified by \hyper{top-level body form} refers to the result of macro
 expansion.
 
-When base-library {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
+When uses of {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax}
+from the \rsixlibrary{base} library
 occur in a top-level body prior to the first
 expression, they are spliced into the body; see section~\ref{begin}.
 Some or all of the body, including portions wrapped in {\cf begin},
@@ -61,9 +58,13 @@ a simple translation into a library body:
 Each \hyper{expression} that appears before a
 definition in
 the top-level body is converted into a dummy definition 
-{\cf (define \hyper{variable} (begin \hyper{expression} \hyper{unspecified}))},
+%
+\begin{scheme}
+(define \hyper{variable} (begin \hyper{expression} \hyper{unspecified}))%
+\end{scheme}
+%
 where \hyper{variable} is a fresh identifier and \hyper{unspecified}
-is a side-effect-free expression returning \unspecifiedreturn.
+is a side-effect-free expression returning an unspecified value.
 (It is generally impossible to determine which forms are 
 definitions and expressions without concurrently expanding the body, so
 the actual translation is somewhat more complicated; see

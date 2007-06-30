@@ -7,7 +7,8 @@ the procedure and syntax bindings that are traditionally associated
 with Scheme.
 
 Section~\ref{basetailcontextsection} defines the rules that identify
-tail calls and tail contexts in base-library constructs.
+tail calls and tail contexts in constructs from the \rsixlibrary{base}
+library.
 
 \section{Base types}
 \label{disjointness}
@@ -46,8 +47,8 @@ A \hyper{definition} may be a variable definition
 (section~\ref{variabledefinitionsection}) or
 keyword definition
 (section~\ref{variabledefinitionsection}).
-Syntactic abstractions that expand into definitions or groups of
-definitions (packaged in a base-library {\cf begin}, {\cf let-syntax}, or
+Macro uses that expand into definitions or groups of
+definitions (packaged in a {\cf begin}, {\cf let-syntax}, or
 {\cf letrec-syntax} form; see section~\ref{begin}) may also appear
 wherever other definitions may appear.
 
@@ -92,7 +93,7 @@ an unspecified value.
 
 In the third form of {\cf define}, \hyper{formals} must be either a
 sequence of zero or more variables, or a sequence of one or more
-variables followed by a space-delimited period and another variable (as
+variables followed by a dot {\cf .} and another variable (as
 in a lambda expression, see section~\ref{lambda}).  This form is equivalent to
 \begin{scheme}
 (define \hyper{variable}
@@ -137,7 +138,7 @@ themselves.
 \implresp The implementation should detect if the value of
 \hyper{expression} cannot possibly be a transformer.
 
-For example:
+Example:
 
 \begin{scheme}
 (let ()
@@ -152,8 +153,9 @@ For example:
 
 An implication of the left-to-right processing order
 (section~\ref{expansionchapter}) is that one definition can
-affect whether a subsequent form is also a definition.  For example,
-the expression
+affect whether a subsequent form is also a definition.  
+
+Example:
 
 \begin{scheme}
 (let ()
@@ -183,21 +185,23 @@ expressions.
 Each identifier defined by a
 definition is local to the \hyper{body}.  That is, the identifier is
 bound, and the region of the binding is the
-entire \hyper{body} (see section~\ref{variablesection}).  For example,
+entire \hyper{body} (see section~\ref{variablesection}).
 
+Example:
+%
 \begin{scheme}
 (let ((x 5))
   (define foo (lambda (y) (bar x y)))
   (define bar (lambda (a b) (+ (* a b) a)))
   (foo (+ x 3)))                \ev  45%
 \end{scheme}
-
-When base-library {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
+%
+When {\cf begin}, {\cf let-syntax}, or {\cf letrec-syntax} forms
 occur in a body prior to the first
 expression, they are spliced into the body; see section~\ref{begin}.
 Some or all of the body, including portions wrapped in {\cf begin},
 {\cf let-syntax}, or {\cf letrec-syntax}
-forms, may be specified by a syntactic abstraction
+forms, may be specified by a macro use
 (see section~\ref{macrosection}).
 
 An expanded \hyper{body} (see chapter~\ref{expansionchapter})
@@ -235,7 +239,7 @@ section~\ref{primitiveexpressionsection}.
 represented by \hyper{datum}
 (see
 section~\ref{datumsyntaxsection}).  This notation is used to include
-constants, including list and vector constants, in Scheme code.
+constants.
 
 \begin{scheme}%
 (quote a)                     \ev  a
@@ -272,16 +276,16 @@ As noted in section~\ref{storagemodel}, constants are immutable.
 \proto{lambda}{ \hyper{formals} \hyper{body}}{\exprtype}}
 
 \syntax
-\hyper{Formals} must be a formal arguments list as described below,
+\hyper{Formals} must be a formal parameter list as described below,
 and \hyper{body} must be as described in section~\ref{bodiessection}.
 
 \semantics
 \vest A \lambdaexp{} evaluates to a procedure.  The environment in
 effect when the \lambdaexp{} is evaluated is remembered as part of the
-procedure.  When the procedure is later called with some actual
+procedure.  When the procedure is later called with some 
 arguments, the environment in which the \lambdaexp{} was evaluated is
-extended by binding the variables in the formal argument list to
-fresh locations, and the resulting actual argument values are stored
+extended by binding the variables in the parameter list to
+fresh locations, and the resulting argument values are stored
 in those locations.  Then, the expressions in the body of the \lambdaexp{}
 (which may contain definitions and thus represent a {\cf
   letrec*} form, see section~\ref{bodiessection}) are evaluated
@@ -319,20 +323,20 @@ corresponding variables.
 
 \item \hyper{variable}:
 The procedure takes any number of arguments; when the procedure is
-called, the sequence of actual arguments is converted into a newly
+called, the sequence of arguments is converted into a newly
 allocated list, and the list is stored in the binding of the
 \hyper{variable}.
 
 \item {\tt(\hyperi{variable} \dotsfoo{} \hyper{variable$_{n}$}\ {\bf.}\
 \hyper{variable$_{n+1}$})}:
-If a space-delimited period precedes the last variable, then
+If a period {\cf .} precedes the last variable, then
 the procedure takes $n$ or more arguments, where $n$ is the
-number of formal arguments before the period (there must
+number of parameters before the period (there must
 be at least one).
 The value stored in the binding of the last variable is a
 newly allocated
-list of the actual arguments left over after all the other actual
-arguments have been matched up against the other formal arguments.
+list of the arguments left over after all the other 
+arguments have been matched up against the other parameters.
 \end{itemize}
 
 \begin{scheme}
@@ -341,7 +345,7 @@ arguments have been matched up against the other formal arguments.
  3 4 5 6)                       \ev  (5 6)%
 \end{scheme}
 
-It is a syntax violation for a \hyper{variable} to appear more than once in
+Any \hyper{variable} must not appear more than once in
 \hyper{formals}.
 \end{entry}
 
@@ -388,7 +392,7 @@ section~\ref{basetailcontextsection}.
 \hyper{Expression} is evaluated, and the resulting value is stored in
 the location to which \hyper{variable} is bound.  \hyper{Variable} must
 be bound either in some region\index{region} enclosing the {\cf set!}\ expression
-or at the top level of a library body.  The result of the {\cf set!}
+or at the top level.  The result of the {\cf set!}
 expression \isunspecified.
 
 \begin{scheme}
@@ -419,13 +423,13 @@ Each \hyper{cond clause} must be of the form
 \begin{scheme}
 (\hyper{test} \hyperi{expression} \dotsfoo)%
 \end{scheme}
-where \hyper{test} is any expression.  Alternatively, a \hyper{cond clause} may be
+where \hyper{test} is an expression.  Alternatively, a \hyper{cond clause} may be
 of the form
 \begin{scheme}
 (\hyper{test} => \hyper{expression})%
 \end{scheme}
 The last \hyper{cond clause} may be
-an ``else clause'', which has the form
+an ``{\cf else} clause'', which has the form
 \begin{scheme}
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
 \end{scheme}
@@ -446,8 +450,8 @@ Its value must be a procedure.  This procedure should accept one argument; it is
 called on the value of the \hyper{test} and the values returned by this
 procedure are returned by the {\cf cond} expression.
 If all \hyper{test}s evaluate
-to \schfalse, and there is no {\cf else} clause, then the result of
-the conditional expression \isunspecified; if there is an {\cf else}
+to \schfalse, and there is no {\cf else} clause, then 
+the conditional expression returns \unspecifiedreturn; if there is an {\cf else}
 clause, then its \hyper{expression}s are evaluated, and the values of
 the last one are returned.
 
@@ -466,7 +470,7 @@ the last one are returned.
 For \hyper{cond clauses} that use the forms
 %
 \begin{scheme}
-(\hyper{test} \hyperi{expression} \dotsfoo)%
+(\hyper{test} \hyperi{expression} \dotsfoo)
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
 \end{scheme}
 %
@@ -489,26 +493,26 @@ the following forms:
 (else \hyperi{expression} \hyperii{expression} \dotsfoo)%
 \end{scheme}
 \schindex{else}
-The second form, which specifies an ``else clause'',
+The second form, which specifies an ``{\cf else} clause'',
 may only appear as the last \hyper{case clause}.
 Each \hyper{datum} is an external representation of some object.
 The data represented by the \hyper{datum}s need not be distinct.
 
 \semantics
 A {\cf case} expression is evaluated as follows.  \hyper{Key} is
-evaluated and its result is compared against the data
+evaluated and its result is compared using {\cf eqv?} (see
+section~\ref{eqv?}) against the data
 represented by the \hyper{datum}s of each \hyper{case clause} in turn, proceeding
 in order from left to right through the set of clauses.  If the
-result of evaluating \hyper{key} is equivalent (in the sense of
-{\cf eqv?}; see section~\ref{eqv?}) to a datum of a \hyper{case clause}, the
+result of evaluating \hyper{key} is equivalent to a datum of a \hyper{case clause}, the
 corresponding \hyper{expression}s are evaluated from left
 to right and the results of the last expression in the \hyper{case clause} are
 returned as the results of the {\cf case} expression.  Otherwise, the
 comparison process continues.  If the result of
 evaluating \hyper{key} is different from every datum in each set, then if
-there is an else clause its expressions are evaluated and the
+there is an {\cf else} clause its expressions are evaluated and the
 results of the last are the results of the {\cf case} expression;
-otherwise the result of the {\cf case} expression \isunspecified.
+otherwise the {\cf case} expression returns \unspecifiedreturn.
 
 \begin{scheme}
 (case (* 2 3)
@@ -581,7 +585,7 @@ right until a \hyper{test} returns a true value \var{val}
 \hyper{test} is reached.  In the former case, the {\cf or} expression
 returns \var{val} without evaluating the remaining expressions.
 In the latter case, the last expression is evaluated and its values
-returned.
+are returned.
 
 \begin{scheme}
 (or (= 2 2) (> 2 1))            \ev  \schtrue
@@ -640,7 +644,8 @@ in a {\cf let*-values} expression, the bindings are performed
 sequentially. 
 
 \begin{note}
-  These forms are compatible with SRFI~11~\cite{srfi11}.
+  The {\cf let-values} and {\cf let-values*} forms are compatible with
+  SRFI~11~\cite{srfi11}.
 \end{note}
 
 \begin{entry}{%
@@ -652,9 +657,8 @@ sequentially.
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
 where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}.  It is a
-syntax violation for a \hyper{variable} to appear more than once in the list of variables
-being bound.
+is as described in section~\ref{bodiessection}.  
+Any variable must not appear more than once in the \hyper{variable}s.
 
 \semantics
 The \hyper{init}s are evaluated in the current environment (in some
@@ -714,17 +718,8 @@ and so on.
 The {\cf let*} keyword could be defined in terms of {\cf let} using {\cf
   syntax-rules} (see section~\ref{syntaxrulessection}) as follows:
 
-\begin{scheme}
-(define-syntax \ide{let*}
-  (syntax-rules ()
-    ((let* () body1 body2 ...)
-     (let () body1 body2 ...))
-    ((let* ((name1 expr1) (name2 expr2) ...)
-       body1 body2 ...)
-     (let ((name1 expr1))
-       (let* ((name2 expr2) ...)
-         body1 body2 ...)))))%
-\end{scheme}
+A sample definition of {\cf let*} in terms of simpler forms is in
+appendix~\ref{derivedformsappendix}.
 
 \end{entry}
 
@@ -737,9 +732,9 @@ The {\cf let*} keyword could be defined in terms of {\cf let} using {\cf
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
 where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}.  It is a
-syntax violation for a \hyper{variable} to appear more than once in the list of variables
-being bound.
+is as described in section~\ref{bodiessection}.  Any
+variable must not appear more than once in the
+\hyper{variable}s.
 
 \semantics
 The \hyper{variable}s are bound to fresh locations, the \hyper{init}s
@@ -770,10 +765,9 @@ define mutually recursive procedures.
                 \ev  \schtrue%
 \end{scheme}
 
-One restriction on {\cf letrec} is very important: it should be possible
+It should be possible
 to evaluate each \hyper{init} without assigning or referring to the
-value of any \hyper{variable}.  The restriction is necessary because
-Scheme passes arguments by value rather than by name.  In the most
+value of any \hyper{variable}.  In the most
 common uses of {\cf letrec}, all the \hyper{init}s are \lambdaexp{}s
 and the restriction is satisfied automatically.
 Another restriction is that the continuation of each \hyper{init} should not be invoked
@@ -790,7 +784,6 @@ Implementations may or may not detect that the continuation of each
 implementation detects this, it must raise an exception with condition
 type {\cf\&assertion}.
 
-
 A sample definition of {\cf letrec} in terms of simpler forms is in
 appendix~\ref{derivedformsappendix}.
 \end{entry}
@@ -804,9 +797,9 @@ appendix~\ref{derivedformsappendix}.
 ((\hyperi{variable} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
 where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}.  It is a
-syntax violation for a \hyper{variable} to appear more than once in the list of variables
-being bound.
+is as described in section~\ref{bodiessection}. 
+Any \hyper{variable} must not appear more than once in the
+\hyper{variable}s.
 
 \semantics
 The \hyper{variable}s are bound to fresh locations,
@@ -834,12 +827,10 @@ procedures.
                 \ev  5%
 \end{scheme}
 
-One restriction on {\cf letrec*} is very important: it must be possible
+It must be possible
 to evaluate each \hyper{init} without assigning or referring to the value
 of the corresponding \hyper{variable} or the \hyper{variable} of any of
 the bindings that follow it in \hyper{bindings}.
-The restriction is necessary because Scheme passes arguments by value
-rather than by name. 
 Another restriction is that the continuation of each \hyper{init} should not be invoked
 more than once.
 
@@ -854,28 +845,6 @@ Implementations may or may not detect that the continuation of each
 \hyper{init} is invoked more than once.  However, if the
 implementation detects this, it must raise an exception with condition
 type {\cf\&assertion}.
-
-The {\cf letrec*} keyword could be defined approximately in terms of {\cf let}
-and {\cf set!}
-using {\cf syntax-rules} (see section~\ref{syntaxrulessection})
-as follows:
-
-\begin{scheme}
-(define-syntax \ide{letrec*}
-  (syntax-rules ()
-    ((letrec* ((var1 init1) ...) body1 body2 ...)
-     (let ((var1 <undefined>) ...)
-       (set! var1 init1)
-       ...
-       (let () body1 body2 ...)))))%
-\end{scheme}
-
-The syntax {\cf <undefined>} represents an expression that
-returns something that, when stored in a location, causes an exception
-with condition type {\cf\&assertion} to
-be raised if an attempt to read from or write to the location occurs before the
-assignments generated by the {\cf letrec*} transformation take place.
-(No such expression is defined in Scheme.)
 \end{entry}
 
 \begin{entry}{%
@@ -887,16 +856,16 @@ assignments generated by the {\cf letrec*} transformation take place.
 ((\hyperi{formals} \hyperi{init}) \dotsfoo)\rm,%
 \end{scheme}
 where each \hyper{init} is an expression, and \hyper{body} 
-is as described in section~\ref{bodiessection}.  It is
-a syntax violation for a variable to appear more
-than once in the list of variables that appear as part of the formals.
+is as described in section~\ref{bodiessection}.  
+Any variable must not appear more
+than once in the set of \var{formals}.
 
 \semantics The \hyper{init}s are evaluated in the current environment
 (in some unspecified order), and the variables occurring in the
 \hyper{formals} are bound to fresh locations containing the values
 returned by the \hyper{init}s, where the \hyper{formals} are matched
 to the return values in the same way that the \hyper{formals} in a
-\lambdaexp{} are matched to the actual arguments in a procedure call.
+\lambdaexp{} are matched to the arguments in a procedure call.
 Then, the \hyper{body} is evaluated in the extended environment, and the
 values of the last expression of \hyper{body} are returned.
 Each binding of a variable has \hyper{body} as its
@@ -932,7 +901,9 @@ appendix~\ref{derivedformsappendix}.
 \end{scheme}
 where each \hyper{init} is an expression, and \hyper{body} 
 is as described in section~\ref{bodiessection}.
+In each \var{formals}, any variable must not appear more than once.
 
+\semantics
 The {\cf let*-values} form is similar to {\cf let-values}, but the \hyper{init}s are
 evaluated and bindings created sequentially from left to right, with
 the region\index{region} of the bindings of each \hyper{formals} including
@@ -953,21 +924,6 @@ on.
   must be distinct, the variables bound by different \hyper{formals} of a
   {\cf let*-values} expression need not be distinct.
 \end{note}
-
-The following macro defines {\cf let*-values} in terms of {\cf let}
-and {\cf let-values}:
-
-\begin{scheme}
-(define-syntax let*-values
-  (syntax-rules ()
-    ((let*-values () body1 body2 ...)
-     (let () body1 body2 ...))
-    ((let*-values (binding1 binding2 ...)
-       body1 body2 ...)
-     (let-values (binding1)
-       (let*-values (binding2 ...)
-         body1 body2 ...)))))%
-\end{scheme}
 
 \end{entry}
 
@@ -1012,34 +968,6 @@ context:
        (display (+ 4 1)))      \ev  \unspecified
  \>{\em and prints}  4 plus 1 equals 5%
 \end{scheme}
-
-The following macro, which uses {\cf syntax-rules} (see
-section~\ref{syntaxrulessection}), defines {\cf begin} in terms of {\cf
-  lambda}.  Note that it covers only the expression case of {\cf begin}.
-%
-\begin{scheme}
-(define-syntax \ide{begin}
-  (syntax-rules ()
-    ((begin exp1 exp2 ...)
-     ((lambda () exp1 exp2 ...)))))%
-\end{scheme}
-
-The following alternative expansion for {\cf begin} does not make use of
-the ability to write more than one expression in the body of a lambda
-expression.  It, too, covers only the expression case of {\cf begin}.
-
-\begin{scheme}
-(define-syntax begin
-  (syntax-rules ()
-    ((begin exp)
-     exp)
-    ((begin exp1 exp2 ...)
-     (call-with-values
-         (lambda () exp1)
-       (lambda ignored
-         (begin exp2 ...))))))%
-\end{scheme}
-
 \end{entry}
 
 \section{Equivalence predicates}
@@ -1170,9 +1098,7 @@ The {\cf eqv?} procedure returns \schfalse{} if one of the following holds:
 (eqv? (cons 1 2) (cons 1 2))     \ev  \schfalse
 (eqv? (lambda () 1)
       (lambda () 2))             \ev  \schfalse
-(eqv? \#f 'nil)                  \ev  \schfalse
-(let ((p (lambda (x) x)))
-  (eqv? p p))                    \ev  \unspecified%
+(eqv? \#f 'nil)                  \ev  \schfalse%
 \end{scheme}
 
 The following examples illustrate cases in which the above rules do
@@ -1181,6 +1107,8 @@ about such cases is that the value returned by {\cf eqv?} must be a
 boolean.
 
 \begin{scheme}
+(let ((p (lambda (x) x)))
+  (eqv? p p))                    \ev  \unspecified
 (eqv? "" "")             \ev  \unspecified
 (eqv? '\#() '\#())         \ev  \unspecified
 (eqv? (lambda (x) x)
@@ -1194,7 +1122,7 @@ The next set of examples shows the use of {\cf eqv?}\ with procedures
 that have local state.  Calls to {\cf gen-counter} must return a
 distinct procedure every time, since each procedure has its own
 internal counter.  Calls to {\cf gen-loser} return procedures that
-behave pairwise equivalent when called.  However, {\cf eqv?} may
+behave equivalently when called.  However, {\cf eqv?} may
 not detect this equivalence.
 
 \begin{scheme}
@@ -1236,7 +1164,6 @@ implementation-dependent.
 
 \begin{scheme}
 (eqv? '(a) '(a))                 \ev  \unspecified
-\>\>\textrm{but see below}
 (eqv? "a" "a")                   \ev  \unspecified
 (eqv? '(b) (cdr '(a b)))         \ev  \unspecified
 (let ((x '(a)))
@@ -1803,7 +1730,7 @@ When in doubt, consult a numerical analyst.
 \proto{nan?}{ x}{procedure}}
 
 These numerical predicates test a number object for a particular property,
-returning \schtrue{} or \schfalse{}.  See note above.  The {\cf zero?}
+returning \schtrue{} or \schfalse{}.  The {\cf zero?}
 procedure
 tests if the number object is {\cf =} to zero, {\cf positive?} tests whether it is
 greater than zero, {\cf negative?} tests whether it is less than zero, {\cf
@@ -1826,6 +1753,11 @@ NaN.
 (infinite? 5.0)               \ev  \schfalse{}
 (infinite? +inf.0)            \ev  \schtrue{}%
 \end{scheme}
+
+\begin{note}
+  As with the predicates above, the results may be unreliable because
+  a small inaccuracy may affect the result.
+\end{note}
 \end{entry}
 
 \begin{entry}{%
@@ -2142,7 +2074,7 @@ number objects have sufficient precision.
 These procedures compute the usual transcendental functions.  The {\cf
   exp} procedure computes the base-$e$ exponential of \var{z}. 
 The {\cf log} procedure with a single argument computes the natural logarithm of
-\var{z} (not the base ten logarithm); {\cf (log \vari{z}
+\var{z} (not the base-ten logarithm); {\cf (log \vari{z}
   \varii{z})} computes the base-\varii{z} logarithm of \vari{z}.
 The {\cf asin}, {\cf acos}, and {\cf atan} procedures compute arcsine,
 arccosine, and arctangent, respectively.  The two-argument variant of
@@ -2174,7 +2106,7 @@ Returns the principal square root of \var{z}.  For rational \var{z},
 the result has either positive real part, or zero real part and
 non-negative imaginary part.  With $\log$ defined as in
 section~\ref{transcendentalfunctions}, the value of {\cf (sqrt
-  \var{z})} could be expressed as $e^{\frac{\log \var{z}}{2}}$.
+  \var{z})} could be expressed as $e^{\frac{\log z}{2}}$.
 
 The {\cf sqrt} procedure may return an inexact result even when given an exact
 argument.
@@ -2203,8 +2135,8 @@ r$ and $\var{k} < (s+1)^2$.
 \proto{expt}{ \vari{z} \varii{z}}{procedure}}
 
 Returns \vari{z} raised to the power \varii{z}.  For nonzero \vari{z},
-this is $e^{\varii{z} \log \vari{z}}$.
-$0.0^{\var{z}}$ is $1.0$ if $\var{z} = 0.0$, and $0.0$ if {\cf
+this is $e^{z_2 \log z_1}$.
+$0.0^{z}$ is $1.0$ if $\var{z} = 0.0$, and $0.0$ if {\cf
   (real-part \var{z})} is positive.  For other cases in which
 the first argument is zero, either an exception is raised with
 condition type {\cf\&implementation-restriction}, or an unspecified
@@ -2239,7 +2171,7 @@ values of \vari{z} and \varii{z}, {\cf (expt \vari{z}
 \proto{angle}{ z}{procedure}}
 
 Suppose $a_1$, $a_2$, $a_3$, and $a_4$ are real
-numbers, and $c$ is a complex number object such that the
+numbers, and $c$ is a complex number such that the
 following holds:
 %
 \begin{displaymath}
@@ -2359,7 +2291,6 @@ returns \schfalse{}.
 (string->number "100")                 \ev  100
 (string->number "100" 16)              \ev  256
 (string->number "1e2")                 \ev  100.0
-(string->number "15\sharpsign\sharpsign")                \ev  1500.0
 (string->number "0/0")                 \ev  \schfalse
 (string->number "+inf.0")              \ev  +inf.0
 (string->number "-inf.0")              \ev  -inf.0
@@ -2376,9 +2307,9 @@ returns \schfalse{}.
 \section{Booleans}
 \label{booleansection}
 
-The standard boolean objects for true and false are written as
+The standard boolean objects for true and false have external representations
 \schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f} However, of all
-the standard Scheme values, only \schfalse{} counts as false in
+objects, only \schfalse{} counts as false in
 conditional expressions.  See section~\ref{booleanvaluessection}.
 
 \begin{note}
@@ -2521,7 +2452,7 @@ Returns the contents of the car field of \var{pair}.
 (car '(a b c))          \ev  a
 (car '((a) b c d))      \ev  (a)
 (car '(1 . 2))          \ev  1
-(car '())               \ev  \exception{\&assertion}%
+(car '())               \lev \exception{\&assertion}%
 \end{scheme}
  
 \end{entry}
@@ -2535,7 +2466,7 @@ Returns the contents of the cdr field of \var{pair}.
 \begin{scheme}
 (cdr '((a) b c d))      \ev  (b c d)
 (cdr '(1 . 2))          \ev  2
-(cdr '())               \ev  \exception{\&assertion}%
+(cdr '())               \lev \exception{\&assertion}%
 \end{scheme}
  
 \end{entry}
@@ -2702,7 +2633,7 @@ The {\cf map} procedure applies \var{proc} element-wise to the elements of the
 \var{list}s and returns a list of the results, in order.
 \var{Proc} is always called in the same dynamic environment 
 as {\cf map} itself.
-The dynamic order in which \var{proc} is applied to the elements of the
+The order in which \var{proc} is applied to the elements of the
 \var{list}s is unspecified.
 If multiple returns occur from {\cf map}, the 
 values returned by earlier returns are not mutated.
@@ -2780,24 +2711,6 @@ symbols are identical (in the sense of {\cf eq?}, {\cf eqv?} and {\cf equal?}) i
 names are spelled the same way. 
 A symbol literal is formed using {\cf quote}.
 
-\begin{scheme}
-Hello \ev Hello
-'H\backwhack{}x65;llo \ev Hello
-'$\lambda$ \ev $\lambda$
-'\backwhack{}x3BB; \ev $\lambda$
-(string->symbol "a b") \ev a\backwhack{}x20;b
-(string->symbol "a\backwhack{}\backwhack{}b") \ev a\backwhack{}x5C;b
-'a\backwhack{}x20;b \ev a\backwhack{}x20;b
-'|a b| \>; \emph{syntax violation}
-\>; \textrm{(illegal character}
-\>; \textrm{vertical bar)}
-'a\backwhack{}nb  \>; \emph{syntax violation}
-\>; \textrm{(illegal use of backslash)}
-'a\backwhack{}x20 \>; \emph{syntax violation}
-\>; \textrm{(missing semi-colon to}
-\>; \textrm{terminate \backwhack{}x escape)}%
-\end{scheme}
-
 \begin{entry}{%
 \proto{symbol?}{ obj}{procedure}}
 
@@ -2872,7 +2785,7 @@ values~\cite{Unicode}.
   \textit{Unicode scalar values}\mainindex{Unicode scalar
     value}\mainindex{scalar value} (integers in the range 0 to
   \#x10FFFF, excluding the range \#xD800 to \#xDFFF) in the latest
-  version of the standard) and human-readable ``characters''. More
+  version of the standard and human-readable ``characters''. More
   precisely, Unicode distinguishes between glyphs, which are printed
   for humans to read, and characters, which are abstract entities that
   map to glyphs (sometimes in a way that's sensitive to surrounding
@@ -2882,14 +2795,14 @@ values~\cite{Unicode}.
 
   Despite this complexity, most things that a literate human would
   call a ``character'' can be represented by a single Unicode scalar
-  value (though several sequences of Unicode scalar values may
+  value (although several sequences of Unicode scalar values may
   represent that same character). For example, Roman letters, Cyrillic
   letters, Hebrew consonants, and most Chinese characters fall into
   this category.
   
   Unicode scalar values exclude the range \#xD800 to \#xDFFF, which
   are part of the range of Unicode \textit{code points}\mainindex{code
-    point}.  However, these the Unicode scalar values in this range,
+    point}.  However, the Unicode scalar values in this range,
   the so-called \textit{surrogates}\mainindex{surrogate}, are an
   artefact of the UTF-16 encoding, and can only appear in specific
   Unicode encodings, and even then only in pairs that encode scalar
@@ -2951,17 +2864,9 @@ Strings are sequences of characters.
 
 \vest The {\em length} of a string is the number of characters that it
 contains.  This number is fixed when the
-string is created, and represented by an exact, non-negative integer
-object.  The \defining{valid indices} of a string are the
-exact non-negative integer objects less than the length of the string.  The first
+string is created.  The \defining{valid indices} of a string are the
+integers less than the length of the string.  The first
 character of a string has index 0, the second has index 1, and so on.
-
-\vest In phrases such as ``the characters of \var{string} beginning with
-index \var{start} and ending with index \var{end}'', it is understood
-that the index \var{start} is inclusive and the index \var{end} is
-exclusive.  Thus if \var{start} and \var{end} are the same index, a null
-substring is referred to, and if \var{start} is zero and \var{end} is
-the length of \var{string}, then the entire string is referred to.
 
 \begin{entry}{%
 \proto{string?}{ obj}{procedure}}
@@ -3001,6 +2906,7 @@ integer object.
 
 \domain{\var{K} must be a valid index of \var{string}.}
 The {\cf string-ref} procedure returns character \vr{k} of \var{string} using zero-origin indexing.
+
 \begin{note}
   Implementors should make {\cf string-ref} run in constant
   time.
@@ -3014,7 +2920,7 @@ Returns \schtrue{} if the strings are the same length and contain the same
 characters in the same positions.  Otherwise, returns \schfalse.
 
 \begin{scheme}
-(string=? "Stra\ss{}e" "Strasse") \ev \schfalse%
+(string=? "Stra\ss{}e" "Strasse") \lev \schfalse%
 \end{scheme}
 \end{entry}
 
@@ -3056,7 +2962,6 @@ The {\cf substring} procedure returns a newly allocated string formed from the c
 
 Returns a newly allocated string whose characters form the concatenation of the
 given strings.
-
 \end{entry}
 
 
@@ -3113,7 +3018,7 @@ chosen element is typically less for the vector than for the list.
 
 \vest The {\em length} of a vector is the number of elements that it
 contains.  This number is a non-negative integer that is fixed when the
-vector is created, and represented by an exact integer object.
+vector is created.
 The {\em valid indices}\index{valid indices} of a
 vector are the exact non-negative integer objects less than the length of the
 vector.  The first element in a vector is indexed by zero, and the last
@@ -3183,8 +3088,8 @@ The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 \proto{vector-set!}{ vector k obj}{procedure}}
 
 \domain{\var{K} must be a valid index of \var{vector}.}
-The {\cf vector-set!} procedure stores \var{obj} in element \vr{k} of \var{vector}.
-The value returned by {\cf vector-set!} \isunspecified.  % <!>
+The {\cf vector-set!} procedure stores \var{obj} in element \vr{k} of
+\var{vector}, and returns \unspecifiedreturn.
 
 Passing an immutable vector to {\cf vector-set!} should cause an exception
 with condition type {\cf\&assertion} to be raised.
@@ -3195,8 +3100,8 @@ with condition type {\cf\&assertion} to be raised.
   vec)      \lev  \#(0 ("Sue" "Sue") "Anna")
 
 (vector-set! '\#(0 1 2) 1 "doe")  \lev  \unspecified
-             ; constant vector
-             ; should raise \exception{\&assertion}%
+             ; \textrm{constant vector}
+             ; \textrm{should raise} \exception{\&assertion}%
 \end{scheme}
 
 \end{entry}
@@ -3221,8 +3126,7 @@ created vector initialized to the elements of the list \var{list}.
 \proto{vector-fill!}{ vector fill}{procedure}}
 
 Stores \var{fill} in every element of \var{vector}
-and returns the unspecified value.  % <!>
-
+and returns \unspecifiedreturn.
 \end{entry}
 
 \begin{entry}{%
@@ -3236,7 +3140,7 @@ The {\cf vector-map} procedure applies \var{proc} element-wise to the elements o
 \var{vector}s and returns a vector of the results, in order.
 \var{Proc} is always called in the same dynamic environment 
 as {\cf vector-map} itself.
-The dynamic order in which \var{proc} is applied to the elements of the
+The order in which \var{proc} is applied to the elements of the
 \var{vector}s is unspecified.
 If multiple returns occur from {\cf vector-map}, the return
 values returned by earlier returns are not mutated.
@@ -3334,8 +3238,8 @@ condition type {\cf \&assertion}.
       (loop n 1)))
 
 (fac 5) \ev 120
-(fac 4.5) \ev \exception{\&assertion}
-(fac -3) \ev \exception{\&assertion}%
+(fac 4.5) \lev \exception{\&assertion}
+(fac -3) \lev \exception{\&assertion}%
 \end{scheme}
 \end{entry}
 
@@ -3373,6 +3277,9 @@ Calls \var{proc} with the elements of the list
 {\cf(append (list \vari{arg} \dotsfoo) \var{rest-args})} as the actual
 arguments.
 
+If a call to {\cf apply} occurs in a tail context, the call
+to \var{proc} is also in a tail context.
+
 \begin{scheme}
 (apply + (list 3 4))              \ev  7
 
@@ -3405,11 +3312,14 @@ may cause the invocation of \var{before} and \var{after} procedures installed us
 The escape procedure accepts the same number of arguments as the
 continuation of the original call to \callcc.
 
-\vest The escape procedure that is passed to \var{proc} has
+The escape procedure that is passed to \var{proc} has
 unlimited extent just like any other procedure in Scheme.  It may be stored
 in variables or data structures and may be called as many times as desired.
 
-\vest The following examples show only some ways in which
+If a call to {\cf call-with-current-continuation} occurs in a tail
+context, the call to \var{proc} is also in a tail context.
+
+The following examples show only some ways in which
 {\cf call-with-current-continuation} is used.  If all real uses were as
 simple as these examples, there would be no need for a procedure with
 the power of {\cf call-with-current-continuation}.
@@ -3463,18 +3373,18 @@ The {\cf values} procedure might be defined as follows:
 \end{scheme}
 
 The continuations of all non-final expressions within a sequence of
-expressions in {\cf lambda}, {\cf begin}, {\cf let}, {\cf let*}, {\cf
-  letrec}, {\cf letrec*}, {\cf let-values}, {\cf let*-values}, {\cf
-  case}, {\cf cond}, and {\cf do} forms as well as the continuations
-of the \var{before} and \var{after} arguments to {\cf dynamic-wind}
-take an arbitrary number of values.
+expressions, such as in {\cf lambda}, {\cf begin}, {\cf let}, {\cf
+  let*}, {\cf letrec}, {\cf letrec*}, {\cf let-values}, {\cf
+  let*-values}, {\cf case}, and {\cf cond} forms, usually take an
+arbitrary number of values.
 
 Except for these and the continuations created by {\cf
-  call-with-values}, {\cf let-values}, and {\cf let*-values}, all
-other continuations take exactly one value.  The effect of passing an
-inappropriate number of values to a continuation not created by {\cf
-  call-with-values}, {\cf let-values}, or {\cf let*-values} is
-undefined.
+  call-with-values}, {\cf let-values}, and {\cf let*-values},
+continuations implicitly accepting a single value, such as the
+continuations of \hyper{operator} and \hyper{operand}s of procedure
+calls or the \hyper{test} expressions in conditionals, take exactly
+one value.  The effect of passing an inappropriate number of values to
+such a continuation is undefined.
 \end{entry}
 
 \begin{entry}{%
@@ -3483,7 +3393,7 @@ undefined.
 \domain{\var{Producer} must be a procedure and should accept zero
   arguments.  \var{Consumer} must be a procedure and should accept as many
   values as \var{producer} returns.}
-Calls \var{producer} with no arguments and
+The {\cf call-with-values} procedure calls \var{producer} with no arguments and
 a continuation that, when passed some values, calls the
 \var{consumer} procedure with those values as arguments.
 The continuation for the call to \var{consumer} is the
@@ -3496,6 +3406,9 @@ continuation of the call to {\tt call-with-values}.
 
 (call-with-values * -)                             \ev  -1%
 \end{scheme}
+
+If a call to {\cf call-with-values} occurs in a tail context, the call
+to \var{consumer} is also in a tail context.
 
 \implresp After \var{producer} returns, the implementation must check
 that \var{consumer} accepts as many values as \var{consumer} has
@@ -3607,12 +3520,12 @@ the continuation packaged in the escape procedure.
 \rproto{let}{ \hyper{variable} \hyper{bindings} \hyper{body}}{\exprtype}}
 
 \label{namedlet}
-``Named {\cf let}'' is a variant on the syntax of \ide{let} which provides
+``Named {\cf let}'' is a variant on the syntax of \ide{let} that provides
 a general looping construct and may also be used to express
 recursion.
 It has the same syntax and semantics as ordinary {\cf let}
 except that \hyper{variable} is bound within \hyper{body} to a procedure
-whose formal arguments are the bound variables and whose body is
+whose parameters are the bound variables and whose body is
 \hyper{body}.  Thus the execution of \hyper{body} may be repeated by
 invoking the procedure named by \hyper{variable}.
 
@@ -3696,7 +3609,8 @@ As noted in section~\ref{abbreviationsection},
   `((unquote-splicing name name name)))%
           \lev (foo foo foo)
 (let ((q '((append x y) (sqrt 9))))
-  ``(foo ,,@q)) \lev `(foo (unquote (append x y) (sqrt 9)))
+  ``(foo ,,@q)) \lev `(foo
+                 (unquote (append x y) (sqrt 9)))
 (let ((x '(2 3))
       (y '(4 5)))
   `(foo (unquote (append x y) (sqrt 9)))) \lev (foo (2 3 4 5) 3)%
@@ -3781,8 +3695,8 @@ un\-quo\-ta\-tion $D$} takes precedence.
 \section{Binding constructs for syntactic keywords}
 \label{bindsyntax}
 
-The {\cf let-syntax} and {\cf letrec-syntax} forms are analogous to {\cf let}
-and {\cf letrec} but bind keywords rather than variables.
+The {\cf let-syntax} and {\cf letrec-syntax} forms 
+bind keywords.
 Like a {\cf begin} form, a {\cf let-syntax} or {\cf letrec-syntax} form
 may appear in a definition context, in which case it is treated as a
 definition, and the forms in the body must also be
@@ -3804,8 +3718,8 @@ and each \hyper{expression} is
 an expression that evaluates, at macro-expansion
 time, to a \textit{transformer}\index{transformer}\index{macro transformer},
 which is returned by {\cf syntax-rules} or {\cf identifier-syntax}
-expressions (see section~\ref{syntaxrulessection}, or by {\cf
-  syntax-case} expressions (see~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}).  It is a
+expressions (see section~\ref{syntaxrulessection}), or by {\cf
+  syntax-case} expressions (see library chapter~\extref{lib:syntaxcasechapter}{{\cf syntax-case}}).  It is a
 syntax violation for \hyper{keyword} to appear more than once in the list of keywords
 being bound.
 
@@ -3935,7 +3849,7 @@ to the keyword {\cf f} whose binding is established by the
 \label{syntaxrulessection}
 
 \begin{entry}{%
-\pproto{(syntax-rules (\hyper{literal} \dots) \hyper{syntax rule} \dots)}{\exprtype~({\cf expand})}
+\pproto{(syntax-rules (\hyper{literal} \dotsfoo) \hyper{syntax rule} \dotsfoo)}{\exprtype~({\cf expand})}
 \litprotoexpandnoindex{\_}
 \litprotoexpand{...}}
 \mainschindex{syntax-rules}\schindex{\_}
@@ -3986,10 +3900,10 @@ according to the template.  It is a syntax violation when no match is found.
 
 An identifier appearing within a \hyper{pattern} may be an underscore
 (~{\cf \_}~), a literal identifier listed in the list of literals
-{\cf (\hyper{literal} \dots)}, or an ellipsis (~{\cf ...}~).
+{\cf (\hyper{literal} \dotsfoo)}, or an ellipsis (~{\cf ...}~).
 All other identifiers appearing within a \hyper{pattern} are
 \textit{pattern variables\mainindex{pattern variable}}.
-It is a syntax violation if an ellipsis or underscore appears in {\cf (\hyper{literal} \dots)}.
+It is a syntax violation if an ellipsis or underscore appears in {\cf (\hyper{literal} \dotsfoo)}.
 
 While the first subform of \hyper{srpattern} may be an identifier, the
 identifier is not involved in the matching and
@@ -4029,19 +3943,19 @@ of any bindings inserted into the output of the macro.
 are undefined, they are considered to refer to the same binding.)
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots{} $P_n$)}
+{\cf ($P_1$ \dotsfoo{} $P_n$)}
 and $F$ is a list of $n$ elements that match $P_1$ through
 $P_n$.
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots{} $P_n$ . $P_x$)}
+{\cf ($P_1$ \dotsfoo{} $P_n$ . $P_x$)}
 and $F$ is a list or improper list of $n$ or more elements
 whose first $n$ elements match $P_1$ through $P_n$
 and
 whose $n$th cdr matches $P_x$.
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
+{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
 and $F$ is a list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
@@ -4050,7 +3964,7 @@ and
 whose remaining $n-m$ elements match $P_{m+1}$ through $P_n$.
 
 \item $P$ is of the form
-{\cf ($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$ . $P_x$)},
+{\cf ($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$ . $P_x$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
 and $F$ is a list or improper list of $n$
 elements whose first $k$ elements match $P_1$ through $P_k$,
@@ -4060,12 +3974,12 @@ and
 whose $n$th and final cdr matches $P_x$.
 
 \item $P$ is of the form
-{\cf \#($P_1$ \dots{} $P_n$)}
+{\cf \#($P_1$ \dotsfoo{} $P_n$)}
 and $F$ is a vector of $n$ elements that match $P_1$ through
 $P_n$.
 
 \item $P$ is of the form
-{\cf \#($P_1$ \dots{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dots{} $P_n$)},
+{\cf \#($P_1$ \dotsfoo{} $P_k$ $P_e$ \hyper{ellipsis} $P_{m+1}$ \dotsfoo{} $P_n$)},
 where \hyper{ellipsis} is the identifier {\cf ...}
 and $F$ is a vector of $n$ or more elements
 whose first $k$ elements match $P_1$ through $P_k$,
@@ -4112,6 +4026,19 @@ ellipsis, {\cf ...}.
 This allows syntactic abstractions to expand into forms containing
 ellipses.
 
+\begin{scheme}
+(define-syntax be-like-begin
+  (syntax-rules ()
+    ((be-like-begin name)
+     (define-syntax name
+       (syntax-rules ()
+         ((name expr (... ...))
+          (begin expr (... ...))))))))
+
+(be-like-begin sequence)
+(sequence 1 2 3 4) \ev 4%
+\end{scheme}
+
 As an example for hygienic use of auxiliary identifier,
 if \ide{let} and \ide{cond} are defined as in
 section~\ref{let} and appendix~\ref{derivedformsappendix} then they
@@ -4124,7 +4051,7 @@ are hygienic (as required) and the following is not an error.
 
 The macro transformer for {\cf cond} recognizes {\cf =>}
 as a local variable, and hence an expression, and not as the
-base-library identifier {\cf =>}, which the macro transformer treats
+identifier {\cf =>}, which the macro transformer treats
 as a syntactic keyword.  Thus the example expands into
 
 \begin{scheme}
@@ -4141,20 +4068,6 @@ instead of
 \end{scheme}
 
 which would result in an assertion violation.
-
-\begin{scheme}
-(define-syntax be-like-begin
-  (syntax-rules ()
-    ((be-like-begin name)
-     (define-syntax name
-       (syntax-rules ()
-         ((name expr (... ...))
-          (begin expr (... ...))))))))
-
-(be-like-begin sequence)
-(sequence 1 2 3 4) \ev 4%
-\end{scheme}
-
 \end{entry}
 
 \begin{entry}{%
@@ -4211,57 +4124,71 @@ expression.
 \begin{itemize}
 \item The last expression within the body of a lambda expression,
   shown as \hyper{tail expression} below, occurs in a tail context.
-\begin{grammar}%
-(l\=ambda \meta{formals}
+%
+\begin{scheme}
+(l\=ambda \hyper{formals}
   \>\arbno{\hyper{definition}} 
-  \>\arbno{\meta{expression}} \meta{tail expression})
-\end{grammar}%
-
+  \>\arbno{\hyper{expression}} \hyper{tail expression})%
+\end{scheme}
+%
 \item If one of the following expressions is in a tail context,
-then the subexpressions shown as \meta{tail expression} are in a tail context.
+then the subexpressions shown as \hyper{tail expression} are in a tail context.
 These were derived from specifications of the syntax of the forms described in
-this chapter by replacing some occurrences of \meta{expression}
-with \meta{tail expression}.  Only those rules that contain tail contexts
+this chapter by replacing some occurrences of \hyper{expression}
+with \hyper{tail expression}.  Only those rules that contain tail contexts
 are shown here.
+%
+\begin{scheme}
+(if \hyper{expression} \hyper{tail expression} \hyper{tail expression})
+(if \hyper{expression} \hyper{tail expression})
 
-\begin{grammar}%
-(if \meta{expression} \meta{tail expression} \meta{tail expression})
-(if \meta{expression} \meta{tail expression})
+(cond \atleastone{\hyper{cond clause}})
+(cond \arbno{\hyper{cond clause}} (else \hyper{tail sequence}))
 
-(cond \atleastone{\meta{cond clause}})
-(cond \arbno{\meta{cond clause}} (else \meta{tail sequence}))
+(c\=ase \hyper{expression}
+  \>\atleastone{\hyper{case clause}})
+(c\=ase \hyper{expression}
+  \>\arbno{\hyper{case clause}}
+  \>(else \hyper{tail sequence}))
 
-(c\=ase \meta{expression}
-  \>\atleastone{\meta{case clause}})
-(c\=ase \meta{expression}
-  \>\arbno{\meta{case clause}}
-  \>(else \meta{tail sequence}))
+(and \arbno{\hyper{expression}} \hyper{tail expression})
+(or \arbno{\hyper{expression}} \hyper{tail expression})
 
-(and \arbno{\meta{expression}} \meta{tail expression})
-(or \arbno{\meta{expression}} \meta{tail expression})
+(let \hyper{bindings} \hyper{tail body})
+(let \hyper{variable} \hyper{bindings} \hyper{tail body})
+(let* \hyper{bindings} \hyper{tail body})
+(letrec* \hyper{bindings} \hyper{tail body})
+(letrec \hyper{bindings} \hyper{tail body})
+(let-values \hyper{mv-bindings} \hyper{tail body})
+(let*-values \hyper{mv-bindings} \hyper{tail body})
 
-(let \hyper{bindings} \meta{tail body})
-(let \meta{variable} \hyper{bindings} \meta{tail body})
-(let* \hyper{bindings} \meta{tail body})
-(letrec* \hyper{bindings} \meta{tail body})
-(letrec \hyper{bindings} \meta{tail body})
-(let-values \hyper{mv-bindings} \meta{tail body})
-(let*-values \hyper{mv-bindings} \meta{tail body})
+(let-syntax \hyper{bindings} \hyper{tail body})
+(letrec-syntax \hyper{bindings} \hyper{tail body})
 
-(let-syntax \hyper{bindings} \meta{tail body})
-(letrec-syntax \hyper{bindings} \meta{tail body})
-
-(begin \meta{tail sequence})
-
-{\rm where}
-
-\meta{cond clause} \: (\meta{test} \meta{tail sequence})
-\meta{case clause} \: ((\arbno{\meta{datum}}) \meta{tail sequence})
-
-\meta{tail body} \: \arbno{\meta{definition}}
-\>\> \meta{tail sequence}
-\meta{tail sequence} \: \arbno{\meta{expression}} \meta{tail expression}
-\end{grammar}%
+(begin \hyper{tail sequence})%
+\end{scheme}
+%
+where a \hyper{cond clause} is 
+%
+\begin{scheme}
+(\hyper{test} \hyper{tail sequence})\textrm{,}%
+\end{scheme}
+a \hyper{case clause} is
+%
+\begin{scheme}
+((\arbno{\hyper{datum}}) \hyper{tail sequence})\textrm{,}%
+\end{scheme}
+%
+a \hyper{tail body} is
+\begin{scheme}
+\arbno{\hyper{definition}} \hyper{tail sequence}\textrm{,}%
+\end{scheme}
+%
+and a \hyper{tail sequence} is
+%
+\begin{scheme}
+\arbno{\hyper{expression}} \hyper{tail expression}\textrm{.}%
+\end{scheme}%
 
 \item
 If a {\cf cond} expression is in a tail context, and has a clause of

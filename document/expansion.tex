@@ -4,8 +4,8 @@
 Macro uses (see section~\ref{macrosection}) are expanded into \textit{core
 forms}\mainindex{core form} at the start of evaluation (before compilation or interpretation)
 by a syntax \emph{expander}.
-(The set of core forms is implementation-dependent, as is the
-representation of these forms in the expander's output.)
+The set of core forms is implementation-dependent, as is the
+representation of these forms in the expander's output.
 If the expander encounters a syntactic abstraction, it invokes
 the associated transformer to expand the syntactic abstraction, then
 repeats the expansion process for the form returned by the transformer.
@@ -19,7 +19,7 @@ To handle definitions, the expander processes the initial
 forms in a \hyper{body} (see section~\ref{bodiessection}) or
 \hyper{library body} (see section~\ref{librarybodysection})
 from left to
-right.  How the expander processes each form encountered as it does so
+right.  How the expander processes each form encountered 
 depends upon the kind of form.
 
 \begin{description}
@@ -47,7 +47,7 @@ processing, arranging for the keywords bound by the {\cf let-syntax}
 and {\cf letrec-syntax} to be visible only in the inner body forms.
 
 \item[expression, i.e., nondefinition]
-The expander completes the expansion of the deferred right-hand-side forms
+The expander completes the expansion of the deferred right-hand-side expressions
 and the current and remaining expressions in the body, and then
 creates the equivalent of a {\cf letrec*} form from the defined variables,
 expanded right-hand-side expressions, and expanded body expressions.
@@ -124,7 +124,7 @@ It requires a single left-to-right pass over the definitions followed by a
 single pass (in any order) over the body expressions and deferred
 right-hand sides.
 
-For example, in
+Example:
 
 \begin{scheme}
 (lambda (x)
@@ -137,7 +137,7 @@ For example, in
   (odd? (if (odd? x) (* x x) x)))%
 \end{scheme}
 
-The definition of {\cf defun} is encountered first, and the keyword
+In the example, the definition of {\cf defun} is encountered first, and the keyword
 {\cf defun} is associated with the transformer resulting from
 the expansion and evaluation of the corresponding right-hand side.
 A use of {\cf defun} is encountered next and expands into a
@@ -150,7 +150,7 @@ A use of {\cf odd?} appears next and is expanded; the resulting
 call to {\cf not} is recognized as an expression
 because {\cf not} is bound as a variable.
 At this point, the expander completes the expansion of the current
-expression (the {\cf not} call) and the deferred right-hand side of the
+expression (the call to {\cf not}) and the deferred right-hand side of the
 {\cf even?} definition;
 the uses of {\cf odd?} appearing in these expressions are expanded
 using the transformer associated with the keyword {\cf odd?}.
@@ -165,7 +165,7 @@ The final output is the equivalent of
     (not (even? (if (not (even? x)) (* x x) x)))))%
 \end{scheme}
 
-although the structure of the output is implementation dependent.
+although the structure of the output is implementation-dependent.
 
 Because definitions and expressions can be interleaved in a
 \hyper{top-level body} (see chapter~\ref{programchapter}),
@@ -177,7 +177,7 @@ When the expander finds a nondefinition,
 it defers its expansion and continues scanning for definitions.
 Once it reaches the end of the set of forms, it processes the
 deferred right-hand-side and body expressions, then
-residualizes the equivalent of a {\cf letrec*} form from the defined variables,
+generates the equivalent of a {\cf letrec*} form from the defined variables,
 expanded right-hand-side expressions, and expanded body expressions.
 For each body expression \hyper{expression} that appears before a variable definition
 in the body, a dummy binding is created at the corresponding place within
@@ -185,11 +185,11 @@ the set of {\cf letrec*} bindings, with a fresh temporary variable on the
 left-hand side and the equivalent of {\cf (begin \hyper{expression}
   \hyper{unspecified})},
 where \hyper{unspecified} is a side-effect-free expression returning
-unspecified values,
+an unspecified value,
 on the right-hand side, so that
 left-to-right evaluation order is preserved.
-The {\cf begin} wrapper allows \hyper{expression} to evaluate to zero or more
-values.
+The {\cf begin} wrapper allows \hyper{expression} to evaluate to an
+arbitrary number of values.
 
 %%% Local Variables: 
 %%% mode: latex
