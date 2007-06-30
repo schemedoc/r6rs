@@ -118,7 +118,8 @@ can appear anywhere any other \hyper{definition} can appear.
 \litproto{protocol}
 \litproto{sealed}
 \litproto{opaque}
-\litproto{nongenerative}}
+\litproto{nongenerative}
+\litproto{parent-rtd}}
 
 A {\cf define-record-type} form defines a record type along with
 associated constructor descriptor and constructor, predicate, field
@@ -364,13 +365,12 @@ also initializes the fields of this record type to the values of {\cf
   x1}, \ldots, {\cf x4}:
 
 \item If there is a {\cf parent} clause, but no {\cf protocol} clause,
-  then a default constructor, then the parent type must not have a
+  then the parent type must not have a
   {\cf protocol} clause itself.  The constructor bound to
-  \hyper{constructor name} is a procedure accepting one argument for
-  each field of type, including the parent's fields, and so on, with
-  the parent's fields coming first, and each type's fields in the same
-  order as they appear in its {\cf fields} clause.  It returns a
-  record object with the fields initialized to the corresponding
+  \hyper{constructor name} is a procedure that accepts arguments corresponding to the 
+  parent types' constructor first, and then one argument for each field in the same
+  order as in the {\cf fields} clause. The constructor
+  returns a record object with the fields initialized to the corresponding
   arguments.
 \item If there is a {\cf parent-rtd} clause, then the constructor is
   as with a {\cf parent} clause, except that the constructor of the
@@ -664,7 +664,7 @@ descriptor.  \var{Protocol}\mainindex{protocol} must be a procedure or \schfalse
 If it is \schfalse, a default \var{protocol} procedure is supplied.
 
 If \var{protocol} is a procedure, it is handled analogously to the
-protocol expression in a {\cf define-record-type} formj.
+protocol expression in a {\cf define-record-type} form.
 
 FIXME
 
