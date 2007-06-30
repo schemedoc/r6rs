@@ -14,7 +14,8 @@ creates a fresh record object and initializes its fields to values.
 Records of different types can be distinguished from each other and
 from other objects by \textit{record predicates}. A record predicate
 returns \schtrue{} when passed a record of the type specified by the
-record-type descriptor.  An \defining{accessor} extracts from a record
+record-type descriptor and \schfalse{} otherwise.
+An \defining{accessor} extracts from a record
 the component associated with a field, and a \defining{mutator}
 changes the component to a different value.
 
@@ -26,7 +27,7 @@ parent's parent, if any, and so on.  A record type that does not
 extend another record type is called a \defining{base record type}.  A
 record type can be \defining{sealed} to prevent it from being
 extended.  Moreover, a record type can be \defining{nongenerative},
-i.e.\ it is globally identified by a ``uid'', and new, compatible
+i.e., it is globally identified by a ``uid'', and new, compatible
 definitions of a nongenerative record type with the same uid as a
 previous always yield the same record type.
 
@@ -58,7 +59,7 @@ target for expansion of the syntactic layers.  However, the
 record operations provided through the procedural layer may be
 significantly less efficient than the operations provided through the
 syntactic layer.  Therefore, alternative implementations
-of syntactic record-type-defining should, when possible, expand into
+of syntactic record-type definition should, when possible, expand into
 the syntatic layer rather than the procedural layer.
 
 The syntactic layer is used more commonly and therefore described
@@ -99,11 +100,14 @@ section~\extref{report:eqv?}{Equivalence predicates}):
   for which {\cf eqv?} returns \schfalse, then {\cf eqv?} returns \schfalse.
 \end{itemize}
 
+These comments apply as well to {\cf eq?}, which is guaranteed to have
+the same behavior on records as {\cf eqv?}.
+
 \section{Syntactic layer}
 \label{recordssyntacticsection}
 
 The syntactic layer is provided by the \defrsixlibrary{records
-  syntactic} library.  Some details of the specifications are
+  syntactic} library.  Some details of the specification are
 explained in terms of the specification of the procedural layer below.
 
 The record-type-defining form {\cf define-record-type} is a definition and
@@ -204,8 +208,7 @@ If \hyper{field spec} is just a \hyper{field name} form, it is an
 abbreviation for {\cf (immutable \hyper{field name})}.
 
 The \hyper{field name}s become, as symbols, the names of the fields in
-the record-type descriptor being created, in the same order. They are
-not used in any other way.
+the record-type descriptor being created, in the same order.
 
 The {\cf fields} clause may be absent; this is equivalent to an empty
 {\cf fields} clause.
@@ -223,8 +226,7 @@ associated with \hyper{parent name} must not be sealed.
    
 \hyper{Expression} is evaluated in the same environment as the
 define-record-type form, and must evaluate to a protocol appropriate
-for the record type being defined (see the description of protocols
-below).
+for the record type being defined.
 
 The protocol is used to create a record-constructor descriptor (see
 below).  If the record type being defined has a parent, the
@@ -240,7 +242,7 @@ definition does not specify a protocol.
 {\cf (sealed \schfalse)}
    
 If this option is specified with operand \schtrue, the defined record
-type is sealed, i.e.\ no extensions of the record type can be created.
+type is sealed, i.e., no extensions of the record type can be created.
 If this option is specified with operand \schfalse, or is absent, the
 defined record type is not sealed.
 
@@ -259,7 +261,7 @@ This specifies that the record type is nongenerative with uid
 \hyper{uid}, which must be an \hyper{identifier}.
 If \hyper{uid} is absent, a unique uid is generated at macro-expansion time.
 If two record-type definitions specify the same \var{uid}, then
-the record-type definitions should equivalent, i.e.\
+the record-type definitions should equivalent, i.e.,
 the implied arguments to {\cf make-record-type-descriptor}
 must be equivalent as described under {\cf make-record-type-descriptor}.
 If this condition is not met, it is either considered a syntax violation or
@@ -288,8 +290,12 @@ must not be sealed.  Moreover, a record-type definition must not have
 both a {\cf parent} and a {\cf parent-rtd} clause.
 
 \begin{note}
-  Using a {\cf parent-rtd} instead of a {\cf parent} clause may
-  significantly impede performance on some implementations.
+  Use of the {\cf parent-rtd} clause generally forces an implementation to
+  delay the generation of constructor, accessor, and mutator code until
+  the record-type definition is evaluated at run time, since the type of
+  the parent is not generally known until then.
+  The {\cf parent} clause should therefore be used instead whenever
+  possible.
 \end{note}
 
 All bindings created by {\cf define-record-type} (for the record type,
@@ -339,10 +345,10 @@ procedure as follows:
   different from \var{p} in the previous case: It accepts arguments
   corresponding to the arguments of the constructor of the parent
   type.  It then returns a procedure \var{p} that accepts as many
-  arguments as there are fields in this type, in the same order as in
+  arguments as there are (additional) fields in this type, in the same order as in
   the {\cf fields} clause, and returns a record object with the fields
   of the parent record types initialized according to their
-  constructors and the arguments to \var{n}, and this the fields of
+  constructors and the arguments to \var{n}, and the fields of
   this record type initialized to its arguments of \var{p}.
 
   The constructor returned by the protocol procedure can accept an
@@ -358,7 +364,7 @@ procedure as follows:
     (let ((p (n v1 v2 v3)))
       (p x1 x2 x3 x4))))%
 \end{scheme}
-The constructor created by it accepts seven arguments, and initializes
+The resulting constructor accepts seven arguments, and initializes
 the fields of the parent types according to the constructor of the
 parent type, with {\cf v1}, {\cf v2}, and {\cf v3} as arguments.  It
 also initializes the fields of this record type to the values of {\cf
@@ -377,6 +383,10 @@ also initializes the fields of this record type to the values of {\cf
   parent type is determined by the constructor descriptor of the {\cf
     parent-rtd} clause.
 \end{itemize}
+
+A protocol may perform other actions consistent with the requirements
+described above, including mutation of the new record or other side
+effects, before returning the reocrd.
 \end{entry}
 
 Any definition that takes advantage of implicit naming for the
@@ -388,7 +398,8 @@ example, the implicit-naming record definition:
 (define-record-type frob
   (fields (mutable widget))
   (protocol
-    (lambda (p) (lambda (n) (p (make-widget n))))))%
+    (lambda (p)
+      (lambda (n) (p (make-widget n))))))%
 \end{scheme}
 
 is equivalent to the following explicit-naming record definition.
@@ -396,9 +407,11 @@ is equivalent to the following explicit-naming record definition.
 \begin{scheme}
 (define-record-type (frob make-frob frob?)
   (fields (mutable widget
-                   frob-widget frob-widget-set!))
+                   frob-widget
+                   frob-widget-set!))
   (protocol
-    (lambda (p) (lambda (n) (p (make-widget n))))))%
+    (lambda (p)
+      (lambda (n) (p (make-widget n))))))%
 \end{scheme}
 
 Also, the implicit-naming record definition:
