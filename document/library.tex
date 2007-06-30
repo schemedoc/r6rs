@@ -127,9 +127,10 @@ one of the following:
 \end{scheme}
 
 A \hyper{library~reference} identifies a library by its 
-name and optionally by its version.  It has the following form:
+name and optionally by its version.  It has one of the following forms:
 
 \begin{scheme}
+(\hyperi{identifier} \hyperii{identifier} \ldots)
 (\hyperi{identifier} \hyperii{identifier} \ldots \hyper{version~reference})%
 \end{scheme}
 
@@ -139,10 +140,14 @@ permitted only within a {\cf library} \hyper{import~set}.
 The \hyper{import~set} {\cf (library \hyper{library~reference})} is
 otherwise equivalent to \hyper{library~reference}.
 
+A \hyper{library~reference} with no \hyper{version~reference}
+(first form above) is equivalent to a \hyper{library~reference} with a
+\hyper{version~reference} of {\cf ()}.
+
 A \hyper{version~reference} specifies a set of \hyper{version}s that
 it matches.  The \hyper{library~reference} identifies all libraries of
 the same name and whose version is matched by the
-\hyper{version~reference}.  A \hyper{version~reference} is empty or has
+\hyper{version~reference}.  A \hyper{version~reference} has
 the following form:
 %
 \begin{scheme}
@@ -152,8 +157,7 @@ the following form:
 (not \hyper{version reference})%
 \end{scheme}
 %
-An empty \hyper{version reference} is equivalent to {\cf ()}.  A
-\hyper{version reference} of the first form matches a \hyper{version}
+A \hyper{version reference} of the first form matches a \hyper{version}
 with at least $n$ elements, whose \hyper{sub-version reference}s match
 the corresponding \hyper{sub-version}s.  An {\cf and} \hyper{version
   reference} matches a version if all \hyper{version references}
