@@ -24,18 +24,19 @@ A library declaration contains the following elements:
 
 \begin{itemize}
 \item The \hyper{library~name} specifies the name of the library
-  (possibly with versioning).
+  (possibly with version).
 \item The {\cf export} subform specifies a list of exports, which name
   a subset of the bindings defined within or imported into the
   library.
 \item The {\cf import} subform specifies the imported bindings as a
   list of import dependencies, where each dependency specifies:
 \begin{itemize}
-\item the imported library's name,
+\item the imported library's name, and, optionally, constraints on its
+  version,
 \item the relevant levels, e.g., expand or run time, and
 \item the subset of the library's exports to make available within the
       importing library, and the local names to use within the importing
-      library for each of the library's exports, and
+      library for each of the library's exports.
 \end{itemize}
 \item The \hyper{library body} is the library body, consisting of a
   sequence of definitions followed by a sequence of expressions.  The
@@ -275,15 +276,16 @@ forms, may be specified by a syntactic abstraction
 
 The transformer expressions and bindings are evaluated and created
 from left to right, as described in chapter~\ref{expansionchapter}.
-The variable-definition right-hand-side expressions are evaluated
+The expressions of variable definitions are evaluated
 from left to right, as if in an implicit {\cf letrec*},
 and the body expressions are also evaluated from left to right
-after the variable-definition right-hand-side expressions.
+after the expressions of the variable definitions.
 A fresh location is created for each exported variable and initialized
 to the value of its local counterpart.
 The effect of returning twice to the continuation of the last body
 expression is unspecified.
 
+\begin{note}
 The names {\cf library}, {\cf export}, {\cf import},
 {\cf for}, {\cf run}, {\cf expand}, {\cf meta},
 {\cf import}, {\cf export}, {\cf only}, {\cf except}, {\cf
@@ -293,6 +295,7 @@ syntax and are not reserved, i.e., the same names can be used for other
 purposes within the library or even exported from or imported 
 into a library with different meanings, without affecting their
 use in the {\cf library} form.
+\end{note}
 
 Bindings defined with a library are not visible in code
 outside of the library, unless the bindings are explicitly exported from the
@@ -326,7 +329,20 @@ All other variables defined within a library are mutable.
 \section{Import and export levels}
 \label{phasessection}
 
-Every library can be characterized by expand-time information (minimally,
+Expanding a library may require run-time information from another
+library. Specifically, if a macro transformer is defined by a
+procedure that calls procedure from another library, then the latter
+library must be run when expanding the latter.  The latter may not be
+needed when the former is eventually run as part of a program, or it
+may be needed for the former program's run time, too.  The library
+mechanism distinguishes these times by phases, which are explained in
+this section.  Note that phases are only relevant for programs that
+contain macro transformers defined by procedures---programmers that
+exclusively use {\cf syntax-rules} and {\cf identifier-syntax} for
+defining macro transformers (see section~\ref{syntaxrulessection}) can
+ignore phases.
+
+More generally, every library can be characterized by expand-time information (minimally,
 its imported libraries, a list of the exported keywords, a list of the
 exported variables, and code to evaluate the transformer expressions) and
 run-time information (minimally, code to evaluate the variable definition
@@ -334,13 +350,6 @@ right-hand-side expressions, and code to evaluate the body expressions).
 The expand-time information must be available to expand references to
 any exported binding, and the run-time information must be available to
 evaluate references to any exported variable binding.
-
-Expanding a library may require run-time information from another
-library. For example, if a library provides procedures that are called
-by another library's macros during expansion, then the former library
-must be run when expanding the latter. The former may not be needed
-when the latter is eventually run as part of a program, or it may be
-needed for the latter's run time, too.
 
 \mainindex{phase}
 %
@@ -354,7 +363,7 @@ phase $1$.
 When {\cf define-syntax},
 {\cf let-syntax}, or {\cf letrec-syntax}
 forms appear within code evaluated at phase $n$, the right-hand sides
-are evaluated as phase $n+1$ expressions.
+are evaluated at phase $n+1$.
 
 These phases are relative to the phase in which the library itself is
 used.
@@ -370,8 +379,7 @@ $A$, then it refers to the export from an instance of $A$ at phase $1$
 
 A \defining{visit} of a library corresponds to the evaluation of its syntax
 definitions in a particular phase relative to another
-library---a process called \defining{visiting}. Evaluating a syntax definition
-at phase $n$ means that its right-hand side is evaluated at phase $n+1$.
+library---a process called \defining{visiting}. 
 For example, if a top-level expression in a library $B$ refers to
 a macro export from another library $A$, then it refers to the export from a
 visit of $A$ at phase $0$ (relative to the phase of $B$), which corresponds
@@ -383,7 +391,7 @@ to the evaluation of the macro's transformer expression at phase $1$.
 A \emph{level} is a lexical property of an identifier that determines
 in which phases it can be referenced. The level for each identifier
 bound by a definition within a library is $0$; that is, the identifier
-can be referenced only by phase $0$ expressions within the library.
+can be referenced only at phase $0$ within the library.
 The level for each imported binding is determined by the enclosing {\cf
   for} form of the {\cf import} in the importing library, in
 addition to the levels of the identifier in the exporting
@@ -420,10 +428,10 @@ shifted by the difference between the phase of the source library
 the library that encloses the reference. For example, suppose that
 expanding a library invokes a macro transformer, and the evaluation of
 the macro transformer refers to an identifier that is exported from
-another library (so the phase $1$ instance of the library is used);
+another library (so the phase-$1$ instance of the library is used);
 suppose further that the value of the binding is a syntax object
 representing an identifier with only a level-$n$ binding; then, the
-identifier must be used only in a phase $n+1$ expression in the
+identifier must be used only at phase $n+1$ in the
 library being expanded. This combination of levels and phases is why
 negative levels on identifiers can be useful, even though libraries
 exist only at non-negative phases.
@@ -453,9 +461,7 @@ create instances/visits of more libraries at more phases than required to
 satisfy references. When an identifier appears as an expression in a
 phase that is inconsistent with the identifier's level, then an
 implementation may raise an exception either at expand time or run
-time, or it may allow the reference. Thus, a library is portable only
-when it references identifiers in phases consistent with the declared
-levels, and a library whose meaning depends on whether the
+time, or it may allow the reference. Thus, a library whose meaning depends on whether the
 instances of a library are distinguished or shared across phases or
 {\cf library} expansions may be unportable.
 
