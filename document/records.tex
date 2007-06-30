@@ -12,7 +12,7 @@ other properties that all records of that type share.  Record objects
 are created by a \defining{record constructor}, a procedure that
 creates a fresh record object and initializes its fields to values.
 Records of different types can be distinguished from each other and
-from other objects by \textit{record predicates}. A record predicate
+from other types of objects by \textit{record predicates}. A record predicate
 returns \schtrue{} when passed a record of the type specified by the
 record-type descriptor and \schfalse{} otherwise.
 An \defining{accessor} extracts from a record
@@ -21,10 +21,16 @@ changes the component to a different value.
 
 Record types can be extended via single inheritance, allowing record
 types to model hierarchies that occur in applications like algebraic
-data types as well as single-inheritance class systems.  The extension
+data types as well as single-inheritance class systems.  If a record
+type \var{t} extends another record type \var{p}, each record of type
+\var{t} is also a record of type \var{p}, and the predicate,
+accessors, and mutators applicable to a record of type \var{p} are
+also applicable to a record of type \var{t}.  The extension
 relationship is transitive in the sense that a type extends its
 parent's parent, if any, and so on.  A record type that does not
-extend another record type is called a \defining{base record type}.  A
+extend another record type is called a \defining{base record type}.
+
+A
 record type can be \defining{sealed} to prevent it from being
 extended.  Moreover, a record type can be \defining{nongenerative},
 i.e., it is globally identified by a ``uid'', and new, compatible
@@ -138,7 +144,7 @@ forms:
 
 \begin{scheme}
 (\hyper{record name} \hyper{constructor name} \hyper{predicate name})
-\hyper{record name}
+\hyper{record name}%
 \end{scheme}
 
 \hyper{Record name}, \hyper{constructor name}, and \hyper{predicate
@@ -217,15 +223,17 @@ The {\cf fields} clause may be absent; this is equivalent to an empty
    
 Specifies that the record type is to have parent type \hyper{parent
   name}, where \hyper{parent name} is the \hyper{record name} of a
-record type previously defined using {\cf define-record-type}. The
-absence of a {\cf parent} or {\cf parent-rtd} (see below) clause
-implies a record type with no parent type.  The record-type definition
+record type previously defined using {\cf define-record-type}. 
+The record-type definition
 associated with \hyper{parent name} must not be sealed.
+If
+no {\cf parent} clause and no {\cf parent-rtd} (see below) clause
+is present, the record type is a base type.  
 
 {\cf (protocol \hyper{expression})}
    
 \hyper{Expression} is evaluated in the same environment as the
-define-record-type form, and must evaluate to a protocol appropriate
+{\cf define-record-type} form, and must evaluate to a protocol appropriate
 for the record type being defined.
 
 The protocol is used to create a record-constructor descriptor (see
@@ -261,7 +269,7 @@ This specifies that the record type is nongenerative with uid
 \hyper{uid}, which must be an \hyper{identifier}.
 If \hyper{uid} is absent, a unique uid is generated at macro-expansion time.
 If two record-type definitions specify the same \var{uid}, then
-the record-type definitions should equivalent, i.e.,
+the record-type definitions should be equivalent, i.e.,
 the implied arguments to {\cf make-record-type-descriptor}
 must be equivalent as described under {\cf make-record-type-descriptor}.
 If this condition is not met, it is either considered a syntax violation or
@@ -368,7 +376,7 @@ The resulting constructor accepts seven arguments, and initializes
 the fields of the parent types according to the constructor of the
 parent type, with {\cf v1}, {\cf v2}, and {\cf v3} as arguments.  It
 also initializes the fields of this record type to the values of {\cf
-  x1}, \ldots, {\cf x4}:
+  x1}, \ldots, {\cf x4}.
 
 \item If there is a {\cf parent} clause, but no {\cf protocol} clause,
   then the parent type must not have a
@@ -446,9 +454,11 @@ of accessor and mutator names for the widget field.
    
 Evaluates to the record-type descriptor (see below) associated with the type
 specified by \hyper{record-name}.
-   
-Note that {\cf record-type-descriptor} works on both opaque and non-opaque record
+
+\begin{note}   
+The {\cf record-type-descriptor} procedure works on both opaque and non-opaque record
 types.
+\end{note}
 \end{entry}
 
 \begin{entry}{%
@@ -576,10 +586,7 @@ the underlying Scheme system.
 
 The \var{parent} argument must be either \schfalse{} or an rtd. If it is an
 rtd, the returned record type, \var{t}, extends the record type
-\var{p} represented by \var{parent}. Each record of type \var{t} is also a
-record of type \var{p}, and all operations applicable to a record of
-type \var{p} are also applicable to a record of type \var{t}, except for
-inspection operations if \var{t} is opaque but \var{p} is not. An exception with
+\var{p} represented by \var{parent}.  An exception with
 condition type {\cf\&assertion} is raised if \var{parent} is sealed (see below).
    
 The \var{uid} argument must be either \schfalse{} or a symbol.
@@ -791,9 +798,9 @@ associated with \var{constructor-descriptor}.
 \proto{record-predicate}{ rtd}{procedure}}
    
 Returns a procedure that, given an object \var{obj}, returns
-a boolean that is \schtrue{}
-iff \var{obj} is a record of the type represented by
-\var{rtd}.
+\schtrue{}
+if \var{obj} is a record of the type represented by
+\var{rtd}, and \schfalse{} otherwise.
 \end{entry}
 
 \begin{entry}{%
@@ -947,7 +954,7 @@ when applied to an object of one of these types, may return
 \proto{record?}{ obj}{procedure}}
    
 Returns \schtrue{} if \var{obj} is a record, and its record type is
-not opaque. Returns \schfalse{} otherwise.  
+not opaque, and returns \schfalse{} otherwise.  
 \end{entry}
 
 \begin{entry}{%
