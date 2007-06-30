@@ -464,8 +464,10 @@ otherwise.
 For a binary port, the {\cf port-position} procedure returns the index
 of the position at which the next byte would be read from or written
 to the port as an exact non-negative integer object.  For a textual
-port, {\cf port-position} returns an arbitrary value that is
-acceptable as input for {\cf set-port-position!} (see below).
+port, {\cf port-position} returns a value of some implementation-dependent
+type representing the port's position; this value may be useful only as
+the \var{pos} argument to {\cf set-port-position!}, if the latter is
+supported on the port (see below).
 
 If the port does not support the operation, {\cf port-position} raises
 an exception with condition type {\cf\&assertion}.
@@ -629,9 +631,8 @@ port is unspecified.
 Returns a textual input port whose characters are drawn from
 \var{string}.  The port may or may not have an associated transcoder;
 if it does, the transcoder is implementation-dependent.
-Whether the port supports
-the {\cf port-position} and {\cf set-port-position!} operations
-is implementation-dependent.
+The port should support the
+{\cf port-position} and {\cf set-port-position!} operations.
 
 If \var{string} is modified after {\cf open-string-input-port}
 has been called, the effect on the returned port is unspecified.
