@@ -467,15 +467,21 @@ the last one are returned.
       (else \schfalse{}))         \ev  2%
 \end{scheme}
 
-For \hyper{cond clauses} that use the forms
+For a \hyper{cond clause} of one of the following forms
 %
 \begin{scheme}
 (\hyper{test} \hyperi{expression} \dotsfoo)
-(else \hyperi{expression} \hyperii{expression} \dotsfoo)\rm.%
+(else \hyperi{expression} \hyperii{expression} \dotsfoo)%
 \end{scheme}
 %
 the last \hyper{expression} is in tail context if the {\cf cond} form
-itself is; see section~\ref{basetailcontextsection}.
+itself is.  For a \hyper{cond clause} of the form
+\begin{scheme}
+(\hyper{test} => \hyper{expression})%
+\end{scheme}
+the (implied) call to the procedure that results from the evaluation
+of \hyper{expression} is in a tail context if the {\cf cond} form
+itself is. See section~\ref{basetailcontextsection}.
 
 A sample definition of {\cf cond} in terms of simpler forms is in
 appendix~\ref{derivedformsappendix}.
@@ -793,7 +799,7 @@ appendix~\ref{derivedformsappendix}.
 \end{scheme}
 where each \hyper{init} is an expression, and \hyper{body} 
 is as described in section~\ref{bodiessection}. 
-Any \hyper{variable} must not appear more than once in the
+Any variable must not appear more than once in the
 \hyper{variable}s.
 
 \semantics
@@ -4190,7 +4196,7 @@ If a {\cf cond} expression is in a tail context, and has a clause of
 the form {\cf (\hyperi{expression} => \hyperii{expression})}
 then the (implied) call to
 the procedure that results from the evaluation of \hyperii{expression} is in a
-tail context.  \hyperii{expression} itself is not in a tail context.
+tail context.  \hyperii{Expression} itself is not in a tail context.
 
 \end{itemize}
 

@@ -335,18 +335,18 @@ All other variables defined within a library are mutable.
 
 Expanding a library may require run-time information from another
 library. Specifically, if a macro transformer is defined by a
-procedure that calls procedure from another library, then the latter
+procedure that calls a procedure from another library, then the latter
 library must be run when expanding the latter.  The latter may not be
 needed when the former is eventually run as part of a program, or it
 may be needed for the former program's run time, too.  The library
 mechanism distinguishes these times by phases, which are explained in
 this section.  Note that phases are only relevant for programs that
-contain macro transformers defined by procedures---programmers that
+contain macro transformers defined by procedures---programmers whose programs
 exclusively use {\cf syntax-rules} and {\cf identifier-syntax} for
 defining macro transformers (see section~\ref{syntaxrulessection}) can
 ignore phases.
 
-More generally, every library can be characterized by expand-time information (minimally,
+Every library can be characterized by expand-time information (minimally,
 its imported libraries, a list of the exported keywords, a list of the
 exported variables, and code to evaluate the transformer expressions) and
 run-time information (minimally, code to evaluate the variable definition
