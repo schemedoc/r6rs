@@ -1900,8 +1900,8 @@ of its argument.
 (/ 1.0 0)                              \ev  +inf.0
 (/ -1 0.0)                             \ev  -inf.0
 (/ +inf.0)                             \ev  0.0
-(/ 0 0)                                \lev \exception{\&assertion}
-(/ 3 0)                                \lev \exception{\&assertion}
+(/ 0 0)                                \xev \exception{\&assertion}
+(/ 3 0)                                \xev \exception{\&assertion}
 (/ 0 3.5)                              \ev  0.0
 (/ 0 0.0)                              \ev  +nan.0
 (/ 0.0 0)                              \ev  +nan.0
@@ -2090,7 +2090,7 @@ even when given exact arguments.
 (exp -inf.0)                   \ev 0.0
 (log +inf.0)                   \ev +inf.0
 (log 0.0)                      \ev -inf.0
-(log 0)                        \lev \exception{\&assertion}
+(log 0)                        \xev \exception{\&assertion}
 (log -inf.0)                   \lev +inf.0+3.141592653589793i\\\> ; \textrm{approximately}
 (atan -inf.0)                  \lev -1.5707963267948965 ; \textrm{approximately}
 (atan +inf.0)                  \lev 1.5707963267948965 ; \textrm{approximately}
@@ -2452,7 +2452,7 @@ Returns the contents of the car field of \var{pair}.
 (car '(a b c))          \ev  a
 (car '((a) b c d))      \ev  (a)
 (car '(1 . 2))          \ev  1
-(car '())               \lev \exception{\&assertion}%
+(car '())               \xev \exception{\&assertion}%
 \end{scheme}
  
 \end{entry}
@@ -2466,7 +2466,7 @@ Returns the contents of the cdr field of \var{pair}.
 \begin{scheme}
 (cdr '((a) b c d))      \ev  (b c d)
 (cdr '(1 . 2))          \ev  2
-(cdr '())               \lev \exception{\&assertion}%
+(cdr '())               \xev \exception{\&assertion}%
 \end{scheme}
  
 \end{entry}
@@ -2834,7 +2834,7 @@ returns its associated character.
 (integer->char 32) \ev \sharpsign\backwhack{}space
 (char->integer (integer->char 5000))
 \ev 5000
-(integer->char \sharpsign{}\backwhack{}xD800) \ev \exception{\&assertion}%
+(integer->char \sharpsign{}\backwhack{}xD800) \xev \exception{\&assertion}%
 \end{scheme}
 \end{entry}
 
@@ -3238,8 +3238,8 @@ condition type {\cf \&assertion}.
       (loop n 1)))
 
 (fac 5) \ev 120
-(fac 4.5) \lev \exception{\&assertion}
-(fac -3) \lev \exception{\&assertion}%
+(fac 4.5) \xev \exception{\&assertion}
+(fac -3) \xev \exception{\&assertion}%
 \end{scheme}
 \end{entry}
 

@@ -35,12 +35,15 @@ example, \hyper{expression}, \hyper{variable}.  Case is insignificant
 in syntactic variables.  Syntactic variables
 stand for other forms, or
 sequences of them.  A syntactic variable may refer to a non-terminal
-in the grammar for syntactic data (see section~\ref{datumsyntax},
+in the grammar for syntactic data (see section~\ref{datumsyntax}),
 in which case only forms matching
-that non-terminal are permissible in that position.  For example,
+that non-terminal are permissible in that position.
+For example \hyper{identifier} stands for a form which must be an
+identifier.
+Also,
 \hyper{expression} stands for any form which is a
 syntactically valid expression.  Other non-terminals that are used in
-templates will be defined as part of the specification.
+templates are defined as part of the specification.
 
 The notation
 \begin{tabbing}
@@ -98,7 +101,7 @@ A procedure that detects an argument that it is not specified to
 handle must raise an exception with condition type
 {\cf\&assertion}.  Also, the argument specifications are exhaustive: if the
 number of arguments provided in a procedure call does not match 
-the number of arguments accepted by the procedure, an exception with
+any number of arguments accepted by the procedure, an exception with
 condition type {\cf\&assertion} must be raised.
 
 For succinctness, the report follows the convention
@@ -129,7 +132,7 @@ conventions imply type restrictions:
   \end{tabular}
 \texonly\end{center}\endtexonly
 
-Other type restrictions are expressed through parameter naming
+Other type restrictions are expressed through parameter-naming
 conventions that are described in specific chapters.  For example,
 library chapter~\extref{lib:numberchapter}{Arithmetic} uses a number of special
 parameter variables for the various subsets of the numbers.
@@ -152,18 +155,22 @@ arguments of a procedure.  Typically, such a restriction is formulated
 as a phrase of the form ``\var{x} must be a \ldots'' (or otherwise
 using the word ``must'').
 
+\section{Implementation responsibilities}
+
 In addition to the restrictions implied by naming conventions, an
 entry may list additional explicit restrictions.
 These explicit restrictions usually describe both the
-programmer's responsibilities, who must ensure that an appropriate
+programmer's responsibilities, who must ensure that the subforms of a
+form are appropriate, or that an appropriate
 argument is passed, and the implementation's responsibilities, which
-must check that the argument is appropriate.  A description
+must check that subform adheres to the specified restrictions (if
+macro expansion terminates), or if the argument is appropriate.  A description
 may explicitly list the implementation's responsibilities for some
-arguments in a paragraph labeled ``\textit{Implementation
+arguments or subforms in a paragraph labeled ``\textit{Implementation
   responsibilities}''.  In this case, the responsibilities specified
-for these arguments in the rest of the description are only for the
-programmer.  An paragraph describing implementation responsibility does not
-affect the implementation's responsibilities for checking arguments not
+for these subforms or arguments in the rest of the description are only for the
+programmer.  A paragraph describing implementation responsibility does not
+affect the implementation's responsibilities for checking subforms or arguments not
 mentioned in the paragraph.
 
 \section{Other kinds of entries}
@@ -210,7 +217,7 @@ The ``\evalsto'' symbol is also used when the evaluation of an
 expression causes a violation.  For example,
 
 \begin{scheme}
-(integer->char \sharpsign{}xD800) \ev \exception{\&assertion}%
+(integer->char \sharpsign{}xD800) \xev \exception{\&assertion}%
 \end{scheme}
 %
 means that the evaluation of the expression {\cf (integer->char

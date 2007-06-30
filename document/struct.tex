@@ -38,7 +38,7 @@ even if the iterative computation is described by a syntactically
 recursive procedure.  Thus with a properly tail-recursive implementation,
 iteration can be expressed using the ordinary procedure-call
 mechanics, so that special iteration constructs are useful only as
-syntactic sugar.  See section~\ref{proper tail recursion}.
+syntactic sugar.
 
 \vest Scheme was one of the first languages to support procedures as
 objects in their own right.  Procedures can be created dynamically,
@@ -48,9 +48,9 @@ Haskell, ML, Ruby, and Smalltalk.
 
 \vest One distinguishing feature of Scheme is that continuations, which
 in most other languages only operate behind the scenes, also have
-``first-class'' status.  Continuations are useful for implementing a
+``first-class'' status.  First-class continuations are useful for implementing a
 wide variety of advanced control constructs, including non-local exits,
-backtracking, and coroutines.  See section~\ref{continuations}.
+backtracking, and coroutines.
 
 In Scheme, the argument expressions of a procedure call are evaluated
 before the procedure gains control, whether the procedure needs the
@@ -179,7 +179,7 @@ Consequently, ``superfluous'' parentheses, which are often permissible in
 mathematical notation and also in many programming languages, are not
 allowed in Scheme.
 
-As in many other languages, whitespace (including newlines) is not
+As in many other languages, whitespace (including line endings) is not
 significant when it separates subexpressions of an expression, and
 can be used to indicate structure.
 
@@ -229,8 +229,8 @@ where an expression can occur.  Moreover, a definition has no value.
 Bindings follow the lexical structure of the program:  When several
 bindings with the same name exist, a variable refers to the binding
 that is closest to it, starting with its occurrence in the program
-and going from inside to outside, going all the way to a top-level
-binding only if no
+and going from inside to outside, and referring to a top-level
+binding if no
 local binding can be found along the way:
 
 \begin{scheme}
@@ -251,7 +251,7 @@ definitions exhibit similar syntactic structure:
 %
 \begin{scheme}
 (define x 23)
-(* x 2)
+(* x 2)%
 \end{scheme}
 %
 While the first line contains a definition, and the second an
@@ -274,8 +274,8 @@ procedures:
 (f 23) \ev 65%
 \end{scheme}
 
-A procedure is, slightly simplified, an abstraction over an
-expression.  In the example, the first definition defines a procedure
+A procedure is, slightly simplified, an abstraction of an
+expression over values.  In the example, the first definition defines a procedure
 called {\cf f}.  (Note the parentheses around {\cf f x}, which
 indicate that this is a procedure definition.)  The expression {\cf (f
   23)} is a \index{procedure call}procedure call, meaning,
@@ -340,7 +340,7 @@ syntactic keyword.  Hence, definitions are also not procedure calls.
 The rules for the {\cf lambda} keyword specify that the first
 subform is a list of parameters, and the remaining subforms are the body of
 the procedure.  In {\cf let} expressions, the first subform is a list
-of binding specifications, and the remaining subforms are a body of
+of binding specifications, and the remaining subforms constitute a body of
 expressions.
 
 Procedure calls can generally be distinguished from these
@@ -353,7 +353,7 @@ special forms, but are comparatively rare.)
 The set of syntactic keywords of Scheme is
 fairly small, which usually makes this task fairly simple.
 It is possible, however, to create new bindings for syntactic keywords; see
-below.
+section~\ref{macrosintrosection} below.
 
 \section{Assignment}
 
@@ -377,6 +377,7 @@ expression.  The expression {\cf (set! x 42)} is an assignment, saying
 Thus, the previous value of {\cf x}, 23, is replaced by 42.
 
 \section{Derived forms and macros}
+\label{macrosintrosection}
 
 Many of the special forms specified in this report
 can be translated into more basic special forms.
@@ -444,11 +445,8 @@ These include booleans, number objects, characters, symbols,
 and strings as well as lists and vectors whose elements are data.  Each
 datum value may be represented in textual form as a
 \textit{syntactic datum}\index{syntactic datum}, which can be written out
-and read back in without loss of information, giving a syntactic datum
-equal to the original (in the sense of {\cf equal?}; see section~\ref{equal?}).
-A datum value may be represented by several different syntactic data,
-but the datum value corresponding to a syntactic datum is uniquely
-determined up to equality (in the sense of {\cf equal?}).
+and read back in without loss of information.
+A datum value may be represented by several different syntactic data.
 Moreover, each datum value
 can be trivially translated to a literal expression in a program by
 prepending a {\cf\singlequote} to a corresponding syntactic datum:
@@ -563,7 +561,7 @@ the transitive closure of the libraries it imports, a Scheme program.
 The following program obtains the first argument from the command line
 via the {\cf command-line} procedure from the \rsixlibrary{programs}
 library (see library chapter~\extref{lib:programlibchapter}{Command-line
-  access and exit values}.  It then opens the file using {\cf
+  access and exit values}).  It then opens the file using {\cf
   open-file-input-port} (see library section~\extref{lib:portsiosection}),
 yielding a \textit{port}, i.e.\ a connection to the file as a data
 source, and calls the {\cf get-bytes-all} procedure to obtain the
