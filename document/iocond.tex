@@ -19,7 +19,7 @@ This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&i/o \&error
-  make-i/o-error i/o-error?)
+  make-i/o-error i/o-error?)%
 \end{scheme}        
 
 This is a supertype for a set of more specific I/O errors.
@@ -33,7 +33,7 @@ This is a supertype for a set of more specific I/O errors.
 This condition type could be defined by
 \begin{scheme}
 (define-condition-type \&i/o-read \&i/o
-  make-i/o-read-error i/o-read-error?)
+  make-i/o-read-error i/o-read-error?)%
 \end{scheme}
 
 This condition type describes read errors that occurred during an I/O
@@ -49,7 +49,7 @@ This condition type could be defined by
 %
 \begin{scheme}
 (define-condition-type \&i/o-write \&i/o
-  make-i/o-write-error i/o-write-error?)
+  make-i/o-write-error i/o-write-error?)%
 \end{scheme}
 This condition type describes write errors that occurred during an I/O
     operation.
@@ -66,11 +66,11 @@ This condition type could be defined by
 (define-condition-type \&i/o-invalid-position \&i/o
   make-i/o-invalid-position-error
   i/o-invalid-position-error?
-  (position i/o-error-position))
+  (position i/o-error-position))%
 \end{scheme}
 
 This condition type describes attempts to set the file position to an
-invalid position. The value of the position field is the file position that
+invalid position. The value of the position field should be the file position that
 the program intended to set. This condition describes a range error, but
 not an assertion violation.
 \end{entry}   
@@ -86,12 +86,12 @@ This condition type could be defined by
 \begin{scheme}
 (define-condition-type \&i/o-filename \&i/o
   make-i/o-filename-error i/o-filename-error?
-  (filename i/o-error-filename))
+  (filename i/o-error-filename))%
 \end{scheme}
 
 This condition type describes an I/O error that occurred during an
 operation on a named file. Condition objects belonging to this type
-must specify a file name in the {\cf filename} field.
+should specify a file name in the {\cf filename} field.
 \end{entry}
 
 \begin{entry}{%
@@ -105,7 +105,7 @@ This condition type could be defined by
 (define-condition-type \&i/o-file-protection
     \&i/o-filename
   make-i/o-file-protection-error
-  i/o-file-protection-error?)
+  i/o-file-protection-error?)%
 \end{scheme}
 
 A condition of this type specifies that an operation tried to operate on a
@@ -123,7 +123,7 @@ This condition type could be defined by
 (define-condition-type \&i/o-file-is-read-only
     \&i/o-file-protection
   make-i/o-file-is-read-only-error
-  i/o-file-is-read-only-error?)
+  i/o-file-is-read-only-error?)%
 \end{scheme}
 
 A condition of this type specifies that an operation tried to operate on a
@@ -141,7 +141,7 @@ This condition type could be defined by
 (define-condition-type \&i/o-file-already-exists
     \&i/o-filename
   make-i/o-file-already-exists-error
-  i/o-file-already-exists-error?)
+  i/o-file-already-exists-error?)%
 \end{scheme}
 A condition of this type specifies that an operation tried to operate on an
 existing named file under the assumption that it did not exist.
@@ -158,7 +158,7 @@ This condition type could be defined by
 (define-condition-type \&i/o-file-does-not-exist
     \&i/o-filename
   make-i/o-file-does-not-exist-error
-  i/o-file-does-not-exist-error?)
+  i/o-file-does-not-exist-error?)%
 \end{scheme}
 
 A condition of this type specifies that an operation tried to operate on an
@@ -176,12 +176,13 @@ This condition type could be defined by
 \begin{scheme}
 (define-condition-type \&i/o-port \&i/o
   make-i/o-port-error i/o-port-error?
-  (port i/o-error-port))
+  (port i/o-error-port))%
 \end{scheme}
 
 This condition type specifies the port with which an I/O
-error is associated. Except for condition objects provided for
-encoding and decoding errors, conditions raised by procedures may
+error is associated. Condition objects belonging to this type
+should specify a port in the {\cf port} field.
+Conditions raised by procedures accepting a port as an argument should
 include an {\cf\&i/o-port-error} condition.
 \end{entry}
 

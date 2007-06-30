@@ -23,7 +23,7 @@ identifier capture.
 % transcription step."
 
 Barendregt's \emph{hygiene condition}~\cite{barendregt} for the
-lambda-calculus is an informal notion that requires the free variables of
+lambda calculus is an informal notion that requires the free variables of
 an expression $N$ that is to be substituted into another expression $M$ not to
 be captured by bindings in $M$ when such capture is not intended.
 Kohlbecker, et al~\cite{hygienic} propose a corresponding
@@ -151,7 +151,7 @@ An unwrapped syntax object is one that is unwrapped, fully or partially,
 i.e., whose outer layers consist of lists and vectors and whose leaves are
 either wrapped syntax objects or nonsymbol values.
 
-The term syntax object is used in this document to refer to
+The term \textit{syntax object} is used in this document to refer to
 a syntax object that is either wrapped or unwrapped.
 More formally, a syntax object is:
 
@@ -175,11 +175,8 @@ In {\cf define-syntax} (report
 section~\extref{report:define-syntax}{Syntax definitions}), {\cf
   let-syntax}, and {\cf letrec-syntax} forms (report
 section~\extref{report:let-syntax}{Binding constructs for syntactic
-  keywords}), a binding for a syntactic keyword must be an expression
-that evaluates to a \defining{transformer}\index{macro transformer}.  (This is only the programmer's
-responsibility; the implementation must check this only if evaluation
-of a transformer expression actually terminates.  See the respective
-specifications.)
+  keywords}), a binding for a syntactic keyword is an expression
+that evaluates to a \defining{transformer}\index{macro transformer}.
 
 A transformer is a \defining{transformation procedure} or a
 \defining{variable transformer}.
@@ -352,7 +349,7 @@ datum) and $F$ is equal to $P$ in the sense of the
 \end{itemize}
 
 \semantics
-{\cf syntax-case} first evaluates \hyper{expression}.
+A {\cf syntax-case} expression first evaluates \hyper{expression}.
 It then attempts to match
 the \hyper{pattern} from the first \hyper{syntax-case clause} against the resulting value,
 which is unwrapped as necessary to perform the match.
@@ -600,7 +597,7 @@ Operationally, two identifiers are considered equivalent by
 substitution for each maps to the same binding (section~\ref{hygienesection})
 or the identifiers have the same name and no matching substitution.
 
-{\cf syntax-case} and {\cf syntax-rules} use
+The {\cf syntax-case} and {\cf syntax-rules} forms internally use
 {\cf free-identifier=?} to compare identifiers listed in the literals
 list against input identifiers.
 
@@ -701,8 +698,7 @@ therefore not the same {\cf else} that appears in the definition of
 \begin{entry}{%
 \proto{syntax->datum}{ syntax-object}{procedure}}
 
-The procedure {\cf syntax\coerce{}datum}
-strips all syntactic information from a syntax
+Strips all syntactic information from a syntax
 object and returns the corresponding Scheme datum.
 \end{entry}
 
@@ -730,7 +726,7 @@ Thus, a predicate {\cf symbolic-identifier=?} might be defined as follows.
 
 \domain{\var{Template-id} must be a
 template identifier and \var{datum} should be a datum value.}
-The {\cf datum->syntax} procedure returns a syntax object representation of \var{datum} that
+The {\cf datum->syntax} procedure returns a syntax-object representation of \var{datum} that
 contains the same contextual information as
 \var{template-id}, with the effect that the
 syntax object behaves
@@ -893,15 +889,15 @@ helper to generate the necessary temporaries.
 \section{Derived forms and procedures}
 \label{derivedsection}
 
-The forms and procedures described in this section are \emph{derived},
-i.e., they can defined in terms of the forms and procedures described
-in earlier sections of this document.
+The forms and procedures described in this section can be defined in
+terms of the forms and procedures described in earlier sections of
+this chapter.
 
 \begin{entry}{%
 \pproto{(with-syntax ((\hyper{pattern} \hyper{expression}) \dotsfoo) \hyper{body})}{\exprtype}}
 \mainschindex{with-syntax}
 
-The derived {\cf with-syntax} form is used to bind pattern variables,
+The {\cf with-syntax} form is used to bind pattern variables,
 just as {\cf let} is used to bind variables.
 This allows a transformer to construct its output in separate
 pieces, then put the pieces together.

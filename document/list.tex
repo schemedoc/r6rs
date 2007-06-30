@@ -1,7 +1,8 @@
 \chapter{List utilities}
 \label{listutilities}
 
-This chapter describes the \defrsixlibrary{lists} library.
+This chapter describes the \defrsixlibrary{lists} library, which
+contains various useful procedures that operate on lists.
 
 \begin{entry}{%
 \proto{find}{ proc list}{procedure}}
@@ -25,6 +26,9 @@ pairs up to the found element, or that it is indeed a list if no
 element is found.  It should not check that it is a chain of pairs
 beyond the found element.  The implementation must check the restrictions on
 \var{proc} to the extent performed by applying it as described.
+An
+implementation may check whether \var{proc} is an appropriate argument
+before applying it.
 \end{entry}
 
 \begin{entry}{%
@@ -40,7 +44,7 @@ For natural numbers $i = 0, 1, \ldots$, the {\cf for-all} procedure
 successively applies \var{proc} to arguments $x_i^1 \ldots x_i^n$,
 where $x_i^j$ is the $i$th element of \varj{list}, until \schfalse{} is
 returned.  If \var{proc} returns true values for all but the last
-element of \vari{list}, \var{for-all} performs a tail call of \var{proc}
+element of \vari{list}, {\cf for-all} performs a tail call of \var{proc}
 on the $k$th elements, where $k$ is the length of \vari{list}.  If \var{proc}
 returns \schfalse{} on any set of elements, {\cf for-all} returns
 \schfalse{} after the first such application of \var{proc}.
@@ -51,7 +55,7 @@ For natural numbers $i = 0, 1, \ldots$, the {\cf exists} procedure
 applies \var{proc} successively to arguments $x_i^1 \ldots x_i^n$,
 where $x_i^j$ is the $i$th element of \varj{list}, until a true value is
 returned.  If \var{proc} returns \schfalse{} for all but the last
-elements of the \var{list}s, \var{exists} performs a tail call of
+elements of the \var{list}s, {\cf exists} performs a tail call of
 \var{proc} on the $k$th elements, where $k$ is the length of
 \vari{list}.
 If \var{proc} returns a true value on any set of elements, {\cf

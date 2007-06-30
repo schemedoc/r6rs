@@ -53,14 +53,14 @@ the \rsixlibrary{io ports} library.
 \proto{with-input-from-file}{ filename thunk}{procedure}
 \proto{with-output-to-file}{ filename thunk}{procedure}}
 
-\domain{\var{Thunk} must be a procedure and should accept zero arguments.}  The
+\domain{\var{Thunk} must be a procedure and must accept zero arguments.}  The
 file is opened for input or output using empty file options, and
 \var{thunk} is called with no arguments.  During the dynamic extent of
 the call to \var{thunk}, the obtained port is made the value returned
 by {\cf current-input-port} or {\cf current-output-port} procedures;
 the previous default values are reinstated when the dynamic extent is
-exited.  When \var{thunk} returns, the port is closed automatically,
-and the previous values for {\cf current-input-port}.  The values
+exited.  When \var{thunk} returns, the port is closed automatically.
+The values
 returned by \var{thunk} are returned.  If an escape procedure is used
 to escape back into the call to \var{thunk} after \var{thunk} is
 returned, the behavior is unspecified.

@@ -21,10 +21,6 @@ taxonomy.
 This section describes Scheme's exception-handling and
 exception-raising constructs provided by the \defrsixlibrary{exceptions} library.
 
-\begin{note}
-  This specification follows SRFI~34~\cite{srfi34}.
-\end{note}
-
 Exception handlers are one-argument procedures that determine the
 action the program takes when an exceptional situation is signalled.
 The system implicitly maintains a current exception handler.
@@ -92,9 +88,10 @@ handler that binds the raised object to \hyper{variable} and within the scope of
 that binding evaluates the clauses as if they were the clauses of a
 {\cf cond} expression. That implicit {\cf cond} expression is evaluated with the
 continuation and dynamic environment of the {\cf guard} expression. If every
-\hyper{cond clause}'s \hyper{test} evaluates to \schfalse{} and there is no else clause, then
+\hyper{cond clause}'s \hyper{test} evaluates to \schfalse{} and there
+is no {\cf else} clause, then
 {\cf raise} is re-invoked on the raised object within the dynamic
-environment of the original call to raise except that the current
+environment of the original call to {\cf raise} except that the current
 exception handler is that of the {\cf guard} expression.  
 
 The final expression in a \hyper{cond} clause is in a tail context if
@@ -218,8 +215,7 @@ describes a single aspect of an exceptional situation.  A compound
 condition represents multiple aspects of an exceptional situation as a
 list of simple conditions, its \textit{components}.  Most of the
 operations described in this section treat a simple condition
-identically to a compound condition consisting of only the simple
-condition.  Thus, a simple condition is its own sole component.  For a
+identically to a compound condition with itself as its own sole component.  For a
 subtype \var{t} of {\cf\&condition}, a \textit{condition of type
   \var{t}} is either a record of type \var{t} or a compound condition
 containing a component of type \var{t}.
@@ -228,7 +224,7 @@ containing a component of type \var{t}.
 \ctproto{condition}}
 
 Simple conditions are records of subtypes of the {\cf\&condition}
-record type.  The {\cf\&condition} type is neither sealed nor opaque.
+record type.  The {\cf\&condition} type has no fields and is neither sealed nor opaque.
 \end{entry}
 
 \begin{entry}{%
@@ -364,7 +360,7 @@ where both \hyper{field} and \hyper{accessor} must be identifiers.
 
 \semantics
 The {\cf define-condition-type} form expands into a record-type
-definition for a record type {\cf\&condition-type} (see
+definition for a record type \hyper{condition-type} (see
 section~\ref{recordssyntacticsection}).  The record type will be
 non-opaque, non-sealed, and its fields will be immutable.
 It will have \hyper{supertype} has its parent type.  The remaining

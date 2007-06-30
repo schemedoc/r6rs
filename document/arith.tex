@@ -4,10 +4,17 @@
 
 This chapter describes Scheme's libraries for more specialized
 numerical operations: fixnum and flonum arithmetic, as well as bitwise
-operations on exact integer objects.  A number of procedures operate
-on the binary representations of exact integer objects: Bit positions
-within an exact integer object are counted from the left, i.e.\ bit 0
-is the least significant bit.
+operations on exact integer objects.  
+
+\section{Bitwise operations}
+
+A number of procedures operate on the binary two's-complement
+representations of exact integer objects: Bit positions within an
+exact integer object are counted from the left, i.e.\ bit 0 is the
+least significant bit.  Some procedures allow extracting \defining{bit
+  fields}, i.e., number objects representing subsequences of the
+binary representation of an exact integer object.  Bit fields are
+always positive, and always defined using a finite number of bits.
 
 \section{Fixnums}
 \label{fixnumssection}
@@ -130,10 +137,10 @@ specified in report section~\extref{report:integerdivision}{Integer division}.
 \begin{scheme}
 (fxdiv \vari{fx} \varii{fx})         \ev \(\vari{fx}~\mathrm{div}~\varii{fx}\)
 (fxmod \vari{fx} \varii{fx})         \ev \(\vari{fx}~\mathrm{mod}~\varii{fx}\)
-(fxdiv-and-mod \vari{fx} \varii{fx})     \lev \(\vari{fx}~\mathrm{div}~\varii{fx}, \vari{fx}~\mathrm{mod}~\varii{fx}\)\\\>\>; two return values
+(fxdiv-and-mod \vari{fx} \varii{fx})     \lev \(\vari{fx}~\mathrm{div}~\varii{fx}, \vari{fx}~\mathrm{mod}~\varii{fx}\)\\\>\>; \texttt{two return values}
 (fxdiv0 \vari{fx} \varii{fx})        \ev \(\vari{fx}~\mathrm{div}\sb{0}~\varii{fx}\)
 (fxmod0 \vari{fx} \varii{fx})        \ev \(\vari{fx}~\mathrm{mod}\sb{0}~\varii{fx}\)
-(fxdiv0-and-mod0 \vari{fx} \varii{fx})   \lev \(\vari{fx} \vari{fx}~\mathrm{div}\sb{0}~\varii{fx}, \vari{fx}~\mathrm{mod}\sb{0}~\varii{fx}\)\\\>\>; two return values%
+(fxdiv0-and-mod0 \vari{fx} \varii{fx})   \lev \(\vari{fx} \vari{fx}~\mathrm{div}\sb{0}~\varii{fx}, \vari{fx}~\mathrm{mod}\sb{0}~\varii{fx}\)\\\>\>; \textrm{two return values}%
 \end{scheme}
 \end{entry}
 
@@ -259,7 +266,7 @@ the two's complement representation of \var{fx}.  If
 
 \domain{\varii{Fx} must be non-negative and less than {\cf
     (fixnum-width)}.}  The {\cf fxbit-set?} procedure returns
-\schtrue{} if the \varii{fx}th bit is set in the two's complement
+\schtrue{} if the \varii{fx}th bit is 1 in the two's complement
 representation of \vari{fx}, and \schfalse{} otherwise.  This is the
 fixnum result of the following computation:
 %
@@ -278,7 +285,7 @@ fixnum result of the following computation:
 \domain{\varii{Fx} must be non-negative and less than {\cf
   (fixnum-width)}. \variii{Fx} must be 0 or
 1.}  The {\cf fxcopy-bit} procedure returns the result of replacing
-the \varii{fx}th bit of \vari{fx} by \variii{fx}, which is
+the \varii{fx}th bit of \vari{fx} by the \varii{fx}th bit of \variii{fx}, which is
 the result of the following computation:
 \begin{scheme}
 (let* ((mask (fxarithmetic-shift-left 1 \varii{fx})))
@@ -400,10 +407,10 @@ following computation:
   equal to \variii{fx}.}  The {\cf fxreverse-bit-field} procedure
 returns
 the fixnum obtained from \vari{fx} by reversing the
-bit field specified by \varii{fx} and \variii{fx}.
+order of the bits at positions from \varii{fx} (inclusive) to
+\variii{fx} (exclusive).
 \begin{scheme}
-(fxreverse-bit-field \sharpsign{}b1010010 1 4)    \lev  88 ; \sharpsign{}b1011000
-(fxreverse-bit-field \sharpsign{}b1010010 91 -4)  \lev  82 ; \sharpsign{}b1010010%
+(fxreverse-bit-field \sharpsign{}b1010010 1 4)    \lev  88 ; \sharpsign{}b1011000%
 \end{scheme}
 
 \end{entry}
@@ -501,7 +508,7 @@ than zero, {\cf flodd?} tests whether it is odd,
 {\cf (flnegative? -0.0)} must return \schfalse{},
 else it would lose the correspondence with
 {\cf (fl< -0.0 0.0)}, which is \schfalse{}
-according to the IEEE standards.
+according to IEEE 754~\cite{IEEE}.
 \end{note}
 \end{entry}
 
@@ -581,10 +588,10 @@ procedures may return a NaN or some unspecified flonum.
 \begin{scheme}
 (fldiv \vari{fl} \varii{fl})         \ev \(\vari{fl}~\mathrm{div}~\varii{fl}\)
 (flmod \vari{fl} \varii{fl})         \ev \(\vari{fl}~\mathrm{mod}~\varii{fl}\)
-(fldiv-and-mod \vari{fl} \varii{fl})     \lev \(\vari{fl}~\mathrm{div}~\varii{fl}, \vari{fl}~\mathrm{mod}~\varii{fl}\)\\\>\>; two return values
+(fldiv-and-mod \vari{fl} \varii{fl})     \lev \(\vari{fl}~\mathrm{div}~\varii{fl}, \vari{fl}~\mathrm{mod}~\varii{fl}\)\\\>\>; \textrm{two return values}
 (fldiv0 \vari{fl} \varii{fl})        \ev \(\vari{fl}~\mathrm{div}_0~\varii{fl}\)
 (flmod0 \vari{fl} \varii{fl})        \ev \(\vari{fl}~\mathrm{mod}_0~\varii{fl}\)
-(fldiv0-and-mod0 \vari{fl} \varii{fl})   \lev \(\vari{fl}~\mathrm{div}_0~\varii{fl}, \vari{fl}~\mathrm{mod}_0~\varii{fl}\)\\\>\>; two return values%
+(fldiv0-and-mod0 \vari{fl} \varii{fl})   \lev \(\vari{fl}~\mathrm{div}_0~\varii{fl}, \vari{fl}~\mathrm{mod}_0~\varii{fl}\)\\\>\>; \textrm{two return values}%
 \end{scheme}
 
 \end{entry}
@@ -720,7 +727,8 @@ These condition types could be defined by the following code:
 \begin{scheme}
 (define-condition-type \&no-infinities
     \&implementation-restriction
-  make-no-infinities-violation no-infinities-violation?)
+  make-no-infinities-violation
+  no-infinities-violation?)
 
 (define-condition-type \&no-nans
     \&implementation-restriction
@@ -753,12 +761,6 @@ library.  The exact bitwise arithmetic provides generic operations on
 exact integer objects.  This section uses \var{ei}, \vari{ei}, \varii{ei}, etc.,
 as parameter names that must be exact integer objects.
 
-Some procedures allow extracting \defining{bit fields}, i.e., number objects
-representing subsequences of the binary representation of an exact
-integer object.  Bit fields are always positive, and always defined using a
-finite number of bits, contrary to 2's complement representation which
-implicitly uses an infinite extension of $0$ bits or $1$ bits to the
-left.
 
 \begin{entry}{%
 \proto{bitwise-not}{ ei}{procedure}}
@@ -783,7 +785,13 @@ the operation.
 \begin{entry}{%
 \proto{bitwise-if}{ \vari{ei} \varii{ei} \variii{ei}}{procedure}}
 
-Returns the exact integer object that is the result of the following computation:
+Returns the exact integer object that is the bit-wise ``if'' of the two's complement
+representations of its arguments, i.e.\ for each bit, if it is 1 in
+\vari{ei}, the corresponding bit in \varii{ei} becomes the value of
+the corresponding bit in the result, and if it is 0, the corresponding
+bit in \variii{ei} becomes the corresponding bit in the value of the
+result.
+This is the result of the following computation:
 \begin{scheme}
 (bitwise-ior (bitwise-and \vari{ei} \varii{ei})
              (bitwise-and (bitwise-not \vari{ei}) \variii{ei}))%
@@ -838,7 +846,7 @@ If \var{ei} is $0$, then $-1$ is returned.
 
 \domain{\varii{Ei} must be non-negative.}
 The {\cf bitwise-bit-set?} procedure returns
-\schtrue{} if the \varii{ei}th bit is set in the two's complement
+\schtrue{} if the \varii{ei}th bit is 1 in the two's complement
 representation of \vari{ei}, and \schfalse{}
 otherwise.  This is the result of the following computation:
 \begin{scheme}
@@ -855,7 +863,7 @@ otherwise.  This is the result of the following computation:
 \domain{\varii{Ei} must be non-negative, and \variii{ei}
 must be either $0$ or $1$.}
 The {\cf bitwise-copy-bit} procedure returns the result of replacing
-the \varii{ei}th bit of \vari{ei} by \variii{ei}, which is
+the \varii{ei}th bit of \vari{ei} by the \varii{ei}th bit of \variii{ei}, which is
 the result of the following computation:
 \begin{scheme}
 (let* ((mask (bitwise-arithmetic-shift-left 1 \varii{ei})))
@@ -871,8 +879,8 @@ the result of the following computation:
 \domain{\varii{Ei} and \variii{ei} must be non-negative, and
   \varii{ei} must be less than or equal to \variii{ei}.}
 The {\cf bitwise-bit-field} procedure returns the
-number represented by the bits at the positions from \varii{ei} to
-$\variii{ei}-1$, which is
+number represented by the bits at the positions from \varii{ei}
+(inclusive) to $\variii{ei}$ (exclusive), which is
 the result of the following computation:
 %
 \begin{scheme}
@@ -892,7 +900,7 @@ the result of the following computation:
 and \varii{ei} must be less than or equal to \variii{ei}.}
 The {\cf bitwise-copy-bit-field} procedure returns
 the result of replacing in \vari{ei} the bits at positions from
-\varii{ei} to $\variii{ei}$ by the corresponding bits in \variv{ei}, which
+\varii{ei} (inclusive) to $\variii{ei}$ (exclusive) by the corresponding bits in \variv{ei}, which
 is the fixnum result of the following computation:
 %
 \begin{scheme}
@@ -939,7 +947,7 @@ Examples:
 \proto{bitwise-arithmetic-shift-right}{ \vari{ei} \varii{ei}}{procedure}}
 
 \domain{\varii{Ei} must be non-negative.}  The {\cf
-  bitwise-arithmetic-shift-left} procedure returns the same result as {\cf
+  bitwise-\linebreak[0]arithmetic\linebreak[0]-shift\linebreak[0]-left} procedure returns the same result as {\cf
   bitwise-arithmetic-shift}, and {\cf (bitwise-arithmetic-shift-right
   \vari{ei} \varii{ei})} returns the same result as {\cf
   (bitwise-arithmetic-shift \vari{ei} (- \varii{ei}))}.
@@ -952,7 +960,7 @@ Examples:
 \varii{ei} must be less than or equal to \variii{ei}, and
 \variv{ei} must be non-negative.}
 procedure returns the result of cyclically permuting in \vari{ei} the
-bits at positions from \varii{ei} to \variii{ei} by \variv{ei} bits
+bits at positions from \varii{ei} (inclusive) to \variii{ei} (exclusive) by \variv{ei} bits
 towards the more significant bits, which is the result of the
 following computation:
 %
@@ -982,11 +990,11 @@ following computation:
 
 \domain{\varii{Ei} and \variii{ei} must be non-negative, and
   \varii{ei} must be less than or equal to \variii{ei}.}  The {\cf bitwise-reverse-bit-field} procedure returns
-the result obtained from \vari{ei} by reversing the bit field
-specified by \varii{ei} and \variii{ei}.
+the result obtained from \vari{ei} by reversing the
+order of the bits at positions from \varii{ei} (inclusive) to
+\variii{ei} (exclusive).
 \begin{scheme}
-(bitwise-reverse-bit-field \sharpsign{}b1010010 1 4)   \lev  88 ; \sharpsign{}b1011000
-(bitwise-reverse-bit-field \sharpsign{}1010010 91 -4)  \lev  \exception{\&assertion}%
+(bitwise-reverse-bit-field \sharpsign{}b1010010 1 4)   \lev  88 ; \sharpsign{}b1011000%
 \end{scheme}
 \end{entry}
 

@@ -10,8 +10,8 @@ category information, case-independent comparisons,
 case mappings, and normalization~\cite{Unicode}.
 
 Some of the procedures that operate on characters or strings ignore the
-difference between upper case and lower case.  The procedures that
-ignore case have \hbox{``{\tt -ci}''} (for ``case
+difference between upper case and lower case.  These procedures
+have \hbox{``{\tt -ci}''} (for ``case
 insensitive'') embedded in their names.
 
 \section{Characters}
@@ -23,17 +23,17 @@ insensitive'') embedded in their names.
 \proto{char-foldcase}{ char}{procedure}}
 
 These procedures take a character argument and return a character
-result. If the argument is an upper case or title case character, and if
+result. If the argument is an upper-case or title-case character, and if
 there is a single character that is its lower case form, then
 {\cf char-downcase} returns that character. If the argument is a lower case
 or title case character, and there is a single character that is
-its upper case form, then {\cf char-upcase} returns that character.
+its upper-case form, then {\cf char-upcase} returns that character.
 If the argument is a lower case
-or upper case character, and there is a single character that is
-its title case form, then {\cf char-titlecase} returns that character.
-If the argument is not a title case character and there is no single
-character that is its title case form, then {\cf char-titlecase}
-returns the upper case form of the argument.
+or upper-case character, and there is a single character that is
+its title-case form, then {\cf char-titlecase} returns that character.
+If the argument is not a title-case character and there is no single
+character that is its title-case form, then {\cf char-titlecase}
+returns the upper-case form of the argument.
 Finally, if the character has a case-folded character,
 then {\cf char-foldcase} returns that character.
 Otherwise the character returned is the same
@@ -67,7 +67,7 @@ same as {\cf char-downcase} composed with {\cf char-upcase}.
 \end{scheme}
 
 \begin{note}
-  Note that {\cf char-titlecase} does not always return a title case
+  Note that {\cf char-titlecase} does not always return a title-case
   character.
 \end{note}
 
@@ -103,7 +103,7 @@ on the case-folded versions of the characters.
 \begin{scheme}
 (char-ci<? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schfalse
 (char-ci=? \sharpsign\backwhack{}z \sharpsign\backwhack{}Z) \ev \schtrue
-(char-ci=? \sharpsign\backwhack{}$\varsigma$ \sharpsign\backwhack{}$\sigma$) \ev \schtrue
+(char-ci=? \sharpsign\backwhack{}$\varsigma$ \sharpsign\backwhack{}$\sigma$) \ev \schtrue%
 \end{scheme}
 \end{entry}
 
@@ -117,7 +117,7 @@ on the case-folded versions of the characters.
 \proto{char-title-case?}{ char}{procedure}}
 
 These procedures return \schtrue{} if their arguments are alphabetic,
-numeric, whitespace, upper case, lower case, or title case characters,
+numeric, whitespace, upper-case, lower-case, or title-case characters,
 respectively; otherwise they return \schfalse.
 
 A character is alphabetic if it has the Unicode ``Alphabetic''
@@ -137,7 +137,7 @@ property, and title case if it is in the Lt general category.
 (char-lower-case? \sharpsign\backwhack{}$\sigma$) \ev \schtrue{}
 (char-lower-case? \sharpsign\backwhack{}x00AA) \ev \schtrue{}
 (char-title-case? \sharpsign\backwhack{}I) \ev \schfalse{}
-(char-title-case? \sharpsign\backwhack{}x01C5) \ev \schtrue{}
+(char-title-case? \sharpsign\backwhack{}x01C5) \ev \schtrue{}%
 \end{scheme}
 \end{entry}
 
@@ -168,7 +168,7 @@ Unicode general category of \var{char}, one of {\cf Lu}, {\cf Ll}, {\cf Lt},
 
 These procedures take a string argument and return a string
 result.  They are defined in terms of Unicode's locale-independent
-case mappings from Unicode-scalar-value sequences to scalar-value sequences.
+case mappings from Unicode scalar-value sequences to scalar-value sequences.
 In particular, the length of the result string can be different from
 the length of the input string.
 When the specified result is equal in the sense of {\cf string=?} to the
@@ -209,7 +209,7 @@ procedure converts the first cased character of each word via {\cf
 (string-titlecase "who's there?")
 \ev "Who's There?"
 (string-titlecase "r6rs") \ev "R6Rs"
-(string-titlecase "R6RS") \ev "R6Rs"
+(string-titlecase "R6RS") \ev "R6Rs"%
 \end{scheme}
 
 \begin{note}
@@ -249,7 +249,7 @@ operate on the case-folded versions of the strings.
 (string-ci=? "Stra\ss{}e" "STRASSE")
 \ev \schtrue
 (string-ci=? "$\latingreek{XAO}\Sigma$" "$\chi\alpha{}o\sigma$")
-\ev \schtrue
+\ev \schtrue%
 \end{scheme}
 
 \end{entry}
@@ -275,7 +275,7 @@ allocated string.
 (string-normalize-nfd "\backwhack{}x65;\backwhack{}x301;")
 \ev "\backwhack{}x65;\backwhack{}x301;"
 (string-normalize-nfc "\backwhack{}x65;\backwhack{}x301;")
-\ev "\backwhack{}xE9;"
+\ev "\backwhack{}xE9;"%
 \end{scheme}
 \end{entry}
 
