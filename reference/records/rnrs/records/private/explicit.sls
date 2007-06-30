@@ -26,9 +26,19 @@
 (library (rnrs records private explicit)
   (export define-record-type
 	  record-type-descriptor
-	  record-constructor-descriptor)
+	  record-constructor-descriptor
+          fields mutable immutable parent protocol 
+          sealed opaque nongenerative)
   (import (rnrs)
 	  (rnrs records procedural))
+
+  (define-syntax define-aux
+    (syntax-rules ()
+      [(_ id) (define-syntax id (syntax-rules ()))]
+      [(_ id ...) (begin (define-aux id) ...)]))
+
+  (define-aux
+    fields mutable immutable parent protocol sealed opaque nongenerative)
 
   ;; ASSQ at the syntax level
   (define-syntax define-alist-extractor
