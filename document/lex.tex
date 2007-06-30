@@ -196,8 +196,10 @@ language: {\tt \verb"{" \verb"}"}
 \meta{string element} \: \meta{any character other than \doublequote{} or \backwhack}
  \> \| \backwhack{}a \| \backwhack{}b \| \backwhack{}t \| \backwhack{}n \| \backwhack{}v \| \backwhack{}f \| \backwhack{}r
  \>  \| \backwhack\doublequote{} \| \backwhack\backwhack 
- \>  \| \backwhack\meta{line ending} \| \backwhack\meta{space}
+ \>  \| \backwhack\meta{intraline whitespace}\meta{line ending}\meta{intraline whitespace}
  \>  \| \meta{inline hex escape}%
+\meta{intraline whitespace} \: \meta{character tabulation}
+\> \| \meta{any character whose category is Zs}
 \end{grammar}
 
 A \meta{hex scalar value} represents a Unicode scalar value
@@ -480,19 +482,17 @@ sequences\mainindex{escape sequence} represent characters other than
 themselves.  Escape sequences always start with a backslash (\backwhack{}):
 
 \begin{itemize}
-\item{\tt \backwhack{}a} : alarm, U+0007
-\item{\tt \backwhack{}b} : backspace, U+0008 
-\item{\tt \backwhack{}t} : character tabulation, U+0009 
-\item{\tt \backwhack{}n} : linefeed, U+000A 
-\item{\tt \backwhack{}v} : line tabulation, U+000B 
-\item{\tt \backwhack{}f} : formfeed, U+000C 
-\item{\tt \backwhack{}r} : return, U+000D 
-\item{\tt \backwhack{}}\verb|"| : doublequote, U+0022 
-\item{\tt \backwhack{}\backwhack{}} : backslash, U+005C 
-\item{\tt \backwhack{}\hyper{line ending}} : nothing
-\item{\tt \backwhack{}\hyper{space}} : space, U+0020 (useful for terminating the
-  previous escape sequence before continuing with whitespace)
-\item{\tt \backwhack{}x\meta{hex scalar value};} : specified character (note the
+\item{\cf\backwhack{}a} : alarm, U+0007
+\item{\cf\backwhack{}b} : backspace, U+0008 
+\item{\cf\backwhack{}t} : character tabulation, U+0009 
+\item{\cf\backwhack{}n} : linefeed, U+000A 
+\item{\cf\backwhack{}v} : line tabulation, U+000B 
+\item{\cf\backwhack{}f} : formfeed, U+000C 
+\item{\cf\backwhack{}r} : return, U+000D 
+\item{\cf\backwhack{}}\verb|"| : doublequote, U+0022 
+\item{\cf\backwhack{}\backwhack{}} : backslash, U+005C 
+\item{\cf\backwhack{}}\hyper{intraline whitespace}\hyper{line ending}\\\hspace*{2em}\hyper{intraline whitespace} : nothing
+\item{\cf\backwhack{}x\meta{hex scalar value};} : specified character (note the
   terminating semi-colon).
 \end{itemize}
 
