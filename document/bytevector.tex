@@ -273,7 +273,7 @@ indices $\var{k}, \ldots, \var{k} + \var{size} - 1$.
 \domain{For {\cf bytevector-uint-set!}, \var{n} must be an exact
   integer object in the interval $\{0, \ldots, 256^{\mathit{size}}-1\}$.}
 
-{\cf bytevector-uint-set!} stores the unsigned representation of size \var{size}
+The {\cf bytevector-uint-set!} procedure stores the unsigned representation of size \var{size}
 and specified by \var{endianness} into \var{bytevector} at indices
 $\var{k}, \ldots, \var{k} + \var{size} - 1$.
    
@@ -356,7 +356,7 @@ representations according to \var{size} and \var{endianness} in the
    
 \domain{\var{K} must be a valid index of \var{bytevector}; so must
   $\var{k} + 1$. For {\cf bytevector-u16-set!} and {\cf
-    bytevector-\linebreak[0]u16-native\linebreak[0]-set!}, \var{n} must be an exact integer object in
+    bytevector-\linebreak[0]u16-native-\linebreak[0]set!}, \var{n} must be an exact integer object in
   the interval $\{0, \ldots, 2^{16}-1\}$.  For {\cf bytevector-s16-set!}
   and {\cf bytevector-s16-native-set!}, \var{n} must be an exact
   integer object in the interval $\{-2^{15}, \ldots, 2^{15}-1\}$.}
@@ -409,7 +409,7 @@ The \ldots{\cf -set!} procedures return \unspecifiedreturn.
 \domain{$\var{K}, \ldots, \var{k}+ 3$ must be valid indices of
   \var{bytevector}.
   For {\cf bytevector-u32-set!} and {\cf
-    bytevector-u32-native-set!}, \var{n} must be an exact integer
+    bytevector-\linebreak[0]u32-\linebreak[0]native-\linebreak[0]set!}, \var{n} must be an exact integer
   object in
   the interval $\{0, \ldots, 2^{32}-1\}$.  For {\cf bytevector-s32-set!}
   and {\cf bytevector-s32-native-set!}, \var{n} must be an exact
@@ -453,7 +453,7 @@ The \ldots{\cf{}-set!} procedures return \unspecifiedreturn.
 \domain{$\var{K}, \ldots, \var{k}+ 7$ must be valid indices of
   \var{bytevector}.
   For {\cf bytevector-u64-set!} and {\cf
-    bytevector-u64-native-set!}, \var{n} must be an exact integer
+    bytevector-\linebreak[0]u64-\linebreak[0]native-\linebreak[0]set!}, \var{n} must be an exact integer
   object in
   the interval $\{0, \ldots, 2^{64}-1\}$.  For {\cf bytevector-s64-set!}
   and {\cf bytevector-s64-native-set!}, \var{n} must be an exact
@@ -565,8 +565,8 @@ contains the UTF-8 encoding of the given string.
 \rproto{string->utf16}{ string endianness}{procedure}}
 
 \domain{If \var{endianness} is specified, it must be the symbol {\cf
-    big} or the symbol {\cf little}.}  The {\cf string->utf16
-  procedure} returns a newly allocated (unless empty) bytevector that
+    big} or the symbol {\cf little}.}  The {\cf string->utf16}
+  procedure returns a newly allocated (unless empty) bytevector that
 contains the UTF-16BE or UTF-16LE encoding of the given string (with
 no byte-order mark).  If endianness is not specified or is {\cf big},
 then UTF-16BE is used.  If endianness is {\cf little}, then UTF-16LE
@@ -578,7 +578,8 @@ is used.
 \rproto{string->utf32}{ string endianness}{procedure}}
 
 \domain{If \var{endianness} is specified, it must be the symbol {\cf
-    big} or the symbol {\cf little}.}  The {\cf string->utf32} returns
+    big} or the symbol {\cf little}.}  The {\cf string->utf32}
+procedure returns
 a newly allocated (unless empty) bytevector that contains the UTF-32BE
 or UTF-32LE encoding of the given string (with no byte mark).  If
 endianness is not specified or is {\cf big}, then UTF-32BE is used.
