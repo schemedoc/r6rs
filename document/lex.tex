@@ -21,12 +21,12 @@ The syntax of Scheme code is organized in three levels:
 %
 Syntactic data (also called \textit{external
   representations\index{external representation}}) double
-as a notation for data, and Scheme's \rsixlibrary{io ports} library
+as a notation for objects, and Scheme's \rsixlibrary{io ports} library
 (library section~\extref{lib:portsiosection}{Port I/O})
 provides the {\cf get-datum} and {\cf put-datum} procedures
 for reading and writing syntactic data, converting between their
 textual representation and the corresponding values. 
-Each syntactic datum uniquely determines a corresponding \defining{datum value}.
+Each syntactic datum represents a corresponding \defining{datum value}.
 A syntactic datum can be used in a program to obtain the corresponding
 datum value using {\cf quote} (see section~\ref{quote}).
 
@@ -37,10 +37,10 @@ Consequently, Scheme's syntax has the property that any sequence of
 characters that is a form is also a syntactic datum representing
 some object.  This can lead to confusion, since it may not be obvious
 out of context whether a given sequence of characters is intended to
-be a representation of data or the text of a program.
+be a representation of objects or the text of a program.
 It is also a source of power, since it
 facilitates writing programs such as interpreters or compilers that
-treat programs as data (or vice versa).  A form nested inside another form is
+treat programs as objects (or vice versa).  A form nested inside another form is
 called a \defining{subform}.
 
 A datum value may have several different external representations.
@@ -71,9 +71,6 @@ datum syntax described by
 this report.
 {\cf \sharpsign{}!r6rs} is otherwise treated as a comment; see section~\ref{whitespaceandcomments}.
 
-This chapter contains overviews and formal accounts of the lexical
-syntax and the datum syntax.
-
 \section{Notation}
 \label{BNF}
 
@@ -103,8 +100,8 @@ The lexical syntax determines how a character sequence is split into a
 sequence of lexemes\index{lexeme}, omitting non-significant portions
 such as comments and whitespace.  The character sequence is assumed to
 be text according to the Unicode standard~\cite{Unicode}.  Some of
-the lexemes, such as number representations, identifiers, strings etc., of the lexical
-syntax are syntactic data in the datum syntax, and thus represent data.
+the lexemes, such as identifiers, representations of number objects, strings etc., of the lexical
+syntax are syntactic data in the datum syntax, and thus represent objects.
 Besides the formal account of the syntax, this section also describes
 what datum values are represented by these syntactic data.
 
@@ -124,8 +121,8 @@ distinct from the identifier {\cf FOO}.
 \meta{Interlexeme space} may occur on either side of any lexeme, but not
 within a lexeme.
 
-\vest Identifiers, number representations, characters, booleans, and dot must be terminated
-by a \meta{delimiter} (e.g., parenthesis, space, or comment) or by the
+\hyper{Identifier}s, {\cf .}, \hyper{number}s, \hyper{character}s, and
+\hyper{boolean}s, must be terminated by a \meta{delimiter} or by the
 end of the input.
 
 The following two characters are reserved for future extensions to the
@@ -282,7 +279,7 @@ marks the end of a line.  Moreover, the two-character line endings
 \meta{carriage return} \meta{linefeed} and \meta{carriage return}
 \meta{next line} each count as a single line ending.
 
-In a string literal, a line ending not preceded by a {\cf\backwhack}
+In a string literal, a \hyper{line ending} not preceded by a {\cf\backwhack}
 stands for a linefeed character, which is the standard line-ending
 character of Scheme.
 
@@ -381,12 +378,12 @@ represents a \textit{symbol}\index{symbol} (see section~\ref{symbolsection}).
 
 \subsection{Booleans}
 
-The standard boolean objects for true and false are written as
+The standard boolean objects for true and false have external representations
 \schtrue{} and \schfalse.\sharpindex{t}\sharpindex{f}
 
 \subsection{Characters}
 
-Characters are written using the notation
+Characters are represented using the notation
 \sharpsign\backwhack\hyper{character}\index{#\@\texttt{\sharpsign\backwhack}} or
 \sharpsign\backwhack\hyper{character name} or
 \sharpsign\backwhack{}x\meta{hex scalar value}.
@@ -460,7 +457,7 @@ a lexical syntax violation.)
 
 Case is significant in \sharpsign\backwhack\hyper{character}, and in
 \sharpsign\backwhack{\rm$\langle$character name$\rangle$}, % \hyper doesn't allow a linebreak
-but not in \sharpsign\backwhack{}x\meta{hex scalar value}.  
+but not in {\cf\sharpsign\backwhack{}x}\meta{hex scalar value}.  
 A \meta{character} must be followed by a \meta{delimiter} or by the end of the input.
 This rule resolves various ambiguous cases involving named characters,
 requiring, for
@@ -477,7 +474,7 @@ by the identifier ``{\tt pace}''.
 
 \subsection{Strings}
 
-\vest String are written as sequences of characters enclosed within doublequotes
+\vest String are represented by sequences of characters enclosed within doublequotes
 ({\cf "}).  Within a string literal, various escape
 sequences\mainindex{escape sequence} represent characters other than
 themselves.  Escape sequences always start with a backslash (\backwhack{}):
@@ -547,22 +544,21 @@ Examples:
 \subsection{Numbers}
 \label{numbernotations}
 
-The syntax of written representations for number objects is described
+The syntax of external representations for number objects is described
 formally by the \meta{number} rule in the formal grammar.
-Case is not significant in numerical constants.
+Case is not significant in external representations of number objects.
 
-A number representation may be written in binary, octal, decimal, or
+A representation of a number object may be written in binary, octal, decimal, or
 hexadecimal by the use of a radix prefix.  The radix prefixes are {\cf
 \#b}\sharpindex{b} (binary), {\cf \#o}\sharpindex{o} (octal), {\cf
 \#d}\sharpindex{d} (decimal), and {\cf \#x}\sharpindex{x} (hexadecimal).  With
 no radix prefix, a number representation is assumed to be expressed in decimal.
 
-A
-numerical constant may be specified to be either exact or
+A representation of a number object may be specified to be either exact or
 inexact by a prefix.  The prefixes are {\cf \#e}\sharpindex{e}
 for exact, and {\cf \#i}\sharpindex{i} for inexact.  An exactness
 prefix may appear before or after any radix prefix that is used.  If
-the written representation of a number has no exactness prefix, the
+the representation of a number object has no exactness prefix, the
 constant is
 inexact if it contains a decimal point, an
 exponent, or
@@ -571,7 +567,8 @@ otherwise it is exact.
 
 In systems with inexact number objects
 of varying precisions, it may be useful to specify
-the precision of a constant.  For this purpose, numerical constants
+the precision of a constant.  For this purpose, representations of
+number objects
 may be written with an exponent marker that indicates the
 desired precision of the inexact
 representation.  The letters {\cf s}, {\cf f},
@@ -633,8 +630,8 @@ precision can be calculated by calling the following procedure:
 \begin{note}
 When the underlying floating-point representation is IEEE double
 precision, the {\cf |\var{p}} suffix should not always be omitted:
-Denormalized floating-point representations have diminished precision,
-and therefore their external representation should
+Denormalized floating-point numbers have diminished precision,
+and therefore their external representations should
 carry a {\cf |\var{p}} suffix with the actual width of the
 significand.
 \end{note}
@@ -689,7 +686,8 @@ section~\ref{lexicalsyntaxsection}:
 \>    \| (\atleastone{\meta{datum}} .\ \meta{datum}) \| [\atleastone{\meta{datum}} .\ \meta{datum}]
 \>    \| \meta{abbreviation}
 \meta{abbreviation} \: \meta{abbrev prefix} \meta{datum}
-\meta{abbrev prefix} \: ' \| ` \| , \| ,@ \| \#' | \#` | \#, | \#,@
+\meta{abbrev prefix} \: ' \| ` \| , \| ,@
+\>    \| \#' | \#` | \#, | \#,@
 \meta{vector} \: \#(\arbno{\meta{datum}})
 \meta{bytevector} \: \#vu8(\arbno{\meta{u8}})
 \meta{u8} \: $\langle${\rm any \meta{number} representing an exact}
@@ -700,7 +698,7 @@ section~\ref{lexicalsyntaxsection}:
 \label{pairlistsyntax}
 
 List and pair data, representing pairs and lists of values
-(see section~\ref{listsection}) are written using parentheses or brackets.
+(see section~\ref{listsection}) are represented using parentheses or brackets.
 Matching pairs of brackets that occur in the rules of \meta{list} are
 equivalent to matching pairs of parentheses.
 
@@ -713,7 +711,7 @@ cdr is 5.
 
 A more streamlined notation can be used for lists: the elements of the
 list are simply enclosed in parentheses and separated by spaces.  The
-empty list\index{empty list} is written {\tt()} .  For example,
+empty list\index{empty list} is represented by {\tt()} .  For example,
 
 \begin{scheme}
 (a b c d e)%
@@ -743,12 +741,12 @@ are the symbol {\tt +} and the integers 2 and 6.
 \subsection{Vectors}
 \label{vectorsyntax}
 
-Vector data, representing vectors of values (see
-section~\ref{vectorsection}), are written using the notation
+Vector data, representing vectors of objects (see
+section~\ref{vectorsection}), are represented using the notation
 {\tt\#(\hyper{datum} \dotsfoo)}.  For example, a vector of length 3
-containing the number zero in element 0, the list {\cf(2 2 2 2)} in
-element 1, and the string {\cf "Anna"} in element 2 can be written as
-following:
+containing the number object for zero in element 0, the list {\cf(2 2 2 2)} in
+element 1, and the string {\cf "Anna"} in element 2 can be represented as
+follows:
 
 \begin{scheme}
 \#(0 (2 2 2 2) "Anna")%
@@ -761,10 +759,10 @@ base-library expression that evaluates to a vector.
 \label{bytevectorsyntax}
 
 Bytevector data, representing bytevectors (see
-library chapter~\extref{lib:bytevectorschapter}{Bytevectors}), are written using the notation
+library chapter~\extref{lib:bytevectorschapter}{Bytevectors}), are represented using the notation
 {\tt\#vu8(\hyper{u8} \dotsfoo)}, where the \hyper{u8}s represent the octets of
 the bytevector.  For example, a bytevector of length 3 containing the
-octets 2, 24, and 123 can be written as follows:
+octets 2, 24, and 123 can be represented as follows:
 
 \begin{scheme}
 \#vu8(2 24 123)%
