@@ -189,9 +189,6 @@ r6rs-rationale-html: $(RATIONALE_TEX_FILES)
 	$(TEX2PAGE) r6rs-rationale
 	$(TEX2PAGE) r6rs-rationale
 	$(TEX2PAGE) r6rs-rationale
-	$(MAKEINDEX) -s r6rs.mst -c r6rs-rationale-html/r6rs-rationale-Z-I.idx
-	$(TEX2PAGE) r6rs-rationale
-	$(TEX2PAGE) r6rs-rationale
 
 clean:
 	-rm -f r6rs.idx r6rs.log r6rs.toc r6rs.aux r6rs.bbl r6rs.blg r6rs.eval4tex r6rs.ilg r6rs.ind
