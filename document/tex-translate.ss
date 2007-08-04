@@ -767,10 +767,12 @@
   
   (define (format-hole hole exp)
     (parameterize ([pretty-print-columns 'infinity])
-      (string-append (do-pretty-format hole)
-                     "\\["
-                     (do-pretty-format exp)
-                     "\\]")))
+      (if (memq exp '(hole hole-here))
+          (do-pretty-format hole)
+          (string-append (do-pretty-format hole)
+                         "\\["
+                         (do-pretty-format exp)
+                         "\\]"))))
   
   (define (do-pretty-format p)
     (let ((o (open-output-string)))
@@ -844,9 +846,10 @@
                (display "" o)))
 	    ((in-hole)
 	     (loop (cadr p))
-	     (display "[" o)
-	     (loop (caddr p))
-	     (display "]" o))
+             (unless (memq (caddr p) '(hole hole-here))
+               (display "[" o)
+               (loop (caddr p))
+               (display "]" o)))
             (else
 	     (cond
                [(memq (car p) flatten-args-metafunctions)
@@ -1274,7 +1277,11 @@
         [`(side-condition ,p ,_) (loop p)]
         [`(name ,_ ,p) (loop p)]
         [`(in-hole ,hole ,exp)
-          (begin (loop hole) (d "[") (loop exp) (d "]"))]
+          (begin (loop hole) 
+                 (unless (memq exp '(hole hole-here))
+                   (d "[")
+                   (loop exp)
+                   (d "]")))]
         [`(in-hole* ,_ ,hole ,exp) 
           (begin (loop hole) (d "[") (loop exp) (d "]"))]
         [`(in-named-hole ,holename ,context ,exp)
@@ -1364,7 +1371,9 @@
 	 (display "\\Io")]
 	[(I*)
 	 (display "\\Istar")]
-	[(hole)
+        [(hole)
+	 (display "\\hole")]
+        [(hole-here)
 	 (display "\\hole")]
         [(exception) (display "\\sy{exception}")]
         [(unknown) (display "\\sy{unknown}")]

@@ -64,4 +64,6 @@
           (set-car! x 3)
           (car y))
         c c))
-     (cons 1 2))))
+     (cons 1 2)))
+  
+  (step  '(store () ((lambda (sx first-time?) ((lambda (k) (if first-time? (begin (set! first-time? #f) (with-exception-handler (lambda (x) (k values)) (lambda () (dynamic-wind + (lambda () (raise-continuable 1)) (lambda () (set! sx (+ sx 1))))))) sx)) (call/cc values))) 1 #t))))

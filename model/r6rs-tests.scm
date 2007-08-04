@@ -2047,7 +2047,10 @@ of digits with deconv-base
              (printf "~a tests, ~a tests failed\n" test-count failed-tests))
          (printf "verified that ~a terms are p*\n" verified-terms)))
       (collect-garbage) (collect-garbage) (collect-garbage)
-      (printf "mem ~s\n" (current-memory-use))))
+      (printf "mem ~s\n" (current-memory-use))
+      (let ([v (make-vector 10)])
+        (vector-set-performance-stats! v)
+        (printf "ht searches    ~a\nslots searched ~a\n" (vector-ref v 8) (vector-ref v 9)))))
   
   (provide run-tests
            the-tests

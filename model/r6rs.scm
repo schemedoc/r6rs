@@ -545,14 +545,14 @@
      (in-hole H_1
               (begin e_1 
                      (dw x_1 e_1 (pRe E_1) e_2)))]
-    [H_1 H_1])
+    [(in-hole H_1 hole) H_1])
   
   (metafunction-type poSt (-> E E))
   (define-metafunction poSt
     lang
     [(in-hole E_1 (dw x_1 e_1 H_2 e_2))
-     (in-hole (poSt E_1) (begin0 (dw x_1 e_1 hole e_2) e_2))]
-    [H_1 hole])
+     (in-hole (poSt E_1) (begin0 (dw x_1 e_1 hole-here e_2) e_2))]
+    [H_1 hole-here])
   
   (metafunction-type Trim (-> E E E))
   (define-metafunction Trim
@@ -560,7 +560,8 @@
     [((in-hole H_1 (dw x_1 e_1 E_1 e_2))
       (in-hole H_2 (dw x_1 e_3 E_2 e_4)))
      (in-hole H_2 (dw x_1 e_3 (Trim (E_1 E_2)) e_4))]
-    [(E_1 E_2)
+    [((in-hole E_1 hole)
+      (in-hole E_2 hole))
      (begin (in-hole (poSt E_1) 1)
             (pRe E_2))])
 
