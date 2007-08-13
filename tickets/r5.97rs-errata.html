@@ -44,6 +44,14 @@ evaluated for their effects."  by "The definitions may be both for
 local (unexported) and exported bindings, and the expressions 
 are initialization expressions to be evaluated for their effects.</dd>
 
+<dt>sec. 7.2, second sentence</dt>
+<dd>"Specifically, if a macro transformer is defined by a
+procedure that calls a procedure from another library, then the latter
+library must be run when expanding the latter." &rArr; "Specifically,
+if a macro transformer is defined by a
+procedure that calls a procedure from another library, then the latter
+library must be run when expanding a use of the macro."</dd>
+
 <dt>sec 10</dt>
 <dd>the example for the macro expansion algorithm misses
     a pair of parens in the use of defun: <br />
@@ -64,10 +72,31 @@ are initialization expressions to be evaluated for their effects.</dd>
 <h2>Standard Libraries</h2>
 
 <dl>
+  <dt>sec 2.9</dt>
+      <dd><code>utf16->string!</code> &rArr;
+	<code>utf16->string</code>,
+	<code>utf32->string!</code> &rArr; <code>utf32->string</code>
+      </dd>
   <dt>sec 6.2</dt>
   <dd>"reocrd" &rArr; "record"</dd>
+  <dd>
+	<pre>(define-record-type frob
+  (fields (mutable widget getwid setwid!))
+  (protocol
+    (lambda (p) (p (make-widget n)))))</pre>
+	&rArr;
+		<pre>(define-record-type frob
+  (fields (mutable widget getwid setwid!))
+  (protocol
+    (lambda (p) 
+      (lambda (n) (p (make-widget n))))))</pre>
 
   <dt>sec 6.3, 11th para</dt>
+  <dd>"Moreover, if <code>record-rtd</code> (see ``Inspection'' below)
+is called an instance of the record type [...]"
+	&rArr;
+	Moreover, if <code>record-rtd</code> (see ``Inspection'' below)
+is called with an instance of the record type [...]
   <dd>"make-record-type" should read "make-record-type-descriptor":<br />
     "If fields is modified after make-record-type has been called..." 
     &rArr; "If fields is modified after make-record-type-descriptor has
