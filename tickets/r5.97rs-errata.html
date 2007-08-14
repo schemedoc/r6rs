@@ -30,7 +30,7 @@ dd {
 <dd>Will Clinger's name should not be listed among the current editors
 on the main report and library documents.</dd>
 
-<dt>&sect; 2</d>
+<dt>&sect; 2</dt>
 <dd>Requirement levels under "should not". The verb "mean" should be
 "means" since the subject is singular.</dd>
 
@@ -152,6 +152,48 @@ particular evaluation order)."</dd>
   (protocol
     (lambda (p) 
       (lambda (n) (p (make-widget n))))))</pre>
+
+  <dt>&sect; 6.3, <code>make-record-constructor-constructor</code></dt>
+  <dd>"The procedure returned by
+<var>protocol</var> should call <var>p</var> once with the number of arguments
+it expects" &rArr;
+"The procedure returned by
+<var>protocol</var> should call <var>p</var> once with the number of arguments
+<var>p</var> expects"
+  <dd>The procedure returned by <var>protocol</var> should call <var>n</var> once with
+the number of arguments it expects, call the procedure <var>p</var> it
+returns once with the number of arguments it expects" &rArr; "The
+procedure returned by <var>protocol</var> should call <var>n</var>
+once with the number of arguments <var>n</var> expects, call the
+procedure <var>p</var> it returns once with the number of arguments
+<var>p</var> expects"</dd>
+
+  <dd>"<var>Protocol</var> may be <code>#f</code>, specifying a default value that
+accepts one argument for each field of <var>rtd</var> (not including the
+fields of its parent type, if any)."
+	&rArr;
+"<var>Protocol</var> may be <code>#f</code>, specifying a default constructor that
+accepts one argument for each field of <var>rtd</var> (not including the
+fields of its parent type, if any)."</dd>
+  <dd>"If <var>rtd</var> is an extension of another type,
+then <var>parent-constructor-descriptor</var> must be either <code>#f</code> or
+itself specify a default constructor.  In this case, the default
+<var>protocol</var> procedure behaves as if it were:"
+&rArr;
+"If <var>rtd</var> is an extension of another type,
+then <var>parent-constructor-descriptor</var> must be either <code>#f</code> or
+itself specify a default constructor, and, the default
+<var>protocol</var> procedure behaves as if it were:"</dd>
+<dd>"If <var>rtd</var> is an extension of another record type, and
+<var>parent-constructor-descriptor</var> or <var>protocol</var> is <code>#f</code>, <var>protocol</var> must
+also be <code>#f</code>, and a default constructor descriptor is as
+described above is also assumed."
+""If <var>rtd</var> is an extension of another record type, and 
+<var>parent-constructor-descriptor</var> or the <var>protocol</var> of <var>parent-constructor-descriptor</var> is <code>#f</code>, <var>protocol</var> must
+also be <code>#f</code>, and a default constructor descriptor as
+described above is also assumed."
+</dd>
+
 
   <dt>&sect; 6.3, 11th para</dt>
   <dd>"Moreover, if <code>record-rtd</code> (see ``Inspection'' below)
