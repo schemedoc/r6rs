@@ -67,12 +67,17 @@ local (unexported) and exported bindings, and the expressions
 are initialization expressions to be evaluated for their effects.</dd>
 
 <dt>&sect; 7.2, second sentence</dt>
-<dd>"Specifically, if a macro transformer is defined by a
-procedure that calls a procedure from another library, then the latter
-library must be run when expanding the latter." &rArr; "Specifically,
-if a macro transformer is defined by a
-procedure that calls a procedure from another library, then the latter
-library must be run when expanding a use of the macro."</dd>
+<dd>"Specifically, if a macro transformer is defined by a procedure
+that calls a procedure from another library, then the latter library
+must be run when expanding the latter.  The latter may not be needed
+when the former is eventually run as part of a program, or it may be
+needed for the former program's run time, too." &rArr; "For example,
+if a macro transformer calls a procedure from library <var>A</var>,
+then the library <var>A</var> must be instantiated before expanding
+any use of the macro in library <var>B</var>.  Library <var>A</var>
+may not be needed when library <var>B</var> is eventually run as part
+of a program, or it may be needed for run time of library
+<var>B</var>, too."</dd>
 
 <dt>&sect; 10</dt>
 <dd>the example for the macro expansion algorithm misses
@@ -118,6 +123,9 @@ particular evaluation order)."</dd>
       &rArr;
 "However, the Unicode code points in this range,
   the so-called <i>surrogates</i> [...]"
+
+<dt>Appendix B, <code>letrec</code></dt>
+<dd>"read to or write from" &rArr; "read from or write to"</dd>
 
 <dt>Appendix E, 14th bullet</dt>
 <dd>"The !#r6rs comment" &rArr; "The #!r6rs comment"</dd>
