@@ -394,7 +394,7 @@ also initializes the fields of this record type to the values of {\cf
 
 A protocol may perform other actions consistent with the requirements
 described above, including mutation of the new record or other side
-effects, before returning the reocrd.
+effects, before returning the record.
 \end{entry}
 
 Any definition that takes advantage of implicit naming for the
@@ -446,7 +446,8 @@ of accessor and mutator names for the widget field.
 (define-record-type frob
   (fields (mutable widget getwid setwid!))
   (protocol
-    (lambda (p) (p (make-widget n)))))%
+    (lambda (p)
+      (lambda (n) (p (make-widget n))))))%
 \end{scheme}
 
 \begin{entry}{%
@@ -625,7 +626,7 @@ is opaque.
 If passed an instance of the record type,
 {\cf record?} returns
 \schfalse{}.  Moreover, if {\cf record-rtd} (see ``Inspection'' below)
-is called an instance of the record type, 
+is called with an instance of the record type, 
 an exception with condition type {\cf\&assertion} is raised.
 The record type is also opaque if an opaque parent is
 supplied.  If \var{opaque?} is \schfalse{} and an opaque parent is not
@@ -645,7 +646,7 @@ record instance.
 
 The specified fields are added to the parent fields, if any, to determine
 the complete set of fields of the returned record type.
-If \var{fields} is modified after {\cf make-record-type}
+If \var{fields} is modified after {\cf make-record-type-descriptor}
 has been called, the effect on the returned
 rtd is unspecified.
 
@@ -693,7 +694,7 @@ argument \var{p}.  \var{P} is a procedure that expects one argument
 for every field of \var{rtd} and returns a record with the fields of
 \var{rtd} initialized to these arguments.  The procedure returned by
 \var{protocol} should call \var{p} once with the number of arguments
-it expects and return the resulting record as shown in the simple
+\var{p} expects and return the resulting record as shown in the simple
 example below:
 %
 \begin{scheme}
@@ -725,8 +726,8 @@ fields of \var{parent-rtd} and its parents initialized as specified by
 \var{parent-constructor-descriptor}.
 
 The procedure returned by \var{protocol} should call \var{n} once with
-the number of arguments it expects, call the procedure \var{p} it
-returns once with the number of arguments it expects and return the
+the number of arguments \var{n} expects, call the procedure \var{p} it
+returns once with the number of arguments \var{p} expects and return the
 resulting record.  A simple \var{protocol} in this case might be
 written as follows:
 %
@@ -748,13 +749,13 @@ associated record type.
 Child record constructors need not know the number or contents of parent
 fields, only the number of arguments accepted by the parent constructor.
 
-\var{Protocol} may be \schfalse, specifying a default value that
-accepts one argument for each field of \var{rtd} (not including the
+\var{Protocol} may be \schfalse, specifying a default constructor that
+accepts one argument for each field of \var{rtd} (including the
 fields of its parent type, if any).  Specifically, if \var{rtd} is a
 base type, the default \var{protocol} procedure behaves as if it were
 {\cf (lambda (p) p)}.  If \var{rtd} is an extension of another type,
 then \var{parent-constructor-descriptor} must be either \schfalse{} or
-itself specify a default constructor.  In this case, the default
+itself specify a default constructor, and the default
 \var{protocol} procedure behaves as if it were:
 %
 \begin{scheme}
@@ -773,9 +774,10 @@ the parent coming before those of the extension in the argument list.
 type, and $k$ is the number of fields of \var{rtd} itself.)
 
 If \var{rtd} is an extension of another record type, and
-\var{parent-constructor-descriptor} or \var{protocol} is \schfalse,
-\var{protocol} must also be \schfalse, and a default constructor
-descriptor is as described above is also assumed.
+\var{parent-constructor-descriptor} or the \var{protocol} of
+\var{parent-constructor-descriptor} is \schfalse, \var{protocol} must
+also be \schfalse, and a default constructor descriptor as
+described above is also assumed.
 
 \implresp If \var{protocol} is a procedure, the implementation must
 check the restrictions on it to the extent performed by applying it as
@@ -783,6 +785,61 @@ described when the constructor is called.
 An
 implementation may check whether \var{protocol} is an appropriate argument
 before applying it.
+
+\begin{scheme}
+(define rtd1
+  (make-record-type-descriptor
+   'rtd1 \schfalse{} \schfalse{} \schfalse{} \schfalse{}
+   '\sharpsign((immutable x1) (immutable x2))))
+
+(define rtd2
+  (make-record-type-descriptor
+   'rtd2 rtd1 \schfalse{} \schfalse{} \schfalse{}
+   '\sharpsign((immutable x3) (immutable x4))))
+
+(define rtd3
+  (make-record-type-descriptor
+   'rtd3 rtd2 \schfalse{} \schfalse{} \schfalse{}
+   '\sharpsign((immutable x5) (immutable x6))))
+
+(define protocol1
+  (lambda (p)
+    (lambda (a b c)
+      (p (+ a b) (+ b c)))))
+
+(define protocol2
+  (lambda (n)
+    (lambda (a b c d e f)
+      (let ((p (n a b c)))
+        (p (+ d e) (+ e f))))))
+
+(define protocol3
+  (lambda (n)
+    (lambda (a b c d e f g h i)
+      (let ((p (n a b c d e f)))
+        (p (+ g h) (+ h i))))))
+
+(define cd1
+  (make-record-constructor-descriptor
+    rtd1 \schfalse{} protocol1))
+
+(define cd2
+  (make-record-constructor-descriptor
+    rtd2 cd1 protocol2))
+
+(define cd3
+  (make-record-constructor-descriptor
+    rtd3 cd2 protocol3))
+
+(define make-rtd1 (record-constructor cd1))
+
+(define make-rtd2 (record-constructor cd2))
+
+(define make-rtd3 (record-constructor cd3))
+
+(make-rtd3 1 2 3 4 5 6 7 8 9)\lev
+  \(\langle\)\textrm{record with fields initialized to 3, 5, 9, 11, 15, 17}\(\rangle\)
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%

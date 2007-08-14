@@ -93,7 +93,7 @@ the binding is visible.  The region is determined by the particular
 binding construct that establishes the binding; if the binding is
 established by a {\cf lambda} expression, for example, then its region
 is the entire {\cf lambda} expression.  Every mention of an identifier
-refers to the binding of the identifier that established the
+refers to the binding of the identifier that establishes the
 innermost of the regions containing the use.  If a use of an
 identifier appears in a place where none of the surrounding expressions
 contains a binding for the identifier, the use may refer to a
@@ -301,7 +301,8 @@ the specific values themselves.
 \section{Storage model}
 \label{storagemodel}
 
-Variables and objects such as pairs, vectors, bytevectors, strings, hashtables, records implicitly
+Variables and objects such as pairs, vectors, bytevectors, strings,
+hashtables, and records implicitly
 refer to locations\mainindex{location} or sequences of locations.  A string, for
 example, contains as many locations as there are characters in the string. 
 (These locations need not correspond to a full machine word.) A new value may be
@@ -323,7 +324,7 @@ locations are marked to indicate that they are now in use before the variable
 or object is made to refer to them.
 
 It is desirable for constants\index{constant} (i.e. the values of
-literal expressions) to reside in read-only-memory.  To express this,
+literal expressions) to reside in read-only memory.  To express this,
 it is convenient to imagine that every object that refers to locations
 is associated with a flag telling whether that object is
 mutable\index{mutable} or immutable\index{immutable}.  Literal

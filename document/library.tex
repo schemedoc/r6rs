@@ -41,7 +41,7 @@ A library declaration contains the following elements:
 \item The \hyper{library body} is the library body, consisting of a
   sequence of definitions followed by a sequence of expressions.  The
   definitions may be both for local (unexported) and exported
-  bindings, and the set of initialization expressions to be evaluated
+  bindings, and the expressions are initialization expressions to be evaluated
   for their effects.
 \end{itemize}
 
@@ -293,7 +293,7 @@ expression is unspecified.
 The names {\cf library}, {\cf export}, {\cf import},
 {\cf for}, {\cf run}, {\cf expand}, {\cf meta},
 {\cf import}, {\cf export}, {\cf only}, {\cf except}, {\cf
-  prefix}, {\cf rename}, {\cf and}, {\cf or}, {\cf >=}, and {\cf <=}
+  prefix}, {\cf rename}, {\cf and}, {\cf or}, {\cf not}, {\cf >=}, and {\cf <=}
 appearing in the library syntax are part of the
 syntax and are not reserved, i.e., the same names can be used for other
 purposes within the library or even exported from or imported 
@@ -334,11 +334,12 @@ All other variables defined within a library are mutable.
 \label{phasessection}
 
 Expanding a library may require run-time information from another
-library. Specifically, if a macro transformer is defined by a
-procedure that calls a procedure from another library, then the latter
-library must be run when expanding the latter.  The latter may not be
-needed when the former is eventually run as part of a program, or it
-may be needed for the former program's run time, too.  The library
+library.  For example, if a macro transformer calls a
+procedure from library $A$, then the library $A$ must be
+instantiated before expanding any use of the macro in library $B$.  Library $A$ may
+not be
+needed when library $B$ is eventually run as part of a program, or it
+may be needed for run time of library $B$, too.  The library
 mechanism distinguishes these times by phases, which are explained in
 this section.  Note that phases are only relevant for programs that
 contain macro transformers defined by procedures---programmers whose programs

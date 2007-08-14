@@ -96,7 +96,7 @@ The following do not violate the restriction.
   (let ([z 3])
     (define def0 list)
     (def0 z)
-    (list z)))          \ev  (e)
+    (list z)))          \ev  (3)
 
 (let ()
   (define-syntax foo
@@ -131,7 +131,7 @@ Example:
   (define-syntax defun
     (syntax-rules ()
       [(\_ x a e) (define x (lambda a e))]))
-  (defun even? (n) (or = n 0) (odd? (- n 1)))
+  (defun even? (n) (or (= n 0) (odd? (- n 1))))
   (define-syntax odd?
     (syntax-rules () [(\_ n) (not (even? n))]))
   (odd? (if (odd? x) (* x x) x)))%

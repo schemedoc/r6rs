@@ -209,7 +209,7 @@ also to eschew more expensive checks.
 \section{Infinities, NaNs}
 \label{infinitiesnansection}
 
-Infinities and NaNs and are artefacts that help deal with the
+Infinities and NaNs are artifacts that help deal with the
 inexactness of binary floating-point arithmetic.  The semantics
 dealing with infinities and NaNs, or the circumstances leading to
 their generation are somewhat arbitrary.  However, as most Scheme
@@ -229,7 +229,7 @@ is optional.
 
 \section{Distinguished -0.0}
  
-A distinguished -0.0 is another artefact of IEEE~754, which can be
+A distinguished -0.0 is another artifact of IEEE~754, which can be
 used to construct certain branch cuts.  A Scheme implementation is not
 required to distinguish -0.0.  If it does, however, the behavior of
 the transcendental functions is sensitive to the distinction.  
@@ -260,7 +260,7 @@ arbitrary symbols can be represented using only ASCII, which allows
 referencing them from Scheme programs restricted to ASCII or some
 other subset of Unicode.
 
-Among existing implementations of Scheme , a popular choice for
+Among existing implementations of Scheme, a popular choice for
 extending the set of characters that can occur in symbols is the
 vertical-bar syntax of Common Lisp.  The vertical-bar syntax of Common
 Lisp carries the risk of confusing the syntax of identifiers with that
@@ -316,7 +316,7 @@ difficult.
 While \rn{5} only provided the {\cf;} syntax for comments, the report
 now describes three essential kinds: In addition to {\cf;}, {\tt \#|}
 and {\tt |\#} delimit block comments, and {\cf\sharpsign;} starts a
-``datum comment''.  ({\cf\sharpsign!r6rs} is also a kind of command,
+``datum comment''.  ({\cf\sharpsign!r6rs} is also a kind of comment,
 albeit with a specific, fixed purpose.) 
 
 Block comments provide a more convenient way of writing multi-line
@@ -447,7 +447,7 @@ undecidable or too expensive to always enforce (see
 section~\ref{argumentchecking}).  Therefore, some entries have
 an additional paragraph labelled ``\textit{Implementation
   responsibilities}'' that distinguishes the responsibilities of the
-implementation from those of the implementation.
+programmer from those of the implementation.
 
 \chapter{Libraries}
 
@@ -565,10 +565,10 @@ identifiers in the rest of the language.  Using compound names
 reflects experience across programming languages that a structured
 top-level name space is necessary to avoid collisions.  Embedding a
 hierarchy within a single string or symbol is certainly possible.
-However, in Scheme, list data is the natural means for represent
+However, in Scheme, list data is the natural means for representing
 hierarchical structure, rather than encoding it in a string or symbol.
-The hierarchical structure makes it easy formulating policies for
-choosing unique names, or possible storage formats in a file system.
+The hierarchical structure makes it easy to formulate policies for
+choosing unique names or possible storage formats in a file system.
 See appendix~\extref{app:librarynamesappendix}{Unique library
   names}.
 Consequently, despite the syntactic complexity of compound
@@ -609,7 +609,7 @@ entity, an \rn{5} program could evolve by being entered piecemeal into
 a running Scheme system.  Many Scheme systems have interactive
 command-line environments based on the semantics of \rn{5} programs.
 However, the specification of \rn{5} programs was not really
-sufficient do describe how to operate an arbitrary Scheme system: The
+sufficient to describe how to operate an arbitrary Scheme system: The
 \rn{5} is ambiguous on some aspects of the semantics such as binding.
 Moreover, \rn{5}'s {\cf load} procedure does say how to load source
 code into the running system, but the pragmatics of {\cf load} would
@@ -625,7 +625,7 @@ emerged since \rn{5}.  Consequently, \rn{6} makes no attempt of trying
 to specify the semantics of programs as in \rn{5}; the design of an
 interactive environment is now completely in the hands of the
 implementors.  On the other hand, being able to distribute portable
-programs as one of the goals of the \rn{6} process.  As a result, the
+programs is one of the goals of the \rn{6} process.  As a result, the
 notion of top-level program was added to the report.
 
 By allowing the interleaving of definitions and expressions, top-level 
@@ -650,7 +650,7 @@ better code if they can choose evaluation order.
 
 \chapter{Expansion process}
 
-The description of macro expansion is considerable more involved than
+The description of macro expansion is considerably more involved than
 it was in \rn{5}: One reason for this that the specification of
 expansion in \rn{5} was ambiguous in several important respects.  For
 example, \rn{5} does not specify whether {\cf define} is a binding
@@ -775,7 +775,7 @@ SRFI~11~\cite{srfi11}.
 
 \subsection{Treatment of procedures}
 
-The above definition of {\cf eqv?} allows implementations latitude in
+The definition of {\cf eqv?} allows implementations latitude in
 their treatment of procedures: implementations are free either to
 detect or to fail to detect that two procedures are equivalent to each
 other, and can decide whether or not to merge representations of
@@ -901,7 +901,7 @@ than it would be for the editors to guess their intent.
 Scheme's numerical types are the exactness types exact and inexact,
 the tower types integer, rational, real, complex, and number, and the
 Cartesian product of the exactness types with the tower types, where
-$\left< t_1, t2 \right>$; is regarded as a subtype of both $t_1$ and
+$\left< t_1, t_2 \right>$; is regarded as a subtype of both $t_1$ and
 $t_2$.
 
 These types have an aesthetic symmetry to them, but they are not
@@ -1095,7 +1095,7 @@ The procedures {\cf modulo}, {\cf remainder}, and {\cf quotient} from
 \subsection{Numerical predicates}
 
 The behavior of the numerical type predicates {\cf complex?}, {\cf
-  real?}, {\cf rational?}, and {\cf integer} behavior is motivated by
+  real?}, {\cf rational?}, and {\cf integer?} is motivated by
 closure properties described in
 section~\ref{closurepropertiessection}.  Conversely, the procedures
 {\cf real-valued?}, {\cf rational-valued?}, and {\cf integer-valued?}
@@ -1126,7 +1126,7 @@ representations other than binary floating-point.
 
 Where \rn{5} specified characters and strings in terms of its own,
 limited character set, \rn{6} specifies characters and strings in
-terms of Unicode.  The primary goal of the design change were to
+terms of Unicode.  The primary goal of the design change was to
 improve the portability of Scheme programs that manipulate text, while
 preserving a maximum of backward compatibility with \rn{5}.
 
@@ -1156,7 +1156,7 @@ integers that are Unicode scalar values.)
 
 The surrogates cover a numerical range deliberately omitted from the
 set of Unicode scalar values.  Hence, surrogates have no
-representation as characters---they are merely an artefact of the
+representation as characters---they are merely an artifact of the
 design of UTF-16.  Including surrogates in the set of characters
 introduces complications similar to the complications of using UTF-16
 directly.  In particular, most Unicode consortium standards and
@@ -1247,7 +1247,7 @@ value (or zero values) are returned to a continuation that implicitly
 accepts only one value.  In particular:
 %
 \begin{scheme}
-((lambda (x) x) (values  1 2)) \lev \unspecified%
+((lambda (x) x) (values 1 2)) \lev \unspecified%
 \end{scheme}
 %
 Whether an implementation must raise an exception when evaluating such
@@ -1268,7 +1268,7 @@ typically an error, one that implementations ideally detect and report.
 \rn{6} allows an implementation to take either position.  Moreover, it
 allows an implementation to let {\cf set!}, {\cf vector-set!}, and
 other effect-only operators to pass zero values to their
-continuations, preventing a program to make obscure use of the return
+continuations, preventing a program from making obscure use of the return
 value.  This causes a potential compatibility problem with \rn{5},
 which specifies that such expression return a single unspecified
 value, but the benefits of the change were deemed to outweigh the costs.
@@ -1488,7 +1488,7 @@ barriers, which is useful in itself, but also allows more efficient
 compilation.
 
 In particular, when the implementor of an abstract data type chooses
-to represent that ADT by record type, and allows one of the classes
+to represent that ADT by a record type, and allows one of the classes
 that represent the ADT to be exposed and subclassed, then the ADT is
 no longer abstract.  Its implementors must expose enough information
 to allow for effective subtyping, and must commit to enough of the
@@ -1504,7 +1504,7 @@ that evolve more gracefully over time.
 Moreover, making a record type sealed may prevent its accessors and
 mutators from becoming polymorphic, which would make effective flow analysis and
 optimization difficult.  This is particularly relevant for
-Scheme implementations that use record to implement some of Scheme's
+Scheme implementations that use records to implement some of Scheme's
 other primitive data types such as pairs.
 
 \chapter{Conditions and exceptions}
@@ -1638,7 +1638,7 @@ either {\cf bytevector->string} or the procedures from the
 
 The separation of binary and textual ports enables creating ports from
 both binary and textual sources and sinks.  It also makes creating
-both binary and textual versions of some procedures many procedures
+both binary and textual versions of many procedures
 necessary.
 
 \section{File positions}
@@ -1651,7 +1651,7 @@ defined, especially when transcoding is buffered.
 \section{Freshness of standard ports}
 
 The ports returned by {\cf standard-input-port}, {\cf
-  standard-output-port}, and {\cf standard-error-port} is fresh so it
+  standard-output-port}, and {\cf standard-error-port} are fresh so it
 can be safely closed or converted to a textual port without risking
 the usability of an existing port.
 
@@ -1679,7 +1679,7 @@ old file is no longer useful.
 Standardization of procedures that return or pass to another procedure
 the name of a file is more difficult than standardization of {\cf
   file-exists?} and {\cf delete-file}, because strings are either
-awkward or in sufficient to represent file names on some platforms,
+awkward or insufficient to represent file names on some platforms,
 such as Unix and Windows.  See section~\ref{filenamesection}.
 
 \chapter{Arithmetic}
@@ -1788,7 +1788,7 @@ objects to different addresses.
 \chapter{Enumerations}
 
 Many procedures in many libraries accept arguments from a finite set,
-or subsets of a finite sets to describe a certain mode of operation,
+or subsets of a finite set to describe a certain mode of operation,
 or several flags to describe a mode of operation.  Examples in the
 \rn{6} include the endianness for bytes-object operations, and file
 and buffering modes in the I/O library.  Offering a default policy for
@@ -1815,7 +1815,7 @@ or desirable. The \thersixlibrary{} library exports all bindings for
 {\cf expand} as well as {\cf run} so that it is convenient for writing
 {\cf syntax-case} macros as well as run-time code.
 
-The \rsixlibrary{} library does not include a few select libraries:
+The \thersixlibrary{} library does not include a few select libraries:
 %
 \begin{itemize}
 \item \rsixlibrary{eval}, as its presence may make creating
@@ -1832,7 +1832,7 @@ The \rsixlibrary{} library does not include a few select libraries:
 The presence of mutable pairs causes numerous problems:
 %
 \begin{itemize}
-\item It complicates the specification of higher-procedures that
+\item It complicates the specification of higher-order procedures that
   operate on lists.
 \item It inhibits certain compiler optimizations such as
   deforestation.
@@ -1851,7 +1851,7 @@ in the future.
 
 \chapter{Mutable strings}
 
-The presence of mutable strings problems similar to some of the
+The presence of mutable strings causes problems similar to some of the
 problems caused by the presence of mutable pairs.  Hence, the same
 reasoning applies for moving the mutation operations into a separate
 library.
