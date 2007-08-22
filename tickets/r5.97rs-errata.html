@@ -222,6 +222,21 @@ is called with an instance of the record type [...]
     &rArr; "If fields is modified after make-record-type-descriptor has
     been called..."
   </dd>
+      <dt>&sect; 12.8, definition of <code>syntax-rules</code></dt>
+      <dd>The definition of <code>syntax-rules</code> will be replaced
+      by:
+<pre>(define-syntax syntax-rules
+  (lambda (x)
+    (syntax-case x ()
+      [(_ (k ...) [(_ . p) t] ...)
+       #'(lambda (x)
+           (syntax-case x (k ...)
+             [(_ . p) #'t] ...))])))</pre>
+	</dd>
+      <dd>
+      Moreover, the phrase ", and that at most one fender
+is present in each clause" will be removed.</dd>
+
 </dl>
 
 

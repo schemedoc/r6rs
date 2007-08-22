@@ -1046,10 +1046,10 @@ as follows.
 (define-syntax syntax-rules
   (lambda (x)
     (syntax-case x ()
-      [(\_ (k ...) [(\_ . p) f ... t] ...)
-       \#'(lambda (x)
+      [(_ (k ...) [(_ . p) t] ...)
+       #'(lambda (x)
            (syntax-case x (k ...)
-             [(\_ . p) f ... \#'t] ...))])))%
+             [(_ . p) #'t] ...))])))%
 \end{scheme}
 
 A more robust implementation would verify that the literals
