@@ -94,7 +94,25 @@ of a program, or it may be needed for run time of library
       &rArr; <code>(defun even? (n) (or (= n 0) (odd? (- n 1))))</code>
 </dd>
 
-<dt>&sect; 10</dt>
+      <dd>The two example definitions for <code>foo</code> are missing
+	a <code>#'</code> in the output. The two examples will be
+	changed as follows:
+	<pre>(let ()
+  (define-syntax foo
+    (lambda (e)
+      #'(+ 1 2)))
+  (define + 2)
+  (foo))
+
+(let ()
+  (define-syntax foo
+    (lambda (e)
+      #'(let ([+ -]) (+ 1 2))))
+  (define + 2)
+  (foo))
+</pre>
+</dd>
+
 <dd>The result of the second example, the let-syntax one, can't be
 (e). I think it should be (3), but I haven't tested it.</dd>
 
