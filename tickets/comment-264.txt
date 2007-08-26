@@ -1,0 +1,44 @@
+From: ludovic.courtes at laas.fr (Ludovic =?iso-8859-1?Q?Court=E8s?=)
+Date: Thu, 14 Jun 2007 10:00:40 +0200
+Subject: [Formal] Versioned names for base libraries considered harmful
+Message-ID: <87r6of55jr.fsf@laas.fr>
+
+Submitter:      Ludovic Court?s
+Email:          ludovic.courtes at laas.fr
+Type of Issue:  Defect
+Priority:       Major
+Component:      Base Library
+Report:         Revised^5.94 Report on the Algorithmic Language Scheme
+Summary:        The `rnrs' versioned library names for the base library
+                are considered harmful.
+
+R5.93RS changed the identifiers of the base libraries from `(r6rs ...)'
+to `(rnrs ... (6))', the last `(6)' being a version specifier.
+
+This change was discussed on the `r6rs-discuss' list last month [0].
+Arguments were given against this change.  The main reason this was
+considered harmful is that programs and libraries that do not specify
+which version of the base library is being imported would suddenly break
+when the next version of the report is implemented.  Thus, programs
+meant to be "future-proofs" are likely to always specify the version
+number when importing base libraries, i.e., `(6)'.  Practically, this
+makes little difference compared to typing `(r6rs ...)'.
+
+Arguments in favor of base library versioning were given [1].  The main
+argument is that it would provide R7RS editors more flexibility because
+they could use the same library names when deemed appropriate.  However,
+these comments fail to acknowledge important points that were raised
+during the discussion, notably the fact that there is no reason for a
+program to blindly import any version of the base libraries.
+
+I suggest reverting this change or at least discussing the rationale
+behind it.
+
+Thanks,
+Ludovic.
+
+[0] http://lists.r6rs.org/pipermail/r6rs-discuss/2007-May/002332.html
+[1] http://lists.r6rs.org/pipermail/r6rs-discuss/2007-May/002369.html
+
+
+From shiro at lava.net  Thu Jun 14 04:18:38 2007

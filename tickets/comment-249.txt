@@ -1,0 +1,32 @@
+From: cowan at ccil.org (John Cowan)
+Date: Tue, 5 Jun 2007 15:29:44 -0400
+Subject: [Formal] Defun example should actually implement defun
+Message-ID: <20070605192944.GA14784@mercury.ccil.org>
+
+Submitter: John Cowan
+Email address: cowan at ccil.org
+Issue type: Defect
+Priority: Trivial
+Component:  Macro expansion
+Report version: 5.93
+Summary: Defun example should actually implement defun
+
+The defun example in report section 8 should actually implement
+(simplified) defun rather than a mere clone of define.
+
+(lambda (x)
+  (define-syntax defun
+    (syntax-rules ()
+      [(_ x a e) (define x (lambda a e))]))
+  (defun even? (n) (or = n 0) (odd? (- n 1))))
+
+etc.
+
+-- 
+Even a refrigerator can conform to the XML      John Cowan
+Infoset, as long as it has a door sticker       cowan at ccil.org
+saying "No information items inside".           http://www.ccil.org/~cowan
+        --Eve Maler
+
+
+From cowan at ccil.org  Tue Jun  5 15:33:43 2007

@@ -1,0 +1,142 @@
+From: will at ccs.neu.edu (William D Clinger)
+Date: Mon, 18 Jun 2007 23:17:45 -0400
+Subject: [Formal] please repair and simplify lexical syntax
+Message-ID: <E1I0UDx-0000Kw-7d@welsh.ccs.neu.edu>
+
+Submitter: William D Clinger
+Email address: will at ccs.neu.edu
+Issue type: Defect
+Priority: Minor
+Component: Lexical Syntax
+Report version: 5.94
+Summary: please repair and simplify lexical syntax
+
+Full description of issue:
+
+The current draft's description of lexical
+syntax contains several technical errors.
+The lexical description is also so complex
+as to invite controversy concerning its
+interpretation.  For example, I count well
+over 800,000 distinct errors in the current
+reference implementation of get-datum, but
+its author does not agree that these are
+errors [private communication].
+
+Implementations of the R5RS were allowed to
+simplify the lexical syntax by extending it
+to a simpler and more regular syntax that
+includes the required R5RS syntax as a proper
+sublanguage.  Many did so.  One of the more
+popular extensions adds an <identifier-like>
+nonterminal, which generates all identifiers,
+all numbers, and many non-R5RS tokens besides.
+Any <identifier-like> token that is rejected
+by number->string is then accepted as an
+identifier.  The current draft R6RS forbids
+the use of such extensions to simplify the
+lexical syntax.
+
+Hence simplicity of lexical syntax has become
+more important for the R6RS than it was in the
+R5RS.  Unfortunately, the lexical syntax has
+become more complicated, not simpler.
+
+                * * *
+
+Details:
+
+The end of input is not listed as a lexeme, but
+it probably should be.
+
+The current draft says "Identifiers, numbers,
+characters, booleans, and dot must be terminated
+by a <delimiter> (e.g. parenthesis, space, or
+comment) or by the end of the input."
+
+That sounds like an excellent requirement, but
+it is vacuous.  According to the formal syntax,
+a <delimiter> can be <interlexeme space>, and
+the empty sequence of characters is one kind of
+<interlexeme space>, so it is simply impossible
+for a lexeme (other than the end of input) not
+to be followed by a <delimiter>.
+
+The solution I recommend is to change the first
+production of <delimiter> to <whitespace>.
+
+In the 5.94 draft, the following are legal:
+
+    foo#;13#;15()          ; read as foo ()
+    foo#|comment|#()       ; read as foo ()
+    foo#!r6rs#!r6rs()      ; read as foo ()
+
+but the following are illegal:
+
+    foo#()
+    foo#!r5rs#!r5rs()
+
+Treating #!r6rs as a delimiter, but not #!r5rs
+or #!fold-case, is especially confusing.
+
+I recommend the addition of # to the list of
+delimiters.  This might cause problems for
+backwards compatibility, however, since several
+systems have been allowing # as a <subsequent>.
+
+Since there are over 235,000 Unicode characters
+that can begin an R6RS identifier, programmers
+are likely to assume that identifiers can begin
+with any alphabetic character.  With the current
+draft, however, 163 alphabetic characters (of
+Unicode 5.0.0) cannot begin an identifier.  This
+should be fixed.
+
+The peculiar identifiers that begin with ->
+are not needed by the current draft, and are
+no more useful than many other extensions that
+are just as widely implemented.  There is no
+principled reason for the R6RS to allow the
+-> peculiarities while forbidding others.
+Either remove the -> wart from the lexical
+syntax, or generalize the lexical syntax so
+the -> identifiers are no longer exceptions to
+the general rules for constructing identifiers.
+
+Scheme's lexical syntax for numbers has always
+been complex, but the draft R6RS proposes to
+make that more of a problem by outlawing
+simplifying extensions.  I think it is time to
+drop the # notation for insignificant digits.
+Our earlier discussion of this revealed general
+confusion concerning its semantics, and it also
+appears that hardly anyone uses it.  The R6RS
+<mantissa width> is arguably a better solution
+than the # notation, and should replace it.
+
+The #\nul, #\esc, and #\delete characters have no
+corresponding two-letter escape sequence in strings,
+while the other eight named characters do.  This
+seems arbitrary and capricious.
+
+The formal syntax is ambiguous, which implies it
+is not LR.  This creates unnecessary obstacles
+to the use of some standard scanner and parser
+generators.  The ambiguities I have noticed so
+far include:
+
+    The fact that any two input characters are
+    separated by <interlexeme space>.
+
+    The first two productions for <string element>
+    overlap.
+
+    The first and third productions for <ureal 10>
+    overlap.
+
+    The two productions for <prefix R> overlap.
+
+Will
+
+
+From atsmyles at rcn.com  Tue Jun 19 00:47:13 2007

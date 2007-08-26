@@ -1,0 +1,101 @@
+From: will at ccs.neu.edu (William D Clinger)
+Date: Thu, 14 Jun 2007 20:20:53 -0400
+Subject: [Formal] syntactic sugar causes cancer of the exports
+Message-ID: <E1HyzYb-0003qY-Tc@adara.ccs.neu.edu>
+
+Submitter: William D Clinger
+Email address: will at ccs.neu.edu
+Issue type: Defect
+Priority: Major
+Component: Other (baleful influence of macros)
+Report version: 5.94
+Summary: syntactic sugar causes cancer of the exports
+
+Full description of issue:
+
+In response to previous formal comments, the 5.94
+draft is careful to note that:
+
+    the (rnrs base (6)) library exports identifiers
+    unquote unquote-splicing => else ... _ set!
+
+    the (rnrs records syntactic (6)) libraries exports
+    fields mutable immutable parent protocol sealed
+    opaque nongenerative
+
+The editors intended to set a precedent by exporting
+macro keywords in this way.  They failed to follow
+that precedent, however, in three other libraries:
+
+    (rnrs bytevector (6)) apparently does not export
+    big little
+
+    (rnrs i/o ports (6)) apparently does not export
+    no-create no-fail no-truncate
+    lf cr crlf nel crnel ls
+    ignore raise replace
+
+    (rnrs syntax-case (6)) apparently does not export
+    ... _ set!
+
+If these omissions were deliberate, they break the
+precedent set by the (rnrs base (6)) and (rnrs records
+syntactic (6)) libraries, which is a problem in itself.
+
+If these omissions are corrected, they bring to light
+a more fundamental problem with the intended precedent:
+syntactic sugar makes it necessary for a library to
+export the keywords its macros match (or else to treat
+them specially as symbols, which is inconsistent with
+the precedent set by R5RS and with the two libraries
+cited above).  It is easy for implementors of a library
+to overlook the need for these exports.
+
+Worse, it is easy for a client of a library to overlook
+these exports.
+
+Worse still, clients may not be able to determine the
+exported identifiers by examining the source code of
+the libraries they import.  For example, it is likely
+that some implementations of the R6RS will not make
+their (rnrs bytevector (6)) and (rnrs i/o ports (6))
+libraries available in source form, or will write
+those libraries in a language other than R6RS Scheme.
+That will make it impossible for clients to determine
+the implementation-dependent identifiers that are
+exported by those libraries.
+
+(Recall that the endianness, file-options, eol-style,
+and error-handling-mode syntaxes are explicitly
+allowed to recognize implementation-dependent identifiers,
+which will presumably be exported by those libraries.)
+
+Clients' inability to determine which identifiers are
+exported by standard libraries implies that, in theory,
+it is impossible to write fully portable code that
+imports those libraries.
+
+Fortunately, there is an easy solution to this problem.
+The problematic syntaxes (endianness, file-options,
+eol-style, and error-handling-mode) are all unnecessary.
+Their only purpose is to detect a certain kind of bug
+at macro-expansion time instead of run time, and to
+prevent the buggy program's execution from commencing.
+
+Since the 5.94 draft forbids implementations to deal
+with similar errors by refusing to execute the program,
+the provision of these four syntaxes is inconsistent,
+arbitrary, and capricious.  The file-options syntax
+should be replaced by a procedure, and the other three
+syntaxes can and should be omitted from the R6RS.
+
+The problem these four syntaxes cause is more severe
+than the problem they solve.  They should be removed
+from the report, and Scheme programmers in general
+should remember that syntactic sugar causes cancer
+of the exports.
+
+Will
+
+
+From r6rs at jdev.users.panix.com  Fri Jun 15 14:21:23 2007

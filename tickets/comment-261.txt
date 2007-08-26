@@ -1,0 +1,52 @@
+From: cowan at ccil.org (John Cowan)
+Date: Tue, 5 Jun 2007 18:09:38 -0400
+Subject: [Formal] Implementation-dependent transcoders considered harmful
+Message-ID: <20070605220938.GN18038@mercury.ccil.org>
+
+Submitter: John Cowan
+Email address: cowan at ccil.org
+Issue type: Defect
+Priority: Major
+Component:  Port I/O
+Report version: 5.93
+Summary: Implementation-defined transcoders considered harmful
+
+There are three kinds of references to implementation-defined transcoders
+in R5.93RS.  One is in the description of native-transcoder,
+which is appropriate: the native transcoder is inherently an
+implementation-specific notion.  The other two kinds are respectively
+unnecessary and vague, and should be removed.
+
+The unnecessary ones are those which arise from the false
+assumption that a textual port necessarily has a transcoder.
+In fact, a textual port should have a transcoder if and only if
+it is derived (explicitly or implicitly) from a binary port of
+some sort.  These transcoders don't do anything and should simply
+be removed.  This involves changing port-transcoder to return #f for
+textual ports without transcoders, and removing the references to
+implementation-defined transcoders in open-string-{input,output}-port
+and make-custom-textual-{input,output,input/output}-port.
+
+The other kind of implementation-dependent transcoder applies to the
+current {input,output,error} ports and to the simple I/O procedures
+that depend on them.  These procedures are very convenient to use,
+particularly with-{input,output}-from-file, but one simply has to
+hope that the implementer has done the right thing with respect to
+transcoders.  I suggest at least the minimal change of saying that the
+procedures with-{input,output}-from file, open-{input,output}-file,
+{read,peek,write}-char, read, write, newline and display be specified
+to use the transcoder returned by native-transcoder.  However, I
+would greatly prefer providing for each of them to accept an optional
+final argument specifying an explicit transcoder.  Doing so allows the
+simple procedures to be used with textual files using any reasonable
+representation, a necessity in modern programming environments.
+
+-- 
+Is not a patron, my Lord [Chesterfield],        John Cowan
+one who looks with unconcern on a man           http://www.ccil.org/~cowan
+struggling for life in the water, and when      cowan at ccil.org
+he has reached ground encumbers him with help?
+        --Samuel Johnson
+
+
+From cowan at ccil.org  Tue Jun  5 18:18:46 2007

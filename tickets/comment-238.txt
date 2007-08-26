@@ -1,0 +1,38 @@
+From: bjh21 at bjh21.me.uk (Ben Harris)
+Date: Tue, 17 Apr 2007 20:56:43 +0100 (BST)
+Subject: [Formal] Rename bitwise-arithmetic-shift to bitwise-shift etc.
+Message-ID: <Pine.LNX.4.61.0704172055500.30000@smaug.linux.pwf.cam.ac.uk>
+
+submitter: Ben Harris <bjh21 at bjh21.me.uk>
+type: Simplification
+priority: Trivial
+component: Arithmetic
+version: 5.92
+summary: Rename bitwise-arithmetic-shift to bitwise-shift etc.
+
+The distinction between "logical" and "arithmetic" shift operations is
+only relevant when working with a fixed word-length and both signed
+and unsigned numbers.  In those cases, the choice of shift operation
+determines how bits inserted at the high-order end of the word are
+chosen, with "logical" shifts being useful for unsigned values, and
+"arithmetic" shifts for signed ones.  Scheme numbers, as represented
+in (r6rs arithmetic bitwise) are of indefinite length and are always
+signed, so a bitwise "logical" shift operation on them would be
+meaningless on two counts.
+
+In consequence, I think that the following procedures should be
+renamed to remove the word "arithmetic":
+
+Page    From                            To
+42      bitwise-arithmetic-shift        bitwise-shift
+42      bitwise-arithmetic-shift-left   bitwise-shift-left
+42      bitwise-arithmetic-shift-right  bitwise-shift-right
+38      fxarithmetic-shift              fxshift
+38      fxarithmetic-shift-left         fxshift-left
+38      fxarithmetic-shift-right        fxshift-right
+
+-- 
+Ben Harris
+
+
+From bjh21 at bjh21.me.uk  Tue Apr 17 16:03:57 2007

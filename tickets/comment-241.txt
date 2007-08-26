@@ -1,0 +1,30 @@
+From: bjh21 at bjh21.me.uk (Ben Harris)
+Date: Tue, 24 Apr 2007 00:23:14 +0100 (BST)
+Subject: [Formal] fxlogical-shift-left and fxlogical-shift-right used but
+	not defined.
+Message-ID: <Pine.LNX.4.61.0704240015590.15546@smaug.linux.pwf.cam.ac.uk>
+
+submitter: Ben Harris <bjh21 at bjh21.me.uk>
+type: Defect
+priority: Minor
+component: Arithmetic
+version: 5.92
+summary: fxlogical-shift-left and fxlogical-shift-right used but not 
+defined.
+
+The definitions on page 38 of fxbit-field, fxcopy-bit-field, and
+fxrotate-bit-field all use fxlogical-shift-left, and two of them use
+fxlogical-shift-right.  Neither of these procedures is defined.
+
+fxlogical-shift-left can obviously safely be replaced with
+bitwise-arithmetic-shift-left.  I suspect that overflow considerations
+prevent the use of fxarithmetic-shift-left in fxcopy-bit-field and 
+fxrotate-bit-field.
+
+fxlogical-shift-right appears to only be called with positive
+arguments, so it can safely be replaced with fxarithmetic-shift-right.
+
+-- 
+Ben Harris
+
+

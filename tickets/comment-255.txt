@@ -1,0 +1,34 @@
+From: cowan at ccil.org (John Cowan)
+Date: Tue, 5 Jun 2007 16:04:52 -0400
+Subject: [Formal] Identifiers beginning with "->" considered useless
+Message-ID: <20070605200452.GF18038@mercury.ccil.org>
+
+Submitter: John Cowan
+Email address: cowan at ccil.org
+Issue type: Defect
+Priority: Minor
+Component:  Lexical syntax
+Report version: 5.93
+Summary: Identifiers beginning with "->" considered useless.
+
+R5.93RS extends the lexical syntax of R5RS identifiers to allow
+them to begin with "->", presumably for the sake of the R5.91
+procedures "->exact" and "->inexact".  The former names of these
+procedures, "exact->inexact" and "inexact->exact", were misleading,
+since they accepted both exact and inexact arguments.  However,
+5.93 renamed these "exact" and "inexact" per formal comment #203.
+
+I believe that the principles given in that comment are of a general
+nature such that names like "->foo" are always better given as "foo".
+While I am no fan of arbitrary restrictions on names, I am not in favor
+of arbitrary exceptions either.  I suggest that "->" prefixes should be
+removed for R6RS.
+
+-- 
+LEAR: Dost thou call me fool, boy?      John Cowan
+FOOL: All thy other titles              http://www.ccil.org/~cowan
+             thou hast given away:      cowan at ccil.org
+      That thou wast born with.
+
+
+From cowan at ccil.org  Tue Jun  5 16:09:16 2007

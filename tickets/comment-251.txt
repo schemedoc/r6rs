@@ -1,0 +1,30 @@
+From: cowan at ccil.org (John Cowan)
+Date: Tue, 5 Jun 2007 15:49:39 -0400
+Subject: [Formal] (eqv? 1+2i 3+4i) should be explicitly #f
+Message-ID: <20070605194939.GB18038@mercury.ccil.org>
+
+Submitter: John Cowan
+Email address: cowan at ccil.org
+Issue type: Defect
+Priority: Minor
+Component:  Base library
+Report version: 5.93
+Summary: (eqv? 1+2i 3+4i) should be made explicitly #f
+
+Currently, (eqv? 1+2i 3+4i) is defined to be #f as a consequence of
+the rule about "yield[ing] different results (in the sense of eqv?)
+when passed as arguments to any other procedure".  This not only
+appears to be recursive (eqv? is defined in terms of eqv?) but
+the work it does can be covered by a rule such as this:
+
+	Obj1 and obj2 are numbers such that = returns #f, at least one
+	of obj1 and obj2 is non-real, and both the real and the imaginary
+	parts of obj1 and obj2 are rational numbers.
+
+
+-- 
+John Cowan    http://ccil.org/~cowan    cowan at ccil.org
+Mr. Henry James writes fiction as if it were a painful duty.  --Oscar Wilde
+
+
+From cowan at ccil.org  Tue Jun  5 15:52:11 2007

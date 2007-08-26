@@ -1,0 +1,38 @@
+From: bjh21 at bjh21.me.uk (Ben Harris)
+Date: Tue, 17 Apr 2007 21:03:57 +0100 (BST)
+Subject: [Formal] bitwise-bit-count should return -ve on -ve argument.
+Message-ID: <Pine.LNX.4.61.0704172059450.30000@smaug.linux.pwf.cam.ac.uk>
+
+submitter: Ben Harris <bjh21 at bjh21.me.uk>
+type: Enhancement
+priority: Minor
+component: Arithmetic
+version: 5.92
+summary: bitwise-bit-count should return -ve on -ve argument.
+
+As currently defined, bitwise-bit-count (page 41) is rather ugly,
+returning the number of set bits in non-negative arguments and the
+number of clear bits in negative ones.  It would obviously be nicer if
+it were consistent, but this is made difficult by there being an
+infinite number of set bits in a negative number.  This problem can be
+dodged by having bitwise-bit-count return the number of set bits mod0
+infinity, or more prosaically, by returning the number of set bits in
+a non-negative argument, and _minus_ the number of clear bits in a
+negative one.
+
+This has some nicer properties than the current definition.  In
+particular, setting a previously-clear bit in the argument uniformly
+increases the result by one, and clearing a previously-set bit
+decreases it.  Also, for arguments that fit in a particular word size,
+the number of set bits in the argument represented in a word of that
+size can be obtained by taking the result modulo the word size,
+regardless of the sign of the argument.  If there are uses for the
+current semantics, they're trivially obtained using "abs".
+
+The same change should be applied to fxbit-count on page 37.
+
+-- 
+Ben Harris
+
+
+From bjh21 at bjh21.me.uk  Mon Apr 23 19:15:54 2007

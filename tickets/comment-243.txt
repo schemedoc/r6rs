@@ -1,0 +1,39 @@
+From: aghuloum at cs.indiana.edu (Abdulaziz Ghuloum)
+Date: Wed, 23 May 2007 00:40:12 -0400
+Subject: [Formal]  Minor improvement to lisp-transformer
+Message-ID: <500AEB26-1765-41E9-8533-361F28CCECEE@cs.indiana.edu>
+
+submitter: Abdulaziz Ghuloum <aghuloum at cs.indiana.edu>
+type: better example
+priority: minor
+component: syntax-case
+version: 5.93-libs (page 54)
+summary: The lisp-transformer macro can be improved slightly
+
+The lisp-transformer example in page 54 does not yield true
+lisp transformers (as its description says).
+
+(define lisp-transformer
+   (lambda (p)
+     (lambda (x)
+       (datum->syntax #'lisp-transformer
+         (p (syntax->datum x))))))
+
+Rewriting the example as:
+
+(define lisp-transformer
+   (lambda (p)
+     (lambda (x)
+       (syntax-case x ()
+         [(id . rest) (identifier? #'id)
+          (datum->syntax #'id
+            (p (syntax->datum x)))]))))
+
+will re-introduce the datum in the context where the actual
+transformer was used instead of where the lisp-transformer
+macro was defined.  defmacro is left as an exercise.
+
+Aziz,,,
+
+
+From alan at alan-watson.org  Wed May 30 15:13:51 2007

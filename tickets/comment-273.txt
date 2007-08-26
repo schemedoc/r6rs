@@ -1,0 +1,41 @@
+From: atsmyles at rcn.com (Arthur Smyles)
+Date: Tue, 19 Jun 2007 00:47:13 -0400
+Subject: [Formal] Formal Comment: NaN should be considered a number,
+	not a real
+Message-ID: <46775FD1.9080306@rcn.com>
+
+NaN should be considered a number, not a real
+
+Submitter: Arthur Smyles
+Email: atsmyles at rcn.com
+Type of issue: Defect
+Priority: Major
+Component: arithmetic
+version: 5.94
+
+According to Section 2.4 Infinities and NaNs?
+
+"A NaN is regarded as a real (but not rational) number whose value is so
+indeterminate that it might represent any real number, including
+positive or negative infinity, and might even be greater than positive
+infinity or less than negative infinity."
+
+In formal comment 11, Aubrey Jaffer correctly stated that NaN is not a
+real number. But, his conclusion that a NaN is a complex number is also
+incorrect. The complex numbers includes the set of all real and
+imaginary numbers. NaN is neither real nor imaginary, therefore it
+cannot be a value in the real or the imaginary part of a complex number,
+therefore it cannot be complex. So the definition of a number is really
+the set of all complex numbers and NaN.
+
+If you treat a NaN as a number that is not complex, it will solve the
+performance issues stated in formal comment 143. It will also address
+formal comment 230, which will make reals conform to mathematical usage.
+It will also conform with IEEE-754.
+
+In conclusion this section should read:
+
+A NaN is regarded as a number that is not complex.
+
+
+From agj at alum.mit.edu  Fri Jun 22 17:46:17 2007

@@ -1,0 +1,114 @@
+From: will at ccs.neu.edu (William D Clinger)
+Date: Sat, 16 Jun 2007 21:43:39 -0400
+Subject: [Formal] please make square brackets more useful
+Message-ID: <E1Hzjnn-0005kj-53@adara.ccs.neu.edu>
+
+Submitter: William D Clinger
+Email address: will at ccs.neu.edu
+Issue type: Enhancement
+Priority: Minor
+Component: Lexical Syntax
+Report version: 5.94
+Summary: please make square brackets more useful
+
+Full description of issue:
+
+The addition of square brackets to Scheme's lexical
+syntax has been controversial for several reasons.
+Most obviously, it creates a redundant alternative
+to Lisp's established lexical syntax for lists, for
+the sole purpose of allowing programmers to express
+their intentions through some subtly creative choice
+of parenthetical styles.  Since all such choices are
+equally valid under the proposed standard, we are
+likely to have unproductive disputes concerning the
+One True Way to choose between round and square
+brackets.
+
+These disputes have actually been going on for some
+time, but the addition of square brackets to the
+draft R6RS brought this dispute to the fore and
+makes its resolution both urgent and necessary.
+
+Jonathan Rees has proposed an elegant solution that
+would make square brackets more useful to all known
+factions in this dispute.  I endorse his suggestion
+by submitting it, verbatim, as a formal comment.
+
+Will
+
+                                * * *
+
+(If someone else would care to turn the below into a formal comment
+and/or SRFI, to be submitted under my or another name, I would
+be delighted; and in fact if no one wants to go
+to that effort that speaks poorly of the idea and it should probably
+drop. I am sorry but I do not read r6rs-discuss very often so will
+not see followup unless you cc me.  -Jonathan)
+
+
+There is a feud between a faction that wants to be able to enlist two
+distinct kinds of brackets to help beginners to learn Scheme, and/or
+to help anyone to write what they consider to be clearer code, and a
+faction that is horrified at the loss of 1/64 of the valuable ASCII
+character space for a purpose that to them isn't justified, preventing
+the use of brackets for legitimate extensions to Scheme.
+
+No one will change anyone else's mind, since this conflict has been
+raging unresolved since the 1970's.
+
+Here is a compromise that satisfies concerns on both sides.  Define
+[a b c] to be a special reader syntax for the four-element list
+(*square-bracketed* a b c), just as '(a b c) is special reader syntax
+for the two-element list (quote (a b c)).  By "*square-bracketed*" here
+I really do mean the symbol of that name (although it could be some
+other symbol).
+
+For example, it will make sense to define:
+
+(define-syntax let
+   (syntax-rules (*square-bracketed*)
+     ((let ([?var ?val] ...) ?body ...)
+      ((lambda (?var ...) ?body ...) ?val ...))))
+
+if you want to require that let-bindings be written using square
+brackets, or
+
+(define-syntax let
+   (syntax-rules (*square-bracketed*)
+     ((let ([?var ?val] ...) ?body ...)
+      ((lambda (?var ...) ?body ...) ?val ...))
+     ((let ((?var ?val) ...) ?body ...)
+      ((lambda (?var ...) ?body ...) ?val ...))))
+
+if you want to allow either syntax.  If you want [a b c] to be an
+abbreviation for (list a b c), you can do
+
+(define *square-bracketed* list)
+
+and so on.
+
+Note that this improves on synonymizing [ ] with ( ) for teaching
+purposes in that it enables error checking - in every syntactic
+position, you can enable or disable either kind of parenthesis
+selectively.
+
+The same kind of thing could also be done with curly brackets, using a
+different marker.  (N.b. the Unicode names for the characters are LEFT
+and RIGHT SQUARE BRACKET and LEFT and RIGHT CURLY BRACKET.)
+
+WRITE could be made to generate [...] on output.
+
+If I remember correctly, we did something like this for T (Yale
+Scheme) in about 1983 or 1984, but I don't remember it being used.
+Perhaps the feature was undocumented or experimental.
+
+You may very well object that this is unhygienic - that the fact
+that the name *square-bracketed* is free in [...] is in poor taste.
+But I will point out that this is already true of quote (we all
+ignored Brian C Smith way back when). The proposal is a
+compromise, and the question is whether the benefits of its
+peacekeeping effect compensates for the embarrassment it causes.
+
+
+From will at ccs.neu.edu  Mon Jun 18 23:17:45 2007

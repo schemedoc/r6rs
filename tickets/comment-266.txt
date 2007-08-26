@@ -1,0 +1,93 @@
+From: will at ccs.neu.edu (William D Clinger)
+Date: Thu, 14 Jun 2007 20:18:30 -0400
+Subject: [Formal] raise semantics no longer makes sense
+Message-ID: <E1HyzWI-0003pV-2w@adara.ccs.neu.edu>
+
+Submitter: William D Clinger
+Email address: will at ccs.neu.edu
+Issue type: Defect
+Priority: Major
+Component: I/O
+Report version: 5.94
+Summary: raise semantics no longer makes sense
+
+Full description of issue:
+
+The semantics of raise error handling, which is the
+default, was designed for the i/o system of the 5.91
+draft, and no longer makes sense now that arbitrary
+mixing of binary and textual i/o is impossible and
+the i/o system has been rewritten to allow transcoding
+in bulk.
+
+The problematic semantics is described in the second
+paragraph of the specification of &i/o-decoding,
+make-i/o-decoding-error, i/o-decoding-error?, and
+i/o-decoding-error-transcoder:
+
+    Exceptions of the type raised by the operations
+    described in this section are continuable.  When
+    such an exception is raised, the port's position
+    is at the beginning of the invalid encoding.  If
+    the exception handler returns, it should return
+    a character or string representing the decoded
+    text starting at the port's current position, and
+    the exception handler must update the port's
+    position to point past the error.
+
+There are several problems with that paragraph.  The
+"must" should be "should".  Second, the exception
+handler cannot determine the bits involved in the
+invalid encoding, since binary input is not allowed
+on textual ports.  Hence little is gained by
+requiring the position of the port to be "at the
+beginning of the invalid encoding."  Furthermore it
+is generally impossible for the exception handler
+to "update the port's position to point past the
+error", since operations such as get-char would
+just re-raise the exception, and only a few textual
+ports are required to support the set-port-position!
+operation.
+
+In summary, the 5.94 semantics can be implemented,
+but it makes bulk transcoding more difficult, and
+is not very useful in the wake of changes made to
+the i/o system since the 5.91 draft.
+
+Here are several possible repairs:
+
+1.  For buffered i/o and bulk transcoding, it makes
+sense to allow the exception to be raised when the
+invalid encoding is encountered or generated, which
+can come before (input) or after (output) the get-char
+or put-char operation that a naive programmer might
+think of as the cause of the exception.
+
+2.  The exception handler for &i/o-decoding might
+be given the invalid encoding as a bytevector that
+is packaged up within the &i/o-decoding condition.
+
+3.  The port might already have been updated to
+point past the error when the exception handler
+gains control.
+
+4.  The exception might be made non-continuable.
+This would greatly reduce the usefulness of the
+raise error handling mode, however, so the raise
+mode should no longer be the default if it is made
+non-continuable.
+
+I don't like any of those choices, especially the
+fourth, but all of them would improve upon the 5.94
+draft.  Note that the four choices above are
+independent: any subset of them could be adopted.
+
+The editors should keep in mind that whatever
+semantics they adopt should make sense for fairly
+arbitrary transcoders, not just for the three
+standard codecs.
+
+Will
+
+
+From will at ccs.neu.edu  Thu Jun 14 20:20:53 2007
