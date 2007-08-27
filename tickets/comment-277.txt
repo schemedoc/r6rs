@@ -1,0 +1,37 @@
+Subject: Transcendental Harmonization
+From: Aubrey Jaffer
+Date: Sat, 30 Jun 2007 22:48:50 -0400 (EDT)
+
+	         submitter's name: Aubrey Jaffer
+		    type of issue: Defect
+		         priority: Minor
+		   R6RS component: 11.7.3 Semantics of common operations
+	    version of the report: 5.96
+one-sentence summary of the issue: Transcendental Harmonization
+
+    full description of the issue:
+
+There are several inconsistencies in mathematical functions.
+
+Given that (/ 0.0) returns +inf.0, shouldn't (expt 0.0 -1) also return
++inf.0?  R5.96RS has (expt 0 -5) ==> unspecified.
+
+(exp z) is the natural exponential of z, while (expt b z) is the base
+b raised to the z power.  So far, so good.
+
+But in R5.96RS, (log z) is the natural logarithm, while (log z b) is
+the logarithm base b.  Mathematical convention is log_b z; the base is
+the first argument.
+
+SRFI-94 has a more harmonious treatment.  (ln z) is the natural
+logarithm of z; and (log b z) is the logarithm base b of z.  Both of
+these are more compatible with modern mathematical usage.  Leaving
+[one-argument] (log z) unspecified allows implementations to have
+one-argument log provide the natural logarithm for legacy code.
+
+SRFI-94 also specifies (integer-log base k), which by analogy to
+exact-integer-sqrt would be called exact-integer-log.
+
+
+RESPONSE:
+
