@@ -829,16 +829,17 @@ Using {\cf datum\coerce{}syntax}, it is even possible to break hygiene
 entirely and write macros in the style of old Lisp macros.
 The {\cf lisp-transformer} procedure defined below creates a transformer
 that converts its input into a datum, calls the programmer's procedure on
-this datum, and converts the result back into a syntax object that is
-scoped at top level (or, more accurately, wherever
-{\cf lisp-transformer} is defined).
+this datum, and converts the result back into a syntax object scoped
+where the original macro use appeared.
 
 \begin{scheme}
 (define lisp-transformer
   (lambda (p)
     (lambda (x)
-      (datum\coerce{}syntax \#'lisp-transformer
-        (p (syntax\coerce{}datum x))))))%
+      (syntax-case x ()
+        [(kwd . rest)
+         (datum\coerce{}syntax \#'kwd
+           (p (syntax\coerce{}datum x)))]))))%
 \end{scheme}
 
 \section{Generating lists of temporaries}
