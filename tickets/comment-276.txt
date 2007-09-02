@@ -34,12 +34,12 @@ Description:
 
 RESPONSE:
 
-This is a general problem: A library can always change the way a
-record type is exported.  (For example, by wrapping it in another data
-structure.)  The significant problem is that changing the definition
-of a parent type to use something other than the syntactic layer makes
-it impossible for clients using the syntactic layer to adjust.  The
-`parent-rtd' clause has been added to make it possible to extend
-parent types that were not defined using the syntactic layer.
-
-
+There are actually two issues here: (1) whether it's possible to
+define a syntactic record type whose parent record type is defined
+via the procedural layer, and (2) whether the parent can be
+specified in a way that is independent of the mode of definition
+(syntactic or procedural) of the parent record type.  The first
+issue has been addressed by the addition of a parent-rtd clause
+that allows a syntactic record definition to specify a parent
+defined by the procedural layer.  The second has, unfortunately,
+not been addressed.
