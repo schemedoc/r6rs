@@ -649,6 +649,9 @@ initial values are computed before any of the variables become bound;
 in a {\cf let*-values} expression, the bindings are performed
 sequentially. 
 
+Sample definitions of all the binding forms of this section in terms
+of simpler forms are in appendix~\ref{derivedformsappendix}.
+
 \begin{entry}{%
 \proto{let}{ \hyper{bindings} \hyper{body}}{\exprtype}}
 
@@ -715,13 +718,6 @@ and so on.
   While the variables bound by a {\cf let} expression must be distinct,
   the variables bound by a {\cf let*} expression need not be distinct.
 \end{note}
-
-The {\cf let*} keyword could be defined in terms of {\cf let} using {\cf
-  syntax-rules} (see section~\ref{syntaxrulessection}) as follows:
-
-A sample definition of {\cf let*} in terms of simpler forms is in
-appendix~\ref{derivedformsappendix}.
-
 \end{entry}
 
 \begin{entry}{%
@@ -784,9 +780,6 @@ Implementations may or may not detect that the continuation of each
 \hyper{init} is invoked more than once.  However, if the
 implementation detects this, it must raise an exception with condition
 type {\cf\&assertion}.
-
-A sample definition of {\cf letrec} in terms of simpler forms is in
-appendix~\ref{derivedformsappendix}.
 \end{entry}
 
 \begin{entry}{%
@@ -886,9 +879,6 @@ If the \hyper{formals} do not match, an exception with condition type
                ((x y) (values a b)))
     (list a b x y)))       \ev (x y a b)%
 \end{scheme}
-
-A sample definition of {\cf let-values} in terms of simpler forms is in
-appendix~\ref{derivedformsappendix}.
 \end{entry}
 
 \begin{entry}{%
