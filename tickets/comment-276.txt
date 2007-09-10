@@ -34,12 +34,26 @@ Description:
 
 RESPONSE:
 
-There are actually two issues here: (1) whether it's possible to
-define a syntactic record type whose parent record type is defined
-via the procedural layer, and (2) whether the parent can be
-specified in a way that is independent of the mode of definition
-(syntactic or procedural) of the parent record type.  The first
-issue has been addressed by the addition of a parent-rtd clause
-that allows a syntactic record definition to specify a parent
-defined by the procedural layer.  The second has, unfortunately,
-not been addressed.
+With the addition of the parent-rtd clause, it is now possible to specify
+record-type descriptors created by make-record-type-descriptor as parents
+of syntactically defined record types.  It remains impossible to do so
+through the parent clause, which requires a <record name>.  The
+record-type descriptors of the procedural layer and the <record name>s
+of the syntactic layer are not interchangeable, since it is possible to
+determine the record constructor descriptor from the latter but not from
+the former.
+
+It has been suggested that <record name>s be variables bound to
+record-type descriptors, that a default constructor descriptor be
+associated with all record-type descriptors, and that the parent and
+parent-rtd clauses be merged into one clause that requires an expression
+that evaluates to a parent descriptor.  While too big of a change to make
+at this stage for R6RS, this would address the concerns of the comment
+submitter, and it would be a worthwhile change to consider for R7RS.  It
+is important to note, however, that the syntactic layer is designed to
+allow define-record-type to determine record-instance sizes and field
+offsets (in the absense of the parent-rtd clause) so that implementations
+can generate efficient code for record creation and access without
+compiler support for record-type descriptors and related analyses.  This
+property would be lost if <record name>s were ordinary mutable variables
+but can be preserved if the <record name> bindings are immutable.
