@@ -110,9 +110,9 @@
 		  ((compound-condition? component)
 		   (explode-condition component))
 		  (else
-		   (assertion-violation? 'condition
-					 "component wasn't a condition"
-					 component))))
+		   (assertion-violation 'condition
+					"component wasn't a condition"
+					component))))
 	       components))))
 
   ;; does RTD-1 represent an ancestor of RTD-2?
@@ -125,9 +125,9 @@
 (define (condition-predicate rtd)
   (if (not (rtd-ancestor? (record-type-descriptor &condition)
 			  rtd))
-      (assertion-violation? 'condition-predicate
-			    "not a subtype of &condition"
-			    rtd))
+      (assertion-violation 'condition-predicate
+			   "not a subtype of &condition"
+			   rtd))
   (let ((simple-pred (record-predicate rtd)))
     (lambda (con)
       (cond
@@ -140,9 +140,9 @@
 (define (condition-accessor rtd simple-access)
   (if (not (rtd-ancestor? (record-type-descriptor &condition)
 			  rtd))
-      (assertion-violation? 'condition-predicate
-			    "not a subtype of :simple-condition"
-			    rtd))
+      (assertion-violation 'condition-predicate
+			   "not a subtype of :simple-condition"
+			   rtd))
   (let ((simple-pred (record-predicate rtd)))
     (lambda (con)
     (cond
@@ -153,13 +153,13 @@
        ((first simple-pred (explode-condition con))
 	=> simple-access)
        (else
-	(assertion-violation? '<condition-accessor>
-			      "condition isn't of type"
-			      con rtd))))
+	(assertion-violation '<condition-accessor>
+			     "condition isn't of type"
+			     con rtd))))
      (else
-      (assertion-violation? '<condition-accessor>
-			    "condition isn't of type"
-			    con rtd))))))
+      (assertion-violation '<condition-accessor>
+			   "condition isn't of type"
+			   con rtd))))))
 
 (define-syntax define-condition-type
   (syntax-rules ()
