@@ -1,8 +1,6 @@
-(define-structure r6rs-mockup (export unspecified
-				      put-string standard-error-port
-				      (library :syntax))
-  (open scheme
-	(subset i/o (current-error-port)))
+(define-structure r6rs-library-mockup
+  (export (library :syntax))
+  (open scheme)
   (begin
     (define-syntax library
       (syntax-rules (import export)
@@ -11,6 +9,13 @@
 	   (import ?import-spec ...)
 	   ?body ...)
 	 (begin ?body ...))))
+    ))
+
+(define-structure r6rs-mockup (export unspecified
+				      put-string standard-error-port)
+  (open scheme
+	(subset i/o (current-error-port)))
+  (begin
     (define (unspecified) (if #f #f))
     (define (put-string p s)
       (display s p))
@@ -28,7 +33,8 @@
 	  set-operate-unhandled!)
   (open scheme
 	(modify srfi-23 (rename (error abort)))
-	r6rs-mockup)
+	r6rs-mockup
+	r6rs-library-mockup)
   (files exception-internal))
 
 (define-structure r6rs-conditions
@@ -84,6 +90,7 @@
 	  
 	  assertion-violation)
   (open scheme
+	r6rs-library-mockup
 	r6rs-mockup
 	r6rs-exceptions-internal
 	procedural-record-types
