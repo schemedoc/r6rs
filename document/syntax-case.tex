@@ -47,7 +47,6 @@ see section~\ref{syntaxcasesection}) inside the transformer body or one of
 the helpers it calls.
 This is essentially the referential transparency property described
 by Clinger and Rees~\cite{macrosthatwork}.
-
 Thus, the hygiene condition can be restated as follows:
 
 \begin{quotation}
@@ -100,7 +99,7 @@ form being processed by the expander and pushed down toward the leaves as
 necessary.
 A wrapped form is referred to as a \defining{wrapped syntax object}.
 Ultimately, the wrap may rest on a leaf that represents an identifier, in
-which case the wrapped syntax object is referred to more precisely
+which case the wrapped syntax object is also referred to
 as an \emph{identifier}.
 An identifier contains a name along with the wrap.
 (Names are typically represented by symbols.)
@@ -133,16 +132,7 @@ This contextual information is used by the expander to maintain
 lexical scoping and may also be used by an implementation to maintain
 source-object correlation.
 
-Syntax objects may be wrapped or unwrapped.
-A wrapped syntax object (section~\ref{hygienesection}) consists of a
-\textit{wrap} (section~\ref{hygienesection}) and some internal representation
-of a Scheme form.
-(The internal representation is unspecified, but is typically a 
-datum value or datum value annotated with source information.)
-A wrapped syntax object representing an identifier is itself referred to as
-an identifier; thus, the term \textit{identifier\mainindex{identifier}} may refer either to
-the syntactic entity (symbol, variable, or keyword) or to the
-concrete representation of the syntactic entity as a syntax object.
+As explained in section~\ref{hygienesection}, syntax objects may be wrapped or unwrapped.
 Wrapped syntax objects may or may not be distinct from other types of values,
 but syntax objects representing identifiers are distinct
 from other types of values.
@@ -182,7 +172,7 @@ A transformer is a \defining{transformation procedure} or a
 \defining{variable transformer}.
 A transformation procedure is a procedure that must accept one
 argument, a wrapped syntax object (section~\ref{syntaxobjectssection})
-representing the input, and return a \defining{syntax object}
+representing the input, and return a syntax object
 (section~\ref{syntaxobjectssection}) representing the output.
 The transformer is called by the expander whenever a reference to
 a keyword with which it has been associated is found.
@@ -553,7 +543,7 @@ recursive objects, below.
 \end{scheme}
 \end{entry}
 
-The procedures {\cf bound-identifier=?} and {\cf free-identifier=?}
+The procedures {\cf bound-identifier=?} and {\cf free-\linebreak[0]identifier=?}
 each take two identifier arguments and return \schtrue{} if their
 arguments are equivalent and \schfalse{} otherwise.
 These predicates are used to compare identifiers according to their
@@ -564,10 +554,10 @@ context.
 \proto{bound-identifier=?}{ \vari{id} \varii{id}}{procedure}}
 
 \domain{\vari{Id} and \varii{id} must be identifiers.}
-The procedure {\cf bound-identifier=?} returns \schtrue{} if and only if a
+The procedure {\cf bound-\linebreak[0]identifier=?} returns \schtrue{} if a
 binding for one would capture a reference to the other in the output of
 the transformer, assuming that the reference appears within the scope of
-the binding.
+the binding, and \schfalse{} otherwise.
 In general, two identifiers are {\cf bound-identifier=?} only if
 both are present in the original program or both are introduced by the
 same transformer application
@@ -1055,7 +1045,7 @@ as follows.
 
 A more robust implementation would verify that the literals
 {\cf \hyper{literal} \dots} are all identifiers, that the first position
-of each pattern is an identifier, and that at most one fender
+of each pattern is an identifier, and that no fender
 is present in each clause.
 \end{note}
 
@@ -1096,11 +1086,12 @@ follows.
   \var{Subform} must be a syntax object or a datum value.}
 The {\cf syntax-violation} procedure raises an exception, reporting 
 a syntax violation.  
-The \var{who} argument should describe the macro transformer that
+\var{Who} should describe the macro transformer that
 detected the exception.  The \var{message} argument should describe
 the violation.
-The \var{form} argument is the erroneous source syntax
-object or a datum value representing a form. The optional \var{subform} argument is a syntax
+\var{Form} should be the erroneous source syntax
+object or a datum value representing a form. The optional
+\var{subform} argument should be a syntax
 object or datum value representing a form that more precisely locates the
 violation.
 
@@ -1117,16 +1108,15 @@ chapter~\ref{exceptionsconditionschapter}) has the following condition types:
 %
 \begin{itemize}
 \item If \var{who} is not \schfalse{} or can be inferred, the condition has condition type
-  {\cf \&who}, with \var{who} as the value of the {\cf who} field.  In
+  {\cf \&who}, with \var{who} as the value of its field.  In
   that case, \var{who} should identify the procedure or entity that
   detected the exception.  If it is \schfalse, the condition does not
   have condition type {\cf \&who}.
 \item The condition has condition type {\cf \&message}, with
-  \var{message} as the value of the {\cf message} field.
+  \var{message} as the value of its field.
 \item The condition has condition type {\cf \&syntax} 
-  with \var{form} as the value of the {\cf form} field,
-  and \var{subform} as the value of the {\cf subform} field.
-  If \var{subform} is not provided, the value of the {\cf subform}
+  with \var{form} and \var{subform} as the value of its fields.
+  If \var{subform} is not provided, the value of the subform
   field is \schfalse.
 \end{itemize}
 \end{entry}

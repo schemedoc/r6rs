@@ -59,6 +59,10 @@ record from the inspection mechanism---by declaring the type opaque.
 Thus, opacity as presented here can be used to enforce abstraction
 barriers.
 
+Any of the standard types mentioned in this report may or may not be
+implemented as an opaque record type.  Thus, it may be possible to use
+inspection on objects of the standard types.
+
 The procedural layer is particularly useful for writing interpreters
 that construct host-compatible record types.  It may also serve as a
 target for expansion of the syntactic layers.  However, the
@@ -74,6 +78,7 @@ first.  This chapter uses the \var{rtd} and
 be record-type descriptors and constructor descriptors, respectively
 (see section~\ref{recordsproceduralsection}).
 
+
 \section{Mutability and equivalence of records}
 \label{recordsequivalencesection}
 
@@ -87,7 +92,8 @@ and so are their records.
 Each call to a record constructor returns a new record with a fresh
 location (see report section~\extref{report:storagemodel}{Storage
   model}).  Consequently, for two records \vari{obj} and \varii{obj},
-the return value of {\cf (eqv? \vari{obj} \varii{obj})}, adheres to
+the return value of {\cf (eqv? \vari{obj} \varii{obj})}, as well as the
+return value of {\cf (eq? \vari{obj} \varii{obj})}, adheres to
 the following criteria (see report
 section~\extref{report:eqv?}{Equivalence predicates}):
 
@@ -98,16 +104,13 @@ section~\extref{report:eqv?}{Equivalence predicates}):
 \item If \vari{obj} and \varii{obj} are both records of the
   same record type, and are the results of two separate calls to
   record constructors, then {\cf eqv?} returns \schfalse.
-\item If \vari{obj} and \varii{obj} are both records of the
-  same record type, and both are the result of a single call to a
+\item If \vari{obj} and \varii{obj} are both the result of a single call to a
   record constructor, then {\cf eqv?} returns \schtrue.
 \item If \vari{obj} and \varii{obj} are both records of the same
   record type, where applying an accessor to both yields results
   for which {\cf eqv?} returns \schfalse, then {\cf eqv?} returns \schfalse.
 \end{itemize}
 
-These comments apply as well to {\cf eq?}, which is guaranteed to have
-the same behavior on records as {\cf eqv?}.
 
 \section{Syntactic layer}
 \label{recordssyntacticsection}
@@ -236,15 +239,11 @@ is present, the record type is a base type.
 {\cf define-record-type} form, and must evaluate to a protocol appropriate
 for the record type being defined.
 
-The protocol is used to create a record-constructor descriptor (see
-below).  If the record type being defined has a parent, the
-parent-type constructor descriptor is the one associated with the
-parent type specified in the {\cf parent} clause.  If no {\cf
-  protocol} clause is specified, a constructor descriptor is still
-created using a default protocol. The rules for this are the same as
-for {\cf make-record-constructor-descriptor}: the clause can be absent
-only if the record type defined has no parent type, or if the parent
-definition does not specify a protocol.
+The protocol is used to create a record-constructor descriptor as
+described below.  If no {\cf protocol} clause is specified, a
+constructor descriptor is still created using a default protocol.  The
+clause can be absent only if the record type being defined has no parent
+type, or if the parent definition does not specify a protocol.
 
 {\cf (sealed \schtrue)}\\
 {\cf (sealed \schfalse)}
@@ -271,7 +270,8 @@ If \hyper{uid} is absent, a unique uid is generated at macro-expansion time.
 If two record-type definitions specify the same \var{uid}, then
 the record-type definitions should be equivalent, i.e.,
 the implied arguments to {\cf make-record-type-descriptor}
-must be equivalent as described under {\cf make-record-type-descriptor}.
+must be equivalent as described under {\cf
+  make-record-type-descriptor}.  See section~\ref{make-record-type-descriptor}.
 If this condition is not met, it is either considered a syntax violation or
 an exception with condition type {\cf\&assertion} is raised.
 If the condition is met, a single record type is generated for both
@@ -298,7 +298,7 @@ must not be sealed.  Moreover, a record-type definition must not have
 both a {\cf parent} and a {\cf parent-rtd} clause.
 
 \begin{note}
-  Use of the {\cf parent-rtd} clause generally forces an implementation to
+  Use of the {\cf parent-rtd} clause may force an implementation to
   delay the generation of constructor, accessor, and mutator code until
   the record-type definition is evaluated at run time, since the type of
   the parent is not generally known until then.
@@ -321,8 +321,9 @@ procedure as follows:
   corresponding arguments.
 \item If there is no {\cf parent} or {\cf parent-rtd} clause and a
   {\cf protocol} clause,
-  the protocol expressions must evaluate to a procedure that accepts a
-  single argument.  The protocol procedure is called once with a
+  the protocol expression must evaluate to a procedure that accepts a
+  single argument.  The protocol procedure is called once during the
+  evaluation of the {\cf define-record-type} form with a
   procedure \var{p} as its argument.  It should return a procedure,
   which will become the constructor bound to \hyper{constructor name}.
   The procedure \var{p} accepts as many arguments as there are fields,
@@ -438,7 +439,7 @@ definition:
     (immutable y point-y)))%
 \end{scheme}
 
-With implicit naming, one can choose to specify just some of
+With implicit naming, it is still possible to specify some of
 the names explicitly; for example, the following overrides the choice
 of accessor and mutator names for the widget field.
 
@@ -468,6 +469,10 @@ types.
 Evaluates to the record-constructor descriptor (see below) associated with
 \hyper{record name}.
 \end{entry}
+
+The following examples the procedural layer (see
+section~\ref{recordsproceduralsection}) to demonstrate some aspects of
+the semantics of {\cf define-record-type}.
 
 \begin{scheme}
 (define-record-type (point make-point point?)
@@ -532,7 +537,9 @@ Evaluates to the record-constructor descriptor (see below) associated with
    (lambda (p)
      (lambda (x y z)
        (let ((length 
-               (sqrt (+ (* x x) (* y y) (* z z)))))
+               (sqrt (+ (* x x)
+                        (* y y)
+                        (* z z)))))
          (p (/ x length)
             (/ y length)
             (/ z length))))))
@@ -614,7 +621,7 @@ record type, the same record-type descriptor
 
 \begin{note}   
   Users are encouraged to use symbol names
-  constructed using the UUID namespace (for example, using the
+  constructed using the UUID namespace~\cite{RFC4122} (for example, using the
   record-type name as a prefix) for the uid argument.
 \end{note}
 
@@ -689,7 +696,7 @@ protocol expression in a {\cf define-record-type} form.
 
 If \var{rtd} is a base record type and \var{protocol} is a procedure,
 \var{parent-constructor-descriptor} must be \schfalse.  In this case,
-\var{protocol} it is called by {\cf record-constructor} with a single
+\var{protocol} is called by {\cf record-constructor} with a single
 argument \var{p}.  \var{P} is a procedure that expects one argument
 for every field of \var{rtd} and returns a record with the fields of
 \var{rtd} initialized to these arguments.  The procedure returned by
@@ -743,7 +750,7 @@ This passes arguments {\cf v1}, {\cf v2}, {\cf v3} to \var{n} for
 with {\cf x1}, \ldots, {\cf x4} to initialize the fields of \var{rtd} itself.
 
 Thus, the constructor descriptors for a record type form a sequence of
-protocols exactly parallel to the sequence of record-type parents. Each
+protocols parallel to the sequence of record-type parents. Each
 constructor descriptor in the chain determines the field values for the
 associated record type.
 Child record constructors need not know the number or contents of parent
@@ -863,33 +870,27 @@ if \var{obj} is a record of the type represented by
 \begin{entry}{%
 \proto{record-accessor}{ rtd k}{procedure}}
 
-\domain{\var{K} must be a valid field index  of \var{rtd}.}
-The {\cf record-accessor} procedure returns a one-argument procedure that, given a
-record of the type represented by \var{rtd}, returns the value of the
-selected field of that record.
+\domain{\var{K} must be a valid field index of \var{rtd}.}  The {\cf
+  record-accessor} procedure returns a one-argument procedure whose
+argument must be a record of the type represented by \var{rtd}.  This
+procedure returns the value of the selected field of that record.
 
-The field selected is the one corresponding the \var{k}th element
+The field selected corresponds to the \var{k}th element
 (0-based) of the \var{fields} argument to the invocation of {\cf
   make-record-type-descriptor} that created \var{rtd}. Note that
 \var{k} cannot be used to specify a field of any type \var{rtd} extends.
-
-If the accessor procedure is given something other than
-a record of the type represented by \var{rtd}, an exception with
-condition type {\cf\&assertion} is raised.  Records
-of the type represented by \var{rtd} include records of extensions of
-the type represented by \var{rtd}.
 \end{entry}
 
 \begin{entry}{%
 \proto{record-mutator}{ rtd k}{procedure}}
    
-\domain{\var{K} must be a valid field index  of \var{rtd}.}
-The {\cf record-mutator} procedure returns a two-argument procedure that, given a
-record \var{r} of the type represented by \var{rtd} and an object
-\var{obj}, stores \var{obj} within the field of \var{r} specified by
-\var{k}. The \var{k} argument is as in {\cf record-accessor}. If
-\var{k} specifies an immutable field, an exception with condition type
-{\cf\&assertion} is raised.
+\domain{\var{K} must be a valid field index of \var{rtd}.}  The {\cf
+  record-mutator} procedure returns a two-argument procedure whose
+arguments must be a record record \var{r} of the type represented by
+\var{rtd} and an object \var{obj}.  This procedure stores \var{obj}
+within the field of \var{r} specified by \var{k}. The \var{k} argument
+is as in {\cf record-accessor}. If \var{k} specifies an immutable
+field, an exception with condition type {\cf\&assertion} is raised.
 The mutator returns \unspecifiedreturn.
 \end{entry}
 
@@ -986,10 +987,8 @@ The mutator returns \unspecifiedreturn.
 
 \section{Inspection}
 
-The inspection layer is provided by the
-\defrsixlibrary{records inspection} library.
-
-A set of procedures are provided for inspecting records and their
+The \defrsixlibrary{records inspection} library
+provides procedures for inspecting records and their
 record-type descriptors. These procedures are designed to allow the
 writing of portable printers and inspectors.
 
@@ -1001,11 +1000,6 @@ controls whether a program can obtain an rtd from a record. If the
 program has access to the original rtd via {\cf
   make-record-type-descriptor} or {\cf record-type-descriptor}, it can
 still make use of the inspection procedures.
-
-Any of the standard types mentioned in this report may or may not be
-implemented as an opaque record type.  Consequently, {\cf record?},
-when applied to an object of one of these types, may return
-\schtrue{}.  In this case, inspection is possible for these objects.
 
 \begin{entry}{%
 \proto{record?}{ obj}{procedure}}
@@ -1055,15 +1049,15 @@ Returns \schtrue{} if \var{rtd} is generative, and \schfalse{} if not.
 \begin{entry}{%
 \proto{record-type-sealed?}{ rtd}{procedure}}
 
-Returns a boolean value indicating whether the record-type descriptor is
-sealed.
+Returns \schtrue{} if the record-type descriptor is
+sealed, and \schfalse{} if not.
 \end{entry}
 
 \begin{entry}{%
 \proto{record-type-opaque?}{ rtd}{procedure}}
    
-Returns a boolean value indicating whether the record-type descriptor is
-opaque.
+Returns \schtrue{} if the the record-type descriptor is
+opaque, and \schfalse{} if not.
 \end{entry}
 
 \begin{entry}{%
@@ -1080,9 +1074,9 @@ If the returned vector is modified, the effect on
 \begin{entry}{%
 \proto{record-field-mutable?}{ rtd k}{procedure}}
    
-Returns a boolean value indicating whether the field specified by
-\var{k} of the type represented by \var{rtd} is mutable, where \var{k}
-is as in {\cf record-accessor}.
+Returns \schtrue{} if the field specified by
+\var{k} of the type represented by \var{rtd} is mutable, and
+\schfalse{} if not.  \var{K} is as in {\cf record-accessor}.
 \end{entry}
 
 %%% Local Variables: 

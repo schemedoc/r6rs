@@ -81,6 +81,7 @@ before applying it.
 \syntax
 Each \hyper{cond clause} is as in the specification of {\cf cond}.
 (See report section~\extref{report:cond}{Derived conditionals}.)
+{\cf \=>} and {\cf else} are the same as in the \rsixlibrary{base} library.
 
 \semantics 
 Evaluating a {\cf guard} form evaluates \hyper{body} with an exception
@@ -178,7 +179,8 @@ returns become the values returned by the call to
     (+ (raise-continuable
          (condition
            (make-warning)
-           (make-message-condition "should be a number")))
+           (make-message-condition
+             "should be a number")))
        23)))
    {\it prints:} should be a number
    \ev 65
@@ -190,12 +192,12 @@ returns become the values returned by the call to
 The section describes Scheme's \defrsixlibrary{conditions} library 
 for creating and inspecting
 condition types and values. A condition value encapsulates information
-about an exceptional situation\mainindex{exceptional situation}, or
-\defining{exception}. Scheme also defines a
+about an exceptional situation\mainindex{exceptional situation}.
+Scheme also defines a
 number of basic condition types.
 
 Scheme conditions provides two mechanisms to enable communication
-about exceptional situation: subtyping among condition types allows
+about an exceptional situation: subtyping among condition types allows
 handling code to determine the general nature of an exception even
 though it does not anticipate its exact nature, and compound
 conditions allow an exceptional situation to be described in multiple
@@ -271,7 +273,8 @@ a procedure that takes one argument.  This procedure returns
 \schtrue{} if its argument is a condition of the condition type
 represented by \var{rtd}, i.e., if it is either a simple condition of
 that record type (or one of its subtypes) or a compound conditition
-with such a simple condition as one of its components.
+with such a simple condition as one of its components, and \schfalse{}
+otherwise.
 \end{entry}
 
 \begin{entry}{%
@@ -622,7 +625,7 @@ This condition type could be defined by
   (irritants condition-irritants))%
 \end{scheme}
 %
-The {\cf irritants} field should contain a list of objects.  This
+\domain{\var{Irritants} should be a list of objects.}  This
 condition provides additional information about a condition, typically
 the argument list of a procedure that detected an exception.
 Conditions of this type are created by the {\cf error} and {\cf
@@ -644,7 +647,7 @@ This condition type could be defined by
   (who condition-who))%
 \end{scheme}
 %
-The {\cf who} field should contain a symbol or string identifying the
+\var{Who} should be a symbol or string identifying the
 entity reporting the exception.
 Conditions of this type are created by the {\cf error} and {\cf
   assertion-violation} procedures (report
@@ -721,9 +724,9 @@ This condition type could be defined by
 \end{scheme}
 
 This type describes syntax violations.
-The {\cf form} field contains the erroneous syntax object or a
-datum representing the code of the erroneous form.  The {\cf
-  subform} field may contain an optional syntax object or
+\var{Form} should be the erroneous syntax object or a
+datum representing the code of the erroneous form.  \var{Subform}
+should be an optional syntax object or
 datum within the erroneous form that more precisely locates the
 violation.  It can be \schfalse{} to indicate the absence of more precise
 information.
@@ -740,7 +743,7 @@ This condition type could be defined by
 (define-condition-type \&undefined \&violation
   make-undefined-violation undefined-violation?)%
 \end{scheme}
-% 
+% x
 This type describes unbound identifiers in the program.
 \end{entry}
 

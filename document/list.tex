@@ -102,6 +102,7 @@ before applying it.
 
 \domain{\var{Proc} should accept one argument
   and return a single value. \var{Proc} should not mutate \var{list}.}
+
 The {\cf filter} procedure applies
 \var{proc} to each element of \var{list} and returns a list of
 the elements of \var{list} for which \var{proc} returned a true
@@ -201,7 +202,7 @@ list is reached; then the accumulator value is returned.
 as {\cf fold-right} itself.
 
 \begin{scheme}
-(fold-right + 0 '(1 2 3 4 5)) \ev 15
+(fold-right + 0 '(1 2 3 4 5)) \lev 15
 
 (fold-right cons '() '(1 2 3 4 5)) \lev (1 2 3 4 5)
 
@@ -233,6 +234,7 @@ before applying it.
 \domain{\var{Proc} should accept one argument
    and return a single value.
    \var{Proc} should not mutate \var{list}.}
+
 Each of these procedures returns a list of the elements of \var{list}
 that do not satisfy a given condition.  The {\cf remp} procedure
 applies \var{proc} to each element of \var{list} and returns a
@@ -280,8 +282,8 @@ satisfies a given condition, where the sublists of \var{lists} are the
 lists returned by {\tt (list-tail \var{list} \var{k})} for
 \var{k} less than the length of \var{list}.  The {\cf memp} procedure applies
 \var{proc} to the cars of the sublists of \var{list} until it
-finds one for which \var{proc} returns a true value, without traversing
-\var{list} further.  \var{Proc} is always called in the same dynamic environment 
+finds one for which \var{proc} returns a true value.
+\var{Proc} is always called in the same dynamic environment 
 as {\cf memp} itself.  The {\cf
   member}, {\cf memv}, and {\cf memq} procedures look for the first occurrence of
 \var{obj}.  If \var{list} does not contain an element satisfying the

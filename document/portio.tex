@@ -165,9 +165,7 @@ Each transcoder represents some specific bidirectional (but not
 necessarily lossless), possibly stateful translation between byte
 sequences and Unicode characters and strings.
 Every transcoder can operate in the input direction (bytes to characters)
-or in the output direction (characters to bytes),
-but the composition of those directions need not be identity (and
-often is not).  The composition of two transcoders is not defined.
+or in the output direction (characters to bytes). 
 A \var{transcoder} parameter name means that the corresponding
 argument must be a transcoder.
 
@@ -199,7 +197,7 @@ procedure.
 corresponding symbol.  If the name of \var{eol-style symbol} is not
 one of these symbols, the effect and result are
 implementation-dependent; in particular, the result may be an
-eol-style symbol acceptable as an \var{eol-mode} argument to {\cf
+eol-style symbol acceptable as an \var{eol-style} argument to {\cf
   make-transcoder}.  Otherwise, an exception is raised.
 
 All eol-style symbols except {\cf none} describe a specific
@@ -273,8 +271,7 @@ This condition type could be defined by
 An exception with this type is raised when one of the operations for
 textual output to a port encounters a character that cannot be
 translated into bytes by the output direction of the port's transcoder.
-The {\cf char} field of the
-condition object contains the character that could not be encoded.
+\var{Char} is the character that could not be encoded.
 \end{entry}
 
 \begin{entry}{%
@@ -423,9 +420,9 @@ textual and has an associated transcoder, and returns \schfalse{} if
 \proto{textual-port?}{ port}{procedure}
 \proto{binary-port?}{ port}{procedure}}
 
-The {\cf textual-port} procedure returns \schtrue{} if \var{port} is
+The {\cf textual-port?} procedure returns \schtrue{} if \var{port} is
 textual, and returns \schfalse{} otherwise.
-The {\cf binary-port} procedure returns \schtrue{} if \var{port} is
+The {\cf binary-port?} procedure returns \schtrue{} if \var{port} is
 binary, and returns \schfalse{} otherwise.
 \end{entry}
 
@@ -495,7 +492,9 @@ otherwise.
    
 The {\cf set-port-position!} procedure raises an
 exception with condition type {\cf\&assertion}
-if the port does not support the operation.
+if the port does not support the operation, 
+and an exception with condition type {\cf\&i/o-invalid-position} if
+\var{pos} is not in the range of valid positions of \var{port}.
 Otherwise, it sets the current position
 of the port to \var{pos}.  If \var{port} is an output
 port, {\cf set-port-position!} first flushes \var{port}.  (See {\cf
@@ -580,7 +579,8 @@ but the port cannot be determined to be at end of file.
    
 \domain{\var{Maybe-transcoder} must be either a transcoder or \schfalse.}
 
-Returns an input port for the named file. The \var{file-options} and
+The {\cf open-file-input-port} procedure returns an
+input port for the named file. The \var{file-options} and
 \var{maybe-transcoder} arguments are optional.
 
 The \var{file-options} argument, which may determine
@@ -599,7 +599,7 @@ the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
-will be implementation-dependent (and possibly transcoder-dependent).
+is implementation-dependent (and possibly transcoder-dependent).
 \end{entry}
 
 \begin{entry}{%
@@ -609,7 +609,7 @@ will be implementation-dependent (and possibly transcoder-dependent).
 
 \domain{\var{Maybe-transcoder} must be either a transcoder or \schfalse.}
    
-The {\cf open-bytevector-input-port} procedure returns an input port whose bytes are drawn from the
+The {\cf open-bytevector-input-port} procedure returns an input port whose bytes are drawn from 
 \var{bytevector}.
 If \var{transcoder} is specified, it becomes the transcoder associated
 with the returned port.
@@ -804,8 +804,8 @@ update \var{binary-input-port} to point past the byte.
    
 \domain{\var{Count} must be an exact, non-negative integer object representing
   the number of bytes to be read.}
-
-Reads from \var{binary-input-port}, blocking as necessary, until \var{count}
+The {\cf get-bytevector-n} procedure reads
+from \var{binary-input-port}, blocking as necessary, until \var{count}
 bytes are available from \var{binary-input-port} or until an end of file is
 reached. If \var{count} bytes are available before an end
 of file, {\cf get-bytevector-n} returns a bytevector of size \var{count}.
@@ -848,7 +848,7 @@ Reads from \var{binary-input-port}, blocking as necessary, until bytes are
 available from \var{binary-input-port} or until an end of file is reached.
 If bytes become available,
 {\cf get-bytevector-some} returns a freshly allocated
-bytevector containing the initial one or more available bytes,
+bytevector containing the initial available bytes (at least one),
 and it updates \var{binary-input-port} to point just past these bytes.
 If no input bytes are seen before an end
 of file is reached, the end-of-file object is returned.
@@ -921,7 +921,7 @@ end of file, the end-of-file object is returned.
 \proto{get-string-n!}{ textual-input-port string start count}{procedure}}
 
 \domain{\var{Start} and \var{count} must be exact, non-negative
-  integer object, with \var{count} representing the number of characters to be read.
+  integer objects, with \var{count} representing the number of characters to be read.
   \var{String} must be a string with at least $\var{start} +
   \var{count}$ characters.}
 
@@ -930,7 +930,7 @@ The {\cf get-string-n!} procedure reads from \var{textual-input-port} in the sam
 before an end of file, they are written into \var{string}
 starting at index \var{start}, and \var{count} is returned. If fewer
 characters are available before an end of file, but one
-or more can be read, those characters are written into string
+or more can be read, those characters are written into \var{string}
 starting at index \var{start} and the number of characters actually read is
 returned as an exact integer object. If no characters can be read before an end of file,
 the end-of-file object is returned.
@@ -1013,7 +1013,7 @@ combined input and output port), \schfalse{} otherwise.
 \begin{entry}{%
 \proto{flush-output-port}{ output-port}{procedure}}
    
-Flushes any output from the buffer of \var{output-port} to the
+Flushes any buffered output from the buffer of \var{output-port} to the
 underlying file, device, or object. The {\cf flush-output-port}
 procedure returns \unspecifiedreturn.
 \end{entry}
@@ -1053,7 +1053,7 @@ the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
-will be implementation-dependent (and possibly transcoder-dependent).
+is implementation-dependent (and possibly transcoder-dependent).
 \end{entry}   
 
 \begin{entry}{%
@@ -1074,7 +1074,7 @@ the port will be a binary port and will support the
 {\cf port-position} and {\cf set-port-position!}  operations.
 Otherwise the port will be a textual port, and whether it supports
 the {\cf port-position} and {\cf set-port-position!} operations
-will be implementation-dependent (and possibly transcoder-dependent).
+is implementation-dependent (and possibly transcoder-dependent).
 
 The extraction procedure takes no arguments.
 When called, it returns a
@@ -1124,7 +1124,7 @@ the port's position.
 \proto{call-with-string-output-port}{ proc}{procedure}}
 
 \domain{\var{Proc} must accept one argument.}
-The {\cf call-with-string-output-port} procedure creates a textual output port that accumulates the
+The {\cf call-\linebreak[0]with-\linebreak[0]string-\linebreak[0]output-\linebreak[0]port} procedure creates a textual output port that accumulates the
 characters written to it and calls \var{proc} with that output port
 as an argument.  Whenever \var{proc} returns, a string consisting of all
 of the port's accumulated characters (regardless of the port's current
@@ -1286,7 +1286,8 @@ Writes \var{char} to the port. The {\cf put-char} procedure returns
 \domain{\var{Start} and \var{count} must be non-negative exact
   integer objects.  \var{String} must have a length of at least $\var{start} +
   \var{count}$.}  \var{Start} defaults to 0.  \var{Count} defaults to
-$\texttt{(string-length \var{string})} - \var{start}$. Writes the
+$\texttt{(string-length \var{string})} - \var{start}$.  The {\cf
+  put-string} procedure writes the
 \var{count} characters of \var{string} starting at
 index \var{start} to the port.  The {\cf put-string} procedure
 returns \unspecifiedreturn.

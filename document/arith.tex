@@ -10,7 +10,7 @@ operations on exact integer objects.
 
 A number of procedures operate on the binary two's-complement
 representations of exact integer objects: Bit positions within an
-exact integer object are counted from the left, i.e.\ bit 0 is the
+exact integer object are counted from the right, i.e.\ bit 0 is the
 least significant bit.  Some procedures allow extracting \defining{bit
   fields}, i.e., number objects representing subsequences of the
 binary representation of an exact integer object.  Bit fields are
@@ -106,8 +106,8 @@ that sum or product is not a fixnum.
 \proto{fx-}{ \vari{fx} \varii{fx}}{procedure}
 \rproto{fx-}{ fx}{procedure}}
 
-With two arguments, this procedure returns the difference of its
-arguments, provided that difference is a fixnum.
+With two arguments, this procedure returns the difference
+$\vari{fx}-\varii{fx}$, provided that difference is a fixnum.
 
 With one argument, this procedure returns the additive
 inverse of its argument, provided that integer object is a
@@ -137,7 +137,7 @@ specified in report section~\extref{report:integerdivision}{Integer division}.
 \begin{scheme}
 (fxdiv \vari{fx} \varii{fx})         \ev \(\vari{fx}~\mathrm{div}~\varii{fx}\)
 (fxmod \vari{fx} \varii{fx})         \ev \(\vari{fx}~\mathrm{mod}~\varii{fx}\)
-(fxdiv-and-mod \vari{fx} \varii{fx})     \lev \(\vari{fx}~\mathrm{div}~\varii{fx}, \vari{fx}~\mathrm{mod}~\varii{fx}\)\\\>\>; \texttt{two return values}
+(fxdiv-and-mod \vari{fx} \varii{fx})     \lev \(\vari{fx}~\mathrm{div}~\varii{fx}, \vari{fx}~\mathrm{mod}~\varii{fx}\)\\\>\>; \textrm{two return values}
 (fxdiv0 \vari{fx} \varii{fx})        \ev \(\vari{fx}~\mathrm{div}\sb{0}~\varii{fx}\)
 (fxmod0 \vari{fx} \varii{fx})        \ev \(\vari{fx}~\mathrm{mod}\sb{0}~\varii{fx}\)
 (fxdiv0-and-mod0 \vari{fx} \varii{fx})   \lev \(\vari{fx} \vari{fx}~\mathrm{div}\sb{0}~\varii{fx}, \vari{fx}~\mathrm{mod}\sb{0}~\varii{fx}\)\\\>\>; \textrm{two return values}%
@@ -350,7 +350,7 @@ is the fixnum result of the following computation:
 \end{scheme}
 %
 is a fixnum, then that fixnum is returned.  Otherwise an exception
-with condition type {\cf\&implementation-restriction} is
+with condition type {\cf\&implementation-\linebreak[0]restriction} is
 raised.
 \end{entry}
 
@@ -358,8 +358,8 @@ raised.
 \proto{fxarithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxarithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{Fx} must be non-negative.} {\cf
-  fxarithmetic-shift-left} behaves the same as {\cf
+\domain{\varii{Fx} must be non-negative.}  The {\cf
+  fxarithmetic-shift-left} procedure behaves the same as {\cf
   fxarithmetic-shift}, and {\cf (fxarithmetic-shift-right \vari{fx}
   \varii{fx})} behaves the same as {\cf (fxarithmetic-shift \vari{fx}
   (fixnum- \varii{fx}))}.
@@ -369,7 +369,7 @@ raised.
 \proto{fxrotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
 \domain{\varii{Fx}, \variii{fx}, and \variv{fx} must be non-negative
-  and less than {\cf (fixnum-width)}.  \varii{fx} must be less than or
+  and less than {\cf (fixnum-width)}.  \varii{Fx} must be less than or
   equal to \variii{fx}. \variv{Fx} must be less than the difference
 between \variii{fx} and \varii{fx}.}  The {\cf fxrotate-bit-field}
 procedure returns the result of cyclically permuting in \vari{fx} the
@@ -709,7 +709,7 @@ the result may be a NaN or some unspecified flonum.
 
 \domain{Either \vari{fl} should be non-negative, or, if \vari{fl} is
   negative, \varii{fl} should be an integer object.}
-Returns \vari{fl} raised to the power \varii{fl}.  If \vari{fl} is
+The {\cf flexpt} procedure returns \vari{fl} raised to the power \varii{fl}.  If \vari{fl} is
 negative and \varii{fl} is not an integer object, the result may be a
 NaN, or may be some unspecified flonum.  If \vari{fl} is zero, then
 the result is zero.
@@ -949,9 +949,14 @@ Examples:
 
 \domain{\varii{Ei} must be non-negative.}  The {\cf
   bitwise-\linebreak[0]arithmetic-\linebreak[0]shift-\linebreak[0]left} procedure returns the same result as {\cf
-  bitwise-arithmetic-shift}, and {\cf (bitwise-arithmetic-shift-right
-  \vari{ei} \varii{ei})} returns the same result as {\cf
-  (bitwise-arithmetic-shift \vari{ei} (- \varii{ei}))}.
+  bitwise-arithmetic-shift}, and
+\begin{scheme}
+(bitwise-arithmetic-shift-right \vari{ei} \varii{ei})%
+\end{scheme}
+returns the same result as 
+\begin{scheme}
+(bitwise-arithmetic-shift \vari{ei} (- \varii{ei}))\textrm{.}%
+\end{scheme}
 \end{entry}
 
 \begin{entry}{%
