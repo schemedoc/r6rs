@@ -130,19 +130,12 @@ A \defining{syntax object} is a representation of a Scheme form that contains
 contextual information about the form in addition to its structure.
 This contextual information is used by the expander to maintain
 lexical scoping and may also be used by an implementation to maintain
-source-object correlation.
+source-object correlation~\cite{syntacticabstraction}.
 
-As explained in section~\ref{hygienesection}, syntax objects may be wrapped or unwrapped.
-Wrapped syntax objects may or may not be distinct from other types of values,
-but syntax objects representing identifiers are distinct
-from other types of values.
-
-An unwrapped syntax object is one that is unwrapped, fully or partially,
-i.e., whose outer layers consist of lists and vectors and whose leaves are
-either wrapped syntax objects or nonsymbol values.
-
-The term \textit{syntax object} is used in this document to refer to
-a syntax object that is either wrapped or unwrapped.
+A syntax object may be wrapped, as described in section~\ref{hygienesection}.
+It may also be unwrapped, fully or partially, i.e., consist of list and
+vector structure with wrapped syntax objects or nonsymbol values at the
+leaves.
 More formally, a syntax object is:
 
 \begin{itemize}
@@ -157,6 +150,11 @@ object'' is important.
 For example, when invoked by the expander, a transformer
 (section~\ref{transformerssection}) must accept a wrapped syntax object but
 may return any syntax object, including an unwrapped syntax object.
+
+Syntax objects representing identifiers are always wrapped and are distinct
+from other types of values.
+Wrapped syntax objects that are not identifiers may or may not be distinct
+from other types of values.
 
 \section{Transformers}
 \label{transformerssection}
@@ -1037,16 +1035,12 @@ as follows.
 (define-syntax syntax-rules
   (lambda (x)
     (syntax-case x ()
-      [(\_ (k ...) [(\_ . p) t] ...)
+      [(\_ (lit ...) [(k . p) t] ...)
+       (for-all identifier? \sharpsign{}'(lit ... k ...))
        \sharpsign{}'(lambda (x)
-           (syntax-case x (k ...)
+           (syntax-case x (lit ...)
              [(\_ . p) \sharpsign{}'t] ...))])))%
 \end{scheme}
-
-A more robust implementation would verify that the literals
-{\cf \hyper{literal} \dots} are all identifiers, that the first position
-of each pattern is an identifier, and that no fender
-is present in each clause.
 \end{note}
 
 \begin{note}
