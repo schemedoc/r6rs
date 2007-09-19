@@ -65,10 +65,11 @@ inspection on objects of the standard types.
 
 The procedural layer is particularly useful for writing interpreters
 that construct host-compatible record types.  It may also serve as a
-target for expansion of the syntactic layers.  However, the
-record operations provided through the procedural layer may be
-significantly less efficient than the operations provided through the
-syntactic layer.  Therefore, alternative implementations
+target for expansion of the syntactic layers.  The
+record operations provided through the procedural layer may, however, be
+less efficient than the operations provided through the
+syntactic layer, which is designed to allow expand-time determination
+of record-instance sizes and field offsets.  Therefore, alternative implementations
 of syntactic record-type definition should, when possible, expand into
 the syntatic layer rather than the procedural layer.
 
@@ -156,8 +157,8 @@ forms:
 \hyper{Record name}, taken as a symbol, becomes the name of the record
 type. (See the description of {\cf make-record-type-descriptor}
 below.)
-Additionally, it is bound by this definition to an expand-time
-representation of the record type; it can be used as parent name in
+Additionally, it is bound by this definition to an expand-time or run-time
+representation of the record type and can be used as parent name in
 syntactic record-type definitions that extend this definition. It can
 also be used as a handle to gain access to the underlying record-type
 descriptor and constructor descriptor (see {\cf
@@ -298,12 +299,14 @@ must not be sealed.  Moreover, a record-type definition must not have
 both a {\cf parent} and a {\cf parent-rtd} clause.
 
 \begin{note}
-  Use of the {\cf parent-rtd} clause may force an implementation to
-  delay the generation of constructor, accessor, and mutator code until
-  the record-type definition is evaluated at run time, since the type of
-  the parent is not generally known until then.
-  The {\cf parent} clause should therefore be used instead whenever
-  possible.
+  The syntactic layer is designed to allow record-instance sizes and field
+  offsets to be determined at expand time, i.e., by a macro definition of
+  {\cf define-record-type}, as long as the parent (if any) is known.
+  Implementations that take advantage of this may generate less
+  efficient constructor, accessor, and mutator code when the
+  {\cf parent-rtd} clause is used, since the type of the parent is
+  generally not known until run time.
+  The {\cf parent} clause should therefore be used instead when possible.
 \end{note}
 
 All bindings created by {\cf define-record-type} (for the record type,
