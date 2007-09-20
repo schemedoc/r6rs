@@ -3,6 +3,7 @@
 
 \pagestyle{headings} 
 \showboxdepth=0
+\makeindex
 \input{commands}
 
 \newcommand{\rn}[1]{R$^{#1}$RS}
@@ -61,7 +62,7 @@ behind the \textit{Revised\hspace{1pt}$^6$ Report on the Algorithmic Language
 the report.  Moreover, numerous fundamental design decisions of Scheme
 are explained.  This report also contains some historical notes.
 The formal comments submitted for drafts of the report and their
-responses, as archived on \url{http://www.r6rs.org/} provides additional
+responses, as archived on \url{http://www.r6rs.org/}, provides additional
 background information on many decisions that are reflected
 in the report.
 
@@ -278,11 +279,12 @@ The change from case-insensitive syntax in \rn{5} to case-sensitive
 syntax is a major change.  Many technical arguments exist in favor of
 both case sensitivity and case insensitivity, and any attempt to list
 them all here would be incomplete.  
-Switching to case sensitivity breaks backwards compatibility, and
-might set a precedent for switching a technically more or less
-arbitrary decision again in the future.
+% [MF] So, don't bother with one argument against:
+%  Switching to case sensitivity breaks backwards compatibility, and
+%  might set a precedent for switching a technically more or less
+%  arbitrary decision again in the future.
 
-The editors decided to switch to case sensitivity because they
+The editors decided to switch to case sensitivity, because they
 perceived that a significant majority of the Scheme community favored
 the change.  This perception has been strengthened by polls at the
 2004 Scheme workshop, on the {\cf plt-scheme} mailing list, and the
@@ -298,8 +300,8 @@ case-insensitivity and therefore must be case-folded upon reading.
 
 \rn{6} introduces a special rule in the lexical syntax for
 identifiers starting with the characters {\cf ->}.  In \rn{5}, such
-identifiers were not valid lexemes.  (In \rn{5}, a lexeme starting
-with a {\cf -} character---except for {\cf -} itself---has to be a
+identifiers are not valid lexemes.  (In \rn{5}, a lexeme starting
+with a {\cf -} character---except for {\cf -} itself---must be a
 representation of a number object.)
 However, many existing
 Scheme implementations prior to \rn{6} already supported identifiers
@@ -310,14 +312,14 @@ portable Scheme code used identifiers starting with {\cf ->}, which
 are a convenient choice for many names.  Therefore, \rn{6} legalizes
 these identifiers.  The separate production in the grammar is not particularly elegant.
 However, designing a more elegant production that does not overlap with
-representations of number objects or other lexeme classes has proved to be surprisingly
+representations of number objects or other lexeme classes has proven to be surprisingly
 difficult.
 
  
 \section{Comments}
 
-While \rn{5} only provided the {\cf;} syntax for comments, the report
-now describes three essential kinds: In addition to {\cf;}, {\tt \#|}
+While \rn{5} provides only the {\cf;} syntax for comments, the report
+now describes three comment forms: In addition to {\cf;}, {\tt \#|}
 and {\tt |\#} delimit block comments, and {\cf\sharpsign;} starts a
 ``datum comment''.  ({\cf\sharpsign!r6rs} is also a kind of comment,
 albeit with a specific, fixed purpose.) 
@@ -326,16 +328,12 @@ Block comments provide a more convenient way of writing multi-line
 comments, and are an often-requested and often-implemented syntactic
 addition to the language. 
 
-The rationale for {\cf\sharpsign;} is not as readily apparent: It
-automatically comments out a single datum, the basic unit of Scheme
-syntax, something that the other comment mechanisms cannot do.  {\cf
-  \sharpsign\verticalbar} \ldots {\cf \verticalbar\sharpsign} as such
-cannot comment out an arbitrary datum.
-Moreover, while {\cf\sharpsign;} is probably most useful during
-development and debugging, it is still useful to have a standard
-notation for commenting out a datum, particularly since programmers
-sometimes develop and debug a single piece of code concurrently on
-multiple systems.
+The rationale for {\cf\sharpsign;} is not as readily apparent: It is
+guaranteed syntactically to comment out a single datum---no more, and
+no less. Arguably, {\cf\sharpsign;} is most useful during development
+and debugging; even so, programmers sometimes develop and debug a
+single piece of code concurrently on multiple systems, in which case a
+standard notation for commenting out a datum is useful.
 
 \section{Future extensions}
 
@@ -378,24 +376,24 @@ the following exceptions:
 The second item deserves special attention, as the specific decisions
 made for the report are meant to enable ``picky'' implementations that
 catch as many violations and unportable assumptions made by programs
-as possible, while also enabling practical and efficient
+as possible, while also enabling practical
 implementations that execute programs quickly.
 
 \section{Safety}
 
-\rn{5} described many situations not specified in the report as ``is
-an error'': Portable programs could not cause such situations, but
-implementations were free to implement arbitrary behavior under this
-umbrella.  This included ``crashing'' the running program, or
-somehow compromising the integrity of its execution model, resulting
-in random behavior.  This was in sharp contrast to the common assumption
-that Scheme was a ``safe'' language where each
+\rn{5} describes many situations not specified in the report as ``is
+an error'': Portable \rn{5} programs cannot cause such situations, but
+\rn{5} implementations are free to implement arbitrary behavior under this
+umbrella.  Arbitrary behavior can include ``crashing'' the running program, or
+somehow compromising the integrity of its execution model to result
+in random behavior.  This situation stands in sharp contrast to the common assumption
+that Scheme is a ``safe'' language, where each
 violation of a restriction of the language standard or the
-implementation would at least result in defined behavior, such as
-interrupting or aborting the program and/or starting a debugger.
+implementation would at least result in defined behavior (e.g.,
+interrupting or aborting the program, or starting a debugger).
 
 To avoid the problems associated with this arbitrary behavior, all
-libraries specified in the report must be safe, and react to
+libraries specified in the report must be safe, and they react to
 detected violations of the specification by raising
 an exception, which allows the program to detect and react
 to the violation itself.
@@ -405,7 +403,7 @@ may compromise safety.
 
 \section{Proper tail recursion}
 
-Intuitively, no space is needed for an active tail call because the
+Intuitively, no space is needed for an active tail call, because the
 continuation that is used in the tail call has the same semantics as the
 continuation passed to the procedure containing the call.  Although an improper
 implementation might use a new continuation in the call, a return
@@ -614,14 +612,14 @@ multiple instances of a library.
 The notion of ``top-level program'' is new in \rn{6} and replaces the
 notion of ``Scheme program'' in \rn{5}.  The two are quite different:
 While a \rn{6} top-level program is defined to be a complete, textual
-entity, an \rn{5} program could evolve by being entered piecemeal into
+entity, an \rn{5} program can evolve by being entered piecemeal into
 a running Scheme system.  Many Scheme systems have interactive
 command-line environments based on the semantics of \rn{5} programs.
-However, the specification of \rn{5} programs was not really
+However, the specification of \rn{5} programs is not really
 sufficient to describe how to operate an arbitrary Scheme system: The
 \rn{5} is ambiguous on some aspects of the semantics such as binding.
 Moreover, \rn{5}'s {\cf load} procedure does say how to load source
-code into the running system, but the pragmatics of {\cf load} would
+code into the running system; the pragmatics of {\cf load} would
 often make compiling programs before execution problematic, in
 particular with regard to macros.  Furthermore, Scheme implementations
 handle treatment of and recovery from errors in wildly different ways.
@@ -659,9 +657,9 @@ better code if they can choose evaluation order.
 
 \chapter{Expansion process}
 
-The description of macro expansion is considerably more involved than
-it was in \rn{5}: One reason for this that the specification of
-expansion in \rn{5} was ambiguous in several important respects.  For
+The description of macro expansion in \rn{6} is considerably more involved than
+in \rn{5}: One reason is that the specification of
+expansion in \rn{5} is ambiguous in several important respects.  For
 example, \rn{5} does not specify whether {\cf define} is a binding
 form.  Also, it was not clear whether definitions of macros had to
 precede their uses.  The fact that the set of available bindings may
@@ -738,7 +736,7 @@ within expressions.  Different generalizations of definition placement
 are possible, however a survey of current Scheme code found
 surprisingly few places where such a generalization would be useful.
 
-If such a generalization proposed, were adopted, programmers who are
+If such a generalization were adopted, programmers who are
 familiar with Java and similar languages might expect definitions to
 be allowed in the same kinds of contexts that allow declarations in
 Java.  However, Scheme
@@ -868,9 +866,9 @@ state since it obeys the same constraints as {\cf eqv?}.
 
 \subsection{Full numerical tower}
 
-\rn{5} did not require implementations to support the full numeric
-tower.  Consequently, it was hard to write portable programs that
-perform substantial arithmetic, and it is unnecessarily difficult even
+\rn{5} does not require implementations to support the full numeric
+tower.  Consequently, writing portable \rn{5} programs that
+perform substantial arithmetic is difficult; it is unnecessarily difficult even
 to write programs whose arithmetic is portable between different
 implementations in the same category.  The portability problems were
 most easily solved by requiring all implementations to support the
@@ -1133,7 +1131,7 @@ representations other than binary floating-point.
 
 \section{Characters and strings}
 
-Where \rn{5} specified characters and strings in terms of its own,
+While \rn{5} specifies characters and strings in terms of its own,
 limited character set, \rn{6} specifies characters and strings in
 terms of Unicode.  The primary goal of the design change was to
 improve the portability of Scheme programs that manipulate text, while
@@ -1360,7 +1358,7 @@ datatype considerably reduces both programming effort and library
 size.
 
 Bytevectors can also be used to encode sequences of unboxed number objects.
-However, unencapsulated use of bytevectors for this purpose may lead
+Unencapsulated use of bytevectors for this purpose may lead
 to aliasing, which may reduce the effectiveness of compiler
 optimizations.  However, sealedness and
 opacity of records, together with bytevectors, make it possible to
@@ -1385,7 +1383,7 @@ specification, and to establish uniform naming conventions.
 
 Although they are ordinarily used as predicates, {\cf memp}, {\cf
   member}, {\cf memv}, and {\cf memq}, do not have question marks in
-their names because they return useful values rather than just
+their names, because they return useful values rather than just
 \schtrue{} or \schfalse{}.
 
 \chapter{Sorting}
@@ -1616,12 +1614,12 @@ flags.
 \section{End-of-line styles}
 
 The set of end-of-line styles recognized by the \rsixlibrary{ports}
-library is not closed because end-of-line styles other than those
+library is not closed, because end-of-line styles other than those
 listed might become commonplace in the future.
 
 \section{Error-handling modes}
 
-The set of error-handling modes is not closed because implementations
+The set of error-handling modes is not closed, because implementations
 may support error-handling modes other than those listed.
 
 \section{Binary and textual ports}
@@ -1728,14 +1726,14 @@ in SRFIs 33~\cite{srfi33} and 60~\cite{srfi60}.
 
 \paragraph{{\tt fx+} and {\tt fx*}}
 
-These procedures are restricted to two arguments because their
+These procedures are restricted to two arguments, because their
 generalizations to three or more arguments would require
 precision proportional to the number of arguments.
 
 \paragraph{{\tt real->flonum}}
 
-This procedure is necessary because not all real number objects are inexact, and
-some inexact real number objects may not be flonums.
+This procedure is necessary, because not all real number objects are inexact, and
+because some inexact real number objects may not be flonums.
 
 \paragraph{{\tt flround}}
 
