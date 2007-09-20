@@ -41,7 +41,7 @@
 \multicolumn{4}{c}{
   R\authorsc{ICHARD} K\authorsc{ELSEY}, W\authorsc{ILLIAM} C\authorsc{LINGER},
   J\authorsc{ONATHAN} R\authorsc{EES}} \\
-\multicolumn{4}{c}{(\textit{Editors, Revised$^5$ Report on the
+\multicolumn{4}{c}{(\textit{Editors, Revised\hspace{1pt}$^5$ Report on the
     Algorithmic Language Scheme})} \\
 \multicolumn{4}{c}{\bf \rnrsrevisiondate}
 \end{tabular}
@@ -56,13 +56,13 @@ $$
 
 {\parskip 1ex
 This document describes rationales for some of the design decisions
-behind the \textit{Revised$^6$ Report on the Algorithmic Language
+behind the \textit{Revised\hspace{1pt}$^6$ Report on the Algorithmic Language
   Scheme}.  The focus is on changes made since the last revision on
 the report.  Moreover, numerous fundamental design decisions of Scheme
-are also explained.  This report also contains some historical notes.
+are explained.  This report also contains some historical notes.
 The formal comments submitted for drafts of the report and their
-responses, as archived on \url{http://www.r6rs.org/} provides more
-valuable background information on many decisions that are reflected
+responses, as archived on \url{http://www.r6rs.org/} provides additional
+background information on many decisions that are reflected
 in the report.
 
 Note that this document rationale is not intended to be an exhaustive
@@ -74,10 +74,10 @@ decisions.  As such, the arguments given here may not be convincing to
 every reader, but they convinced the editors at the time the
 respective decisions were made.
 
-This document frequently refers back to the \textit{Revised$^6$ Report
+This document frequently refers back to the \textit{Revised\hspace{1pt}$^6$ Report
   on the Algorithmic Language Scheme}~\cite{R6RS}, the
-\textit{Revised$^6$ Report on the Algorithmic Language Scheme ---
-  Libraries ---}~\cite{R6RS-libraries}, and the \textit{Revised$^6$
+\textit{Revised\hspace{1pt}$^6$ Report on the Algorithmic Language Scheme ---
+  Libraries ---}~\cite{R6RS-libraries}, and the \textit{Revised\hspace{1pt}$^6$
   Report on the Algorithmic Language Scheme --- Non-Normative
   Appendices ---}~\cite{R6RS-appendices}; specific references to the
 report are identified by designations such as ``report section'' or
@@ -85,8 +85,8 @@ report are identified by designations such as ``report section'' or
 designations such as ``library section'' or ``library chapter'', and
 references to the appendices are identified by designations such as
 ``appendix'' or ``appendix section''.  This document frequently refers
-to the whole \textit{Revised$^6$ Report on the Algorithmic Language
-  Scheme} as ``\rn{6}'', and to the \textit{Revised$^5$ Report
+to the whole \textit{Revised\hspace{1pt}$^6$ Report on the Algorithmic Language
+  Scheme} as ``\rn{6}'', and to the \textit{Revised\hspace{1pt}$^5$ Report
   on the Algorithmic Language Scheme} as ``\rn{5}''.
 }
 
@@ -125,7 +125,7 @@ ratification process of the report.
 
 \chapter{Historical background}
 
-The \textit{Revised$^6$ Report on the Algorithmic Language Scheme}
+The \textit{Revised\hspace{1pt}$^6$ Report on the Algorithmic Language Scheme}
 (\rn{6} for short) is the sixth of the Revised Reports on Scheme.
 
 \vest The first description of Scheme was written by Gerald Jay
@@ -170,7 +170,8 @@ editorial committees for producing new revisions for the report, was
 confirmed by the attendees of the Scheme Workshop in Boston in
 November 2003.  Subsequently, a Steering Committee according to the
 charter was selected, consisting of Alan Bawden, Guy L.\ Steele Jr.,
-and Mitch Wand.  An editors' committee charged with producing this report was
+and Mitch Wand.  An editors' committee charged with producing a new
+revision of the report was
 also formed at the end of 2003, consisting of Will Clinger,
 R.\ Kent Dybvig, Marc Feeley, Matthew Flatt, Richard Kelsey, Manuel
 Serrano, and Mike Sperber, with Marc Feeley acting as Editor-in-Chief.
@@ -215,7 +216,7 @@ Infinities and NaNs are artifacts that help deal with the
 inexactness of binary floating-point arithmetic.  The semantics
 dealing with infinities and NaNs, or the circumstances leading to
 their generation are somewhat arbitrary.  However, as most Scheme
-implementation use an IEEE~754-conformant implementation~\cite{IEEE}
+implementation use an IEEE-754-conformant implementation~\cite{IEEE}
 of flonums, \rn{6} uses the particular semantics from this standard as
 the basis for the treatment of infinities and NaNs in the report.
 This is also the reason why infinities and NaNs are flonums and thus
@@ -277,7 +278,7 @@ The change from case-insensitive syntax in \rn{5} to case-sensitive
 syntax is a major change.  Many technical arguments exist in favor of
 both case sensitivity and case insensitivity, and any attempt to list
 them all here would be incomplete.  
-Switching to case sensitivity will break backwards compatibility, and
+Switching to case sensitivity breaks backwards compatibility, and
 might set a precedent for switching a technically more or less
 arbitrary decision again in the future.
 
@@ -289,7 +290,7 @@ the change.  This perception has been strengthened by polls at the
 
 The directives described in
 appendix~\extref{app:caseinsensitivityappendix}{Optional case
-  insensitivity} allow specifying that a code portion (or other
+  insensitivity} allow specifying that a section of the code (or other
 syntactic data) was written under the old assumption of
 case-insensitivity and therefore must be case-folded upon reading.
 
@@ -328,8 +329,8 @@ addition to the language.
 The rationale for {\cf\sharpsign;} is not as readily apparent: It
 automatically comments out a single datum, the basic unit of Scheme
 syntax, something that the other comment mechanisms cannot do.  {\cf
-  \sharpsign\verticalbar} \ldots {\cf \verticalbar\sharpsign} cannot
-generally be used to comment out an arbitrary datum or set of data.
+  \sharpsign\verticalbar} \ldots {\cf \verticalbar\sharpsign} as such
+cannot comment out an arbitrary datum.
 Moreover, while {\cf\sharpsign;} is probably most useful during
 development and debugging, it is still useful to have a standard
 notation for commenting out a datum, particularly since programmers
@@ -343,7 +344,7 @@ syntactic data: vectors, bytevectors, syntactic abbreviations related
 to quasiquotes and syntax construction, nested comments, characters,
 {\cf\sharpsign!r6rs}, and implementation-specific extensions to the
 syntax that start with {\cf\sharpsign!}.  In each case, the character
-following the {\cf\sharpsign} identifies the class of syntactic datum.
+following the {\cf\sharpsign} specifies what kind of syntactic datum follows.
 In the case of bytevectors, the syntax anticipates several different
 kinds of homogeneous vectors, even though \rn{6} specifies only
 one. The {\cf u8} after the {\cf\sharpsign{}v} identifies the
@@ -387,8 +388,8 @@ an error'': Portable programs could not cause such situations, but
 implementations were free to implement arbitrary behavior under this
 umbrella.  This included ``crashing'' the running program, or
 somehow compromising the integrity of its execution model, resulting
-in random behavior.  This was in sharp contrast to the assumption to
-many users that assumed Scheme was a ``safe'' language where each
+in random behavior.  This was in sharp contrast to the common assumption
+that Scheme was a ``safe'' language where each
 violation of a restriction of the language standard or the
 implementation would at least result in defined behavior, such as
 interrupting or aborting the program and/or starting a debugger.
@@ -467,10 +468,10 @@ corollary requirements:
 \item Composing libraries requires management of dependencies.
 \item Libraries from different sources may have name conflicts.
   Consequently, name-space management is needed.
-\item Macro definitions may be included in portable code.
-  Hence, it should be possible to export macro bindings from libraries, with all
-  the consequences dictated by the referential-transparency property
-  of hygienic macros.
+\item Macro definitions appear in portable code, requiring that macro
+  bindings may be exported from libraries, with all the consequences
+  dictated by the referential-transparency property of hygienic
+  macros.
 \end{itemize}
 %
 The library system does not address the following goals, which were
@@ -484,7 +485,7 @@ considered during the design process:
 \end{itemize}
 %
 This section discusses some aspects of the design of the library
-system that have been controversial:
+system that have been controversial.
 
 \section{Syntax}
 
@@ -499,7 +500,7 @@ technical merits and drawbacks. The single-form syntax chosen for
 A difference between top-level programs and libraries is that a
 program contains only one top-level program but multiple libraries.
 Thus, delimiting the text for a library body will be a
-a common need (in streams of various kinds) that it is worth
+common need (in streams of various kinds) that it is worth
 standardizing the delimiters; parentheses are the obvious choice.
 
 \section{Local import}
@@ -510,8 +511,7 @@ import has several benefits, a drawback of local
 imports is that library dependencies are not readily apparent from a
 library header. This drawback seems significant enough to merit
 longer-term consideration. Since leaving out local import for now does
-not preclude it from being added later, and since the report already
-tackles so many library-related issues, the editors decided to omit
+not preclude it from being added later, the editors decided to omit
 local import from the report.
 
 \section{Local modules}
@@ -699,9 +699,9 @@ terms of others.  Organizing the libraries according to such a
 layering would have meant imposing unnecessary constraints on
 implementations.  Implementations differ in their sets of primitives,
 and thus any layering mandated by the report is unlikely to reflect
-the layering employed by any specific implementation.  (The
+the layering employed by any specific implementation.  The
 distinction between primitive and derived features was removed from
-the report for the same reasons.)
+the report for the same reasons.
 
 \section{Bodies}
 
@@ -715,9 +715,9 @@ rapidly via cut and paste.
 Definitions are not interchangeable with expressions, so definitions
 cannot be allowed to appear wherever expressions can appear, and
 expressions cannot be allowed to appear wherever definitions can
-appear.  Composition of definitions with expressions will therefore be
-restricted in some way; the question is not whether there will be
-restrictions, but what those restrictions will be.
+appear.  Composition of definitions with expressions therefore must be
+restricted in some way.  The question is what those restrictions
+should be.
 
 Historically, top-level definitions in Scheme have had a different
 semantics from definitions in bodies.  In a body, definitions serve as
@@ -734,21 +734,21 @@ surprisingly few places where such a generalization would be useful.
 If such a generalization proposed, were adopted, programmers who are
 familiar with Java and similar languages might expect definitions to
 be allowed in the same kinds of contexts that allow declarations in
-Java.  These programmers would have to be reminded that Scheme's
+Java.  However, Scheme
 definitions have {\cf letrec*} scope, while Java declarations (inside
 a method body) have {\cf let*} scope and cannot be used to define
-recursive procedures; that Scheme's begin expressions do not introduce
-a new scope, while Java's curly braces do introduce a new scope; that
+recursive procedures.  Moreover, Scheme's {\cf begin} expressions do not introduce
+a new scope, while Java's curly braces do introduce a new scope.  Also, 
 flow analysis is nontrivial in higher order languages, while Java can
 use a trivial flow analysis to reject programs with undefined
-variables; that Scheme's macro expander must locate all definitions,
-while Java has no macro system; and so on.  Rather than explain how
+variables.  Furthermore, Scheme's macro expander must locate all definitions,
+while Java has no macro system.   And so on.  Rather than explain how
 those facts justify restricting definitions to appear as top-level
 forms of a body, it is simpler to explain that definitions are just
 syntactic sugar for the bindings of an implicit {\cf letrec*} at the
 head of each body, and to explain that the relaxation of that
 restriction for top-level bodies is (like several other features of
-top-level programs) an ad hoc special case.
+top-level programs) an ad-hoc special case.
 
 \section{Export levels}
 
@@ -802,10 +802,10 @@ Arguably, \rn{6} should require
 (let ((x \hyper{expression})) (eqv? x x))%
 \end{scheme}
 %
-to evaluate to true when \hyper{expression} evaluates to a number object;
+to evaluate to \schtrue{} when \hyper{expression} evaluates to a number object;
 both \rn{5} and \rn{6} imply this for certain other types, and for
-most numbers objects, but not for NaNs.  Since the IEEE-754 and draft
-IEEE-754R~\cite{IEEE754R} both say that the interpretation of a NaN's
+most numbers objects, but not for NaNs.  Since the IEEE~754 and draft
+IEEE~754R~\cite{IEEE754R} both say that the interpretation of a NaN's
 payload is left up to implementations, and implementations of Scheme
 often do not have much control over the implementation of IEEE
 arithmetic, it would be unwise for \rn{6} to insist upon the truth of
@@ -815,7 +815,7 @@ arithmetic, it would be unwise for \rn{6} to insist upon the truth of
   (or (not (number? x))
       (eqv? x x)))%
 \end{scheme}
-even though that expression is likely to evaluate to true in most
+even though that expression is likely to evaluate to \schtrue{} in most
 systems.  For example, a system with delayed boxing of inexact real
 number objects might box the two arguments to {\cf eqv?} separately, the boxing
 process might involve a change of precision, and the two separate
@@ -831,12 +831,12 @@ representations.  \rn{6} should not require this, however, because
   floating-point representation,
 \item the interpretation of a NaN's payload is explicitly
   implementation-dependent according to both the IEEE-754 standard and
-  the current draft of its proposed replacement, IEEE-754R, and
+  the current draft of its proposed replacement, IEEE~754R, and
 \item the semantics of Scheme should remain independent
   of bit-level representations.
 \end{enumerate}
 %
-For example, IEEE-754, IEEE-754R, and the draft \rn{6} all allow the
+For example, IEEE~754, IEEE~754R, and the draft \rn{6} all allow the
 external representation {\cf +nan.0} to be read as a NaN whose payload
 encodes the input port and position at which {\cf +nan.0} was read.
 This is no different from any other external representation such as
@@ -873,7 +873,7 @@ full numerical tower.
 
 As mentioned in chapter~\ref{numberschapter}, the treatment of
 infinities, NaNs and -0.0, if present in a Scheme implementation, are
-in line with IEEE-754~\cite{IEEE} and IEEE-754R~\cite{IEEE754R}.
+in line with IEEE~754~\cite{IEEE} and IEEE~754R~\cite{IEEE754R}.
 Analogously, the specification of branch cuts for certain
 transcendental functions have been changed from \rn{5} to conform to
 the IEEE standard.
@@ -893,7 +893,7 @@ all objects.  However, \rn{6} restricts them to real number objects.
 Expanding {\cf nan?} to complex number objects would involve at least some
 arbitrariness; not expanding its domain while expanding the domains of
 the other two would introduce an irregularity into the domains of
-these three procedures, which are likely to be used together; it is
+these three procedures, which are likely to be used together.  It is
 easier for programmers who wish to use these procedures with complex
 number objects to express their intent in terms of the real-only versions
 than it would be for the editors to guess their intent.
@@ -937,7 +937,7 @@ rational number objects are closed under the rational operations, which consist 
 the integral operations plus division (although division by zero is a special
 case).  The real number objects (and inexact real number objects) are closed
 under some (often inexact) interpretation of rational and irrational
-operations such as exp and sin, but are not closed under operations
+operations such as {\cf exp} and {\cf sin}, but are not closed under operations
 such as {\cf log}, {\cf sqrt}, and {\cf expt}.  The complex (and
 inexact complex) number objects are closed under the largest set of
 operations.
@@ -946,7 +946,7 @@ operations.
 
 A naive implementation of Scheme's arithmetic operations is slow
 compared to the arithmetic operations of most other languages, mainly
-because most operations must perform some sort of case dispatch on the
+because most operations must perform case dispatch on the
 representation types of their arguments.  The potential for this case
 dispatch arises when the type of an operation's argument is
 represented by a union of two or more representation types, or because
@@ -959,7 +959,7 @@ provide sets of operations whose domain is restricted to a single
 representation type, and which are not expected to raise an exception
 when given arguments of incorrect type.
 
-Alternatively, or in addition, several compilers perform some kind of
+Alternatively, or in addition, several compilers perform a
 flow analysis that attempts to infer the representation types of
 expressions.  When a single representation type can be inferred for
 each argument of an operation, and those types match the types
@@ -1021,7 +1021,7 @@ analysis.
   \var{z})} to be true if and only if {\cf (zero? (imag-part
   \var{z}))} is true.  This means, for example, that {\cf -2.5+0.0i}
 is real.  If {\cf -2.5+0.0i} is represented as a compnum, then the
-compiler cannot rely on x being a flonum during the \hyper{real case}
+compiler cannot rely on {\cf x} being a flonum in the consequent
 of {\cf (if (real? x) \hyperi{expression} \hyperii{expression})}.  This
 problem could be fixed by writing all of the arithmetic operations so
 that any compnum with a zero imaginary part is converted to a flonum
@@ -1152,8 +1152,8 @@ awkward.  Choosing UTF-16 as the basis for the string representation
 would have meant that a character object potentially carries no
 semantic information at all, as surrogates have to be combined
 pairwise to yield the corresponding Unicode scalar value.  (As a
-result, the APIs of Java for semantic operations on Unicode text often
-come in two overloadings, one for character objects and one for
+result, Java provides some semantic operations on Unicode text 
+in two overloadings, one for character objects and one for
 integers that are Unicode scalar values.)
 
 The surrogates cover a numerical range deliberately omitted from the
@@ -1185,7 +1185,7 @@ enumerated values are used in C and Pascal.
 
 \section{Control features}
 
-\subsection{{\tt call-with-current-continuation} and {\tt dynamic-wind}}
+\subsection{{\tt call-with-current-continuation}}
 
 \vest A common use of {\cf call-with-current-continuation} is for
 structured, non-local exits from loops or procedure bodies, but in fact
@@ -1195,7 +1195,7 @@ wide variety of advanced control structures.
 Most programming languages incorporate one or more special-purpose
 escape constructs with names like {\tt exit}, \hbox{{\cf return}}, or
 even {\tt goto}.  In 1965, however, Peter Landin~\cite{Landin65}
-invented a general purpose escape operator called the J-operator.  John
+invented a general-purpose escape operator called the J-operator.  John
 Reynolds~\cite{Reynolds72} described a simpler but equally powerful
 construct in 1972.  The {\cf catch} special form described by Sussman
 and Steele in the 1975 report on Scheme is exactly the same as
@@ -1206,6 +1206,8 @@ special syntactic construct, and the name
 {\cf call-with-current-continuation} was coined in 1982.  This name is
 descriptive, but opinions differ on the merits of such a long name, and
 some people use the name \ide{call/cc} instead.
+
+\subsection{{\tt dynamic-wind}}
 
 The {\cf dynamic-wind} procedure was added more recently in \rn{5}.
 It enables implementing a number of abstractions related to
@@ -1244,8 +1246,8 @@ from an expression, which makes constructing interfaces and using them
 easier.
 
 \rn{6} does not specify the semantics of multiple values completely.
-In particular, it does not specify what happens when more than one
-value (or zero values) are returned to a continuation that implicitly
+In particular, it does not specify what happens when several
+(or zero) values are returned to a continuation that implicitly
 accepts only one value.  In particular:
 %
 \begin{scheme}
@@ -1259,7 +1261,7 @@ incompatible positions on this issue exist, each with its own merits:
 %
 \begin{enumerate}
 \item Passing the wrong number of values to a continuation is
-typically an error, one that implementations ideally detect and report.
+typically a violation, one that implementations ideally detect and report.
 
 \item There is no such thing as returning the wrong number of values
   to a continuation.  In particular, continuations not created by {\cf
@@ -1353,10 +1355,10 @@ size.
 Bytevectors can also be used to encode sequences of unboxed number objects.
 However, unencapsulated use of bytevectors for this purpose may lead
 to aliasing, which may reduce the effectiveness of compiler
-optimizations.  However, the records facility provides sealedness and
-opacity, which, together with bytevectors, make it possible to
+optimizations.  However, sealedness and
+opacity of records, together with bytevectors, make it possible to
 construct a portable implementation for new data types that
-provide fast and memory-efficient arrays of homogeneous numerical
+provides fast and memory-efficient arrays of homogeneous numerical
 data.
 
 \chapter{List utilities}
@@ -1397,7 +1399,7 @@ comparison procedure would make calling the sorting procedures less
 convenient, with no discernible performance advantage.
 
 The specification of the {\cf vector-sort!} procedure is meant to
-allow an implementation using quicksort, hence the $O(n^2)$
+allow an implementation using quicksort~\cite{quicksort}, hence the $O(n^2)$
 bound on the number of calls to the comparison procedure, and the
 omission of the stability requirement.
 
@@ -1409,8 +1411,8 @@ The {\cf when} and {\cf unless} forms are syntactic sugar for {\cf if}
 expressions in one arm.  They provide minor convenience, and are
 useful for distinguishing one-armed conditionals from two-armed {\cf
   if} expressions.  Some programmers use {\cf when} and {\cf unless}
-to mark conditionals with side effects, avoid one-armed {\cf if}
-expressions, and use two-armed {\cf if} expressions primarily for
+to mark conditionals with side effects, to avoid one-armed {\cf if}
+expressions, while they use two-armed {\cf if} expressions primarily for
 their values, not their effects.
 
 \section{{\tt case-lambda}}
@@ -1436,8 +1438,8 @@ Moreover, some implementations are able to implement the syntactic
 layer more efficiently than a portable implementation built on top of
 the procedural layer, and thus the syntactic layer facilitates the
 development of efficient portable libraries that define and use record
-types.  The syntactic layer is designed to allow expansion- or
-compile-time determination of record characteristics (at least in the
+types.  The syntactic layer is designed to allow expansion-time
+determination of record characteristics (at least in the
 absence of a {\cf parent-rtd} clause), including field offsets, so
 that, for example, record accesses can be be compiled efficiently to
 simple memory indirects.  This property may be lost if the {\cf
@@ -1446,7 +1448,7 @@ known until run time.
 
 \section{Positional access and field names}
 
-The record and field names passed to {\cf make-record-type-descriptor}
+The record and field names passed to {\cf make-\linebreak[0]record-\linebreak[0]type-\linebreak[0]descriptor}
 and appearing in the syntactic layer are for informational purposes
 only, e.g., for printers and debuggers.  In particular, the accessor
 and mutator creation routines do not use names, but rather field
@@ -1455,9 +1457,12 @@ Thus, field names are not required to be distinct in the procedural or
 syntactic layers.  This relieves macros and other code generators from
 the need to generate distinct names.
 
-The record and field names are used in the syntactic layer for the
-generation of accessor and mutator names, and thus duplicate field names
-may lead to accessor and mutator naming conflicts.
+Moreover, not requiring distinctness prevents naming conflicts that
+occur when a field in a base type is renamed such that it is the same
+as in an extension Also, the record and field names are used in the
+syntactic layer for the generation of accessor and mutator names, and
+thus duplicate field names may lead to accessor and mutator naming
+conflicts.
 
 \section{Lack of multiple inheritance}
 
@@ -1585,11 +1590,11 @@ The file names in most common operating systems, despite their
 appearance in most cases, are not text: For example, Unix uses
 null-terminated byte sequences, and Windows uses null-terminated
 sequences of UTF-16 code units.  On Unix, the textual representation
-of a file name depends on the locale, environmental setting.  In both
+of a file name depends on the locale, an environmental setting.  In both
 cases, a file name may be an invalid encoding and thus not correspond
 to a string.  An appropriate representation for file names that covers
 these cases while still offering convenient access to file-system
-names through strings is still an open research problem.  Therefore,
+names through strings is still an open problem.  Therefore,
 \rn{6} allows specifying file names as strings, but also allows an
 implementation to add its own representation for file names.
 
@@ -1645,7 +1650,7 @@ necessary.
 
 \section{File positions}
 
-Transcoded ports do not always support the {\cf port-position} and
+Transcoded ports do not always support the {\cf port-\linebreak[0]position} and
 {\cf set-port-position!} operations: The position of a transcoded port
 may not be well-defined, and may be hard to calculate even when
 defined, especially when transcoding is buffered.
@@ -1653,7 +1658,7 @@ defined, especially when transcoding is buffered.
 \section{Freshness of standard ports}
 
 The ports returned by {\cf standard-input-port}, {\cf
-  standard-output-port}, and {\cf standard-error-port} are fresh so it
+  standard-\linebreak[0]output-\linebreak[0]port}, and {\cf standard-error-port} are fresh so it
 can be safely closed or converted to a textual port without risking
 the usability of an existing port.
 
@@ -1681,7 +1686,7 @@ old file is no longer useful.
 Standardization of procedures that return or pass to another procedure
 the name of a file is more difficult than standardization of {\cf
   file-exists?} and {\cf delete-file}, because strings are either
-awkward or insufficient to represent file names on some platforms,
+awkward or insufficient for representing file names on some platforms,
 such as Unix and Windows.  See section~\ref{filenamesection}.
 
 \chapter{Arithmetic}
@@ -1714,7 +1719,7 @@ in SRFIs 33~\cite{srfi33} and 60~\cite{srfi60}.
 
 \section{Notes on individual procedures}
 
-\paragraph{{\tt fl+} and {\tt fl*}}
+\paragraph{{\tt fx+} and {\tt fx*}}
 
 These procedures are restricted to two arguments because their
 generalizations to three or more arguments would require
@@ -1740,9 +1745,9 @@ floating-point standard.
 
 While many syntax transformers are succinctly expressed using the
 high-level {\cf syntax-rules} form, others are difficult or impossible
-to write, including some that introduce visible bindings for or references
-to identifiers that do not appear explicitly in the input form, ones that
-maintain state or read from the file system, and ones that construct new
+to write, including transformers that introduce visible bindings for or references
+to identifiers that do not appear explicitly in the input form, transformers that
+maintain state or read from the file system, and transformers that construct new
 identifiers.
 The {\cf syntax-case} system~\cite{syntacticabstraction} 
 allows the programmer to write transformers that perform these sorts of
@@ -1798,9 +1803,9 @@ dealing with such values fosters portable and readable code, much as
 records do for compound values, or multiple values for procedures
 computing several values.  Moreover, representations of sets from a
 finite set of options should offer the standard set operations, as
-they tend to occur in practice.  (One such set operation is the
+they tend to occur in practice.  One such set operation is the
 complement, which makes lists of symbols a less than suitable
-representation.)
+representation.
 
 Different Scheme implementations have taken different approaches to
 this problem in the past, which suggests that a default policy does
