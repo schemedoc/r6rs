@@ -66,12 +66,12 @@ responses, as archived on \url{http://www.r6rs.org/}, provides additional
 background information on many decisions that are reflected
 in the report.
 
-Note that this document rationale is not intended to be an exhaustive
+This document is not intended to be an exhaustive
 justification for every decision and design aspect of the report.
-Instead, it provides information about some of the arguments
+Instead, it provides information about some of the issues
 considered by the editors' committee when decisions were made, as
-background information and as guidelines for future makers of
-decisions.  As such, the arguments given here may not be convincing to
+background information and as guidelines for future decision makers.
+As such, the rationales given here may not be convincing to
 every reader, but they convinced the editors at the time the
 respective decisions were made.
 
@@ -167,7 +167,7 @@ Attendees of the Scheme Workshop in Pittsburgh in October 2002 formed
 a Strategy Committee to discuss a process for producing new revisions
 of the report.  The strategy committee drafted a charter for Scheme
 standardization.  This charter, together with a process for selecting
-editorial committees for producing new revisions for the report, was
+editorial committees for producing new revisions of the report, was
 confirmed by the attendees of the Scheme Workshop in Boston in
 November 2003.  Subsequently, a Steering Committee according to the
 charter was selected, consisting of Alan Bawden, Guy L.\ Steele Jr.,
@@ -227,6 +227,20 @@ floating-point representation.  See
 section~\ref{closurepropertiessection} for details on closure
 properties.
 
+Infinities and NaNs are not considered integers (or even rational) by
+\rn{6}.
+Despite this, the {\tt ceiling}, {\tt floor}, {\tt round}, and
+{\tt truncate} procedures (and their {\tt fl}-prefixed counterparts) return an
+infinity or NaN when given an infinity or NaN as an argument.
+This has the advantage of allowing these procedures to take arbitrary
+real (or flonum) arguments but the disadvantage that they do not always
+return integer values.
+We observe that the integer values of the mathematical equivalents of
+these procedures are, in fact, infinite for infinite inputs, and
+that while infinities are not considered integers, they might represent
+infinite integers, so the extension to infinities, at least, makes sense.
+The extension to NaNs is somewhat more arbitrary.
+
 \rn{6} intentionally does not require a Scheme implementation to use
 infinities and NaNs as specified in IEEE~754.  Hence, support for them
 is optional.
@@ -251,15 +265,15 @@ allow each symbol to be written out using {\cf put-datum} (section
 (section~\extref{lib:write}{Simple I/O}), and
 read back in using {\cf get-datum} (section
 \extref{lib:get-datum}{Textual input}) or
-{\cf read} (section \extref{lib:read}{Simple I/O})), yielding the same symbol.  This
+{\cf read} (section \extref{lib:read}{Simple I/O}), yielding the same symbol.  This
 was not the case in \rrs{5}, as symbols could contain arbitrary
 characters such as spaces which could not be part of their external
-representation.  Moreover, symbols could distinguish case, whereas
-their external representation could not.
+representation.  Moreover, symbols could be distinguish internally by
+case, whereas their external representation could not.
 
 For representing unusual characters in the symbol syntax, the report
-provides the {\cf\backwhack{}x} escape syntax, which allows specifying
-an arbitrary Unicode scalar value.  This also has the advantage that
+provides the {\cf\backwhack{}x} escape syntax, which allows an arbitrary
+Unicode scalar value to be specified.  This also has the advantage that
 arbitrary symbols can be represented using only ASCII, which allows
 referencing them from Scheme programs restricted to ASCII or some
 other subset of Unicode.
@@ -269,7 +283,7 @@ extending the set of characters that can occur in symbols is the
 vertical-bar syntax of Common Lisp.  The vertical-bar syntax of Common
 Lisp carries the risk of confusing the syntax of identifiers with that
 of consecutive lexemes, and also does not allow representing arbitrary
-characters only using ASCII.  Consequently, it was not adopted for
+characters using only ASCII.  Consequently, it was not adopted for
 \rn{6}.
 
 \subsection{Case sensitivity}
@@ -290,9 +304,9 @@ the change.  This perception has been strengthened by polls at the
 2004 Scheme workshop, on the {\cf plt-scheme} mailing list, and the
 {\cf r6rs-discuss} mailing list.
 
-The directives described in
+The suggested directives described in
 appendix~\extref{app:caseinsensitivityappendix}{Optional case
-  insensitivity} allow specifying that a section of the code (or other
+  insensitivity} allow programs to specify that a section of the code (or other
 syntactic data) was written under the old assumption of
 case-insensitivity and therefore must be case-folded upon reading.
 
@@ -309,7 +323,7 @@ starting with {\cf ->}.  (Many readers would classify any lexeme as an
 identifier starting with {\cf -} for which {\cf string->number}
 returns \schfalse{}.)  As a result, a significant amount of otherwise
 portable Scheme code used identifiers starting with {\cf ->}, which
-are a convenient choice for many names.  Therefore, \rn{6} legalizes
+are a convenient choice for certain names.  Therefore, \rn{6} legalizes
 these identifiers.  The separate production in the grammar is not particularly elegant.
 However, designing a more elegant production that does not overlap with
 representations of number objects or other lexeme classes has proven to be surprisingly
@@ -324,22 +338,28 @@ and {\tt |\#} delimit block comments, and {\cf\sharpsign;} starts a
 ``datum comment''.  ({\cf\sharpsign!r6rs} is also a kind of comment,
 albeit with a specific, fixed purpose.) 
 
-Block comments provide a more convenient way of writing multi-line
+Block comments provide a convenient way of writing multi-line
 comments, and are an often-requested and often-implemented syntactic
 addition to the language. 
 
-The rationale for {\cf\sharpsign;} is not as readily apparent: It is
-guaranteed syntactically to comment out a single datum---no more, and
-no less. Arguably, {\cf\sharpsign;} is most useful during development
-and debugging; even so, programmers sometimes develop and debug a
-single piece of code concurrently on multiple systems, in which case a
-standard notation for commenting out a datum is useful.
+A datum comment always comments out a single datum---no more, and no less,
+something the other comment forms cannot reliably do.
+They are useful for commenting out alternative versions of a form
+(say one that is more clear but less efficient) or to include
+forms that may be required, say, only if some future extension is
+made.
+Datum comments are perhaps most useful during development and debugging
+and may thus be less likely to appear in the final version of a
+distributed library or top-level program; even so, a programmer or group
+of programmers sometimes develop and debug a single piece of code
+concurrently on multiple systems, in which case a standard notation for
+commenting out a datum is useful.
 
 \section{Future extensions}
 
 The {\cf\sharpsign} is the prefix of several different kinds of
-syntactic data: vectors, bytevectors, syntactic abbreviations related
-to quasiquotes and syntax construction, nested comments, characters,
+syntactic entities: vectors, bytevectors, syntactic abbreviations related
+to syntax construction, nested comments, characters,
 {\cf\sharpsign!r6rs}, and implementation-specific extensions to the
 syntax that start with {\cf\sharpsign!}.  In each case, the character
 following the {\cf\sharpsign} specifies what kind of syntactic datum follows.
@@ -503,43 +523,40 @@ standardizing the delimiters; parentheses are the obvious choice.
 
 \section{Local import}
 
-Some Scheme implementations feature module systems that allow
-importing a module's bindings into a local environment.  While local
-import has several benefits, a drawback of local
-imports is that library dependencies are not readily apparent from a
-library header. This drawback seems significant enough to merit
-longer-term consideration. Since leaving out local import for now does
-not preclude it from being added later, the editors decided to omit
-local import from the report.
+Some Scheme implementations feature module systems that allow importing a
+module's bindings into a local environment. 
+While local imports can be used to limit the scope of an import and thus
+leads to more modular code (and less need for the prefixing and renaming
+of imports), the existence of local imports would mean that a library's
+dependencies are not readily apparent from a library header, which some of
+the editors feel is important.
+
+Leaving out local import for now does not preclude it from being added
+later.
 
 \section{Local modules}
 
-Some Scheme implementations feature module systems that allow defining
-``local modules'' in a local environment rather than only at the
-library level.  Specifically, this enables syntactic abstraction over
-modules.  Local modules are useful, but also complicate
-the scoping rules of the language: Whereas the library system only
-allows transporting bindings from one library top level to another,
-local modules allow transporting bindings into local scopes, with
-far-reaching consequences for the rules that may be used to determine
-scoping, particularly in the absence of {\cf syntax-case}.
+Some Scheme implementations feature local libraries and/or modules, e.g.,
+libraries or modules that appear within top-level libraries or within
+local bodies.
+This feature allows libraries and top-level programs to be further
+subdivided into modular subcomponents, but it also complicates the scoping
+rules of the language.
+Whereas the library system allows bindings to be transported only from one
+library top level to another, local modules allow bindings to be
+transported from one local scope to another, which complicates the rules
+for determining where identifiers are bound.
 
-Moreover it is debatable whether a top-level library should
-be the same construct as a local module. The job of the library
-system is to organize the top-level namespace, and not to serve as a
-target for expansion of sophisticated macros. Of course, the broader
-roles and syntactic similarity of {\cf module} and {\cf library}
-suggest merging the concepts, but merging the concepts further
-broadens the role of each.  Such generalization may seem intuitively
-right to Scheme programmers, but all attempts by the editors at such
-broadening led away from consensus rather than toward it.
+Leaving out local libraries and modules for now does
+not preclude them from being added later.
 
 \section{Fixed {\tt import} and {\tt export} clauses}
 
 The {\cf import} and {\cf export} clauses of the {\cf library} form
-are fixed---they cannot be the result of macro expansion.  Just as
-with local import, this decision reflects the desire to make library
-dependencies readily apparent from the library header.
+are fixed---they cannot be the result of macro expansion.  As with
+the decision to omit local import, this reflects the desire of some
+editors to make library dependencies readily apparent from the library
+header.
 
 \section{Instantiation and initialization}
 
@@ -596,15 +613,15 @@ library system.
 
 \section{Treatment of different versions}
 
-Libraries with the same name but different versions cannot coexist
-within the same program.  This prevents combining libraries and
-programs that require conflicting versions of the same library.  An
-alternative choice would have been to allow the co-existence of
-different versions of the same library.  Based on experience with
-other shared-library systems (including Windows DLLs and Unix shared
-objects), the potential for confusion created by multiple library
-instances seems too great.  Therefore, the reports recommends against
-multiple instances of a library.
+Implementations are encouraged to prohibit two
+libraries with the same name but different versions to coexist
+within the same program.
+While this prevents the combination of libraries and
+programs that require different versions of the same library,
+it eliminates the potential for having multiple copies of a
+library's state, thus avoiding problems experienced with
+other shared-library mechanisms,
+including Windows DLLs and Unix shared objects.
 
 \chapter{Top-level programs}
 
@@ -621,13 +638,13 @@ Moreover, \rn{5}'s {\cf load} procedure does say how to load source
 code into the running system; the pragmatics of {\cf load} would
 often make compiling programs before execution problematic, in
 particular with regard to macros.  Furthermore, Scheme implementations
-handle treatment of and recovery from errors in wildly different ways.
+handle treatment of and recovery from errors in different ways.
 
 Tightening the specification of programs from \rn{5} would have been
 possible, but could have restricted the design employed by Scheme
 implementations in undesirable ways.  Moreover, alternative approaches
 to structuring the user interface of a Scheme implementation have
-emerged since \rn{5}.  Consequently, \rn{6} makes no attempt of trying
+emerged since \rn{5}.  Consequently, \rn{6} makes no attempt at trying
 to specify the semantics of programs as in \rn{5}; the design of an
 interactive environment is now completely in the hands of the
 implementors.  On the other hand, being able to distribute portable
@@ -636,7 +653,7 @@ notion of top-level program was added to the report.
 
 By allowing the interleaving of definitions and expressions, top-level 
 programs support exploratory and interactive development, without 
-imposing unnecessary organizational overhead on code which may not be 
+imposing unnecessary organizational overhead on code that might not be 
 intended for reuse.
 
 \chapter{Primitive syntax}
@@ -646,7 +663,7 @@ intended for reuse.
 The order in which the subexpressions of an application are evaluated
 is unspecified, as is the order in which certain subexpressions of
 some other forms such as {\cf letrec} are evaluated.  While this
-causes occasional problems, it encourages programmers to write
+causes occasional confusion, it encourages programmers to write
 programs that do not depend on a specific evaluation order, and thus
 may be easier to read.  Moreover, it allows the programmer to express
 that the evaluation order really does not matter for the result.  A
@@ -697,15 +714,15 @@ hygiene-breaking transformers are only available through the
 Note that \rsixlibrary{base} is not a ``primitive library'' in the
 sense that all other libraries of the Scheme standard can be
 implemented portably using only its exports.  Moreover, the library
-organization is not layered from more primitive to more advanced
+organization is generally not layered from more primitive to more advanced
 libraries, even though some libraries can certainly be implemented in
-terms of others.  Organizing the libraries according to such a
-layering would have meant imposing unnecessary constraints on
-implementations.  Implementations differ in their sets of primitives,
-and thus any layering mandated by the report is unlikely to reflect
-the layering employed by any specific implementation.  The
-distinction between primitive and derived features was removed from
-the report for the same reasons.
+terms of others.
+Such an organization would have little benefit for users and may not
+reflect the internal organization of any particular implementation.
+Instead, libraries are organized by use.
+
+The distinction between primitive and derived features was removed from
+the report for similar reasons.
 
 \section{Bodies}
 
@@ -717,9 +734,8 @@ allowed as a concession to convenience when constructing programs
 rapidly via cut and paste.
 
 Definitions are not interchangeable with expressions, so definitions
-cannot be allowed to appear wherever expressions can appear, and
-expressions cannot be allowed to appear wherever definitions can
-appear.  Composition of definitions with expressions therefore must be
+cannot be allowed to appear wherever expressions can appear.
+Composition of definitions with expressions therefore must be
 restricted in some way.  The question is what those restrictions
 should be.
 
@@ -910,26 +926,20 @@ Cartesian product of the exactness types with the tower types, where
 $\left< t_1, t_2 \right>$; is regarded as a subtype of both $t_1$ and
 $t_2$.
 
-These types have an aesthetic symmetry to them, but they are not
-equally important.  Judging by the number of \rn{5} procedures whose
-domain is restricted to values of some numerical type, the most
-important numerical types are the exact integer objects, the integer objects, the
-rational number objects, the real number objects, and the complex
-number objects.
-
-Many programmers and implementors regard the focus of \rn{5} on those
-particular numerical types as something of a mistake.  In practice,
+These types have an aesthetic symmetry to them, but they are not equally
+important
+In practice,
 there is reason to believe that the most important numerical types are
 the exact integer objects, the exact rational number objects, the
 inexact real number objects, and the
 inexact complex number objects.  This section explores one of the reasons
-those four types are so important in practice, and why real number objects have an
+those four types are important in practice, and why real number objects have an
 exact zero as their imaginary part in \rn{6} (a change from \rn{5}).
 
 \subsection{Closure Properties}
 \label{closurepropertiessection}
 
-Scheme's types are not completely arbitrary.  Each type corresponds to
+Each of the four types mentioned above corresponds to
 a set of values that turns up repeatedly as the natural domain or
 range of the functions that are computed by Scheme's standard
 procedures.  The reason these types turn up so often is that they are
@@ -961,7 +971,7 @@ case of the first.)
 To make Scheme's arithmetic more efficient, many implementations
 provide sets of operations whose domain is restricted to a single
 representation type, and which are not expected to raise an exception
-when given arguments of incorrect type.
+when given arguments of incorrect type when used in an unsafe mode.
 
 Alternatively, or in addition, several compilers perform a
 flow analysis that attempts to infer the representation types of
@@ -982,10 +992,10 @@ constraints that arise from such things as:
   that is known to be within the interval $[2,2]$
   
 \item conditional control flow that is predicated on known
-  inequalities, e.g. {\cf (if (< i n) \hyperi{expression} \hyperii{expression})}
+  inequalities, e.g., {\cf (if (< i n) \hyperi{expression} \hyperii{expression})}
   
 \item conditional control flow that is predicated on known type
-  predicates, e.g. {\cf (if (real? x) \hyperi{expression} \hyperii{expression})}
+  predicates, e.g., {\cf (if (real? x) \hyperi{expression} \hyperii{expression})}
   
 \item the closure properties of known operations (for example, {\cf (+
     \vari{flonum} \varii{flonum})} always evaluates to a flonum)
@@ -1006,8 +1016,8 @@ representation type cannot be inferred.
 
 The fixnum representation type is not closed under any operation of
 \rn{5}, so it is hard for flow analysis to infer the fixnum type from
-portable code.  Sometimes the combination of a more general type (e.g.
-exact integer object) and an interval (e.g.  $[0,n)$, where $n$ is known to
+portable code.  Sometimes the combination of a more general type (e.g.,
+exact integer object) and an interval (e.g., $[0,n)$, where $n$ is known to
 be a fixnum) can imply the fixnum representation type.  Adding
 fixnum-specific operations that map fixnums to fixnums 
 greatly increases the number of fixnum
@@ -1070,7 +1080,7 @@ structure of the integers over to the residues modulo 3.
 \end{scheme}
 %
 In fact, {\cf modulo} should have been used, producing residues in
-$\{0,1,2\}$. For modular reduction with symmetric residues, i.e. in
+$\{0,1,2\}$. For modular reduction with symmetric residues, i.e., in
 $\{-1,0,1\}$ in the example, it is necessary to define a more
 complicated reduction altogether.
 
@@ -1411,13 +1421,13 @@ omission of the stability requirement.
 
 \section{{\tt when} and {\tt unless}}
 
-The {\cf when} and {\cf unless} forms are syntactic sugar for {\cf if}
-expressions in one arm.  They provide minor convenience, and are
-useful for distinguishing one-armed conditionals from two-armed {\cf
-  if} expressions.  Some programmers use {\cf when} and {\cf unless}
-to mark conditionals with side effects, to avoid one-armed {\cf if}
-expressions, while they use two-armed {\cf if} expressions primarily for
-their values, not their effects.
+The {\cf when} and {\cf unless} forms are syntactic sugar for one-armed
+{\cf if} expressions.
+Because each incorporates an implicit {\cf begin}, they are sometimes more
+convenient than one-armed {\cf if}.
+Some programmers always use {\cf when} and {\cf unless} in lieu of
+one-armed {\cf if} to make clear when a one-armed conditional is being
+used.
 
 \section{{\tt case-lambda}}
 
@@ -1434,21 +1444,19 @@ deconstructs argument lists.
 
 \section{Syntactic layer}
 
-While the syntactic layer could be expressed portably in terms of the
+While the syntactic layer can be expressed portably in terms of the
 procedural layer, standardizing a particular surface syntax
 facilitates communication via code.
 
-Moreover, some implementations are able to implement the syntactic
-layer more efficiently than a portable implementation built on top of
-the procedural layer, and thus the syntactic layer facilitates the
-development of efficient portable libraries that define and use record
-types.  The syntactic layer is designed to allow expansion-time
-determination of record characteristics (at least in the
-absence of a {\cf parent-rtd} clause), including field offsets, so
-that, for example, record accesses can be be compiled efficiently to
-simple memory indirects.  This property may be lost if the {\cf
-  parent-rtd} clause is present, and the parent is thus not generally
-known until run time.
+Moreover, the syntactic layer is designed to allow expansion-time
+determination of record characteristics, including field offsets, so that,
+for example, record accesses can be reduced to simple memory indirects
+without flow analyses or any other nontrivial compiler support. 
+(This property may be lost if the {\cf parent-rtd} clause is present, and
+the parent is thus not generally known until run time.)
+Thus, the syntactic layer facilitates the development of efficient
+portable libraries that define and use record types and can serve as a
+basis for other syntactic record definition constructs. 
 
 \section{Positional access and field names}
 
@@ -1499,18 +1507,21 @@ barriers, which is useful in itself, but also allows more efficient
 compilation.
 
 In particular, when the implementor of an abstract data type chooses
-to represent that ADT by a record type, and allows one of the classes
-that represent the ADT to be exposed and subclassed, then the ADT is
+to represent that ADT by a record type, and allows one of the record types
+that represent the ADT to be exposed and extended, then the ADT is
 no longer abstract.  Its implementors must expose enough information
 to allow for effective subtyping, and must commit to enough of the
-representation to allow those subclasses to continue to work even as
+representation to allow those subtypes to continue to work even as
 the ADT evolves.
 
-In practice, the ADT cannot evolve freely over time.  Its
-representation cannot be changed without breaking most of its
-subclasses.  This kind of brittleness is often problematic in
-large programs.  Sealedness allows the construction of record types
-that evolve more gracefully over time.
+A partial solution is to maintain independence of the child record type
+from the specific fields of the parent, particularly by specifying a
+record constructor descriptor for the parent type that is independent of
+its specific fields.
+When this is deemed to be insufficient, the record type can be sealed,
+thereby preventing the ADT from being subtyped.
+(This does not completely eliminate the problem, however, since the ADT
+may be extended implicitly, i.e., used as a delegate for some other type.)
 
 Moreover, making a record type sealed may prevent its accessors and
 mutators from becoming polymorphic, which would make effective flow analysis and
@@ -1748,7 +1759,8 @@ floating-point standard.
 \chapter{{\tt syntax-case}}
 
 While many syntax transformers are succinctly expressed using the
-high-level {\cf syntax-rules} form, others are difficult or impossible
+high-level {\cf syntax-rules} form, others cannot be succinctly expressed.
+Still others are impossible
 to write, including transformers that introduce visible bindings for or references
 to identifiers that do not appear explicitly in the input form, transformers that
 maintain state or read from the file system, and transformers that construct new
@@ -1760,14 +1772,6 @@ sacrificing the default enforcement of hygiene or the high-level
 pattern-based syntax matching and template-based output construction
 provided by {\cf syntax-rules} (report
 section~\extref{report:syntax-rules}{Macro transformers}).
-
-Because {\cf syntax-case} does not require literals, including quoted
-lists or vectors, to be copied or even traversed, it may be able to preserve sharing
-and cycles within and among the constants of a program.  It also
-allows source-object correlation, i.e., the maintenance of ties
-between the original source code and expanded output, allowing
-implementations to provide source-level support for debuggers and
-other tools.
 
 \chapter{Hashtables}
 
@@ -1835,7 +1839,7 @@ The \thersixlibrary{} library does not include a few select libraries:
   optimizations, and as mutable pairs might be deprecated in the future;
 \item \rsixlibrary{mutable-strings}, for similar reasons as for
   \rsixlibrary{mutable-pairs};
-\item \rsixlibrary{r5rs}, as its use is deprecated.
+\item \rsixlibrary{r5rs}, as its features are deprecated.
 \end{itemize}
 
 \chapter{Mutable pairs}
