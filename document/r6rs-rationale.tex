@@ -1224,9 +1224,9 @@ guarantee that
 (dynamic-wind \var{before} \var{thunk} \var{after})%
 \end{scheme}
 %
-cannot return unless both \var{before} and \var{after} have been
-evaluated, in that order.  They might be evaluated several times, but
-always in that order, and these evaluations are never nested.  As this
+cannot call \var{thunk} unless \var{before} has been called, and it
+cannot leave the dynamic extent of the call to \var{thunk} without
+calling \var{after}. These evaluations are never nested.  As this
 guarantee is crucial for enabling many of the uses of {\cf
   call-with-current-continuation} and {\cf dynamic-wind}, both are
 specified jointly.
