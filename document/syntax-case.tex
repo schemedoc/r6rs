@@ -474,7 +474,7 @@ prefix instead of the full {\cf syntax} form.
       [(\_ e) \#'e]
       [(\_ e1 e2 e3 ...)
        \#'(let ([t e1])
-           (if t t (or e2 e3 ...)))])))
+           (if t t (or e2 e3 ...)))])))%
 \end{schemenoindent}
 
 The examples below define \emph{identifier macros\mainindex{identifier
@@ -608,7 +608,7 @@ uses {\cf bound-identifier=?} to detect duplicate identifiers.
     (syntax-case x ()
       [(\_ ((i v) ...) e1 e2 ...)
        (unique-ids? \#'(i ...))
-       \#'((lambda (i ...) e1 e2 ...) v ...)])))
+       \#'((lambda (i ...) e1 e2 ...) v ...)])))%
 \end{schemenoindent}
 
 The argument {\cf \#'(i ...)} to {\cf unique-ids?} is guaranteed
@@ -661,7 +661,7 @@ this version explicitly tests for {\cf else} using
            (cond
              [(memv t '(ka ...)) e1a e2a ...]
              [(memv t '(kb ...)) e1b e2b ...]
-             ...))])))
+             ...))])))%
 \end{schemenoindent}
 
 With either definition of {\cf case}, {\cf else} is not
@@ -868,7 +868,7 @@ derived forms} is shown below.
          \#'(let ((i <undefined>) ...)
              (let ((t e) ...)
                (set! i t) ...
-               (let () b1 b2 ...))))))))
+               (let () b1 b2 ...))))))))%
 \end{schemenoindent}
 
 This version uses {\cf generate-temporaries} instead of recursively defined
@@ -939,7 +939,7 @@ one-armed {\cf if} expressions where appropriate.
                 [(e0 e1 e2 ...)
                  \#'(if e0 
                         (begin e1 e2 ...)
-                        rest)]))]))])))
+                        rest)]))]))])))%
 \end{schemenoindent}
 \end{entry}
 
@@ -1001,7 +1001,7 @@ as follows.
                       \#`(if (memv t '(k ...))
                             (begin e1 e2 ...)
                             \#,(f (car cmore)
-                                  (cdr cmore)))]))))])))
+                                  (cdr cmore)))]))))])))%
 \end{schemenoindent}
                           
 Uses of {\cf unsyntax} and {\cf unsyntax-splicing} with zero or more than
@@ -1064,7 +1064,7 @@ follows.
          (syntax-case x (set!)
            [(set! var val) \#'exp2]
            [(id x (... ...)) \#'(exp1 x (... ...))]
-           [id (identifier? \#'id) \#'exp1])))]))
+           [id (identifier? \#'id) \#'exp1])))]))%
 \end{schemenoindent}
 \end{note}
 
