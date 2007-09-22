@@ -229,13 +229,13 @@ properties.
 
 Infinities and NaNs are not considered integers (or even rational) by
 \rn{6}.
-Despite this, the {\tt ceiling}, {\tt floor}, {\tt round}, and
-{\tt truncate} procedures (and their {\tt fl}-prefixed counterparts) return an
+Despite this, the {\cf ceiling}, {\cf floor}, {\cf round}, and
+{\cf truncate} procedures (and their {\cf fl}-prefixed counterparts) return an
 infinity or NaN when given an infinity or NaN as an argument.
 This has the advantage of allowing these procedures to take arbitrary
 real (or flonum) arguments but the disadvantage that they do not always
 return integer values.
-We observe that the integer values of the mathematical equivalents of
+The integer values of the mathematical equivalents of
 these procedures are, in fact, infinite for infinite inputs, and
 that while infinities are not considered integers, they might represent
 infinite integers, so the extension to infinities, at least, makes sense.
@@ -268,7 +268,7 @@ read back in using {\cf get-datum} (section
 {\cf read} (section \extref{lib:read}{Simple I/O}), yielding the same symbol.  This
 was not the case in \rrs{5}, as symbols could contain arbitrary
 characters such as spaces which could not be part of their external
-representation.  Moreover, symbols could be distinguish internally by
+representation.  Moreover, symbols could be distinguished internally by
 case, whereas their external representation could not.
 
 For representing unusual characters in the symbol syntax, the report
@@ -333,8 +333,8 @@ difficult.
 \section{Comments}
 
 While \rn{5} provides only the {\cf;} syntax for comments, the report
-now describes three comment forms: In addition to {\cf;}, {\tt \#|}
-and {\tt |\#} delimit block comments, and {\cf\sharpsign;} starts a
+now describes three comment forms: In addition to {\cf;}, {\cf \#|}
+and {\cf |\#} delimit block comments, and {\cf\sharpsign;} starts a
 ``datum comment''.  ({\cf\sharpsign!r6rs} is also a kind of comment,
 albeit with a specific, fixed purpose.) 
 
@@ -345,8 +345,8 @@ addition to the language.
 A datum comment always comments out a single datum---no more, and no less,
 something the other comment forms cannot reliably do.
 They are useful for commenting out alternative versions of a form
-(say one that is more clear but less efficient) or to include
-forms that may be required, say, only if some future extension is
+or to include
+forms that may be required only if some future extension is
 made.
 Datum comments are perhaps most useful during development and debugging
 and may thus be less likely to appear in the final version of a
@@ -526,11 +526,9 @@ standardizing the delimiters; parentheses are the obvious choice.
 Some Scheme implementations feature module systems that allow importing a
 module's bindings into a local environment. 
 While local imports can be used to limit the scope of an import and thus
-leads to more modular code (and less need for the prefixing and renaming
+may lead to more modular code (and less need for the prefixing and renaming
 of imports), the existence of local imports would mean that a library's
-dependencies are not readily apparent from a library header, which some of
-the editors feel is important.
-
+dependencies are not readily apparent from a library header.
 Leaving out local import for now does not preclude it from being added
 later.
 
@@ -546,7 +544,6 @@ Whereas the library system allows bindings to be transported only from one
 library top level to another, local modules allow bindings to be
 transported from one local scope to another, which complicates the rules
 for determining where identifiers are bound.
-
 Leaving out local libraries and modules for now does
 not preclude them from being added later.
 
@@ -554,8 +551,8 @@ not preclude them from being added later.
 
 The {\cf import} and {\cf export} clauses of the {\cf library} form
 are fixed---they cannot be the result of macro expansion.  As with
-the decision to omit local import, this reflects the desire of some
-editors to make library dependencies readily apparent from the library
+the decision to omit local import, this reflects the desire
+to make library dependencies readily apparent from the library
 header.
 
 \section{Instantiation and initialization}
@@ -1207,8 +1204,8 @@ structured, non-local exits from loops or procedure bodies, but in fact
 wide variety of advanced control structures.
 
 Most programming languages incorporate one or more special-purpose
-escape constructs with names like {\tt exit}, \hbox{{\cf return}}, or
-even {\tt goto}.  In 1965, however, Peter Landin~\cite{Landin65}
+escape constructs with names like {\cf exit}, \hbox{{\cf return}}, or
+even {\cf goto}.  In 1965, however, Peter Landin~\cite{Landin65}
 invented a general-purpose escape operator called the J-operator.  John
 Reynolds~\cite{Reynolds72} described a simpler but equally powerful
 construct in 1972.  The {\cf catch} special form described by Sussman
