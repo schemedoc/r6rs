@@ -589,6 +589,22 @@ The {\cf syntax-case} and {\cf syntax-rules} forms internally use
 {\cf free-identifier=?} to compare identifiers listed in the literals
 list against input identifiers.
 
+\begin{scheme}
+(let ([fred 17])
+  (define-syntax a
+    (lambda (x)
+      (syntax-case x ()
+        [(\_ id) \sharpsign{}'(b id fred)])))
+  (define-syntax b
+    (lambda (x)
+      (syntax-case x ()
+        [(\_ id1 id2)
+         \sharpsign{}`(list
+             \sharpsign{},(free-identifier=? \sharpsign{}'id1 \sharpsign{}'id2)
+             \sharpsign{},(bound-identifier=? \sharpsign{}'id1 \sharpsign{}'id2))])))
+  (a fred)) \ev (\schtrue{} \schfalse{})%
+\end{scheme}
+
 The following definition of unnamed {\cf let}
 uses {\cf bound-identifier=?} to detect duplicate identifiers.
 
