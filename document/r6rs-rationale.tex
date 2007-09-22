@@ -236,9 +236,10 @@ This has the advantage of allowing these procedures to take arbitrary
 real (or flonum) arguments but the disadvantage that they do not always
 return integer values.
 The integer values of the mathematical equivalents of
-these procedures are, in fact, infinite for infinite inputs, and
-that while infinities are not considered integers, they might represent
-infinite integers, so the extension to infinities, at least, makes sense.
+these procedures are, in fact, infinite for infinite inputs.
+Also, while infinities are not considered integers, they might
+represent infinite integers.
+So the extension to infinities, at least, makes sense.
 The extension to NaNs is somewhat more arbitrary.
 
 \rn{6} intentionally does not require a Scheme implementation to use
@@ -344,10 +345,8 @@ addition to the language.
 
 A datum comment always comments out a single datum---no more, and no less,
 something the other comment forms cannot reliably do.
-They are useful for commenting out alternative versions of a form
-or to include
-forms that may be required only if some future extension is
-made.
+Their uses include commenting out alternative versions of a form and
+commenting out forms that may be required only in certain circumstances.
 Datum comments are perhaps most useful during development and debugging
 and may thus be less likely to appear in the final version of a
 distributed library or top-level program; even so, a programmer or group
@@ -522,13 +521,19 @@ common need (in streams of various kinds) that it is worth
 standardizing the delimiters; parentheses are the obvious choice.
 
 \section{Local import}
+\label{localimportsection}
 
-Some Scheme implementations feature module systems that allow importing a
-module's bindings into a local environment. 
-While local imports can be used to limit the scope of an import and thus
-may lead to more modular code (and less need for the prefixing and renaming
-of imports), the existence of local imports would mean that a library's
-dependencies are not readily apparent from a library header.
+Some Scheme implementations feature module systems that allow a
+module's bindings to be imported into a local environment.  While local
+imports can be used to limit the scope of an import and thus lead to more
+modular code and less need for the prefixing and renaming of imports,
+the existence of local imports would mean that the set of libraries upon
+whicn a library depends cannot be approximated as precisely from the
+library header.
+(The actual set cannot be determined even in the absense of local import,
+because a library might be listed but its exports not used, and a library
+not listed might still be imported at run time through the {\cf
+environment} procedure.)
 Leaving out local import for now does not preclude it from being added
 later.
 
@@ -550,10 +555,13 @@ not preclude them from being added later.
 \section{Fixed {\tt import} and {\tt export} clauses}
 
 The {\cf import} and {\cf export} clauses of the {\cf library} form
-are fixed---they cannot be the result of macro expansion.  As with
-the decision to omit local import, this reflects the desire
-to make library dependencies readily apparent from the library
-header.
+are a fixed part of the library syntax.
+This eliminates the need to specify in what language or language
+version the clauses are written and simplifies the process of
+approximating the set of libraries upon which a library depends, as
+described in section~\ref{localimportsection}.
+A downside is that {\cf import} and {\cf export} clauses cannot
+be abstracted, i.e., cannot be the products of macro calls.
 
 \section{Instantiation and initialization}
 
