@@ -130,7 +130,8 @@ $\calA$, $\calR$, and $\calRv$) and literals are
 written in a \texttt{monospaced} font.
 
 The $\calP$ non-terminal represents possible program states. The
-first alternative is a program with a store and an expression. The second alternative is an exception, and the third is
+first alternative is a program with a store and an expression. 
+The second alternative is an uncaught exception, and the third is
 used to indicate a place where the model does not completely specify
 the behavior of the primitives it models (see section~\ref{sec:semantics:underspecification} for details of those situations). 
 The $\calA$ non-terminal
@@ -166,7 +167,7 @@ procedures (\nt{pproc}), lambda expressions, \sy{letrec} and \sy{letrec*} expres
 
 The last few expression forms are only generated for intermediate states (\sy{dw} for \sy{dynamic-wind}, \sy{throw} for continuations, \sy{unspecified} for the result of the assignment operators, \sy{handlers} for exception handlers, and \sy{l!} and \sy{reinit} for \sy{letrec}), and should not appear in an initial program. Their use is described in the relevant sections of this appendix.
 
-The \nt{f} describes the formals for \sy{lambda} expressions. (The \sy{dot} is used instead of a period for procedures that accept an arbitrary number of arguments, in order to avoid meta-circular confusion in our PLT Redex model.) 
+The \nt{f} non-terminal describes the formals for \sy{lambda} expressions. (The \sy{dot} is used instead of a period for procedures that accept an arbitrary number of arguments, in order to avoid meta-circular confusion in our PLT Redex model.) 
 
 The \nt{s} non-terminal covers all datums, which can be either non-empty sequences (\nt{seq}), the empty sequence, self-quoting values (\nt{sqv}), or symbols. Non-empty sequences are either just a sequence of datums, or they are terminated with a dot followed by either a symbol or a self-quoting value. Finally the self-quoting values are numbers and the booleans \semtrue{} and \semfalse{}.
 
@@ -250,7 +251,7 @@ The first reduction rules that apply to any program is the
 rules in figure~\ref{fig:quote} that eliminate quoted expressions. 
 The first two rules erase the quote for quoted expressions that do not introduce any pairs.
 The last two rules lift quoted datums to the top of the expression so
-they are evaluated first, and turn the datums into calls to either \va{cons} or \va{consi}, via the metafunctions $\mathscr{Q}_i$ and $\mathscr{Q}_m$.
+they are evaluated only once, and turn the datums into calls to either \va{cons} or \va{consi}, via the metafunctions $\mathscr{Q}_i$ and $\mathscr{Q}_m$.
 
 Note that the left-hand side of the \rulename{6qcons} and \rulename{6qconsi} rules are identical, meaning that if one rule applies to a term, so does the other rule. 
 Accordingly, a quoted expression may be lifted out into a sequence of \va{cons} expressions, which create mutable pairs, or into a sequence of \va{consi} expressions, which create immutable pairs (see section~\ref{sec:semantics:lists} for the rules on how that happens).
@@ -315,7 +316,7 @@ defined in terms of itself, exploits \Fstar{} and \Fo{} to dictate
 where promotion and demotion can occur. For example, \nt{F} can be
 $\texttt{(}\sy{if}~\Fo{}~e~e\texttt{)}$ meaning that demotion from
 $\texttt{(}\va{values}~v\texttt{)}$ to
-$v$ can occur in the test to an \sy{if} expression.
+$v$ can occur in the test of an \sy{if} expression.
 Similarly, $F$ can be $\texttt{(}\sy{begin}~\Fstar{}~e~e~\cdots\texttt{)}$ meaning that
 $v$ can be promoted to $\texttt{(}\va{values}~v\texttt{)}$ in the first subexpression of a \sy{begin}.
 
@@ -443,9 +444,9 @@ The bottom half of figure~\ref{fig:Arithmetic} shows the rules for
 evaluation contexts are given by the $F$ non-terminal.
 
 The evaluation contexts for \sy{if} only allow evaluation in its
-test. Once that is a value, the rules for \sy{if} reduce
+test expression. Once that is a value, the rules reduce
 an \sy{if} expression to its consequent if the test is not
-\semfalse{}, and to its alternative if it is.
+\semfalse{}, and to its alternative if it is \semfalse{}.
 
 The \sy{begin} evaluation contexts allow evaluation in the first
 subexpression of a begin, but only if there are two or more
@@ -542,7 +543,7 @@ evaluation of the body of the procedure begins.
 At first glance, the rule \rulename{6appN} appears superfluous, since it seems like the rules could just reduce first by \rulename{6appN!} and then look up the variable when it is evaluated. 
 There are two reasons why we keep the \rulename{6appN}, however. 
 The first is purely conventional: reducing applications via substitution is taught to us at an early age and is commonly used in rewriting systems in the literature.
-The second reason is more technical:   The
+The second reason is more technical:  the
 \rulename{6mark} rule requires that \rulename{6appN} be applied once $\nt{e}_i$ has been reduced to a value. \rulename{6appN!} would
 lift the value into the store and put a variable reference into the application, leading to another use of \rulename{6mark}, and another use of \rulename{6appN!}, which continues forever.
 
