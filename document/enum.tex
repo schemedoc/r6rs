@@ -25,7 +25,7 @@ of the universes that can be defined using {\cf make-enumeration}.
 \proto{make-enumeration}{ symbol-list}{procedure}}
 
 \domain{\var{Symbol-list} must be a list of symbols.}
-The {\cf make-enumeration} procedure
+The {\cf make-\hp{}enumeration} procedure
 creates a new enumeration type whose universe consists of
 those symbols (in canonical order of their first appearance
 in the list) and returns that universe as an enumeration
@@ -51,7 +51,7 @@ value not in the universe, the unary procedure returns \schfalse.
 \begin{scheme}
 (let* ((e (make-enumeration '(red green blue)))
        (i (enum-set-indexer e)))
-  (list (i 'red) (i 'green) (i 'blue) (i 'yellow))) \lev (0 1 2 \schfalse)
+  (list (i 'red) (i 'green) (i 'blue) (i 'yellow))) \lev (0 1 2 \schfalse)%
 \end{scheme}
 
 The {\cf enum-set-indexer} procedure could be defined as follows using the
@@ -63,10 +63,11 @@ The {\cf enum-set-indexer} procedure could be defined as follows using the
                     (enum-set-universe set)))
          (cardinality (length symbols)))
     (lambda (x)
-      (let ((probe (memq x symbols)))
-        (if probe
-            (- cardinality (length probe))
-            \schfalse)))))
+      (cond
+       ((memq x symbols)
+        => (lambda (probe)
+             (- cardinality (length probe))))
+       (else \schfalse)))))%
 \end{scheme}
 \end{entry}
 

@@ -71,9 +71,10 @@ as {\cf for-all} or, respectively, {\cf exists} itself.
 (for-all even? '(3 1 4 1 5 9 . 2)) \lev \schfalse{}
 (for-all even? '(2 4 14)) \ev \schtrue{}
 (for-all even? '(2 4 14 . 9)) \lev \exception{\cf\&assertion}
-(for-all (lambda (n) (and (even? n) n)) '(2 4 14)) \lev 14
-(for-all < '(1 2 3) '(2 3 4)) \ev \schtrue{}
-(for-all < '(1 2 4) '(2 3 4)) \ev \schfalse{}
+(for-all (lambda (n) (and (even? n) n))
+         '(2 4 14)) \lev 14
+(for-all < '(1 2 3) '(2 3 4)) \lev \schtrue{}
+(for-all < '(1 2 4) '(2 3 4)) \lev \schfalse{}
 
 (exists even? '(3 1 4 1 5 9)) \lev \schtrue{}
 (exists even? '(3 1 1 5 9)) \ev \schfalse{}
