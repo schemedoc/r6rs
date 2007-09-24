@@ -115,7 +115,7 @@ implementation, an \textit{exception is raised}\mainindex{raise},
 which means that a special procedure called the \textit{current
   exception handler} is called.  A program can also raise an
 exception, and override the current exception handler; see
-section~\extref{lib:exceptionssection}.
+library section~\extref{lib:exceptionssection}{Exceptions}.
 
 When an exception is raised, an object is provided that
 describes the nature of the exceptional situation.  The report uses
@@ -199,7 +199,7 @@ implementation.
 When an implementation detects a violation of a restriction for an
 argument, it must raise an exception with condition type
 {\cf\&assertion} in a way consistent with the safety of execution as
-described in the next section.
+described in section~\ref{safetysection}.
 
 \section{Syntax violations}
 
@@ -224,7 +224,7 @@ condition type {\cf\&syntax}, and execution of that top-level program
 or library must not be allowed to begin.
 
 \section{Safety}
-\label{safeunsafemodesection}
+\label{safetysection}
 
 The standard libraries whose exports are described by this document
 are said to be \defining{safe libraries}.  Libraries and top-level
@@ -357,7 +357,7 @@ in Clinger's paper~\cite{propertailrecursion}.  The rules for identifying tail c
 in constructs from the \rsixlibrary{base} library are described in
 section~\ref{basetailcontextsection}.
 
-\section{Dynamic extent and dynamic environment}
+\section{Dynamic extent and the dynamic environment}
 \label{dynamicenvironmentsection}
 
 For a procedure call, the time between when it is initiated and when
@@ -369,7 +369,7 @@ dynamic extent of a call may not be a single, connected time period.
 
 Some operations described in the report acquire information in
 addition to their explicit arguments from the \defining{dynamic
-  environment}.  For example, {\cf call-with-current-continuation}
+  environment}.  For example, {\cf call-\hp{}with-\hp{}current-\hp{}continuation}
 accesses an implicit context established
 by {\cf dynamic-wind} (section~\ref{dynamic-wind}), and the {\cf
   raise} procedure (library

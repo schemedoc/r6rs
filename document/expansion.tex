@@ -10,7 +10,8 @@ If the expander encounters a syntactic abstraction, it invokes
 the associated transformer to expand the syntactic abstraction, then
 repeats the expansion process for the form returned by the transformer.
 If the expander encounters a core form, it recursively
-processes the subforms, if any, and reconstructs the form from the
+processes its subforms that are in expression or definition context,
+if any, and reconstructs the form from the
 expanded subforms.
 Information about identifier bindings is maintained during expansion
 to enforce lexical scoping for variables and keywords.
@@ -42,7 +43,7 @@ The expander splices the subforms into the list of body forms it is
 processing.  (See section~\ref{begin}.)
 
 \item[{\cf let-syntax} or {\cf letrec-syntax} form]
-The expander splices the inner body forms into the list of (outer) body forms it is
+The expander splic\-es the inner body forms into the list of (outer) body forms it is
 processing, arranging for the keywords bound by the {\cf let-syntax}
 and {\cf letrec-syntax} to be visible only in the inner body forms.
 
@@ -172,7 +173,7 @@ Because definitions and expressions can be interleaved in a
 the expander's processing of a \hyper{top-level body} is somewhat
 more complicated.
 It behaves as described above for a \hyper{body} or
-\hyper{library body} with the following exceptions.
+\hyper{library body} with the following exceptions:
 When the expander finds a nondefinition,
 it defers its expansion and continues scanning for definitions.
 Once it reaches the end of the set of forms, it processes the

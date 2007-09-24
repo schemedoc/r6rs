@@ -5,7 +5,7 @@ program, the forms
 that constitute the body of the library or the top-level program
 depend on the libraries that are
 imported. In particular, imported syntactic keywords determine 
-the available syntatic abstractions and whether each form is a 
+the available syntactic abstractions and whether each form is a 
 definition or expression. A few form types are
 always available independent of imported libraries, however,
 including constant literals, variable references, procedure calls,
@@ -47,7 +47,8 @@ expression is immutable.
 \pproto{\hyper{variable}}{\exprtype}}
 
 An expression consisting of a variable\index{variable}
-(section~\ref{variablesection}) is a variable reference.  The value of
+(section~\ref{variablesection}) is a variable reference if it is not a
+macro use (see below).  The value of
 the variable reference is the value stored in the location to which the
 variable is bound.  It is a syntax violation to reference
 an unbound\index{unbound} variable.
@@ -119,8 +120,8 @@ A syntactic abstraction is created by binding a keyword to a
 {\em macro transformer} or, simply, {\em transformer}.
 \index{macro transformer}\index{transformer}
 The transformer determines
-how a use of the macro is transcribed into a more primitive
-form.
+how a use of the macro (called a \defining{macro use})
+is transcribed into a more primitive form.
 
 Most macro uses have the form:
 \begin{scheme}

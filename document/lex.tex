@@ -25,7 +25,7 @@ as a notation for objects, and Scheme's \rsixlibrary{io ports} library
 (library section~\extref{lib:portsiosection}{Port I/O})
 provides the {\cf get-datum} and {\cf put-datum} procedures
 for reading and writing syntactic data, converting between their
-textual representation and the corresponding values. 
+textual representation and the corresponding objects. 
 Each syntactic datum represents a corresponding \defining{datum value}.
 A syntactic datum can be used in a program to obtain the corresponding
 datum value using {\cf quote} (see section~\ref{quote}).
@@ -33,6 +33,8 @@ datum value using {\cf quote} (see section~\ref{quote}).
 Scheme source code consists of syntactic data and (non-significant) comments.
 Syntactic data in Scheme source code are called
 \textit{forms}\mainindex{form}.
+(A form nested inside another form is
+called a \defining{subform}.)
 Consequently, Scheme's syntax has the property that any sequence of
 characters that is a form is also a syntactic datum representing
 some object.  This can lead to confusion, since it may not be obvious
@@ -40,8 +42,7 @@ out of context whether a given sequence of characters is intended to
 be a representation of objects or the text of a program.
 It is also a source of power, since it
 facilitates writing programs such as interpreters or compilers that
-treat programs as objects (or vice versa).  A form nested inside another form is
-called a \defining{subform}.
+treat programs as objects (or vice versa).
 
 A datum value may have several different external representations.
 For example, both ``{\tt \#e28.000}'' and

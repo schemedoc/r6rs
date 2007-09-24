@@ -15,7 +15,7 @@ apparent binding of that variable.
 
 \vest Scheme has latent as opposed to manifest types
 \cite{WaiteGoos}.  Types
-are associated with values (also called objects\mainindex{object}) rather than
+are associated with objects\mainindex{object} (also called values) rather than
 with variables.  (Some authors refer to languages with latent types as
 untyped, weakly typed or dynamically typed languages.)  Other languages with
 latent types are Python, Ruby, Smalltalk, and other dialects of Lisp.  Languages
@@ -69,9 +69,9 @@ is the result of a computation that involved rounding or other errors.
 
 \section{Basic types}
 
-Scheme programs manipulate \textit{values}, which are also referred
-to as \textit{objects}.
-Scheme values are organized into sets of values called \textit{types}.
+Scheme programs manipulate \textit{objects}, which are also referred
+to as \textit{values}.
+Scheme objects are organized into sets of values called \textit{types}.
 This section gives an overview of the fundamentally important types of the
 Scheme language.  More types are described in later chapters.
 
@@ -81,12 +81,12 @@ Scheme language.  More types are described in later chapters.
   languages, particularly those with manifest typing.
 \end{note}
 
-\paragraph{Boolean values}
+\paragraph{Booleans}
 
-\mainindex{boolean}A boolean value is a truth value, and can be either
-true or false.  In Scheme, the value for ``false'' is written
-\schfalse{}.  The value ``true'' is written \schtrue{}.  In
-most places where a truth value is expected, however, any value different from
+\mainindex{boolean}A boolean is a truth value, and can be either
+true or false.  In Scheme, the object for ``false'' is written
+\schfalse{}.  The object for ``true'' is written \schtrue{}.  In
+most places where a truth value is expected, however, any object different from
 \schfalse{} counts as true.
 
 \paragraph{Numbers}
@@ -132,7 +132,7 @@ pairs that form a list.
 representing finite sequences of arbitrary objects.
 Whereas the elements of a list are accessed
 sequentially through the chain of pairs representing it,
-the elements of a vector are addressed by an integer index.
+the elements of a vector are addressed by integer indices.
 Thus, vectors are more appropriate than
 lists for random access to elements.
 
@@ -275,7 +275,7 @@ procedures:
 \end{scheme}
 
 A procedure is, slightly simplified, an abstraction of an
-expression over values.  In the example, the first definition defines a procedure
+expression over objects.  In the example, the first definition defines a procedure
 called {\cf f}.  (Note the parentheses around {\cf f x}, which
 indicate that this is a procedure definition.)  The expression {\cf (f
   23)} is a \index{procedure call}procedure call, meaning,
@@ -315,7 +315,7 @@ same holds for {\cf *} and many others:
 \end{scheme}
 
 Procedure definitions are not the only way to create procedures.  A
-{\cf lambda} expression creates a new procedure as a value, with no
+{\cf lambda} expression creates a new procedure as an object, with no
 need to specify a name:
 
 \begin{scheme}
@@ -346,7 +346,7 @@ expressions.
 Procedure calls can generally be distinguished from these
 \textit{special forms}\mainindex{special form} by
 looking for a syntactic keyword in the first position of an
-form: if it is not a syntactic keyword, the expression
+form: if the first position does not contain a syntactic keyword, the expression
 is a procedure call.  
 (So-called \textit{identifier macros} allow creating other kinds of
 special forms, but are comparatively rare.)
@@ -358,8 +358,8 @@ section~\ref{macrosintrosection} below.
 \section{Assignment}
 
 Scheme variables bound by definitions or {\cf let} or {\cf lambda}
-expressions are not actually bound directly to the values specified in the
-respective bindings, but to locations containing these values.  The
+expressions are not actually bound directly to the objects specified in the
+respective bindings, but to locations containing these objects.  The
 contents of these locations can subsequently be modified destructively
 via \textit{assignment}\index{assignment}:
 %
@@ -373,7 +373,7 @@ In this case, the body of the {\cf let} expression consists of two
 expressions which are evaluated sequentially, with the value of the
 final expression becoming the value of the entire {\cf let}
 expression.  The expression {\cf (set! x 42)} is an assignment, saying
-``replace the value in the location referenced by {\cf x} with 42''.
+``replace the object in the location referenced by {\cf x} with 42''.
 Thus, the previous value of {\cf x}, 23, is replaced by 42.
 
 \section{Derived forms and macros}
@@ -439,7 +439,7 @@ built into other languages to be derived forms in Scheme.
 
 \section{Syntactic data and datum values}
 
-A subset of the Scheme values is called \textit{datum
+A subset of the Scheme objects is called \textit{datum
   values}\index{datum value}. 
 These include booleans, number objects, characters, symbols,
 and strings as well as lists and vectors whose elements are data.  Each
@@ -461,7 +461,7 @@ prepending a {\cf\singlequote} to a corresponding syntactic datum:
 
 The {\cf\singlequote} shown in the previous examples
 is not needed for representations of number objects or booleans.
-The syntatic datum {\cf foo} represents a
+The syntactic datum {\cf foo} represents a
 symbol with name ``foo'', and {\cf 'foo} is a literal expression with
 that symbol as its value.  {\cf (1 2 3)} is a syntactic datum that 
 represents a list with elements 1, 2, and 3, and {\cf '(1 2 3)} is a literal
@@ -558,7 +558,7 @@ program contains imports, definitions and expressions, and specifies
 an entry point for execution.  Thus a top-level program defines, via
 the transitive closure of the libraries it imports, a Scheme program.
 
-The following program obtains the first argument from the command line
+The following top-level program obtains the first argument from the command line
 via the {\cf command-line} procedure from the \rsixlibrary{programs}
 library (see library chapter~\extref{lib:programlibchapter}{Command-line
   access and exit values}).  It then opens the file using {\cf

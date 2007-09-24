@@ -998,7 +998,7 @@ The {\cf eqv?} procedure returns \schtrue{} if one of the following holds:
 
 \item \vari{Obj} and \varii{obj} are both inexact\index{inexact}
   number objects, are numerically
-  equal (see {\cf =}, section~\ref{genericarithmeticsection}, and
+  equal (see {\cf =}, section~\ref{genericarithmeticsection}), and
   yield the same results (in the sense of {\cf eqv?}) when passed
   as arguments to any other procedure that can be defined
   as a finite composition of Scheme's standard arithmetic
@@ -1135,13 +1135,11 @@ not detect this equivalence.
 
 (letrec ((f (lambda () (if (eqv? f g) 'both 'f)))
          (g (lambda () (if (eqv? f g) 'both 'g))))
-  (eqv? f g))
-                        \ev  \unspecified
+  (eqv? f g)) \ev  \unspecified
 
 (letrec ((f (lambda () (if (eqv? f g) 'f 'both)))
          (g (lambda () (if (eqv? f g) 'g 'both))))
-  (eqv? f g))
-                        \ev  \schfalse%
+  (eqv? f g)) \ev  \schfalse%
 \end{scheme}
 
 Implementations may
@@ -1329,7 +1327,7 @@ may return either {\cf 0} (exact) or {\cf 0.0} (inexact).
 The specification of the numerical operations is written as though
 infinities and NaNs are representable, and specifies many operations
 with respect to these number objects in ways that are consistent with the
-IEEE 754 standard for binary floating-point arithmetic.  
+IEEE-754 standard for binary floating-point arithmetic.  
 An implementation of Scheme may or may not represent infinities and
 NaNs; however,
 an implementation must raise a continuable exception with
@@ -1372,7 +1370,7 @@ where
 %
 \begin{displaymath}
 \begin{array}{c}
-x_1 = n_d * x_2 + x_m\\
+x_1 = n_d \cdot x_2 + x_m\\
 0 \leq x_m < |x_2|
 \end{array}
 \end{displaymath}
@@ -1402,7 +1400,7 @@ where:
 %
 \begin{displaymath}
 \begin{array}{c}
-x_1 = n_d * x_2 + x_m\\
+x_1 = n_d \cdot x_2 + x_m\\
 -|\frac{x_2}{2}| \leq x_m < |\frac{x_2}{2}|
 \end{array}
 \end{displaymath}
@@ -1811,7 +1809,7 @@ For any real number object \var{x} that is neither infinite nor NaN:
 
 \begin{scheme}
 (+ +inf.0 \var{x})                           \ev  +inf.0
-(+ -inf.0 \var{x})                           \ev  -inf.0
+(+ -inf.0 \var{x})                           \ev  -inf.0%
 \end{scheme}
 
 For any real number object \var{x}:
@@ -2119,8 +2117,8 @@ integer objects $s$ and $r$ where $\var{k} = s^2 +
 r$ and $\var{k} < (s+1)^2$.
 
 \begin{scheme}
-(exact-integer-sqrt 4) \ev 2, 0\\\>\>\>; \textrm{two return values}
-(exact-integer-sqrt 5) \ev 2, 1\\\>\>\>; \textrm{two return values}
+(exact-integer-sqrt 4) \ev 2 0\\\>\>\>; \textrm{two return values}
+(exact-integer-sqrt 5) \ev 2 1\\\>\>\>; \textrm{two return values}
 \end{scheme}
 \end{entry}
 
@@ -2242,7 +2240,7 @@ number object in the given radix such that
 %
 is true.  If no possible result makes this expression
 true, an exception with condition type
-{\cf\&implementation-restriction} is raised.
+{\cf\&implementation-\hp{}restriction} is raised.
 
 \begin{note}
 The error case can occur only when \var{z} is not a complex number object
@@ -2291,7 +2289,7 @@ returns \schfalse{}.
 \end{scheme}
 
 \begin{note}
-  The {\cf string->number} procedure always returns a number or
+  The {\cf string->number} procedure always returns a number object or
   \schfalse{}; it never raises an exception.
 \end{note}
 \end{entry}
@@ -2496,15 +2494,15 @@ twenty-eight of these procedures in all.
 \begin{entry}{%
 \proto{null?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is the empty list\index{empty list}.
-Otherwise, returns \schfalse.
+Returns \schtrue{} if \var{obj} is the empty list\index{empty list},
+\schfalse otherwise.
 
 \end{entry}
 
 \begin{entry}{%
 \proto{list?}{ obj}{procedure}}
 
-Returns \schtrue{} if \var{obj} is a list.  Otherwise, returns \schfalse{}.
+Returns \schtrue{} if \var{obj} is a list, \schfalse{} otherwise.
 By definition, all lists are chains of pairs that have finite length and are terminated by
 the empty list.
 
@@ -2531,7 +2529,6 @@ Returns a newly allocated list of its arguments.
 \begin{entry}{%
 \proto{length}{ list}{procedure}}
 
-\nodomain{\var{List} must be a list.}
 Returns the length of \var{list}.
 
 \begin{scheme}
@@ -2545,7 +2542,6 @@ Returns the length of \var{list}.
 \begin{entry}{%
 \proto{append}{ list \dotsfoo{} obj}{procedure}}
 
-\nodomain{All \var{list}s must be lists.}
 Returns a possibly improper list consisting of the elements of the first \var{list}
 followed by the elements of the other \var{list}s, with \var{obj} as
 the cdr of the final pair.
@@ -2568,7 +2564,6 @@ newly allocated.  If no pairs are allocated, \var{obj} is returned.
 \begin{entry}{%
 \proto{reverse}{ list}{procedure}}
 
-\nodomain{\var{List} must be a list.}
 Returns a newly allocated list consisting of the elements of \var{list}
 in reverse order.
 
@@ -2583,7 +2578,6 @@ in reverse order.
 \proto{list-tail}{ list k}{procedure}}
 
 \domain{\var{List} should be a list of size at least \var{k}.}
-
 The {\cf list-tail} procedure returns the subchain of pairs of \var{list}
 obtained by omitting the first \var{k} elements.
 
@@ -2601,8 +2595,7 @@ of pairs beyond this length.
 \proto{list-ref}{ list k}{procedure}}
 
 \domain{\var{List} must be a list whose length is at least $\var{k}+1$.}
-
-Returns the \var{k}th element of \var{list}.
+The {\cf list-tail} procedure returns the \var{k}th element of \var{list}.
 
 \begin{scheme}
 (list-ref '(a b c d) 2)                 \ev c%
@@ -2910,7 +2903,8 @@ The {\cf string-ref} procedure returns character \vr{k} of \var{string} using ze
 \proto{string=?}{ \vari{string} \varii{string} \variii{string} \dotsfoo}{procedure}}
 
 Returns \schtrue{} if the strings are the same length and contain the same
-characters in the same positions.  Otherwise, returns \schfalse.
+characters in the same positions.  Otherwise, the {\cf string=?}
+procedure returns \schfalse.
 
 \begin{scheme}
 (string=? "Stra\ss{}e" "Strasse") \lev \schfalse%
@@ -3069,10 +3063,7 @@ The {\cf vector-ref} procedure returns the contents of element \vr{k} of
 \var{vector}.
 
 \begin{scheme}
-(vector-ref '\#(1 1 2 3 5 8 13 21)
-            5)  \lev  8
-(vector-ref '\#(1 1 2 3 5 8 13 21)
-            (exact (round (* 2 (acos -1))))) \lev 13%
+(vector-ref '\#(1 1 2 3 5 8 13 21) 5)  \lev  8%
 \end{scheme}
 \end{entry}
 
@@ -3201,18 +3192,18 @@ library chapter~\extref{lib:exceptionsconditionschapter}{Exceptions
 %
 \begin{itemize}
 \item If \var{who} is not \schfalse, the condition has condition type
-  {\cf \&who}, with \var{who} as the value of the {\cf who} field.  In
+  {\cf \&who}, with \var{who} as the value of its field.  In
   that case, \var{who} should be the name of the procedure or entity that
   detected the exception.  If it is \schfalse, the condition does not
   have condition type {\cf \&who}.
 \item The condition has condition type {\cf \&message}, with
-  \var{message} as the value of the {\cf message} field.
-\item The condition has condition type {\cf \&irritants}, and the {\cf
-    irritants} field has as its value a list of the \var{irritant}s.
+  \var{message} as the value of its field.
+\item The condition has condition type {\cf \&irritants}, and its
+  field has as its value a list of the \var{irritant}s.
 \end{itemize}
 %
 Moreover, the condition created by {\cf error} has condition type 
-{\cf \&error}, and the condition created by {\cf assertion-violation} has
+{\cf \&error}, and the condition created by {\cf assertion-\hp{}violation} has
 condition type {\cf \&assertion}.
 
 \begin{scheme}
@@ -3266,7 +3257,7 @@ flow of program execution in special ways.
 \domain{\var{Rest-args} must be a list.
  \var{Proc} should accept $n$ arguments, where $n$ is
   number of \var{arg}s plus the length of \var{rest-args}.}
-Calls \var{proc} with the elements of the list
+The {\cf apply} procedure calls \var{proc} with the elements of the list
 {\cf(append (list \vari{arg} \dotsfoo) \var{rest-args})} as the actual
 arguments.
 
@@ -3303,7 +3294,7 @@ may cause the invocation of \var{before} and \var{after} procedures installed us
 \ide{dynamic-wind}.
 
 The escape procedure accepts the same number of arguments as the
-continuation of the original call to \callcc.
+continuation of the original call to {\cf call-\hp{}with-\hp{}current-\hp{}continuation}.
 
 The escape procedure that is passed to \var{proc} has
 unlimited extent just like any other procedure in Scheme.  It may be stored
@@ -3315,7 +3306,7 @@ context, the call to \var{proc} is also in a tail context.
 The following examples show only some ways in which
 {\cf call-with-current-continuation} is used.  If all real uses were as
 simple as these examples, there would be no need for a procedure with
-the power of {\cf call-with-current-continuation}.
+the power of {\cf call-\hp{}with-\hp{}current-\hp{}continuation}.
 
 \begin{scheme}
 (call-with-current-continuation
@@ -3372,7 +3363,7 @@ expressions, such as in {\cf lambda}, {\cf begin}, {\cf let}, {\cf
 arbitrary number of values.
 
 Except for these and the continuations created by {\cf
-  call-with-values}, {\cf let-values}, and {\cf let*-values},
+  call-\hp{}with-\hp{}values}, {\cf let-values}, and {\cf let*-values},
 continuations implicitly accepting a single value, such as the
 continuations of \hyper{operator} and \hyper{operand}s of procedure
 calls or the \hyper{test} expressions in conditionals, take exactly
@@ -3386,7 +3377,7 @@ such a continuation is undefined.
 \domain{\var{Producer} must be a procedure and should accept zero
   arguments.  \var{Consumer} must be a procedure and should accept as many
   values as \var{producer} returns.}
-The {\cf call-with-values} procedure calls \var{producer} with no arguments and
+The {\cf call-\hp{}with-\hp{}values} procedure calls \var{producer} with no arguments and
 a continuation that, when passed some values, calls the
 \var{consumer} procedure with those values as arguments.
 The continuation for the call to \var{consumer} is the
@@ -4193,9 +4184,9 @@ tail context.  \hyperii{Expression} itself is not in a tail context.
 \end{itemize}
 
 Certain built-in procedures must also perform tail calls.
-The first argument passed to \ide{apply} and to
-\ide{call-with-current-continuation}, and the second argument passed to
-\ide{call-with-values}, must be called via a tail call.
+The first argument passed to {\cf apply} and to
+{\cf call-\hp{}with-\hp{}current-continuation}, and the second argument passed to
+{\cf call-with-values}, must be called via a tail call.
 
 In the following example the only tail call is the call to {\cf f}.
 None of the calls to {\cf g} or {\cf h} are tail calls.  The reference to
