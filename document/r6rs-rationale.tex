@@ -565,17 +565,17 @@ identifier uses to particular phases. This report therefore leaves
 considerable latitude to implementations, while attempting to
 provide enough guarantees to make portable libraries feasible.
 
-Note that, if a program uses only {\cf syntax-rules} or
-{\cf identifier-syntax} forms as the
-right-hand sides of keyword definitions and keyword binding forms, does
-does not use {\cf syntax-rules} or {\cf identifier-syntax} in any
-other context, and avoids the use of {\cf for} in all {\cf import}
-forms, then the program does not depend on whether instances are
+Note that, if each right-hand side of the keyword definition and keyword
+binding forms in a program is a {\cf syntax-rules} or
+{\cf identifier-syntax} form, {\cf syntax-rules} and {\cf identifier-syntax}
+forms do not appear in any other contexts, and no {\cf import} form employs
+{\cf for} to override the default import phases, 
+then the program does not depend on whether instances are
 distinguished across phases, and the phase of an identifier's use cannot
 be inconsistent with the identifier's level.
 Moreover, the phase of an identifier's use is never inconsistent with the
 identifier's level if the implementation uses an implicit phasing model in
-which references are allowed at any phase regardless of the phase
+which references are allowed at any phase regardless of any phase
 declarations.
 
 \section{Immutable exports}
