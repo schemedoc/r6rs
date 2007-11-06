@@ -12,8 +12,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; Finite sets of symbols, and their use as enumeration types.
+;
+; Tested in Larceny v0.95.
 
-(library (r6rs enum)
+(library (rnrs enums)
+
   (export make-enumeration
           enum-set-universe
           enum-set-indexer
@@ -27,12 +30,16 @@
           enum-set-difference
           enum-set-complement
           enum-set-projection
-          define-enumeration)     ; syntax, untested, with known bugs
-  (import (r6rs base)
-          (r6rs list)
-          (r6rs records procedural)
-          (r6rs hash-tables)
-          (r6rs arithmetic fixnum))
+          define-enumeration)
+
+  (import (for (rnrs base)        run expand)
+          (for (rnrs syntax-case) run expand)
+          (for (rnrs lists)       run expand)
+          (rnrs control)
+          (rnrs records procedural)
+          (rnrs hashtables)
+          (rnrs arithmetic fixnums)
+          (rnrs arithmetic bitwise))
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -88,7 +95,7 @@
          (if (not (symbol? x))
              #f
              (lookup-index x
-                           (exact-mod (symbol-hash x) modulus)
+                           (mod (symbol-hash x) modulus)
                            max-distance)))
 
        (define (lookup-index sym i bound)
@@ -105,14 +112,14 @@
          (if (not (symbol? x))
              #f
              (lookup-index x
-                           (fixnum-mod (symbol-hash x) modulus)
+                           (fxmod (symbol-hash x) modulus)
                            max-distance)))
 
        (define (fixnum-lookup-index sym i bound)
          (cond ((eq? sym (vector-ref vec0 i))
                 (vector-ref vec1 i))
-               ((fixnum> bound 0)
-                (fixnum-lookup-index sym (fixnum+ i 1) (fixnum- bound 1)))
+               ((fx>? bound 0)
+                (fixnum-lookup-index sym (fx+ i 1) (fx- bound 1)))
                (else #f)))
 
        ; Given a list of symbols that belong to this universe,
@@ -129,8 +136,8 @@
                (if index
                    (constructor-bits
                     (cdr syms)
-                    (exact-ior bits
-                               (exact-arithmetic-shift-left 1 index)))
+                    (bitwise-ior bits
+                               (bitwise-arithmetic-shift-left 1 index)))
                    (error "anonymous set constructor"
                           "Illegal value passed to set constructor"
                           (car syms))))))
@@ -149,8 +156,8 @@
                (if index
                    (fixnum-constructor-bits
                     (cdr syms)
-                    (fixnum-ior bits
-                                (fixnum-arithmetic-shift-left 1 index)))
+                    (fxior bits
+                                (fxarithmetic-shift-left 1 index)))
                    (error "anonymous set constructor"
                           "Illegal value passed to set constructor"
                           (car syms))))))
@@ -169,9 +176,9 @@
        (define (bits-deconstructor bits syms)
          (if (= bits 0)
              (reverse syms)
-             (let* ((i (exact-first-bit-set bits))
+             (let* ((i (bitwise-first-bit-set bits))
                     (sym (vector-ref canonical-ordering i)))
-               (bits-deconstructor (exact-copy-bit bits i 0)
+               (bits-deconstructor (bitwise-copy-bit bits i 0)
                                    (cons sym syms)))))
 
        ; As above, but specialized to use fixnum arithmetic when
@@ -186,9 +193,9 @@
        (define (fixnum-bits-deconstructor bits syms)
          (if (= bits 0)
              (reverse syms)
-             (let* ((i (fixnum-first-bit-set bits))
+             (let* ((i (fxfirst-bit-set bits))
                     (sym (vector-ref canonical-ordering i)))
-               (fixnum-bits-deconstructor (fixnum-copy-bit bits i 0)
+               (fixnum-bits-deconstructor (fxcopy-bit bits i 0)
                                           (cons sym syms)))))
 
        (if (<= (length symbols) (fixnum-width))
@@ -258,11 +265,11 @@
         (bits1 (enumeration:set-bits set1))
         (bits2 (enumeration:set-bits set2)))
     (cond ((eq? type1 type2)
-           (exact-zero? (exact-and bits1 (exact-not bits2))))
+           (zero? (bitwise-and bits1 (bitwise-not bits2))))
           ; FIXME: Isn't this redundant with the previous test?
           ((eq? (enumeration:type-universe type1)
                 (enumeration:type-universe type2))
-           (exact-zero? (exact-and bits1 (exact-not bits2))))
+           (zero? (bitwise-and bits1 (bitwise-not bits2))))
           (else
            (enum-set-subset? set1 (enum-set-projection set2 set1))))))
 
@@ -283,11 +290,11 @@
         (bits1 (enumeration:set-bits set1))
         (bits2 (enumeration:set-bits set2)))
     (cond ((eq? type1 type2)
-           (enumeration:make-set (exact-ior bits1 bits2) type1))
+           (enumeration:make-set (bitwise-ior bits1 bits2) type1))
           ; FIXME: Isn't this redundant with the previous test?
           ((eq? (enumeration:type-universe type1)
                 (enumeration:type-universe type2))
-           (enumeration:make-set (exact-ior bits1 bits2) type1))
+           (enumeration:make-set (bitwise-ior bits1 bits2) type1))
           (else
            (error 'enum-set-union "Incompatible sets" set1 set2)))))
 
@@ -300,11 +307,11 @@
         (bits1 (enumeration:set-bits set1))
         (bits2 (enumeration:set-bits set2)))
     (cond ((eq? type1 type2)
-           (enumeration:make-set (exact-and bits1 bits2) type1))
+           (enumeration:make-set (bitwise-and bits1 bits2) type1))
           ; FIXME: Isn't this redundant with the previous test?
           ((eq? (enumeration:type-universe type1)
                 (enumeration:type-universe type2))
-           (enumeration:make-set (exact-and bits1 bits2) type1))
+           (enumeration:make-set (bitwise-and bits1 bits2) type1))
           (else
            (error 'enum-set-intersection "Incompatible sets" set1 set2)))))
 
@@ -317,11 +324,13 @@
         (bits1 (enumeration:set-bits set1))
         (bits2 (enumeration:set-bits set2)))
     (cond ((eq? type1 type2)
-           (enumeration:make-set (exact-and bits1 (exact-not bits2)) type1))
+           (enumeration:make-set
+            (bitwise-and bits1 (bitwise-not bits2)) type1))
           ; FIXME: Isn't this redundant with the previous test?
           ((eq? (enumeration:type-universe type1)
                 (enumeration:type-universe type2))
-           (enumeration:make-set (exact-and bits1 (exact-not bits2)) type1))
+           (enumeration:make-set
+            (bitwise-and bits1 (bitwise-not bits2)) type1))
           (else
            (error 'enum-set-difference "Incompatible sets" set1 set2)))))
 
@@ -356,18 +365,27 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; Explicit-naming syntactic interface.
+; Syntactic interface.
+;
+; Only the names of the symbols are significant, so
+; the most obvious implementation using syntax-rules
+; won't work.
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-syntax define-enumeration
   (syntax-rules ()
    ((_ type-name (symbol1 ...) set-constructor-syntax)
-    ; This relies on left-to-right evaluation of definitions.
     (begin (define-syntax type-name
-             (syntax-rules (symbol1 ...)
-              ((_ symbol1) 'symbol1)
-              ...))
+             (lambda (x)
+               (define (complain)
+                 (syntax-violation 'type-name "illegal symbol" x))
+               (syntax-case x ()
+                ((_ y)
+                 (let ((sym1 (syntax->datum #'y)))
+                   (if (memq sym1 '(symbol1 ...))
+                       #''y
+                       (complain)))))))
            (define hidden-name (make-enumeration '(symbol1 ...)))
            (define-syntax set-constructor-syntax
              (syntax-rules ()
@@ -383,11 +401,11 @@
 
 (define enumeration:type
   (make-record-type-descriptor 'enumeration #f #f #f #f
-   '((immutable universe)       ; thunk that returns universal set
-     (immutable indexer)        ; maps objects to indexes
-     (immutable constructor)    ; maps lists of symbols to sets
-     (immutable deconstructor)  ; maps sets to lists of symbols
-     )))
+   '#((immutable universe)       ; thunk that returns universal set
+      (immutable indexer)        ; maps objects to indexes
+      (immutable constructor)    ; maps lists of symbols to sets
+      (immutable deconstructor)  ; maps sets to lists of symbols
+      )))
 
 (define enumeration:make-type (record-constructor enumeration:type))
 (define enumeration:type-universe      (record-accessor enumeration:type 0))
@@ -397,9 +415,9 @@
 
 (define enumeration:set
   (make-record-type-descriptor 'enum-set #f #f #f #f
-   '((immutable bits)           ; exact non-negative integer
-     (immutable universe-type)  ; an enumeration:type
-     )))
+   '#((immutable bits)           ; exact non-negative integer
+      (immutable universe-type)  ; an enumeration:type
+      )))
 
 (define enumeration:make-set (record-constructor enumeration:set))
 (define enumeration:set-bits (record-accessor enumeration:set 0))
@@ -423,7 +441,7 @@
 
 (define (enumeration:hash-table-components symbols)
   (let* ((n (length symbols))
-         (bits (inexact->exact (floor (* 2 (log (+ n 1))))))
+         (bits (exact (floor (* 2 (log (+ n 1))))))
          (m (expt 2 bits))
          (mask (- m 1))
          (vec0 (make-vector (* 2 m) #f))
@@ -447,7 +465,7 @@
          (i 0 (+ i 1)))
         ((null? symbols))
       (let ((sym (car symbols)))
-        (let loop ((h (exact-and mask (symbol-hash sym)))
+        (let loop ((h (bitwise-and mask (symbol-hash sym)))
                    (d 0))
           (if (vector-ref vec0 h)
               (loop (+ h 1) (+ d 1))
@@ -476,15 +494,9 @@
                   (test (syntax-rules (=>)
                          ((test n exp => result)
                           (if (not (equal? exp result))
-                              (begin (display "*****BUG*****")
-                                     (newline)
-                                     (display "Failed test ")
-                                     (display n)
-                                     (display ":")
-                                     (newline)
-                                     (write 'exp)
-                                     (newline)
-                                     (exit #f)))))))
+                              (assertion-violation
+                               'basic-enumerations-tests
+                               "failed test" n 'exp))))))
        (let* ((colors
                (make-enumeration '(black white purple maroon)))
               (color-index (enum-set-indexer colors))
