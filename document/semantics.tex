@@ -251,7 +251,7 @@ The first reduction rules that apply to any program is the
 rules in figure~\ref{fig:quote} that eliminate quoted expressions. 
 The first two rules erase the quote for quoted expressions that do not introduce any pairs.
 The last two rules lift quoted datums to the top of the expression so
-they are evaluated only once, and turn the datums into calls to either \va{cons} or \va{consi}, via the metafunctions $\mathscr{Q}_i$ and $\mathscr{Q}_m$.
+they are evaluated only once, and turn the datums into calls to either \va{cons} or \va{consi}, via the metafunctions $\scrQ_i$ and $\scrQ_m$.
 
 Note that the left-hand side of the \rulename{6qcons} and \rulename{6qconsi} rules are identical, meaning that if one rule applies to a term, so does the other rule. 
 Accordingly, a quoted expression may be lifted out into a sequence of \va{cons} expressions, which create mutable pairs, or into a sequence of \va{consi} expressions, which create immutable pairs (see section~\ref{sec:semantics:lists} for the rules on how that happens).
@@ -623,15 +623,15 @@ use in the \rulename{6throw} rule when the continuation is applied.
 That rule takes the arguments of the continuation, wraps them with a
 call to \va{values}, and puts them back into the place where the
 original call to \va{call/cc} occurred, replacing the current
-context with the context returned by the $\mathscr{T}$ metafunction.
+context with the context returned by the $\scrT$ metafunction.
 
-The $\mathscr{T}$ (for ``trim'') metafunction accepts two $D$ contexts and
+The $\scrT$ (for ``trim'') metafunction accepts two $D$ contexts and
 builds a context that matches its second argument, the destination
 context, except that additional calls to the \var{before} and
 \var{after} procedures
 from \sy{dw} expressions in the context have been added.
 
-The first clause of the $\mathscr{T}$ metafunction exploits the
+The first clause of the $\scrT$ metafunction exploits the
 $H$ context, a context that contains everything except
 \sy{dw} expressions. It ensures that shared parts of the
 \va{dynamic-wind} context are ignored, recurring deeper into the
@@ -643,17 +643,17 @@ either when there are no \sy{dw}s in the context, or when the
 metafunctions defined in figure~\ref{fig:Call-cc--and--dynamic-wind} and
 puts their results together into a \sy{begin} expression.
 
-The $\mathscr{R}$ metafunction extracts all of the \var{before}
-procedures from its argument and the $\mathscr{S}$ metafunction extracts all of the \var{after} procedures from its argument. They each construct new contexts and exploit
+The $\scrR$ metafunction extracts all of the \var{before}
+procedures from its argument and the $\scrS$ metafunction extracts all of the \var{after} procedures from its argument. They each construct new contexts and exploit
 $H$ to work through their arguments, one \sy{dw} at a time.
 In each case, the metafunctions are careful to keep the right
 \sy{dw} context around each of the procedures in case a continuation
 jump occurs during one of their evaluations. 
-Since $\mathscr{R}$,
+Since $\scrR$,
 receives the destination context, it keeps the intermediate
 parts of the context in its result.
 In contrast
-$\mathscr{S}$ discards all of the context except the \sy{dw}s,
+$\scrS$ discards all of the context except the \sy{dw}s,
 since that was the context where the call to the
 continuation occurred.
 
