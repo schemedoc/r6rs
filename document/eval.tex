@@ -39,20 +39,22 @@ raise an exception with a condition type {\cf\&assertion}.
 \begin{scheme}
 (library (foo)
   (export)
-  (import (rnrs))
+  (import (rnrs)
+          (rnrs eval))
   (write
     (eval '(let ((x 3)) x)
           (environment '(rnrs))))) \\\> {\it writes} 3
 
 (library (foo)
   (export)
-  (import (rnrs))
+  (import (rnrs)
+          (rnrs eval))
   (write
     (eval
       '(eval:car (eval:cons 2 4))
       (environment
         '(prefix (only (rnrs) car cdr cons null?)
-                 eval:))))) \\\> {\it writes} 2
+                 eval:))))) \\\> {\it writes} 2%
 \end{scheme}
 \end{entry}
 

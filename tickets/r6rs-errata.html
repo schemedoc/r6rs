@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html40/loose.dtd">
+<html>
+  <head>
+    <base href="http://www.r6rs.org/">
+    <link type="text/css" rel="stylesheet" href="/r6rs.css">
+    <style>
+      body { width:7in }
+      dt {
+      border-top: 1px solid #000;
+      position: relative;
+      left: 0;
+      top: 1.1em;
+      width: 8em;
+      font-weight: bold;
+      }
+      
+      dd {
+      margin: 0 0 0 8em;
+      padding: 0 0 0 .5em;
+      }
+    </style>
+    <title>R6RS Errata</title>
+  </head>
+  <body>
+    <h1>R6RS Errata</h1>
+    
+    <h2>Revised<sup>6</sup> Report on the Algorithmic Language Scheme</h2>
+    <dl>
+      <dt>&sect; 4</dt>
+      <dd>The term "read syntax" mentioned in the introduction of the
+      chapter should be "datum syntax".</dd>
+      <dt>&sect; 4.2.1</dt>
+      <dd>The rule
+	<p>&lt;decimal 10&gt -&gt; &lt;digit 10&gt;+ . &lt;suffix&gt;</p>
+	is redundant.
+      </dd>
+      <dt>&sect; 4.2.1, &sect; 4.2.8</dt>
+      <dd>The rules for &lt;number&gt; suggest that the lexical syntax
+	for the external representations of number objects is case-sensitive,
+	with a number of specific exceptions, while the first
+	apragraph of &sect; 4.2.8 claims that case is not significant
+	in external representations of number objects.  This should be
+	resolved by making case generally insignificant in the
+	external representation of number objects.
+      </dd>
+      <dt>&sect; 4.2.6</dt>
+      <dd>The sentence <p>"Case is significant in #\&lt;character&gt;, and in
+	    #\&lt;character name&gt;, but not in #\x&lt;hex scalar
+	    #value&gt;." is worded confusingly.</p>  It should be
+	<p>"Case is significant in #\&lt;character&gt;, and in
+	    #\&lt;character name&gt;, but not the in the &lt;hex scalar
+	    #value&gt; part of #\x&lt;hex scalar #value&gt;."
+      </dd>
+      <dt>&sect; 4.2.8<dt>
+      <dd>The following sentence should be added: <p>"The
+      <code>-nan.0</code> literal also represents a NaN."</p></dd>
+    </dl>
+    
+    <h2>Standard Libraries</h2>
+    
+    <dl>
+      <dt>&sect; 2.9</dt>
+      <dd>The sentence in the specification of <code>utf16-&gt;string</code>
+	<p>"<var>Bytevector</var> is decoded according to UTF-16BE or
+	UTF-16LE:"</p>
+	should be replaced by
+	<p>"<var>Bytevector</var> is decoded according
+	  to UTF-16, UTF-16BE, UTF-16LE, or a fourth encoding scheme that differs from
+	  all three of those as follows:"</p>
+      <dd>The sentence in the specification of <code>utf32-&gt;string</code>
+	<p>"<var>Bytevector</var> is decoded according to UTF-32BE or
+	  UTF-32LE:"</p>
+	should be replaced by
+	<p>"<var>Bytevector</var> is decoded according
+	  to UTF-32, UTF-32BE, UTF-32LE, or a fourth encoding scheme that differs from
+	  all three of those as follows:"</p>
+      <dd>
+      <dt>&sect; 4</dt>
+      <dd>The example for the call to <code>vector-sort!</code> is
+      incorrect; it should be:
+	<pre>(define v (vector 3 5 2 1))
+(vector-sort! &lt; v)
+v => #(1 2 3 5)</pre>
+      </dd>
+      <dt>&sect; 11.3</dt>
+      <dd>The examples for <code>fl=?</code> etc. lack the trailing
+	<code>?</code> in their names.</dd>
+      <dt>&sect; 13.2</dt>
+      <dd>The parameter to <code>hashtable?</code> should be
+	<var>obj</var> instead of <var>hashtable</var> -
+	<code>hashtable?</code> can be called with any object.</dd>
+      <dt>&sect; 16</dt>
+      <dd>The examples for <code>environment</code> both lack imports
+	of <code>(rnrs eval)</code>.</dd>
+  </dl>
+    
+  </body>
+</html>
+
