@@ -3584,8 +3584,8 @@ As noted in section~\ref{abbreviationsection},
           \lev  (a 3 4 5 6 b)
 `(({\cf foo} ,(- 10 3)) ,@(cdr '(c)) . ,(car '(cons))) %
           \lev  ((foo 7) . cons)
-`\#(10 5 ,(sqrt 4) ,@(map sqrt '(16 9)) 8) %
-          \lev  \#(10 5 2 4 3 8)
+`\#(10 5 ,(- 4) ,@(map - '(16 9)) 8) %
+          \lev  \#(10 5 -4 -16 -9 8)
 (let ((name 'foo))
   `((unquote name name name)))%
           \lev (foo foo foo)
@@ -3597,7 +3597,7 @@ As noted in section~\ref{abbreviationsection},
                  (unquote (append x y) (sqrt 9)))
 (let ((x '(2 3))
       (y '(4 5)))
-  `(foo (unquote (append x y) (sqrt 9)))) \lev (foo (2 3 4 5) 3)%
+  `(foo (unquote (append x y) (- 9)))) \lev (foo (2 3 4 5) -9)%
 \end{scheme}
 
 Quasiquote forms may be nested.  Substitutions are made only for
