@@ -697,7 +697,7 @@ If it is \schfalse, a default \var{protocol} procedure is supplied.
 If \var{protocol} is a procedure, it is handled analogously to the
 protocol expression in a {\cf define-record-type} form.
 
-If \var{rtd} is a base record type and \var{protocol} is a procedure,
+If \var{rtd} is a base record type
 \var{parent-constructor-descriptor} must be \schfalse.  In this case,
 \var{protocol} is called by {\cf record-constructor} with a single
 argument \var{p}.  \var{P} is a procedure that expects one argument
@@ -783,11 +783,11 @@ the parent coming before those of the extension in the argument list.
 (In the example, $j$ is the complete number of fields of the parent
 type, and $k$ is the number of fields of \var{rtd} itself.)
 
-If \var{rtd} is an extension of another record type, and
-\var{parent-constructor-descriptor} or the \var{protocol} of
-\var{parent-constructor-descriptor} is \schfalse, \var{protocol} must
-also be \schfalse, and a default constructor descriptor as
-described above is also assumed.
+If \var{rtd} is an extension of another record type and
+\var{parent-constructor-descriptor} is \schfalse{},
+\var{parent-constructor-descriptor} is treated as if it were a
+constructor descriptor for the parent rtd of \var{rtd} with a default
+protocol.
 
 \implresp If \var{protocol} is a procedure, the implementation must
 check the restrictions on it to the extent performed by applying it as
