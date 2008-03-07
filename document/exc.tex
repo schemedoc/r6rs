@@ -153,7 +153,7 @@ returns become the values returned by the call to
           'error))
   (raise
     (condition
-      (make-violation
+      (make-violation)
       (make-message-condition "I am an error"))))
   \ev \exception{\&violation}
 
@@ -331,8 +331,8 @@ of applying \var{proc} to that component.
 (cond1? (condition foo)) \ev \schtrue
 (real-cond1? (condition foo)) \lev \unspecified
 (real-cond1? (condition foo bar)) \lev \schfalse
-(cond1-x (condition foo bar) \lev foo
-(cond2-y (condition foo bar) \lev bar
+(cond1-x (condition foo bar)) \lev foo
+(cond2-y (condition foo bar)) \lev bar
  
 (equal? (simple-conditions (condition foo bar))
         (list foo bar)) \ev \schtrue

@@ -1762,7 +1762,7 @@ These procedures return the maximum or minimum of their arguments.
 (max 3.9 4)                            \ev  4.0%
 \end{scheme}
 
-For any real number object \var{x}:
+For any real number object \var{x} that is not a NaN:
 
 \begin{scheme}
 (max +inf.0 \var{x})                         \ev  +inf.0
@@ -2186,7 +2186,7 @@ returns $a_3$, and {\cf (angle \var{z})} returns $a_4$.
 
 \begin{scheme}
 (real-part 1.1+2.2i)              \ev 1.1 ; \textrm{approximately}
-(imag-part 1.1+2.2i)              \ev 2.2i ; \textrm{approximately}
+(imag-part 1.1+2.2i)              \ev 2.2 ; \textrm{approximately}
 (magnitude 1.1@2.2)              \ev 1.1 ; \textrm{approximately}
 (angle 1.1@2.2)                  \ev 2.2 ; \textrm{approximately}
 
@@ -4092,7 +4092,7 @@ replaced by \hyperii{template}.
     ((set! \_ e) (set-car! p e))))
 (set! p.car 15)
 p.car           \ev 15
-p               \ev (15 5)%
+p               \ev (15 . 5)%
 \end{scheme}
 
 \end{entry}
