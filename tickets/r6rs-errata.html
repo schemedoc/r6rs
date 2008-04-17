@@ -26,6 +26,21 @@
     
     <h2>Revised<sup>6</sup> Report on the Algorithmic Language Scheme</h2>
     <dl>
+      <dt>&sect; 1.13</dt>
+      <dd>The example code is missing a call to
+      <code>close-port</code>, and should be:
+	<pre>#!r6rs
+(import (rnrs base)
+        (rnrs io ports)
+        (rnrs programs))
+(let ((p (standard-output-port)))
+  (put-bytevector p
+                  (call-with-port
+                      (open-file-input-port
+                        (cadr (command-line)))
+                    get-bytevector-all))
+  (close-port p))</pre>
+      </dd>
       <dt>&sect; 4</dt>
       <dd>The term "read syntax" mentioned in the introduction of the
       chapter should be "datum syntax".</dd>
@@ -99,6 +114,10 @@
 	<pre>p =&gt; (15 5)</pre>
 	should be:
 	<pre>p =&gt; (15 . 5)</pre>
+      <dt>&sect; D</dt>
+      <dd>The example is missing the following line at the end:
+	<pre>(close-output-port (current-output-port))</pre>
+      </dd>
     </dl>
     
     <h2>Standard Libraries</h2>

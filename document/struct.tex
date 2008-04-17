@@ -573,11 +573,13 @@ output the contents of the file to standard output:
 (import (rnrs base)
         (rnrs io ports)
         (rnrs programs))
-(put-bytes (standard-output-port)
-           (call-with-port
-               (open-file-input-port
-                 (cadr (command-line)))
-             get-bytes-all))%
+(let ((p (standard-output-port)))
+  (put-bytevector p
+                  (call-with-port
+                      (open-file-input-port
+                        (cadr (command-line)))
+                    get-bytevector-all))
+  (close-port p))%
 \end{scheme}
 
 %%% Local Variables: 
