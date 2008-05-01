@@ -322,7 +322,9 @@ the fixnum result of the following computation:
   {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
   equal to \variii{fx}.}  The {\cf fxcopy-bit-field} procedure returns
 the result of replacing in \vari{fx} the bits at positions from
-\varii{fx} (inclusive) to $\variii{fx}$ (exclusive) by the corresponding bits in \variv{fx}, which
+\varii{fx} (inclusive) to $\variii{fx}$ (exclusive) by the bits in
+\variv{fx} from position 0 (inclusive) to position
+$\variii{fx}-\varii{fx}$ (exclusive), which
 is the fixnum result of the following computation:
 \begin{scheme}
 (let* ((to    \vari{fx})
@@ -336,6 +338,12 @@ is the fixnum result of the following computation:
   (fxif mask
         (fxarithmetic-shift-left from start)
         to))%
+\end{scheme}
+
+\begin{scheme}
+(fxcopy-bit-field \sharpsign{}b0000001 2 5 \sharpsign{}b1111000) \lev 1
+(fxcopy-bit-field \sharpsign{}b0000001 2 5 \sharpsign{}b0001111) \lev 29
+(fxcopy-bit-field \sharpsign{}b0001111 2 5 \sharpsign{}b0001111) \lev 31%
 \end{scheme}
 \end{entry}
 
@@ -902,7 +910,9 @@ the result of the following computation:
 and \varii{ei} must be less than or equal to \variii{ei}.}
 The {\cf bitwise-copy-bit-field} procedure returns
 the result of replacing in \vari{ei} the bits at positions from
-\varii{ei} (inclusive) to $\variii{ei}$ (exclusive) by the corresponding bits in \variv{ei}, which
+\varii{ei} (inclusive) to $\variii{ei}$ (exclusive) by the bits in
+\variv{ei} from position 0 (inclusive) to position
+$\variii{ei}-\varii{ei}$ (exclusive), which
 is the result of the following computation:
 %
 \begin{scheme}
