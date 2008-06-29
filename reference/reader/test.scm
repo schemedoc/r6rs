@@ -145,6 +145,17 @@
  (get-datum (open-input-string "(#\\t,b)")))
 (check
  (get-datum (open-input-string "(#\\t ,b)")) => '(#\t (unquote b)))
+(check-exception
+ (get-datum (open-input-string "(#t#f)")))
+(check
+ (get-datum (open-input-string "(#t #f)")) => '(#t #f))
+
+(check
+ (get-datum (open-input-string "#!r6rs")) => (eof-object))
+(check
+ (get-datum (open-input-string "#!r6rs ")) => (eof-object))
+(check
+ (get-datum (open-input-string "#!r6rs a")) => 'a)
 
 (define (single-character-passes lo hi)
   (do ((i lo (+ 1 i))

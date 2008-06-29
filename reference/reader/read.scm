@@ -1,6 +1,6 @@
 ; A little R6RS Scheme reader, adapted from the Scheme 48 reader.
 
-; Copyright (c) 1993-2006 by Richard Kelsey, Jonathan Rees, and Mike Sperber
+; Copyright (c) 1993-2008 by Richard Kelsey, Jonathan Rees, and Mike Sperber
 ; All rights reserved.
 
 ; Redistribution and use in source and binary forms, with or without
@@ -299,10 +299,22 @@
 	  (reading-error port "unknown # syntax" c)))))
 
 (define-sharp-macro #\f
-  (lambda (c port) (get-char port) #f))
+  (lambda (c port)
+    (get-char port)
+    (let ((c (lookahead-char port)))
+      (if (not (or (eof-object? c)
+		   (delimiter? c)))
+	  (reading-error port "undelimited #f" c)))
+    #f))
 
 (define-sharp-macro #\t
-  (lambda (c port) (get-char port) #t))
+  (lambda (c port)
+    (get-char port)
+    (let ((c (lookahead-char port)))
+      (if (not (or (eof-object? c)
+		   (delimiter? c)))
+	  (reading-error port "undelimited #t" c)))
+    #t))
 
 (define-sharp-macro #\'
   (lambda (c port)
@@ -365,6 +377,16 @@
 			     (reading-error port "non-octet in #vu8(...)" non-u8)))
 		       (else
 			(u8-list->bytes elts))))))))))))))))
+
+(define-sharp-macro #\!
+  (lambda (c port)
+    (get-char port)
+    (let ((s (sub-read-symbol (get-char port) port)))
+      (case s
+	((r6rs)
+	 (sub-read port))
+	(else
+	 (reading-error port "unknown #! syntax" s))))))
 
 (define (not-u8-list l)
   (if (null? l)
@@ -494,7 +516,7 @@
 	      (+ n 1)))
        ((string->number (reverse-list->string l n)))
        (else
-	(reading-error "invalid number syntax" (reverse-list->string l n)))))))
+	(reading-error port "invalid number syntax" (reverse-list->string l n)))))))
 
 ; We know it's a symbol
 (define (sub-read-symbol c port)
