@@ -1,3 +1,5 @@
+;; Requires development version of Scheme 48
+
 (define-structure r6rs-faux (export u8-list->bytes
 				    bytes=?
 				    &i/o-read &i/o-port &lexical
@@ -11,21 +13,14 @@
     (define u8-list->bytes u8-list->blob)
     (define bytes=? blob=?)
 
-    (define-condition-type &violation &serious
-      violation?)
-    (define-condition-type &defect &violation
-      defect?)
-    (define-condition-type &lexical &defect
-      lexical-violation?)
-    
     (define-condition-type &i/o &error
-      i/o-error?)
+      make-i/o-error i/o-error?)
 
     (define-condition-type &i/o-read &i/o
-      i/o-read-error?)
+      make-i/o-read-error i/o-read-error?)
 
     (define-condition-type &i/o-port &i/o
-      i/o-port-error?
+      make-i/o-port-error i/o-port-error?
       (port i/o-error-port))
 
     (define (get-char port)
