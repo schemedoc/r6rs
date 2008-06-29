@@ -25,10 +25,6 @@
 ; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 ; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-; Known insufficiencies:
-; - it doesn't properly check the syntax of symbols starting with "->"
-; - it doesn't check the maximum size for hex scalar-value literals
-
 (library (r6rs i/o port reader)
   (export get-datum)
   (import (r6rs base)
@@ -67,7 +63,7 @@
 
 (define close-paren (make-reader-token "unexpected right parenthesis"))
 (define close-bracket (make-reader-token "unexpected right bracket"))
-(define dot         (make-reader-token "unexpected \" . \""))
+(define dot (make-reader-token "unexpected \" . \""))
 
 
 ; Main dispatch
@@ -79,12 +75,12 @@
                (lambda (c port)
                  (reading-error port "illegal character read" c))))
 
-(define read-terminating?-vector
-  (make-vector *dispatch-table-limit* #t))
+(define read-subsequent?-vector
+  (make-vector *dispatch-table-limit* #f))
 
-(define (set-standard-syntax! char terminating? reader)
-  (vector-set! read-dispatch-vector     (char->integer char) reader)
-  (vector-set! read-terminating?-vector (char->integer char) terminating?))
+(define (set-standard-syntax! char subsequent? reader)
+  (vector-set! read-dispatch-vector    (char->integer char) reader)
+  (vector-set! read-subsequent?-vector (char->integer char) subsequent?))
 
 (define (sub-read port)
   (let ((c (get-char port)))
@@ -95,33 +91,17 @@
 	   ((< scalar-value *dispatch-table-limit*)
 	    ((vector-ref read-dispatch-vector (char->integer c))
 	     c port))
-	   ((char-alphabetic? c)
-	    (sub-read-constituent c port))
+	   ((constituent>127? c)
+	    (sub-read-symbol c port))
+	   ((char-scheme-whitespace? c)
+	    (sub-read port))
 	   (else
 	    (reading-error port "illegal character read" c)))))))
 
-(let ((sub-read-whitespace
-       (lambda (c port)
-         c                              ;ignored
-         (sub-read port))))
-  (for-each (lambda (c)
-              (vector-set! read-dispatch-vector c sub-read-whitespace))
-	    ;; ASCII whitespaces
-            '(32 9 10 11 12 13)))
-
-(define (sub-read-constituent c port)
-  (parse-token (sub-read-token c port) port))
-
-(for-each (lambda (c)
-	    (set-standard-syntax! c #f sub-read-constituent))
-	  (string->list
-	   (string-append "!$%&*+-./0123456789:<=>?@^_~ABCDEFGHIJKLM"
-			  "NOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")))
-
 ; Usual read macros
 
-(define (set-standard-read-macro! c terminating? proc)
-  (set-standard-syntax! c terminating? proc))
+(define (set-standard-read-macro! c subsequent? proc)
+  (set-standard-syntax! c subsequent? proc))
 
 (define (sub-read-list c port close-token)
   (let ((form (sub-read port)))
@@ -149,31 +129,31 @@
 (define (sub-read-list-bracket c port)
   (sub-read-list c port close-bracket))
 
-(set-standard-read-macro! #\( #t sub-read-list-paren)
+(set-standard-read-macro! #\( #f sub-read-list-paren)
 
-(set-standard-read-macro! #\[ #t sub-read-list-bracket)
+(set-standard-read-macro! #\[ #f sub-read-list-bracket)
 
-(set-standard-read-macro! #\) #t
+(set-standard-read-macro! #\) #f
   (lambda (c port)
     c port
     close-paren))
 
-(set-standard-read-macro! #\] #t
+(set-standard-read-macro! #\] #f
   (lambda (c port)
     c port
     close-bracket))
 
-(set-standard-read-macro! #\' #t
+(set-standard-read-macro! #\' #f
   (lambda (c port)
     c
     (list 'quote (sub-read-carefully port))))
 
-(set-standard-read-macro! #\` #t
+(set-standard-read-macro! #\` #f
   (lambda (c port)
     c
     (list 'quasiquote (sub-read-carefully port))))
 
-(set-standard-read-macro! #\, #t
+(set-standard-read-macro! #\, #f
   (lambda (c port)
     c
     (let* ((next (lookahead-char port))
@@ -200,7 +180,7 @@
 (define *escape* (integer->char 27))
 (define *delete* (integer->char 127))
 
-(set-standard-read-macro! #\" #t
+(set-standard-read-macro! #\" #f
   (lambda (c port)
     c ;ignored
     (let loop ((l '()) (i 0))
@@ -232,7 +212,7 @@
 	    (cond 
 	     ((eof-object? c)
 	      (reading-error port "end of file within a string"))
-	     ((char-unicode-whitespace? c)
+	     ((char-scheme-whitespace? c)
 	      (get-char port)
 	      (loop))
 	     (else #f)))))
@@ -262,6 +242,7 @@
 (define (decode-hex-digits port delimiter? desc)
   (let loop ((rev-digits '()))
     (let ((c (lookahead-char port)))
+      (write (list 'hex c)) (newline)
       (cond
        ((delimiter? c)
 	(integer->char
@@ -287,7 +268,7 @@
 	(and (>= scalar-value 97)	; #\a
 	     (<= scalar-value 102)))))	; #\f
 
-(set-standard-read-macro! #\; #t
+(set-standard-read-macro! #\; #f
   (lambda (c port)
     c ;ignored
     (gobble-line port)
@@ -437,15 +418,17 @@
 
 (define *char-name-table*
   (list
-   (cons 'space #\space)
    (cons 'nul *nul*)
    (cons 'alarm *alarm*)
    (cons 'backspace *backspace*)
    (cons 'tab *tab*)
    (cons 'linefeed *linefeed*)
+   (cons 'newline *linefeed*)
    (cons 'vtab *vtab*)
    (cons 'page *page*)
+   (cons 'return *return*)
    (cons 'esc *escape*)
+   (cons 'space #\space)
    (cons 'delete *delete*)))
 
 (define-sharp-macro #\\
@@ -490,23 +473,44 @@
 	((pair? x) (proper-list? (cdr x)))
 	(else #f)))
 
-(let ((number-sharp-macro
-       (lambda (c port)
-	 (let ((string (sub-read-token #\# port)))
-	   (or (string->number string)
-	       (reading-error port "unsupported number syntax" string))))))
-  (for-each (lambda (c)
-	      (define-sharp-macro c number-sharp-macro))
-	    '(#\b #\o #\d #\x #\i #\e)))
+(for-each (lambda (c)
+	    (define-sharp-macro c (lambda (c port)
+				    (sub-read-number #\# port))))
+	  '(#\b #\o #\d #\x #\i #\e))
 
 ; Tokens
 
-(define (sub-read-token c port)
+; Symbols and numbers
+
+; We know it's a number
+(define (sub-read-number c port)
+  (let loop ((l (list c)) (n 1))
+    (let ((c (lookahead-char port)))
+      (cond
+       ((not (or (eof-object? c)
+		 (delimiter? c)))
+	(get-char port)
+	(loop (cons c l)
+	      (+ n 1)))
+       ((string->number (reverse-list->string l n)))
+       (else
+	(reading-error "invalid number syntax" (reverse-list->string l n)))))))
+
+; We know it's a symbol
+(define (sub-read-symbol c port)
   (let loop ((l (list c)) (n 1))
     (let ((c (lookahead-char port)))
       (cond
        ((eof-object? c)
-	(reverse-list->string l n))
+	(string->symbol (reverse-list->string l n)))
+       ((let ((sv (char->integer c)))
+	  (if (< sv *dispatch-table-limit*)
+	       (vector-ref read-subsequent?-vector sv)
+	       (or (constituent>127? c)
+		   (memq (char-general-category c) '(Nd Mc Me)))))
+	(get-char port)
+	(loop (cons c l)
+	      (+ n 1)))
        ((char=? c #\\)
 	(get-char port)
 	(let ((c (lookahead-char port)))
@@ -517,44 +521,81 @@
 			   c))
 	   (else
 	    (get-char port)
-	    (let ((d (decode-hex-digits port char-semicolon? "symbol literal")))
+	    (let ((d (decode-hex-digits port char-semicolon? "symbol")))
 	      (get-char port)		; remove semicolon
 	      (loop (cons d l) (+ n 1)))))))
+       ((delimiter? c)
+	(string->symbol (reverse-list->string l n)))
        (else
-	(let ((sv (char->integer c)))
-	  (if (if (< sv *dispatch-table-limit*)
-		  (vector-ref read-terminating?-vector sv)
-		  (binary-search *non-symbol-constituents-above-127* sv))
-	      (reverse-list->string l n)
-	      (begin
-		(get-char port)
-		(loop (cons c l)
-		      (+ n 1))))))))))
+	(reading-error "invalid symbol syntax" (reverse-list->string l n)))))))
 
-(define (parse-token string port)
-  (if (let ((c (string-ref string 0)))
-	(or (char-numeric? c) (char=? c #\+) (char=? c #\-) (char=? c #\.)))
-      (cond ((string->number string))
-	    ((member string strange-symbol-names)
-	     (string->symbol (make-immutable! string)))
-	    ((string=? string ".")
-	     dot)
-	    ;; ->... symbols
-	    ;; #### should have more checking
-	    ((and (>= (string-length string) 2)
-		  (char=? (string-ref string 0) #\-)
-		  (char=? (string-ref string 1) #\>))
-	     (string->symbol (make-immutable! string)))
-	    (else
-	     (reading-error port "unsupported number syntax" string)))
-      (string->symbol (make-immutable! string))))
+; something starting with a +
+(define (sub-read/+ c port)
+  (let ((next (lookahead-char port)))
+    (if (or (eof-object? next)
+	    (delimiter? next))
+	'+
+	(sub-read-number c port))))
 
-(define strange-symbol-names
-  '("+" "-" "..."
-	))
+; something starting with a -
+(define (sub-read/- c port)
+  (let ((next (lookahead-char port)))
+    (cond
+     ((or (eof-object? next)
+	  (delimiter? next))
+      '-)
+     ((char=? #\> next)
+      (sub-read-symbol c port))
+     (else
+      (sub-read-number c port)))))
+
+; something starting with a .
+(define (sub-read/. c port)
+  (let ((next (lookahead-char port)))
+    (cond
+     ((or (eof-object? next)
+	  (delimiter? next))
+      dot)
+     ((char=? #\. next)
+      (let ((next2
+	     (begin (get-char port)
+		    (lookahead-char port))))
+	(if (or (eof-object? next2)
+		(not (char=? #\. next2)))
+	    (reading-error "invalid symbol syntax" (string c next next2)))
+	'...))
+     (else
+      (sub-read-number c port)))))
+
+(let ((sub-read-whitespace
+       (lambda (c port)
+         c                              ;ignored
+         (sub-read port))))
+  (for-each (lambda (c)
+              (vector-set! read-dispatch-vector c sub-read-whitespace))
+	    ;; ASCII whitespaces
+            '(32 9 10 11 12 13)))
+
+(for-each (lambda (c)
+	    (set-standard-syntax! c #t sub-read-symbol))
+	  (string->list
+	   "!$%&*/:<=>?^_~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"))
+
+(set-standard-syntax! #\+ #t sub-read/+)
+(set-standard-syntax! #\- #t sub-read/-)
+
+(set-standard-syntax! #\. #t sub-read/.)
+	  
+(for-each (lambda (c)
+	    (set-standard-syntax! c #t sub-read-number))
+	  (string->list "0123456789"))
+
+(set-standard-syntax! #\@ #t
+		      (lambda (c port)
+			(reading-error port "illegal character read" c)))
 
 (define (delimiter? c)
-  (or (char-unicode-whitespace? c)
+  (or (char-scheme-whitespace? c)
       (char=? c #\))
       (char=? c #\()
       (char=? c #\])
@@ -562,8 +603,14 @@
       (char=? c #\")
       (char=? c #\;)))
 
-(define (char-unicode-whitespace? c)
+(define (constituent>127? c)
+  (memq (char-general-category c)
+	'(Lu Ll Lt Lm Lo Mn Nl No Pd Pc Po Sc Sm Sk So Or Co)))
+
+(define (char-scheme-whitespace? c)
   (binary-search *whitespaces* (char->integer c)))
+
+(define *whitespaces* '#(9 10 11 12 13 32 133 160 5760 6158 8192 8193 8194 8195 8196 8197 8198 8199 8200 8201 8202 8232 8233 8239 8287 12288))
 
 ; Reader errors
 
