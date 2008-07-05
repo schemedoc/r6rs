@@ -292,8 +292,17 @@ generated every time a {\cf define-record-type} form is evaluated:
 
 Specifies that the record type is to have its parent type specified by
 \hyper{parent rtd}, which should be an expression evaluating to a
-record-type descriptor, and \hyper{parent cd}, which should be an
-expression evaluating to a constructor descriptor (see below).  The
+record-type descriptor or \schfalse, and \hyper{parent cd}, which should be an
+expression evaluating to a constructor descriptor (see below) or
+\schfalse.
+
+If \hyper{parent rtd} evaluates to \schfalse, the record type being
+defined is a base record type.  In this case, if \hyper{parent cd}
+evaluates to a value, that value must be \schfalse.  If \hyper{parent
+  cd} evaluates to \schfalse{}, the protocol of the value of
+\hyper{parent rtd} must be a default protocol (see below).
+
+If \hyper{parent rtd} evaluates to a record-type descriptor, the
 record-type definition associated with the value of \hyper{parent rtd}
 must not be sealed.  Moreover, a record-type definition must not have
 both a {\cf parent} and a {\cf parent-rtd} clause.
