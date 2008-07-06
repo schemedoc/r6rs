@@ -332,7 +332,8 @@ procedure as follows:
   returns a record object with the fields initialized to the
   corresponding arguments.
 \item If the record type is a base type and a {\cf protocol} clause is present,
-  the protocol expression must evaluate to a procedure that accepts a
+  the protocol expression, if it evaluates to a value,
+  must evaluate to a procedure that accepts a
   single argument.  The protocol procedure is called once during the
   evaluation of the {\cf define-record-type} form with a
   procedure \var{p} as its argument.  It should return a procedure,
@@ -395,7 +396,8 @@ also initializes the fields of this record type to the values of {\cf
   {\cf protocol} clause itself.
   Similarly, if there is a {\cf parent-rtd} clause whose \hyper{parent rtd}
   evaluates to a record-type descriptor, but no {\cf protocol} clause,
-  then the \hyper{parent cd} expression must evaluate to \schfalse.
+  then the \hyper{parent cd} expression, if it evaluates to a value,
+  must evaluate to \schfalse.
   The constructor bound to
   \hyper{constructor name} is a procedure that accepts arguments corresponding to the 
   parent types' constructor first, and then one argument for each field in the same
