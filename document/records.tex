@@ -230,9 +230,6 @@ Specifies that the record type is to have parent type \hyper{parent
 record type previously defined using {\cf define-record-type}. 
 The record-type definition
 associated with \hyper{parent name} must not be sealed.
-If
-no {\cf parent} clause and no {\cf parent-rtd} (see below) clause
-is present, the record type is a base type.  
 
 {\cf (protocol \hyper{expression})}
    
@@ -296,14 +293,11 @@ record-type descriptor or \schfalse, and \hyper{parent cd}, which should be an
 expression evaluating to a constructor descriptor (see below) or
 \schfalse.
 
-If \hyper{parent rtd} evaluates to \schfalse, the record type being
-defined is a base record type.  In this case, if \hyper{parent cd}
-evaluates to a value, that value must be \schfalse.  If \hyper{parent
-  cd} evaluates to \schfalse{}, the protocol of the value of
-\hyper{parent rtd} must be a default protocol (see below).
+If \hyper{parent rtd} evaluates to \schfalse, then if \hyper{parent cd}
+evaluates to a value, that value must be \schfalse.
 
 If \hyper{parent rtd} evaluates to a record-type descriptor, the
-record-type definition associated with the value of \hyper{parent rtd}
+record type
 must not be sealed.  Moreover, a record-type definition must not have
 both a {\cf parent} and a {\cf parent-rtd} clause.
 
@@ -322,17 +316,22 @@ All bindings created by {\cf define-record-type} (for the record type,
 the constructor, the predicate, the accessors, and the
 mutators) must have names that are pairwise distinct.
 
+If
+no {\cf parent} clause is present, no {\cf parent-rtd} clause
+is present, or a {\cf parent-rtd} clause is present but
+\hyper{parent rtd} evaluates to \schfalse,
+the record type is a base type.  
+
 The constructor created by a {\cf define-record-type} form is a
 procedure as follows:
 %
 \begin{itemize}
-\item If there is no {\cf parent} clause and no {\cf protocol} clause,
+\item If the record type is a base type and no {\cf protocol} clause is present,
   the constructor accepts as many arguments as there are fields, in
   the same order as they appear in the {\cf fields} clause, and
   returns a record object with the fields initialized to the
   corresponding arguments.
-\item If there is no {\cf parent} or {\cf parent-rtd} clause and a
-  {\cf protocol} clause,
+\item If the record type is a base type and a {\cf protocol} clause is present,
   the protocol expression must evaluate to a procedure that accepts a
   single argument.  The protocol procedure is called once during the
   evaluation of the {\cf define-record-type} form with a
@@ -358,8 +357,8 @@ procedure as follows:
     (p v3 v2 v1)))%
  \end{scheme}
 
-\item If there is both a {\cf parent} clause and a {\cf protocol}
-  clause, then the protocol procedure is called once with a procedure
+\item If the record type is not a base type and a {\cf protocol}
+  clause is present, then the protocol procedure is called once with a procedure
   \var{n} as its argument.  As in the previous case, the protocol
   procedure should return a procedure, which will become the
   constructor bound to \hyper{constructor name}.  However, \var{n} is
@@ -393,16 +392,16 @@ also initializes the fields of this record type to the values of {\cf
 
 \item If there is a {\cf parent} clause, but no {\cf protocol} clause,
   then the parent type must not have a
-  {\cf protocol} clause itself.  The constructor bound to
+  {\cf protocol} clause itself.
+  Similarly, if there is a {\cf parent-rtd} clause whose \hyper{parent rtd}
+  evaluates to a record-type descriptor, but no {\cf protocol} clause,
+  then the \hyper{parent cd} expression must evaluate to \schfalse.
+  The constructor bound to
   \hyper{constructor name} is a procedure that accepts arguments corresponding to the 
   parent types' constructor first, and then one argument for each field in the same
   order as in the {\cf fields} clause. The constructor
   returns a record object with the fields initialized to the corresponding
   arguments.
-\item If there is a {\cf parent-rtd} clause, then the constructor is
-  as with a {\cf parent} clause, except that the constructor of the
-  parent type is determined by the constructor descriptor of the {\cf
-    parent-rtd} clause.
 \end{itemize}
 
 A protocol may perform other actions consistent with the requirements
