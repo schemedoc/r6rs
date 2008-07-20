@@ -1,7 +1,7 @@
 (module show-examples mzscheme
   
-  (require (planet "gui.ss" ("robby" "redex.plt" 3 10))
-           (planet "reduction-semantics.ss" ("robby" "redex.plt" 3 10))
+  (require (planet "gui.ss" ("robby" "redex.plt" 4))
+           (planet "reduction-semantics.ss" ("robby" "redex.plt" 4))
            "r6rs.scm")
   (provide trace trace-expression
            step step-expression)
@@ -66,4 +66,4 @@
         c c))
      (cons 1 2)))
   
-  (step  '(store () ((lambda (sx first-time?) ((lambda (k) (if first-time? (begin (set! first-time? #f) (with-exception-handler (lambda (x) (k values)) (lambda () (dynamic-wind + (lambda () (raise-continuable 1)) (lambda () (set! sx (+ sx 1))))))) sx)) (call/cc values))) 1 #t))))
+  (trace '(store () (letrec* ((phase 0) (k #f) (l (quote ()))) (with-exception-handler (lambda (x) (if (eqv? phase 0) (begin (set! phase 1) (call/cc (lambda (k2) (begin (set! k k2) (quote whatever))))) (if (eqv? phase 1) (begin (set! phase 2) (k 1)) 1234))) (lambda () (dynamic-wind (lambda () (set! l (cons 1 l))) (lambda () (dynamic-wind (lambda () (set! l (cons 2 l))) (lambda () (raise-continuable 1)) (lambda () (set! l (cons 3 l)))) (dynamic-wind (lambda () (set! l (cons 4 l))) (lambda () (raise-continuable 1)) (lambda () (set! l (cons 5 l))))) (lambda () (set! l (cons 6 l)))))) (set! k #f) (apply values l)))))

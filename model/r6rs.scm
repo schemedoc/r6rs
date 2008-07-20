@@ -1,6 +1,6 @@
 
 (module r6rs mzscheme
-  (require (planet "reduction-semantics.ss" ("robby" "redex.plt" 3 10))
+  (require (planet "reduction-semantics.ss" ("robby" "redex.plt" 4))
            (lib "plt-match.ss"))
   
   (provide lang 
@@ -27,134 +27,133 @@
     ;; these are only used in the figures
     #''ignore)
 
-  (define lang
-    (language
-     (p* (store (sf ...) es) (uncaught-exception v) (unknown string))
-     (a* (store (sf ...) (values v ...)) (uncaught-exception v) (unknown string))
-     (r* (values r*v ...) exception unknown)
-     (r*v  pair null 'sym sqv condition procedure)
-     (sf (x v) (x bh) (pp (cons v v)))
-     
-     (es 'seq 'sqv '()
-         (begin es es ...) (begin0 es es ...) (es es ...)
-         (if es es es) (set! x es) x
-         nonproc pproc (lambda f es es ...)
-         (letrec ([x es] ...) es es ...) 
-         (letrec* ([x es] ...) es es ...)
-         
-         ;; intermediate states
-         (dw x es es es) 
-         (throw x es)
-         unspecified
-         (handlers es ... es)
-         (l! x es)
-         (reinit x))
-     (f (x ...)
-        (x x ... dot x)
-        x)
-     
-     (s seq () sqv sym)
-     (seq (s s ...) (s s ... dot sqv) (s s ... dot sym))
-     (sqv n #t #f)
-
-     (p (store (sf ...) e))
-     (e (begin e e ...) (begin0 e e ...)
-        (e e ...) (if e e e)
-        (set! x e) (handlers e ... e)
-        x nonproc proc (dw x e e e)
+  (define-language lang
+    (p* (store (sf ...) es) (uncaught-exception v) (unknown string))
+    (a* (store (sf ...) (values v ...)) (uncaught-exception v) (unknown string))
+    (r* (values r*v ...) exception unknown)
+    (r*v  pair null 'sym sqv condition procedure)
+    (sf (x v) (x bh) (pp (cons v v)))
+    
+    (es 'seq 'sqv '()
+        (begin es es ...) (begin0 es es ...) (es es ...)
+        (if es es es) (set! x es) x
+        nonproc pproc (lambda f es es ...)
+        (letrec ([x es] ...) es es ...) 
+        (letrec* ([x es] ...) es es ...)
+        
+        ;; intermediate states
+        (dw x es es es) 
+        (throw x es)
         unspecified
-        (letrec ([x e] ...) e e ...)
-        (letrec* ([x e] ...) e e ...)
+        (handlers es ... es)
         (l! x es)
         (reinit x))
-     (v nonproc proc)
-     (nonproc pp null 'sym sqv (make-cond string))
-     
-     (proc (lambda f e e ...) pproc (throw x e))
-     (pproc aproc proc1 proc2 list dynamic-wind apply values)
-     (proc1 null? pair? car cdr call/cc procedure? condition? raise*)
-     (proc2 cons consi set-car! set-cdr! eqv? call-with-values with-exception-handler)
-     (aproc + - / *)
-     (raise* raise-continuable raise)
-     
-     ; pair pointers, both mutable and immutable
-     (pp ip mp)
-     (ip (variable-prefix ip))
-     (mp (variable-prefix mp))
-     
-     (sym (variable-except dot))
-     
-     (x (side-condition 
-         (name var_none
-               (variable-except 
-                dot                         ; the . in dotted pairs
-                lambda if loc set!          ; core syntax names
-                quote
-                begin begin0
-                
-                null                      ; non-function values
-                unspecified
-                pair closure
-                
-                error                       ; signal an error
-                
-                letrec letrec* l! reinit
-                
-                procedure? condition?
-                cons consi pair? null? car cdr       ; list functions
-                set-car! set-cdr! list
-                + - * /                          ; math functions
-                call/cc throw dw dynamic-wind  ; call/cc functions
-                values call-with-values              ; values functions
-                apply eqv?
-                
-                with-exception-handler handlers
-                raise-continuable raise))
-         (not (pp? (term var_none)))))
-     
-     (n number)
-     
-     (P (store (sf ...) E*))
-     
-     (E (in-hole F (handlers proc ... E*)) (in-hole F (dw x e E* e)) F)
-     (E* (hole multi) E)
-     (Eo (hole single) E)
-     
-     (F hole (v ... Fo v ...) (if Fo e e) (set! x Fo)  
-        (begin F* e e ...) (begin0 F* e e ...) 
-        (begin0 (values v ...) F* e ...) (begin0 unspecified F* e ...)
-        (call-with-values (lambda () F* e ...) v)
-        (l! x Fo))
-
-     (F* (hole multi) F)
-     (Fo (hole single) F)
-     
-     ;; all of the one-layer contexts that "demand" their values, 
-     ;; (maybe just "demand" it enough to ensure it is the right # of values)
-     ;; which requires unspecified to blow up.
-     (U (v ... hole v ...) (if hole e e) (set! x hole) 
-        (call-with-values (lambda () hole) v))
-        
-     ;; everything except exception handler bodies
-     (PG (store (sf ...) G))
-     (G (in-hole F (dw x e G e))
-        F)
-     
-     ;; everything except dw
-     (H (in-hole F (handlers proc ... H)) F)
-     
-     (S hole (begin e e ... S es ...) (begin S es ...)
-        (begin0 e e ... S es ...) (begin0 S es ...)
-        (e ... S es ...) (if S es es) (if e S es) (if e e S)
-        (set! x S) (handlers s ... S es ... es) (handlers s ... S)
-        (throw x e) 
-        (lambda f S es ...) (lambda f e e ... S es ...)
-        (letrec ([x e] ... [x S] [x es] ...) es es ...)
-        (letrec ([x e] ...) S es ...)
-        (letrec ([x e] ...) e e ... S es ...)
-        (letrec* ([x e] ... [x S] [x es] ...) es es ...)
-        (letrec* ([x e] ...) S es ...)
-        (letrec* ([x e] ...) e e ... S es ...))))
+    (f (x ...)
+       (x x ... dot x)
+       x)
+    
+    (s seq () sqv sym)
+    (seq (s s ...) (s s ... dot sqv) (s s ... dot sym))
+    (sqv n #t #f)
+    
+    (p (store (sf ...) e))
+    (e (begin e e ...) (begin0 e e ...)
+       (e e ...) (if e e e)
+       (set! x e) (handlers e ... e)
+       x nonproc proc (dw x e e e)
+       unspecified
+       (letrec ([x e] ...) e e ...)
+       (letrec* ([x e] ...) e e ...)
+       (l! x es)
+       (reinit x))
+    (v nonproc proc)
+    (nonproc pp null 'sym sqv (make-cond string))
+    
+    (proc (lambda f e e ...) pproc (throw x e))
+    (pproc aproc proc1 proc2 list dynamic-wind apply values)
+    (proc1 null? pair? car cdr call/cc procedure? condition? raise*)
+    (proc2 cons consi set-car! set-cdr! eqv? call-with-values with-exception-handler)
+    (aproc + - / *)
+    (raise* raise-continuable raise)
+    
+    ; pair pointers, both mutable and immutable
+    (pp ip mp)
+    (ip (variable-prefix ip))
+    (mp (variable-prefix mp))
+    
+    (sym (variable-except dot))
+    
+    (x (side-condition 
+        (name var_none
+              (variable-except 
+               dot                         ; the . in dotted pairs
+               lambda if loc set!          ; core syntax names
+               quote
+               begin begin0
+               
+               null                      ; non-function values
+               unspecified
+               pair closure
+               
+               error                       ; signal an error
+               
+               letrec letrec* l! reinit
+               
+               procedure? condition?
+               cons consi pair? null? car cdr       ; list functions
+               set-car! set-cdr! list
+               + - * /                          ; math functions
+               call/cc throw dw dynamic-wind  ; call/cc functions
+               values call-with-values              ; values functions
+               apply eqv?
+               
+               with-exception-handler handlers
+               raise-continuable raise))
+        (not (pp? (term var_none)))))
+    
+    (n number)
+    
+    (P (store (sf ...) E*))
+    
+    (E (in-hole F (handlers proc ... E*)) (in-hole F (dw x e E* e)) F)
+    (E* (hole multi) E)
+    (Eo (hole single) E)
+    
+    (F hole (v ... Fo v ...) (if Fo e e) (set! x Fo)  
+       (begin F* e e ...) (begin0 F* e e ...) 
+       (begin0 (values v ...) F* e ...) (begin0 unspecified F* e ...)
+       (call-with-values (lambda () F* e ...) v)
+       (l! x Fo))
+    
+    (F* (hole multi) F)
+    (Fo (hole single) F)
+    
+    ;; all of the one-layer contexts that "demand" their values, 
+    ;; (maybe just "demand" it enough to ensure it is the right # of values)
+    ;; which requires unspecified to blow up.
+    (U (v ... hole v ...) (if hole e e) (set! x hole) 
+       (call-with-values (lambda () hole) v))
+    
+    ;; everything except exception handler bodies
+    (PG (store (sf ...) G))
+    (G (in-hole F (dw x e G e))
+       F)
+    
+    ;; everything except dw
+    (H (in-hole F (handlers proc ... H)) F)
+    
+    (S hole (begin e e ... S es ...) (begin S es ...)
+       (begin0 e e ... S es ...) (begin0 S es ...)
+       (e ... S es ...) (if S es es) (if e S es) (if e e S)
+       (set! x S) (handlers s ... S es ... es) (handlers s ... S)
+       (throw x e) 
+       (lambda f S es ...) (lambda f e e ... S es ...)
+       (letrec ([x e] ... [x S] [x es] ...) es es ...)
+       (letrec ([x e] ...) S es ...)
+       (letrec ([x e] ...) e e ... S es ...)
+       (letrec* ([x e] ... [x S] [x es] ...) es es ...)
+       (letrec* ([x e] ...) S es ...)
+       (letrec* ([x e] ...) e e ... S es ...)))
 
   (define Basic--syntactic--forms
     (reduction-relation
@@ -202,7 +201,7 @@
           (in-hole P_1 ,(/ (term n_1) (product-of (term (n_2 n_3 ...)))))
           "6/"
           (side-condition (not (member 0 (term (n_2 n_3 ...))))))
-     (--> (in-hole P_1 (/ n n ... 0 n ...))
+     (--> (in-hole P_1 (/ n_1 n_2 ... 0 n_3 ...))
           (in-hole P_1 (raise (make-cond "divison by zero")))
           "6/0")
      (--> (in-hole P_1 (/))
@@ -238,10 +237,10 @@
           (side-condition (or (not (condition? (term v_1)))
                               (not (condition? (term v_2))))))
      
-     (--> (in-hole P_1 (eqv? (make-cond string) (make-cond string)))
+     (--> (in-hole P_1 (eqv? (make-cond string_1) (make-cond string_2)))
           (in-hole P_1 #t)
           "6eqct")
-     (--> (in-hole P_1 (eqv? (make-cond string) (make-cond string)))
+     (--> (in-hole P_1 (eqv? (make-cond string_1) (make-cond string_2)))
           (in-hole P_1 #f)
           "6eqcf")))
   
@@ -381,14 +380,14 @@
      (--> (in-hole P_1 (procedure? nonproc)) (in-hole P_1 #f) "6procf")
      
      ;; mu-lambda too few arguments case
-     (--> (in-hole P_1 ((lambda (x_1 ...) e e ...) v_1 ...))
+     (--> (in-hole P_1 ((lambda (x_1 ...) e_1 e_2 ...) v_1 ...))
           (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6arity"
           (side-condition
            (not (= (length (term (x_1 ...)))
                    (length (term (v_1 ...)))))))
      
-     (--> (in-hole P_1 ((lambda (x_1 x_2 ... dot x) e e ...) v_1 ...))
+     (--> (in-hole P_1 ((lambda (x_1 x_2 ... dot x) e_1 e_2 ...) v_1 ...))
           (in-hole P_1 (raise (make-cond "arity mismatch")))
           "6μarity"
           (side-condition
@@ -417,12 +416,12 @@
           "6applyf")
      
      (--> (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole E_1 (apply proc_1 v_1 ... pp_1)))
-          (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole  E_1 (apply proc_1 v_1 ... v_2 v_3)))
+          (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole E_1 (apply proc_1 v_1 ... v_2 v_3)))
           "6applyc"
           (side-condition (not (term (circular? (pp_1 v_3 (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...)))))))
      
      (--> (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole E_1 (apply proc_1 v_1 ... pp_1)))
-          (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole  E_1 (raise (make-cond "apply called on circular list"))))
+          (store (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...) (in-hole E_1 (raise (make-cond "apply called on circular list"))))
           "6applyce"
           (side-condition (term (circular? (pp_1 v_3 (sf_1 ... (pp_1 (cons v_2 v_3)) sf_2 ...))))))
      
@@ -525,7 +524,7 @@
           "6dwarity"
           (side-condition (not (= (length (term (v_1 ...))) 3))))
      
-     (--> (in-hole P_1 (dw x e (values v_1 ...) e))
+     (--> (in-hole P_1 (dw x e_1 (values v_1 ...) e_2))
           (in-hole P_1 (values v_1 ...))
           "6dwdone")
      
@@ -718,7 +717,7 @@
   (define Underspecification
     (reduction-relation
      lang
-     (--> (in-hole P (eqv? proc proc))
+     (--> (in-hole P (eqv? proc_1 proc_2))
           (unknown "equivalence of procedures")
           "6ueqv")
      (--> (in-named-hole single P (values v_1 ...))
@@ -738,7 +737,7 @@
      (--> (in-hole P_1 (handlers v ... unspecified))
           (in-hole P_1 unspecified)
           "6uhandlers")
-     (--> (in-hole P_1 (dw x e unspecified e))
+     (--> (in-hole P_1 (dw x e_1 unspecified e_2))
           (in-hole P_1 unspecified)
           "6udw")
      (--> (in-hole P_1 (begin0 (values v_1 ...) unspecified e_1 ...))

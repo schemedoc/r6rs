@@ -2,7 +2,7 @@
   (require (lib "match.ss")
            (lib "list.ss")
            (lib "etc.ss")
-           (planet "reduction-semantics.ss" ("robby" "redex.plt" 3 10))
+           (planet "reduction-semantics.ss" ("robby" "redex.plt" 4))
            "test.scm"
            "r6rs.scm")
   
@@ -1886,7 +1886,7 @@ of digits with deconv-base
                        (k (lambda (x) x))
                        (k 2)))
                   (list '(uncaught-exception (make-cond "reinvoked continuation of letrec init"))
-                        '(store ((lx-k (lambda (x2) x2))) (values 2))))
+                        '(store ((lx-k (lambda (x3) x3))) (values 2))))
      
      (make-r6test '(store ()
                      ((lambda (flag)
@@ -1930,7 +1930,7 @@ of digits with deconv-base
                       #t))
                   (list '(uncaught-exception (make-cond "reinvoked continuation of letrec init"))
                         '(uncaught-exception (make-cond "can't take car of non-pair"))
-                        '(store ((lx-k (lambda (x2) x2)) (lx-x 'nothing-doing)) (values 2))))
+                        '(store ((lx-k (lambda (x3) x3)) (lx-x 'nothing-doing)) (values 2))))
      
      (make-r6test '(store ()
                      ((lambda (flag)
@@ -2017,7 +2017,7 @@ of digits with deconv-base
   
   (define the-tests (apply append (map cadr the-sets)))
   
-  (define run-tests
+  (define main
     (opt-lambda ([verbose? #f])
       (time
        (let ()
@@ -2052,10 +2052,10 @@ of digits with deconv-base
         (vector-set-performance-stats! v)
         (printf "ht searches    ~a\nslots searched ~a\n" (vector-ref v 8) (vector-ref v 9)))))
   
-  (provide run-tests
+  (provide main
            the-tests
            
-           ;; the test and the expected are not compared with equal?.
+           ;; the 'test' and the 'expected' are not compared with equal?.
            ;; instead, the result of running the test is first simplified
            ;; by substituting all of the variables with a colon in their
            ;; names thru the term, and then the results from the test are
