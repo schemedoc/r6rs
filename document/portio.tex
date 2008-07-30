@@ -821,7 +821,8 @@ any bytes are available, {\cf get-bytevector-n} returns the end-of-file object.
 \mainschindex{get-bytevector-n!}{\tt\obeyspaces\\
     \var{bytevector} \var{start} \var{count})}
 
-\domain{\var{Count} must be an exact, non-negative integer object, representing
+\domain{\var{Start} and \var{count} must be exact, non-negative
+  integer objects, with \var{count} representing
   the number of bytes to be read. \var{bytevector} must be a bytevector
   with at
   least $\var{start} + \var{count}$ elements.}
@@ -860,7 +861,8 @@ of file is reached, the end-of-file object is returned.
 Attempts to read all bytes until the next end of file, blocking as
 necessary. If one or more bytes are read, {\cf get-bytevector-all} returns
 a bytevector
-containing all bytes up to the next end of file.  Otherwise, {\cf
+containing all bytes up to the next end of file and updates
+\var{binary-input-port} to point just past these bytes.  Otherwise, {\cf
   get-bytevector-all} returns the end-of-file object.
 The operation may block indefinitely waiting to see if more bytes
 will become available, even if some bytes are already available.
