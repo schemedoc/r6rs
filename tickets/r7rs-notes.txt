@@ -23,33 +23,68 @@ Extensions:
   the latter is just a convenience, but there's no existing way to
   specify a buffer mode for these ports.
 
-  enumerations should not be limited to symbols.
+Mutable-string issue:
 
-Custom port notes:
+  The get-string-n! procedure of the (rnrs io ports) library allows
+  string-set! and string-fill! of the (rnrs mutable-strings) library
+  to be implemented, which eliminates most of the benefit of isolating
+  string-set! and string-fill! in the (rnrs mutable-strings) library
+  and leaving them out of the composite (rnrs) library.
 
-  there's no way to set the position properly for a write after a
+Custom port issues:
+
+  There's no way to set the position properly for a write after a
   lookahead on a custom binary input/output port unless working
-  get-position and set-position procedures are provided when the port is
-  created.
+  get-position and set-position! procedures are provided when the port is
+  created.  The problem is worse for custom input and custom input/output
+  ports.
 
-  this problem is worse for custom textual input and custom textual
-  input/output ports, because even if working get-position and
-  set-position procedures are provided, there's no way to adjust the
-  position reported by get-position to account for the buffered lookahead
-  character (or other characters buffered for efficiency), given that
-  positions may not be represented as a sequence of integer values.
+  For example, suppose a program creates a custom binary input/output port,
+  iop.  If the program evaluates first (get-u8 iop) then (put-u8 iop 77),
+  the second byte of the file should be overwritten with the value 77.  As
+  long as get-u8 actually read just one byte and didn't buffer any more,
+  there's no problem.  In terms of the custom port's low-level opertions,
+  this translates into a read! of one byte followed by a write! of one
+  byte.  The read! advances the position from 0 to 1 and the write! writes
+  to position 1.
 
-  it's also unclear whether an eof object occupies a character position,
-  which affects the position calculation.  the report appears to suggest
+  Now consider the alternate senario where the program evaluates first
+  (lookahead-u8 iop) then (put-u8 iop 77).  In this senario, since lookahead
+  doesn't advance the position, the first byte (rather than the second) of
+  the file should be overwritten with 77.  But in terms of the custom port's
+  low-level operations, this still translates into a read! of one byte
+  followed by a write! of one byte.  write! won't know to put the byte
+  at position 0 instead of position 1, because it doesn't know that the byte
+  wasn't actually consumed.
+
+  If get-position and set-position! are provided, put-u8 can determine the
+  correct position for the write by calling get-position and subtracting the
+  number of buffered bytes, then set the position using set-position!
+  before calling write!.  In general, it can handle arbitrary amounts of
+  input buffering in this manner.
+
+  For custom textual input/output ports, the problem is worse because
+  put-u8 can't determine the proper position even if get-position is
+  supplied.  It has no way of subracting the number of characters it has
+  buffered from the position since the position is not necessarily an
+  integer representing the absolute character position in the underlying
+  source.
+
+  For custom textual input ports that provide a get-position procedure, the
+  same problem prevents port-position from returning a useful value, since
+  again there's no way to subtract the number of buffered characters to
+  determine the actual position.
+
+  It's also unclear whether an eof object occupies a character position,
+  which affects the position calculation.  The report appears to suggest
   that eof objects are discrete elements of the input stream, but problems
   arise if eof does occupy character positions for finite streams ending
   in an infinite sequence of eof objects, including custom ports
   ultimately based on finite files.
 
-  a possible set of fixes for would be (1) to add an
+  A possible set of fixes for would be (1) to add an
   "elements-currently-buffered" argument to a custom port's get-position
   procedure that it can use to report an accurate position, (2) to require
-  working get-position and set-position procedures for custom input/output
-  ports, and (3) to declare that "buffered" eof objects (i.e., those
-  detected port-eof?  or lookahead) take up no byte or character
+  working get-position and set-position! procedures for custom input/output
+  ports, and (3) to declare that eof objects take up no byte or character
   positions.
