@@ -1,6 +1,55 @@
-Kent says:
+R7RS suggestions:
 
-> > Also, I realized that there should probably have been a
-> > record-constructor-descriptor?  predicate.  We probably should also have
-> > added a record-type-descriptor=?  predicate and defined eqv? in terms of
-> > it, as we did with symbol=? and boolean=?.
+Missing type predicates:
+
+  enum-set?
+  environment?
+  record-constructor-descriptor?
+
+Missing equality predicates:
+
+  enum-type=?
+  record-type-descriptor=?
+
+  The latter should be referenced in the description of eqv?
+
+Extensions:
+
+  environment should accept zero or more import specs, just as
+  import contains zero or more import specs.
+
+  standard-input-port, standard-output-port, and standard-error-port
+  should take optional buffer-mode and maybe-transcoder arguments.
+  the latter is just a convenience, but there's no existing way to
+  specify a buffer mode for these ports.
+
+  enumerations should not be limited to symbols.
+
+Custom port notes:
+
+  there's no way to set the position properly for a write after a
+  lookahead on a custom binary input/output port unless working
+  get-position and set-position procedures are provided when the port is
+  created.
+
+  this problem is worse for custom textual input and custom textual
+  input/output ports, because even if working get-position and
+  set-position procedures are provided, there's no way to adjust the
+  position reported by get-position to account for the buffered lookahead
+  character (or other characters buffered for efficiency), given that
+  positions may not be represented as a sequence of integer values.
+
+  it's also unclear whether an eof object occupies a character position,
+  which affects the position calculation.  the report appears to suggest
+  that eof objects are discrete elements of the input stream, but problems
+  arise if eof does occupy character positions for finite streams ending
+  in an infinite sequence of eof objects, including custom ports
+  ultimately based on finite files.
+
+  a possible set of fixes for would be (1) to add an
+  "elements-currently-buffered" argument to a custom port's get-position
+  procedure that it can use to report an accurate position, (2) to require
+  working get-position and set-position procedures for custom input/output
+  ports, and (3) to declare that "buffered" eof objects (i.e., those
+  detected port-eof?  or lookahead) take up no byte or character
+  positions.
