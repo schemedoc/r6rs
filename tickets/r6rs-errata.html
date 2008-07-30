@@ -230,6 +230,21 @@ v => #(1 2 3 5)</pre>
       are lacking trailing parentheses and should go like this:
 	<pre>(cond1-x (condition foo bar)) =&gt; foo
 (cond2-y (condition foo bar)) =&gt; bar</pre>
+      <dt>&sect; 8.1</dt>
+      <dd>The argument <var>port</var> in the template for
+        <code>make-i/o-port-error</code> inappropraitely implies
+        that the argument must be a port, in conflict with the
+        description.  The three occurrences of <var>port</var> in the
+        description should be replaced with <var>pobj</var>.
+      <dt>&sect; 8.2.4</dt>
+      <dd>The occurrences of <var>port</var> in the templates for
+        <code>make-i/o-decoding-error</code> and
+        <code>make-i/o-encoding-error</code> should be replaced
+        with <var>pobj</var>, and the occurrences of <var>char</var>
+        in the description of <code>make-i/o-encoding-error</code>
+        should be replaced with <code>cobj</code>.  The description
+        of <code>make-i/o-encoding-error</code> should say that
+        <var>cobj</var> should be the character that could not be encoded.
       <dt>&sect; 8.2.10</dt>
       <dd>In the description of
 	<code>make-custom-binary-output-port</code>, the sentence
@@ -285,9 +300,27 @@ v => #(1 2 3 5)</pre>
       <dd>The description of <code>hashtable-entries</code> should
 	contain an explanatory note saying that the order of the entries
 	in the result vectors may be different from the example.
+      <dt>&sect; 14</dt>
+      <dd>The word "value" in the description of
+        <code>enum-set-indexer</code> should be replaced with "symbol"
+        to avoid implying that the procedure returned by
+        <code>enum-set-indexer</code> accepts arbitrary types of values.
       <dt>&sect; 16</dt>
       <dd>The examples for <code>environment</code> both lack imports
 	of <code>(rnrs eval)</code>.</dd>
+      <dt>&sect; 16</dt>
+      <dd>The requirement that <code>eval</code> raise an exception with
+          condition type <code>&amp;assertion</code> if applied to an
+          expression containing an assignment to one of the variables in
+          the environment should be replaced with a requirement that it
+          raise an exception with condition type <code>&amp;syntax</code>
+          <!-- for consistency
+          its requirement to raise an exception
+          with condition type <code>&amp;syntax</code> for inputs that
+          are not syntactically valid and -->
+          for consistency with treatement
+          of similar situations as syntax violations in Section 7.1 of the
+          base document.
   </dl>
     
   </body>
