@@ -235,7 +235,7 @@ Returns the default end-of-line style of the underlying platform, e.g.,
 
 \begin{entry}{%
 \ctproto{i/o-decoding}
-\proto{make-i/o-decoding-error}{ port}{procedure}
+\proto{make-i/o-decoding-error}{ pobj}{procedure}
 \proto{i/o-decoding-error?}{ obj}{procedure}}
 
 This condition type could be defined by
@@ -256,7 +256,7 @@ the invalid encoding.
 
 \begin{entry}{% 
 \ctproto{i/o-encoding}
-\proto{make-i/o-encoding-error}{ port char}{procedure}
+\proto{make-i/o-encoding-error}{ pobj cobj}{procedure}
 \proto{i/o-encoding-error?}{ obj}{procedure}
 \proto{i/o-encoding-error-char}{ condition}{procedure}}
 
@@ -265,13 +265,13 @@ This condition type could be defined by
 \begin{scheme}
 (define-condition-type \&i/o-encoding \&i/o-port
   make-i/o-encoding-error i/o-encoding-error?
-  (char i/o-encoding-error-char))%
+  (cobj i/o-encoding-error-char))%
 \end{scheme}
 
 An exception with this type is raised when one of the operations for
 textual output to a port encounters a character that cannot be
 translated into bytes by the output direction of the port's transcoder.
-\var{Char} is the character that could not be encoded.
+\var{Cobj} should be the character that could not be encoded.
 \end{entry}
 
 \begin{entry}{%
