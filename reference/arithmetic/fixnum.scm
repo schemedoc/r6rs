@@ -513,9 +513,10 @@
       (let* ((mask1 (fixnum-logical-shift-left (make-fixnum -1) start))
              (mask2 (fixnum-not
                      (fixnum-logical-shift-left (make-fixnum -1) end)))
-             (mask (fixnum-and mask1 mask2)))
+             (mask (fixnum-and mask1 mask2))
+	     (mask3 (fxnot (fxarithmetic-shift-left -1 (- end start)))))
         (fixnum-if mask
-                   (fixnum-logical-shift-left from start)
+                   (fixnum-logical-shift-left (fxand from mask3) start)
                    to))))
 
 (define (fixnum-arithmetic-shift x y)

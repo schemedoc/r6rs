@@ -334,9 +334,12 @@ is the fixnum result of the following computation:
        (mask1 (fxarithmetic-shift-left -1 start))
        (mask2 (fxnot
                (fxarithmetic-shift-left -1 end)))
-       (mask (fxand mask1 mask2)))
+       (mask (fxand mask1 mask2))
+       (mask3 (fxnot (fxarithmetic-shift-left
+                       -1 (- end start)))))
   (fxif mask
-        (fxarithmetic-shift-left from start)
+        (fxarithmetic-shift-left (fxand from mask3)
+                                 start)
         to))%
 \end{scheme}
 
