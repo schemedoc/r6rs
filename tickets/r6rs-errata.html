@@ -104,6 +104,27 @@
 	<pre>(imag-part 1.1+2.2i) =&gt;  2.2i ; approximately</pre>
 	should be replaced by:
 	<pre>(imag-part 1.1+2.2i) =&gt;  2.2 ; approximately</pre>
+      <dd>In the description of the <code>div</code>, <code>mod</code>
+      etc., the wording
+
+	<p>"In each case, <var>x<sub>1</sub></var> must be neither infinite nor a NaN,
+	and <var>x<sub>2</sub></var> must be nonzero; otherwise, an exception with
+	condition type <code>&amp;assertion</code> is raised."</p>
+
+	should be replaced by:
+
+	<p>"If <var>x<sub>1</sub></var> and <var>x<sub>2</sub></var>
+	are exact, <var>x<sub>2</sub></var> must be nonzero.  In the
+	cases where the mathematical requirements in section 11.7.3
+	cannot be satisfied by any number object, either an exception
+	is raised with condition type
+	<code>&amp;implementation-restriction</code>, or unspecified
+	number objects (one for for <code>div</code> <code>mod</code>,
+	<code>div0</code> and <code> mod0</code>, two for
+	<code>div-and-mod</code> and <code>div0-and-mod0</code>) are
+	returned."</p>
+      </dd>
+
       <dt>&sect; 11.17</dt>
       <dd>Two of the examples involve calls to <code>sqrt</code> for
       which Scheme implementations are allowed to return either exact
@@ -287,6 +308,22 @@ v => #(1 2 3 5)</pre>
       <dt>&sect; 11.3</dt>
       <dd>The examples for <code>fl=?</code> etc. lack the trailing
 	<code>?</code> in their names.</dd>
+      <dd>In the description of <code>fldiv</code> etc, the wording:
+
+	<p>"For zero divisors, these procedures may return a NaN or
+	some unspecified flonum."</p>
+
+	should be replaced by <p>"In the cases where the mathematical
+	requirements in section
+	11.7.3 cannot be satisfied by any number object, either an
+	exception is raised with condition type
+	<code>&amp;implementation-restriction</code>, or unspecified flonums (one
+	for for <code>fldiv</code> <code>flmod</code>, <code>fldiv0</code> and <code>
+	flmod0</code>, two for <code>fldiv-and-mod</code> and <code>
+	fldiv0-and-mod0</code>) are
+	  returned."</p>
+      </dd>
+
       <dt>&sect; 11.4</dt>
       <dd>In the specification of <code>bitwise-copy-bit</code>,
 	<p>"[...] by the <var>ei<sub>2</sub></var> bit of

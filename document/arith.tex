@@ -595,8 +595,14 @@ Returns the absolute value of \var{fl}.
 
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
-specified in report section~\extref{report:integerdivision}{Integer division}.  For zero divisors, these
-procedures may return a NaN or some unspecified flonum.
+specified in report section~\extref{report:integerdivision}{Integer division}.
+In the cases where the
+mathematical requirements in section~\extref{report:integerdivision} cannot be
+satisfied by any number object, either an exception is raised with
+condition type {\cf\&implementation-restriction}, or unspecified
+flonums (one for for {\cf fldiv} {\cf flmod}, {\cf fldiv0} and {\cf
+  flmod0}, two for {\cf fldiv-and-mod} and {\cf fldiv0-and-mod0}) are
+returned.
 
 \begin{scheme}
 (fldiv \vari{fl} \varii{fl})         \ev \(\vari{fl}~\mathrm{div}~\varii{fl}\)

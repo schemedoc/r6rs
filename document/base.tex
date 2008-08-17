@@ -1927,9 +1927,14 @@ Returns the absolute value of its argument.
 
 These procedures implement number-theoretic integer division and
 return the results of the corresponding mathematical operations
-specified in section~\ref{integerdivision}.  In each case, \vari{x}
-must be neither infinite nor a NaN, and \varii{x} must be nonzero;
-otherwise, an exception with condition type {\cf\&assertion} is raised.
+specified in section~\ref{integerdivision}.  If \vari{x} and \varii{x}
+are exact, \varii{x} must be nonzero.  In the cases where the
+mathematical requirements in section~\ref{integerdivision} cannot be
+satisfied by any number object, either an exception is raised with
+condition type {\cf\&implementation-restriction}, or unspecified
+number objects (one for for {\cf div} {\cf mod}, {\cf div0} and {\cf
+  mod0}, two for {\cf div-and-mod} and {\cf div0-and-mod0}) are
+returned.
 
 \begin{scheme}
 (div \vari{x} \varii{x})         \ev \(\vari{x}~\mathrm{div}~\varii{x}\)
