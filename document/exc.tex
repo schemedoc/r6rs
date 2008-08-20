@@ -54,13 +54,15 @@ raised the exception, not as a crash.
 \proto{with-exception-handler}{ \var{handler} \var{thunk}}{procedure}}
 
 \domain{\var{Handler} must be a procedure and should accept one argument.
-\var{Thunk} must be a procedure that accepts zero arguments.}  The {\cf
+\var{Thunk} must be a procedure and should accept zero arguments.}  The {\cf
 with-exception-handler} procedure returns the results of invoking
-\var{thunk}.  \var{Handler} is installed as the current
+\var{thunk} without arguments.  \var{Handler} is installed as the current
 exception handler for the dynamic extent (as determined by {\cf
   dynamic-wind}) of the invocation of \var{thunk}.
 
 \implresp The implementation must check the restrictions on
+\var{thunk} to the extent performed by applying it as described above.
+The implementation must check the restrictions on
 \var{handler} to the extent performed by applying it as described
 when it is called as a result of a call to {\cf raise} or {\cf
   raise-continuable}.
