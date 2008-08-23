@@ -28,6 +28,25 @@ Mutable-string issue:
   string-set! and string-fill! in the (rnrs mutable-strings) library
   and leaving them out of the composite (rnrs) library.
 
+RTD equivalence issue
+
+  Since the record names of two calls to make-record-type-descriptor with
+  the same uid need not be the same, the spec should be loosened to allow
+  the field names to be different as well, since both kinds of names are
+  only informational.
+
+&i/o-encoding and &i/o-decoding
+
+  These condition types should not be subtypes of &i/o-port, since it's
+  possible (e.g., with bytevector->string and string->bytevector) that
+  no port is involved.
+
+&undefined
+
+  &undefined should either be a subtype of &syntax or the report should
+  clarify that both a &syntax and an &undefined condition should be
+  included when an exception is raised due to an unbound variable.
+
 Custom port issues:
 
   There's no way to set the position properly for a write after a
