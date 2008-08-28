@@ -62,7 +62,7 @@
         (fmatch exp
                 [`(module ,_ ,_ ,body ...)
                  (for-each loop body)]
-                [`(define ,lang (language ,productions ...))
+                [`(define-language ,lang ,productions ...)
                  (print-language productions)]
                 [`(metafunction-type ,name ,type)
                  (unless (member name metafunctions-to-skip) 
