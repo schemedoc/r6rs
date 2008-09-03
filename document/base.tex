@@ -2545,20 +2545,24 @@ Returns the length of \var{list}.
 
 
 \begin{entry}{%
-\proto{append}{ list \dotsfoo{} obj}{procedure}}
+\proto{append}{ list \dotsfoo{} obj}{procedure}
+\rproto{append}{}{procedure}}
 
 Returns a possibly improper list consisting of the elements of the first \var{list}
 followed by the elements of the other \var{list}s, with \var{obj} as
 the cdr of the final pair.
 An improper list results if \var{obj} is not a
-list.
+list.  The {\cf append} procedure returns the empty list if called
+with no arguments.
 
 \begin{scheme}
 (append '(x) '(y))              \ev  (x y)
 (append '(a) '(b c d))          \ev  (a b c d)
 (append '(a (b)) '((c)))        \ev  (a (b) (c))
 (append '(a b) '(c . d))        \ev  (a b c . d)
-(append '() 'a)                 \ev  a%
+(append '() 'a)                 \ev  a
+(append)                        \ev  ()
+(append 'a)                     \ev a%
 \end{scheme}
 
 If {\cf append} constructs a nonempty chain of pairs, it is always
