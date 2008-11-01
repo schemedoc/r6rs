@@ -264,17 +264,18 @@ the two's complement representation of \var{fx}.  If
 \begin{entry}{%
 \proto{fxbit-set?}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{Fx} must be non-negative and less than {\cf
-    (fixnum-width)}.}  The {\cf fxbit-set?} procedure returns
+\domain{\varii{Fx} must be non-negative.}  The {\cf fxbit-set?} procedure returns
 \schtrue{} if the \varii{fx}th bit is 1 in the two's complement
 representation of \vari{fx}, and \schfalse{} otherwise.  This is the
 result of the following computation:
 %
 \begin{scheme}
-(not
-  (fxzero?
-    (fxand \vari{fx}
-           (fxarithmetic-shift-left 1 \varii{fx}))))%
+(if (fx>= \varii{fx} (fx- (fixnum-width) 1))
+    (fxnegative? \vari{fx})
+    (not
+      (fxzero?
+         (fxand \vari{fx}
+                (fxarithmetic-shift-left 1 \varii{fx})))))%
 \end{scheme}
 %
 \end{entry}
@@ -283,7 +284,7 @@ result of the following computation:
 \proto{fxcopy-bit}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
 \domain{\varii{Fx} must be non-negative and less than {\cf
-  (fixnum-width)}. \variii{Fx} must be 0 or
+  $w-1$}. \variii{Fx} must be 0 or
 1.}  The {\cf fxcopy-bit} procedure returns the result of replacing
 the \varii{fx}th bit of \vari{fx} by \variii{fx}, which is
 the result of the following computation:
@@ -300,7 +301,7 @@ the result of the following computation:
 \proto{fxbit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
 \domain{\varii{Fx} and \variii{fx} must be non-negative and less than
-  {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
+  $w$.  Moreover, \varii{fx} must be less than or
   equal to \variii{fx}.}  The {\cf fxbit-field} procedure returns the
 number represented by the bits at the positions from \varii{fx} (inclusive) to
 $\variii{fx}$ (exclusive), which is
@@ -319,7 +320,7 @@ the fixnum result of the following computation:
 \proto{fxcopy-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
 \domain{\varii{Fx} and \variii{fx} must be non-negative and less than
-  {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
+  $w-1$.  Moreover, \varii{fx} must be less than or
   equal to \variii{fx}.}  The {\cf fxcopy-bit-field} procedure returns
 the result of replacing in \vari{fx} the bits at positions from
 \varii{fx} (inclusive) to $\variii{fx}$ (exclusive) by the bits in
@@ -354,7 +355,7 @@ is the fixnum result of the following computation:
 \proto{fxarithmetic-shift}{ \vari{fx} \varii{fx}}{procedure}}
 
 \domain{The absolute value of \varii{fx} must be less than 
-{\cf (fixnum-width)}.}  If
+$w$.}  If
 %
 \begin{scheme}
 (floor (* \vari{fx} (expt 2 \varii{fx})))%
@@ -369,8 +370,7 @@ raised.
 \proto{fxarithmetic-shift-left}{ \vari{fx} \varii{fx}}{procedure}
 \proto{fxarithmetic-shift-right}{ \vari{fx} \varii{fx}}{procedure}}
 
-\domain{\varii{Fx} must be non-negative, and less than {\cf
-    (fixnum-width)}.}
+\domain{\varii{Fx} must be non-negative, and less than $w$.}
   The {\cf fxarithmetic-shift-left} procedure behaves the same as {\cf
   fxarithmetic-shift}, and {\cf (fxarithmetic-shift-right \vari{fx}
   \varii{fx})} behaves the same as {\cf (fxarithmetic-shift \vari{fx}
@@ -381,8 +381,8 @@ raised.
 \proto{fxrotate-bit-field}{ \vari{fx} \varii{fx} \variii{fx} \variv{fx}}{procedure}}
 
 \domain{\varii{Fx}, \variii{fx}, and \variv{fx} must be non-negative
-  and less than {\cf (fixnum-width)}.  \varii{Fx} must be less than or
-  equal to \variii{fx}. \variv{Fx} must be less than the difference
+  and less than $w$.  \varii{Fx} must be less than or
+  equal to \variii{fx}. \variv{Fx} must be less than or equal to the difference
 between \variii{fx} and \varii{fx}.}  The {\cf fxrotate-bit-field}
 procedure returns the result of cyclically permuting in \vari{fx} the
 bits at positions from \varii{fx} (inclusive) to \variii{fx}
@@ -395,19 +395,14 @@ following computation:
        (end   \variii{fx})
        (count \variv{fx})
        (width (fx- end start)))
-  (if (fxpositive? width)
-      (let* ((count (fxmod count width))
-             (field0
-               (fxbit-field n start end))
-             (field1
-               (fxarithmetic-shift-left
-                 field0 count))
-             (field2
-               (fxarithmetic-shift-right
-                 field0 (fx- width count)))
-             (field (fxior field1 field2)))
-        (fxcopy-bit-field n start end field))
-      n))%
+  (fxcopy-bit-field n start end
+    (fxior
+      (fxarithmetic-shift-left
+        (fxbit-field n start (fx- end count))
+        count)
+      (fxarithmetic-shift-right
+        (fxbit-field n start end)
+        (fx- width count))))))%
 \end{scheme}
 
 \end{entry}
@@ -416,7 +411,7 @@ following computation:
 \proto{fxreverse-bit-field}{ \vari{fx} \varii{fx} \variii{fx}}{procedure}}
 
 \domain{\varii{Fx} and \variii{fx} must be non-negative and less than
-  {\cf (fixnum-width)}.  Moreover, \varii{fx} must be less than or
+  $w$.  Moreover, \varii{fx} must be less than or
   equal to \variii{fx}.}  The {\cf fxreverse-bit-field} procedure
 returns
 the fixnum obtained from \vari{fx} by reversing the

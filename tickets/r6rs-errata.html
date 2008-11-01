@@ -307,29 +307,62 @@ v => #(1 2 3 5)</pre>
 	the introduction of that section), not
 	<code>&amp;assertion</code>.
       </dd>
-      <dd>The specification of <code>fxcopy-bit-field</code> should be
-	clarified to say <p>"the bits in
-	<var>fx<sub>4</sub></var> from position 0 (inclusive) to position
-	<var>fx<sub>3</sub></var> - <var>fx<sub>2</sub></var>
-	(exclusive)"</p> instead of just <p>"the corresponding bits in
-	<var>fx<sub>4</sub></var>".</p></dd>
-      <dd>The code illustrating the computation performed by
-      <code>fxcopy-bit-field</code> should be replaced by the
-      following:
-<pre>(let* ((to    <var>fx<sub>1</sub></var>)
+      <dd>In the specification of <code>fxbit-set?</code>,
+	the sentence
+	<p>"<var>Fx<sub>2</sub></var> must be non-negative
+	  and less than <code>(fixnum-width)</code>."</p>
+	should be replaced by
+	<p>"<var>Fx<sub>2</sub></var> must be non-negative."</p>
+	Also, the code describing its computation should be changed
+	to:
+	<pre>(if (fx>= <var>fx<sub>2</sub></var> (fx- (fixnum-width) 1))
+    (fxnegative? <var>fx<sub>1</sub></var>)
+    (not
+      (fxzero?
+         (fxand <var>fx<sub>1</sub></var>
+                (fxarithmetic-shift-left 1 <var>fx<sub>2</sub></var>)))))</pre>
+
+      <dd>In the specification of <code>fxcopy-bit</code>, the
+      sentence
+	<p>
+"<var>Fx<sub>2</sub></var> must be non-negative
+	  and less than <code>(fixnum-width)</code>."</p>
+	should be replaced by
+	<p>"<var>Fx<sub>2</sub></var> must be non-negative and less
+	than <var>w</var> - 1."</p>
+      <dd>In the specification of <code>fxcopy-bit-field</code>, the
+      sentence
+	<p>
+"<var>Fx<sub>2</sub></var> and <var>Fx<sub>3</sub></var> must be non-negative
+	  and less than <code>(fixnum-width)</code>."</p>
+	should be replaced by
+	<p>"<var>Fx<sub>2</sub></var> and <var>Fx<sub>3</sub></var> must be non-negative and less
+	than <var>w</var> - 1."</p>
+      </dd>
+      <dd>
+	In the entry for <code>fxrotate-bit-field</code>, the
+	sentence
+	<p>"<var>Fx<sub>4</sub></var> must be less than the difference
+between <var>fx<sub>3</sub></var> and <var>fx<sub>2</sub></var>."</p>
+	should be changed to:
+	<p>"<var>Fx<sub>4</sub></var> must be less than or equal to the difference
+between <var>fx<sub>3</sub></var> and <var>fx<sub>2</sub></var>."</p>
+      <dd>
+	The code used to illustrate the computation performed by
+	<code>fxrotate-bit-field</code>
+	should be changed to:
+	<pre>(let* ((n     <var>fx<sub>1</sub></var>)
        (start <var>fx<sub>2</sub></var>)
        (end   <var>fx<sub>3</sub></var>)
-       (from  <var>fx<sub>4</sub></var>)
-       (mask1 (fxarithmetic-shift-left -1 start))
-       (mask2 (fxnot
-               (fxarithmetic-shift-left -1 end)))
-       (mask (fxand mask1 mask2))
-       (mask3 (fxnot (fxarithmetic-shift-left
-                       -1 (- end start)))))
-  (fxif mask
-        (fxarithmetic-shift-left (fxand from mask3)
-                                 start)
-        to))</pre>
+       (count <var>fx<sub>4</sub></var>)
+       (width (fx- end start)))
+  (fxcopy-bit-field n start end
+    (fxior
+      (fxarithmetic-shift-left
+        (fxbit-field n start (fx- end count)) count)
+      (fxarithmetic-shift-right
+        (fxbit-field n start end) (fx- width count))))))</pre>
+      </dd>
       <dt>&sect; 11.3</dt>
       <dd>The examples for <code>fl=?</code> etc. lack the trailing
 	<code>?</code> in their names.</dd>
