@@ -50,6 +50,12 @@ RTD equivalence issue
 define-enumeration
   The <constructor syntax> should be optional.
 
+utf8->string
+  This procedure should take an optional argument to say whether a leading
+  BOM should be ignored or treated as an ordinary character, with the
+  default being to ignore a leading BOM for consistency with the
+  utf16->string and utf32->string.
+
 Custom port issues:
 
   There's no way to set the position properly for a write after a
@@ -101,9 +107,8 @@ Custom port issues:
   in an infinite sequence of eof objects, including custom ports
   ultimately based on finite files.
 
-  A possible set of fixes for would be (1) to add an
-  "elements-currently-buffered" argument to a custom port's get-position
-  procedure that it can use to report an accurate position, (2) to require
-  working get-position and set-position! procedures for custom input/output
-  ports, and (3) to declare that eof objects take up no byte or character
-  positions.
+  A possible set of fixes for would be (1) to add an "unconsumed-elements"
+  argument to a custom port's get-position procedure that it can use to
+  report an accurate position, (2) to require working get-position and
+  set-position!  procedures for custom input/output ports, and (3) to
+  declare that eof objects take up no byte or character positions.
