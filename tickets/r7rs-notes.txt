@@ -56,6 +56,31 @@ utf8->string
   default being to ignore a leading BOM for consistency with the
   utf16->string and utf32->string.
 
+for-all, exists, memp, assp, and find implementation responsibilities
+  The implementation responsibility description for for-all and exists
+  say that the implemntation should not check that the input lists are
+  well formed if the answer can be determined without doing so.  (The
+  actual wording is not this clear, but this was the intent.) So, for
+  example, (exists even? '(1 2 .  3)) should return #t.  This gets weird
+  for cyclic input lists.  First, should (exists even? '#1=(1 .  #1#))
+  [using the common but nonstandard syntax for cyclic lists] return #f
+  because no element in the cyclic list is even, or should it raise an
+  exception because the list is cyclic?  Should
+  (exists equal? '#1=(1 . #1#) '(3 2 1)) return #t or raise an exception?
+  Should the implementation be permitted to call the argument procedure
+  more than once on some elements, as would happen if it uses the
+  hare-and-tortoise algorithm for detecting cycles, or must it use some
+  more expensive cycle-detection algorithm to avoid calling the argument
+  procedure more than once on the inputs?  To resolve these issues, it
+  might be appropriate to either require that the implementation check the
+  lists arguments up front or at least to say that the implementation
+  "may" check the arguments up front, i.e., have the report take no stand
+  on what a proper implementation should do in these cases.
+
+memp, assp, find implementation responsibilities
+  These have the same issues for cyclic lists as for-all and exists,
+  but without the added complication of multiple input lists.
+
 Custom port issues:
 
   There's no way to set the position properly for a write after a
