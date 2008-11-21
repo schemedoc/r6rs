@@ -296,7 +296,15 @@ v => #(1 2 3 5)</pre>
         in the description of <code>make-i/o-encoding-error</code>
         should be replaced with <code>cobj</code>.  The description
         of <code>make-i/o-encoding-error</code> should say that
-        <var>cobj</var> should be the character that could not be encoded.
+        <var>cobj</var> should be the character that could not be
+        encoded.</dd>
+      <dt>&sect; 8.2.7</dt> 
+      <dd>The design of the
+      <code>make-custom-textual-input-port</code> procedure prevents
+      the <code>port-position</code>
+	procedure to return a useful value, even when the <var>get-position</var>
+	procedure is supplied.  Its use is therefore discouraged.
+      </dd>
       <dt>&sect; 8.2.10</dt>
       <dd>In the description of
 	<code>make-custom-binary-output-port</code>, the sentence
@@ -305,7 +313,18 @@ v => #(1 2 3 5)</pre>
 	byte sink."</p>
 	should be deleted (it was left over from an earlier
 	revision).  The corresponding sentence in the description of
-	<code>make-custom-textual-output-port</code> should also be deleted.
+	<code>make-custom-textual-output-port</code> should also be
+	deleted.
+      <dt>&sect; 8.2.13</dt>
+      <dd>
+	The design of the <code>make-custom-binary-input/output-port</code>
+	<code>make-custom-textual-input/output-port</code> and
+	procedures prevents the ports returned by 
+	<code>make-custom-binary-input/output-port</code> from handling interleaved
+	read and write operations properly.  Its use is therefore
+	discouraged.
+      </dd>
+
       <dt>&sect; 11.2</dt>
       <dd>In the entry for <code>fx-</code>, the exception mentioned
 	should have condition type

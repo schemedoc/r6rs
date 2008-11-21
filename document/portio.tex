@@ -777,6 +777,13 @@ them as part of an I/O operation requested by the program.  The
 implementation is not required to check that these procedures
 otherwise behave as described.  If they do not, however, the behavior
 of the resulting port is unspecified.
+
+\begin{note}
+  The design of this procedure prevents the {\cf port-position}
+  procedure to return a useful value, even when the \var{get-position}
+  procedure is supplied.  Its use is therefore discouraged.
+\end{note}
+
 \end{entry}
 
 \subsection{Binary input}\unsection
@@ -1359,6 +1366,13 @@ Each of the remaining arguments may be \schfalse{}; if any of
 those arguments is not \schfalse{}, it must be a procedure and
 should behave as specified in the description of
 {\cf make-custom-binary-input-port}.
+
+\begin{note}
+  The design of this procedure prevents the ports returned by {\cf
+    make-custom-binary-input/output-port} from handling interleaved
+  read and write operations properly.  Its use is therefore
+  discouraged.
+\end{note}
 \end{entry}
 
 \begin{entry}{%
@@ -1381,6 +1395,13 @@ Each of the remaining arguments may be \schfalse{}; if any of
 those arguments is not \schfalse{}, it must be a procedure and
 should behave as specified in the description of
 {\cf make-custom-textual-input-port}.
+
+\begin{note}
+  The design of this procedure prevents the ports returned by {\cf
+    make-custom-textual-input/output-port} from handling interleaved
+  read and write operations properly.  Its use is therefore
+  discouraged.
+\end{note}
 \end{entry}
 
 
