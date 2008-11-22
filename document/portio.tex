@@ -779,9 +779,10 @@ otherwise behave as described.  If they do not, however, the behavior
 of the resulting port is unspecified.
 
 \begin{note}
-  The design of this procedure prevents the {\cf port-position}
-  procedure to return a useful value, even when the \var{get-position}
-  procedure is supplied.  Its use is therefore discouraged.
+  Even when the \var{get-position} procedure is supplied, the
+  {\cf port-position} procedure cannot generally return a precise
+  value for a custom textual input port if data has been
+  read from the port.
 \end{note}
 
 \end{entry}
@@ -1368,10 +1369,10 @@ should behave as specified in the description of
 {\cf make-custom-binary-input-port}.
 
 \begin{note}
-  The design of this procedure prevents the ports returned by {\cf
-    make-custom-binary-input/output-port} from handling interleaved
-  read and write operations properly.  Its use is therefore
-  discouraged.
+  Unless both \var{get-position} and \var{set-position!} procedures are
+  supplied, a put operation cannot precisely position the port for output
+  to a custom binary input/output port after data has been read from
+  the port.
 \end{note}
 \end{entry}
 
@@ -1397,10 +1398,11 @@ should behave as specified in the description of
 {\cf make-custom-textual-input-port}.
 
 \begin{note}
-  The design of this procedure prevents the ports returned by {\cf
-    make-custom-textual-input/output-port} from handling interleaved
-  read and write operations properly.  Its use is therefore
-  discouraged.
+  Even when both \var{get-position} and \var{set-position!} procedures are
+  supplied, the {\cf port-position} procedure cannot generally return a
+  precise value for a custom textual input/output port, and a put operation
+  cannot precisely position the port for output, after data has
+  been read from the port.
 \end{note}
 \end{entry}
 
