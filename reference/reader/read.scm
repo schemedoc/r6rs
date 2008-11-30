@@ -242,7 +242,6 @@
 (define (decode-hex-digits port delimiter? desc)
   (let loop ((rev-digits '()))
     (let ((c (lookahead-char port)))
-      (write (list 'hex c)) (newline)
       (cond
        ((delimiter? c)
 	(integer->char
@@ -627,7 +626,7 @@
 
 (define (constituent>127? c)
   (memq (char-general-category c)
-	'(Lu Ll Lt Lm Lo Mn Nl No Pd Pc Po Sc Sm Sk So Or Co)))
+	'(Lu Ll Lt Lm Lo Mn Nl No Pd Pc Po Sc Sm Sk So Co)))
 
 (define (char-scheme-whitespace? c)
   (binary-search *whitespaces* (char->integer c)))
@@ -639,11 +638,10 @@
 (define (reading-error port message . irritants)
   (raise
    (condition
-    (&message (message message))
-    (&i/o-port (port port))
-    (&lexical)
-    (&irritants
-     (irritants (cons port irritants))))))
+    (make-message-condition message)
+    (make-i/o-port-error port)
+    (make-lexical-violation)
+    (make-irritants-condition (cons port irritants)))))
 
 ; returns index of value (must be number) in vector
 (define (binary-search vec val)
