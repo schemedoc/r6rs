@@ -53,6 +53,10 @@
  (get-datum (open-input-string "+123")) => 123)
 (check
  (get-datum (open-input-string "...")) => '...)
+(check
+ (get-datum (open-input-string "(...)")) => '(...))
+(check
+ (get-datum (open-input-string "(... foo ... baz)")) => '(... foo ... baz))
 (check-exception
  (get-datum (open-input-string "..")))
 (check

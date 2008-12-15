@@ -45,8 +45,7 @@
 	r6rs-unicode
 	conditions exceptions
 	)
-  (files read)
-  (optimize auto-integrate))
+  (files read))
 
 (define-structure read-test (export)
   (open scheme
