@@ -524,7 +524,31 @@
       [`(error string)           (format "\\textbf{error: } \\textit{error message}")]
       [`(unknown string)           (format "\\textbf{unknown: } \\textit{description}")]
       [`(uncaught-exception v)           (format "\\textbf{uncaught exception: } \\nt{v}")]
-      [_                         (do-pretty-format p)]))
+      [_                         (do-pretty-format
+                                  (remove-unique-side-conditions
+                                   p))]))
+  
+  (define (remove-unique-side-conditions p)
+    (let loop ([p p])
+      (match p
+        [`(side-condition ,pat (unique? ,arg))
+         (remove-underscores pat)]
+        [(? list?) (map loop p)]
+        [else p])))
+  
+  (define (remove-underscores pat)
+    (let loop ([pat pat])
+      (cond
+        [(symbol? pat)
+         (let ([str (symbol->string pat)])
+           (cond
+             [(regexp-match #rx"^([^_]*)_" str)
+              =>
+              (λ (m) (string->symbol (list-ref m 1)))]
+             [else
+              pat]))]
+        [(pair? pat) (cons (loop (car pat)) (loop (cdr pat)))]
+        [else pat])))
   
   (define (show-rewritten-nt lhs str) (display (string-append lhs " " str " " TEX-NEWLINE)))
   

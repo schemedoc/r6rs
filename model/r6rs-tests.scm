@@ -252,7 +252,12 @@
      (make-r6test '(store () (letrec ([x 1]) (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1))))
                   (list '(unknown "unspecified result")))
      (make-r6test '(store () (letrec ([x 1]) (begin (dynamic-wind (lambda () 0) (lambda () (set! x 2)) (lambda () 1)) 5)))
-                  (list '(store ((lx-x 2)) (values 5))))))
+                  (list '(store ((lx-x 2)) (values 5))))
+     
+     ;; letrec
+     ;; bug one that Casey found
+     (make-r6test '(store () (letrec* ([y 1] [x (set! y 2)]) y))
+                  (list '(unknown "unspecified result")))))
   
   (define basic-form-tests
     (list
@@ -894,7 +899,30 @@
                         (lambda (x) 17))))
                   (list '(store ((lx-g (lambda (y) y))
                                  (lx-f (lambda (x) (lx-g 1))))
-                           (values 17))))))
+                           (values 17))))
+     
+     (make-r6test '(store () ((lambda (x)
+                                (letrec ([x 1]) 
+                                  1))
+                              1))
+                  (list '(store ((lx-x 1)) (values 1))))
+     
+     (make-r6test '(store () ((lambda (x)
+                                (letrec* ([x 1]) 
+                                  1))
+                              1))
+                  (list '(store ((lx-x 1)) (values 1))))
+     
+     (make-r6test '(store () 
+                     (letrec ((x 1))
+                       ((lambda (f) (letrec ([x 3]) (f)))
+                        (lambda () x))))
+                  (list '(store ((lx-x 1) (lx-x1 3)) (values 1))))
+     (make-r6test '(store () 
+                     (letrec ((x 1))
+                       ((lambda (f) (letrec* ([x 3]) (f)))
+                        (lambda () x))))
+                  (list '(store ((lx-x 1) (lx-x1 3)) (values 1))))))
   
   (define mv-tests
     (list
@@ -2047,10 +2075,7 @@ of digits with deconv-base
              (printf "~a tests, ~a tests failed\n" test-count failed-tests))
          (printf "verified that ~a terms are p*\n" verified-terms)))
       (collect-garbage) (collect-garbage) (collect-garbage)
-      (printf "mem ~s\n" (current-memory-use))
-      (let ([v (make-vector 10)])
-        (vector-set-performance-stats! v)
-        (printf "ht searches    ~a\nslots searched ~a\n" (vector-ref v 8) (vector-ref v 9)))))
+      (printf "mem ~s\n" (current-memory-use))))
   
   (provide main
            the-tests

@@ -28,8 +28,16 @@
     #''ignore)
 
   (define-language lang
-    (p* (store (sf ...) es) (uncaught-exception v) (unknown string))
-    (a* (store (sf ...) (values v ...)) (uncaught-exception v) (unknown string))
+    (p* (store (side-condition (sf_1 ...)
+                               (unique? (map car (term (sf_1 ...)))))
+               es)
+        (uncaught-exception v)
+        (unknown string))
+    (a* (store (side-condition (sf_1 ...)
+                               (unique? (map car (term (sf_1 ...)))))
+               (values v ...))
+        (uncaught-exception v)
+        (unknown string))
     (r* (values r*v ...) exception unknown)
     (r*v  pair null 'sym sqv condition procedure)
     (sf (x v) (x bh) (pp (cons v v)))
@@ -38,8 +46,12 @@
         (begin es es ...) (begin0 es es ...) (es es ...)
         (if es es es) (set! x es) x
         nonproc pproc (lambda f es es ...)
-        (letrec ([x es] ...) es es ...) 
-        (letrec* ([x es] ...) es es ...)
+        (letrec (side-condition ([x_1 es] ...)
+                                (unique? (term (x_1 ...))))
+          es es ...) 
+        (letrec* (side-condition ([x_1 es] ...)
+                                 (unique? (term (x_1 ...))))
+                 es es ...)
         
         ;; intermediate states
         (dw x es es es) 
@@ -48,8 +60,8 @@
         (handlers es ... es)
         (l! x es)
         (reinit x))
-    (f (x ...)
-       (x x ... dot x)
+    (f (side-condition (x_1 ...) (unique? (term (x_1 ...))))
+       (side-condition (x_1 x_2 ... dot x_3) (unique? (term (x_1 x_2 ... x_3))))
        x)
     
     (s seq () sqv sym)
@@ -62,8 +74,12 @@
        (set! x e) (handlers e ... e)
        x nonproc proc (dw x e e e)
        unspecified
-       (letrec ([x e] ...) e e ...)
-       (letrec* ([x e] ...) e e ...)
+       (letrec (side-condition ([x_1 e] ...)
+                               (unique? (term (x_1 ...))))
+         e e ...)
+       (letrec* (side-condition ([x_1 e] ...)
+                                (unique? (term (x_1 ...))))
+                e e ...)
        (l! x es)
        (reinit x))
     (v nonproc proc)
@@ -107,6 +123,7 @@
                values call-with-values              ; values functions
                apply eqv?
                
+               make-cond
                with-exception-handler handlers
                raise-continuable raise))
         (not (pp? (term var_none)))))
@@ -131,7 +148,7 @@
     ;; all of the one-layer contexts that "demand" their values, 
     ;; (maybe just "demand" it enough to ensure it is the right # of values)
     ;; which requires unspecified to blow up.
-    (U (v ... hole v ...) (if hole e e) (set! x hole) 
+    (U (v ... hole v ...) (if hole e e) (set! x hole) (l! x hole)
        (call-with-values (lambda () hole) v))
     
     ;; everything except exception handler bodies
@@ -154,6 +171,19 @@
        (letrec* ([x e] ... [x S] [x es] ...) es es ...)
        (letrec* ([x e] ...) S es ...)
        (letrec* ([x e] ...) e e ... S es ...)))
+  
+  (define (unique? lst)
+    (let ([ht (make-hash-table)])
+      (let loop ([lst lst])
+        (cond
+          [(null? lst) #t]
+          [else
+           (let ([var (car lst)])
+             (cond
+               [(hash-table-get ht var #f) #f]
+               [else
+                (hash-table-put! ht var #t)
+                (loop (cdr lst))]))]))))
 
   (define Basic--syntactic--forms
     (reduction-relation
@@ -827,7 +857,15 @@
     [(variable_1 e (lambda variable_1 e_2 e_3 ...))
      (lambda variable_1 e_2 e_3 ...)]
     
-    ;; next 3 cases: we know no capture can occur, so we just recur
+    ;; when the letrec binds the variable, stop stubstituting
+    [(variable_1 e (letrec ([variable_2 e_2] ... [variable_1 e_1] [variable_3 e_3] ...) e_4 e_5 ...))
+     (letrec ([variable_2 e_2] ... [variable_1 e_1] [variable_3 e_3] ...) e_4 e_5 ...)]
+    
+    ;; when the letrec* binds the variable, stop stubstituting
+    [(variable_1 e (letrec* ([variable_2 e_2] ... [variable_1 e_1] [variable_3 e_3] ...) e_4 e_5 ...))
+     (letrec ([variable_2 e_2] ... [variable_1 e_1] [variable_3 e_3] ...) e_4 e_5 ...)]
+    
+    ;; next 5 cases: we know no capture can occur, so we just recur
     [(variable_1 e_1 (lambda (variable_2 ...) e_2 e_3 ...))
      (lambda (variable_2 ...) 
        (r6rs-subst-one (variable_1 e_1 e_2))
@@ -846,6 +884,19 @@
        (r6rs-subst-one (variable_1 e_1 e_3)) ...)
      (side-condition (equal? (variable-not-in (term e_1) (term variable_2)) 
                              (term variable_2)))]
+    
+    [(variable_1 e_1 (letrec ([variable_2 e_2] ...) e_3 e_4 ...))
+     (letrec ([variable_2 (r6rs-subst-one (variable_1 e_1 e_2))] ...)
+       (r6rs-subst-one (variable_1 e_1 e_3)) 
+       (r6rs-subst-one (variable_1 e_1 e_4)) ...)
+     (side-condition (andmap (λ (x) (equal? (variable-not-in (term e_1) x) x))
+                             (term (variable_2 ...))))]
+    [(variable_1 e_1 (letrec* ([variable_2 e_2] ...) e_3 e_4 ...))
+     (letrec* ([variable_2 (r6rs-subst-one (variable_1 e_1 e_2))] ...)
+       (r6rs-subst-one (variable_1 e_1 e_3)) 
+       (r6rs-subst-one (variable_1 e_1 e_4)) ...)
+     (side-condition (andmap (λ (x) (equal? (variable-not-in (term e_1) x) x))
+                             (term (variable_2 ...))))]
     
     ;; capture avoiding cases
     [(variable_1 e_1 (lambda (variable_2 ... dot variable_3) e_2 e_3 ...))
@@ -871,6 +922,19 @@
         (term (lambda variable_new
                 (r6rs-subst-one (variable_1 e_1 (r6rs-subst-one (variable_2 variable_new e_2))))
                 (r6rs-subst-one (variable_1 e_1 (r6rs-subst-one (variable_2 variable_new e_3)))) ...)))]
+    
+    [(variable_1 e_1 (letrec ([variable_2 e_2] ...) e_3 e_4 ...))
+     ,(term-let ([(variable_new ...) (variables-not-in (term (variable_1 e_1 e_2 ... e_3 e_4 ...))
+                                                       (term (variable_2 ...)))])
+        (term (letrec ([variable_new (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_2))))] ...)
+                (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_3))))
+                (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_4)))) ...)))]
+    [(variable_1 e_1 (letrec* ([variable_2 e_2] ...) e_3 e_4 ...))
+     ,(term-let ([(variable_new ...) (variables-not-in (term (variable_1 e_1 e_2 ... e_3 e_4 ...))
+                                                       (term (variable_2 ...)))])
+        (term (letrec* ([variable_new (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_2))))] ...)
+                (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_3))))
+                (r6rs-subst-one (variable_1 e_1 (r6rs-subst-many ((variable_2 variable_new) ... e_4)))) ...)))]
     
     ;; last two cases cover all other expressions -- they don't have any variables, 
     ;; so we don't care about their structure. 
