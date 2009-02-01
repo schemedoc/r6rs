@@ -38,32 +38,26 @@
   ;; example uses of the above functions
   ;; if any of the terms in the graph don't 
   ;;    match p*, they will be colored red
-  ;; #; comments out an entire sexpression.
   ;; 
   
-  #;
-  (show '(store () (((lambda (x y) (set! x (+ x y)) x) 2 3))))
+  (trace '(store () ((lambda (x y) (set! x (+ x y)) x) 2 3)))
 
   ;; an infinite, tail-recursive loop
-  #;
-  (show-expression '((lambda (x) ((call/cc call/cc) x)) (call/cc call/cc)))
+  (trace-expression '((lambda (x) ((call/cc call/cc) x)) (call/cc call/cc)))
 
   ;; two infinite loops, one in left-to-right and one in right-to-left evaluation order
   ;; one goes into a non-tail infinite loop, the other's reduction graph has a cycle
-  #;
   (step '(store () 
            ((call/cc call/cc) 
             (call/cc call/cc))))
           
   
   ;; demonstrates sharing
-  #;
-  (show-expression
+  (trace-expression
    '((lambda (c)
        ((lambda (x y) 
           (set-car! x 3)
           (car y))
         c c))
-     (cons 1 2)))
-  
-  (trace '(store () (letrec* ((phase 0) (k #f) (l (quote ()))) (with-exception-handler (lambda (x) (if (eqv? phase 0) (begin (set! phase 1) (call/cc (lambda (k2) (begin (set! k k2) (quote whatever))))) (if (eqv? phase 1) (begin (set! phase 2) (k 1)) 1234))) (lambda () (dynamic-wind (lambda () (set! l (cons 1 l))) (lambda () (dynamic-wind (lambda () (set! l (cons 2 l))) (lambda () (raise-continuable 1)) (lambda () (set! l (cons 3 l)))) (dynamic-wind (lambda () (set! l (cons 4 l))) (lambda () (raise-continuable 1)) (lambda () (set! l (cons 5 l))))) (lambda () (set! l (cons 6 l)))))) (set! k #f) (apply values l)))))
+     (cons 1 2))))
+
