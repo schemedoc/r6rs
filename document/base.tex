@@ -2278,7 +2278,9 @@ Returns a number object with maximally precise representation expressed by the
 given \var{string}.  \var{Radix} must be an exact integer object, either 2, 8, 10,
 or 16.  If supplied, \var{radix} is a default radix that may be overridden
 by an explicit radix prefix in \var{string} (e.g., {\tt "\#o177"}).  If \var{radix}
-is not supplied, then the default radix is 10.  If \var{string} is not
+is not supplied, then the default radix is 10.  If
+the arguments are as specified,
+ \var{string} is not
 a syntactically valid notation for a number object or a notation for a
 rational number object with a zero denominator, then {\cf string->number}
 returns \schfalse{}.
@@ -2294,8 +2296,9 @@ returns \schfalse{}.
 \end{scheme}
 
 \begin{note}
-  The {\cf string->number} procedure always returns a number object or
-  \schfalse{} when the argument is a string.
+  If the arguments to {\cf string->number} are a string and a valid
+  radix as specified, it must produce a number object or \schfalse{};
+  it may not raise an exception.
 \end{note}
 \end{entry}
 
