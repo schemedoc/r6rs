@@ -132,7 +132,7 @@
     (lambda (con)
       (cond
        ((simple-condition? con)
-	(simple-pred condition))
+	(simple-pred con))
        ((compound-condition? con)
 	(any? simple-pred (explode-condition con)))
        (else #f)))))
@@ -141,7 +141,7 @@
   (if (not (rtd-ancestor? (record-type-descriptor &condition)
 			  rtd))
       (assertion-violation 'condition-predicate
-			   "not a subtype of :simple-condition"
+			   "not a subtype of &condition"
 			   rtd))
   (let ((simple-pred (record-predicate rtd)))
     (lambda (con)
