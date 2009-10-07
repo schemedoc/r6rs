@@ -21,6 +21,14 @@
 
 \let\TIIPbrORIG\TIIPbr
 
+% make ' fit for cut-and-paste; otherwise a special Unicode character gets output
+\evalh{(set! do-rsquo
+         (let ((do-rsquo-old do-rsquo))
+           (lambda ()
+             (if (and (not *math-mode?*) (not *ligatures?*))
+   	         (emit "'")
+	         (do-rsquo-old)))))}
+
 \newcount\obeylinesstart
 
 \def\TIIPbr{\obeylinesstart=0\TIIPbrORIG}
@@ -50,9 +58,9 @@
 \let\tableofcontentsORIG=\tableofcontents
 
 \def\tableofcontents{%
-\evalh{(set! *tex-format* 'tex)}%
+\evalh{(set! *tex-format* ':tex)}%
 \tableofcontentsORIG
-\evalh{(set! *tex-format* 'latex)}}
+\evalh{(set! *tex-format* ':latex)}}
 
 % the image preamble
 

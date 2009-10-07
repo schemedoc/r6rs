@@ -4,8 +4,7 @@ BIBTEX = bibtex
 MAKEINDEX = makeindex
 SCHEME = scheme48 -a batch
 MZSCHEME = mzscheme
-# use the one from tex2page distro, *not* the one included with PLT Scheme
-TEX2PAGE = /afs/wsi/home/sperber/build/tex2page/tex2page
+TEX2PAGE = ./tex2page
 
 report: thirdrun
 
