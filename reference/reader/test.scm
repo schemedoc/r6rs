@@ -92,6 +92,8 @@
 (check-exception
  (get-datum (open-input-string "h\\x65llo")))
 (check
+ (get-datum (make-string-input-port "\\x2e;reader.")) => (string->symbol ".reader."))
+(check
  (get-datum (open-input-string "'foo")) => '(quote foo))
 (check
  (get-datum (open-input-string "`foo")) => '(quasiquote foo))

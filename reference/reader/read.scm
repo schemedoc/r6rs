@@ -550,6 +550,21 @@
        (else
 	(reading-error "invalid symbol syntax" (reverse-list->string l n)))))))
 
+; We know it's a symbol, and it starts with an escape
+(define (sub-read-symbol-with-initial-escape c port)
+  ;(assert (char=? c #\\))
+  (let ((c (peek-char port)))
+    (cond
+     ((or (eof-object? c)
+          (not (char=? #\x c)))
+      (reading-error port "invalid escape sequence in a symbol"
+                     c))
+     (else
+      (read-char port)
+      (let ((d (decode-hex-digits port char-semicolon? "symbol")))
+        (read-char port)		; remove semicolon
+        (sub-read-symbol d port))))))
+
 ; something starting with a +
 (define (sub-read/+ c port)
   (let ((next (lookahead-char port)))
@@ -602,6 +617,10 @@
 	    (set-standard-syntax! c #t sub-read-symbol))
 	  (string->list
 	   "!$%&*/:<=>?^_~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"))
+
+; #\\ must not be marked as a subsequent because sub-read-symbol handles it
+;    separately
+(set-standard-syntax! #\\ #f sub-read-symbol-with-initial-escape)
 
 (set-standard-syntax! #\+ #t sub-read/+)
 (set-standard-syntax! #\- #t sub-read/-)
