@@ -89,6 +89,15 @@
       <dt>&sect; 7.3</dt>
       <dd>The <code>(stack)</code> example library is missing an
 	import of <code>(rnrs mutable-pairs)</code>.</dd>
+      <dt>&sect; 11.5</dt>
+      <dd>The folowing example for <code>eq?</code>
+	<pre>(eq? car car) =&gt; #t</pre>
+	should be replaced by
+	<pre>(eq? car car) =&gt; <i>unspecified</i></pre>
+      </dd>
+      <dt>&sect; 11.6</dt>
+      <dd>In the entry for <code>list-ref</code>,
+	"<code>list-tail</code>" should be replaced by "<code>list-ref</code>".</dd>
       <dt>&sect; 11.7.4</dt>
       <dd>The two examples for <code>&lt;</code> and <code>&gt;</code>
       on infinities have extra parentheses.</dd>
@@ -133,12 +142,27 @@
 	should be replaced by:
 	<pre>(expt 0 5+.0000312i)   =&gt;  0.0</pre>
       </dd>
-
+      <dd>The note for <code>string-&gt;number</code> should be replaced
+      by:
+	<p>
+	  "If the arguments to <code>string-&gt;number</code> are a
+	  string and a valid radix as specified, it must produce a
+	  number object or <code>#f</code> ; it may not raise an
+	  exception."
+	<p>
+	  (I.e., <code>string-&gt;number</code> may raise an exception
+	  if the argument is not a string.)
+	</p>
+	</dd>
       <dt>&sect; 11.9<dt>
       <dd>The <code>append</code> procedure can be
       called with zero arguments.  Thus, in the description of
       <code>append</code>, a template
 	<code>(append)</code> should be added.
+      <dd><p>The sentence at the end of the entry for <code>append</code>
+      should be clarified to:</p>
+	<p>"The return value is made from new pairs for all arguments but the
+	  last; the last is merely placed at the end of the new structure."</p>
       </dd>
 
       <dt>&sect; 11.17</dt>
