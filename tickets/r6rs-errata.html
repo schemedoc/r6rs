@@ -514,6 +514,14 @@ some unspecified flonum."</p>
 	<pre>p =&gt; (15 5)</pre>
 	should be:
 	<pre>p =&gt; (15 . 5)</pre>
+      <dt>&sect; 12.6</dt>
+      <dd>The example definition of the <code>include</code> macro
+      uses
+	<pre>(open-file-input-port fn)</pre>
+	to open the file, which would result in a binary input port.
+	Instead, a textual input port should be opened, for example via:
+	<pre>(open-file-input-port fn (file-options) (buffer-mode block) (native-transcoder))</pre>
+      </dd>
       <dt>&sect; 13.2</dt>
       <dd>The parameter to <code>hashtable?</code> should be
 	<var>obj</var> instead of <var>hashtable</var> -

@@ -104,6 +104,14 @@
 	the sense of <code>free-identifier=?</code>, whereas this report requires
 	instead that they must have the same marks and have the same name."</p>
     </dd>
+      <dt>&sect; 12.6</dt>
+      <dd>The example definition of the <code>include</code> macro
+      uses
+	<pre>(open-file-input-port fn)</pre>
+	to open the file, which would result in a binary input port.
+	Instead, a textual input port should be opened, for example via:
+	<pre>(open-file-input-port fn (file-options) (buffer-mode block) (native-transcoder))</pre>
+      </dd>
       <dt>&sect; 14</dt>
       <dd>There's an extra parenthesis at the end of the code example
 	for <code>enum-set-projection</code>.</dd>
