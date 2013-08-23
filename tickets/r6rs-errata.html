@@ -420,6 +420,30 @@ v => #(1 2 3 5)</pre>
 	the introduction of that section), not
 	<code>&amp;assertion</code>.
       </dd>
+      <dd>The specification of <code>fxcopy-bit-field</code> should be
+	clarified to say <p>"the bits in
+	<var>fx<sub>4</sub></var> from position 0 (inclusive) to position
+	<var>fx<sub>3</sub></var> - <var>fx<sub>2</sub></var>
+	(exclusive)"</p> instead of just <p>"the corresponding bits in
+	<var>fx<sub>4</sub></var>".</p></dd>
+      <dd>The code illustrating the computation performed by
+      <code>fxcopy-bit-field</code> should be replaced by the
+      following:
+	<pre>(let* ((n     <var>fx<sub>1</sub></var>)
+       (start <var>fx<sub>2</sub></var>)
+       (end   <var>fx<sub>3</sub></var>)
+       (from  <var>fx<sub>4</sub></var>)
+       (mask1 (fxarithmetic-shift-left -1 start))
+       (mask2 (fxnot
+               (fxarithmetic-shift-left -1 end)))
+       (mask (fxand mask1 mask2))
+       (mask3 (fxnot (fxarithmetic-shift-left
+                       -1 (- end start)))))
+  (fxif mask
+        (fxarithmetic-shift-left (fxand from mask3)
+                                 start)
+        to))</pre>
+      </dd>
       <dd>In the code specifying the computation for
       <code>fxbit-count</code>, "<var>ei</var>" should be "<var>fx</var>".</dd>
       <dd>In the specification of <code>fxbit-set?</code>,
