@@ -1074,20 +1074,21 @@ follows.
 
 \begin{schemenoindent}
 (define-syntax identifier-syntax
-  (syntax-rules (set!)
-    [(\_ e)
-     (lambda (x)
-       (syntax-case x ()
-         [id (identifier? \#'id) \#'e]
-         [(\_ x (... ...)) \#'(e x (... ...))]))]
-    [(\_ (id exp1) ((set! var val) exp2))
-     (and (identifier? \#'id) (identifier? \#'var))
-     (make-variable-transformer
-       (lambda (x)
-         (syntax-case x (set!)
-           [(set! var val) \#'exp2]
-           [(id x (... ...)) \#'(exp1 x (... ...))]
-           [id (identifier? \#'id) \#'exp1])))]))%
+  (lambda (x)
+    (syntax-case x (set!)
+      [(\_ e)
+       \#'(lambda (x)
+           (syntax-case x ()
+             [id (identifier? \#'id) \#'e]
+             [(\_ x (... ...)) \#'(e x (... ...))]))]
+      [(\_ (id exp1) ((set! var val) exp2))
+       (and (identifier? \#'id) (identifier? \#'var))
+       \#'(make-variable-transformer
+          (lambda (x)
+            (syntax-case x (set!)
+              [(set! var val) \#'exp2]
+              [(id x (... ...)) \#'(exp1 x (... ...))]
+              [id (identifier? \#'id) \#'exp1])))])))
 \end{schemenoindent}
 \end{note}
 

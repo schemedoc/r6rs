@@ -141,6 +141,26 @@
 	Instead, a textual input port should be opened, for example via:
 	<pre>(open-file-input-port fn (file-options) (buffer-mode block) (native-transcoder))</pre>
       </dd>
+      <dt>&sect; 12.8</dt>
+      <dd>The sample definition of <code>identifier-syntax</code> is
+      incorrect and should be as follows:
+	<pre>(define-syntax identifier-syntax
+  (lambda (x)
+    (syntax-case x (set!)
+      [(_ e)
+       #'(lambda (x)
+           (syntax-case x ()
+             [id (identifier? #'id) #'e]
+             [(_ x (... ...)) #'(e x (... ...))]))]
+      [(_ (id exp1) ((set! var val) exp2))
+       (and (identifier? #'id) (identifier? #'var))
+       #'(make-variable-transformer
+          (lambda (x)
+            (syntax-case x (set!)
+              [(set! var val) #'exp2]
+              [(id x (... ...)) #'(exp1 x (... ...))]
+              [id (identifier? #'id) #'exp1])))])))</pre>
+      </dd>
       <dt>&sect; 14</dt>
       <dd>There's an extra parenthesis at the end of the code example
 	for <code>enum-set-projection</code>.</dd>
