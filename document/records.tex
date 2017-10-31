@@ -90,7 +90,7 @@ field is called \textit{immutable}\mainindex{immutable record
 are immutable objects.  All other record types are \textit{mutable},
 and so are their records.
 
-Each call to a record constructor returns a new record with a fresh
+Each call to a record constructor of a mutable record type returns a new record with a fresh
 location (see report section~\extref{report:storagemodel}{Storage
   model}).  Consequently, for two records \vari{obj} and \varii{obj},
 the return value of {\cf (eqv? \vari{obj} \varii{obj})}, as well as the
@@ -103,7 +103,7 @@ section~\extref{report:eqv?}{Equivalence predicates}):
   their record-type descriptors are not {\cf eqv?}), {\cf eqv?}
   returns \schfalse.
 \item If \vari{obj} and \varii{obj} are both records of the
-  same record type, and are the results of two separate calls to
+  same mutable record type, and are the results of two separate calls to
   record constructors, then {\cf eqv?} returns \schfalse.
 \item If \vari{obj} and \varii{obj} are both the result of a single call to a
   record constructor, then {\cf eqv?} returns \schtrue.
