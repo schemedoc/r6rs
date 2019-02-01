@@ -68,8 +68,8 @@ r6rs.ind : r6rs.idx r6rs-lib.idx
 r6rs-lib.ind : r6rs-lib.idx
 	$(MAKEINDEX) -s r6rs.mst -c r6rs-lib.idx
 
-r6rs-app.ind : r6rs-app.idx
-	$(MAKEINDEX) -s r6rs.mst -c r6rs-app.idx
+# r6rs-app.ind : r6rs-app.idx
+# 	$(MAKEINDEX) -s r6rs.mst -c r6rs-app.idx
 
 r6rs-rationale.ind : r6rs-rationale.idx
 	$(MAKEINDEX) -s r6rs.mst -c r6rs-rationale.idx
@@ -84,7 +84,7 @@ r6rs.dvi : r6rs.bbl r6rs.ind r6-fig-grammar-parti.tex
 r6rs-lib.dvi : r6rs-lib.bbl r6rs-lib.ind
 	$(LATEX) r6rs-lib
 
-r6rs-app.dvi : r6rs-app.bbl r6rs-app.ind
+r6rs-app.dvi : r6rs-app.bbl
 	$(LATEX) r6rs-app
 
 r6rs-rationale.dvi : r6rs-rationale.bbl r6rs-rationale.ind
@@ -108,7 +108,7 @@ r6rs.pdf : r6rs.bbl r6rs.ind r6-fig-grammar-parti.tex
 r6rs-lib.pdf : r6rs-lib.bbl r6rs-lib.ind
 	$(LATEX) r6rs-lib
 
-r6rs-app.pdf : r6rs-app.bbl r6rs-app.ind
+r6rs-app.pdf : r6rs-app.bbl
 	$(LATEX) r6rs-app
 
 r6rs-rationale.pdf : r6rs-rationale.bbl r6rs-rationale.ind
@@ -118,7 +118,7 @@ endif
 r6rs-lib.idx r6rs-lib.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
 	$(LATEX) r6rs-lib
 
-r6rs-app.idx r6rs-app.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
+r6rs-app.aux : $(COMMON_TEX_FILES) $(LIB_TEX_FILES)
 	$(LATEX) r6rs-app
 
 r6rs-rationale.idx r6rs-rationale.aux : $(COMMON_TEX_FILES) $(RATIONALE_TEX_FILES)
