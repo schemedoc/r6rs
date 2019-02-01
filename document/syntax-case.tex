@@ -799,7 +799,10 @@ Scheme form, as demonstrated by the following definition of
   (lambda (x)
     (define read-file
       (lambda (fn k)
-        (let ([p (open-file-input-port fn (file-options) (buffer-mode block) (native-transcoder))])
+        (let ([p (open-file-input-port fn
+                    (file-options)
+                    (buffer-mode block)
+                    (native-transcoder))])
           (let f ([x (get-datum p)])
             (if (eof-object? x)
                 (begin (close-port p) '())
