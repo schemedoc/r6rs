@@ -281,11 +281,13 @@ performed by altering a script header from its default form.
 (import (rnrs base)
         (rnrs io ports)
         (rnrs programs))
-(put-bytes (standard-output-port)
-           (call-with-port
-               (open-file-input-port
-                 (cadr (command-line)))
-             get-bytevector-all))%
+(let ((p (standard-output-port)))
+  (put-bytevector p
+                  (call-with-port
+                      (open-file-input-port
+                        (cadr (command-line)))
+                    get-bytevector-all))
+  (close-port p))%
 \end{scheme}
 
 \section{Platform considerations}
